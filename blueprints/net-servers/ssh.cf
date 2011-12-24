@@ -1,0 +1,122 @@
+#!/var/cfengine/bin/cf-agent -KIf
+#
+# Author: Diego Zamboni <diego.zamboni@cfengine.com>
+# OS: linux
+# Tested: ubuntu
+#
+# Install and configure sshd
+# 1. Install sshd daemon
+# 2. Set configuration parameters
+# 3. Ensure daemon is running
+#
+# Sample usage:
+#
+#
+# body common control
+# {
+#       inputs => { "cfengine_stdlib.cf", "wordpress_installer.cf" };
+#       bundlesequence =>
+#       { 
+#         # Install and configure sshd (not yet implemented)
+#         sshd_install("g.sshd_config"),
+#         # Only configure sshd
+#         sshd_config("g.sshd_config"),
+#         # Configure ssh (client-side configuration) (not yet implemented)
+#         ssh_config("g.ssh_config")
+#       };
+# }
+#
+# bundle common g
+# {
+#   vars:
+#       # SSHD configuration to set
+#       "sshd_config[Protocol]"           string => "2";
+#       "sshd_config[X11Forwarding]"      string => "yes";
+#       "sshd_config[UseDNS]"		string => "no";
+#
+#       # SSH configuration to set, per host
+#       "ssh_config[host1][ForwardX11]"   string => "yes";
+#       "ssh_config[host1][ForwardAgent]" string => "yes";
+#       "ssh_config[host2][Port]"         string => "2222";
+#       "ssh_config[*][Port]"             string => "2022";
+# }
+#
+# Any parameters in sshd_config are entered into the sshd configuration
+# file (normally /etc/ssh/sshd_config or /etc/sshd_config, depending
+# on the operating system). Any parameters in ssh_config are entered into
+# the ssh configuration file (normally /etc/ssh/ssh_config or /etc/ssh_config).
+
+######################################################################
+# Public entry points
+######################################################################
+
+# Configure sshd, according to the parameters given in the "params" argument.
+# All parameters that do not start with an underscore (_) will be edited/added
+# to the sshd configuration file.
+# The file to edit is determined automatically, but you can manually override it
+# by specifying the parameter _sshd_config_file in the params array.
+
+bundle agent sshd_config(params)
+{
+  methods:
+      "sshd_vars" usebundle => sshd_vars("$(params)");
+      "sshd_cfg"  usebundle => sshd_set_cfg("sshd_vars.conf");
+}
+
+######################################################################
+
+bundle agent sshd_vars(params)
+{
+  vars:
+      # Default value
+      "conf[_sshd_config_file]" string => "/etc/ssh/sshd_config",
+                                policy => "free";
+      "conf[_sshd_start_cmd]"   string => "/etc/init.d/sshd start",
+                                policy => "free";
+      "conf[_sshd_stop_cmd]"    string => "/etc/init.d/sshd restart",
+                                policy => "free";
+
+      # OS-specific values that differ from the default
+    darwin:: # Macs
+      "conf[_sshd_config_file]" string => "/etc/sshd_config",
+                                policy => "free";
+      "conf[_sshd_start_cmd]"   string => "/usr/sbin/systemsetup -setremotelogin on",
+                                policy => "free";
+      "conf[_sshd_stop_cmd]"    string => "/usr/sbin/systemsetup -f -setremotelogin off",
+                                policy => "free";
+    hpux::
+      "conf[_sshd_config_file]" string => "/opt/ssh/etc/sshd_config",
+                                policy => "free";
+      "conf[_sshd_start_cmd]"   string => "/sbin/init.d/secsh start",
+                                policy => "free";
+      "conf[_sshd_stop_cmd]"    string => "/sbin/init.d/secsh stop",
+                                policy => "free";
+    any::
+      # Copy configuration parameters passed, into a local array
+      "param_keys"          slist  => getindices("$(params)");
+      "conf[$(param_keys)]" string => "$($(params)[$(param_keys)])",
+                            policy => "free";
+}
+
+bundle agent sshd_set_cfg(params)
+{
+  vars:
+      "allparams" slist => getindices("$(params)");
+      "sshdparamlist"                 slist => grep("[^_].*", "allparams");
+      "sshdparams[$(sshdparamlist)]"  string => "$($(params)[$(sshdparamlist)])";
+
+  files:
+      "$($(params)[_sshd_config_file])"
+        handle => "sshd_edit_configfile",
+        comment => "Set desired sshd_config parameters",
+        edit_line => set_config_values("sshd_set_cfg.sshdparams"),
+        classes => if_repaired("restart_sshd");
+
+  commands:
+    restart_sshd.!no_restarts::
+      "$($(params)[_sshd_stop_cmd]) && $($(params)[_sshd_start_cmd]) "
+        handle => "sshd_restart",
+        comment => "Restart sshd if the configuration file was modified",
+        contain => in_shell;
+}
+
