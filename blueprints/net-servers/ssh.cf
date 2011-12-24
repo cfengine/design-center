@@ -1,8 +1,8 @@
 #!/var/cfengine/bin/cf-agent -KIf
 #
 # Author: Diego Zamboni <diego.zamboni@cfengine.com>
-# OS: linux
-# Tested: ubuntu
+# OS: linux, darwin
+# Tested: darwin
 #
 # Install and configure sshd
 # 1. Install sshd daemon
