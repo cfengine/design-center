@@ -1,10 +1,10 @@
 #!/var/cfengine/bin/cf-agent -KIf
 #
-# Author: Aleksey Tsalolikhin, Diego Zamboni
+# Author: Aleksey Tsalolikhin <atsaloli.tech@gmail.com>, Diego Zamboni <diego.zamboni@cfengine.com>
 # OS: linux
 # Tested: ubuntu
 #
-#Install WordPress:
+# Install and configure WordPress:
 #	1. Install Infrastructure:
 #		1.1. Install httpd and mod_php and PHP MySQL client.
 #		1.2. Install MySQL server.
@@ -16,7 +16,7 @@
 #		2.2. Extract it into the httpd document root where it can be run by the Web server.
 #		2.3. Create WordPress config file wp-config.php from wp-config-sample.php that's shipped with WordPress.
 #		2.4. Tweak wp-config.php to put in the data needed to establish database connection (db name, db username and password).
-#	
+#
 #
 # Sample usage:
 #
