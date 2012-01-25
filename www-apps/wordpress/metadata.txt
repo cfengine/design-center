@@ -1,0 +1,4 @@
+Author: Aleksey Tsalolikhin <atsaloli.tech@gmail.com>, Diego Zamboni <diego.zamboni@cfengine.com>
+OS: linux
+Tested: ubuntu
+Supports: ubuntu, redhat

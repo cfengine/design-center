@@ -4,46 +4,6 @@
 # OS: linux
 # Tested: ubuntu
 #
-# Install and configure WordPress:
-#	1. Install Infrastructure:
-#		1.1. Install httpd and mod_php and PHP MySQL client.
-#		1.2. Install MySQL server.
-#			1.2.1. Create WordPress User in MySQL.
-#			1.2.2. Create WordPress Database in MySQL.
-#		1.3. Make sure httpd and MySQL servers are running.
-#	2. Install the PHP application (WordPress)
-#		2.1. Download tarball with the latest version of WordPress PHP application.
-#		2.2. Extract it into the httpd document root where it can be run by the Web server.
-#		2.3. Create WordPress config file wp-config.php from wp-config-sample.php that's shipped with WordPress.
-#		2.4. Tweak wp-config.php to put in the data needed to establish database connection (db name, db username and password).
-#
-#
-# Sample usage:
-#
-#   body common control
-#   {
-#     bundlesequence => { wp_install("g.wp_config") };
-#     inputs => { "cfengine_stdlib.cf", "wordpress_installer.cf" };
-#   }
-#   
-#   bundle common g
-#   {
-#   vars:
-#     "wp_config[DB_NAME]"      string => "wordpress";
-#     "wp_config[DB_USER]"      string => "wordpress";
-#     "wp_config[DB_PASSWORD]"  string => "lopsa10linux";
-#     debian::
-#       "wp_config[_htmlroot]"     string => "/var/www";
-#     redhat::
-#       "wp_config[_htmlroot]"     string => "/var/www/html";
-#     any::
-#       "wp_config[_wp_dir]"       string => "$(wp_config[_htmlroot])/blog";
-#   }
-#
-# Any parameters in wp_config that do not start with an underscore (_) will be
-# edited/added to the wp-config.php file. You can use this to modify any
-# other Wordpress parameters you want, for example:
-#   "wp_config[AUTH_KEY]" string => "foobarbaz";
 
 ######################################################################
 # Public entry points
@@ -124,7 +84,7 @@ bundle agent wp_report_params(params)
 bundle agent wp_packages_installed(params)
 {
   vars:
-    debian::  ###CO1###
+    debian::
       "desired_package" slist => { 
                                    "apache2", 
                                    "php5",
@@ -138,14 +98,14 @@ bundle agent wp_packages_installed(params)
                                    "php-mysql",
                                    "mysql-server",
                                  };
-  packages:  ###CO2###
+  packages:
       "$(desired_package)"
         package_policy => "add",
         package_method => generic,
         classes => if_repaired("packages_added");
 
   commands:
-    packages_added::  ###CO3###
+    packages_added::
       "$($(params)[_sys_servicecmd]) $($(params)[_sys_apachesrv]) graceful" 
         comment => "Restarting httpd so it can pick up new modules.";
 
@@ -156,14 +116,14 @@ bundle agent wp_packages_installed(params)
 bundle agent wp_services_up(params)
 {
   processes:
-    debian:: ###CO1###
+    debian::
       "/usr/sbin/mysqld" restart_class => "start_mysqld";
       "/usr/sbin/apache2"  restart_class => "start_httpd";
     redhat::
       "^mysqld" restart_class => "start_mysqld";
       "^httpd"  restart_class => "start_httpd";
 
-  commands: ###CO2###
+  commands:
     start_mysqld::
       "$($(params)[_sys_servicecmd]) mysql start";
 
@@ -175,15 +135,15 @@ bundle agent wp_services_up(params)
 
 bundle agent wp_tarball_is_present(params)
 {
-  classes: ###CO1###
+  classes:
       "wordpress_tarball_is_present" expression => fileexists("$($(params)[_tarfile])");
 
-  commands: ###CO2###
+  commands:
     !wordpress_tarball_is_present::
       "/usr/bin/wget -q -O $($(params)[_tarfile]) $($(params)[_downloadurl])"
         comment => "Downloading latest version of WordPress.";
 
-  reports: ###CO3###
+  reports:
     wordpress_tarball_is_present::
       "WordPress tarball is on disk.";
 }
@@ -192,7 +152,7 @@ bundle agent wp_tarball_is_present(params)
 
 bundle agent wp_tarball_is_unrolled(params)
 {
-  classes: ###CO1###
+  classes:
       "wordpress_src_dir_is_present" expression => fileexists("$($(params)[_htmlroot])/wordpress");
       "wordpress_final_dir_is_present" expression => fileexists("$($(params)[_wp_dir])");
 
@@ -201,7 +161,7 @@ bundle agent wp_tarball_is_unrolled(params)
       "WordPress directory is present.";
 
   commands:
-    !wordpress_final_dir_is_present&!wordpress_src_dir_is_present:: ###CO2###
+    !wordpress_final_dir_is_present&!wordpress_src_dir_is_present::
       "/bin/tar -xzf $($(params)[_tarfile])"
         comment => "Unrolling wordpress tarball to $($(params)[_htmlroot])/wordpress.",
         contain => in_dir_shell("$($(params)[_htmlroot])");
@@ -229,11 +189,11 @@ bundle agent wp_mysql_configuration(params)
 bundle agent wp_config_exists(params)
 {
   classes:
-     "wordpress_config_file_exists"  ###CO1###
+     "wordpress_config_file_exists"
         expression => fileexists("$($(params)[_wp_config])");
 
   files:
-    !wordpress_config_file_exists::  ###CO2###
+    !wordpress_config_file_exists::
       "$($(params)[_wp_config])"
         copy_from => backup_local_cp("$($(params)[_wp_cfgsample])");
 
@@ -249,7 +209,7 @@ bundle agent wp_config_exists(params)
 bundle agent wp_is_properly_configured(params)
 {
   vars:
-      "allparams" slist => getindices("$(params)"); ###CO1###
+      "allparams" slist => getindices("$(params)");
     secondpass::
       "wpparams"  slist => grep("[^_].*", "allparams");
 
@@ -257,7 +217,7 @@ bundle agent wp_is_properly_configured(params)
       "secondpass" expression => isvariable("allparams");
 
   files:
-    "$($(params)[_wp_config])" ###CO2###
+    "$($(params)[_wp_config])"
       edit_line => replace_or_add("define\('$(wpparams)', *(?!'$($(params)[$(wpparams)]))'.*",
 				  "define('$(wpparams)', '$($(params)[$(wpparams)])');");
 }
