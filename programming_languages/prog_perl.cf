@@ -1,0 +1,129 @@
+#
+#  Copyright (C) CFEngine AS
+# 
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License LGPL as published by the
+#  Free Software Foundation; version 3.
+#   
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  To the extent this program is licensed as part of the Enterprise
+#  versions of CFEngine, the applicable Commerical Open Source License
+#  (COSL) may apply to this file if you as a licensee so wish it. See
+#  included file COSL.txt.
+#
+#######################################################
+# PERL Programming Environment
+#######################################################
+#
+# CATEGORY:
+#  Programing Languages
+#
+# LICENSE:
+#  COPBL
+#
+# PLATFORMS:
+#  Redhat, CentOS, Debian, Ubuntu, SUSE
+#
+# DESCRIPTION:
+#  Install PERL packages
+#
+# REQUIREMENT:
+#  CFEngine version 3.x.x
+#  Public/Private software repository
+#  inputs => {
+#             "programming_languages/prog_perl.cf", 
+#             "cfengine_stdlib.cf",
+#             };
+# 
+# USAGE:
+#  In bundlesequence/methods, do like the following;
+#
+#   bundlesequence => { prog_perl("$(state)") };
+#
+# or
+#
+#  methods:
+#   "PERL" usebundle => prog_perl("$(state)");
+#
+#    $(state) = "on"    -> to install PERL
+#    $(state) = "purge" -> to uninstall PERL
+#
+# CHANGES:
+#  - removed web packages only PERL here
+#
+# Author:
+#  Nakarin Phooripoom
+#
+#
+#
+
+bundle agent prog_perl(state)
+{
+ vars:
+
+ redhat|centos|fedora::
+
+  "perl_pkgs"   slist => {
+                          "perl",
+                         },
+              comment => "List of PERL packages for Redhat-related distributions",
+               handle => "prog_perl_vars_pkgs_redhat_centos_fedora";
+
+ ubuntu|debian::
+
+  "perl_pkgs"   slist => {
+                          "perl",
+                         },
+              comment => "List of PERL packages for Debian-related distributions",
+               handle => "prog_perl_vars_pkgs_debian_ubuntu";
+
+ suse|SuSE::
+
+  "perl_pkgs"   slist => {
+                          "perl",
+                         },
+              comment => "List of PERL packages for SUSE linux",
+               handle => "prog_perl_vars_pkgs_suse";
+
+#
+
+ classes:
+
+  any::
+
+   "on"    expression => strcmp("$(state)","on"),
+              comment => "Check if to install packages",
+               handle => "prog_perl_classes_strcmp_on";
+   "purge" expression => strcmp("$(state)","purge"),
+              comment => "Check if to remove packages",
+               handle => "prog_perl_classes_strcmp_purge";
+
+#
+
+ packages:
+
+  on::
+
+   "$(perl_pkgs)"
+
+             comment => "Install PERL packages",
+              handle => "prog_perl_packages_add",
+      package_policy => "add",
+      package_method => generic,
+              action => log_repaired("stdout","PERL environment was installed");
+
+  purge::
+
+   "$(perl_pkgs)"
+
+             comment => "Remove PERL packages",
+              handle => "prog_perl_packages_remove",
+      package_policy => "delete",
+      package_method => generic,
+              action => log_repaired("stdout","PERL environment was removed");
+
+}

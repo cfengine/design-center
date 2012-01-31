@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/nova/!svn/ver/3472/trunk/masterfiles/OrionCloud/programming_languages
+END
+prog_python.cf
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/nova/!svn/ver/3350/trunk/masterfiles/OrionCloud/programming_languages/prog_python.cf
+END
+prog_java.cf
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/nova/!svn/ver/3472/trunk/masterfiles/OrionCloud/programming_languages/prog_java.cf
+END
+prog_perl.cf
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/nova/!svn/ver/3461/trunk/masterfiles/OrionCloud/programming_languages/prog_perl.cf
+END
+prog_ruby_gems_rails.cf
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/nova/!svn/ver/3472/trunk/masterfiles/OrionCloud/programming_languages/prog_ruby_gems_rails.cf
+END
+build_essential.cf
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/nova/!svn/ver/3341/trunk/masterfiles/OrionCloud/programming_languages/build_essential.cf
+END
