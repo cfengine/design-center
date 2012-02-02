@@ -77,7 +77,7 @@ SAMPLE USAGE:
     "RUBY on RAILS" usebundle => prog_ruby_gem_rails("$(ruby)","$(gem)","$(state)");
  }
 
- This bundle accepts any valid format versions of $(ruby) and $(gem) parameters and only 2 values of $(state)
+ This bundle accepts any valid format versions of $(ruby) and $(gem) parameters and only 2 values of $(state) parameter.
 
   $(ruby)
    Any version of ruby. For instance, "ruby-1.8.7-p357"
@@ -92,3 +92,4 @@ SAMPLE USAGE:
    To uninstall RUBY on RAILS
 
 CHANGES:
+ * N/A

@@ -1,69 +1,6 @@
-#
-#  Copyright (C) CFEngine AS
-# 
-#  This program is free software; you can redistribute it and/or modify it
-#  under the terms of the GNU Lesser General Public License LGPL as published by the
-#  Free Software Foundation; version 3.
-#   
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  To the extent this program is licensed as part of the Enterprise
-#  versions of CFEngine, the applicable Commerical Open Source License
-#  (COSL) may apply to this file if you as a licensee so wish it. See
-#  included file COSL.txt.
-#
 #######################################################
 # Java Runtime Environment (JRE)
 #######################################################
-#
-# CATEGORY:
-#  Programing Languages
-#
-# LICENSE:
-#  COPBL
-#
-# PLATFORMS:
-#  Redhat, CentOS, Debian, Ubuntu, SUSE
-#
-# DESCRIPTION:
-#  Install JRE packages. It is required to modify the code if you'd like to
-# 
-#
-# REQUIREMENT:
-#  CFEngine version 3.x.x
-#  Internet connection to Sun/Oracle website
-#  inputs => {
-#             "programming_languages/prog_java.cf", 
-#             "cfengine_stdlib.cf",
-#             };
-# 
-# USAGE:
-#  In bundlesequence/methods, do like the following;
-#
-#   bundlesequence => { prog_java("$(type)","$(state)") };
-#
-# or
-#
-#  methods:
-#   "JRE" usebundle => prog_java("$(type)","$(state)");
-#
-#    $(type)  = "openjdk" -> to select JRE from openjdk
-#    $(type)  = "sun"     -> to select JRE from SUN/Oracle
-#    $(type)  = "oracle"  -> to select JRE from SUN/Oracle 
-#    $(state) = "on"      -> to install JRE
-#    $(state) = "purge"   -> to uninstall JRE
-#
-# CHANGES:
-#  
-#
-# Author:
-#  Nakarin Phooripoom
-#
-#
-#
 
 bundle agent prog_java(type,state)
 {

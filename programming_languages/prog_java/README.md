@@ -32,7 +32,7 @@ PLATFORMS:
  LINUX (Redhat, CentOS, Debian, Ubuntu, SUSE)
 
 DESCRIPTION:
- This bluprint contains bundles to install JRE packages either from OPENJDK or SUN/ORACLE. The current version is "6u30". You may need to modify the bundle to upgrade JRE version.
+ This blueprint contains a bundle to install JRE packages either from OPENJDK or SUN/ORACLE. The current version is "6u30". You may need to modify the bundle to upgrade JRE version.
 
 REQUIREMENTS:
  * CFEngine version 3.x.x
@@ -70,7 +70,7 @@ SAMPLE USAGE:
     "JRE" usebundle => prog_java("$(type)","$(state)");
  }
 
- This bundle accepts only 3 values of $(type) parameter and 2 values of the $(state) parameter.
+ This bundle accepts only 3 values of $(type) parameter and 2 values of $(state) parameter.
 
  $(type) = "openjdk"
   To select JRE from OPENJDK
@@ -88,3 +88,4 @@ SAMPLE USAGE:
   To uninstall JRE 
 
 CHANGES:
+ * N/A

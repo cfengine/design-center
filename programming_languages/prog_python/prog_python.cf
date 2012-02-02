@@ -1,65 +1,6 @@
-#
-#  Copyright (C) CFEngine AS
-# 
-#  This program is free software; you can redistribute it and/or modify it
-#  under the terms of the GNU Lesser General Public License LGPL as published by the
-#  Free Software Foundation; version 3.
-#   
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  To the extent this program is licensed as part of the Enterprise
-#  versions of CFEngine, the applicable Commerical Open Source License
-#  (COSL) may apply to this file if you as a licensee so wish it. See
-#  included file COSL.txt.
-#
 #######################################################
 # PYTHON Programming Environment
 #######################################################
-#
-# CATEGORY:
-#  Programing Languages
-#
-# LICENSE:
-#  COPBL
-#
-# PLATFORMS:
-#  Redhat, CentOS, Debian, Ubuntu, SUSE
-#
-# DESCRIPTION:
-#  Install PYTHON packages
-#
-# REQUIREMENT:
-#  CFEngine version 3.x.x
-#  Public/Private software repository
-#  inputs => {
-#             "programming_languages/prog_python.cf", 
-#             "cfengine_stdlib.cf",
-#             };
-# 
-# USAGE:
-#  In bundlesequence/methods, do like the following;
-#
-#   bundlesequence => { prog_python("$(state)") };
-#
-# or
-#
-#  methods:
-#   "PYTHON" usebundle => prog_python("$(state)");
-#
-#    $(state) = "on"    -> to install PYTHON
-#    $(state) = "purge" -> to uninstall PYTHON
-#
-# CHANGES:
-#  - removed web packages only PYTHON here
-#
-# Author:
-#  Nakarin Phooripoom
-#
-#
-#
 
 bundle agent prog_python(state)
 {

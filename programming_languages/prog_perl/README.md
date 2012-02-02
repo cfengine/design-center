@@ -32,7 +32,7 @@ PLATFORMS:
  LINUX (Redhat, CentOS, Debian, Ubuntu, SUSE)
 
 DESCRIPTION:
- This bluprint contains bundles to install PERL packages
+ This blueprint contains a bundle to install PERL packages
 
 REQUIREMENTS:
  * CFEngine version 3.x.x

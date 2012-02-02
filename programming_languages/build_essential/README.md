@@ -1,3 +1,20 @@
+#
+#  Copyright (C) CFEngine AS
+# 
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License LGPL as published by the
+#  Free Software Foundation; version 3.
+#   
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  To the extent this program is licensed as part of the Enterprise
+#  versions of CFEngine, the applicable Commerical Open Source License
+#  (COSL) may apply to this file if you as a licensee so wish it. See
+#  included file COSL.txt.
+#
 #######################################################
 # C and C++ Programming environment
 #######################################################
@@ -15,7 +32,7 @@ PLATFORMS:
  LINUX (Redhat, CentOS, Debian, Ubuntu, SUSE)
 
 DESCRIPTION:
- This bluprint contains bundles to install packages to be able to compile C/C++ software from source
+ This blueprint contains a bundle to install packages to be able to compile C/C++ software from source
 
 REQUIREMENTS:
  * CFEngine version 3.x.x
@@ -30,8 +47,8 @@ SAMPLE USAGE:
  {
   bundlesequence => { build_essential("$(state)") };
           inputs => {
-                     "blueprints/programming_languages/build_essential.cf", 
                      "cfengine_stdlib.cf",
+                     "blueprints/programming_languages/build_essential.cf", 
                     };
  }
 
@@ -50,16 +67,16 @@ SAMPLE USAGE:
  {
   methods:
    any::
-    "build-essential" usebundle => build_essential("$(state)");
+    "C/C++" usebundle => build_essential("$(state)");
  }
 
- This bundle accepts only 2 values of the $(state) parameter.
+ This bundle accepts only 2 values of $(state) parameter.
 
  $(state) = "on"
   To install packages
 
  $(state) = "purge"
-  Ton uninstall packages
+  To uninstall packages
 
 CHANGES:
  * support SUSE distribution

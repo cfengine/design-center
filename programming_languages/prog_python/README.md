@@ -32,7 +32,7 @@ PLATFORMS:
  LINUX (Redhat, CentOS, Debian, Ubuntu, SUSE)
 
 DESCRIPTION:
- This bluprint contains a bundle to install PYTHON packages
+ This blueprint contains a bundle to install PYTHON packages
 
 REQUIREMENTS:
  * CFEngine version 3.x.x

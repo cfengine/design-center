@@ -1,65 +1,6 @@
-#
-#  Copyright (C) CFEngine AS
-# 
-#  This program is free software; you can redistribute it and/or modify it
-#  under the terms of the GNU Lesser General Public License LGPL as published by the
-#  Free Software Foundation; version 3.
-#   
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  To the extent this program is licensed as part of the Enterprise
-#  versions of CFEngine, the applicable Commerical Open Source License
-#  (COSL) may apply to this file if you as a licensee so wish it. See
-#  included file COSL.txt.
-#
 #######################################################
 # C and C++ Programming environment
 #######################################################
-#
-# CATEGORY:
-#  Programing Languages
-#
-# LICENSE:
-#  COPBL
-#
-# PLATFORMS:
-#  Redhat, CentOS, Debian, Ubuntu, SUSE
-#
-# DESCRIPTION:
-#  Install packages to compile C/C++ software from source
-#
-# REQUIREMENT:
-#  CFEngine version 3.x.x
-#  Public/Private software repository
-#  inputs => {
-#             "programming_languages/build_essential.cf", 
-#             "cfengine_stdlib.cf",
-#             };
-# 
-# USAGE:
-#  In bundlesequence/methods, do like the following;
-#
-#   bundlesequence => { build_essential("$(state)") };
-#
-# or
-#
-#  methods:
-#   "build-essential" usebundle => build_essential("$(state)");
-#
-#    $(state) = "on"    -> to install packages
-#    $(state) = "purge" -> to uninstall packages
-#
-# CHANGES:
-#  - added SUSE disto
-#
-# Author:
-#  Nakarin Phooripoom
-#
-#
-#
 
 bundle agent build_essential(state)
 {
