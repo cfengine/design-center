@@ -1,0 +1,4 @@
+Author: Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>
+OS: linux
+Tested: redhat, centos, fedora, debian, ubuntu, suse
+Supports: redhat, centos, fedora, debian, ubuntu, suse
