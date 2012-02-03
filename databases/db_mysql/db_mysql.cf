@@ -1,0 +1,193 @@
+#######################################################
+# MySQL (Client/Server)
+#######################################################
+
+bundle agent db_mysql(type,state)
+{
+ vars:
+
+  redhat|centos|fedora::
+
+   "mysql_pkgs"      slist => {
+                               "mysql",
+                              },
+                   comment => "List of MySQL client packages on Redhat-related distributions",
+                    handle => "db_mysql_vars_mysql_pkgs_client_redhat_centos_fedora",
+                ifvarclass => "client";
+
+   "mysql_pkgs"      slist => {
+                               "mysql",
+                               "mysql-server",
+                               "perl-DBD-MySQL",
+                              },
+                   comment => "List of MySQL server packages on Redhat-related distributions",
+                    handle => "db_mysql_vars_mysql_pkgs_server_redhat_centos_fedora",
+                ifvarclass => "server";
+
+  debian|ubuntu:: 
+
+   "mysql_pkgs"      slist => {
+                               "mysql-client-5.1",
+                               "mysql-client-core-5.1",
+                               "mysql-common",
+                               "libmysqlclient16",
+                               "libdbd-mysql-perl",
+                               "libdbi-perl",
+                               "libnet-daemon-perl",
+                               "libplrpc-perl",
+                              },
+                   comment => "List of MySQL client packages on Debian-related distributions",
+                    handle => "db_mysql_vars_mysql_pkgs_client_debian_ubuntu",
+                ifvarclass => "client";
+
+   "mysql_pkgs"      slist => {
+                               "mysql-server-5.1",
+                               "mysql-server-core-5.1",
+                               "mysql-client-5.1",
+                               "mysql-client-core-5.1",
+                               "mysql-common",
+                               "libmysqlclient16",
+                               "libdbd-mysql-perl",
+                               "libdbi-perl",
+                               "libnet-daemon-perl",
+                               "libplrpc-perl",
+                               "libhtml-template-perl",
+                              },
+                   comment => "List of MySQL server packages on Debian-related distributions",
+                    handle => "db_mysql_vars_mysql_pkgs_server_debian_ubuntu",
+                ifvarclass => "server";
+
+  suse|SuSE::
+ 
+   "mysql_pkgs"      slist => {
+                               "mysql-community-server-client",
+                               "libmysqlclient16",
+                               "libmysqlclient_r16",
+                              },
+                   comment => "List of MySQL client packages on SUSE linux distribution",
+                    handle => "db_mysql_vars_mysql_pkgs_client_suse",
+                ifvarclass => "client";
+
+   "mysql_pkgs"      slist => {
+                               "mysql-community-server",
+                               "mysql-community-server-client",
+                               "libmysqlclient16",
+                               "libmysqlclient_r16",
+                              },
+                   comment => "List of MySQL server packages on SUSE linux distribution",
+                    handle => "db_mysql_vars_mysql_pkgs_server_suse",
+                ifvarclass => "server";
+
+#
+
+ classes:
+
+  any::
+
+   "on"     expression => strcmp("$(state)","on"),
+               comment => "Check if to install packages",
+                handle => "db_mysql_classes_strcmp_on";
+   "purge"  expression => strcmp("$(state)","purge"),
+               comment => "Check if to remove packages",
+                handle => "db_mysql_classes_strcmp_purge";
+   "client" expression => strcmp("$(type)","client"),
+               comment => "Check if to install only client packages",
+                handle => "db_mysql_classes_strcmp_client";
+   "server" expression => strcmp("$(type)","server"),
+               comment => "Check if to install both client and server packages",
+                handle => "db_mysql_classes_strcmp_server";
+
+#
+
+ packages:
+
+  on::
+
+   "$(mysql_pkgs)"
+
+             comment => "Install MySQL packages",
+              handle => "db_mysql_packages_add",
+      package_policy => "add",
+      package_method => generic,
+             classes => if_ok("ensure_mysql_running"),
+              action => log_repaired("stdout","MySQL $(type) was installed");
+
+  purge::
+
+   "$(mysql_pkgs)"
+
+             comment => "Remove MySQL packages",
+              handle => "db_mysql_packages_remove",
+      package_policy => "delete",
+      package_method => generic,
+              action => log_repaired("stdout","MySQL $(type) was removed");
+
+#
+
+ files:
+
+  (redhat|centos|fedora).on.server::
+
+  "/tmp/mysql.sock"
+
+         comment => "Create a temp link to mysql.sock",
+          handle => "db_mysql_files_mysql_sock_redhat_centos_fedora",
+       link_from => ln_s("/var/lib/mysql/mysql.sock");
+
+  (debian|ubuntu).on.server::
+
+  "/tmp/mysql.sock"
+
+         comment => "Create a temp link to mysql.sock",
+          handle => "db_mysql_files_mysql_sock_debian_ubuntu",
+       link_from => ln_s("/var/run/mysqld/mysqld.sock");
+
+#
+
+ processes:
+
+  (redhat|centos|fedora).server.ensure_mysql_running::
+
+   ".*mysqld.*"
+            comment => "Check for MySQL process on Redhat-related distributions",
+             handle => "db_mysql_processes_run_redhat_centos_fedora",
+      restart_class => "redhat_centos_fedora_start_mysqld";
+
+  (redhat|centos|fedora).purge::
+
+   ".*mysqld.*"
+      comment => "Teminate MySQL process on Redhat-related distributions",
+       handle => "db_mysql_processes_terminate_redhat_centos_fedora",
+      signals => { "term","kill" };
+   
+  (debian|ubuntu|suse|SuSE).server.ensure_mysql_running::
+
+   "/usr/sbin/mysqld.*"
+            comment => "Check for MySQL process on Debian-related and SUSE distributions",
+             handle => "db_mysql_processes_run_debian_ubuntu_suse",
+      restart_class => "debian_ubuntu_suse_start_mysqld";
+
+  (debian|ubuntu|suse|SuSE).purge::
+
+   "/usr/sbin/mysqld.*"
+      comment => "Terminate MySQL process on Debian-related and SUSE distributions",
+       handle => "db_mysql_processes_terminate_debian_ubuntu_suse",
+      signals => { "term","kill" };
+
+#
+
+ commands:
+
+  redhat_centos_fedora_start_mysqld::
+
+   "/etc/init.d/mysqld restart"
+      comment => "Start/Restart command of MySQL on Redhat-related distributions",
+       handle => "db_mysql_commands_run_redhat_centos_fedora";
+
+  debian_ubuntu_suse_start_mysqld::
+
+   "/etc/init.d/mysql restart"
+      comment => "Start/Restart command of MySQL on Debian-related and SUSE distributions",
+       handle => "db_mysql_commands_run_debian_ubuntu_suse";
+
+}
