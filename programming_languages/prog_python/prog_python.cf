@@ -1,0 +1,73 @@
+#######################################################
+# PYTHON Programming Environment
+#######################################################
+
+bundle agent prog_python(state)
+{
+ vars:
+
+  redhat|centos|fedora::
+
+   "python_pkgs"   slist => {
+                             "python",
+                             "python-devel",
+                             "python-libs",
+                            },
+                 comment => "List of PYTHON packages for Redhat-related distributions",
+                  handle => "prog_python_vars_python_pkgs_redhat_centos_fedora";
+
+  debian|ubuntu::
+
+   "python_pkgs" slist => {
+                           "python",
+                          },
+                 comment => "List of PYTHON packages for Debian-related distributions",
+                  handle => "prog_python_vars_python_pkgs_debian_ubuntu";
+
+  suse|SuSE::
+
+   "python_pkgs" slist => {
+                           "python",
+                           "python-base",
+                          },
+                 comment => "List of PYTHON packages for SUSE",
+                  handle => "prog_python_vars_python_pkgs_suse";
+
+#
+
+ classes:
+
+  any::
+
+   "on"    expression => strcmp("$(state)","on"),
+              comment => "Check if to install packages",
+               handle => "prog_python_classes_strcmp_on";
+   "purge" expression => strcmp("$(state)","purge"),
+              comment => "Check if to remove packages",
+               handle => "prog_python_classes_strcmp_purge";
+
+#
+
+ packages:
+
+  on::
+
+   "$(python_pkgs)"
+
+             comment => "Install PYTHON environment for python programing and python cgi",
+              handle => "prog_python_packages_add",
+      package_policy => "add",
+      package_method => generic,
+              action => log_repaired("stdout","PYTHON environment was installed");
+
+  purge::
+
+   "$(python_pkgs)"
+
+             comment => "Remove PYTHON environment for python programing and python cgi",
+              handle => "prog_python_packages_remove",
+      package_policy => "delete",
+      package_method => generic,
+              action => log_repaired("stdout","PYTHON environment was removed");
+
+}
