@@ -1,0 +1,3 @@
+Author: Diego Zamboni <diego.zamboni@cfengine.com>
+OS: linux, darwin
+Tested: linux, darwin
