@@ -1,8 +1,9 @@
-# Configure sshd
+# ssh configuration
 
 Author: Diego Zamboni <diego.zamboni@cfengine.com>
 
-Configure sshd
+## Configure sshd
+
 1. Set configuration parameters
 2. Ensure daemon is running
 
@@ -37,7 +38,7 @@ Sample usage:
           # "ssh_config[*][Port]"             string => "2022";
     }
 
-Any parameters in sshd_config are entered into the sshd configuration
-file (normally /etc/ssh/sshd_config or /etc/sshd_config, depending
-on the operating system). Any parameters in ssh_config are entered into
-the ssh configuration file (normally /etc/ssh/ssh_config or /etc/ssh_config).
+Any parameters in `sshd_config` are entered into the sshd configuration
+file (normally `/etc/ssh/sshd_config` or `/etc/sshd_config`, depending
+on the operating system). Any parameters in `ssh_config` are entered into
+the ssh configuration file (normally `/etc/ssh/ssh_config` or `/etc/ssh_config`).
