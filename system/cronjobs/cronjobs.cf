@@ -1,0 +1,21 @@
+bundle agent cronjobs(user, jobs) {
+
+	files:
+
+		"${g.nhw_crontabs}/${user}"
+			handle => "cronjobs_files_crontab",
+			comment => "Promise root cron table entries",
+			create => "true",
+			classes => if_repaired("root_cron_repaired"),
+			perms => mog("0600","root","root"),
+			edit_line => append_if_no_lines( "@{cronjobs.jobs}" );
+
+	commands:
+
+		root_cron_repaired.(aix|sunos_5_10)::
+
+			"/usr/bin/crontab ${g.nhw_crontabs}/${user}",
+				handle => "cronjobs_commands_crontab",
+				comment => "Reread cron tables if it was edited.";
+}
+

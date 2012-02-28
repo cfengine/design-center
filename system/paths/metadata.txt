@@ -1,0 +1,3 @@
+author: Neil H Watson, neil@watson-wilson.ca
+ostype: Any UNIX
+tested: 
