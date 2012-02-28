@@ -45,18 +45,18 @@ bundle agent interface_settings_update(nic, config) {
                 create          => "true",
                 perms           => mog("644", "root", "root"),
                 edit_line       => set_variable_values2("$(this.promiser)", "$(config)"),
-                classes         => if_repaired("ifupdown_$(nic)");
+                classes         => if_repaired("interface_settings_update_ifupdown_$(nic)");
 
     commands:
         redhat|centos::
             "/sbin/ifdown $(nic)"
-                ifvarclass  => "ifupdown_$(nic)",
-                classes     => if_repaired("downed_interface_$(nic)"),
+                ifvarclass  => "interface_settings_update_ifupdown_$(nic)",
+                classes     => if_repaired("interface_settings_update_downed_interface_$(nic)"),
                 comment     => "down the interface with old configuration";
 
             "/sbin/ifup $(nic)"
-                ifvarclass  => "ifupdown_$(nics)",
-                classes     => if_repaired("uped_interface_$(nic)"),
+                ifvarclass  => "interface_settings_update_ifupdown_$(nics)",
+                classes     => if_repaired("interface_settings_update_uped_interface_$(nic)"),
                 comment     => "bring up the interface with new configuration";
 
     reports:
