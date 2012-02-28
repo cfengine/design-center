@@ -1,0 +1,40 @@
+#!/bin/bash
+# Author: Nick Anderson <nick@cmdln.org>
+# Lay down broilerplate for a new CFEngine sketch
+sketch=$1
+
+if [[ "$sketch" == "" ]];then
+    echo Usage: $0 sketchname
+    exit 1
+fi
+
+if [[ -d "$sketch" ]]; then
+    echo A sketch by the name of $sketch already exists
+    exit 1
+fi
+
+# Look for default settings and source if available
+sketchconf="$HOME/.newsketch.conf"
+if [[ -f "$sketchconf" ]]; then
+    source $sketchconf
+else
+    echo Could not locate newsketch defaults $sketchconf
+    echo "Empty defaults have been put in place for you, 
+          you may want to consider customizing the file"
+    echo -e 'author=""\nostype=""\ntested=""\ncfengine_version=""' > $sketchconf
+fi
+ 
+
+mkdir $sketch
+
+metadata_txt="author:$author\nostype:$ostype\ntested:$tested\ncfengine_version:$cfengine_version\n
+"
+README_md="# $sketch - \n## AUTHOR\n$author\n\n## PLATFORM\n$ostype\n\n## DESCRIPTION\n\n## REQUIREMENTS\n\n## SAMPLE USAGE\n\n"
+
+echo -e $metadata_txt > $sketch/metadata.txt
+
+echo -e $README_md > $sketch/README.md
+
+touch $sketch/$sketch.cf
+
+echo "New sketch \"$sketch\" initalized"
