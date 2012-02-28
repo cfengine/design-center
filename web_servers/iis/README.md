@@ -1,21 +1,21 @@
 # Internet Information Services (IIS) configuration
 
-##AUTHOR:
+##AUTHOR
 Eystein Måløy Stenberg <eystein@cfengine.com>
 
-##PLATFORM:
+##PLATFORM
 Windows
 
-##DESCRIPTION:
+##DESCRIPTION
 Create IIS sites, and start, stop, delete existing sites.
 Uses the command-line utility appcmd.exe bundled with IIS.
 Does not (yet) support reconfiguring existing sites.
 
-##REQUIREMENTS:
+##REQUIREMENTS
  * CFEngine Nova for Windows
  * IIS 7 already installed
 
-##SAMPLE USAGE:
+##SAMPLE USAGE
     bundle agent service_iis
     {
     vars:
@@ -38,6 +38,6 @@ Does not (yet) support reconfiguring existing sites.
 Assumes IIS is installed in its default path at inetsrv in the system32 directory.
 If this is not the case, please modify the docroot and appcmd variables.
 
-##TODO:
+##TODO
  * Modify incorrectly configured sites (more advanced regex)
  * Support more OS/IIS versions
