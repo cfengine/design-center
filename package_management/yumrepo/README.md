@@ -6,11 +6,14 @@ Nick Anderson <nick@cmdln.org>
 ## PLATFORM
 Linux
 
+## DESCRIPTION
+
+Create a repository in a given location. Update repository metadata any 
+time files are added or removed from the location.
+
 ## REQUIREMENTS
 * createrepo command is needed to manage repositorys
 
-It will create a repository in a given location, any time files are added or
-removed from the location the repository metadata is refreshed.
 
 
 ## SAMPLE USAGE
