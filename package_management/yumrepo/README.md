@@ -17,7 +17,7 @@ time files are added or removed from the location.
 
 
 ## SAMPLE USAGE
-    bundle agent maintin_repositorys {
+    bundle agent maintain_repositorys {
 
         vars:
             "updates_repo" string => "/var/www/html/repo_mirror/updates";
