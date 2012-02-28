@@ -1,0 +1,3 @@
+Useful tools and utilities for interacting with CFEngine, but that are not CFEngine policy code.
+
+Examples: git/svn hooks, pre/post processing scripts, etc.
