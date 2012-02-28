@@ -1,0 +1,29 @@
+#!/bin/bash
+# Author: Nick Anderson <nick@cmdln.org>
+# Simple git pre-commit script to ensure the important files have proper syntax
+
+# Run checks on promises.cf and failsafe.cf from the root of the repository
+# (we expect thats where the files exist)
+
+POLICYCHECK=$(/var/cfengine/bin/cf-promises -f $(git rev-parse --show-toplevel)/promises.cf)
+FAILSAFECHECK=$(/var/cfengine/bin/cf-promises -f $(git rev-parse --show-toplevel)/failsafe.cf)
+
+if [[ $POLICYCHECK != "" ]]; then
+    #/var/cfengine/bin/cf-promises -f $(git rev-parse --show-toplevel)/promises.cf
+    echo $POLICYCHECK
+    echo promises.cf check FAILED syntax check Aborting, we dont allow broken commits
+    exit 1
+fi
+
+if [[ $FAILSAFECHECK != "" ]]; then
+    #/var/cfengine/bin/cf-promises -f $(git rev-parse --show-toplevel)/failsafe.cf
+    echo $FAILSAFECHECK
+    echo failsafe.cf FAILED syntax check. Aborting, we dont allow broken commits
+    exit 1
+fi
+
+
+echo "###########################################################################"
+echo "#                         Syntax Check All Clear                          #"
+echo "###########################################################################"
+
