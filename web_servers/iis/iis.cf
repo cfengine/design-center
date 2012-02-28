@@ -1,0 +1,99 @@
+bundle agent iis(site_configs, start_sites, stop_sites, delete_sites)
+{
+vars:
+  "docroot"        string => "$(sys.winsysdir)\inetsrv\wwwroot";
+  "appcmd"         string => "\"$(sys.winsysdir)\inetsrv\appcmd.exe\"";
+  
+# local variable initialisation
+  "id"                  slist => getindices("$(site_configs)");
+  "name[$(id)]"         string => "$($(site_configs)[$(id)][name])";
+  "bindings[$(id)]"     string => "$($(site_configs)[$(id)][bindings])";
+  "physicalPath[$(id)]" string => "$($(site_configs)[$(id)][physical_path])";
+  
+classes:
+
+  "has_start_sites" expression => isvariable("start_sites");
+  "has_stop_sites" expression => isvariable("stop_sites");
+  "has_delete_sites" expression => isvariable("delete_sites");
+
+Windows_Server_2008_R2::
+  "site_correct_$(id)" expression => regcmp("SITE \"$(name[$(id)])\" .*", 
+                                            execresult("$(appcmd) list site \"$(name[$(id)])\"", "noshell"));
+
+has_start_sites::											
+  "site_started_$(start_sites)" expression => regcmp("SITE \"$(start_sites)\" .*state:Started\)", 
+                                                     execresult("$(appcmd) list site \"$(start_sites)\"", "noshell") );
+has_stop_sites::
+  "site_stopped_$(stop_sites)" expression => regcmp("SITE \"$(stop_sites)\" .*state:Stopped\)", 
+                                                     execresult("$(appcmd) list site \"$(stop_sites)\"", "noshell") );
+has_delete_sites::
+  "site_deleted_$(delete_sites)" expression => strcmp("", 
+                                                     execresult("$(appcmd) list site \"$(delete_sites)\"", "noshell") );
+  
+													 
+files:
+  "$(docroot)"
+    comment => "Ensure docroot exists",
+    create => "true";
+
+  "$(physicalPath[$(id)])"
+    comment => "Ensure site docroots exist",
+    create => "true";
+	
+	
+commands:
+
+has_delete_sites::
+  "$(appcmd) delete site \"$(delete_sites)\""
+    comment    => "Delete IIS site $(delete_sites)",
+    handle     => canonify("service_iis_site_delete_$(delete_sites)"),
+    ifvarclass => not( canonify("site_deleted_$(delete_sites)") );	
+
+any::
+  "$(appcmd) delete site \"$(name[$(id)])\""
+    comment    => "Remove any existing, but wrongly configured IIS site $(name[$(id)])",
+    handle     => canonify("service_iis_site_delete_ifexisting_$(name[$(id)])"),
+    ifvarclass => "!site_correct_$(id)";
+
+  "$(appcmd) add site /name:\"$(name[$(id)])\" /bindings:\"$(bindings[$(id)])\" /physicalPath:\"$(physicalPath[$(id)])\""
+    comment    => "Add missing IIS site $(name[$(id)])",
+    handle     => canonify("service_iis_site_add_$(name[$(id)])"),
+    ifvarclass => "!site_correct_$(id)";
+
+has_stop_sites::
+  "$(appcmd) stop site \"$(stop_sites)\""
+    comment    => "Stop IIS site $(stop_sites)",
+    handle     => canonify("service_iis_site_stop_$(stop_sites)"),
+    ifvarclass => not( canonify("site_stopped_$(stop_sites)") );	
+
+has_start_sites::
+  "$(appcmd) start site \"$(start_sites)\""
+    comment    => "Start IIS site $(start_sites)",
+    handle     => canonify("service_iis_site_start_$(start_sites)"),
+    ifvarclass => not( canonify("site_started_$(start_sites)") );
+ 
+ 
+reports:
+cfengine_3::
+
+  "IIS site $(name[$(id)]) was incorrectly configured - correcting..."
+    ifvarclass => "!site_correct_$(id)";
+
+has_delete_sites::
+  "IIS site $(delete_sites) was present - deleting"
+    ifvarclass => not( canonify("site_deleted_$(delete_sites)"));
+
+has_stop_sites::
+  "IIS site $(stop_sites) was started - stopping"
+    ifvarclass => not( canonify("site_stopped_$(stop_sites)"));
+	
+has_start_sites::
+  "IIS site $(start_sites) was stopped - starting"
+    ifvarclass => not( canonify("site_started_$(start_sites)"));
+
+has_start_sites::
+  "start sites: $(start_sites)";
+
+cfengine_3::
+  "id is $(id)";
+}
