@@ -12,8 +12,8 @@ Uses the command-line utility appcmd.exe bundled with IIS.
 Does not (yet) support reconfiguring existing sites.
 
 ##REQUIREMENTS:
-CFEngine Nova for Windows
-IIS 7 already installed
+ * CFEngine Nova for Windows
+ * IIS 7 already installed
 
 ##SAMPLE USAGE:
     bundle agent service_iis
@@ -39,5 +39,5 @@ Assumes IIS is installed in its default path at inetsrv in the system32 director
 If this is not the case, please modify the docroot and appcmd variables.
 
 ##TODO:
-Modify incorrectly configured sites (more advanced regex)
-Support more OS/IIS versions
+ * Modify incorrectly configured sites (more advanced regex)
+ * Support more OS/IIS versions
