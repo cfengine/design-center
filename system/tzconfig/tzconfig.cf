@@ -1,0 +1,28 @@
+bundle agent tzconfig(timezone) {
+# timezone should be a string representing the timezone 
+# At least in the linux distros I checked this should be 
+# relative to /usr/share/zoneinfo
+
+    vars:
+        linux::
+            "zoneinfo" string => "/usr/share/zoneinfo";
+    
+    classes:
+        "timezone_exists" expression => fileexists("$(zoneinfo)/$(timezone)");
+
+    files:
+        linux::
+            "/etc/localtime"
+                ifvarclass        => "timezone_exists",
+                link_from         => ln_s("$(zoneinfo)/$(timezone)"),
+                classes           => if_repaired("tzconfig_timezone_updated"),
+                move_obstructions => "true";
+    reports:
+        !timezone_exists::
+            "Unable to set invalid timezone: $(timezone)";
+
+        tzconfig_timezone_updated::
+            "System timezone updated to $(timezone)";
+
+}
+
