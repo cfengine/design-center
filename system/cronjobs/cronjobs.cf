@@ -20,13 +20,13 @@ bundle agent cronjobs(user, jobs) {
 			handle => "cronjobs_files_crontab",
 			comment => "Promise table entries",
 			create => "true",
-			classes => if_repaired("crontab_repaired"),
+			classes => if_repaired("cronjobs_crontab_repaired"),
 			perms => mog("${m}","${user}","${g}"),
 			edit_line => append_if_no_lines( "@{cronjobs.jobs}" );
 
 	commands:
 
-		root_cron_repaired.(aix|sunos_5_10)::
+		cronjobs_crontab_repaired.(aix|sunos_5_10)::
 
 			"/usr/bin/crontab ${paths.crontabs}/${user}",
 				handle => "cronjobs_commands_crontab",
