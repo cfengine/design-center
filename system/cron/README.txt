@@ -10,8 +10,8 @@ vars:
 
 methods:
 
-	"configure" usebundle => cronjobs("root", @{main.root_cron_jobs}),
-		handle => "main_methods_cronjobs";
+	"configure" usebundle => cronjobs_add("root", @{main.root_cron_jobs}),
+		handle => "main_methods_cronjobs_add";
 
 Refer to the sketch names paths (paths.cf) for the location of
 crontab files.

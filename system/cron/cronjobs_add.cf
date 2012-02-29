@@ -1,4 +1,4 @@
-bundle agent cronjobs(user, jobs) {
+bundle agent cronjobs_add(user, jobs) {
 
 	vars:
 
@@ -17,18 +17,18 @@ bundle agent cronjobs(user, jobs) {
 	files:
 
 		"${paths.crontabs}/${user}"
-			handle => "cronjobs_files_crontab",
+			handle => "cronjobs_add_files_crontab",
 			comment => "Promise table entries",
 			create => "true",
-			classes => if_repaired("cronjobs_crontab_repaired"),
+			classes => if_repaired("cronjobs_add_crontab_repaired"),
 			perms => mog("${m}","${user}","${g}"),
-			edit_line => append_if_no_lines( "@{cronjobs.jobs}" );
+			edit_line => append_if_no_lines( "@{cronjobs_add.jobs}" );
 
 	commands:
 
-		cronjobs_crontab_repaired.(aix|sunos_5_10)::
+		cronjobs_add_crontab_repaired.(aix|sunos_5_10)::
 
 			"/usr/bin/crontab ${paths.crontabs}/${user}",
-				handle => "cronjobs_commands_crontab",
+				handle => "cronjobs_add_commands_crontab",
 				comment => "Reread cron tables if it was edited.";
 }
