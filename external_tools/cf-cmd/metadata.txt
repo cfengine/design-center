@@ -1,0 +1,4 @@
+author:Diego Zamboni <diego.zamboni@cfengine.com>
+ostype:any
+tested:darwin
+cfengine_version:
