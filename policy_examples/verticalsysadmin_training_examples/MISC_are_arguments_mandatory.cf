@@ -1,0 +1,18 @@
+bundle agent example {
+
+    files:
+
+        "/tmp/group"
+
+            edit_line => delete_group;
+                                     # note the parameter
+                                     # you can parameterize bundles
+}
+
+
+bundle edit_line delete_group(group) {
+
+    delete_lines:
+        "$(group).*";
+}
+

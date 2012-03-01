@@ -1,0 +1,7 @@
+bundle agent example {
+
+reports:
+  cfengine::
+    "hello world";
+
+}

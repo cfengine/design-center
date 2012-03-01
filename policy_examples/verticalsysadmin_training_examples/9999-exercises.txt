@@ -1,0 +1,63 @@
+1. Write a policy to signal TERM and then KILL to any
+process matching "trn".
+
+
+1b. Write a policy to signal term and then kill to
+any process matching "trn" or "eggdrop" or "ircII"
+
+2. Write a policy to create /tmp/myname.txt and put
+your name in it.  (Use "reports" type promise)
+
+3. Write another policy to edit /tmp/myname.txt
+and populate its contents from /tmp/name.tmpl
+
+/tmp/name.tmpl should contain:
+
+Hello, $(bundle.myname)
+
+(where bundle is your bundle name)
+
+
+Use "insert_lines" promise with the attributes of:
+
+      insert_type => "file",
+      expand_scalars => "true";
+
+
+4. Now write another policy where the template contains
+a placeholder.
+
+The template, /tmp/myname.txt, should contain:
+Hello, __NAME__
+
+Your CFEngine policy should generate /tmp/myname.txt
+from /tmp/myname.tmpl
+
+Use MISC_simplest_replace_patterns_example.cf for 
+an example of search and replace in CFEngine.
+
+5. Write a policy to create /etc/motd as follows:
+It should always say  "unauthorized use forbidden"
+
+On weekends only it should have an extra line that says
+"go home, it's the weekend".
+
+
+
+
+6. integrate your policy into the default cfengine policy
+
+7.  Practice using "methods" type promises:
+
+Write a policy that has two bundles.
+
+The first bundle does something visible (such as a
+reports type promise that says "bundle1") AND calls
+the second bundle.
+
+The second bundle reports "bundle2".
+
+
+7. now parameterize the 2nd bundle -- have the
+first bundle feed it an argument, and have the
+2nd bundle display that argument.

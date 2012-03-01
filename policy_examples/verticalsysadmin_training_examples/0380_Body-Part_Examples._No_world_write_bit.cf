@@ -1,0 +1,18 @@
+bundle agent example {
+
+files:
+
+   "/tmp/testfile" 
+
+	comment => "/tmp/testfile must not be world-wirtable", 
+	perms   => no_world_writable_files_allowed;
+
+}
+
+
+#######################################################
+
+body perms no_world_writable_files_allowed
+{
+mode   => "o-w";
+}

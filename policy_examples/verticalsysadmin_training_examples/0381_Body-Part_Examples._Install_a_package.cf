@@ -1,0 +1,34 @@
+bundle agent example {
+
+packages:
+
+  "php-mysql"
+
+     package_policy => "add",	# Ensure that a package is present
+     package_method => yum;
+}
+
+############################################################
+
+
+body package_method yum {
+
+     package_changes => "bulk";	# Can be "individual" or "bulk"
+
+     package_list_command => "/usr/bin/yum list installed";
+                             # command to run to get a list of packages
+
+     package_list_update_ifelapsed => "0";  # 0 minutes - default is 4 hours.
+                                            # This is how long cfengine will
+                                            # cache the package list.
+
+     package_list_name_regex    => "([^.]+).*";           # Regexes needed 
+     package_list_version_regex => "[^\s]\s+([^\s]+).*";  # to parse the
+     package_list_arch_regex    => "[^.]+\.([^\s]+).*";   # package list
+     package_installed_regex => ".*installed.*";          # command output
+
+     package_add_command => "/usr/bin/yum -y install";
+                            # command to run to install a package
+     package_delete_command => "/bin/rpm -e";
+                            # command to run to delete a package
+}

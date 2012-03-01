@@ -1,0 +1,16 @@
+bundle agent example {
+
+    files:
+
+        "/tmp/hello" 
+
+            create  => "true";
+
+
+    files:
+
+        "/tmp/world" 
+
+            create  => "true";
+
+}

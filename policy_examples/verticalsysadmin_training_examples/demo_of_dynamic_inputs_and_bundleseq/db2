@@ -1,0 +1,5 @@
+bundle agent db2{
+    reports:
+        cfengine_3::
+            "db2 bundle";
+}

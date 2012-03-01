@@ -1,0 +1,14 @@
+There is a special promise type in Cfengine 3 called "methods"
+that promises to call another promise bundle.  
+
+
+ methods:
+
+        "any"
+
+           usebundle => bundle_name("parameter", ...);
+
+
+The promiser can be any word, right now it does not matter;
+the promiser is reserved for future development.  Parameters
+are optional.

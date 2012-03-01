@@ -1,0 +1,45 @@
+bundle common classes {
+
+   classes:
+       "cf_dbs"
+           expression => "linux";
+
+}
+
+
+bundle common global_vars {
+    vars:
+
+        any::
+
+            "bseq" slist => {
+                "site",
+                "ntp",
+            },
+            policy => "overridable";
+
+        cf_dbs::
+
+            "bseq" slist => {
+                @{bseq},
+                "db2",
+                "mysql"
+            },
+            policy => "overridable";
+
+        cf_webfarm::
+
+            "bseq" slist => {
+                @{bseq},
+                "httpd",
+                "proxy"
+            },
+            policy => "overridable";
+}
+
+body common control {
+
+    inputs         => { "@{global_vars.bseq}" };
+    bundlesequence => { "@{global_vars.bseq}" };
+
+}

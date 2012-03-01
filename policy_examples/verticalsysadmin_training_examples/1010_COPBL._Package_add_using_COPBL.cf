@@ -1,0 +1,17 @@
+
+body common control {
+    inputs         => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+}
+
+#############################################
+
+bundle agent example {
+
+    packages:
+
+        "php-mysql"
+
+            package_policy => "add",
+            package_list_update_ifelapsed => "1",  # minutes
+            package_method => yum;
+}

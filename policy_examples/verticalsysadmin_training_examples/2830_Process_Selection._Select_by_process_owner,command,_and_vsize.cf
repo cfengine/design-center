@@ -1,0 +1,30 @@
+# Scenario: you have a memory leak in your Web app
+# that causes "bloat" in httpd processes.
+#
+# kill all apache httpd processes over a certain vsize
+# (vsize = total Virtual Memory size in kb)
+
+bundle agent example {
+
+    processes:
+
+         ".*"
+
+             process_select  => vsize_exceeds("apache", "/usr/sbin/httpd.*", "30000"),
+             signals => { "term", "kill" };
+
+}
+
+########################################################
+
+body process_select vsize_exceeds(process_owner, process_command, vsize_limit) {
+   
+    process_owner => { "apache" };  # username of process owner
+
+    command => "$(process_command)";  # username of process owner
+
+    vsize => irange("$(vsize_limit)","inf"); # vsize is over
+                                             # $(vsize_limit)
+
+    process_result => "process_owner&command&vsize";  # class expression
+}

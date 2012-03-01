@@ -1,0 +1,255 @@
+#Install WordPress:
+#	1. Install Infrastructure:
+#		1.1. Install httpd and mod_php and PHP MySQL client.
+#		1.2. Install MySQL server.
+#			1.2.1. Create WordPress User in MySQL.
+#			1.2.2. Create WordPress Database in MySQL.
+#		1.3. Make sure httpd and MySQL servers are running.
+#	2. Install the PHP application (WordPress)
+#		2.1. Download tarball with the latest version of WordPress PHP application.
+#		2.2. Extract it into the httpd document root where it can be run by the Web server.
+#		2.3. Create WordPress config file wp-config.php from wp-config-sample.php that's shipped with WordPress.
+#		2.4. Tweak wp-config.php to put in the data needed to establish database connection (db name, db username and password).
+#	
+
+body common control
+{
+
+bundlesequence => {
+			"wordpress_install",
+		  };
+
+
+inputs =>	  { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+
+}
+
+
+
+bundle agent wordpress_install
+{
+vars:
+  "wp_config[DB_NAME]"      string => "wordpress";
+  "wp_config[DB_USER]"      string => "wordpress";
+  "wp_config[DB_PASSWORD]"  string => "lopsa10linux";
+  "wp_config[htmlroot]"     string => "/var/www/html";
+  "wp_config[tarfile]"      string => "/root/wordpress-latest.tar.gz";
+  "wp_config[wp_dir]"       string => "$(wp_config[htmlroot])/wordpress";
+  "wp_config[wp_config]"    string => "$(wp_config[wp_dir])/wp-config.php";
+  "wp_config[wp_cfgsample]" string => "$(wp_config[wp_dir])/wp-config-sample.php";
+
+methods:
+  "any" usebundle => wp_packages_installed("wordpress_install.wp_config");
+  "any" usebundle => wp_services_up("wordpress_install.wp_config");
+  "any" usebundle => wp_tarball_is_present("wordpress_install.wp_config");
+  "any" usebundle => wp_tarball_is_unrolled("wordpress_install.wp_config"); 
+  "any" usebundle => wp_mysql_configuration("wordpress_install.wp_config"); 
+  "any" usebundle => wp_config_exists("wordpress_install.wp_config");
+  "any" usebundle => wp_is_properly_configured("wordpress_install.wp_config");
+#  "any" usebundle => wp_allow_http_inbound("wordpress_install.wp_config");
+}
+
+#############################################
+
+bundle agent wp_packages_installed(params)
+{
+vars:
+  debian::
+  "desired_package" slist => { 
+                               "apache2", 
+                               "php5",
+                               "php5-mysql",
+                               "mysql-server",
+                             };
+  redhat::
+  "desired_package" slist => { 
+                               "httpd",
+                               "php",
+                               "php-mysql",
+                               "mysql-server",
+                             };
+packages:
+  "$(desired_package)"
+    package_policy => "add",
+    package_architecture => "x86_64",
+    package_method => generic,
+    classes => if_repaired("packages_added");
+
+commands: 
+  packages_added.debian::
+    "/usr/sbin/service httpd graceful" 
+    comment => "Restarting httpd so it can pick up new modules.";
+
+commands: 
+  packages_added.redhat::
+    "/sbin/service httpd graceful" 
+    comment => "Restarting httpd so it can pick up new modules.";
+}
+
+#############################################
+
+bundle agent wp_services_up(params)
+{
+processes:
+  "mysqld" restart_class => "start_mysqld";
+  "httpd"  restart_class => "start_httpd";
+
+commands:
+  start_mysqld::
+    "/sbin/service mysqld start";
+
+  start_httpd::
+    "/sbin/service httpd start";
+}
+
+#############################################
+
+bundle agent wp_tarball_is_present(params)
+{
+
+classes:
+  "wordpress_tarball_is_present" expression => fileexists("$($(params)[tarfile])");
+
+reports:
+  wordpress_tarball_is_present::
+    "WordPress tarball is on disk.";
+
+commands:
+  !wordpress_tarball_is_present::
+    "/usr/bin/wget -q -O $($(params)[tarfile]) http://wordpress.org/latest.tar.gz"
+    comment => "Downloading latest version of WordPress.";
+}
+
+#############################################
+
+bundle agent wp_tarball_is_unrolled(params)
+{
+
+classes:
+  "wordpress_directory_is_present" expression => fileexists("$($(params)[htmlroot])/wordpress/");
+
+reports:
+  wordpress_directory_is_present::
+    "WordPress directory is present.";
+
+commands:
+  !wordpress_directory_is_present::
+    "/bin/tar -C $($(params)[htmlroot]) -xzf $($(params)[tarfile])"
+    comment => "Unrolling wordpress tarball to $($(params)[htmlroot]).";
+}
+
+#############################################
+
+bundle agent wp_mysql_configuration(params)
+{
+
+commands:
+  "/usr/bin/mysql -u root -e \"
+    CREATE DATABASE IF NOT EXISTS $($(params)[DB_NAME]);
+    GRANT ALL PRIVILEGES ON $($(params)[DB_NAME]).*
+    TO '$($(params)[DB_USER])'@localhost
+    IDENTIFIED BY '$($(params)[DB_PASSWORD])';
+    FLUSH PRIVILEGES;\"
+  ";
+
+}
+
+#############################################
+
+bundle agent wp_config_exists(params)
+{
+
+classes:
+  "wordpress_config_file_exists" 
+    expression => fileexists("$($(params)[wp_config])");
+
+reports:
+  wordpress_config_file_exists::
+    "WordPress config file $($(params)[wp_config]) is present";
+  !wordpress_config_file_exists::
+    "WordPress config file $($(params)[wp_config]) is not present";
+
+commands:
+  !wordpress_config_file_exists::
+    "/bin/cp -p $($(params)[wp_cfgsample]) $($(params)[wp_config])";
+}
+
+#############################################
+
+bundle agent wp_is_properly_configured(params)
+{
+vars:
+  "wpparams" slist => getindices("$(params)");
+
+files:
+  "$($(params)[wp_config])"
+    edit_line => replace_or_add("define\('$(wpparams)', *'(?!$($(params)[$(wpparams)])).*",
+				"define('$(wpparams)', '$($(params)[$(wpparams)])');");
+}
+            
+#############################################
+
+bundle agent wp_allow_http_inbound(params)
+{
+files:
+  redhat:: # tested on RHEL only, file location may vary based on Linux distro or OS
+    "/etc/sysconfig/iptables"
+      edit_line => insert_HTTP_allow_rule_before_the_accept_established_tcp_conns_rule,
+      comment => "insert HTTP allow rule into /etc/sysconfig/iptables",
+      classes => if_repaired("iptables_edited");
+
+commands: 
+  iptables_edited::
+    "/sbin/service iptables restart"
+    comment => "Restarting iptables to load new config";
+}
+
+bundle edit_line insert_HTTP_allow_rule_before_the_accept_established_tcp_conns_rule(params)
+{
+vars:
+  "http_rule" string => "-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT";
+
+insert_lines:
+  "$(http_rule)"
+    location => before_the_accept_established_tcp_conns_rule;
+}
+
+body location before_the_accept_established_tcp_conns_rule
+{
+  before_after => "before";
+  first_last => "first";
+  select_line_matching => "^-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT.*";
+}
+
+bundle edit_line replace_or_add(pattern,line)
+ # Diego's.  
+ # Replace a pattern in a file with a single line.
+ # If the pattern is not found, add the line to the file.
+ # The pattern must match the whole line (it is automatically
+ # anchored to the start and end of the line) to avoid
+ # ambiguity.
+ 
+{
+replace_patterns:
+  "^${pattern}$"
+  replace_with => value("${line}"),
+  classes => always("replace_done");
+
+insert_lines:
+  replace_done::
+  "${line}";
+}
+
+
+body classes always(x)
+# Diego's.
+# Define a class no matter what the outcome of the promise is
+
+{
+  promise_repaired => { "$(x)" };
+  promise_kept => { "$(x)" };
+  repair_failed => { "$(x)" };
+  repair_denied => { "$(x)" };
+  repair_timeout => { "$(x)" };
+}
+

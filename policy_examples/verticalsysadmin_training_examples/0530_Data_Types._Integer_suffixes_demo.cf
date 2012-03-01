@@ -1,0 +1,13 @@
+bundle agent example {
+
+    vars:
+
+        "fourty_two_kilobytes"     int     => "42k";  # 42 x 1000
+        "fourty_two_kibibytes"             int     => "42K";  # 42 x 1024
+
+
+     reports:
+       cfengine_3:: 
+         "42 x 1000 = $(fourty_two_kilobytes)";
+         "42 x 1024 = $(fourty_two_kibibytes)";
+}

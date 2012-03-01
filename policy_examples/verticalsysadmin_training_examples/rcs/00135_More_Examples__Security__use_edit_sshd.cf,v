@@ -1,0 +1,37 @@
+head	1.1;
+access;
+symbols;
+locks
+	root:1.1; strict;
+comment	@# @;
+
+
+1.1
+date	2011.05.18.22.14.09;	author root;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@bundle agent configfiles
+{
+vars:
+  "sshdconfig" string => "/etc/ssh/sshd_config";
+
+  # SSHD configuration to set
+  "sshd[Protocol]"                                string => "2";
+  "sshd[X11Forwarding]"                           string => "yes";
+  "sshd[UseDNS]"                                  string => "no";
+
+methods:
+  "sshd"    usebundle => edit_sshd("$(sshdconfig)", "configfiles.sshd");
+}
+@

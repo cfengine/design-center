@@ -1,0 +1,5 @@
+bundle agent httpd{
+        reports:
+            cfengine_3::
+                "httpd bundle";
+}

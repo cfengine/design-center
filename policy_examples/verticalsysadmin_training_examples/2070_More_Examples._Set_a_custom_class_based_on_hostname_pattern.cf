@@ -1,0 +1,11 @@
+bundle agent example {
+
+classes:
+  "italy"
+     expression => classmatch("cfe.*");
+
+reports:
+  italy::
+    "Italy";
+
+}

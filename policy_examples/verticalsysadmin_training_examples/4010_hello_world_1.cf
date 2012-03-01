@@ -1,0 +1,25 @@
+# reports
+#    A promise to report a message.  (A message promises to appear.)
+
+
+bundle agent example {
+
+
+    reports:
+      Morning::
+        "Good morning, world";
+
+    reports:
+      Afternoon::
+        "Good afternoon, world";
+
+    reports:
+      Evening::
+        "Good evening, world";
+
+    reports:
+      Night::
+        "Good night, world";
+
+
+}
