@@ -6,7 +6,7 @@ Nick Anderson <nick@cmdln.org>
 linux
 
 ## DESCRIPTION
-* manage_hosts_entries_completely
+* etc_hosts_manage_all_entries
     - edit_line based
     - removes any entries not specified except localhost and comments
     - Allows single definition of each entry allowing comments for 
@@ -54,7 +54,7 @@ standard library
 
 
        methods:
-           "any" usebundle => manage_hosts_entries_completely("main.hosts");
+           "any" usebundle => etc_hosts_manage_all_entries("main.hosts");
 
     }
 
