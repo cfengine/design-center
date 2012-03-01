@@ -14,9 +14,12 @@ bundle agent tzconfig(timezone) {
         linux::
             "/etc/localtime"
                 ifvarclass        => "timezone_exists",
-                link_from         => ln_s("$(zoneinfo)/$(timezone)"),
+                copy_from         => tzconfig_copy_zoneinfo("$(zoneinfo)/$(timezone)"),
                 classes           => if_repaired("tzconfig_timezone_updated"),
-                move_obstructions => "true";
+                move_obstructions => "true",
+                comment => "Copy the proper timezone file in place. We dont use
+                            a symlink because that might cause problems across 
+                            different filesystems, it has been a bug in the past.";
     reports:
         !timezone_exists::
             "Unable to set invalid timezone: $(timezone)";
@@ -24,5 +27,14 @@ bundle agent tzconfig(timezone) {
         tzconfig_timezone_updated::
             "System timezone updated to $(timezone)";
 
+}
+
+body copy_from tzconfig_copy_zoneinfo(source){
+    # Copy the file any symlinks reference this is superiour to symlinking
+    # There have been bugs in the past that cause things to not function
+    # properly if /etc/localtime is a symlink to a different filesystem
+    source => "$(source)";
+    copylink_patterns => { ".*", };
+    compare => "hash";
 }
 
