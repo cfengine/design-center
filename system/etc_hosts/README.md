@@ -17,7 +17,7 @@ linux
 standard library
 
 ## SAMPLE USAGE
-   body common control {
+    body common control {
 
     }
 
@@ -29,9 +29,9 @@ standard library
                            "cfengine_stdlib.cf",
                            "sketches/etc_hosts/etc_hosts.cf",
                            };
-   }
+    }
 
-   bundle agent main {
+    bundle agent main {
        vars:
            "hosts[192.0.2.10]"
                string  => "mailhost.mynet.com ntp02",
