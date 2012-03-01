@@ -1,0 +1,504 @@
+bundle agent shorewall_config (interfaces,masq,policy,rules,zones,toggle) {
+
+	vars:
+
+		"state_dir" string => "/var/lib/shorewall";
+		"config_dir" string => "/etc/shorewall";
+
+		debian::
+
+			"config_file" string => "/etc/default/shorewall";
+			"config[startup]" string =>	"1";
+
+		!debian::
+
+			"config_file" string => "${config_dir}/shorewall.conf";
+			"config[STARTUP_ENABLED]" string =>	"Yes";
+
+	classes:
+
+		"no_cache_file" not => fileexists("${paths.mf_cache}/.iptables-cache");
+
+		"shorewall_not_started" not => regline("^Started.*", "${state_dir}/state");
+
+		"shorewall_config_restart" or => { classmatch
+			( ".*?shorewall_config_(file|interfaces|masq|policy|rules|zones)_repaired$") };
+
+	files:
+
+		"${config_dir}/."
+			handle => "shorewall_configdir",
+			create => "true",
+			perms => mog("640", "root", "root");
+	
+		"${config_file}"
+			handle => "shorewall_configfile",
+			create => "true",
+			edit_line => set_variable_values( "shorewall_config.config" ),
+			classes => cfop_status(
+				"cfop_shorewall_config_config_file_kept",
+				"cfop_shorewall_config_config_file_repaired",
+				"cfop_shorewall_config_config_file_failed"
+				);
+			
+		"${config_file}"
+			handle => "shorewall_configfile_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall_config_config_file_perms_kept",
+				"cfop_shorewall_config_config_file_perms_repaired",
+				"cfop_shorewall_config_config_file_perms_failed"
+				);
+
+		"${config_dir}/interfaces"
+			handle => "shorewall_files_interfaces",
+			create => "true",
+			classes => cfop_status(
+				"cfop_shorewall_config_interfaces_kept",
+				"cfop_shorewall_config_interfaces_repaired",
+				"cfop_shorewall_config_interfaces_failed"
+				),
+			edit_defaults => empty,
+			edit_line => insert_lines( "@{shorewall_config.interfaces}" );
+	
+		"${config_dir}/interfaces"
+			handle => "shorewall_files_interfaces_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall_config_interfaces_perms_kept",
+				"cfop_shorewall_config_interfaces_perms_repaired",
+				"cfop_shorewall_config_interfaces_perms_failed"
+				);
+	
+		"${config_dir}/masq"
+			handle => "shorewall_files_masq",
+			create => "true",
+			classes => cfop_status(
+				"cfop_shorewall_config_masq_kept",
+				"cfop_shorewall_config_masq_repaired",
+				"cfop_shorewall_config_masq_failed"
+				),
+			edit_defaults => empty,
+			edit_line => insert_lines( "@{shorewall_config.masq}" );
+		
+		"${config_dir}/masq"
+			handle => "shorewall_files_masq_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall_config_masq_perms_kept",
+				"cfop_shorewall_config_masq_perms_repaired",
+				"cfop_shorewall_config_masq_perms_failed"
+				);
+				
+		"${config_dir}/policy"
+			handle => "shorewall_files_policy",
+			create => "true",
+			classes => cfop_status(
+				"cfop_shorewall_config_policy_kept",
+				"cfop_shorewall_config_policy_repaired",
+				"cfop_shorewall_config_policy_failed"
+				),
+			edit_defaults => empty,
+			edit_line => insert_lines( "@{shorewall_config.policy}" );
+
+		"${config_dir}/policy"
+			handle => "shorewall_files_policy_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall_config_policy_perms_kept",
+				"cfop_shorewall_config_policy_perms_repaired",
+				"cfop_shorewall_config_policy_perms_failed"
+				);
+
+		"${config_dir}/rules"
+			handle => "shorewall_files_rules",
+			create => "true",
+			classes => cfop_status(
+				"cfop_shorewall_config_rules_kept",
+				"cfop_shorewall_config_rules_repaired",
+				"cfop_shorewall_config_rules_failed"
+				),
+			edit_defaults => empty,
+			edit_line => insert_lines( "@{shorewall_config.rules}" );
+
+		"${config_dir}/rules"
+			handle => "shorewall_files_rules_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall_config_rules_perms_kept",
+				"cfop_shorewall_config_rules_perms_repaired",
+				"cfop_shorewall_config_rules_perms_failed"
+				);
+			
+		"${config_dir}/zones"
+			handle => "shorewall_files_zones",
+			create => "true",
+			classes => cfop_status(
+				"cfop_shorewall_config_zones_kept",
+				"cfop_shorewall_config_zones_repaired",
+				"cfop_shorewall_config_zones_failed"
+				),
+			edit_defaults => empty,
+			edit_line => insert_lines( "@{shorewall_config.zones}" );
+
+		"${config_dir}/zones"
+			handle => "shorewall_files_zones_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall_config_zones_perms_kept",
+				"cfop_shorewall_config_zones_perms_repaired",
+				"cfop_shorewall_config_zones_perms_failed"
+				);
+
+	methods:
+
+		cfop_shorewall_config_restart_repaired::
+
+			"save" usebundle => iptables_save("${paths.mf_cache}/.iptables-cache");
+
+	commands:
+
+	shorewall_config_restart|shorewall_not_started|no_cache_file::
+
+		"/sbin/shorewall restart"
+			classes => cfop_status(
+				"cfop_shorewall_config_restart_kept",
+				"cfop_shorewall_config_restart_repaired",
+				"cfop_shorewall_config_restart_failed"
+				),
+				contain => silent;
+}
+
+bundle agent iptables_save(f){
+
+	classes:
+
+		"done" expression => returnszero("/sbin/iptables-save | /bin/grep -v '#' > /tmp/.iptmp", "useshell");
+
+    files:
+
+		done::
+
+			"${f}"
+				handle => "iptables_save",
+				create => "true",
+				edit_defaults => empty,
+				classes => cfop_status(
+					"cfop_iptables_save_kept",
+					"cfop_iptables_save_repaired",
+					"cfop_iptables_save_failed"
+					),
+				edit_line => iptables_clear_counters("/tmp/.iptmp");
+
+			"${f}"
+				handle => "iptables_save_perms",
+				perms => mog("600", "root", "root"),
+				classes => cfop_status(
+					"cfop_iptables_save_perms_kept",
+					"cfop_iptables_save_perms_repaired",
+					"cfop_iptables_save_perms_failed"
+					);
+}
+
+bundle edit_line iptables_clear_counters(l) {
+
+	insert_lines:
+		"${l}"
+		insert_type => "file";
+
+	replace_patterns:
+		"\[[1-9][0-9]*:[1-9][0-9]*\]" replace_with => value("[0:0]");
+
+}
+
+bundle agent shorewall_check{
+
+	files:
+
+		shorewall_check_iptables_save_now::
+
+			"${paths.mf_cache}/.iptables-now"
+				handle => "shorewall_check_files_now_rules",
+				classes => cfop_status(
+					"cfop_shorewall_check_files_now_rules_kept",
+					"cfop_shorewall_check_files_now_rules_repaired",
+					"cfop_shorewall_check_files_now_rules_failed"
+					),
+				edit_defaults => empty,
+				edit_line => iptables_clear_counters("${paths.mf_cache}/.iptables-cache");
+
+	methods:
+
+		"now" usebundle => iptables_save("${paths.mf_cache}/.iptables-now"),
+				classes => if_ok("shorewall_check_iptables_save_now");
+
+		cfop_shorewall_check_restart_repaired::
+
+			"cache" usebundle => iptables_save("${paths.mf_cache}/.iptables-cache"),
+				classes => if_ok("shorewall_check_iptables_save_cache");
+
+    commands:
+
+		cfop_shorewall_check_files_now_rules_repaired|cfop_shorewall_check_files_now_rules_failed::
+
+			"/sbin/shorewall restart"
+				 classes => cfop_status(
+					  "cfop_shorewall_check_restart_kept",
+					  "cfop_shorewall_check_restart_repaired",
+					  "cfop_shorewall_check_restart_failed"
+					  ),
+				 contain => silent;
+}
+
+bundle agent shorewall6_config (interfaces,masq,policy,rules,zones,toggle) {
+
+	vars:
+
+		"state_dir" string => "/var/lib/shorewall6";
+		"config_dir" string => "/etc/shorewall6";
+
+		debian::
+
+			"config_file" string => "/etc/default/shorewall6";
+			"config[startup]" string =>	"1";
+
+		!debian::
+
+			"config_file" string => "${config_dir}/shorewall6.conf";
+			"config[STARTUP_ENABLED]" string =>	"Yes";
+
+	classes:
+
+		"no_cache_file" not => fileexists("${paths.mf_cache}/.ip6tables-cache");
+
+		"shorewall6_not_started" not => regline("^Started.*", "${state_dir}/state");
+
+		"shorewall6_config_restart" or => { classmatch
+			( ".*?shorewall6_config_(file|interfaces|masq|policy|rules|zones)_repaired$") };
+
+	files:
+
+		"${config_dir}/."
+			handle => "shorewall6_configdir",
+			create => "true",
+			perms => mog("640", "root", "root");
+	
+		"${config_file}"
+			handle => "shorewall6_configfile",
+			create => "true",
+			edit_line => set_variable_values( "shorewall6_config.config" ),
+			classes => cfop_status(
+				"cfop_shorewall6_config_config_file_kept",
+				"cfop_shorewall6_config_config_file_repaired",
+				"cfop_shorewall6_config_config_file_failed"
+				);
+			
+		"${config_file}"
+			handle => "shorewall6_configfile_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall6_config_config_file_perms_kept",
+				"cfop_shorewall6_config_config_file_perms_repaired",
+				"cfop_shorewall6_config_config_file_perms_failed"
+				);
+
+		"${config_dir}/interfaces"
+			handle => "shorewall6_files_interfaces",
+			create => "true",
+			classes => cfop_status(
+				"cfop_shorewall6_config_interfaces_kept",
+				"cfop_shorewall6_config_interfaces_repaired",
+				"cfop_shorewall6_config_interfaces_failed"
+				),
+			edit_defaults => empty,
+			edit_line => insert_lines( "@{shorewall6_config.interfaces}" );
+	
+		"${config_dir}/interfaces"
+			handle => "shorewall6_files_interfaces_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall6_config_interfaces_perms_kept",
+				"cfop_shorewall6_config_interfaces_perms_repaired",
+				"cfop_shorewall6_config_interfaces_perms_failed"
+				);
+		
+		"${config_dir}/masq"
+			handle => "shorewall6_files_masq",
+			create => "true",
+			classes => cfop_status(
+				"cfop_shorewall6_config_masq_kept",
+				"cfop_shorewall6_config_masq_repaired",
+				"cfop_shorewall6_config_masq_failed"
+				),
+			edit_defaults => empty,
+			edit_line => insert_lines( "@{shorewall6_config.masq}" );
+		
+		"${config_dir}/masq"
+			handle => "shorewall6_files_masq_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall6_config_masq_perms_kept",
+				"cfop_shorewall6_config_masq_perms_repaired",
+				"cfop_shorewall6_config_masq_perms_failed"
+				);
+				
+		"${config_dir}/policy"
+			handle => "shorewall6_files_policy",
+			create => "true",
+			classes => cfop_status(
+				"cfop_shorewall6_config_policy_kept",
+				"cfop_shorewall6_config_policy_repaired",
+				"cfop_shorewall6_config_policy_failed"
+				),
+			edit_defaults => empty,
+			edit_line => insert_lines( "@{shorewall6_config.policy}" );
+
+		"${config_dir}/policy"
+			handle => "shorewall6_files_policy_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall6_config_policy_perms_kept",
+				"cfop_shorewall6_config_policy_perms_repaired",
+				"cfop_shorewall6_config_policy_perms_failed"
+				);
+
+		"${config_dir}/rules"
+			handle => "shorewall6_files_rules",
+			create => "true",
+			classes => cfop_status(
+				"cfop_shorewall6_config_rules_kept",
+				"cfop_shorewall6_config_rules_repaired",
+				"cfop_shorewall6_config_rules_failed"
+				),
+			edit_defaults => empty,
+			edit_line => insert_lines( "@{shorewall6_config.rules}" );
+		
+		"${config_dir}/rules"
+			handle => "shorewall6_files_rules_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall6_config_rules_perms_kept",
+				"cfop_shorewall6_config_rules_perms_repaired",
+				"cfop_shorewall6_config_rules_perms_failed"
+				);
+			
+		"${config_dir}/zones"
+			handle => "shorewall6_files_zones",
+			create => "true",
+			classes => cfop_status(
+				"cfop_shorewall6_config_zones_kept",
+				"cfop_shorewall6_config_zones_repaired",
+				"cfop_shorewall6_config_zones_failed"
+				),
+			edit_defaults => empty,
+			edit_line => insert_lines( "@{shorewall6_config.zones}" );
+
+		"${config_dir}/zones"
+			handle => "shorewall6_files_zones_perms",
+			perms => mog("640", "root", "root"),
+			classes => cfop_status(
+				"cfop_shorewall6_config_zones_perms_kept",
+				"cfop_shorewall6_config_zones_perms_repaired",
+				"cfop_shorewall6_config_zones_perms_failed"
+				);
+
+	methods:
+
+		cfop_shorewall6_config_restart_repaired::
+
+			"save" usebundle => ip6tables_save("${paths.mf_cache}/.ip6tables-cache");
+
+	commands:
+
+	shorewall6_config_restart|shorewall6_not_started|no_cache_file::
+
+		"/sbin/shorewall6 restart"
+			classes => cfop_status(
+				"cfop_shorewall6_config_restart_kept",
+				"cfop_shorewall6_config_restart_repaired",
+				"cfop_shorewall6_config_restart_failed"
+				),
+				contain => silent;
+}
+
+bundle agent ip6tables_save(f){
+
+	classes:
+
+		"done" expression => returnszero("/sbin/ip6tables-save | /bin/grep -v '#' > /tmp/.ip6tmp", "useshell");
+
+    files:
+
+		done::
+
+			"${f}"
+				handle => "ip6tables_save",
+				create => "true",
+				edit_defaults => empty,
+				classes => cfop_status(
+					"cfop_ip6tables_save_kept",
+					"cfop_ip6tables_save_repaired",
+					"cfop_ip6tables_save_failed"
+					),
+				edit_line => ip6tables_clear_counters("/tmp/.ip6tmp");
+
+			"${f}"
+				handle => "ip6tables_save_perms",
+				perms => mog("600", "root", "root"),
+				classes => cfop_status(
+					"cfop_ip6tables_save_perms_kept",
+					"cfop_ip6tables_save_perms_repaired",
+					"cfop_ip6tables_save_perms_failed"
+					);
+}
+
+bundle edit_line ip6tables_clear_counters(l) {
+
+	insert_lines:
+		"${l}"
+		insert_type => "file";
+
+	replace_patterns:
+		"\[[1-9][0-9]*:[1-9][0-9]*\]" replace_with => value("[0:0]");
+
+}
+
+bundle agent shorewall6_check{
+
+	files:
+
+		shorewall6_check_ip6tables_save_now::
+
+			"${paths.mf_cache}/.ip6tables-now"
+				handle => "shorewall6_check_files_now_rules",
+				classes => cfop_status(
+					"cfop_shorewall6_check_files_now_rules_kept",
+					"cfop_shorewall6_check_files_now_rules_repaired",
+					"cfop_shorewall6_check_files_now_rules_failed"
+					),
+				edit_defaults => empty,
+				edit_line => ip6tables_clear_counters("${paths.mf_cache}/.ip6tables-cache");
+
+	methods:
+
+		"now" usebundle => ip6tables_save("${paths.mf_cache}/.ip6tables-now"),
+				classes => if_ok("shorewall6_check_ip6tables_save_now");
+
+		cfop_shorewall6_check_restart_repaired::
+
+			"cache" usebundle => ip6tables_save("${paths.mf_cache}/.ip6tables-cache"),
+				classes => if_ok("shorewall6_check_ip6tables_save_cache");
+
+    commands:
+
+		cfop_shorewall6_check_files_now_rules_repaired|cfop_shorewall6_check_files_now_rules_failed::
+
+			"/sbin/shorewall6 restart"
+				 classes => cfop_status(
+					  "cfop_shorewall6_check_restart_kept",
+					  "cfop_shorewall6_check_restart_repaired",
+					  "cfop_shorewall6_check_restart_failed"
+					  ),
+				 contain => silent;
+}
+

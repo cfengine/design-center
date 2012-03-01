@@ -1,0 +1,3 @@
+author: Neil H Watson <neil@watson-wilson.ca>
+ostype: linux
+tested: debian_6.x86_64
