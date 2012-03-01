@@ -1,0 +1,5 @@
+author:Nick Anderson <nick@cmdln.org>
+ostype:linux
+tested:ubuntu, redhat_5, centos_5
+cfengine_version:
+
