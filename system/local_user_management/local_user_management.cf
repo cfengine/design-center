@@ -1,4 +1,4 @@
-bundle agent local_user_management_add_users (users) {
+bundle agent local_user_management_add_users_fileedit (users) {
 # Expects to be passed a two-dimensional array keyed on username and field
 # The following fields are required.
 # gecos, uid, gid, home, shell, passwdhash
@@ -28,16 +28,16 @@ bundle agent local_user_management_add_users (users) {
 
             "days_since_epoch"
                 string => execresult("/usr/bin/perl -le 'print int time/(60*60*24)'", "noshell"),
-                ifvarclass => "local_user_management_add_users_add_$(userlist)",
+                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
                 comment     => "Only calculate if we need to add a user, otherwise its just wasteful";
 
             "shadowentry[$(userlist)]"  
                 string => "$(userlist):$($(users)[$(userlist)][passwdhash]):$(days_since_epoch):0:99999:7:::",
-                ifvarclass => "local_user_management_add_users_add_$(userlist)",
+                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
                 comment    => "Only construct the shadow entry for a user if we need to add the user";
 
     classes:
-        "local_user_management_add_users_add_$(userlist)" 
+        "local_user_management_add_users_fileedit_add_$(userlist)" 
             not => userexists("$(userlist)"),
             comment => "Trigger a class so we know we need to create the user if it does not exist";
 
@@ -45,26 +45,26 @@ bundle agent local_user_management_add_users (users) {
         linux::
             "$(pwfile)"
                 edit_line  => replace_or_add("$(userlist):.*", "$(pwentry[$(userlist)])"),
-                ifvarclass => "local_user_management_add_users_add_$(userlist)",
+                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
                 comment   => "Ensure user exists";
 
             "$(shadowfile)"
                 edit_line  => replace_or_add("$(userlist):.*", "$(shadowentry[$(userlist)])"),
-                ifvarclass => "local_user_management_add_users_add_$(userlist)",
+                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
                 comment    => "Ensure user has password entry";
 
             "$($(users)[$(userlist)][home])/."
                 create      => "true",
                 perms       => mog("755", "$($(users)[$(userlist)][uid])", "$($(users)[$(userlist)][gid])"),
-                classes     => if_repaired("local_user_management_add_users_seed_$(userlist)"),
-                ifvarclass => "local_user_management_add_users_add_$(userlist)",
+                classes     => if_repaired("local_user_management_add_users_fileedit_seed_$(userlist)"),
+                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
                 comment     => "Make sure users home directory exists";
 
             "$($(users)[$(userlist)][home])/."
                 depth_search    => recurse("inf"),
-                copy_from       => seed_cp("$(local_user_management_add_users.skel)"),
+                copy_from       => seed_cp("$(local_user_management_add_users_fileedit.skel)"),
                 perms           => og("$($(users)[$(userlist)][uid])", "$($(users)[$(userlist)][gid])"),
-                ifvarclass      => "local_user_management_add_users_seed_$(userlist)",
+                ifvarclass      => "local_user_management_add_users_fileedit_seed_$(userlist)",
                 comment         => "Seed home directory with skell, but only when we create the home 
                                     directory the user should have the choice to remove the seeded files";
 }

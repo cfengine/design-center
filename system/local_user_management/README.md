@@ -6,12 +6,12 @@ Nick Anderson <nick@cmdln.org>
 linux
 
 ## DESCRIPTION
-* local_user_management_add_users takes care of initalizing new users then it
+* local_user_management_add_users_fileedit takes care of initalizing new users then it
   leaves them alone. Tries to stick with edit_line based functionality instead
   of calling out to system tools.
 
 ## REQUIREMENTS
-* local_user_management_add_users
+* local_user_management_add_users_fileedit
     - perl
     - copbl svn 105 or greater
 
@@ -45,5 +45,5 @@ you choose. Thanks Scott Hunter <scott.hunter.iii@gmail.com> for the oneliners.
         "users[testuser][passwdhash]"     string => "$1$cCMJbSmS$/tQtxSsLZmYq3/zp1Vm/l0";
 
     methods:
-        "any" usebundle => local_user_management_add_users("scope.users");
+        "any" usebundle => local_user_management_add_users_fileedit("scope.users");
 ```
