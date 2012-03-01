@@ -1,0 +1,23 @@
+This is a collection of more or less practical examples of CFEngine 3 language.
+
+Aleksey Tsalolikhin used it to learn and then to teach CFEngine 3.
+
+It is intended to supplement the documentation from cfengine.com
+
+Professional CFEngine 3 training is available from www.verticalsysadmin.com
+
+How to use this collection:
+
+The examples are arranged alphanumerically by filename in logical order. 
+Please list them with "ls -1" to get the alphanumeric sorting.  Go through
+in order.
+
+Additional CFEngine resources are available at www.verticalsysadmin.com/cfengine/
+
+Enjoy learning CFEngine 3!
+
+Best,
+Aleksey Tsalolikhin
+Authorized CFEngine 3 Trainer
+29 Feb 2012
+Los Angeles, USA

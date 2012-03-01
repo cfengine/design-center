@@ -1,0 +1,7 @@
+files:
+  redhat&smtp::
+   (your other iptables promise here, to allow port 25)
+
+files:
+  redhat&web::
+    (your iptables promise here, to allow port 80)

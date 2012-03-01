@@ -1,0 +1,12 @@
+Example of dynamic inputs and bundlesequence
+based on Neil Watson's blog post
+http://watson-wilson.ca/2011/09/dynamic-bundlesequence-in-cfengine.html
+
+The purpose is: you have lots of inputs files
+containing lots of bundles -- to increase efficiency
+and reduce resource usage, we only read in the those
+inputs files that we need (as determined by classes),
+and only run those bundles we need.
+
+-- Aleksey Tsalolikhin
+22 Feb 2012

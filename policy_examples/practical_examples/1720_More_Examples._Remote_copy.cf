@@ -1,0 +1,78 @@
+body common control
+
+{
+
+bundlesequence => { "update" };
+inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+
+}
+
+#########################################################
+
+bundle agent update
+{
+vars:
+
+ "master_location" string => "/var/cfengine/masterfiles";
+
+files:
+
+  "/var/cfengine/inputs"
+
+    perms => u_p("600"),
+    copy_from => mycopy("$(master_location)","205.186.156.208"),
+    depth_search => recurse("inf"),
+    action => immediate;
+
+}
+
+############################################
+
+body perms u_p(p)
+
+{
+mode  => "$(p)";
+}
+
+
+#########################################################
+
+body copy_from mycopy(from,server)
+
+{
+source      => "$(from)";
+servers     => { "$(server)" };
+compare     => "digest";
+trustkey    => "true";  # trust the server's public key
+}
+
+# I had to add the client's IP address to the server's promises.cf: 
+#
+# diff -r1.1 /var/cfengine/inputs/promises.cf
+# 103,105c103,105
+# < allowconnects         => { "127.0.0.1" , "::1" };
+# < allowallconnects      => { "127.0.0.1" , "::1" };
+# < trustkeysfrom         => { "127.0.0.1" , "::1" };
+# ---
+# > allowconnects         => { "127.0.0.1" , "::1", "205.186.147.194" };
+# > allowallconnects      => { "127.0.0.1" , "::1", "205.186.147.194" };
+# > trustkeysfrom         => { "127.0.0.1" , "::1", "205.186.147.194" };
+
+# and I had to make sure the server's site.cf promised access to the client for this directory: 
+#
+# 
+# bundle server access_rules()
+# {
+# access:
+# 
+#  "/var/cfengine/masterfiles"
+# 
+#     admit   => { "205.186.147.194" };
+# 
+# 
+# roles:
+# 
+#   ".*"  authorize => { "root" };
+# }
+
+# note: run cf-serverd with --verbose option to troubleshoot it

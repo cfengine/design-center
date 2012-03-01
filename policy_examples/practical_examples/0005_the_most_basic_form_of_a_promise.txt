@@ -1,0 +1,10 @@
+
+
+promisetype:
+
+    "promiser"
+
+        attribute1,
+        attribute2,
+        ...
+        attributeN;

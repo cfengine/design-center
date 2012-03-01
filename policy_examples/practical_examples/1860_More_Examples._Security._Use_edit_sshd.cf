@@ -1,0 +1,40 @@
+# an example of a methods bundle accessing an
+# array from the parent bundle.
+#
+# Arrays are not a data type in Cfengine; they
+# are a data structure.
+#
+# Arrays cannot be "passed" as variables to a
+# bundle or body. They are only referred to in
+# some functions that search for their members
+# and extract things like indices and values.
+#
+# So what you CAN pass is the name of the array,
+# complete with context.
+
+
+body common control {
+
+  inputs => {
+               "/var/cfengine/inputs/cfengine_stdlib.cf",
+               "1870_More_Examples__Security__edit_sshd.cf"
+            };
+
+}
+
+#########################################################
+
+
+bundle agent example
+{
+vars:
+  "sshdconfig" string => "/etc/ssh/sshd_config";
+
+  # SSHD configuration to set
+  "sshd[Protocol]"                                string => "2";
+  "sshd[X11Forwarding]"                           string => "yes";
+  "sshd[UseDNS]"                                  string => "no";
+
+methods:
+  "any"    usebundle => edit_sshd("$(sshdconfig)", "example.sshd");
+}

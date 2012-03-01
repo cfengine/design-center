@@ -1,0 +1,20 @@
+body common control
+{
+
+	inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+}
+
+bundle agent example
+{
+
+classes:
+
+  "file_exists"
+         
+         expression  =>  fileexists("/etc/site_id").Hr16;
+
+
+commands:
+     "/usr/bin/startbackup";
+
+}

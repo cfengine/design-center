@@ -1,0 +1,10 @@
+# Note: this does not work in 3.1.5; fixed in version 3.2.0.
+
+
+bundle agent example {
+
+  commands:
+
+     "/bin/echo $(this.promiser)";
+
+}

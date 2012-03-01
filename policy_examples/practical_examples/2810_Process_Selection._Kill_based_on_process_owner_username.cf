@@ -1,0 +1,27 @@
+# Kill all processes belonging to user "victim".
+# For the demonstration, in another window, run:
+#    useradd victim && su - victim
+# You will see cf-agent kill victim's session.
+#
+# You can dry-run this with cf-agent --dry-run.
+
+
+bundle agent example {
+
+  processes:
+
+    ".*"
+
+        process_select   => by_process_owner("victim"),
+        signals => { "term", "kill" };
+
+}
+
+########################################################
+
+body process_select by_process_owner(username) {
+
+  process_owner => { "$(username)" }; 
+  process_result => "process_owner";
+
+}

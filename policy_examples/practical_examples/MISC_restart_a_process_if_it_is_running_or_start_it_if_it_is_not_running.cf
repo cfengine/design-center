@@ -1,0 +1,48 @@
+bundle agent example
+
+{
+processes:
+
+ ".*"
+
+    process_count   => anyprocs,
+    process_select  => proc_finder;
+
+
+commands:
+
+ process_running::
+
+   "/bin/echo restart command";
+
+ process_not_running::
+   "/bin/echo start command";
+
+}
+
+########################################################
+
+body process_select proc_finder
+
+{
+
+command => "sendmail: .*"; # (Anchored) regular expression matching the command/cmd field of a process
+
+process_result => "command";
+
+}
+
+########################################################
+
+body process_count anyprocs
+
+{
+match_range => "0,0"; # Integer range for acceptable number of matches for this process
+
+
+out_of_range_define => { "process_running" }; # List of classes to define if the matches are out of range 
+
+in_range_define => { "process_not_running" }; # List of classes to define if the matches are in range.
+				   
+
+}

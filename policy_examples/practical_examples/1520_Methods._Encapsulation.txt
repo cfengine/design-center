@@ -1,0 +1,2 @@
+Methods offer powerful ways to encapsulate multiple
+issues pertaining to a set of parameters. 

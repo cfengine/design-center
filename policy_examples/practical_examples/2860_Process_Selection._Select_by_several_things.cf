@@ -1,0 +1,64 @@
+########################################################
+#
+# Simple test processes 
+#
+########################################################
+
+
+bundle agent example
+
+{
+processes:
+
+ ".*"
+
+    process_count   => anyprocs,
+    process_select  => proc_finder;
+
+
+reports:
+
+ any_procs::
+
+   "Found processes in range";
+
+ in_range::
+   "Found no processes in range";
+
+}
+
+########################################################
+
+body process_select proc_finder
+
+{
+
+command => "vim .*"; # (Anchored) regular expression matching the command/cmd field of a process
+
+stime_range => irange(ago(1,0,0,0,0,0),ago(0,0,0,0,0,10)); # Processes started between 1 year and 10 seconds ago
+
+process_owner => { "root" }; # List of regexes matching the user of a process
+
+process_result => "stime&command&process_owner";
+
+# pid => irange("1","10");   # Range of integers matching the process id of a process
+# ttime_range => irange(0,accumulated(1,0,0,0,0,0));
+#    # ttime_range is the range of integers matching the total elapsed time of a process
+#    # in this case, between 0 and 1 year
+}
+
+########################################################
+
+body process_count anyprocs
+
+{
+match_range => "0,0"; # Integer range for acceptable number of matches for this process
+                      # (In this case, one or more processes
+
+
+out_of_range_define => { "any_procs" }; # List of classes to define if the matches are out of range 
+
+in_range_define => { "in_range" }; # List of classes to define if the matches are in range.
+				   # We should never have a process that has a count of 0.
+
+}

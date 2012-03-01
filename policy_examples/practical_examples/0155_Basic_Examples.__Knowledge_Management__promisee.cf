@@ -1,0 +1,18 @@
+bundle agent example {
+
+files:
+
+   "/tmp/testfile" -> "Application X", 
+                      # document which application relies on 
+                      # or uses this file
+
+        handle => "create_testfile", # a name for this promise.
+                                     # can be used with depends_on 
+                                     # attribute in another promise
+                                     # to document dependency
+
+        comment => "/tmp/testfile must exist for application X to work",
+                   # this comment will show up in verbose or debug modes
+
+        create  => "true";
+}

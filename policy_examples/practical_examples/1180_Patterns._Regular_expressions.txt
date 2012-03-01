@@ -1,0 +1,5 @@
+Regular Expressions is another way of writing patterns.
+
+Cfengine supports POSIX and PCRE regular expressions.
+(PCRE by default.)
+

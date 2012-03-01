@@ -1,0 +1,22 @@
+body common control {
+   inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+}
+
+bundle agent example {
+
+files:
+
+  "/tmp/data.txt"
+        edit_line => transform_dogs_to_cats;
+
+}
+
+bundle edit_line transform_dogs_to_cats {
+
+  replace_patterns:
+
+      "dog"
+
+          replace_with => value("cat");
+
+}

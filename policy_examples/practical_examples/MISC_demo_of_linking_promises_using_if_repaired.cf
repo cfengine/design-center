@@ -1,0 +1,23 @@
+body common control {
+	inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+}
+
+bundle agent example {
+
+files:
+    "/tmp/httpd.conf"
+	create => "true",
+	edit_line => insert_lines("ServerName localhost"),
+	classes => if_repaired("httpd_restart_needed");
+
+commands:
+  httpd_restart_needed::
+    "/etc/init.d/httpd reload";
+
+}
+
+
+bundle edit_line sshd_uses_protocol_2_only {
+	delete_lines: "Protocol 1,2";
+	insert_lines: "Protocol 2";
+}

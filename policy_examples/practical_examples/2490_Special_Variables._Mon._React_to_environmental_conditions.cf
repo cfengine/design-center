@@ -1,0 +1,9 @@
+# report environmental conditions
+
+bundle agent mon_var {
+
+reports:
+
+"Percent CPU utilization         ${mon.value_cpu}";
+"Percent CPU0 utilization         ${mon.value_cpu0}";
+}
