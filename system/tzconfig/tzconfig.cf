@@ -1,0 +1,66 @@
+bundle agent tzconfig(timezone) {
+# timezone should be a string representing the timezone 
+# At least in the linux distros I checked this should be 
+# relative to /usr/share/zoneinfo
+
+    vars:
+        linux::
+            "zoneinfo" string => "/usr/share/zoneinfo";
+            "tz_file"  string => "$(zoneinfo)/$(timezone)";
+    
+    classes:
+        "timezone_exists" expression => fileexists("$(tz_file)");
+
+    files:
+
+        ubuntu|debian::
+            "/etc/timezone"
+                ifvarclass    => "timezone_exists",
+                handle        => "tzconfig_files_etc_timezone",
+                edit_defaults => empty,
+                create        => "true",
+                edit_line     => insert_lines("$(timezone)"),
+                perms         => mog("644", "root", "root"),
+                comment       => "Debian based systems also use the /etc/timezone file";
+
+        redhat|centos::
+            "/etc/sysconfig/clock"
+                ifvarclass => "timezone_exists",
+                handle     => "tzconfig_files_etc_sysconfig_clock",
+                create     => "true",
+                edit_line  => replace_or_add("^ZONE=.*", "ZONE=\"$(timezone)\""),
+                perms      => mog("644", "root", "root"),
+                comment    => "Redhat like systems use /etc/sysconfig/clock for
+                               the Time and Date Properties Tool
+                               (system-config-date), and editing it does not
+                               change the system timezone.";
+
+        linux::
+            "/etc/localtime"
+                ifvarclass        => "timezone_exists",
+                handle            => "tzconfig_files_etc_localtime",
+                copy_from         => tzconfig_copy_zoneinfo("$(tz_file)"),
+                classes           => if_repaired("tzconfig_timezone_updated"),
+                perms             => mog("644", "root", "root"),
+                move_obstructions => "true",
+                comment           => "Copy the proper timezone file in place. We dont use
+                                      a symlink because that might cause problems across
+                                      different filesystems, it has been a bug in the past.";
+    reports:
+        !timezone_exists::
+            "Unable to set invalid timezone: $(timezone)";
+
+        tzconfig_timezone_updated::
+            "System timezone updated to $(timezone)";
+
+}
+
+body copy_from tzconfig_copy_zoneinfo(source){
+    # Copy the file any symlinks reference this is superiour to symlinking
+    # There have been bugs in the past that cause things to not function
+    # properly if /etc/localtime is a symlink to a different filesystem
+    source => "$(source)";
+    copylink_patterns => { ".*", };
+    compare => "hash";
+}
+
