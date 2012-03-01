@@ -1,0 +1,113 @@
+bundle agent manage_hosts_entries_completely(config) {
+# Used for enforcing the complete contents of /etc/hosts
+# Warning: This is somewhat draconian, but it might be more desireable
+# than distributing a hand edited file since the definition of each element
+# can have a comment for knowledge management attached to it.
+#
+# This bundle should only be called once per host in a policy!
+# There are many different ways to use this bundle, you could call it per 
+# host, or you could define a master /etc/hosts list just be careful and 
+# choose one, not both.
+#
+# TODO
+# Would be nice to remove duplicate lines, as far as I know the only problem
+# duplicate lines causes is making my head hurt so its not high priority
+#
+# The config passed in is considered to be completely authoritative minus 3 
+# exceptions
+# 1. Any line beginning with 127.0.0.1 will never be deleted by this bundle, 
+#    only replaced if you provide an entry for it
+#
+# 2. Any line beginning with # comments will never be deleted by this bundle,
+#    only replaced if you stuff a # comment into the array index. But you 
+#    shouldn't, do that unexpected things might happen.
+#
+# 3. Any line beginning with ::1 will never be deleted by this bundle, only 
+#    replaced if you provide an entry for it
+#
+# If you want additional exclusions in addition to localhost and # comments see
+# the delete_lines regex in manage_hosts_entries_completely_delete_nonmanaged
+# Usage:
+#   body common control {
+#
+#    }
+#
+#       bundlesequence  => {
+#                           "main",
+#                           };
+#
+#       inputs          => {
+#                           "cfengine_stdlib.cf",
+#                           "sketches/etc_hosts/etc_hosts.cf",
+#                           };
+#   }
+#
+#   bundle agent main {
+#       vars:
+#           "hosts[192.0.2.10]"
+#               string  => "mailhost.mynet.com ntp02",
+#               comment => "No one should rely on DNS when resolving the mail server";
+#
+#           "hosts[192.0.2.11]"
+#               string => "ntp01.mynet.com ntp02",
+#               comment => "No one should rely on DNS when resolving local time servers";
+#
+#           "hosts[192.0.2.12]"
+#               string => "ntp02.mynet.com ntp02",
+#               comment => "No one should rely on DNS when resolving local time servers";
+#
+#           # you can use classes to restrict which nodes would get this setting
+#           am_db_node::
+#               "hosts[192.0.2.20]"
+#                   string  => "clusterscan.mynet.com clusterscan",
+#                   comment => "DB nodes should get an entry for the db cluster so they arent
+#                               relying on DNS";
+#
+#
+#       methods:
+#           "any" usebundle => manage_hosts_entries_completely("main.hosts");
+#
+#    }
+
+
+    vars:
+        "ip" slist => getindices("$(config)");
+        "hosts" string => "/etc/hosts";
+        "CFEnotice" string => "# This file is managed by CFEngine, manual edits will be reverted";
+
+    files:
+        "$(hosts)"
+            create      =>  "true",
+            edit_line   =>  replace_or_add("^$(ip)\s.*", "$(ip)    $($(config)[$(ip)])"),
+            comment     =>  "Fix hosts entry to be as defined.";
+
+        "$(hosts)"
+            edit_line   => manage_hosts_entries_completely_delete_nonmanaged("@(manage_hosts_entries_completely.ip)"),
+            comment     => "Delete lines that do not match our managed ip list";
+
+        "$(hosts)"
+            create      =>  "true",
+            edit_line   =>  manage_hosts_entries_completely_prepend_if_no_line("$(CFEnotice)"),
+            comment     =>  "Notice that the file is managed by CFEngine";
+}
+
+bundle edit_line manage_hosts_entries_completely_prepend_if_no_line(string) {
+    insert_lines:
+    "$(string)" 
+        location => start,
+        comment => "Prepend a line to the file if it doesn't already exist";
+}
+
+
+bundle edit_line manage_hosts_entries_completely_delete_nonmanaged(ips){
+    vars:
+        "regex" string => join ("|", "ips");
+
+    delete_lines:
+    # This is the negative look ahead, and what would need tweaked if you dont like the behavior 
+    # Specifically its identifying our list of ips followed by a space, as well as # comment or localhost
+    # and deleteing everything else
+        "^(?!(#|127.0.0.1|::1|$(regex))\s.*).*$"
+            comment => "Delete lines do not match our ips or are not comments";
+}
+
