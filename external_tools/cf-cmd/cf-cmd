@@ -1,0 +1,210 @@
+#!/usr/bin/env ruby
+#
+# CFengine command-line test utility.
+#
+# Diego Zamboni, December 27th, 2011
+#
+# Run as "cf-cmd help" to see usage information.
+
+require 'readline'
+require 'tmpdir'
+
+######################################################################
+# ATTENTION: customize this if necessary
+
+# Where can I find a copy of cfengine_stdlib.cf
+# $stdlib_loc = "#{ENV['HOME']}/CFEngine/src/copbl/cfengine_stdlib.cf";
+$stdlib_loc = "/var/cfengine/inputs/cfengine_stdlib.cf";
+
+######################################################################
+
+class CfCmd
+
+  # Constructor
+  def initialize(stdlib, initialstate = 'reports:')
+    @version = "1.0";
+    # Initialize base parameters
+    @stdlib_loc = stdlib
+    @initialstate = initialstate
+    @mode = @initialstate
+
+    # Valid promise types and commands
+    @modes = %w(vars: classes: commands: databases: environments: files: interfaces:
+                methods: outputs: packages: processes: services: storage: reports:)
+
+    @commands = self.methods(/^cmd_/).grep(/^cmd_/).map { |c| c.to_s.gsub(/^cmd_/, "") }
+
+    # Initialize data structures
+    @lines = emptypolicy
+    # By default, initialize the reports: section with a cfengine:: class, so that things are always printed.
+    # Issue a "clear" command to eliminate it.
+    @lines['reports:'] = "cfengine::\n"
+  end
+
+  #----------------------------------------------------------------------
+  # Utility functions
+
+  # Policy template to use
+  def policytemplate(bundlebody)
+    <<EOF
+body common control
+{
+   inputs => { "#{ @stdlib_loc }" };
+   bundlesequence => { "test" };
+}
+ 
+bundle agent test
+{
+#{bundlebody}}
+EOF
+  end
+
+  # Return current policy as a string
+  def buildpolicy
+    bundlebody = ""
+    @lines.keys.each { |k|
+      bundlebody += "#{k}\n#{@lines[k]}" unless @lines[k].empty?
+    }
+    return policytemplate(bundlebody)
+  end
+
+  # Empty all policy sections
+  def emptypolicy
+    res = {}
+    @modes.each { |m|
+      res[m] = ""
+    }
+    return res
+  end
+
+  # Find the first command (if any) that start with the given string
+  def findcmd(cmd)
+    cmds = @commands.grep(/^#{Regexp.quote(cmd)}/)
+    return cmds.empty? ? nil : cmds[0]
+  end
+
+  # Word wrap, with an optional prefix string. Based on http://snipplr.com/view.php?codeview&id=1081
+  def wrap_text(txt, col = 80, prefix="") 
+    ncol = col - prefix.length
+    txt.gsub(/(.{1,#{ncol}})( +|$\n?)|(.{1,#{ncol}})/, "#{prefix}\\1\\3\n") 
+  end
+
+  # Interpret and process a line 
+  def interpret(line)
+      (cmd, args) = line.split(nil, 2)
+      if @modes.include?(cmd)
+        $stderr.puts "-> Switching to #{cmd} promise type."
+        @mode = cmd
+      elsif cmdname = findcmd(cmd)
+        eval "cmd_#{cmdname}(args)"
+      else
+        @lines[@mode] = @lines[@mode] + "  #{line}\n"
+      end
+  end
+
+  #----------------------------------------------------------------------
+  # Command definitions
+
+  # List current policy
+  def cmd_list(args=nil)
+    puts "#{buildpolicy}";
+  end
+
+  # Clear current policy
+  def cmd_clear(args=nil)
+    @lines = emptypolicy
+  end
+
+  # Execute current policy
+  def cmd_go(args=nil)
+    fname = "./test.cf"
+    Dir.mktmpdir('cf-') { |dir|
+      Dir.chdir(dir)
+      File.open(fname, "w") { |f| f.puts(buildpolicy) }
+      cmd = "cf-agent #{args.to_s} -KI -f #{fname}"
+      $stderr.puts "-> Running policy with '#{cmd}'"
+      system(cmd)
+    }
+  end
+
+  # Synonymous for go
+  def cmd_run(args=nil)
+    cmd_go(args)
+  end
+
+  # Print help
+  def cmd_help(args=nil)
+    cmdname=File.basename($0)
+    puts <<EOM
+#{cmdname} v#{@version} - Diego Zamboni <diego@zzamboni.org>
+
+#{cmdname} is a tool that allows you to run small CFEngine snippets quickly,
+by automatically wrapping them around a standard "test" bundle.
+
+The CFEngine Standard Library is automatically included.
+
+The following inputs are understood by this tool:
+
+help     Print this message
+list     Print current policy
+clear    Clear current policy
+go|run   Execute current policy using cf-agent
+type:    Switch to the given promise type
+#{wrap_text("(" + @modes.sort.join(', ') +")", 80, '         ').chomp}
+           The current promise type is shown in the prompt.
+
+All other lines are added literally to the current promise type.
+
+Commands can be abbreviated to any part of their name (for example,
+"r" or "ru" for "run").
+
+You can add lines to any of the standard promise types inside the test
+bundle by switching to the appropriate promise type first.
+
+The default promise type is "reports:", to make it easier to quickly print
+the value of expressions.
+
+You can give the inputs also on the command line, they are interpreted
+in exactly the same way (make sure to quote things correctly).
+
+Examples:
+  #{cmdname} '"Flavor: $(sys.flavor)";' list run
+  #{cmdname} '"var1 = $(var1)";' vars: '"var1" string => "test";' l r
+  #{cmdname} h
+EOM
+  end
+
+  #----------------------------------------------------------------------
+  # Interactive subroutine
+
+  def run
+    # Trap Ctrl-C and make it do a clean exit
+    stty_save = `stty -g`.chomp
+    trap('INT') { system('stty', stty_save); exit }
+
+    comp = proc { |s| (@commands + @modes).grep( /^#{Regexp.escape(s)}/ ) }
+
+    Readline.completion_append_character = " "
+    Readline.completion_proc = comp
+
+    while line = Readline.readline("#{@mode} > ", true)
+      interpret(line)
+    end
+  end
+
+end # class CfCmd
+
+
+# Do something if invoked directly (instead of included as a module)
+if __FILE__ == $0
+  cfcmd = CfCmd.new($stdlib_loc)
+  if !ARGV.empty?
+    # If any command-line arguments are given, interpret them as commands
+    ARGV.each { |cmd|
+      cfcmd.interpret(cmd)
+    }
+  else
+    # Otherwise start interactive mode
+    cfcmd.run
+  end
+end
