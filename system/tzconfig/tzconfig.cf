@@ -6,20 +6,33 @@ bundle agent tzconfig(timezone) {
     vars:
         linux::
             "zoneinfo" string => "/usr/share/zoneinfo";
+            "tz_file"  string => "$(zoneinfo)/$(timezone)";
     
     classes:
-        "timezone_exists" expression => fileexists("$(zoneinfo)/$(timezone)");
+        "timezone_exists" expression => fileexists("$(tz_file)");
 
     files:
+
+        ubuntu|debian::
+            "/etc/timezone"
+                ifvarclass    => "timezone_exists",
+                handle        => "tzconfig_files_etc_timezone",
+                edit_defaults => empty,
+                edit_line     => insert_lines("$(timezone)"),
+                perms         => mog("644", "root", "root"),
+                comment       => "Debian based systems also use the /etc/timezone file";
+
         linux::
             "/etc/localtime"
                 ifvarclass        => "timezone_exists",
-                copy_from         => tzconfig_copy_zoneinfo("$(zoneinfo)/$(timezone)"),
+                handle            => "tzconfig_files_etc_localtime"
+                copy_from         => tzconfig_copy_zoneinfo("$(tz_file)"),
                 classes           => if_repaired("tzconfig_timezone_updated"),
+                perms             => mog("644", "root", "root"),
                 move_obstructions => "true",
-                comment => "Copy the proper timezone file in place. We dont use
-                            a symlink because that might cause problems across 
-                            different filesystems, it has been a bug in the past.";
+                comment           => "Copy the proper timezone file in place. We dont use
+                                      a symlink because that might cause problems across
+                                      different filesystems, it has been a bug in the past.";
     reports:
         !timezone_exists::
             "Unable to set invalid timezone: $(timezone)";
