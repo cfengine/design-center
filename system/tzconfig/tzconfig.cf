@@ -18,14 +18,27 @@ bundle agent tzconfig(timezone) {
                 ifvarclass    => "timezone_exists",
                 handle        => "tzconfig_files_etc_timezone",
                 edit_defaults => empty,
+                create        => "true",
                 edit_line     => insert_lines("$(timezone)"),
                 perms         => mog("644", "root", "root"),
                 comment       => "Debian based systems also use the /etc/timezone file";
 
+        redhat|centos::
+            "/etc/sysconfig/clock"
+                ifvarclass => "timezone_exists",
+                handle     => "tzconfig_files_etc_sysconfig_clock",
+                create     => "true",
+                edit_line  => replace_or_add("^ZONE=.*", "ZONE=\"$(timezone)\""),
+                perms      => mog("644", "root", "root"),
+                comment    => "Redhat like systems use /etc/sysconfig/clock for
+                               the Time and Date Properties Tool
+                               (system-config-date), and editing it does not
+                               change the system timezone.";
+
         linux::
             "/etc/localtime"
                 ifvarclass        => "timezone_exists",
-                handle            => "tzconfig_files_etc_localtime"
+                handle            => "tzconfig_files_etc_localtime",
                 copy_from         => tzconfig_copy_zoneinfo("$(tz_file)"),
                 classes           => if_repaired("tzconfig_timezone_updated"),
                 perms             => mog("644", "root", "root"),
