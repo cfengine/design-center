@@ -1,4 +1,4 @@
-bundle agent manage_hosts_entries_completely(config) {
+bundle agent etc_hosts_manage_all_entries(config) {
 # Used for enforcing the complete contents of /etc/hosts
 # Warning: This is somewhat draconian, but it might be more desireable
 # than distributing a hand edited file since the definition of each element
@@ -26,7 +26,7 @@ bundle agent manage_hosts_entries_completely(config) {
 #    replaced if you provide an entry for it
 #
 # If you want additional exclusions in addition to localhost and # comments see
-# the delete_lines regex in manage_hosts_entries_completely_delete_nonmanaged
+# the delete_lines regex in etc_hosts_manage_all_entries_delete_nonmanaged
 # Usage:
 #   body common control {
 #
@@ -65,7 +65,7 @@ bundle agent manage_hosts_entries_completely(config) {
 #
 #
 #       methods:
-#           "any" usebundle => manage_hosts_entries_completely("main.hosts");
+#           "any" usebundle => etc_hosts_manage_all_entries("main.hosts");
 #
 #    }
 
@@ -82,16 +82,16 @@ bundle agent manage_hosts_entries_completely(config) {
             comment     =>  "Fix hosts entry to be as defined.";
 
         "$(hosts)"
-            edit_line   => manage_hosts_entries_completely_delete_nonmanaged("@(manage_hosts_entries_completely.ip)"),
+            edit_line   => etc_hosts_manage_all_entries_delete_nonmanaged("@(etc_hosts_manage_all_entries.ip)"),
             comment     => "Delete lines that do not match our managed ip list";
 
         "$(hosts)"
             create      =>  "true",
-            edit_line   =>  manage_hosts_entries_completely_prepend_if_no_line("$(CFEnotice)"),
+            edit_line   =>  etc_hosts_manage_all_entries_prepend_if_no_line("$(CFEnotice)"),
             comment     =>  "Notice that the file is managed by CFEngine";
 }
 
-bundle edit_line manage_hosts_entries_completely_prepend_if_no_line(string) {
+bundle edit_line etc_hosts_manage_all_entries_prepend_if_no_line(string) {
     insert_lines:
     "$(string)" 
         location => start,
@@ -99,7 +99,7 @@ bundle edit_line manage_hosts_entries_completely_prepend_if_no_line(string) {
 }
 
 
-bundle edit_line manage_hosts_entries_completely_delete_nonmanaged(ips){
+bundle edit_line etc_hosts_manage_all_entries_delete_nonmanaged(ips){
     vars:
         "regex" string => join ("|", "ips");
 
