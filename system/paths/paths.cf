@@ -1,0 +1,33 @@
+bundle common paths{
+# The following are variables that are global and can be used anywhere.
+	vars: 
+
+			"mf_cache" string => "/var/cache/cfmasterfiles",
+				comment => "Local cache of masterfiles";
+
+# definitions for gzip.
+
+			linux::
+				"gzip" string => "/bin/gzip";
+
+# definitions for crontabs.
+
+			debian|ubuntu::
+				"crontabs" string => "/var/spool/cron/crontabs";
+
+			redhat::
+				"crontabs" string => "/var/spool/cron";
+
+
+# definitions for services.
+
+        redhat|suse::
+
+            "svc_cmd" string => "/sbin/service",
+            comment => "Service start/stop command.";
+
+        debian::
+
+            "svc_cmd" string => "/etc/init.d",
+            comment => "Service start/stop command.";
+}
