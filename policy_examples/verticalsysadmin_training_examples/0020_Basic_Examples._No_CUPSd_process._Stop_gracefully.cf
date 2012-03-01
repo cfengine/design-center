@@ -1,0 +1,10 @@
+bundle agent example {
+
+    processes:
+
+        "cupsd" 
+
+            process_stop => "/etc/init.d/cups stop",
+            comment => "We don't want print services on our Web servers.";
+
+}

@@ -1,0 +1,28 @@
+# a mutually exclusive configuration
+
+body common control {
+    inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf",
+              };
+
+    bundlesequence => {
+                      "example"
+                      };
+}
+
+############################################################
+
+
+bundle agent example {
+
+    files:
+       localhost::
+        "/tmp/plug"
+            delete => tidy;
+
+    files:
+      localdomain::
+         "/tmp/plug"
+               create => "true",
+               mode => "0700";
+
+}

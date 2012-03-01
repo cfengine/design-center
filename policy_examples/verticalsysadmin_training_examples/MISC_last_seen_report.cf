@@ -1,0 +1,16 @@
+# feed this config to cf-report using the -f switch,
+# for example: cf-report -f ~/practical_examples/MISC_last_seen_report.cf 
+
+body reporter control
+{
+ any::
+
+  reports => { 
+             "last_seen" 
+             };
+
+  build_directory => "$(sys.workdir)/reports";
+  report_output   => "text";
+  style_sheet => "/cf_enterprise.css";
+
+}

@@ -1,0 +1,30 @@
+# Purpose: input "main" and "web", and 
+# execute "main" bundle always, and "web" bundle
+# only if my hostname is in the list of "web_servers"
+# The list used by both inputs and bundlesequence
+# is drawn from "mylist" variable
+
+
+bundle agent example {
+
+reports:
+  cfengine::
+    "$(global.mylist)";
+  
+}
+##################################################3
+
+
+bundle common global
+# common bundles are included in bundlesequence automatically 
+{
+
+vars: "web_servers" slist => { "web1", "web2", "my-hostname-has-dashes", };
+
+vars: "mylist" slist => { "main" }, policy => "overridable";
+
+vars: "mylist"
+    slist => { @(mylist), "web" },
+    policy => "overridable";
+    #ifvarclass => canonify("$(web_servers)");
+}

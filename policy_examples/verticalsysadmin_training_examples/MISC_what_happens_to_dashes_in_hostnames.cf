@@ -1,0 +1,10 @@
+bundle agent example {
+
+reports:
+
+  my_hostname_has_dashes::
+
+     "Boo!";
+
+}
+

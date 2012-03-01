@@ -1,0 +1,3 @@
+In the "computer immunology" research and development
+phase, Mark added file change detection capability to
+Cfengine.

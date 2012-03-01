@@ -1,0 +1,68 @@
+# Author: Aleksey Tsalolikhin <aleksey.tsalolikhin@verticalsysadmin.com>
+# Date: 3 Dec 2010
+# Based on material by Mark Burgess.
+#
+# Purpose: Make sure my Linux host firewall is configured to allow
+# NTP (UDP port 123) packets from backend servers on an internal
+# network (192.168.1.1/24 in this example).
+#
+# This could be useful for a multi-tier Web app that does not have a
+# time source on the private network.
+#
+# Diagram: 
+#
+# Web server in the DMZ (gets time from public NTP servers)
+#     |
+# Database server on a private network (gets time from Web server)
+#
+#
+#
+#--Aleksey
+
+
+body common control
+{
+bundlesequence  => { "files__iptables__allow_ntp_from_backend_servers" };
+}
+
+
+####################################################################
+
+
+bundle agent files__iptables__allow_ntp_from_backend_servers
+{
+files:
+  redhat::  # tested on RHEL only, file location may vary based on Linux distro or OS
+      "/etc/sysconfig/iptables"
+       edit_line => insert_NTP_allow_rule_before_the_drop_rule,
+       comment => "insert NTP allow rule into /etc/sysconfig/iptables before the drop rule to allow time service to the back end";
+}
+
+
+####################################################################
+
+
+bundle edit_line insert_NTP_allow_rule_before_the_drop_rule
+{
+  vars:
+      "ntp_rule" string => "-A RH-Firewall-1-INPUT -p udp -m udp --dport 123 -s 192.168.1.1/24 -j ACCEPT -m comment --comment \"allow connections from backend servers for time service\""; # this is the text we'll want to insert into /etc/sysconfig/iptables to allow NTP from the backend
+
+
+insert_lines: "$(ntp_rule)",
+      location => before_the_established_connections_rule;
+}
+
+####################################################################
+
+body location before_the_established_connections_rule
+
+{
+before_after => "before";
+first_last => "first";
+select_line_matching => "^-A.*INPUT -m state --state.*ESTABLISHED.*-j ACCEPT.*"; 
+
+}
+
+
+# reloading iptables to load the new config is left
+# as an exercise for the reader

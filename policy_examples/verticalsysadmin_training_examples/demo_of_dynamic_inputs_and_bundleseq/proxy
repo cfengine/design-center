@@ -1,0 +1,5 @@
+bundle agent proxy{
+        reports:
+            cfengine_3::
+                "proxy bundle";
+}

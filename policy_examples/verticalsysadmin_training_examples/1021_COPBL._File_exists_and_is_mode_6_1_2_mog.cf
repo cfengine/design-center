@@ -1,0 +1,27 @@
+body common control {
+    inputs         => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+}
+
+###########################################################
+
+bundle agent example {
+
+files:
+
+# This is a throw-away comment
+
+   "/tmp/testfile" 
+
+	comment => "/tmp/testfile must be mode 612 for application X to work; it must be owned by user aleksey and group cfengine", # Cfengine KM comment
+	create  => "true",   # Promise constraint 1
+	perms   => mog("612","aleksey","cfengine"); # Promise constraint 2
+
+	# shell equivalent: 
+	# touch /tmp/testfile
+	# chmod 612 /tmp/testfile
+	# chown aleksey /tmp/testfile
+	# chgrp cfengine /tmp/testfile
+
+}
+
+# see cfengine_stdlib.cf for the promise body mog

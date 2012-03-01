@@ -1,0 +1,356 @@
+#Install WordPress:
+#	1. Install Infrastructure:
+#		1.1. Install httpd and mod_php and PHP MySQL client.
+#		1.2. Install MySQL server.
+#			1.2.1. Secure MySQL
+#			1.2.2. Create WordPress User in MySQL.
+#			1.2.3. Create WordPress Database in MySQL.
+#		1.3. Make sure httpd and MySQL servers are running.
+#	2. Install the PHP application (WordPress)
+#		2.1. Download tarball with the latest version of WordPress PHP application.
+#		2.2. Extract it into the httpd document root where it can be run by the Web server.
+#		2.3. Create WordPress config file wp-config.php from wp-config-sample.php that's shipped with WordPress.
+#		2.4. Tweak wp-config.php to put in the data needed to establish database connection (db name, db username and password).
+#	
+
+body common control
+{
+
+bundlesequence => {
+			"wordpress_install",
+		  };
+
+
+inputs =>	  { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+
+}
+
+
+
+bundle agent wordpress_install
+{
+vars:
+  "wp_config[DB_HOST]"           string => "db";
+  "wp_config[DB_NAME]"           string => "wordpress";
+  "wp_config[DB_USER]"           string => "wordpress";
+  "wp_config[DB_PASSWORD]"       string => "L0PSA_2011_Linux";
+  "wp_config[DB_ROOT_PASSWORD]"  string => "Linux_2011_L0PSA";
+  "wp_config[htmlroot]"          string => "/var/www/html";
+  "wp_config[tarfile]"           string => "/root/wordpress-latest.tar.gz";
+  "wp_config[wp_dir]"            string => "$(wp_config[htmlroot])/wordpress";
+  "wp_config[wp_config]"         string => "$(wp_config[wp_dir])/wp-config.php";
+  "wp_config[wp_cfgsample]"      string => "$(wp_config[wp_dir])/wp-config-sample.php";
+
+methods:
+
+  web::
+    "any" usebundle => wp_web_front_end_packages_installed("wordpress_install.wp_config");
+    "any" usebundle => wp_web_front_end_services_up("wordpress_install.wp_config");
+    "any" usebundle => wp_tarball_is_present("wordpress_install.wp_config");
+    "any" usebundle => wp_tarball_is_unrolled("wordpress_install.wp_config"); 
+    "any" usebundle => wp_config_exists("wordpress_install.wp_config");
+    "any" usebundle => wp_is_properly_configured("wordpress_install.wp_config");
+#  "any" usebundle => wp_allow_http_inbound("wordpress_install.wp_config");
+
+  db::
+    "any" usebundle => wp_db_back_end_packages_installed("wordpress_install.wp_config");
+    "any" usebundle => wp_db_back_end_services_up("wordpress_install.wp_config");
+    "any" usebundle => wp_mysql_is_secured("wordpress_install.wp_config"); 
+    "any" usebundle => wp_mysql_configuration("wordpress_install.wp_config"); 
+}
+
+
+#############################################
+
+bundle agent wp_web_front_end_packages_installed(params)
+{
+vars:
+
+  debian::
+  "desired_package" slist => { 
+                               "apache2", 
+                               "php5",
+                               "php5-mysql",
+                             };
+
+  redhat::
+  "desired_package" slist => { 
+                               "httpd",
+                               "php",
+                               "php-mysql",
+                             };
+packages:
+  "$(desired_package)"
+    package_policy => "add",
+    package_method => generic,
+    classes => if_repaired("packages_added");
+
+commands: 
+  packages_added&&redhat::
+    "/sbin/service httpd graceful" 
+      comment => "Restarting httpd so it can pick up new modules.";
+
+  packages_added&&debian::
+    "/usr/sbin/service apache2 graceful" 
+      comment => "Restarting httpd so it can pick up new modules.";
+}
+
+#############################################
+bundle agent wp_db_back_end_packages_installed(params)
+{
+vars:
+
+  "desired_package" slist => { 
+                               "mysql-server",
+                             };
+
+packages:
+  "$(desired_package)"
+    package_policy => "add",
+    package_method => generic,
+    classes => if_repaired("packages_added");
+
+}
+
+
+#############################################
+
+bundle agent wp_web_front_end_services_up(params)
+{
+
+processes:
+  redhat::
+    "httpd"  restart_class => "start_httpd_redhat";
+
+  ubuntu::
+    "apache2"  restart_class => "start_httpd_ubuntu";
+
+
+commands:
+  start_httpd_redhat::
+    "/sbin/service httpd start";
+
+  start_httpd_ubuntu::
+    "/usr/sbin/service apache2 start";
+
+}
+
+#############################################
+
+bundle agent wp_db_back_end_services_up(params)
+{
+processes:
+  redhat::
+    "mysqld" restart_class => "start_mysqld_redhat";
+
+  ubuntu::
+    "mysqld" restart_class => "start_mysqld_ubuntu";
+
+
+commands:
+  start_mysqld_redhat::
+    "/sbin/service mysqld start";
+
+  start_mysqld_ubuntu::
+    "/usr/sbin/service mysqld start";
+
+
+}
+
+#############################################
+
+bundle agent wp_tarball_is_present(params)
+{
+
+classes:
+  "wordpress_tarball_is_present" expression => fileexists("$($(params)[tarfile])");
+
+reports:
+  wordpress_tarball_is_present::
+    "WordPress tarball is on disk.";
+
+commands:
+  !wordpress_tarball_is_present::
+    "/usr/bin/wget -q -O $($(params)[tarfile]) http://wordpress.org/latest.tar.gz"
+    comment => "Downloading latest version of WordPress.";
+}
+
+#############################################
+
+bundle agent wp_tarball_is_unrolled(params)
+{
+
+classes:
+  "wordpress_directory_is_present" expression => fileexists("$($(params)[htmlroot])/wordpress/");
+
+reports:
+  wordpress_directory_is_present::
+    "WordPress directory is present.";
+
+commands:
+  !wordpress_directory_is_present::
+    "/bin/tar -C $($(params)[htmlroot]) -xzf $($(params)[tarfile])"
+    comment => "Unrolling wordpress tarball to $($(params)[htmlroot]).";
+}
+
+
+#############################################
+
+bundle agent wp_mysql_is_secured(params)
+{
+
+#  remove the test databases and anonymous user created by default and set the MySQL root password
+# at first I tried to use mysql_secure_installation, but it would not take the root password in a
+# pipeline, error: "stty: standard input: Invalid argument"
+# Here is is how I tried to secure the database:
+#commands:
+#  "/usr/bin/printf '\ny\n$($(params)[DB_ROOT_PASSWORD])\n$($(params)[DB_ROOT_PASSWORD])\ny\ny\ny\ny\n' | /usr/bin/mysql_secure_installation"
+#     contain => in_shell;
+
+# instead let's just do what mysql_secure_installation does, so we can do it non-interactively:
+# - remove anonymous users
+# - remove remote root
+# - remove test database
+# - remove privileges on test database
+# - reload privilege tables
+
+
+
+commands:
+  "/usr/bin/mysql -u root -e \"
+    DELETE FROM mysql.user WHERE User='';
+    DELETE FROM mysql.user WHERE User='root' AND Host!='localhost';
+    DROP DATABASE test;    
+    DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+    FLUSH PRIVILEGES;\"
+  ";
+
+}
+
+#############################################
+
+bundle agent wp_mysql_configuration(params)
+{
+
+commands:
+  "/usr/bin/mysql -u root -e \"
+    CREATE DATABASE IF NOT EXISTS $($(params)[DB_NAME]);
+    GRANT ALL PRIVILEGES ON $($(params)[DB_NAME]).*
+    TO '$($(params)[DB_USER])'@'web'
+    IDENTIFIED BY '$($(params)[DB_PASSWORD])';
+    FLUSH PRIVILEGES;\"
+  ";
+
+}
+
+#############################################
+
+bundle agent wp_config_exists(params)
+{
+
+classes:
+  "wordpress_config_file_exists" 
+    expression => fileexists("$($(params)[wp_config])");
+
+reports:
+  wordpress_config_file_exists::
+    "WordPress config file $($(params)[wp_config]) is present";
+
+commands:
+  !wordpress_config_file_exists::
+    "/bin/cp -p $($(params)[wp_cfgsample]) $($(params)[wp_config])";
+}
+
+#############################################
+
+bundle agent wp_is_properly_configured(params)
+{
+vars:
+  "wpparams" slist => getindices("$(params)");
+
+files:
+  "$($(params)[wp_config])"
+    edit_line => replace_or_add("define\('$(wpparams)', *'(?!$($(params)[$(wpparams)])).*",
+				"define('$(wpparams)', '$($(params)[$(wpparams)])');");
+}
+            
+#############################################
+
+bundle agent wp_allow_http_inbound(params)
+{
+files:
+  redhat:: # tested on RHEL only, file location may vary based on Linux distro or OS
+    "/etc/sysconfig/iptables"
+      edit_line => insert_HTTP_allow_rule_before_the_accept_established_tcp_conns_rule,
+      comment => "insert HTTP allow rule into /etc/sysconfig/iptables",
+      classes => if_repaired("iptables_edited");
+
+commands: 
+  iptables_edited::
+    "/sbin/service iptables restart"
+    comment => "Restarting iptables to load new config";
+}
+
+bundle edit_line insert_HTTP_allow_rule_before_the_accept_established_tcp_conns_rule(params)
+{
+vars:
+  "http_rule" string => "-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT";
+
+insert_lines:
+  "$(http_rule)"
+    location => before_the_accept_established_tcp_conns_rule;
+}
+
+body location before_the_accept_established_tcp_conns_rule
+{
+  before_after => "before";
+  first_last => "first";
+  select_line_matching => "^-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT.*";
+}
+
+bundle edit_line replace_or_add(pattern,line)
+ # Diego's.  
+ # Replace a pattern in a file with a single line.
+ # If the pattern is not found, add the line to the file.
+ # The pattern must match the whole line (it is automatically
+ # anchored to the start and end of the line) to avoid
+ # ambiguity.
+ 
+{
+replace_patterns:
+  "^${pattern}$"
+  replace_with => value("${line}"),
+  classes => always("replace_done");
+
+insert_lines:
+  replace_done::
+  "${line}";
+}
+
+
+body classes always(x)
+# Diego's.
+# Define a class no matter what the outcome of the promise is
+
+{
+  promise_repaired => { "$(x)" };
+  promise_kept => { "$(x)" };
+  repair_failed => { "$(x)" };
+  repair_denied => { "$(x)" };
+  repair_timeout => { "$(x)" };
+}
+
+
+
+
+# Todo:
+#
+#
+# MySQL:
+# - submit a patch to the MySQL folks to add a non-interactive option to /usr/bin/mysql_secure_installation
+# - change the root password using /usr/bin/mysqladmin -u root password 'new-password'
+# - I've hardcoded the web server name as 'web', in allowing connects.  make this more flexible.  (how?)
+#
+# httpd:
+# - instead of hardcoding "/var/www/html", derive httpd document root on the fly from httpd config file
+#   using Function readstringlist. (If it's Apache, look for DocumentRoot)

@@ -1,0 +1,1 @@
+Review chapter 5 "Types of promises in the CFEngine language" in Aleksey's Getting Started with CFEngine 3 Guide.

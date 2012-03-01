@@ -1,0 +1,58 @@
+#######################################################
+#
+# Find and compress PDF files
+#
+#######################################################
+
+bundle agent example
+
+{
+files:
+
+  "/tmp/pdfs" 
+
+    file_select => pdf_files,
+    transformer => "/usr/bin/gzip $(this.promiser)",
+    depth_search => recurse("inf");
+
+}
+
+############################################
+
+body file_select pdf_files
+
+{
+leaf_name => { ".*.pdf" , ".*.fdf" };  # leaf_name = regex to match on
+                                       # the file NAME (ignoring the 
+                                       # full directory path)
+file_result => "leaf_name";
+}
+
+############################################
+
+body depth_search recurse(d)
+
+{
+depth => "$(d)";
+}
+
+# Given the following files: 
+#
+# /tmp/pdfs/a.pdf
+# /tmp/pdfs/b.txt
+# /tmp/pdfs/c.pdf
+# /tmp/pdfs/d.doc,
+#
+# Generates the following output (with -I switch): 
+#
+# Transforming: /usr/bin/gzip /tmp/pdfs/a.pdf
+# -> Transformer /tmp/pdfs/a.pdf => /usr/bin/gzip /tmp/pdfs/a.pdf seemed to work ok
+# Transforming: /usr/bin/gzip /tmp/pdfs/c.pdf
+# -> Transformer /tmp/pdfs/c.pdf => /usr/bin/gzip /tmp/pdfs/c.pdf seemed to work ok
+#
+# and leaves the following files: 
+#
+# /tmp/pdfs/c.pdf.gz
+# /tmp/pdfs/b.txt
+# /tmp/pdfs/d.doc
+# /tmp/pdfs/a.pdf.gz

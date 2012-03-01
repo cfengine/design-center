@@ -1,0 +1,5 @@
+bundle agent ntp{
+    reports:
+        cfengine_3::
+            "ntp bundle";
+}

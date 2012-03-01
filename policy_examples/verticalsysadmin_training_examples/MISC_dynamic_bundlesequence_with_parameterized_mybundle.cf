@@ -1,0 +1,82 @@
+# by Jeff Blaine
+
+# Changes the order of NTP servers in ntp.conf based on site (using class)
+# if we're in site x, site X servers should be first; if we're in site y,
+# site y servers should be first.
+
+# Example run:
+#    [cfengine00  practical_examples]# cf-agent -KI -f ./MISC_dynamic_bundlesequence_with_parameterized_mybundle.cf   -Dsite_x
+#     -> Edited file /etc/ntp.conf
+#    [cfengine00  practical_examples]# cat /etc/ntp.conf
+#    fudge   127.127.1.0 stratum 10
+#    server  127.127.1.0
+#    # will be destroyed by CFEngine, so don't do that.
+#    # This file is configured by CFEngine.  Manual edits to this file
+#    server ntp-sitex.our.org
+#    server ntp-sitey.our.org
+#    restrict -4 default kod notrap nomodify nopeer noquery
+#    restrict -6 default kod notrap nomodify nopeer noquery
+#    [cfengine00  practical_examples]# cf-agent -KI -f ./MISC_dynamic_bundlesequence_with_parameterized_mybundle.cf   -Dsite_y
+#     -> Edited file /etc/ntp.conf
+#    [cfengine00  practical_examples]# cat /etc/ntp.conf
+#    fudge   127.127.1.0 stratum 10
+#    server  127.127.1.0
+#    # will be destroyed by CFEngine, so don't do that.
+#    # This file is configured by CFEngine.  Manual edits to this file
+#    server ntp-sitey.our.org
+#    server ntp-sitex.our.org
+#    restrict -4 default kod notrap nomodify nopeer noquery
+#    restrict -6 default kod notrap nomodify nopeer noquery
+#    [cfengine00  practical_examples]#
+#    
+
+
+
+bundle common g
+{
+   # Define NTP servers in a specific order per site.
+
+   # You could define everything here in "main" and change the references
+   # there in "methods:" if you wanted to.
+
+   vars:
+
+       site_x::
+           "ntpservers" slist => {
+               "ntp-sitex.our.org",
+               "ntp-sitey.our.org",
+               };
+
+       site_y::
+           "ntpservers" slist => {
+               "ntp-sitey.our.org",
+               "ntp-sitex.our.org",
+               };
+}
+
+bundle agent main
+{
+   methods:
+
+       site_x::
+           "site_x" usebundle =>
+               system_ntpclient_configure(@(g.ntpservers));
+
+       site_y::
+           "site_y" usebundle =>
+               system_ntpclient_configure(@(g.ntpservers));
+}
+
+body common control
+{
+   bundlesequence => {
+       "main"
+   };
+
+   # Building a per-site inputs list is beyond the scope of this
+   # example.
+   inputs => {
+       "/var/cfengine/inputs/cfengine_stdlib.cf",
+       "ntp.cf"
+   };
+}

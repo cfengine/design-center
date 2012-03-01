@@ -1,0 +1,79 @@
+#############################################
+bundle common global_vars {
+
+
+vars: "desired_servers" slist => { 
+                                     "web",
+                                     "db",
+                                 };
+}
+
+#############################################
+
+body common control
+{
+
+bundlesequence => {
+			"global_vars",
+                        "no_hosts_known_to_ssh",
+			servers_provisioned(@{global_vars.desired_servers}),
+			hosts_file_distributed_and_loaded(@{global_vars.desired_servers}),
+			wordpress_installer_distributed_and_run(@{global_vars.desired_servers}),
+		  };
+
+
+inputs =>	  { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+
+}
+
+#############################################
+
+
+bundle agent no_hosts_known_to_ssh
+{
+files:
+  "/home/user/.ssh/known_hosts"
+     delete => tidy;  
+
+# I don't want to see SSH complaints about keys having changed
+
+}
+
+#############################################
+
+
+bundle agent servers_provisioned(desired_servers)
+{
+
+classes:
+"$(desired_servers)_up"   expression => fileexists("/home/user/cfengine_ec2/servers/$(desired_servers)");
+"$(desired_servers)_down" not        => fileexists("/home/user/cfengine_ec2/servers/$(desired_servers)");
+
+
+reports:
+  linux::
+     "$(desired_servers) has been provisioned"
+       ifvarclass => canonify("$(desired_servers)_up");
+
+commands: "/home/user/cfengine_ec2/start_micro_instance.sh $(desired_servers) > /home/user/cfengine_ec2/servers/$(desired_servers)"
+       ifvarclass => canonify("$(desired_servers)_down"),
+       contain => in_shell;
+}
+
+
+#############################################
+
+bundle agent hosts_file_distributed_and_loaded(desired_servers)
+{
+commands: "/usr/bin/scp -o StrictHostKeyChecking=no -i /home/user/ec2/mysshkey_key.pem /etc/hosts ec2-user@$(desired_servers):hosts && /usr/bin/ssh -t  -o StrictHostKeyChecking=no -i /home/user/ec2/mysshkey_key.pem ec2-user@$(desired_servers) sudo /bin/cp hosts /etc/hosts"
+       contain => in_shell;
+}
+
+#############################################
+
+bundle agent wordpress_installer_distributed_and_run(desired_servers)
+{
+commands: "/usr/bin/scp -o StrictHostKeyChecking=no -i /home/user/ec2/mysshkey_key.pem /home/user/cfengine_ec2/example102_wordpress_installation.cf ec2-user@$(desired_servers): && /usr/bin/ssh -t  -o StrictHostKeyChecking=no -i /home/user/ec2/mysshkey_key.pem ec2-user@$(desired_servers) sudo /usr/local/sbin/cf-agent -If ./example102_wordpress_installation.cf"
+       contain => in_shell;
+}
+

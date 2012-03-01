@@ -1,0 +1,28 @@
+body common control {
+    inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+}
+
+
+bundle agent example {
+
+files:
+
+   "/tmp/testfile"
+
+        create  => "true",
+        edit_line => proper_greetings;
+}
+
+
+####################################################
+
+
+bundle edit_line  proper_greetings {
+
+
+insert_lines: 
+
+"Good Evening"
+    location => after("Good Day");
+
+}

@@ -1,0 +1,17 @@
+body common control
+{
+version => "1.0";
+bundlesequence => { "test" };
+}
+
+
+########################################
+
+
+bundle agent test
+{
+
+commands:
+  linux::
+    "/bin/echo hello world, i love wednesdays and coffee";
+}
