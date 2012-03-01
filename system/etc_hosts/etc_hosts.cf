@@ -71,14 +71,28 @@ bundle agent etc_hosts_manage_all_entries(config) {
 
 
     vars:
-        "ip" slist => getindices("$(config)");
-        "hosts" string => "/etc/hosts";
-        "CFEnotice" string => "# This file is managed by CFEngine, manual edits will be reverted";
+        "ip" 
+            slist   => getindices("$(config)"),
+            comment => "We need the list of IPs to look for in the hosts file";
+
+        "esc_ips[$(ip)]" 
+            string  => escape("$(ip)"),
+            comment => "We build an array of escaped ips for safe use in regexes";
+
+        "hosts"
+            string => "/etc/hosts",
+            comment => "Path to the systems hosts file";
+            # If someone wants this to work on windows you will probably want to class the path
+            # to the hosts file properly.
+
+        "CFEnotice" 
+            string  => "# This file is managed by CFEngine, manual edits will be reverted",
+            comment => "It's nice to let people know why the file keep magically reverting on them";
 
     files:
         "$(hosts)"
             create      =>  "true",
-            edit_line   =>  replace_or_add("^$(ip)\s.*", "$(ip)    $($(config)[$(ip)])"),
+            edit_line   =>  replace_or_add("^$(esc_ips[$(ip)])\s.*", "$(ip)    $($(config)[$(ip)])"),
             comment     =>  "Fix hosts entry to be as defined.";
 
         "$(hosts)"
@@ -89,6 +103,7 @@ bundle agent etc_hosts_manage_all_entries(config) {
             create      =>  "true",
             edit_line   =>  etc_hosts_manage_all_entries_prepend_if_no_line("$(CFEnotice)"),
             comment     =>  "Notice that the file is managed by CFEngine";
+
 }
 
 bundle edit_line etc_hosts_manage_all_entries_prepend_if_no_line(string) {
@@ -101,13 +116,16 @@ bundle edit_line etc_hosts_manage_all_entries_prepend_if_no_line(string) {
 
 bundle edit_line etc_hosts_manage_all_entries_delete_nonmanaged(ips){
     vars:
-        "regex" string => join ("|", "ips");
+        "regex" 
+            string  => join ("|", "ips"),
+            comment => "Or the escaped ips together so we can build a negative
+                        lookahead and delete all non-specified lines";
 
     delete_lines:
     # This is the negative look ahead, and what would need tweaked if you dont like the behavior 
     # Specifically its identifying our list of ips followed by a space, as well as # comment or localhost
     # and deleteing everything else
-        "^(?!(#|127.0.0.1|::1|$(regex))\s.*).*$"
+        "^(?!(\#|127\.0\.0\.1|\:\:1|$(regex))\s.*).*$"
             comment => "Delete lines do not match our ips or are not comments";
 }
 
