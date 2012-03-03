@@ -11,6 +11,12 @@ bundle agent local_user_management_add_users_fileedit (users) {
 #       "users[testuser][home]"           string => "/home/testuser";
 #       "users[testuser][shell]"          string => "/bin/bash";
 #       "users[testuser][passwdhash]"     string => "$1$cCMJbSmS$/tQtxSsLZmYq3/zp1Vm/l0";
+#       # Optional settings
+#       "users[testuser][groupname]       string => "mygroupname";
+#       "users[testuser][_gid_non_unique] string => "anythinggoeshere";
+#       If groupname is set a named group will be created with the specified gid
+#       by default we wont create a named group with a non_unique gid, setting _gid_non_unique
+#       enables this behavior.
 # Note:
 # This bundle does not handle creating groups, if you assign a gid of a non-existant group
 # you should still be able to log in, there is just no named group associated with the gid,
@@ -38,13 +44,47 @@ bundle agent local_user_management_add_users_fileedit (users) {
 
     classes:
     # Check if different variables are defined
-        "gecos_defined"        expression => isvariable("$($(users)[$(userlist)][gecos])");
-        "uid_defined"          expression => isvariable("$($(users)[$(userlist)][uid])");
-        "gid_defined"          expression => isvariable("$($(users)[$(userlist)][gid])");
-        "shell_defined"        expression => isvariable("$($(users)[$(userlist)][shell])");
-        "home_defined"         expression => isvariable("$($(users)[$(userlist)][home])");
-        "passwdhash_defined"   expression => isvariable("$($(users)[$(userlist)][passwdhash])");
-        "groupname_defined"    expression => isvariable("$($(users)[$(userlist)][groupname])");
+        "gecos_defined"
+            expression => isvariable("$($(users)[$(userlist)][gecos])"),
+            comment    => "I consider gecos a required field, check if its defined";
+
+        "uid_defined"
+            expression => isvariable("$($(users)[$(userlist)][uid])"),
+            comment    => "Since I don't yet do automatic next uid selection
+                           uid is a required field, check if its defined";
+
+        "gid_defined"
+            expression => isvariable("$($(users)[$(userlist)][gid])"),
+            comment    => "Since I dont yet do automatic next gid selection
+                           gid is a required field, check if its defined";
+
+        "shell_defined"
+            expression => isvariable("$($(users)[$(userlist)][shell])"),
+            comment    => "I really think its a good idea to set the shell
+                           to something, check if its defined";
+
+        "home_defined"
+            expression => isvariable("$($(users)[$(userlist)][home])"),
+            comment => "Users really should have a home directoy defined,
+                        check if it is defined";
+
+        "passwdhash_defined"
+            expression => isvariable("$($(users)[$(userlist)][passwdhash])"),
+            comment    => "Without a password set the user wont be able to log in,
+                           this is easily debateable to not be a required field";
+
+        "groupname_defined"
+            expression => isvariable("$($(users)[$(userlist)][groupname])"),
+            comment    => "This is optional, if the groupname is defined
+                           we will create a named group with the defined gid.
+                           Non-unique gid is allowed with the use of the
+                           _gid_non_unique_defined flag";
+
+        "_gid_non_unique_defined"
+            expression => isvariable("$($(users)[$(userlist)][_gid_non_unique_defined])"),
+            comment    => "This is optional, the value does not matter
+                           if its defined at all we allow the creation of
+                           a named group with a duplicate uid";
 
         "required_elements_defined"
             and => { "gecos_defined",
@@ -68,6 +108,13 @@ bundle agent local_user_management_add_users_fileedit (users) {
                 not     => groupexists("$($(users)[$(userlist)][groupname])"),
                 comment => "Trigger a class so we know we should see about creating a user";
 
+            # we only need to know if the gid is in use if the optional named group was defined
+            # Also we only really need to know if the gid is in use if we care about not creating
+            # multiple named groups with the same gid.
+            "gid_in_use"
+                expression => regline(".*\:.*\:$(gid)\:.*$", "/etc/group"),
+                comment => "If we are going to add a named group, we should see if the gid
+                            is already in use";
     files:
         linux::
             "$(pwfile)"
