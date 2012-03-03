@@ -79,15 +79,19 @@ bundle agent etc_hosts_manage_all_entries(config) {
             string  => escape("$(ip)"),
             comment => "We build an array of escaped ips for safe use in regexes";
 
-        "hosts"
-            string => "/etc/hosts",
-            comment => "Path to the systems hosts file";
-            # If someone wants this to work on windows you will probably want to class the path
-            # to the hosts file properly.
-
         "CFEnotice" 
             string  => "# This file is managed by CFEngine, manual edits will be reverted",
             comment => "It's nice to let people know why the file keep magically reverting on them";
+
+        !windows::
+        "hosts"
+            string => "/etc/hosts",
+            comment => "Path to the systems hosts file";
+
+        windows::
+        "hosts"
+	    "$(sys.winsysdir)\drivers\etc\hosts",
+            comment => "Path to the systems hosts file";
 
     files:
         "$(hosts)"
