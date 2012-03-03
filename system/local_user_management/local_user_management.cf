@@ -31,15 +31,42 @@ bundle agent local_user_management_add_users_fileedit (users) {
                 ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
                 comment     => "Only calculate if we need to add a user, otherwise its just wasteful";
 
-            "shadowentry[$(userlist)]"  
+            "shadowentry[$(userlist)]"
                 string => "$(userlist):$($(users)[$(userlist)][passwdhash]):$(days_since_epoch):0:99999:7:::",
                 ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
                 comment    => "Only construct the shadow entry for a user if we need to add the user";
 
     classes:
-        "local_user_management_add_users_fileedit_add_$(userlist)" 
-            not => userexists("$(userlist)"),
-            comment => "Trigger a class so we know we need to create the user if it does not exist";
+    # Check if different variables are defined
+        "gecos_defined"        expression => isvariable("$($(users)[$(userlist)][gecos])");
+        "uid_defined"          expression => isvariable("$($(users)[$(userlist)][uid])");
+        "gid_defined"          expression => isvariable("$($(users)[$(userlist)][gid])");
+        "shell_defined"        expression => isvariable("$($(users)[$(userlist)][shell])");
+        "home_defined"         expression => isvariable("$($(users)[$(userlist)][home])");
+        "passwdhash_defined"   expression => isvariable("$($(users)[$(userlist)][passwdhash])");
+        "groupname_defined"    expression => isvariable("$($(users)[$(userlist)][groupname])");
+
+        "required_elements_defined"
+            and => { "gecos_defined",
+                     "uid_defined",
+                     "gid_defined",
+                     "shell_defined",
+                     "home_defined",
+                     "passwdhash_defined",
+                   },
+            comment => "These are required to create a user";
+
+        required_elements_defined::
+            "local_user_management_add_users_fileedit_add_$(userlist)"
+                not     => userexists("$(userlist)"),
+                comment => "Trigger a class so we know we need to create the user if it does not exist";
+
+        # I need to think on this more, if we blindly insert of groupname does not exist it can
+        # lead to multiple groupnames with the same gid
+        groupname_defined::
+            "local_user_management_add_users_fileedit_add_$($(users)[$(userlist)][groupname])",
+                not     => groupexists("$($(users)[$(userlist)][groupname])"),
+                comment => "Trigger a class so we know we should see about creating a user";
 
     files:
         linux::
@@ -65,6 +92,11 @@ bundle agent local_user_management_add_users_fileedit (users) {
                 copy_from       => seed_cp("$(local_user_management_add_users_fileedit.skel)"),
                 perms           => og("$($(users)[$(userlist)][uid])", "$($(users)[$(userlist)][gid])"),
                 ifvarclass      => "local_user_management_add_users_fileedit_seed_$(userlist)",
-                comment         => "Seed home directory with skell, but only when we create the home 
+                comment         => "Seed home directory with skell, but only when we create the home
                                     directory the user should have the choice to remove the seeded files";
+
+    reports:
+        !required_elements_defined::
+            "Not all required elements defined for $(userlist)";
+
 }
