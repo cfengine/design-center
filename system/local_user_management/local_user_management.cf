@@ -210,27 +210,27 @@ bundle agent local_user_management_add_users_fileedit (users) {
                 edit_line => append_if_no_line("$(groupentry[$(userlist)])"),
                 ifvarclass => "attempt_group_creation_$(userlist)";
 
-    reports:
-    cfengine::
-    "$(userlist)";
-    "$(userlist) does not exist, needs created",
-        ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)";
-
-    "groupname_defined",
-        ifvarclass => "groupname_defined_$(userlist)";
-
-    "allow_non_unique_gid",
-        ifvarclass => "allow_non_unique_gid_$(userlist)";
-
-    "gid in use",
-        ifvarclass => "gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])";
-
-    "gid not in use",
-        ifvarclass => "gid_not_in_use_$(userlist)_$($(users)[$(userlist)][gid])";
-
-    "create group and allow non unique for $(userlist)",
-        ifvarclass => "create_group_and_allow_non_unique_$(userlist)";
-
+#    reports:
+#    cfengine::
+#    "$(userlist)";
+#    "$(userlist) does not exist, needs created",
+#        ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)";
+#
+#    "groupname_defined",
+#        ifvarclass => "groupname_defined_$(userlist)";
+#
+#    "allow_non_unique_gid",
+#        ifvarclass => "allow_non_unique_gid_$(userlist)";
+#
+#    "gid in use",
+#        ifvarclass => "gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])";
+#
+#    "gid not in use",
+#        ifvarclass => "gid_not_in_use_$(userlist)_$($(users)[$(userlist)][gid])";
+#
+#    "create group and allow non unique for $(userlist)",
+#        ifvarclass => "create_group_and_allow_non_unique_$(userlist)";
+#
 #    "gecos OK",
 #        ifvarclass => "gecos_defined_$(userlist)";
 #    "uid OK",
