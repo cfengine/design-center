@@ -21,6 +21,7 @@ linux
 User Definition API
 "users[username][option] string => "value";
 Options
+
 * gecos - required
 * uid - required
 * home - required
