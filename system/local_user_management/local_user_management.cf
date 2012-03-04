@@ -13,9 +13,9 @@ bundle agent local_user_management_add_users_fileedit (users) {
 #       "users[testuser][passwdhash]"     string => "$1$cCMJbSmS$/tQtxSsLZmYq3/zp1Vm/l0";
 #       # Optional settings
 #       "users[testuser][groupname]       string => "mygroupname";
-#       "users[testuser][_gid_non_unique] string => "anythinggoeshere";
+#       "users[testuser][_allow_dup_gid] string => "anythinggoeshere";
 #       If groupname is set a named group will be created with the specified gid
-#       by default we wont create a named group with a non_unique gid, setting _gid_non_unique
+#       by default we wont create a named group with a non_unique gid, setting _allow_dup_gid
 #       enables this behavior.
 # Note:
 # This bundle does not handle creating groups, if you assign a gid of a non-existant group
@@ -82,10 +82,10 @@ bundle agent local_user_management_add_users_fileedit (users) {
             comment    => "This is optional, if the groupname is defined
                            we will create a named group with the defined gid.
                            Non-unique gid is allowed with the use of the
-                           _gid_non_unique_defined flag";
+                           _allow_dup_gid_defined flag";
 
         "allow_non_unique_gid_$(userlist)"
-            expression => isvariable("$(users)[$(userlist)][_gid_non_unique]"),
+            expression => isvariable("$(users)[$(userlist)][_allow_dup_gid]"),
             comment    => "This is optional, the value does not matter
                            if its defined at all we allow the creation of
                            a named group with a duplicate uid";
