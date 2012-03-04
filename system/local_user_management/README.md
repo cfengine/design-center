@@ -18,6 +18,21 @@ linux
 
 ## SAMPLE USAGE
 ### local_user_management_add_users_fileedit
+User Definition API
+"users[username][option] string => "value";
+Options
+* gecos - required
+* uid - required
+* home - required
+* shell - required
+* passwdhash - optional
+* groupname - optional, named group creation if does not exist, will not allow
+  duplicate gids without _allow_dup_gid option.
+* _allow_dup_gid - optional, enable creation of named group with non-unique gid
+* _enforce - optional, completely enforce users passwd and shadow entries 
+* _nocreate_home - optional, do not create home directory
+* _noseed - optional, do not seed home directory
+
 Note on password hashes:
 this perl oneliner should generate valid hashed passwords, replace MYPASSWORD
 with your password. Be sure your system supports whatever encryption method
