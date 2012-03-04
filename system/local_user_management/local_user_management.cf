@@ -31,6 +31,7 @@ bundle agent local_user_management_add_users_fileedit (users) {
             "groupfile"                 string => "/etc/group";
             "userlist"                  slist  => getindices("$(users)");
             "pwentry[$(userlist)]"      string => "$(userlist):x:$($(users)[$(userlist)][uid]):$($(users)[$(userlist)][gid]):$($(users)[$(userlist)][gecos]):$($(users)[$(userlist)][home]):$($(users)[$(userlist)][shell])";
+            "groupentry[$(userlist)]"   string => "$($(users)[$(userlist)][groupname]):x:$($(users)[$(userlist)][gid]):";
 
             "days_since_epoch"
                 string => execresult("/usr/bin/perl -le 'print int time/(60*60*24)'", "noshell"),
@@ -44,55 +45,50 @@ bundle agent local_user_management_add_users_fileedit (users) {
 
     classes:
     # Check if different variables are defined
-        "gecos_defined"
-            expression => isvariable("$($(users)[$(userlist)][gecos])"),
+        "gecos_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][gecos]"),
             comment    => "I consider gecos a required field, check if its defined";
 
-        "uid_defined"
-            expression => isvariable("$($(users)[$(userlist)][uid])"),
+        "uid_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][uid]"),
             comment    => "Since I don't yet do automatic next uid selection
                            uid is a required field, check if its defined";
 
-        "gid_defined"
-            expression => isvariable("$($(users)[$(userlist)][gid])"),
+        "gid_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][gid]"),
             comment    => "Since I dont yet do automatic next gid selection
                            gid is a required field, check if its defined";
 
-        "shell_defined"
-            expression => isvariable("$($(users)[$(userlist)][shell])"),
+        "shell_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][shell]"),
             comment    => "I really think its a good idea to set the shell
                            to something, check if its defined";
 
-        "home_defined"
-            expression => isvariable("$($(users)[$(userlist)][home])"),
+        "home_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][home]"),
             comment => "Users really should have a home directoy defined,
                         check if it is defined";
 
-        "passwdhash_defined"
-            expression => isvariable("$($(users)[$(userlist)][passwdhash])"),
+        "passwdhash_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][passwdhash]"),
             comment    => "Without a password set the user wont be able to log in,
                            this is easily debateable to not be a required field";
 
-        "groupname_defined"
-            expression => isvariable("$($(users)[$(userlist)][groupname])"),
+        "groupname_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][groupname]"),
             comment    => "This is optional, if the groupname is defined
                            we will create a named group with the defined gid.
                            Non-unique gid is allowed with the use of the
                            _gid_non_unique_defined flag";
 
-        "_gid_non_unique_defined"
-            expression => isvariable("$($(users)[$(userlist)][_gid_non_unique_defined])"),
+        "allow_non_unique_gid_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_gid_non_unique]"),
             comment    => "This is optional, the value does not matter
                            if its defined at all we allow the creation of
                            a named group with a duplicate uid";
 
-        "required_elements_defined"
-            and => { "gecos_defined",
-                     "uid_defined",
-                     "gid_defined",
-                     "shell_defined",
-                     "home_defined",
-                     "passwdhash_defined",
+        "required_elements_defined_$(userlist)"
+            and => { "gecos_defined_$(userlist)",
                    },
             comment => "These are required to create a user";
 
@@ -103,18 +99,38 @@ bundle agent local_user_management_add_users_fileedit (users) {
 
         # I need to think on this more, if we blindly insert of groupname does not exist it can
         # lead to multiple groupnames with the same gid
-        groupname_defined::
+        #groupname_defined::
+        any::
             "local_user_management_add_users_fileedit_add_$($(users)[$(userlist)][groupname])",
                 not     => groupexists("$($(users)[$(userlist)][groupname])"),
+                ifvarclass => "groupname_defined_$(userlist)",
                 comment => "Trigger a class so we know we should see about creating a user";
 
             # we only need to know if the gid is in use if the optional named group was defined
             # Also we only really need to know if the gid is in use if we care about not creating
             # multiple named groups with the same gid.
-            "gid_in_use"
-                expression => regline(".*\:.*\:$(gid)\:.*$", "/etc/group"),
+            "gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])"
+                expression => regline(".*\:.*\:$($(users)[$(userlist)][gid])\:.*$", "/etc/group"),
+                #ifvarclass => "allow_non_unique_gid_$(userlist)|groupname_defined_$(userlist)",
+                ifvarclass => "groupname_defined_$(userlist)",
                 comment => "If we are going to add a named group, we should see if the gid
                             is already in use";
+
+            "gid_not_in_use_$(userlist)_$($(users)[$(userlist)][gid])"
+                not => "gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])";
+
+
+            "create_group_and_allow_non_unique_$(userlist)"
+                and     => {"groupname_defined_$(userlist)", "allow_non_unique_gid_$(userlist)"},
+                comment => "Crete a class when we would like to create a user,
+                            and when we dont care about having unique gids";
+
+            "create_group_and_not_conflicting_gid_$(userlist)"
+                and => {"groupname_defined_$(userlist)", "!gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])"};
+
+            "attempt_group_creation_$(userlist)"
+                or => {"create_group_and_allow_non_unique_$(userlist)", "create_group_and_not_conflicting_gid_$(userlist)"};
+
     files:
         linux::
             "$(pwfile)"
@@ -142,8 +158,60 @@ bundle agent local_user_management_add_users_fileedit (users) {
                 comment         => "Seed home directory with skell, but only when we create the home
                                     directory the user should have the choice to remove the seeded files";
 
-    reports:
-        !required_elements_defined::
-            "Not all required elements defined for $(userlist)";
+        # if groupname defined and allow non unique or
+        # if groupname defined and there is no gid conflict
+        #linux.((groupname_defined.allow_non_unique_gid)|groupname_defined.!gid_in_use)::
+            "/etc/group"
+                create    => "true",
+                edit_line => append_if_no_line("$(groupentry[$(userlist)])"),
+                ifvarclass => "attempt_group_creation_$(userlist)";
 
+    reports:
+    cfengine::
+
+    "groupname_defined",
+        ifvarclass => "groupname_defined_$(userlist)";
+
+    "allow_non_unique_gid",
+        ifvarclass => "allow_non_unique_gid_$(userlist)";
+
+    "gid in use",
+        ifvarclass => "gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])";
+
+    "gid not in use",
+        ifvarclass => "gid_not_in_use_$(userlist)_$($(users)[$(userlist)][gid])";
+
+    "create group and allow non unique for $(userlist)",
+        ifvarclass => "create_group_and_allow_non_unique_$(userlist)";
+
+#    "gecos OK",
+#        ifvarclass => "gecos_defined_$(userlist)";
+#    "uid OK",
+#        ifvarclass => "uid_defined_$(userlist)";
+#    "gid OK",
+#        ifvarclass => "gid_defined_$(userlist)";
+#    "home OK",
+#        ifvarclass => "home_defined_$(userlist)";
+#    "shell OK",
+#        ifvarclass => "shell_defined_$(userlist)";
+#    "passwdhash OK",
+#        ifvarclass => "passwdhash_defined_$(userlist)";
+#
+#    "groupname defined",
+#        ifvarclass => "groupname_defined_$(userlist)";
+#
+#    "gid IN USE",
+#        ifvarclass => "gid_in_use_$(userlist)_$(gid)";
+#
+#    "Non unique allowed and groupname defined",
+#        ifvarclass => "allow_non_unique_gid_$(userlist).groupname_defined_$(userlist)";
+#
+#    "ALL REQUIRED ELEMENTS DEFINED FOR $(userlist)",
+#        ifvarclass => "required_elements_defined_$(userlist)";
+
+
+#        gecos_defined::
+#            "gecos is defined";
+#        groupname_defined::
+#            "groupname_defined";
 }
