@@ -46,7 +46,7 @@ body common control {
 
     inputs          => {
                         "cfengine_stdlib.cf",
-                        "/home/cmdln/src/github/nickanderson-design-center/system/local_user_management/local_user_management.cf",
+                        "sketches/local_user_management/local_user_management.cf",
                         };
 }
 
