@@ -96,6 +96,11 @@ bundle agent local_user_management_add_users_fileedit (users) {
             comment    => "Set class if the noseed option is set so that we
                            know not to seed the users home directory";
 
+        "_nocreate_home_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)[_nocreate_home]"),
+            comment    => "Set class if we do not want the users home directory
+                           created";
+
         "required_elements_defined_$(userlist)"
             and => { "gecos_defined_$(userlist)",
                    },
@@ -170,7 +175,7 @@ bundle agent local_user_management_add_users_fileedit (users) {
                 create      => "true",
                 perms       => mog("755", "$($(users)[$(userlist)][uid])", "$($(users)[$(userlist)][gid])"),
                 classes     => if_repaired("local_user_management_add_users_fileedit_seed_$(userlist)"),
-                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
+                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist).!_nocreate_home_$(userlist)",
                 comment     => "Make sure users home directory exists";
 
             # If we created the users home directy seed it from the typical skel location
