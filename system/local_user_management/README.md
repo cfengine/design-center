@@ -6,11 +6,11 @@ Nick Anderson <nick@cmdln.org>
 linux
 
 ## DESCRIPTION
-* local_user_management_add_users_fileedit takes care of initalizing new users then it
-  leaves them alone. Tries to stick with edit_line based functionality instead
-  of calling out to system tools. In addition to adding new users, there is a
-  convienance option to add a named group if it does not exist. Also includes a
-  feature to enforce users passwd and shadow entries as defined.
+* local_user_management_add_users_fileedit takes care of initalizing new users then 
+  can optionally enforce users passwd and shadow entries as defined. Tries to stick
+  with edit_line based functionality instead of calling out to system tools. 
+  In addition to adding new users, there is a convienance option to add a named 
+  group if one is defined and it does not exist.
 
 ## REQUIREMENTS
 * local_user_management_add_users_fileedit
