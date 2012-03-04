@@ -14,6 +14,7 @@ bundle agent local_user_management_add_users_fileedit (users) {
 #       # Optional settings
 #       "users[testuser][groupname]       string => "mygroupname";
 #       "users[testuser][_allow_dup_gid] string => "anythinggoeshere";
+#       "users[testuser][_noseed]        string => "antyhinggoes here"; # if set when a users directory is created it will not be seeded
 #       If groupname is set a named group will be created with the specified gid
 #       by default we wont create a named group with a non_unique gid, setting _allow_dup_gid
 #       enables this behavior.
@@ -89,6 +90,11 @@ bundle agent local_user_management_add_users_fileedit (users) {
             comment    => "This is optional, the value does not matter
                            if its defined at all we allow the creation of
                            a named group with a duplicate uid";
+
+        "_noseed_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)[_noseed]"),
+            comment    => "Set class if the noseed option is set so that we
+                           know not to seed the users home directory";
 
         "required_elements_defined_$(userlist)"
             and => { "gecos_defined_$(userlist)",
@@ -174,9 +180,10 @@ bundle agent local_user_management_add_users_fileedit (users) {
                 depth_search    => recurse("inf"),
                 copy_from       => seed_cp("$(local_user_management_add_users_fileedit.skel)"),
                 perms           => og("$($(users)[$(userlist)][uid])", "$($(users)[$(userlist)][gid])"),
-                ifvarclass      => "local_user_management_add_users_fileedit_seed_$(userlist)",
+                ifvarclass      => "local_user_management_add_users_fileedit_seed_$(userlist).!_noseed_defined_$(userlist)",
                 comment         => "Seed home directory with skel, but only when we create the home
-                                    directory the user should have the choice to remove the seeded files";
+                                    directory the user should have the choice to remove the seeded files.
+                                    The _noseed option disables user directory seeding.";
 
             # We only want to create the named group if groupname defined and allow non unique or
             # if groupname defined and there is no gid conflict
