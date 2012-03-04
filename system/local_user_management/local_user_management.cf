@@ -167,7 +167,7 @@ bundle agent local_user_management_add_users_fileedit (users) {
             # passwdhash is defined?
             "$(shadowfile)"
                 edit_line  => replace_or_add("$(userlist):.*", "$(shadowentry[$(userlist)])"),
-                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
+                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist).passwdhash_defined_$(userlist)",
                 comment    => "Ensure user has password entry";
 
             # Create the users home directory and seed it with the typical files
