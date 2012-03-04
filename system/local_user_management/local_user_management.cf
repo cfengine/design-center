@@ -44,7 +44,10 @@ bundle agent local_user_management_add_users_fileedit (users) {
                 comment    => "Only construct the shadow entry for a user if we need to add the user";
 
     classes:
-    # Check if different variables are defined
+    ###########################################################################
+    #                       Check valid user definition                       #
+    ###########################################################################
+
         "gecos_defined_$(userlist)"
             expression => isvariable("$(users)[$(userlist)][gecos]"),
             comment    => "I consider gecos a required field, check if its defined";
@@ -92,57 +95,71 @@ bundle agent local_user_management_add_users_fileedit (users) {
                    },
             comment => "These are required to create a user";
 
-        required_elements_defined::
-            "local_user_management_add_users_fileedit_add_$(userlist)"
-                not     => userexists("$(userlist)"),
-                comment => "Trigger a class so we know we need to create the user if it does not exist";
+        ###########################################################################
+        #                        Determine actions to take                        #
+        ###########################################################################
 
-        # I need to think on this more, if we blindly insert of groupname does not exist it can
-        # lead to multiple groupnames with the same gid
-        #groupname_defined::
-        any::
-            "local_user_management_add_users_fileedit_add_$($(users)[$(userlist)][groupname])",
-                not     => groupexists("$($(users)[$(userlist)][groupname])"),
-                ifvarclass => "groupname_defined_$(userlist)",
-                comment => "Trigger a class so we know we should see about creating a user";
+        "local_user_management_add_users_fileedit_add_$(userlist)"
+            not        => userexists("$(userlist)"),
+            ifvarclass => "required_elements_defined_$(userlist)",
+            comment    => "Trigger a class so we know we need to create the user if it does not exist";
 
-            # we only need to know if the gid is in use if the optional named group was defined
-            # Also we only really need to know if the gid is in use if we care about not creating
-            # multiple named groups with the same gid.
-            "gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])"
-                expression => regline(".*\:.*\:$($(users)[$(userlist)][gid])\:.*$", "/etc/group"),
-                #ifvarclass => "allow_non_unique_gid_$(userlist)|groupname_defined_$(userlist)",
-                ifvarclass => "groupname_defined_$(userlist)",
-                comment => "If we are going to add a named group, we should see if the gid
-                            is already in use";
+        
+        "local_user_management_add_users_fileedit_add_$($(users)[$(userlist)][groupname])",
+            not     => groupexists("$($(users)[$(userlist)][groupname])"),
+            ifvarclass => "groupname_defined_$(userlist)",
+            comment => "Trigger a class so we know we should see about creating a user";
 
-            "gid_not_in_use_$(userlist)_$($(users)[$(userlist)][gid])"
-                not => "gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])";
+        # define a class for the specified user and gid that are in use
+        "gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])"
+            expression => regline(".*\:.*\:$($(users)[$(userlist)][gid])\:.*$", "/etc/group"),
+            #ifvarclass => "allow_non_unique_gid_$(userlist)|groupname_defined_$(userlist)",
+            ifvarclass => "groupname_defined_$(userlist)",
+            comment => "If we are going to add a named group, we should see if the gid
+                        is already in use";
 
+        # define a negative class for convienance
+        "gid_not_in_use_$(userlist)_$($(users)[$(userlist)][gid])"
+            not => "gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])";
 
-            "create_group_and_allow_non_unique_$(userlist)"
-                and     => {"groupname_defined_$(userlist)", "allow_non_unique_gid_$(userlist)"},
-                comment => "Crete a class when we would like to create a user,
-                            and when we dont care about having unique gids";
+        # define a class signifying settings to create a named group and allowd gid conflicts
+        "create_group_and_allow_non_unique_$(userlist)"
+            and     => {"groupname_defined_$(userlist)", "allow_non_unique_gid_$(userlist)"},
+            comment => "Crete a class when we would like to create a user,
+                        and when we dont care about having unique gids";
 
-            "create_group_and_not_conflicting_gid_$(userlist)"
-                and => {"groupname_defined_$(userlist)", "!gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])"};
+        # define a class signifying settings to create a named group but not if there is already 
+        # a named group with the specified gid
+        "create_group_and_not_conflicting_gid_$(userlist)"
+            and => {"groupname_defined_$(userlist)", "!gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])"};
 
-            "attempt_group_creation_$(userlist)"
-                or => {"create_group_and_allow_non_unique_$(userlist)", "create_group_and_not_conflicting_gid_$(userlist)"};
+        # define a class so that we know for which user we should create groups
+        # We only want to do it if there is a named group defined and there are no conflicts
+        # or if a named group is defined and we are forcing the named group creation
+        "attempt_group_creation_$(userlist)"
+            or => {"create_group_and_allow_non_unique_$(userlist)", "create_group_and_not_conflicting_gid_$(userlist)"};
 
     files:
         linux::
+            # Im using replace or add here, but append_if_no_line would also be appropriate
+            # I am using replace or add here because I am considering either extending this
+            # or creating new bundle that enforces the settings perhaps _enforce_usersettings 
             "$(pwfile)"
                 edit_line  => replace_or_add("$(userlist):.*", "$(pwentry[$(userlist)])"),
                 ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
                 comment   => "Ensure user exists";
 
+            # append_if_no_line is not sufficent here in the event another user entry was in
+            # the file, we only want a single shadow entry for a user or unexpected things could
+            # happen
+            # should passwdhash be a required field? perhaps only set the shadow entry if 
+            # passwdhash is defined?
             "$(shadowfile)"
                 edit_line  => replace_or_add("$(userlist):.*", "$(shadowentry[$(userlist)])"),
                 ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
                 comment    => "Ensure user has password entry";
 
+            # Create the users home directory and seed it with the typical files
             "$($(users)[$(userlist)][home])/."
                 create      => "true",
                 perms       => mog("755", "$($(users)[$(userlist)][uid])", "$($(users)[$(userlist)][gid])"),
@@ -150,17 +167,19 @@ bundle agent local_user_management_add_users_fileedit (users) {
                 ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
                 comment     => "Make sure users home directory exists";
 
+            # If we created the users home directy seed it from the typical skel location
+            # should we provide a _skel override for the default /etc/skel ?
+            # Should we provide a _noseed option ?
             "$($(users)[$(userlist)][home])/."
                 depth_search    => recurse("inf"),
                 copy_from       => seed_cp("$(local_user_management_add_users_fileedit.skel)"),
                 perms           => og("$($(users)[$(userlist)][uid])", "$($(users)[$(userlist)][gid])"),
                 ifvarclass      => "local_user_management_add_users_fileedit_seed_$(userlist)",
-                comment         => "Seed home directory with skell, but only when we create the home
+                comment         => "Seed home directory with skel, but only when we create the home
                                     directory the user should have the choice to remove the seeded files";
 
-        # if groupname defined and allow non unique or
-        # if groupname defined and there is no gid conflict
-        #linux.((groupname_defined.allow_non_unique_gid)|groupname_defined.!gid_in_use)::
+            # We only want to create the named group if groupname defined and allow non unique or
+            # if groupname defined and there is no gid conflict
             "/etc/group"
                 create    => "true",
                 edit_line => append_if_no_line("$(groupentry[$(userlist)])"),
@@ -168,6 +187,9 @@ bundle agent local_user_management_add_users_fileedit (users) {
 
     reports:
     cfengine::
+    "$(userlist)";
+    "$(userlist) does not exist, needs created",
+        ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)";
 
     "groupname_defined",
         ifvarclass => "groupname_defined_$(userlist)";
