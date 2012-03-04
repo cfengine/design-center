@@ -103,6 +103,9 @@ bundle agent local_user_management_add_users_fileedit (users) {
 
         "required_elements_defined_$(userlist)"
             and => { "gecos_defined_$(userlist)",
+                     "uid_defined_$(userlist)",
+                     "gid_defined_$(userlist)",
+                     "shell_defined_$(userlist)",
                    },
             comment => "These are required to create a user";
 
