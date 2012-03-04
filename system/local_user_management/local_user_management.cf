@@ -101,6 +101,11 @@ bundle agent local_user_management_add_users_fileedit (users) {
             comment    => "Set class if we do not want the users home directory
                            created";
 
+        "_enforce_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)[_enforce]"),
+            comment    => "Set class if we want to enforce the user settings";
+
+
         "required_elements_defined_$(userlist)"
             and => { "gecos_defined_$(userlist)",
                      "uid_defined_$(userlist)",
@@ -114,11 +119,16 @@ bundle agent local_user_management_add_users_fileedit (users) {
         ###########################################################################
 
         "local_user_management_add_users_fileedit_add_$(userlist)"
+            expression => "_enforce_$(userlist)",
+            ifvarclass => "required_elements_defined_$(userlist)",
+            comment    => "Trigger a class so we know we need to create the user if it does not exist";
+
+         "local_user_management_add_users_fileedit_add_$(userlist)"
             not        => userexists("$(userlist)"),
             ifvarclass => "required_elements_defined_$(userlist)",
             comment    => "Trigger a class so we know we need to create the user if it does not exist";
 
-        
+       
         "local_user_management_add_users_fileedit_add_$($(users)[$(userlist)][groupname])",
             not     => groupexists("$($(users)[$(userlist)][groupname])"),
             ifvarclass => "groupname_defined_$(userlist)",
@@ -157,7 +167,7 @@ bundle agent local_user_management_add_users_fileedit (users) {
         linux::
             # Im using replace or add here, but append_if_no_line would also be appropriate
             # I am using replace or add here because I am considering either extending this
-            # or creating new bundle that enforces the settings perhaps _enforce_usersettings 
+            # or creating new bundle that enforces the settings perhaps _force_usersettings 
             "$(pwfile)"
                 edit_line  => replace_or_add("$(userlist):.*", "$(pwentry[$(userlist)])"),
                 ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
