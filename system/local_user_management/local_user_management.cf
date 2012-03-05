@@ -377,8 +377,7 @@ bundle agent local_user_management_add_users_fileedit (users) {
 
         # define a class for the specified user and gid that are in use
         "gid_in_use_$(userlist)_$($(users)[$(userlist)][gid])"
-            expression => regline(".*\:.*\:$($(users)[$(userlist)][gid])\:.*$", "/etc/group"),
-            #ifvarclass => "allow_non_unique_gid_$(userlist)|groupname_defined_$(userlist)",
+            expression => groupexists("$($(users)[$(userlist)][gid])"),
             ifvarclass => "groupname_defined_$(userlist)",
             comment => "If we are going to add a named group, we should see if the gid
                         is already in use";
