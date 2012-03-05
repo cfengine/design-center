@@ -84,14 +84,14 @@ bundle agent etc_hosts_manage_all_entries(config) {
             comment => "It's nice to let people know why the file keep magically reverting on them";
 
         !windows::
-        "hosts"
-            string => "/etc/hosts",
-            comment => "Path to the systems hosts file";
+            "hosts"
+                string => "/etc/hosts",
+                comment => "Path to the systems hosts file";
 
         windows::
-        "hosts"
-	    "$(sys.winsysdir)\drivers\etc\hosts",
-            comment => "Path to the systems hosts file";
+            "hosts"
+                string  => "$(sys.winsysdir)\drivers\etc\hosts",
+                comment => "Path to the systems hosts file";
 
     files:
         "$(hosts)"
