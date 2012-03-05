@@ -33,50 +33,135 @@ bundle agent local_user_management_add_users_fileedit (users) {
             "userlist"                  slist  => getindices("$(users)");
             "pwentry[$(userlist)]"      string => "$(userlist):x:$($(users)[$(userlist)][uid]):$($(users)[$(userlist)][gid]):$($(users)[$(userlist)][gecos]):$($(users)[$(userlist)][home]):$($(users)[$(userlist)][shell])";
             "groupentry[$(userlist)]"   string => "$($(users)[$(userlist)][groupname]):x:$($(users)[$(userlist)][gid]):";
+            "escaped_pwhash[$(userlist)]" string => escape("$($(users)[$(userlist)][passwdhash])");
+            "escaped_uid[$(userlist)]"  string => escape("$($(users)[$(userlist)][uid])");
+            "escaped_gid[$(userlist)]"  string => escape("$($(users)[$(userlist)][gid])");
+            "escaped_home[$(userlist)]"  string => escape("$($(users)[$(userlist)][home])");
+            "escaped_shell[$(userlist)]"  string => escape("$($(users)[$(userlist)][shell])");
+            "escaped_passwdhash[$(userlist)]"  string => escape("$($(users)[$(userlist)][passwdhash])");
+            "escaped_min_pass_age[$(userlist)]"  string => escape("$($(users)[$(userlist)][gecos])");
+            "escaped_max_pass_age[$(userlist)]"  string => escape("$($(users)[$(userlist)][max_pass_age])");
+            "escaped_pass_warn_days[$(userlist)]"  string => escape("$($(users)[$(userlist)][pass_warn_days])");
+            "escaped_pass_inact_days[$(userlist)]"  string => escape("$($(users)[$(userlist)][pass_inact_days])");
+            "escaped_account_expiration[$(userlist)]"  string => escape("$($(users)[$(userlist)][account_expiration])");
 
             "days_since_epoch"
                 string => execresult("/usr/bin/perl -le 'print int time/(60*60*24)'", "noshell"),
-                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
+                #ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
+                #ifvarclass => "add_shadow_for_$(userlist)|fix_shadow_for_$(userlist)",
                 comment     => "Only calculate if we need to add a user, otherwise its just wasteful";
 
             "shadowentry[$(userlist)]"
                 string => "$(userlist):$($(users)[$(userlist)][passwdhash]):$(days_since_epoch):0:99999:7:::",
-                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
-                comment    => "Only construct the shadow entry for a user if we need to add the user";
+                #ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
+                #ifvarclass => "add_shadow_for_$(userlist)|fix_shadow_for_$(userlist)",
+                ifvarclass => "passwdhash_defined_$(userlist)",
+                comment    => "Only construct the shadow entry if we are editing the shadow file";
 
     classes:
     ###########################################################################
-    #                       Check valid user definition                       #
+    #                             Check Settings                              #
     ###########################################################################
-
+    
         "gecos_defined_$(userlist)"
             expression => isvariable("$(users)[$(userlist)][gecos]"),
             comment    => "I consider gecos a required field, check if its defined";
+
+         "_enforce_gecos_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_enforce_gecos]"),
+            comment    => "Define a class if we are enforcing gecos";
 
         "uid_defined_$(userlist)"
             expression => isvariable("$(users)[$(userlist)][uid]"),
             comment    => "Since I don't yet do automatic next uid selection
                            uid is a required field, check if its defined";
 
+        "_enforce_uid_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_enforce_uid]"),
+            comment    => "Define a class if we are enforcing uid";
+
         "gid_defined_$(userlist)"
             expression => isvariable("$(users)[$(userlist)][gid]"),
             comment    => "Since I dont yet do automatic next gid selection
                            gid is a required field, check if its defined";
+
+        "_enforce_gid_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_enforce_gid]"),
+            comment    => "Define a class if we are enforcing gid";
 
         "shell_defined_$(userlist)"
             expression => isvariable("$(users)[$(userlist)][shell]"),
             comment    => "I really think its a good idea to set the shell
                            to something, check if its defined";
 
+        "_enforce_shell_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_enforce_shell]"),
+            comment    => "Define a class if we are enforcing shell";
+
         "home_defined_$(userlist)"
             expression => isvariable("$(users)[$(userlist)][home]"),
             comment => "Users really should have a home directoy defined,
                         check if it is defined";
 
+        "_enforce_home_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_enforce_home]"),
+            comment => "Define a class if we are enforcing home directory";
+
         "passwdhash_defined_$(userlist)"
             expression => isvariable("$(users)[$(userlist)][passwdhash]"),
             comment    => "Without a password set the user wont be able to log in,
                            this is easily debateable to not be a required field";
+
+        "_enforce_passwdhash_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_enforce_passwdhash]"),
+            comment => "Define a class if we are enforcing the password";
+
+        "min_pass_age_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][min_pass_age]"),
+            comment    => "Without a password set the user wont be able to log in,
+                           this is easily debateable to not be a required field";
+
+        "_enforce_min_pass_age_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_enforce_min_pass_age]"),
+            comment => "Define a class if we are enforcing the password";
+
+        "max_pass_age_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][max_pass_age]"),
+            comment    => "Without a password set the user wont be able to log in,
+                           this is easily debateable to not be a required field";
+
+        "_enforce_max_pass_age_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_enforce_max_pass_age]"),
+            comment => "Define a class if we are enforcing the password";
+
+        "pass_warn_days_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][pass_warn_days]"),
+            comment    => "Without a password set the user wont be able to log in,
+                           this is easily debateable to not be a required field";
+
+        "_enforce_pass_warn_days_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_enforce_pass_warn_days]"),
+            comment => "Define a class if we are enforcing the password";
+
+        "pass_inact_days_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][pass_inact_days]"),
+            comment    => "Without a password set the user wont be able to log in,
+                           this is easily debateable to not be a required field";
+
+        "_enforce_pass_inact_days_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_enforce_pass_inact_days]"),
+            comment => "Define a class if we are enforcing the password";
+
+        "account_expiration_defined_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][account_expiration]"),
+            comment    => "Without a password set the user wont be able to log in,
+                           this is easily debateable to not be a required field";
+
+        "_enforce_account_expiration_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)][_enforce_account_expiration]"),
+            comment => "Define a class if we are enforcing the password";
+
+
 
         "groupname_defined_$(userlist)"
             expression => isvariable("$(users)[$(userlist)][groupname]"),
@@ -101,10 +186,22 @@ bundle agent local_user_management_add_users_fileedit (users) {
             comment    => "Set class if we do not want the users home directory
                            created";
 
+    ###########################################################################
+    #                              Flow Control                               #
+    ###########################################################################
+
+
+        "shadow_entry_$(userlist)"
+            expression => isvariable("shadowentry[$(userlist)]");
+
         "_enforce_$(userlist)"
             expression => isvariable("$(users)[$(userlist)[_enforce]"),
             comment    => "Set class if we want to enforce the user settings";
 
+
+        "_userdel_$(userlist)"
+            expression => isvariable("$(users)[$(userlist)[_userdel]"),
+            comment    => "Set class if we want to remove the users passwd and shadow entries";
 
         "required_elements_defined_$(userlist)"
             and => { "gecos_defined_$(userlist)",
@@ -115,20 +212,164 @@ bundle agent local_user_management_add_users_fileedit (users) {
             comment => "These are required to create a user";
 
         ###########################################################################
-        #                        Determine actions to take                        #
+        #                        get current state                                #
         ###########################################################################
+        "user_exists_$(userlist)"
+            expression => userexists("$(userlist)"),
+            comment    => "Define a class if the user exists";
+        
+        # For convienance
+        "not_user_exists_$(userlist)"
+            expression => "!user_exists_$(userlist)",
+            comment    => "Define a class if the user doesn't exist";
 
-        "local_user_management_add_users_fileedit_add_$(userlist)"
-            expression => "_enforce_$(userlist)",
-            ifvarclass => "required_elements_defined_$(userlist)",
-            comment    => "Trigger a class so we know we need to create the user if it does not exist";
+        ###########
+        #  gecos  #
+        ###########
+        
+        "gecos_matches_$(userlist)"
+            ifvarclass => "gecos_defined_$(userlist).user_exists_$(userlist)._enforce_gecos_$(userlist)",
+            expression => regline("$(userlist)\:.*\:.*\:.*\:$(escaped_gecos[$(userlist)])\:.*", "/etc/passwd"),
+            comment    => "If we are enforcing gecos determine if it matches the defined value";
 
+        "fix_gecos_$(userlist)"
+            expression => "!gecos_matches_$(userlist).gecos_defined_$(userlist).user_exists_$(userlist)._enforce_gecos_$(userlist)",
+            comment    => "Define a class when we are enforcing gecos and when it did not match the expected value";
+            
+        #########
+        #  uid  #
+        #########
+
+        "uid_matches_$(userlist)"
+            ifvarclass => "uid_defined_$(userlist).user_exists_$(userlist)._enforce_uid_$(userlist)",
+            expression => regline("$(userlist)\:.*\:$(escaped_uid[$(userlist)])\:.*", "/etc/passwd"),
+            comment    => "If we are enforcing uid determine if it matches the defined value";
+
+        "fix_uid_$(userlist)"
+            expression => "!uid_matches_$(userlist).uid_defined_$(userlist).user_exists_$(userlist)._enforce_uid_$(userlist)",
+            comment    => "Define a class when we are enforcing uid and when it did not match the expected value";
+ 
+        #########
+        #  gid  #
+        #########
+
+        "gid_matches_$(userlist)"
+            ifvarclass => "gid_defined_$(userlist).user_exists_$(userlist)._enforce_gid_$(userlist)",
+            expression => regline("$(userlist)\:.*\:.*\:$(escaped_gid[$(userlist)])\:.*", "/etc/passwd"),
+            comment    => "If we are enforcing gid determine if it matches the defined value";
+
+        "fix_gid_$(userlist)"
+            expression => "!gid_matches_$(userlist).gid_defined_$(userlist).user_exists_$(userlist)._enforce_gid_$(userlist)",
+            comment    => "Define a class when we are enforcing gid and when it did not match the expected value";
+ 
+        ###########
+        #  shell  #
+        ###########
+
+        "shell_matches_$(userlist)"
+            ifvarclass => "shell_defined_$(userlist).user_exists_$(userlist)._enforce_shell_$(userlist)",
+            expression => regline("$(userlist)\:.*\:.*\:.*\:.*\:.*\:$(escaped_shell[$(userlist)])", "/etc/passwd"),
+            comment    => "If we are enforcing shell determine if it matches the defined value";
+
+        "fix_shell_$(userlist)"
+            expression => "!shell_matches_$(userlist).shell_defined_$(userlist).user_exists_$(userlist)._enforce_shell_$(userlist)",
+            comment    => "Define a class when we are enforcing shell and when it did not match the expected value";
+
+        ##########
+        #  home  #
+        ##########
+
+        "home_matches_$(userlist)"
+            ifvarclass => "home_defined_$(userlist).user_exists_$(userlist)._enforce_home_$(userlist)",
+            expression => regline("$(userlist)\:.*\:.*\:.*\:.*\:$(escaped_home[$(userlist)])\:.*", "/etc/passwd"),
+            comment    => "If we are enforcing home determine if it matches the defined value";
+
+        "fix_home_$(userlist)"
+            expression => "!home_matches_$(userlist).home_defined_$(userlist).user_exists_$(userlist)._enforce_home_$(userlist)",
+            comment    => "Define a class when we are enforcing home and when it did not match the expected value";
+
+        ################
+        #  passwdhash  #
+        ################
+
+        "passwdhash_matches_$(userlist)"
+            ifvarclass => "passwdhash_defined_$(userlist).user_exists_$(userlist)._enforce_passwdhash_$(userlist)",
+            expression => regline("$(userlist)\:$(escaped_pwhash[$(userlist)])\:.*", "/etc/shadow"),
+            comment    => "If we are enforcing passwdhash determine if it matches the defined value";
+
+        "fix_passwdhash_$(userlist)"
+            expression => "!passwdhash_matches_$(userlist).passwdhash_defined_$(userlist).user_exists_$(userlist)._enforce_passwdhash_$(userlist)",
+            comment    => "Define a class when we are enforcing passwdhash and when it did not match the expected value";
+
+        ##################
+        #  min_pass_age  #
+        ##################
+        "min_pass_age_matches_$(userlist)"
+            ifvarclass => "min_pass_age_defined_$(userlist).user_exists_$(userlist)._enforce_min_pass_age_$(userlist)",
+            expression => regline("$(userlist)\:.*\:.*\:$(escaped_pwhash[$(userlist)])\:.*", "/etc/shadow"),
+            comment    => "If we are enforcing min_pass_age determine if it matches the defined value";
+
+        "fix_min_pass_age_$(userlist)"
+            expression => "!min_pass_age_matches_$(userlist).min_pass_age_defined_$(userlist).user_exists_$(userlist)._enforce_min_pass_age_$(userlist)",
+            comment    => "Define a class when we are enforcing min_pass_age and when it did not match the expected value";
+
+        ##################
+        #  max_pass_age  #
+        ##################
+        "max_pass_age_matches_$(userlist)"
+            ifvarclass => "max_pass_age_defined_$(userlist).user_exists_$(userlist)._enforce_max_pass_age_$(userlist)",
+            expression => regline("$(userlist)\:.*\:.*\:.*\:$(escaped_pwhash[$(userlist)])\:.*", "/etc/shadow"),
+            comment    => "If we are enforcing max_pass_age determine if it matches the defined value";
+
+        "fix_max_pass_age_$(userlist)"
+            expression => "!max_pass_age_matches_$(userlist).max_pass_age_defined_$(userlist).user_exists_$(userlist)._enforce_max_pass_age_$(userlist)",
+            comment    => "Define a class when we are enforcing max_pass_age and when it did not match the expected value";
+
+        ####################
+        #  pass_warn_days  #
+        ####################
+        "pass_warn_days_matches_$(userlist)"
+            ifvarclass => "pass_warn_days_defined_$(userlist).user_exists_$(userlist)._enforce_pass_warn_days_$(userlist)",
+            expression => regline("$(userlist)\:.*\:.*\:.*\:.*\:$(escaped_pwhash[$(userlist)])\:.*", "/etc/shadow"),
+            comment    => "If we are enforcing pass_warn_days determine if it matches the defined value";
+
+        "fix_pass_warn_days_$(userlist)"
+            expression => "!pass_warn_days_matches_$(userlist).pass_warn_days_defined_$(userlist).user_exists_$(userlist)._enforce_pass_warn_days_$(userlist)",
+            comment    => "Define a class when we are enforcing pass_warn_days and when it did not match the expected value";
+
+        #####################
+        #  pass_inact_days  #
+        #####################
+        "pass_inact_days_matches_$(userlist)"
+            ifvarclass => "pass_inact_days_defined_$(userlist).user_exists_$(userlist)._enforce_pass_inact_days_$(userlist)",
+            expression => regline("$(userlist)\:.*\:.*\:.*\:.*\:.*\:$(escaped_pwhash[$(userlist)])\:.*", "/etc/shadow"),
+            comment    => "If we are enforcing pass_inact_days determine if it matches the defined value";
+
+        "fix_pass_inact_days_$(userlist)"
+            expression => "!pass_inact_days_matches_$(userlist).pass_inact_days_defined_$(userlist).user_exists_$(userlist)._enforce_pass_inact_days_$(userlist)",
+            comment    => "Define a class when we are enforcing pass_inact_days and when it did not match the expected value";
+
+        ########################
+        #  account_expiration  #
+        ########################
+        "account_expiration_matches_$(userlist)"
+            ifvarclass => "account_expiration_defined_$(userlist).user_exists_$(userlist)._enforce_account_expiration_$(userlist)",
+            expression => regline("$(userlist)\:.*\:.*\:.*\:.*\:.*\:.*\:$(escaped_pwhash[$(userlist)])\:", "/etc/shadow"),
+            comment    => "If we are enforcing account_expiration determine if it matches the defined value";
+
+        "fix_account_expiration_$(userlist)"
+            expression => "!account_expiration_matches_$(userlist).account_expiration_defined_$(userlist).user_exists_$(userlist)._enforce_account_expiration_$(userlist)",
+            comment    => "Define a class when we are enforcing account_expiration and when it did not match the expected value";
+
+
+        # Signal that we need to create a new user
          "local_user_management_add_users_fileedit_add_$(userlist)"
             not        => userexists("$(userlist)"),
             ifvarclass => "required_elements_defined_$(userlist)",
             comment    => "Trigger a class so we know we need to create the user if it does not exist";
 
        
+        # Signal that we would like to create a named group if it does not exist
         "local_user_management_add_users_fileedit_add_$($(users)[$(userlist)][groupname])",
             not     => groupexists("$($(users)[$(userlist)][groupname])"),
             ifvarclass => "groupname_defined_$(userlist)",
@@ -171,18 +412,81 @@ bundle agent local_user_management_add_users_fileedit (users) {
             "$(pwfile)"
                 edit_line  => replace_or_add("$(userlist):.*", "$(pwentry[$(userlist)])"),
                 ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
-                comment   => "Ensure user exists";
+                comment   => "We want to fix the password entry if we are defining a new user,
+                              or if we have set the _enforce flag.";
+            "$(pwfile)"
+                ifvarclass => "fix_gecos_$(userlist)",
+                edit_line  => set_user_field("$(userlist)", "5", "$($(users)[$(userlist)][gecos])"),
+                comment    => "Fix the gecos value for the user";
+
+             "$(pwfile)"
+                ifvarclass => "fix_uid_$(userlist)",
+                edit_line  => set_user_field("$(userlist)", "3", "$($(users)[$(userlist)][uid])"),
+                comment    => "Fix the uid value for the user";
+
+             "$(pwfile)"
+                ifvarclass => "fix_gid_$(userlist)",
+                edit_line  => set_user_field("$(userlist)", "4", "$($(users)[$(userlist)][gid])"),
+                comment    => "Fix the gid value for the user";
+
+             "$(pwfile)"
+                ifvarclass => "fix_shell_$(userlist)",
+                edit_line  => set_user_field("$(userlist)", "7", "$($(users)[$(userlist)][shell])"),
+                comment    => "Fix the shell value for the user";
+
+             "$(pwfile)"
+                ifvarclass => "fix_home_$(userlist)",
+                edit_line  => set_user_field("$(userlist)", "6", "$($(users)[$(userlist)][home])"),
+                comment    => "Fix the home value for the user";
+
+
+            #"$(pwfile)"
+            #    edit_line  => delete_lines_matching("$(userlist):.*"),
+            #    ifvarclass => "_userdel_$(userlist)",
+            #    comment    => "Remove the user from passwd file";
+
 
             # append_if_no_line is not sufficent here in the event another user entry was in
             # the file, we only want a single shadow entry for a user or unexpected things could
             # happen
-            # should passwdhash be a required field? perhaps only set the shadow entry if 
-            # passwdhash is defined?
+            # having a replace that only replaced the first several fields would be better since we dont 
+            # support setting the password aging settings yet, right now if any password aging settings are 
+            # set and a password is repaired the aging settings will be wiped out
             "$(shadowfile)"
                 edit_line  => replace_or_add("$(userlist):.*", "$(shadowentry[$(userlist)])"),
-                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist).passwdhash_defined_$(userlist)",
-                comment    => "Ensure user has password entry";
+                ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)",
+                comment    => "Add or fix the shadow entry for the specified user";
 
+            "$(shadowfile)"
+                ifvarclass => "fix_passwdhash_$(userlist)",
+                edit_line  => set_user_field("$(userlist)","2", "$($(users)[$(userlist)][passwdhash])"),
+                comment    => "Fix the passwdhash value for the user";
+
+             "$(shadowfile)"
+                ifvarclass => "fix_min_pass_age_$(userlist)",
+                edit_line  => set_user_field("$(userlist)","4", "$($(users)[$(userlist)][min_pass_age])"),
+                comment    => "Fix the min_pass_age value for the user";
+ 
+             "$(shadowfile)"
+                ifvarclass => "fix_max_pass_age_$(userlist)",
+                edit_line  => set_user_field("$(userlist)","5", "$($(users)[$(userlist)][max_pass_age])"),
+                comment    => "Fix the max_pass_age value for the user";
+
+             "$(shadowfile)"
+                ifvarclass => "fix_pass_warn_days_$(userlist)",
+                edit_line  => set_user_field("$(userlist)","6", "$($(users)[$(userlist)][pass_warn_days])"),
+                comment    => "Fix the pass_warn_days value for the user";
+
+             "$(shadowfile)"
+                ifvarclass => "fix_pass_inact_days_$(userlist)",
+                edit_line  => set_user_field("$(userlist)","7", "$($(users)[$(userlist)][pass_inact_days])"),
+                comment    => "Fix the pass_inact_days value for the user";
+
+             "$(shadowfile)"
+                ifvarclass => "fix_account_expiration_$(userlist)",
+                edit_line  => set_user_field("$(userlist)","8", "$($(users)[$(userlist)][account_expiration])"),
+                comment    => "Fix the account_expiration value for the user";
+                                
             # Create the users home directory and seed it with the typical files
             "$($(users)[$(userlist)][home])/."
                 create      => "true",
@@ -212,6 +516,26 @@ bundle agent local_user_management_add_users_fileedit (users) {
 
 #    reports:
 #    cfengine::
+#    "Gecos did not match for $(userlist)",
+#        ifvarclass => "fix_gecos_$(userlist)";
+#
+#    "Gecos matches for $(userlist)",
+#        ifvarclass => "gecos_matches_$(userlist)";
+#
+#    "Enforcing gecos for $(userlist)",
+#        ifvarclass => "_enforce_gecos_$(userlist)";
+#
+#    "$(userlist) needs added",
+#        ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)";
+#    "DO EDIT SHADOW $(userlist)",
+#        #ifvarclass => "_enforce_$(userlist).passwdhash_not_matches_$(userlist)";
+#        ifvarclass => "edit_shadow_$(userlist)";
+#    "enforcing settings for $(userlist)",
+#        ifvarclass => "_enforce_$(userlist)";
+#    "passwdhash_does_not_match_$(userlist)",
+#        ifvarclass => "passwdhash_not_matches_$(userlist)";
+#    "passwdhash_matches_$(userlist)",
+#        ifvarclass => "passwdhash_matches_$(userlist)";
 #    "$(userlist)";
 #    "$(userlist) does not exist, needs created",
 #        ifvarclass => "local_user_management_add_users_fileedit_add_$(userlist)";
