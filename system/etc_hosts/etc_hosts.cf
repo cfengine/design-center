@@ -108,6 +108,12 @@ bundle agent etc_hosts_manage_all_entries(config) {
             edit_line   =>  etc_hosts_manage_all_entries_prepend_if_no_line("$(CFEnotice)"),
             comment     =>  "Notice that the file is managed by CFEngine";
 
+        # I have no idea what windows permissions should be for this file
+        !windows::
+            "$(hosts)"
+                perms   => mog("644", "root", "root"),
+                comment => "Set proper permissions so everyone can read it"; 
+
 }
 
 bundle edit_line etc_hosts_manage_all_entries_prepend_if_no_line(string) {
