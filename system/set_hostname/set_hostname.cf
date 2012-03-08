@@ -35,7 +35,7 @@ bundle agent set_hostname(hostname, domain) {
                 comment => "Update the hostname on the running system so we
                             dont have to wait for a reboot";
 
-            "/bin/domainname $(domainname)"
+            "/bin/domainname $(domain)"
                 comment => "Update the domainname on the running system so
                             we dont have to reboot for it";
 
