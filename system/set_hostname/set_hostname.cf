@@ -1,0 +1,42 @@
+bundle agent set_hostname(hostname, domain) {
+# Expects desired shorthostname and domain name both as strings;
+# Usage:
+#   vars:
+#       "hostname" string => "jim";
+#       "domain"   string => "bob.com";
+#
+#   methods:
+#       "hostname" usebundle => set_hostname("$(hostname)", "$(domain)");
+#
+    vars:
+        # Stuff these into an array on redhat style systems
+        # It's a convienant with the way redhat configs work
+        redhat|centos::
+            "config[HOSTNAME]"  string => "$(hostname)";
+            "config[NISDOMAIN]" string => "$(domain)";
+    files:
+        redhat|centos::
+            "/etc/sysconfig/network"
+                create    => "true",
+                perms     => mog("644", "root", "root"),
+                edit_line => set_variable_values("set_hostname.config"),
+                classes   => if_repaired("set_hostname_update_running_hostname"),
+                comment   => "While the official redhat docs state that you
+                              should set HOSTNAME to the fqdn, it is apparently
+                              incorrect. If you do this the hostname command
+                              will return the fqdn instead of the shorthostname
+                              like its supposed to when run without arguments.
+                              I have been doing it wrong for years, and it only
+                              recently bit me.";
+
+    commands:
+        set_hostname_update_running_hostname.(redhat|centos)::
+            "/bin/hostname $(hostname)"
+                comment => "Update the hostname on the running system so we
+                            dont have to wait for a reboot";
+
+            "/bin/domainname $(domain)"
+                comment => "Update the domainname on the running system so
+                            we dont have to reboot for it";
+
+}
