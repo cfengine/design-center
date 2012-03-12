@@ -84,14 +84,14 @@ bundle agent etc_hosts_manage_all_entries(config) {
             comment => "It's nice to let people know why the file keep magically reverting on them";
 
         !windows::
-        "hosts"
-            string => "/etc/hosts",
-            comment => "Path to the systems hosts file";
+            "hosts"
+                string => "/etc/hosts",
+                comment => "Path to the systems hosts file";
 
         windows::
-        "hosts"
-	    "$(sys.winsysdir)\drivers\etc\hosts",
-            comment => "Path to the systems hosts file";
+            "hosts"
+                string  => "$(sys.winsysdir)\drivers\etc\hosts",
+                comment => "Path to the systems hosts file";
 
     files:
         "$(hosts)"
@@ -107,6 +107,12 @@ bundle agent etc_hosts_manage_all_entries(config) {
             create      =>  "true",
             edit_line   =>  etc_hosts_manage_all_entries_prepend_if_no_line("$(CFEnotice)"),
             comment     =>  "Notice that the file is managed by CFEngine";
+
+        # I have no idea what windows permissions should be for this file
+        !windows::
+            "$(hosts)"
+                perms   => mog("644", "root", "root"),
+                comment => "Set proper permissions so everyone can read it"; 
 
 }
 
