@@ -1,0 +1,66 @@
+bundle agent interface_settings_update(nic, config) {
+# expects string, array
+# nic: interface to operate on
+# config: configuration array containting keys that are valid options for 
+#         redhat style interface configuration
+#
+# note: this bundle only alters settings that have been directed, any other settings 
+#       in the file that are not managed will not be modifed.
+#
+#       
+# example usage:
+#    vars:
+#
+#            # "nics"              slist   => getindices("sys.ipv4");
+#            # this would work, you will be limited to taking action and editing
+#            # interfaces that are already detected. That might be an issue for you
+#            # if you if your trying to setup any bonds, so its reccomended to manually
+#            # specify the nics as below 
+#
+#            "nics"              slist   => { "eth0", "eth1" };
+#
+#            "eth0[DEVICE]"      string  => "eth0";
+#            "eth0[BOOTPROTO]"   string  => "none";
+#            "eth0[ONBOOT]"      string  => "yes";
+#            "eth0[IPADDR]"      string  => "192.168.35.11";
+#            "eth0[NETMASK]"     string  => "255.255.255.0";
+#
+#            "eth1[DEVICE]"      string  => "eth1";
+#            "eth1[BOOTPROTO]"   string  => "none";
+#            "eth1[ONBOOT]"      string  => "yes";
+#            "eth1[IPADDR]"      string  => "172.16.210.65";
+#            "eth1[NETMASK]"     string  => "255.255.255.192";
+#
+#
+#    methods:
+#
+#    "any" usebundle => interface_settings_update("$(nics)", "context.$(nics)");
+
+
+    files:
+        redhat|centos::
+            "/etc/sysconfig/network-scripts/ifcfg-$(nic)"
+                comment         => "configure interface persistent settings",
+                edit_defaults   => no_backup,
+                create          => "true",
+                perms           => mog("644", "root", "root"),
+                edit_line       => set_variable_values2("$(this.promiser)", "$(config)"),
+                classes         => if_repaired("interface_settings_update_ifupdown_$(nic)");
+
+    commands:
+        redhat|centos::
+            "/sbin/ifdown $(nic)"
+                ifvarclass  => "interface_settings_update_ifupdown_$(nic)",
+                classes     => if_repaired("interface_settings_update_downed_interface_$(nic)"),
+                comment     => "down the interface with old configuration";
+
+            "/sbin/ifup $(nic)"
+                ifvarclass  => "interface_settings_update_ifupdown_$(nics)",
+                classes     => if_repaired("interface_settings_update_uped_interface_$(nic)"),
+                comment     => "bring up the interface with new configuration";
+
+    reports:
+        !(redhat|centos)::
+            "Sorry I only know how to work with redhat and centos machines";
+
+}
