@@ -1,0 +1,81 @@
+bundle agent update_routes_by_ip(ipregex, routes) {
+# Expects string, array
+# Note: This bundle depricates rh_add_interface_routes. I see no good reason to continue using it.
+#
+# ipregex is a regular expression that matches the ip on the interface you want these routes added
+#   hint: ipregex should match an ip that can communicate with the specified gateway
+#         for example if your routing a network via 192.168.0.1 and the network is a /24 network
+#         (255.255.255.0 netmask) then you should have an ip in the range 192.168.0.1-254 on the
+#         host your trying to add this route on. So a regex of 192\.168\.0\.[0-9]++ would work.
+# routes is an array keyed on the network you want to route to with the string value being the gateway to use.
+#
+# NOTE: Unfortunately the only way I could think of to automatically determine the interface a route
+#       needs added for is to use regcmp to compare the ipregex to the array of addresses. It would be
+#       better if there was some way to use the iprange function to determine which nic an ipaddress
+#       is on, but that does not currently work, or I am thus far to dense to figure out how.
+#       So right now I am stuck with using ugly ipaddress regular expressions which can be error prone
+#       in construction especially when you start networks that dont fall into octet boundaries
+#
+#       This causes there to be a limitation of usage on this bundle, you MUST NOT MIX
+#       routes that go on seperate interfaces in the same route configuration array. I believe
+#       this limitation could be surpassed if we could use the iprange or similar function.
+#
+# vars:
+#    "ipregex_mgmt" string => "192\.168\.0\.[0-9]++";
+#    "management[CIDRNETWORK]"
+#        string => "GATEWAY",
+#        comment => "What do you need this for";
+#
+#    "management[10.119.156.0/26]"
+#        string => "192.168.0.1",
+#        comment => "Needed for talking to the special network used for backup servers";
+#
+# methods:
+#    "any" usebundle => rh_add_routes("192\.168\.0\.[0-9]++", "context.management");
+#
+    vars:
+        "nics"          slist => getindices("sys.ipv4");
+        #"route_file"    string => "/etc/sysconfig/network-scripts/route-$(interface)";
+        "route_index" slist => getindices("$(routes)");
+
+    classes:
+        "supported_os" or => { "centos_5", "redhat_5" };
+
+        "$(nics)_matches_ipregex" expression    => regcmp("$(ipregex)", "$(sys.ipv4[$(nics)])"),
+            comment => "Determine which network interface has an ip that we are adding routes for.
+                        We need to know this so that we can insert the route in the proper
+                        file for reboot persistence.";
+
+
+    files:
+        # We only want to add persistent routes to the interface that matches the ipregex so we ifvarclass on $(nics)_matches_ipregex
+        (centos_5|redhat_5)::
+            "/etc/sysconfig/network-scripts/route-$(nics)"
+                create      => "true",
+                perms       => mog("644", "root", "root"),
+                edit_line   => replace_or_add("$(route_index).*", "$(route_index) via $($(this.routes)[$(route_index)])"),
+                classes     => if_repaired("persistent_route_updated_for_$(route_index)"),
+                ifvarclass  => "$(nics)_matches_ipregex",
+                comment     => "Replace any conflicting routes and ensure persistent across reboots";
+
+    commands:
+        # We only attempt to delete a route if we have modified the persistent route file
+        "/sbin/ip route del $(route_index)"
+            ifvarclass  => canonify("persistent_route_updated_for_$(route_index)"),
+            classes     => "attempted_route_removal_for_$(route_index)",
+            comment     => "Delete any possibly conflicting old route before adding the new one";
+
+        # We only attempt to add a route if we have modified the persistent route file
+        "/sbin/ip route add $(route_index) via $($(routes)[$(route_index)])"
+            ifvarclass  => canonify("persistent_route_updated_for_$(route_index)"),
+            classes     => "attempted_route_addition_for_$(route_index)",
+            comment     => "Add the new route";
+
+    reports:
+        cfengine::
+            "Persistent route updated for $(route_index) via $($(routes)[$(route_index)]) on dev $(nics)"
+                ifvarclass => canonify("persistent_route_updated_for_$(route_index)");
+
+        !supported_os::
+            "Sorry I don't know how to work with this OS";
+}
