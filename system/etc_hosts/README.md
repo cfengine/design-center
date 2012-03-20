@@ -6,7 +6,7 @@ Nick Anderson <nick@cmdln.org>
 linux
 
 ## DESCRIPTION
-* etc_hosts_manage_all_entries
+* cfdc_etc_hosts_manage_all_entries
     - edit_line based
     - removes any entries not specified except localhost and comments
     - Allows single definition of each entry allowing comments for 
@@ -54,7 +54,7 @@ standard library
 
 
        methods:
-           "any" usebundle => etc_hosts_manage_all_entries("main.hosts");
+           "any" usebundle => cfdc_etc_hosts_manage_all_entries("main.hosts");
 
     }
 
