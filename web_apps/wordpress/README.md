@@ -2,18 +2,14 @@
 
 Original author: Aleksey Tsalolikhin. Enhancements and maintenance: Diego Zamboni.
 
-This Blueprint contains bundles to install and configure a Wordpress installation.
-
-## Installation
-
-Save `wordpress.cf` as `/var/cfengine/masterfiles/blueprints/wordpress.cf` in the policy hub.
+This sketch contains bundles to install and configure a Wordpress installation.
 
 ## Sample usage
 
     body common control
     {
       bundlesequence => { wp_install("g.wp_config") };
-      inputs => { "cfengine_stdlib.cf", "blueprints/wordpress.cf" };
+      inputs => { "cfengine_stdlib.cf", "sketches/wordpress/wordpress.cf" };
     }
     
     bundle common g
