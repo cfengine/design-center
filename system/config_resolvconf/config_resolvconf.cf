@@ -1,0 +1,134 @@
+bundle agent cfdc_config_resolvconf(conf){
+# conf should be an array
+# "resolvconf[nameserver]" slist  => { "4.4.8.8", "8.8.8.8" };
+# "resolvconf[search]"     slist  => { "example.com", "example.net" };
+# "resolvconf[domain]"     string => "example.com";
+# "resolvconf[sortlist]"   slist  => { "130.155.160.0/255.255.240.0", "130.155.0.0" };
+# "resolvconf[options]"    slist  => { "ndots:1", "timeout:5", "attempts:2", "rotate",
+#                                      "no-check-names", "inet6", "ip6-bytestring", 
+#                                      "edns0", "ip6-dotint", "no-ip6-dotint"};
+# "resolvconf[_debug]" string => "whatever";
+# "resolvconf[_empty]" string => "whatever";
+# if _debug is defined we only operate on /tmp/resolv.conf
+# if _empty is defined only defined settings will stay in your resolvconf (no manual additions allowed)
+
+    vars:
+        # import lists locally in case pre 3.3, join into string if 
+        # configuration option is single line
+        # but only if the variable is defined
+        "myconf[nameserver]" 
+            slist      => { "@($(conf)[nameserver])" },
+            ifvarclass => "nameserver_set";
+
+        "myconf[search]" 
+            string     => join(" ", "$(conf)[search]"),
+            ifvarclass => "search_set";
+
+        "myconf[sortlist]" 
+            string     => join(" ", "$(conf)[sortlist]"),
+            ifvarclass => "sortlist_set";
+
+        "myconf[options]" 
+            string     => join(" ", "$(conf)[options]"),
+            ifvarclass => "options_set";
+
+        "myconf[domain]"
+            string     => "$(conf)[domain]",
+            ifvarclass => "domain_set";
+
+        "myconf[_empty]"
+            string     => "$(conf)[_empty]",
+            ifvarclass => "_empty_set";
+
+    classes:
+        "nameserver_set"  expression => isvariable("$(conf)[nameserver]");
+        "sortlist_set"    expression => isvariable("$(conf)[sortlist]");
+        "options_set"     expression => isvariable("$(conf)[options]");
+        "domain_set"      expression => isvariable("$(conf)[domain]");
+        "search_set"      expression => isvariable("$(conf)[search]");
+        "_debug_set"           expression => isvariable("$(conf)[_debug]");
+        "_empty_set"           expression => isvariable("$(conf)[_empty]");
+
+    files:
+        linux::
+            "/tmp/resolv.conf"
+                handle     => "cfdc_config_resolvconf_files_tmp_resolv_conf",
+                ifvarclass => "_debug_set",
+                create     => "true",
+                edit_line  => cfdc_config_resolvconf_set_conf("cfdc_config_resolvconf.myconf"),
+                comment    => "Test resolver settings in debug mode";
+
+            "/etc/resolv.conf"
+                handle     => "cfdc_config_resolvconf_files_etc_resolv_conf",
+                ifvarclass => "!_debug_set",
+                create     => "true",
+                perms      => mog("644", "root", "root"),
+                edit_line  => cfdc_config_resolvconf_set_conf("cfdc_config_resolvconf.myconf"),
+                comment    => "Configure resolver";
+}
+
+bundle edit_line cfdc_config_resolvconf_set_conf(conf){
+    vars:
+        # Need to import the list locally for iteration
+        "my_nameservers"
+            slist      => { "@($(conf)[nameserver])" },
+            ifvarclass => "nameserver_set";
+            
+
+    classes:
+        "nameserver_set"  expression => isvariable("$(conf)[nameserver]");
+        "sortlist_set"    expression => isvariable("$(conf)[sortlist]");
+        "options_set"     expression => isvariable("$(conf)[options]");
+        "domain_set"      expression => isvariable("$(conf)[domain]");
+        "search_set"      expression => isvariable("$(conf)[search]");
+        "_empty_set"      expression => isvariable("$(conf)[_empty]");
+
+
+    delete_lines:
+        ".*"
+            ifvarclass => "_empty_set",
+            comment    => "Reset the entire resolver";
+
+        "search.*"
+            ifvarclass => "search_set",
+            comment    => "Reset search lines from resolver";
+
+        "nameserver.*"
+            ifvarclass => "nameserver_set",
+            comment    => "Reset name servers in resolver";
+
+        "sortlist.*"
+            ifvarclass => "sortlist_set",
+            comment    => "Reset sortlist in resolver";
+
+        "options.*"
+            ifvarclass => "options_set",
+            comment    => "Reset options in resolver";
+
+        "domain.*"
+            ifvarclass => "domain_set",
+            comment    => "Reset domain in resolver";
+
+    insert_lines:
+        # Add domain before search because I think search is more commonly desired
+        # in the event you defined both, and the last listed takes precidence
+        "domain $($(conf)[domain])"
+            ifvarclass => "domain_set",
+            comment    => "Add domain to resolver";
+
+        "search $($(conf)[search])"
+            ifvarclass => "search_set",
+            comment    => "Add search domains to resolver";
+
+        "sortlist $($(conf)[sortlist])"
+            ifvarclass => "sortlist_set",
+            comment    => "Add sortlist to resolver";
+
+        "options $($(conf)[options])"
+            ifvarclass => "options_set",
+            comment    => "Add options to resolver";
+
+        "nameserver $(my_nameservers)"
+            ifvarclass => "nameserver_set",
+            comment    => "Add name servers to resolver";
+}
