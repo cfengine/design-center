@@ -1,4 +1,4 @@
-# config_resolvconf - Manage your resolv.conf
+# config_resolver - Manage your resolv.conf
 ## AUTHOR
 Nick Anderson <nick@cmdln.org>
 
@@ -20,23 +20,23 @@ There are two special switches
     bundle agent main {
 
         vars:
-            "resolvconf[_debug]" 
+            "resolver[_debug]" 
                 string => "true",
                 comment => "If _debug is defined do not operate 
                             on the real resolvers file, but on 
                             a test file like /tmp/resolv.conf";
 
-            "resolvconf[_empty]"
+            "resolver[_empty]"
                 string => "true",
                 comment => "If _empty is defined the file will be
                             emptied before editing, this will remove 
                             any non-defined settings";
 
-            "resolvconf[nameserver]" slist  => { "4.4.8.8", "8.8.8.8" };
-            "resolvconf[search]"     slist  => { "example.com", "example.net" };
-            "resolvconf[domain]"     slist  => "example.com";
-            "resolvconf[sortlist]"   slist  => { "130.155.160.0/255.255.240.0", "130.155.0.0" };
-            "resolvconf[options]"    
+            "resolver[nameserver]" slist  => { "4.4.8.8", "8.8.8.8" };
+            "resolver[search]"     slist  => { "example.com", "example.net" };
+            "resolver[domain]"     slist  => "example.com";
+            "resolver[sortlist]"   slist  => { "130.155.160.0/255.255.240.0", "130.155.0.0" };
+            "resolver[options]"    
                 slist  => { "ndots:1", "timeout:5", "attempts:2", 
                             "rotate", "no-check-names", "inet6", 
                             "ip6-bytestring", "edns0", "ip6-dotint",
@@ -46,6 +46,6 @@ There are two special switches
 
 
         methods:
-            "any" usebundle => cfdc_config_resolvconf("main.resolvconf");
+            "any" usebundle => cfdc_config_resolver("main.resolver");
     }
 

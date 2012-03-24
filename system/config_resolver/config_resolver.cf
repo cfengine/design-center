@@ -1,16 +1,16 @@
-bundle agent cfdc_config_resolvconf(conf){
+bundle agent cfdc_config_resolver(conf){
 # conf should be an array
-# "resolvconf[nameserver]" slist  => { "4.4.8.8", "8.8.8.8" };
-# "resolvconf[search]"     slist  => { "example.com", "example.net" };
-# "resolvconf[domain]"     string => "example.com";
-# "resolvconf[sortlist]"   slist  => { "130.155.160.0/255.255.240.0", "130.155.0.0" };
-# "resolvconf[options]"    slist  => { "ndots:1", "timeout:5", "attempts:2", "rotate",
+# "resolver[nameserver]" slist  => { "4.4.8.8", "8.8.8.8" };
+# "resolver[search]"     slist  => { "example.com", "example.net" };
+# "resolver[domain]"     string => "example.com";
+# "resolver[sortlist]"   slist  => { "130.155.160.0/255.255.240.0", "130.155.0.0" };
+# "resolver[options]"    slist  => { "ndots:1", "timeout:5", "attempts:2", "rotate",
 #                                      "no-check-names", "inet6", "ip6-bytestring", 
 #                                      "edns0", "ip6-dotint", "no-ip6-dotint"};
-# "resolvconf[_debug]" string => "whatever";
-# "resolvconf[_empty]" string => "whatever";
+# "resolver[_debug]" string => "whatever";
+# "resolver[_empty]" string => "whatever";
 # if _debug is defined we only operate on /tmp/resolv.conf
-# if _empty is defined only defined settings will stay in your resolvconf (no manual additions allowed)
+# if _empty is defined only defined settings will stay in your resolver (no manual additions allowed)
 
     vars:
         # import lists locally in case pre 3.3, join into string if 
@@ -52,22 +52,22 @@ bundle agent cfdc_config_resolvconf(conf){
     files:
         linux::
             "/tmp/resolv.conf"
-                handle     => "cfdc_config_resolvconf_files_tmp_resolv_conf",
+                handle     => "cfdc_config_resolver_files_tmp_resolv_conf",
                 ifvarclass => "_debug_set",
                 create     => "true",
-                edit_line  => cfdc_config_resolvconf_set_conf("cfdc_config_resolvconf.myconf"),
+                edit_line  => cfdc_config_resolver_set_conf("cfdc_config_resolver.myconf"),
                 comment    => "Test resolver settings in debug mode";
 
             "/etc/resolv.conf"
-                handle     => "cfdc_config_resolvconf_files_etc_resolv_conf",
+                handle     => "cfdc_config_resolver_files_etc_resolv_conf",
                 ifvarclass => "!_debug_set",
                 create     => "true",
                 perms      => mog("644", "root", "root"),
-                edit_line  => cfdc_config_resolvconf_set_conf("cfdc_config_resolvconf.myconf"),
+                edit_line  => cfdc_config_resolver_set_conf("cfdc_config_resolver.myconf"),
                 comment    => "Configure resolver";
 }
 
-bundle edit_line cfdc_config_resolvconf_set_conf(conf){
+bundle edit_line cfdc_config_resolver_set_conf(conf){
     vars:
         # Need to import the list locally for iteration
         "my_nameservers"
