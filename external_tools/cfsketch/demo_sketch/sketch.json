@@ -1,0 +1,21 @@
+{ 
+
+  "manifest": { 
+              "a/b/c/file1": { "perm": 700, "desc": "File 1", "version": 3.14 },
+              "file2": { },
+            },
+
+  "metadata": { "name": "Misc::mysketch", "version": 3.14, "authors": [ "Diego Z", "Ted Z" ] },
+
+  "interface": {
+# all are mandatory, also accept "boolean"
+               "activated": { "type": "boolean" },
+# also accept "integer"
+               "myint": { "type": "integer", "default": 0 },
+# also accept "string"
+               "mystr": { "type": "string" },
+               "os_special_path": { "type": "string", "default": { "redhat": "/etc", "windows": "c:\\" }},
+# also accept "list of 32-bit integers"
+               "hosts::deny": { "list": { "type": "integer", "bits": 32 } },
+             }
+}
