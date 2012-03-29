@@ -2,12 +2,18 @@
 
 use warnings;
 use strict;
+use File::Compare;
+use File::Copy;
 use File::Find;
+use File::Spec;
+use File::Path qw(make_path remove_tree);
 use File::Basename;
 use Data::Dumper;
 use Getopt::Long;
 use Modern::Perl;               # needs apt-get libmodern-perl
 use JSON::XS;                   # needs apt-get libjson-xs-perl
+
+use constant SKETCH_DEF_FILE => 'sketch.json';
 
 $| = 1;                         # autoflush
 
@@ -18,8 +24,7 @@ my %options =
   verbose    => 0,
   quiet      => 0,
   help       => 0,
-  repolist   => [],
-  configfile => glob('~/.cfsketch.conf'),
+  configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch.conf'),
  );
 
 my @options_spec =
@@ -60,11 +65,23 @@ if (open(my $cfh, '<', $options{configfile}))
 
   foreach (sort keys %$given)
   {
+   next if exists $options{$_};
    say "(read from $options{configfile}) $_ = ", $coder->encode($given->{$_})
     unless $options{quiet};
    $options{$_} = $given->{$_};
   }
   last;
+ }
+}
+
+foreach (@{$options{repolist}})
+{
+ my $abs = File::Spec->rel2abs($_);
+ if ($abs ne $_)
+ {
+  say "Remapped $_ to $abs so it's not relative"
+   if $options{verbose};
+  $_ = $abs;
  }
 }
 
@@ -105,7 +122,7 @@ sub configure_self
   foreach my $key (@keys)
   {
    print "$key: ";
-   my $answer = <>;
+   my $answer = <>;             # TODO: use the right Readline module
    chomp $answer;
    $config{$key} = [split ',', $answer];
   }
@@ -125,10 +142,19 @@ sub configure_self
   }
  }
 
+ ensure_dir(dirname($cf));
  open(my $cfh, '>', $cf)
   or die "Could not write configuration input file $cf: $!";
 
  print $cfh $coder->encode(\%config);
+}
+
+sub ensure_dir
+{
+ my $dir = shift @_;
+
+ make_path($dir, { verbose => $verbose });
+ return -d $dir;
 }
 
 sub search
@@ -141,69 +167,179 @@ sub search
    if $verbose;
 
   my $contents = repo_get_contents($repo);
-
   say "Inspecting repo contents: ", $coder->encode($contents)
    if $verbose;
+
+  foreach my $sketch (sort keys %$contents)
+  {
+   # TODO: improve this search
+   my $as_str = $sketch . ' ' . $coder->encode($contents->{$sketch});
+
+   foreach my $term (@$terms)
+   {
+    next unless $as_str =~ m/$term/;
+    say "$contents->{$sketch}->{dir} $sketch";
+    last;
+   }
+  }
  }
 }
 
-# TODO: need functions for: install activate deactivate remove test
-
-sub repo_get_contents
+sub install
 {
- my $repo = shift @_;
+ my $sketch_dirs = shift @_;
+ # make sure we only work with absolute directories
+ my $sketches = find_sketches(map { File::Spec->rel2abs($_) } @$sketch_dirs);
 
- if ($repo =~ m,^[/\.],)        # just a file path
+ my $dest;
+ foreach my $target (@{$options{repolist}})
  {
-  if (chdir $repo)
+  if (is_repo_local($target))
   {
-   my %contents;
+   $dest = $target;
+   last;
+  }
+ }
 
-   find(sub
-        {
-         my $f = $_;
-         if ($f eq 'sketch.json')
-         {
-          open(my $j, '<', $f)
-           or warn "Could not inspect $File::Find::name: $!";
+ die "Can't install: none of [@{$options{repolist}}] exist locally!"
+  unless defined $dest;
 
-          if ($j)
-          {
-           my @j = <$j>;
-           chomp @j;
-           s/\n//g foreach @j;
-           s/^\s*#.*//g foreach @j;
-           my $json = $coder->decode(join '', @j);
-           # TODO: validate more thoroughly?
-           if (ref $json eq 'HASH' &&
-               exists $json->{manifest}  && ref $json->{manifest}  eq 'HASH' &&
-               exists $json->{metadata}  && ref $json->{metadata}  eq 'HASH' &&
-               exists $json->{metadata}->{name} &&
-               exists $json->{interface} && ref $json->{interface} eq 'HASH')
-           {
-            $json->{dir} = $File::Find::dir;
-            $contents{$json->{metadata}->{name}} = $json;
-           }
-           else
-           {
-            warn "Invalid sketch definition in $File::Find::name, skipping";
-           }
-          }
-         }
-        }, '.');
-   return \%contents;
+ foreach my $sketch (sort keys %$sketches)
+ {
+  my $data = $sketches->{$sketch};
+
+  say sprintf('Installing %s (%s) into %s',
+              $sketch,
+              $data->{file},
+              $dest)
+   if $verbose;
+
+  my $install_dir = File::Spec->catdir($dest,
+                                       split('::', $sketch),
+                                      );
+  if (ensure_dir($install_dir))
+  {
+   say "Created destination directory $install_dir" if $verbose;
+   foreach my $file (SKETCH_DEF_FILE, sort keys %{$data->{manifest}})
+   {
+    my $file_spec = $data->{manifest}->{$file};
+    # build a locally valid install path, while the manifest can use / separator
+    my $source = File::Spec->catfile($data->{dir}, split('/', $file));
+    my $dest = File::Spec->catfile($install_dir, split('/', $file));
+
+    my $dest_dir = dirname($dest);
+    die "Could not make destination directory $dest_dir"
+     unless ensure_dir($dest_dir);
+
+    # TODO: maybe disable this?  It can be expensive for large files.
+    if (compare($source, $dest) == 0)
+    {
+     warn "Manifest member $file is already installed in $dest"
+      if $verbose;
+    }
+
+    copy($source, $dest) or die "Aborting: copy $source -> $dest failed: $!";
+
+    chmod oct($file_spec->{perm}), $dest if exists $file_spec->{perm};
+
+    if (exists $file_spec->{user})
+    {
+     # TODO: ensure this works on platforms without getpwnam
+     # TODO: maybe add group support too
+     my ($login,$pass,$uid,$gid) = getpwnam($file_spec->{user})
+      or die "$file_spec->{user} not in passwd file";
+
+     chown $uid, $gid, $dest;
+    }
+   }
+
+   say "Done installing $sketch";
   }
   else
   {
-   die "Could not chdir into local repository [$repo]: $!"
+   warn "Could not make install directory $install_dir, skipping $sketch";
   }
  }
- else
+}
+
+# TODO: need functions for: activate deactivate remove test
+
+sub find_sketches
+{
+ my @dirs = @_;
+ my %contents;
+
+ find(sub
+      {
+       my $f = $_;
+       if ($f eq SKETCH_DEF_FILE)
+       {
+        open(my $j, '<', $f)
+         or warn "Could not inspect $File::Find::name: $!";
+
+        if ($j)
+        {
+         my @j = <$j>;
+         chomp @j;
+         s/\n//g foreach @j;
+         s/^\s*#.*//g foreach @j;
+         my $json = $coder->decode(join '', @j);
+         # TODO: validate more thoroughly?
+         if (ref $json eq 'HASH' &&
+             exists $json->{manifest}  && ref $json->{manifest}  eq 'HASH' &&
+             exists $json->{metadata}  && ref $json->{metadata}  eq 'HASH' &&
+             exists $json->{metadata}->{name} &&
+             exists $json->{interface} && ref $json->{interface} eq 'HASH') {
+          $json->{dir} = $File::Find::dir;
+          $json->{file} = $File::Find::name;
+          # note this name will be stringified even if it's not a string
+          $contents{$json->{metadata}->{name}} = $json;
+         }
+         else
+         {
+          warn "Invalid sketch definition in $File::Find::name, skipping";
+         }
+        }
+       }
+      }, @dirs);
+
+ return \%contents;
+}
+
+sub is_repo_local
+{
+ my $repo = shift @_;
+ return -d $repo;  # just a file path
+}
+
+{
+ my %content_cache;
+ sub repo_get_contents
  {
-  die "No remote repositories (i.e. $repo) are supported yet"
+  my $repo = shift @_;
+
+  return $content_cache{$repo} if exists $content_cache{$repo};
+
+  if (is_repo_local($repo))
+  {
+   my $contents = find_sketches($repo);
+   $content_cache{$repo} = $contents;
+
+   return $contents;
+  }
+  else
+  {
+   die "No remote repositories (i.e. $repo) are supported yet"
+  }
+
+  warn "Unhandled repo format: $repo";
+  return undef;
  }
 
- return undef;
+ sub repo_clear_cache
+ {
+  %content_cache = ();
+ }
 }
 
 __DATA__
