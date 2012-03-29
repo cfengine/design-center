@@ -179,7 +179,9 @@ sub search
    foreach my $term (@$terms)
    {
     next unless $as_str =~ m/$term/;
-    say "$local $contents->{$sketch}->{dir} $sketch";
+    # this format is easy to parse, even if the directory has spaces,
+    # because the first two fields won't have spaces
+    say "$local $sketch $contents->{$sketch}->{dir}";
     last;
    }
   }
