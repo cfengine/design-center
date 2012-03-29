@@ -43,6 +43,7 @@ my @options_spec =
   "remove=s@",
   "test=s@",
   "search=s@",
+  "list!",
  );
 
 GetOptions (
@@ -93,6 +94,12 @@ my $quiet   = $options{quiet};
 if ($options{config})
 {
  configure_self($options{configfile}, $options{interactive}, shift);
+ exit;
+}
+
+if ($options{list})
+{
+ search(['.']);                   # matches everything
  exit;
 }
 
@@ -149,14 +156,6 @@ sub configure_self
  print $cfh $coder->encode(\%config);
 }
 
-sub ensure_dir
-{
- my $dir = shift @_;
-
- make_path($dir, { verbose => $verbose });
- return -d $dir;
-}
-
 sub search
 {
  my $terms = shift @_;
@@ -165,6 +164,8 @@ sub search
  {
   say "Looking for terms [@$terms] in cfsketch repository [$repo]"
    if $verbose;
+
+  my $local = is_repo_local($repo) ? 'local' : 'remote';
 
   my $contents = repo_get_contents($repo);
   say "Inspecting repo contents: ", $coder->encode($contents)
@@ -178,8 +179,41 @@ sub search
    foreach my $term (@$terms)
    {
     next unless $as_str =~ m/$term/;
-    say "$contents->{$sketch}->{dir} $sketch";
+    say "$local $contents->{$sketch}->{dir} $sketch";
     last;
+   }
+  }
+ }
+}
+
+sub remove
+{
+ my $toremove = shift @_;
+
+ foreach my $repo (@{$options{repolist}})
+ {
+  next unless is_repo_local($repo);
+
+  my $contents = repo_get_contents($repo);
+
+  foreach my $sketch (sort @$toremove)
+  {
+   my @matches = grep
+   {
+    # accept sketch name or directory
+    ($_ eq $sketch) || ($contents->{$_}->{dir} eq $sketch)
+   } keys %$contents;
+
+   next unless scalar @matches;
+   $sketch = shift @matches;
+   my $data = $contents->{$sketch};
+   if (remove_dir($data->{dir}))
+   {
+    say "Successfully removed $sketch from $data->{dir}";
+   }
+   else
+   {
+    say "Could not remove $sketch from $data->{dir}";
    }
   }
  }
@@ -340,6 +374,23 @@ sub is_repo_local
  {
   %content_cache = ();
  }
+}
+
+# Utility functions follow
+
+sub ensure_dir
+{
+ my $dir = shift @_;
+
+ make_path($dir, { verbose => $verbose });
+ return -d $dir;
+}
+
+sub remove_dir
+{
+ my $dir = shift @_;
+
+ return remove_tree($dir, { verbose => $verbose });
 }
 
 __DATA__
