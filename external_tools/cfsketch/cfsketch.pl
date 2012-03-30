@@ -2,6 +2,7 @@
 
 use warnings;
 use strict;
+use List::MoreUtils;
 use File::Compare;
 use File::Copy;
 use File::Find;
@@ -24,6 +25,9 @@ my %options =
   verbose    => 0,
   quiet      => 0,
   help       => 0,
+  force      => 0,
+  # switched depending on root or non-root
+  act_file   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch.activations.conf'),
   configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch.conf'),
  );
 
@@ -32,7 +36,10 @@ my @options_spec =
   "quiet|qq!",
   "help!",
   "verbose!",
+  "force!",
   "configfile|cf=s",
+  "ipolicy=s",
+  "act_file=s",
 
   "config!",
   "interactive!",
@@ -120,18 +127,20 @@ sub configure_self
  my $inter = shift @_;
  my $data  = shift @_;
 
- my @keys = qw/repolist/;
+ my %keys = (
+             repolist => 1,             # array
+            );
 
  my %config;
 
  if ($inter)
  {
-  foreach my $key (@keys)
+  foreach my $key (sort keys %keys)
   {
    print "$key: ";
    my $answer = <>;             # TODO: use the right Readline module
    chomp $answer;
-   $config{$key} = [split ',', $answer];
+   $config{$key} = $keys{$key} ? [split ',', $answer] : $answer;
   }
  }
  else
@@ -188,6 +197,69 @@ sub search
  }
 }
 
+sub activate
+{
+ my $sketch = shift @_;
+
+ die "Can't activate sketch $sketch without valid file from --ipolicy"
+  unless ($options{ipolicy} && -f $options{ipolicy});
+
+ my $installed = 0;
+ foreach my $repo (@{$options{repolist}})
+ {
+  my $contents = repo_get_contents($repo);
+  if (exists $contents->{$sketch})
+  {
+   my $data = $contents->{$sketch};
+   my $if = $data->{interface};
+
+   # TODO: we could load the policy from a pipe or a network resource too
+   say "Loading activation policy from $options{ipolicy}";
+   my $policy = load_json($options{ipolicy});
+
+   die "Could not load activation policy from $options{ipolicy}"
+    unless ref $policy eq 'HASH';
+
+   foreach my $varname (sort keys %$if)
+   {
+    die "Can't activate $sketch: its interface requires variable $varname"
+     unless exists $policy->{$varname};
+
+    say "Satisfied by policy: $varname" if $verbose;
+   }
+
+   # activation successful, now install it
+   my $activations = load_json($options{act_file});
+   ensure_dir(dirname($options{act_file}));
+   if (grep { $_ eq $options{ipolicy} } @{$activations->{$sketch}})
+   {
+    say "Already active: $sketch policy $options{ipolicy}";
+   }
+   else
+   {
+    $activations->{$sketch} = [
+                               List::MoreUtils->uniq(@{$activations->{$sketch}},
+                                                     $options{ipolicy})
+                              ];
+
+    open(my $ach, '>', $options{act_file})
+     or die "Could not write activation file $options{act_file}: $!";
+
+    print $ach $coder->encode($activations);
+    close $ach;
+
+    say "Activated: $sketch policy $options{ipolicy}";
+   }
+
+   $installed = 1;
+   last;
+  }
+ }
+
+ die "Could not activate sketch $sketch, it was not in [@{$options{repolist}}]"
+  unless $installed;
+}
+
 sub remove
 {
  my $toremove = shift @_;
@@ -227,18 +299,10 @@ sub install
  # make sure we only work with absolute directories
  my $sketches = find_sketches(map { File::Spec->rel2abs($_) } @$sketch_dirs);
 
- my $dest;
- foreach my $target (@{$options{repolist}})
- {
-  if (is_repo_local($target))
-  {
-   $dest = $target;
-   last;
-  }
- }
+ my $dest_repo = get_local_repo();
 
  die "Can't install: none of [@{$options{repolist}}] exist locally!"
-  unless defined $dest;
+  unless defined $dest_repo;
 
  foreach my $sketch (sort keys %$sketches)
  {
@@ -247,10 +311,10 @@ sub install
   say sprintf('Installing %s (%s) into %s',
               $sketch,
               $data->{file},
-              $dest)
+              $dest_repo)
    if $verbose;
 
-  my $install_dir = File::Spec->catdir($dest,
+  my $install_dir = File::Spec->catdir($dest_repo,
                                        split('::', $sketch),
                                       );
   if (ensure_dir($install_dir))
@@ -268,7 +332,7 @@ sub install
      unless ensure_dir($dest_dir);
 
     # TODO: maybe disable this?  It can be expensive for large files.
-    if (compare($source, $dest) == 0)
+    if (!$options{force} && compare($source, $dest) == 0)
     {
      warn "Manifest member $file is already installed in $dest"
       if $verbose;
@@ -287,6 +351,8 @@ sub install
 
      chown $uid, $gid, $dest;
     }
+
+    say "Installed file: $source -> $dest";
    }
 
    say "Done installing $sketch";
@@ -310,31 +376,19 @@ sub find_sketches
        my $f = $_;
        if ($f eq SKETCH_DEF_FILE)
        {
-        open(my $j, '<', $f)
-         or warn "Could not inspect $File::Find::name: $!";
+        my $json = load_json($File::Find::name);
 
-        if ($j)
+        # TODO: validate more thoroughly?
+        if (defined $json && ref $json eq 'HASH' &&
+            exists $json->{manifest}  && ref $json->{manifest}  eq 'HASH' &&
+            exists $json->{metadata}  && ref $json->{metadata}  eq 'HASH' &&
+            exists $json->{metadata}->{name} &&
+            exists $json->{interface} && ref $json->{interface} eq 'HASH')
         {
-         my @j = <$j>;
-         chomp @j;
-         s/\n//g foreach @j;
-         s/^\s*#.*//g foreach @j;
-         my $json = $coder->decode(join '', @j);
-         # TODO: validate more thoroughly?
-         if (ref $json eq 'HASH' &&
-             exists $json->{manifest}  && ref $json->{manifest}  eq 'HASH' &&
-             exists $json->{metadata}  && ref $json->{metadata}  eq 'HASH' &&
-             exists $json->{metadata}->{name} &&
-             exists $json->{interface} && ref $json->{interface} eq 'HASH') {
-          $json->{dir} = $File::Find::dir;
-          $json->{file} = $File::Find::name;
-          # note this name will be stringified even if it's not a string
-          $contents{$json->{metadata}->{name}} = $json;
-         }
-         else
-         {
-          warn "Invalid sketch definition in $File::Find::name, skipping";
-         }
+         $json->{dir} = $File::Find::dir;
+         $json->{file} = $File::Find::name;
+         # note this name will be stringified even if it's not a string
+         $contents{$json->{metadata}->{name}} = $json;
         }
        }
       }, @dirs);
@@ -346,6 +400,20 @@ sub is_repo_local
 {
  my $repo = shift @_;
  return -d $repo;  # just a file path
+}
+
+sub get_local_repo
+{
+ my $repo;
+ foreach my $target (@{$options{repolist}})
+ {
+  if (is_repo_local($target))
+  {
+   $repo = $target;
+   last;
+  }
+ }
+ return $repo;
 }
 
 {
@@ -380,6 +448,55 @@ sub is_repo_local
 
 # Utility functions follow
 
+sub load_json
+{
+ # TODO: improve this
+ my $f = shift @_;
+
+ my $j;
+ unless (open($j, '<', $f))
+ {
+  warn "Could not inspect $f: $!";
+  return;
+ }
+
+ if ($j)
+ {
+  my @j = <$j>;
+  chomp @j;
+  s/\n//g foreach @j;
+  s/^\s*#.*//g foreach @j;
+  my $ret = $coder->decode(join '', @j);
+
+  if (ref $ret eq 'HASH' &&
+      exists $ret->{include} && ref $ret->{include} eq 'ARRAY')
+  {
+   foreach my $include (@{$ret->{include}})
+   {
+    if (dirname($include) eq '.' && ! -f $include)
+    {
+     $include = File::Spec->catfile(dirname($f), $include);
+    }
+
+    say "Including $include";
+    my $parent = load_json($include);
+    if (ref $parent eq 'HASH')
+    {
+     $ret->{$_} = $parent->{$_} foreach keys %$parent;
+    }
+    else
+    {
+     warn "Malformed include contents from $include: not a hash";
+    }
+   }
+  }
+
+  return $ret;
+ }
+
+ return;
+}
+
 sub ensure_dir
 {
  my $dir = shift @_;
@@ -400,13 +517,3 @@ __DATA__
 Help for cfsketch
 
 Document the options:
-
-repolist
-  "config!",
-  "interactive!",
-  "install=s@",
-  "activate=s",                 # activate only one at a time
-  "deactivate=s",               # deactivate only one at a time
-  "remove=s@",
-  "test=s@",
-  "search=s@",
