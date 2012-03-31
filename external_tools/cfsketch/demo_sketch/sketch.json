@@ -1,21 +1,27 @@
 { 
 
-  "manifest": { 
-              "a/b/file1": { "perm": "0700", "desc": "File 1", "version": 3.14 },
-              "file2": { },
-            },
+    "manifest":
+    {
+        "a/b/file1": { "perm": "0700", "desc": "File 1", "version": 3.14 },
+        "file2": { },
+    },
 
-  "metadata": { "name": "Misc::mysketch", "version": 3.14, "authors": [ "Diego Z", "Ted Z" ] },
+    "metadata":
+    {
+        "name": "Misc::mysketch", "version": 3.14, "authors": [ "Diego Z", "Ted Z" ],
+        "depends": { "Misc::nosuchsketch": { "version": 3.14 }, },
+    },
 
-  "interface": {
+    "interface": 
+    {
 # all are mandatory, also accept "boolean"
-               "activated": { "type": "boolean" },
+        "activated": { "type": "boolean" },
 # also accept "integer"
-               "myint": { "type": "integer", "default": 0 },
+        "myint": { "type": "integer", "default": 0 },
 # also accept "string"
-               "mystr": { "type": "string" },
-               "os_special_path": { "type": "string", "default": { "redhat": "/etc", "windows": "c:\\" }},
+        "mystr": { "type": "string" },
+        "os_special_path": { "type": "string", "default": { "redhat": "/etc", "windows": "c:\\" }},
 # also accept "list of 32-bit integers"
-               "hosts::deny": { "list": { "type": "integer", "bits": 32 } },
-             }
+        "hosts::deny": { "list": { "type": "integer", "bits": 32 } },
+    }
 }

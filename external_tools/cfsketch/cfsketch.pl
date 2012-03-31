@@ -171,30 +171,48 @@ sub search
 
  foreach my $repo (@{$options{repolist}})
  {
-  say "Looking for terms [@$terms] in cfsketch repository [$repo]"
-   if $verbose;
-
   my $local = is_repo_local($repo) ? 'local' : 'remote';
+  my @sketches = search_internal($repo, $terms);
 
   my $contents = repo_get_contents($repo);
-  say "Inspecting repo contents: ", $coder->encode($contents)
-   if $verbose;
 
-  foreach my $sketch (sort keys %$contents)
+  foreach my $sketch (@sketches)
   {
-   # TODO: improve this search
-   my $as_str = $sketch . ' ' . $coder->encode($contents->{$sketch});
-
-   foreach my $term (@$terms)
-   {
-    next unless $as_str =~ m/$term/;
-    # this format is easy to parse, even if the directory has spaces,
-    # because the first two fields won't have spaces
-    say "$local $sketch $contents->{$sketch}->{dir}";
-    last;
-   }
+   # this format is easy to parse, even if the directory has spaces,
+   # because the first two fields won't have spaces
+   say "$local $sketch $contents->{$sketch}->{dir}";
   }
  }
+}
+
+sub search_internal
+{
+ my $repo  = shift @_;
+ my $terms = shift @_;
+
+ my @ret;
+
+ say "Looking for terms [@$terms] in cfsketch repository [$repo]"
+  if $verbose;
+
+ my $contents = repo_get_contents($repo);
+ say "Inspecting repo contents: ", $coder->encode($contents)
+  if $verbose;
+
+ foreach my $sketch (sort keys %$contents)
+ {
+  # TODO: improve this search
+  my $as_str = $sketch . ' ' . $coder->encode($contents->{$sketch});
+
+  foreach my $term (@$terms)
+  {
+   next unless $as_str =~ m/$term/;
+   push @ret, $sketch;
+   last;
+  }
+ }
+
+ return @ret;
 }
 
 sub activate
@@ -308,6 +326,20 @@ sub install
  {
   my $data = $sketches->{$sketch};
 
+  my @missing = missing_dependencies($data->{metadata}->{depends});
+
+  if (scalar @missing)
+  {
+   if ($options{force})
+   {
+    warn "Installing $sketch despite unsatisfied dependencies @missing";
+   }
+   else
+   {
+    die "Can't install: $sketch has unsatisfied dependencies @missing";
+   }
+  }
+
   say sprintf('Installing %s (%s) into %s',
               $sketch,
               $data->{file},
@@ -364,7 +396,48 @@ sub install
  }
 }
 
-# TODO: need functions for: activate deactivate remove test
+# TODO: need functions for: deactivate remove test
+
+sub missing_dependencies
+{
+ my $deps = shift @_;
+ my @missing;
+
+ foreach my $repo (@{$options{repolist}})
+ {
+  my $contents = repo_get_contents($repo);
+  foreach my $dep (sort keys %$deps)
+  {
+   if (exists $contents->{$dep})
+   {
+    my $dd = $contents->{$dep};
+    # either the version is not specified or it has to match
+    if (!exists $deps->{$dep}->{version} ||
+        $dd->{metadata}->{version} >= $deps->{$dep}->{version})
+    {
+     say "Found dependency $dep in $repo" if $verbose;
+     # TODO: test recursive dependencies, right now this will loop
+     # TODO: maybe use a CPAN graph module
+     push @missing, missing_dependencies($dd->{metadata}->{depends});
+     delete $deps->{$dep};
+    }
+    else
+    {
+     say "Found dependency $dep in $repo but the version doesn't match"
+      if $verbose;
+    }
+   }
+  }
+ }
+
+ push @missing, sort keys %$deps;
+ if (scalar @missing)
+ {
+  say "Unsatisfied dependencies: @missing";
+ }
+
+ return @missing;
+}
 
 sub find_sketches
 {
@@ -382,6 +455,8 @@ sub find_sketches
         if (defined $json && ref $json eq 'HASH' &&
             exists $json->{manifest}  && ref $json->{manifest}  eq 'HASH' &&
             exists $json->{metadata}  && ref $json->{metadata}  eq 'HASH' &&
+            exists $json->{metadata}->{depends}  &&
+            ref $json->{metadata}->{depends}  eq 'HASH' &&
             exists $json->{metadata}->{name} &&
             exists $json->{interface} && ref $json->{interface} eq 'HASH')
         {
