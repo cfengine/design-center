@@ -1,0 +1,2 @@
+this is one more potential stumbling block -- polices are put in masterfiles but not in inputs.  if the policy set is safe (does not make any changes to the system), let's put it in inputs
+

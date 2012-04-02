@@ -1,0 +1,14 @@
+
+body match_value example
+{
+select_line_matching => "Expression match.* whole line";
+}
+
+should be
+
+body location ....
+
+that's in section 7.7.4 of the manual
+
+(which is the location body template section)
+

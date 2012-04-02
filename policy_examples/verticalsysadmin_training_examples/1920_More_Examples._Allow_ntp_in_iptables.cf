@@ -34,7 +34,7 @@ bundle agent files__iptables__allow_ntp_from_backend_servers
 files:
   redhat::  # tested on RHEL only, file location may vary based on Linux distro or OS
       "/etc/sysconfig/iptables"
-       edit_line => insert_NTP_allow_rule_before_the_drop_rule,
+       edit_line => insert_NTP_allow_rule_before_the_allow_established_connections_rule,
        comment => "insert NTP allow rule into /etc/sysconfig/iptables before the drop rule to allow time service to the back end";
 }
 
@@ -42,7 +42,7 @@ files:
 ####################################################################
 
 
-bundle edit_line insert_NTP_allow_rule_before_the_drop_rule
+bundle edit_line insert_NTP_allow_rule_before_the_allow_established_connections_rule
 {
   vars:
       "ntp_rule" string => "-A RH-Firewall-1-INPUT -p udp -m udp --dport 123 -s 192.168.1.1/24 -j ACCEPT -m comment --comment \"allow connections from backend servers for time service\""; # this is the text we'll want to insert into /etc/sysconfig/iptables to allow NTP from the backend

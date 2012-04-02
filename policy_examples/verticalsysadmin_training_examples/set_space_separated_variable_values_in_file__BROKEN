@@ -1,0 +1,47 @@
+
+bundle agent example {
+
+    vars:
+        "config[ServerName]" string => "myexample.example.com" ;
+
+    files:
+        "/etc/httpd/conf/httpd.conf"
+	    
+
+            edit_line => set_space_separated_variable_values_in_file("$(this.promiser)", "example.config");
+
+}
+
+bundle edit_line set_space_separated_variable_values_in_file(file,v)
+#
+# This is a clone of set_variable_values2, except it expects
+# "Name Value" pairs, instead of "Name = Value" pairs.
+#
+{
+vars:
+
+  "index" slist => getindices("$(v)");
+
+  # Be careful if the index string contains funny chars
+
+  "cindex[$(index)]" string => canonify("$(index)");
+
+  "fieldc_$(cindex[$(index)])" int => getfields("$(index).*","$(file)"," ","FIELD_$(cindex[$(index)])");
+
+classes:
+  "$(cindex[$(index)])_in_file" expression => strcmp("$(index) $($(v)[$(index)])", "$(FIELD_$(index)[1]) $(FIELD_$(index)[2])");
+
+
+delete_lines:  # delete any lhs when no match
+  "$(index) .*",
+    ifvarclass => "!$(cindex[$(index)])_in_file";
+
+
+insert_lines:
+
+  "$(index) $($(v)[$(index)])",
+
+         comment => "Insert a variable definition",
+      ifvarclass => "!$(cindex[$(index)])_in_file";
+
+}

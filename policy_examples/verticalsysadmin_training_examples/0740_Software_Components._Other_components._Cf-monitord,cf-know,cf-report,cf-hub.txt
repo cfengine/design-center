@@ -12,7 +12,8 @@ promises are enforced).
 cf-know
 
 Knowledge modelling agent – responsible for building and
-analysing a semantic knowledge network.
+analysing a semantic knowledge network. (Enterprise edition
+only.)
 
 
 cf-report
