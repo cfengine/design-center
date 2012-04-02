@@ -1,0 +1,123 @@
+                       EXERCISES
+
+(If you finish early, please study the Reference
+Manual, chapters 1 - 4.)
+
+
+1. Write a policy to signal TERM and then KILL to any
+process matching "trn".
+
+  Testing it:
+
+    cp /bin/sleep ~/trn
+    ~/trn 1000 &
+    cf-agent -f ...
+
+1b. Make a list of processes you don't want to run
+(let's say "trn" and "eggdrop") and put this list 
+into an slist variable.  Write a promise to signal
+'term' and then 'kill' to any process in that
+list.
+ 
+==================================================
+
+EXERCISE 2
+
+Write a policy to create /tmp/myname.txt and put
+your name in it.
+
+EXERCISE 3
+
+Manually create a template:
+echo 'Hello, $(mybundle.myname).  The time is $(sys.date).' > /tmp/file.tmpl
+
+
+Note: a fully qualified variable consists of the bundle 
+name wherein the variable is defined plus the variable 
+name.  Example: 
+
+    bundle agent mybundle { vars: "myvar" string => "myvalue"; }
+
+The fully qualified variable name is $(mybundle.myvar).
+
+
+Now write a policy to populate contents of /tmp/file.txt
+using this template file, /tmp/file.tmpl. 
+
+Make sure your bundle defines the variable embedded in the
+template, and that your bundle name matches the bundle name
+embedded in the template.
+
+Your policy should use an edit_lines bundle containing an
+insert_lines promise with the following attributes:
+
+      insert_type => "file",
+      expand_scalars => "true";
+
+If you finish before rest of the group, finish studying 
+the CFEngine Reference Manual chapters 1 -4, and if you
+finish that, then study the Special Topic guide on Editing
+File Content.
+
+
+EXERCISE 4.
+
+Now write another policy where the template contains
+a placeholder tag.
+
+The template, /var/cfengine/masterfiles/motd.tmpl should contain:
+
+    This system is property of __ORGANIZATION__ and is maintained
+by __DEPARTMENT__. Unauthorized use forbidden.  This system is
+maintained by CFEngine.  Any ad-hoc changes may get overwritten.
+Please make your changes through CFEngine policy.  cf-agent last ran on
+$(sys.date)' 
+
+
+Write a CFEngine policy to generate /etc/motd from this
+template.  Use all of the following promise types:
+
+delete_lines
+insert_lines
+replace_patterns
+
+Your policy should replace __ORGANIZATION__ with the name of your organization.
+
+
+If you finish before rest of the group, finish studying 
+the CFEngine Reference Manual chapters 1 -4, and if you
+finish that, then study the Special Topic guide on Editing
+File Content.
+
+
+
+
+
+
+5. Write a policy to create /etc/motd as follows:
+It should always say  "unauthorized use forbidden"
+
+On weekends only it should have an extra line that says
+"go home, it's the weekend".
+
+
+6. Integrate your motd policy into the default cfengine policy
+
+7.  Read the Special Topics guide on Reporting.  Now write
+a policy that logs to /var/log/repairs.txt if a promise
+is repaired by CFEngine.
+
+8. Practice using "methods" type promises:
+
+Write a policy that has two bundles.
+
+The first bundle does something visible (such as a
+reports type promise that says "bundle1") AND calls
+the second bundle.
+
+The second bundle reports "bundle2".
+
+
+9. Now parameterize the 2nd bundle -- have the
+first bundle feed it an argument, and have the
+2nd bundle display that argument.
