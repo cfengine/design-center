@@ -34,7 +34,7 @@ reports:
 
   webserver::
 
-    "I am a Web server";
+    "I am a Web server - 1";
 
 }
 
