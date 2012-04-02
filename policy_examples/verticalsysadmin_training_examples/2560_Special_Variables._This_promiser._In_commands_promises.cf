@@ -1,4 +1,5 @@
 # Note: this does not work in 3.1.5; fixed in version 3.2.0.
+# Broken again in 3.2.1
 
 
 bundle agent example {

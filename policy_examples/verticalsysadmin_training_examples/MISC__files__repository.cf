@@ -1,0 +1,35 @@
+body common control {
+  inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+}
+
+bundle agent example {
+
+files:
+
+  "/tmp/file.txt"
+
+     create => "true",
+     edit_line => insert_lines("$(sys.date)"), # guarantees an edit
+     edit_defaults => timestamp,
+     repository => "/var/cfengine/repository",
+     comment => "Save all history of edits to this important file.";
+}
+
+body edit_defaults timestamp
+{
+edit_backup => "timestamp";
+}
+
+#
+# Example output:
+#
+# [root@web01 verticalsysadmin_training_examples]# cf-agent -f ./MISC__files__repository.cf -b example -KI
+#  >> Using command line specified bundlesequence
+#  -> Edited file /tmp/file.txt
+# Moved /tmp/file.txt_1333404966_Mon_Apr__2_17_16_07_2012.cf-before-edit to repository location /var/cfengine/repository/_tmp_file.txt_1333404966_Mon_Apr__2_17_16_07_2012.cf-before-edit
+# [root@web01 verticalsysadmin_training_examples]# cf-agent -f ./MISC__files__repository.cf -b example -KI
+#  >> Using command line specified bundlesequence
+#  -> Edited file /tmp/file.txt
+# Moved /tmp/file.txt_1333404969_Mon_Apr__2_17_16_10_2012.cf-before-edit to repository location /var/cfengine/repository/_tmp_file.txt_1333404969_Mon_Apr__2_17_16_10_2012.cf-before-edit
+# [root@web01 verticalsysadmin_training_examples]# 
+
