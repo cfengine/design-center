@@ -6,6 +6,7 @@ bundle agent example {
 
       linux.Hr15:: "Linux system AND we are in the 15th hour.";
 
+
       linux&Hr22:: "Linux system AND we are in the 22nd hour.";
 
       linux&Hr20:: "Linux system AND we are in the 20th hour.";
