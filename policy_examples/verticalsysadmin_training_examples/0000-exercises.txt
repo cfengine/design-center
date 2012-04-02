@@ -60,29 +60,60 @@ finish that, then study the Special Topic guide on Editing
 File Content.
 
 
-EXERCISE 4.
+EXERCISE 4.  Classes.
 
-Now write another policy where the template contains
-a placeholder tag.
+Set a custom class based on the existance of a file.
+For example:
 
-The template, /var/cfengine/masterfiles/motd.tmpl should contain:
+    classes:
 
-    This system is property of __ORGANIZATION__ and is maintained
-by __DEPARTMENT__. Unauthorized use forbidden.  This system is
-maintained by CFEngine.  Any ad-hoc changes may get overwritten.
-Please make your changes through CFEngine policy.  cf-agent last ran on
-$(sys.date)' 
+       "file_exists"
+         
+           expression  =>  fileexists("/etc/site_id") ;
 
+Then write another promise that is conditional on the 
+above class.
+
+Run it when the file exists, and when it does not, and
+observe how CFEngine dynamically configures your server.
+
+
+
+
+EXERCISE 5.  File Editing and Classes
+
+Write a policy to create /etc/motd as follows:
+It should *always* say "Unauthorized use forbidden."
+
+On weekends only it should have an extra line that says
+"go home, it's the weekend".
+
+
+
+EXERCISE 6.  File Editing - replace_patterns - uses COPBL
+
+Write a policy where the template contains a placeholder tag
+of the form __TAGNAME__
+
+The template, /tmpl/motd.tmpl should contain:
+
+    This system is property of __ORGANIZATION__.
+    Unauthorized use forbidden.  
+    CFEngine maintains this system and last ran on $(sys.date).
 
 Write a CFEngine policy to generate /etc/motd from this
-template.  Use all of the following promise types:
+template. 
+
+Your policy should replace __ORGANIZATION__ with the
+name of your organization.
+
+Your policy should expand the special variable $(sys.date).
+
+Use all of the following promise types:
 
 delete_lines
 insert_lines
 replace_patterns
-
-Your policy should replace __ORGANIZATION__ with the name of your organization.
-
 
 If you finish before rest of the group, finish studying 
 the CFEngine Reference Manual chapters 1 -4, and if you
@@ -94,20 +125,21 @@ File Content.
 
 
 
-5. Write a policy to create /etc/motd as follows:
-It should always say  "unauthorized use forbidden"
+EXERCISE 7. Integrate your motd policy into the default cfengine policy
 
-On weekends only it should have an extra line that says
-"go home, it's the weekend".
+===============================================================
+[For faster students]
 
+EXERCISE 8. Reporting when CFEngine makes a change to your system
 
-6. Integrate your motd policy into the default cfengine policy
-
-7.  Read the Special Topics guide on Reporting.  Now write
+Read the Special Topics guide on Reporting.  Now write
 a policy that logs to /var/log/repairs.txt if a promise
 is repaired by CFEngine.
 
-8. Practice using "methods" type promises:
+===============================================================
+EXERCISE 9. Methods
+
+Practice using "methods" type promises:
 
 Write a policy that has two bundles.
 
@@ -118,6 +150,8 @@ the second bundle.
 The second bundle reports "bundle2".
 
 
-9. Now parameterize the 2nd bundle -- have the
+EXERCISE 10. Methods (continued).
+
+Now parameterize the 2nd bundle -- have the
 first bundle feed it an argument, and have the
 2nd bundle display that argument.
