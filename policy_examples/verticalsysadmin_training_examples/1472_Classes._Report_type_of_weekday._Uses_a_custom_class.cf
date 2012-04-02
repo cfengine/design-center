@@ -1,0 +1,15 @@
+bundle agent example {
+
+    classes:
+          "weekday"
+               expression => "Monday|Tuesday|Wednesday|Thursday|Friday";
+
+
+          "weekend"
+                expression => "Saturday|Sunday";
+
+    reports:
+       weekday::
+        "Today is a weekday.";
+       
+}
