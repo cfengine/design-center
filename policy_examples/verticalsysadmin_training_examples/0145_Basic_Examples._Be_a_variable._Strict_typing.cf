@@ -6,8 +6,12 @@ bundle agent example {
 
             int => "1.5";
 
+        "my_int2"
+
+            int => "hello world";
+
     commands:
 
-        "/bin/echo my int is $(my_int)";
+        "/bin/echo my_int is $(my_int).  my_int2 is $(my_int2).";
 
 }
