@@ -1,28 +1,25 @@
-# copy this to /var/cfengine/inputs/promises.cf and
-# /var/cfengine/inputs/failsafe.cf, and then start
-# the cf-execd service and allow it to pick up the
-# policy and automatically configure your system
+# Demonstration of CFEngine running in non-interactive
+# mode using promises.cf as its input file.
+#
+# 1. Copy this to /var/cfengine/inputs/promises.cf
+# 2. Copy this to # /var/cfengine/inputs/failsafe.cf
+# 3. Restart CFEngine service to reload the policy
+# 4. Watch it create the file within 5 minutes
+
 
 body common control {
-    bundlesequence =>  {"example",}; 
+    bundlesequence =>  {"example",};
 }
 
 bundle agent example {
 
   files:
 
-    "/tmp/nologin"  
+    "/tmp/nologin"
 
-	create => "true",
-	comment => "Mortal users can't log in while system is in maintenance mode";
+        create => "true",
+        comment => "Mortal users can't log in while system is in maintenance mode";
 
 
-    processes:
-
-        "eggdrop" 
-
-            signals => { "term", "kill" },
-            comment => "We don't want IRC bots on our Web servers.";
- 
 
 }
