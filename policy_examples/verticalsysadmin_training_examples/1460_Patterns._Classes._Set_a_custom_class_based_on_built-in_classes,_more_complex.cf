@@ -6,6 +6,7 @@ bundle agent example {
 
         "'our_custom_class' is set";
 
+
     classes:
 
         "our_custom_class"
