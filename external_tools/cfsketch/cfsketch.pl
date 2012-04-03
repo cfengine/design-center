@@ -13,6 +13,7 @@ use Data::Dumper;
 use Getopt::Long;
 use Modern::Perl;               # needs apt-get libmodern-perl
 use JSON::XS;                   # needs apt-get libjson-xs-perl
+use Template;
 
 use constant SKETCH_DEF_FILE => 'sketch.json';
 
@@ -26,7 +27,7 @@ my %options =
   quiet      => 0,
   help       => 0,
   force      => 0,
-  run_file   => '/var/lib/cfsketch/run.cf',
+  run_dir    => '/var/lib/cfsketch',
   # switched depending on root or non-root
   act_file   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch.activations.conf'),
   configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch.conf'),
@@ -41,7 +42,7 @@ my @options_spec =
   "configfile|cf=s",
   "ipolicy=s",
   "act_file=s",
-  "run_file=s",
+  "run_dir=s",
 
   "config!",
   "interactive!",
@@ -113,7 +114,7 @@ if ($options{list})
  exit;
 }
 
-foreach my $word (qw/search install activate deactivate remove test/)
+foreach my $word (qw/search install activate deactivate remove test generate/)
 {
  if ($options{$word})
  {
@@ -132,7 +133,7 @@ sub configure_self
 
  my %keys = (
              repolist => 1,             # array
-             run_file => 0,             # string
+             run_dir => 0,             # string
             );
 
  my %config;
@@ -219,6 +220,136 @@ sub search_internal
  return @ret;
 }
 
+# generate the actual cfengine config that will run all the cfsketch bundles
+sub generate
+{
+   # activation successful, now install it
+   my $activations = load_json($options{act_file});
+   die "Can't load any activations from $options{act_file}"
+    unless defined $activations && ref $activations eq 'HASH';
+
+   # maybe make the run template configurable?
+   my $run_template = 'run.tmpl';
+
+   my $template = Template->new({
+                                 INCLUDE_PATH => dirname($0),
+                                 INTERPOLATE  => 1,
+                                 EVAL_PERL    => 1,
+                                });
+
+ ACTIVATION:
+   foreach my $sketch (sort keys %$activations)
+   {
+    my $prefix = $sketch;
+    $prefix =~ s/::/__/g;
+
+    foreach my $repo (@{$options{repolist}})
+    {
+     my $contents = repo_get_contents($repo);
+     if (exists $contents->{$sketch})
+     {
+      foreach my $policy (@{$activations->{$sketch}})
+      {
+       say "Loading activation policy for sketch $sketch from $policy"
+        if $verbose;
+       my $pdata = load_json($policy);
+       die "Couldn't load activation policy for $sketch from $policy: $!"
+        unless defined $pdata;
+
+       my $data = $contents->{$sketch};
+       my $if = $data->{interface};
+       my $entry = $data->{entry_point};
+
+       my $input = 'run.tmpl';
+       my $output = '';
+
+       my %types;
+       my %booleans;
+       my %vars;
+
+       foreach my $k (sort keys %$if)
+       {
+        my $cfengine_k = "${prefix}::$k";
+        $cfengine_k =~ s/::/__/g;
+
+        my $v = $pdata->{$k};
+        my $definition = $if->{$k};
+
+        if (ref $definition ne 'HASH')
+        {
+         # TODO: add more variable types handled here, including
+         # "list of integers" and such
+         if ($definition eq 'boolean' ||
+             $definition eq 'string' ||
+             $definition eq 'integer')
+         {
+          $definition = { type => $definition };
+         }
+        }
+
+        if (ref $definition ne 'HASH')
+        {
+         die "Can't parse definition of $k: " . Dumper($definition);
+        }
+
+        my $list = 0;
+        my $def1 = $definition;
+
+        # TODO: add more variable types here
+        if (exists $definition->{list})
+        {
+         $list = 1;
+         $def1 = $definition->{list};
+        }
+
+        if ($def1->{type} eq 'boolean' && !$list)
+        {
+         $booleans{$cfengine_k} = $v;
+        }
+        elsif ($list)
+        {
+         $vars{$cfengine_k} = '{ ' . join(',', map { "\"$_\"" } @$v) . ' }';
+         $types{$cfengine_k} = 'slist';
+        }
+        else
+        {
+         $vars{$cfengine_k} = $v;
+         $types{$cfengine_k} = 'string';
+        }
+       }
+
+       ensure_dir($options{run_dir});
+       # process input template, substituting variables
+       $template->process($input,
+                          {
+                           repo        => $repo,
+                           sketch      => $sketch,
+                           entry_point => $entry->[1],
+                           inputs      => sprintf('"%s"', $entry->[0]),
+                           types       => \%types,
+                           booleans    => \%booleans,
+                           vars        => \%vars,
+                  }, \$output)
+        || die $template->error();
+
+       my $run_name = "${prefix}__$policy.cf";
+       $run_name =~ s/[\.\/]/_/g;
+       $run_name =~ s/\.json\.cf/.cf/;
+       my $run_file = File::Spec->catfile($options{run_dir}, $run_name);
+       open(my $rf, '>', $run_file)
+        or die "Could not write run file $run_file: $!";
+
+       print $rf $output;
+       close $rf;
+       say "Generated activated policy $policy for sketch $sketch into $run_file";
+      }
+      next ACTIVATION;
+     }
+    }
+    die "Could not find sketch $sketch in repo list @{$options{repolist}}";
+   }
+}
+
 sub activate
 {
  my $sketch = shift @_;
@@ -260,7 +391,7 @@ sub activate
    else
    {
     $activations->{$sketch} = [
-                               List::MoreUtils->uniq(@{$activations->{$sketch}},
+                               List::MoreUtils::uniq(@{$activations->{$sketch}},
                                                      $options{ipolicy})
                               ];
 
@@ -532,7 +663,37 @@ sub verify_entry_point
    # TODO: need better cfengine parser
    if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/ && $1 eq $entry->[1])
    {
-    say "Found definition of bundle $1 at $maincf_filename:$.";
+    my $bundle = $1;
+    say "Found definition of bundle $bundle at $maincf_filename:$." if $verbose;
+
+    # verify parameters: disabled for now, I think I'd rather pass indirectly
+    # my $params = $2;
+    # $params =~ s/\s+//g;                # no spaces
+    # my %params_needed = %$interface;
+    # delete $params_needed{activated};   # this parameter is managed upstream
+    # foreach my $param (split ',', $params)
+    # {
+    #  # all :: in the parameters become __ on the cfengine side, so reverse it
+    #  $param =~ s/__/::/g;
+    #  if (exists $params_needed{$param})
+    #  {
+    #   say "Found bundle $bundle parameter $param at $maincf_filename:$." if $verbose;
+    #   delete $params_needed{$param};
+    #  }
+    #  else
+    #  {
+    #   warn "Unexpected entry point parameter $param for bundle $bundle in $maincf_filename";
+    #   return 0;
+    #  }
+    # }
+
+    # my @params_missing = sort keys %params_needed;
+    # if (scalar @params_missing)
+    # {
+    #   warn "Could not find entry point parameters [@params_missing] for bundle $bundle in $maincf_filename";
+    #   return 0;
+    # }
+
     return 1;
    }
   }

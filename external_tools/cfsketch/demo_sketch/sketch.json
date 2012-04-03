@@ -17,8 +17,13 @@
 
     "interface": 
     {
-# all are mandatory, also accept "boolean"
+# all are mandatory
+
+# also accept "boolean"
         "activated": { "type": "boolean" },
+
+# note that booleans are CLASSES on the cfengine side!!!
+
 # also accept "integer"
         "myint": { "type": "integer", "default": 0 },
 # also accept "string"

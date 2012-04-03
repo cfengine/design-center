@@ -1,5 +1,5 @@
 bundle agent mysketch_main_bundle(myint, mystr, os_special_path, hosts__deny)
 {
   reports:
-      "$(myint) $(mystr) $(os_special_path) $(hosts__deny)";
+      "$(g.Misc__mysketch__myint) $(g.Misc__mysketch__mystr) $(g.Misc__mysketch__os_special_path) $(g.Misc__mysketch__hosts__deny)";
 }
