@@ -12,6 +12,5 @@ bundle agent example {
         "php-mysql"
 
             package_policy => "add",
-            package_list_update_ifelapsed => "1",  # minutes
             package_method => yum;
 }

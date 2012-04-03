@@ -190,10 +190,6 @@ finish that, then study the Special Topic guide on Editing
 File Content.
 
 
-
-
-
-
 EXERCISE 7. Integrate your motd policy into the default cfengine policy
 
 ===============================================================
@@ -224,3 +220,7 @@ EXERCISE 10. Methods (continued).
 Now parameterize the 2nd bundle -- have the
 first bundle feed it an argument, and have the
 2nd bundle display that argument.
+
+
+
+

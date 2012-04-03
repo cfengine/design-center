@@ -8,7 +8,9 @@ vars:
 					"bananas",
 					"grapes",
 					"plantains",
+					"coconuts",
 			           };
+
 ############################################################
 
 commands:
