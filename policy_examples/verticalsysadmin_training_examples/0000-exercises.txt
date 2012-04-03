@@ -26,6 +26,7 @@ EXERCISE 2
 Write a policy to create /tmp/myname.txt and put
 your name in it.
 
+
 EXERCISE 3
 
 Manually create a template:
@@ -80,17 +81,85 @@ observe how CFEngine dynamically configures your server.
 
 
 
-EXERCISE 5.  File Editing and Classes
+EXERCISE 5.  File Editing
 
 Write a policy to create /etc/motd as follows:
 It should *always* say "Unauthorized use forbidden."
 
+EXERCISE 5b.  File Editing and Classes
 On weekends only it should have an extra line that says
 "go home, it's the weekend".
+
+===========================================================
+
+EXERCISE 6.  Running CFEngine Non-Interactively (as a Service)
+
+Demonstrating of CFEngine running in non-interactive
+mode, using /var/cfengine/inputs/promises.cf as its
+input:
+
+
+1. Specify a bundlesequence in your policy from exercise 5.
+
+Add to your policy:
+
+   body common control {
+
+        bundlesequence =>  { "..." };
+
+   }
+
+
+2. Copy exercise 5 to /var/cfengine/inputs/promises.cf, and
+
+3. Make your failsafe.cf identical to promises.cf:
+
+      cd /var/cfengine/inputs
+      ln -s promises.cf failsafe.cf
+
+4. Check the syntax of the default input file (promises.cf):
+
+      cf-promises
+
+5. Run CFengine from command line once to make sure
+   it all works:
+
+      cf-agent
+
+6. Restart CFEngine service to reload the policy.
+
+      /etc/init.d/cfengine3 restart
+
+
+7. Make sure you don't have an /etc/motd file: 
+ 
+     rm /etc/motd
+
+8. Watch CFEngine create /etc/motd within 5 minutes.
+
+     watch ls -l /etc/motd 2>/dev/null
+
+
+
+
+
 
 
 
 EXERCISE 6.  File Editing - replace_patterns - uses COPBL
+
+Create (manually) a data file:
+
+   /tmp/data.txt
+
+        line 1
+        line 2
+        line 3
+
+Use cf-agent to replace "line 2" with "line two".
+
+
+EXERCISE 6b.  File Editing - replace_patterns - uses COPBL
 
 Write a policy where the template contains a placeholder tag
 of the form __TAGNAME__

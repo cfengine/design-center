@@ -1,7 +1,3 @@
-body common control {
-   inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-}
-
 bundle agent example {
 
 files:
@@ -15,8 +11,14 @@ bundle edit_line transform_dogs_to_cats {
 
   replace_patterns:
 
-      "dog"
+      "[Dd]og"
 
           replace_with => value("cat");
 
+}
+
+body replace_with value(x)
+{
+replace_value => "$(x)";
+occurrences => "all";
 }

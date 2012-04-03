@@ -2,9 +2,13 @@ bundle agent example {
 
     commands:
 
-      linux&Hr09:: "/bin/echo Linux system AND we are in the 9th hour.";
+        any::
 
-      linux&Hr22:: "/bin/echo Linux system AND we are in the 22nd hour.";
+             "/bin/echo hello world";
 
-      any::        "/bin/echo hello world";
+      linux&Hr08::
+
+             "/bin/echo Linux system AND we are in the 8th hour.";
+
+      
 }

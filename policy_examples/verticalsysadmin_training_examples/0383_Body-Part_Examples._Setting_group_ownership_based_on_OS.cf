@@ -6,7 +6,7 @@ files:
 
    "/tmp/testfile" 
 	create  => "true", 
-	perms   => set_attributes("aleksey");
+	perms   => set_mode_700_administrative_group_and_specified_user("aleksey");
 }
 
 
@@ -18,14 +18,14 @@ files:
 
    "/tmp/testfile2" 
 	create  => "true", 
-	perms   => set_attributes("rob");
+	perms   => set_mode_700_administrative_group_and_specified_user("rob");
 }
 
 
 #################################################
 
 
-body perms set_attributes(xyz) {
+body perms set_mode_700_administrative_group_and_specified_user(xyz) {
 
     mode   => "0700";
 

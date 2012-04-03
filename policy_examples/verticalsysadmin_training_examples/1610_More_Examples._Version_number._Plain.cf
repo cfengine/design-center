@@ -1,17 +1,17 @@
 body common control
 {
 version => "1.0";
-bundlesequence => { "test" };
+bundlesequence => { "example" };
 }
 
 
 ########################################
 
 
-bundle agent test
+bundle agent example
 {
 
 commands:
   linux::
-    "/bin/echo hello world, i love wednesdays and coffee";
+    "/bin/nosuchcommand hello world, i love wednesdays and coffee";
 }
