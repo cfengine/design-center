@@ -1,0 +1,5 @@
+bundle agent mysketch_main_bundle(myint, mystr, os_special_path, hosts__deny)
+{
+  reports:
+      "$(myint) $(mystr) $(os_special_path) $(hosts__deny)";
+}

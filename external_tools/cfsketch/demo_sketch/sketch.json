@@ -4,6 +4,7 @@
     {
         "a/b/file1": { "perm": "0700", "desc": "File 1", "version": 3.14 },
         "file2": { },
+        "main.cf": { },
     },
 
     "metadata":
@@ -11,6 +12,8 @@
         "name": "Misc::mysketch", "version": 3.14, "authors": [ "Diego Z", "Ted Z" ],
         "depends": { "Misc::nosuchsketch": { "version": 3.14 }, },
     },
+
+    "entry_point": [ "main.cf", "mysketch_main_bundle" ],
 
     "interface": 
     {

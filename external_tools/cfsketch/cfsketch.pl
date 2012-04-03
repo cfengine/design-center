@@ -26,6 +26,7 @@ my %options =
   quiet      => 0,
   help       => 0,
   force      => 0,
+  run_file   => '/var/lib/cfsketch/run.cf',
   # switched depending on root or non-root
   act_file   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch.activations.conf'),
   configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch.conf'),
@@ -40,6 +41,7 @@ my @options_spec =
   "configfile|cf=s",
   "ipolicy=s",
   "act_file=s",
+  "run_file=s",
 
   "config!",
   "interactive!",
@@ -51,6 +53,7 @@ my @options_spec =
   "test=s@",
   "search=s@",
   "list!",
+  "generate!",
  );
 
 GetOptions (
@@ -129,6 +132,7 @@ sub configure_self
 
  my %keys = (
              repolist => 1,             # array
+             run_file => 0,             # string
             );
 
  my %config;
@@ -451,24 +455,96 @@ sub find_sketches
        {
         my $json = load_json($File::Find::name);
 
-        # TODO: validate more thoroughly?
+        # TODO: validate more thoroughly?  at least better messaging
         if (defined $json && ref $json eq 'HASH' &&
             exists $json->{manifest}  && ref $json->{manifest}  eq 'HASH' &&
+
             exists $json->{metadata}  && ref $json->{metadata}  eq 'HASH' &&
+
             exists $json->{metadata}->{depends}  &&
             ref $json->{metadata}->{depends}  eq 'HASH' &&
+
             exists $json->{metadata}->{name} &&
+
+            exists $json->{entry_point}  &&
+            ref $json->{entry_point}  eq 'ARRAY' &&
+            scalar @{$json->{entry_point}} == 2 &&
+
             exists $json->{interface} && ref $json->{interface} eq 'HASH')
         {
+         my $name = $json->{metadata}->{name};
          $json->{dir} = $File::Find::dir;
          $json->{file} = $File::Find::name;
-         # note this name will be stringified even if it's not a string
-         $contents{$json->{metadata}->{name}} = $json;
+
+         if (verify_entry_point($name,
+                                $File::Find::dir,
+                                $json->{manifest},
+                                $json->{entry_point},
+                                $json->{interface}))
+         {
+          # note this name will be stringified even if it's not a string
+          $contents{$name} = $json;
+         }
+         else
+         {
+          warn "Could not verify bundle entry point from $File::Find::name";
+         }
+        }
+        else
+        {
+         warn "Could not load sketch definition from $File::Find::name";
         }
        }
       }, @dirs);
 
  return \%contents;
+}
+
+sub verify_entry_point
+{
+ my $name      = shift @_;
+ my $dir       = shift @_;
+ my $mft       = shift @_;
+ my $entry     = shift @_;
+ my $interface = shift @_;
+
+ my $maincf = $entry->[0];
+
+ my $maincf_filename = File::Spec->catfile($dir, $maincf);
+ unless (exists $mft->{$maincf} && -f $maincf_filename)
+ {
+  warn "Could not find sketch $name entry point '$maincf'";
+  return 0;
+ }
+
+ my $mcf;
+ unless (open($mcf, '<', $maincf))
+ {
+  warn "Could not open $maincf_filename: $!";
+  return 0;
+ }
+
+ if ($mcf)
+ {
+  $. = 0;
+  while (my $line = <$mcf>)
+  {
+   # TODO: need better cfengine parser
+   if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/ && $1 eq $entry->[1])
+   {
+    say "Found definition of bundle $1 at $maincf_filename:$.";
+    return 1;
+   }
+  }
+
+  warn "Could not find the definition of bundle $entry->[1] in $maincf_filename";
+  return 0;
+ }
+ else
+ {
+  warn "Could not load $maincf_filename: $!";
+  return 0;
+ }
 }
 
 sub is_repo_local
