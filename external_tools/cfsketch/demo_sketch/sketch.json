@@ -21,6 +21,7 @@
 
 # also accept "boolean"
         "activated": { "type": "boolean" },
+        "mybool": "boolean",
 
 # note that booleans are CLASSES on the cfengine side!!!
 

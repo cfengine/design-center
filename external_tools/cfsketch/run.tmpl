@@ -8,9 +8,7 @@ bundle common g
 {
   classes:
 [% FOREACH var IN booleans.keys.sort %]
-  [% IF booleans.$var %]
-      "$var" expression => "any";
-  [% END %]
+      "$var" expression => "[% UNLESS booleans.$var %]![% END %]any";
 [% END %]
   vars:
 [% FOREACH var IN vars.keys.sort %]
@@ -21,6 +19,6 @@ bundle common g
 bundle agent cfsketch_run
 {
   methods:
-    ${prefix}_activated::
+    ${prefix}__activated::
       "$sketch" usebundle => $entry_point;
 }

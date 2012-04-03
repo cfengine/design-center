@@ -1,6 +1,7 @@
 {
     "include": ["top.json"],
     "activated": true,
+    "mybool": false,
     "myint": 100,
     "mystr": "hello",
     "hosts::deny": [100, 200, 300],
