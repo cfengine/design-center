@@ -1,6 +1,6 @@
 body common control
 {
-      bundlesequence => { "g", "cfsketch", "cfsketch_run" };
+      bundlesequence => { "g", "cfsketch_run" };
       inputs => { $inputs };
 }
 
@@ -8,17 +8,19 @@ bundle common g
 {
   classes:
 [% FOREACH var IN booleans.keys.sort %]
-      # TODO: do a proper true/false expression here
-      "$var" => expression("[% booleans.$var %]");
+  [% IF booleans.$var %]
+      "$var" expression => "any";
+  [% END %]
 [% END %]
   vars:
 [% FOREACH var IN vars.keys.sort %]
-      "$var"        [% types.$var %] => "[% vars.$var %]";
+      "$var" [% types.$var %] => [% vars.$var %];
 [% END %]
 }
 
 bundle agent cfsketch_run
 {
   methods:
-      "$sketch" usebundle => $entry_point($passed_vars);
+    ${prefix}_activated::
+      "$sketch" usebundle => $entry_point;
 }

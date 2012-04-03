@@ -27,7 +27,6 @@ my %options =
   quiet      => 0,
   help       => 0,
   force      => 0,
-  run_dir    => '/var/lib/cfsketch',
   # switched depending on root or non-root
   act_file   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch.activations.conf'),
   configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch.conf'),
@@ -42,7 +41,6 @@ my @options_spec =
   "configfile|cf=s",
   "ipolicy=s",
   "act_file=s",
-  "run_dir=s",
 
   "config!",
   "interactive!",
@@ -133,7 +131,6 @@ sub configure_self
 
  my %keys = (
              repolist => 1,             # array
-             run_dir => 0,             # string
             );
 
  my %config;
@@ -313,12 +310,11 @@ sub generate
         }
         else
         {
-         $vars{$cfengine_k} = $v;
+         $vars{$cfengine_k} = "\"$v\"";
          $types{$cfengine_k} = 'string';
         }
        }
 
-       ensure_dir($options{run_dir});
        # process input template, substituting variables
        $template->process($input,
                           {
@@ -329,13 +325,14 @@ sub generate
                            types       => \%types,
                            booleans    => \%booleans,
                            vars        => \%vars,
+                           prefix      => $prefix,
                   }, \$output)
         || die $template->error();
 
        my $run_name = "${prefix}__$policy.cf";
        $run_name =~ s/[\.\/]/_/g;
        $run_name =~ s/\.json\.cf/.cf/;
-       my $run_file = File::Spec->catfile($options{run_dir}, $run_name);
+       my $run_file = File::Spec->catfile($data->{dir}, $run_name);
        open(my $rf, '>', $run_file)
         or die "Could not write run file $run_file: $!";
 
