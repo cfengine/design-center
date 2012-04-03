@@ -20,7 +20,7 @@ Important note, the bundle to call may not take any paramaters
 
     bundle agent main {
         methods:
-            "any" usebundle => usebundle_if_ip_has_mac("test", "192.168.1.254", "98:2c:be:27:e8:c9");
+            "any" usebundle => cfdc_usebundle_if_ip_has_mac("test", "192.168.1.254", "98:2c:be:27:e8:c9");
 
     }
 

@@ -1,4 +1,7 @@
-bundle agent usebundle_if_ip_has_mac(callbundle, ip, maclist){
+bundle agent cfdc_usebundle_if_ip_has_mac(callbundle, ip, maclist){
+# arg1: string
+# arg2: string
+# arg3: slist
 # execute a bundle if an ip has a known mac addres
 # Usefull for performing operatings under certain network conditions.
 # Consider when networks overlap in multiple enviornments and the agent may
@@ -10,7 +13,7 @@ bundle agent usebundle_if_ip_has_mac(callbundle, ip, maclist){
 #       "known_macs"  slist => { "98:2c:be:27:e8:c9" };
 #
 #   methods:
-#       "any" usebundle => usebundle_if_ip_has_mac("bundlename", "$(ip)", @(main.known_macs));
+#       "any" usebundle => cfdc_usebundle_if_ip_has_mac("bundlename", "$(ip)", @(main.known_macs));
 #
     vars:
         linux::
