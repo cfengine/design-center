@@ -1,4 +1,4 @@
-bundle agent interface_settings_update(nic, config) {
+bundle agent cfdc_interface_settings_update(nic, config) {
 # expects string, array
 # nic: interface to operate on
 # config: configuration array containting keys that are valid options for 
@@ -34,30 +34,47 @@ bundle agent interface_settings_update(nic, config) {
 #
 #    methods:
 #
-#    "any" usebundle => interface_settings_update("$(nics)", "context.$(nics)");
+#    "any" usebundle => cfdc_interface_settings_update("$(nics)", "context.$(nics)");
 
 
+    vars:
+        # Contents of the ifdown-up script 
+        "ifdown_up_script" slist => { "#!/bin/bash",
+                                      "/sbin/ifdown $1",
+                                      "/sbin/ifup $1",
+                                    };
     files:
         redhat|centos::
             "/etc/sysconfig/network-scripts/ifcfg-$(nic)"
-                comment         => "configure interface persistent settings",
-                edit_defaults   => no_backup,
-                create          => "true",
-                perms           => mog("644", "root", "root"),
-                edit_line       => set_variable_values("$(config)"),
-                classes         => if_repaired("interface_settings_update_ifupdown_$(nic)");
+                create        => "true",
+                perms         => mog("644", "root", "root"),
+                edit_defaults => no_backup,
+                edit_line     => set_variable_values("$(config)"),
+                classes       => if_repaired("cfdc_interface_settings_update_ifupdown_$(nic)"),
+                handle        => "cfdc_interface_settings_update_files_etc_sysconfig_network_scripts_ifcfg_nic",
+                comment       => "configure interface persistent settings";
+
+            # Using /sbin/ifdown and /sbin/ifup as seperate commands promises 
+            # leaves the interface in a down state. Seems that cf-agent stops
+            # executing after running /sbin/ifdown. This script is a workaround
+            # for that unexpected behavior
+            "/usr/local/sbin/ifdown-up"
+                create        => "true",
+                perms         => mog("755", "root", "root"),
+                edit_defaults => empty,
+                edit_line     => append_if_no_lines("@(cfdc_interface_settings_update.ifdown_up_script)"),
+                handle        => "cfdc_interface_settings_update_files_usr_local_sbin_ifdown_up",
+                comment       => "We need to use this script to down and up
+                                  interfaces that have configuration changed.";
 
     commands:
         redhat|centos::
-            "/sbin/ifdown $(nic)"
-                ifvarclass  => "interface_settings_update_ifupdown_$(nic)",
-                classes     => if_repaired("interface_settings_update_downed_interface_$(nic)"),
-                comment     => "down the interface with old configuration";
+            "/usr/local/sbin/ifdown-up $(nic)"
+                ifvarclass => "cfdc_interface_settings_update_ifupdown_$(nic)",
+                handle     => "cfdc_interface_settings_update_commands_ifdown_up",
+                depends_on => { "cfdc_interface_settings_update_files_usr_local_sbin_ifdown_up" },
+                comment    => "down the interface with old configuration, bring up with new";
 
-            "/sbin/ifup $(nic)"
-                ifvarclass  => "interface_settings_update_ifupdown_$(nics)",
-                classes     => if_repaired("interface_settings_update_uped_interface_$(nic)"),
-                comment     => "bring up the interface with new configuration";
 
     reports:
         !(redhat|centos)::
