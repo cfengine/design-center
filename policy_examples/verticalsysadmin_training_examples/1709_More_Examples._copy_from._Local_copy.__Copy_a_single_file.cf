@@ -14,6 +14,6 @@ files:
 
    "/etc/motd"
 
-	copy_from    => local_cp("/var/cfengine/masterfiles/motd");
+	copy_from    => local_cp("/tmpl/motd.tmpl");
 
 }

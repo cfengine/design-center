@@ -35,7 +35,7 @@ files:
   redhat::  # tested on RHEL only, file location may vary based on Linux distro or OS
       "/etc/sysconfig/iptables"
        edit_line => insert_NTP_allow_rule_before_the_allow_established_connections_rule,
-       comment => "insert NTP allow rule into /etc/sysconfig/iptables before the drop rule to allow time service to the back end";
+       comment => "insert NTP allow rule into /etc/sysconfig/iptables before the allow-established-connections rule to allow time service to the back end";
 }
 
 
@@ -57,9 +57,9 @@ insert_lines: "$(ntp_rule)",
 body location before_the_established_connections_rule
 
 {
+select_line_matching => "^-A.*INPUT -m state --state.*ESTABLISHED.*-j ACCEPT.*"; 
 before_after => "before";
 first_last => "first";
-select_line_matching => "^-A.*INPUT -m state --state.*ESTABLISHED.*-j ACCEPT.*"; 
 
 }
 

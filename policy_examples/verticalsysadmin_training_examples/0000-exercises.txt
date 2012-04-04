@@ -2,9 +2,13 @@
 
 (If you finish early, please study the Reference
 Manual, chapters 1 - 4.)
+w b
+one
 
+http://www.example.com/
+three
 
-1. Write a policy to signal TERM and then KILL to any
+1. Write a policy to signal TERM and then KILL to anyklasdjf
 process matching "trn".
 
   Testing it:
@@ -220,6 +224,86 @@ EXERCISE 10. Methods (continued).
 Now parameterize the 2nd bundle -- have the
 first bundle feed it an argument, and have the
 2nd bundle display that argument.
+
+
+
+============================================================
+
+EXERCISE 11 - Precision File Editing
+
+
+Insert the following three lines (and you can keep them
+in order, as a single block, using
+   insert_type => "preserve_block";
+) into /etc/profile BEFORE the HOSTNAME=... line.
+
+
+if [ -x /bin/custom ]
+  then /bin/custom
+fi
+
+EXERCISE 12 - Methods
+
+Let's say we want our /etc/profile file to contain a line
+ORGANIZATION=MyOrg to set the ORGANIZATION environment
+variable when users log in.
+
+Write a bundle "etc_profile_contains" that would take an argument
+and ensures /etc/profile contains text string that specified
+in the argument.
+
+Demonstrate its use by calling it from another bundle:
+
+    bundle agent example { 
+       methods:  
+         "any"
+             usebundle => etc_profile_contains("ORGANIZATION=MyOrg");
+    }
+
+
+EXERCISE 13 - Methods (re-usable bundles)
+
+Make a bundle called file_contains that takes two arguments:
+a filename, and a text string.  The bundle should ensure that
+the file specified in the first argument contains the text string
+specified in the second argument.  Example:
+
+    methods:
+     "any" usebundle => file_contains("/etc/profile", "ORGANIZATION=MyOrg");
+     "any" usebundle => file_contains("/etc/motd", "Unauth. use forbidden");
+
+
+
+
+EXERCISE 15 - Classes
+
+Reminder:  make any changes to promises.cf in /var/cfengine/masterfiles.
+If you make them in /var/cfengine/inputs, they may get overwritten if/when
+failsafe.cf kicks in.
+
+Problem:  All workstations should be shutdown at end of class at 15:40.
+
+Desired state:  The command "shutdown -h now" is run during the 15:40 - 15:45
+window.
+
+Add to "bundle agent main" in promises.cf a promise to shutdown the
+workstation at 15:40.  Copy promises.cf from masterfiles to inputs.
+Make sure cf-execd is running.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
