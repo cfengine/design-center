@@ -1,3 +1,5 @@
+# does not work under 3.2.1.  haven't tested it under 3.3.0
+
 # INPUT
 # Put a few text files in /tmp (ending in .txt), and put
 # the line "hello world" in one of them.

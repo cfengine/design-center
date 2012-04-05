@@ -1,0 +1,26 @@
+Installing and Using Git (for RHEL 5 systems)
+  to use the CFEngine Community Code Sharing Repo
+  ("Design Center") 
+
+rpm -ihv  http://dl.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm 
+
+yum -y install git 
+
+
+
+1. During class, stay in 
+
+git clone git://github.com/atsaloli/design-center.git
+cd design-center
+git remote add upstream git://github.com/atsaloli/design-center.git
+git pull upstream # use this to pull in changes commited by Aleksey
+
+  Note: Aleksey's practical examples are under
+        design-center/policy-examples/verticalsysadmin_training_examples
+
+
+2. After class:  Use this URL instead, it is the master CFngine repo,
+   they pull in the verticalsysadmin_training_examples from Aleksey's
+   repo:
+
+       git clone git://github.com/cfengine/design-center.git

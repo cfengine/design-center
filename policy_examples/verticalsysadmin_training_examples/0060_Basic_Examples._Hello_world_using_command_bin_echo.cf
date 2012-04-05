@@ -6,6 +6,7 @@ bundle agent example
 
 commands:
 
-   "/bin/echo Hello world!";
+   "/bin/echo"
+      args => "Hello world!";
 
 }

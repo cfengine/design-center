@@ -15,5 +15,6 @@ classes:
 
 reports:
     solinux::
-        "Yay!! I am on Solaris or Linux.";
+        "Yay!! I am on Solaris or Linux."
+             comment => "This is a comment.";
 }

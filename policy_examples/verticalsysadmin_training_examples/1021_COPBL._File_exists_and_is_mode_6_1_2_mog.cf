@@ -8,13 +8,12 @@ bundle agent example {
 
 files:
 
-# This is a throw-away comment
 
    "/tmp/testfile" 
 
-	comment => "/tmp/testfile must be mode 612 for application X to work; it must be owned by user aleksey and group cfengine", # Cfengine KM comment
-	create  => "true",   # Promise constraint 1
-	perms   => mog("612","aleksey","cfengine"); # Promise constraint 2
+	comment => "/tmp/testfile must be mode 612 for application X to work; it must be owned by user aleksey and group cfengine",
+	create  => "true",
+	perms   => mog("612","aleksey","cfengine"); 
 
 	# shell equivalent: 
 	# touch /tmp/testfile

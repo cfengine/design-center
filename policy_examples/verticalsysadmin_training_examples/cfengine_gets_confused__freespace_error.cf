@@ -1,0 +1,27 @@
+bundle agent example {
+
+storage:
+
+#    "/"
+#         volume  => check_min_free_space("30%");
+
+    "/boot"
+         volume  => check_min_free_space("1000000000M");
+
+#    "/xyz"
+#         volume  => check_min_free_space("50%");
+
+}
+
+
+body volume check_min_free_space(free)
+{
+freespace      => "$(free)";   # interpolate the variable $(free)
+
+				# freespace can be % or absolute value
+				#   if percent, percent minimum disk space
+				#   that should be available before warning 
+				#
+				#   if absolute value, minimum disk space
+				#   that should be available before warning
+}
