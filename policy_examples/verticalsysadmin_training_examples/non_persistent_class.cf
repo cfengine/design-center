@@ -1,0 +1,24 @@
+body common control {
+
+inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+
+}
+
+
+bundle agent example {
+
+
+files:
+  "/tmp/file.txt"
+	create => "true",
+	edit_line => insert_lines("hello world 1234"),
+        classes => if_repaired("promise_repaired");
+	
+
+reports:
+  promise_repaired::
+    "soft class is set";
+
+}
+
+

@@ -291,6 +291,51 @@ workstation at 15:40.  Copy promises.cf from masterfiles to inputs.
 Make sure cf-execd is running.
 
 
+EXERCISE 16 - COPBL
+
+Given a file /tmp/file.txt:
+
+apples
+oranges
+
+and given that we want the file to converge to:
+
+apples
+# oranges
+bananas
+
+use the COPBL to ensure the file contains the line
+bananas (bundle edit_line insert_lines) and to ensure
+the line matching "oranges" is commented out (bundle edit_line comment_lines_matching).
+
+EXERCISE 17 - COPBL - contain a command
+
+
+Run the command /usr/bin/id as user classroom.
+
+
+EXERCISE 18 - COPBL - linking promises together
+
+Problem: Increase security by ensuring sshd is running with
+"PermitRootLogin no".
+
+How does the system look like in the correct configuration:
+1. Make sure /etc/ssh/sshd_config contains the line "PermitRootLogin no"
+2. Make sure sshd is running using this configuration
+
+How to code it in CFEngine:
+1. a files promise to edit sshd_config
+2. a commands promise to restart sshd to reload the new config
+
+Exercise:  use the "body classes if_repaired" to link 1 and 2
+to make sure 2 happens.
+
+
+EXERCISE 19 - Bonus Points - Restart sshd if the process start
+time of sshd predates the modification timestamp of /etc/ssh/sshd_config
+(Process selection is demonstrated in *Process_Selection* in
+verticalsysadmin_training_examples)
+
 
 
 

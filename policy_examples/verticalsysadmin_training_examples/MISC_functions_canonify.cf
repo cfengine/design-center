@@ -1,0 +1,16 @@
+bundle agent example {
+
+vars:
+
+   "canonified_text"
+
+	string  => canonify("hello!@#$%world");
+
+reports:
+
+   cfengine::
+
+       "$(canonified_text)";
+
+}
+
