@@ -1,0 +1,58 @@
+The cf3-pip repo contains an extension written for the CFEngine 3 library. Goal
+was to have a means to easily manage Python packages from a CFEngine setup.
+
+With this extension Python package manager 'pip' -- which is an acronym for
+'pip installs packages' -- is supported as one of the package managers
+available in CFEngine. It makes it possible to install and remove Python
+packages both globally as well as in a virtual environment. For the latter
+you'll need an environment with the Python package 'virtualenv'.
+
+
+The extension itself can be found in the file 'pip.cf'.
+
+
+Sample usage:
+=============
+
+#
+# Main Cfengine 3 configuration file
+#
+body common control
+{
+    bundlesequence => { pip_example };
+
+    inputs => {
+        "cfengine_stdlib.cf",
+        "pip.cf",
+    };
+}
+
+bundle agent pip_example
+{
+    vars:
+        any::
+            #
+            # Define the packages to install/delete
+            #
+            "pkgadd[yolk]"  string  => "0.4.3";
+
+            "pip_delete"    slist   => {
+                "dummypkg1",
+                "dummypkg2",
+            };
+
+    methods:
+        #
+        # Install yolk globally and in the virtual environment at
+        # /data/virtualenvs/testenv
+        #
+        "any" usebundle => pip_install_pkg("pip_example.pkgadd");
+        "any" usebundle => pip_install_pkg_virtualenv("pip_example.pkgadd", "/data/virtualenvs/testenv");
+
+        #
+        # Uninstall dummypkg1 and dummypkg2 globally and from the virtual
+        # environment at /data/virtualenvs/testenv
+        #
+        "any" usebundle => pip_uninstall_pkg($(pip_example.pip_delete));
+        "any" usebundle => pip_uninstall_pkg_virtualenv($(pip_example.pip_delete), "/data/virtualenvs/testenv");
+}

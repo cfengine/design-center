@@ -1,0 +1,150 @@
+### pip.cf
+#
+# Contents for your CFEngine library.
+#
+
+bundle common pip
+{
+    classes:
+        "have_pip_from_git"     expression  => fileexists("/usr/local/bin/pip");
+
+        !have_pip::
+            "have_pip"          expression  => returnszero("/usr/bin/which pip", "noshell");
+
+        !have_virtualenv::
+            "have_virtualenv"   expression  => returnszero("/usr/bin/which virtualenv", "useshell");
+    
+    vars:
+
+        #
+        # Set the command to run pip
+        #
+        have_pip.!have_pip_from_git::
+            "command"   string  => execresult("/usr/bin/which pip", "noshell");
+ 
+        have_pip_from_git::
+            "command"   string  => "/usr/local/bin/pip";
+    
+    
+        have_virtualenv::
+            #
+            # Location of the virtualenv-command
+            #
+            "virtualenv_cmd"    string => execresult("/usr/bin/which virtualenv", "noshell");
+}
+
+#
+# Let pip manage Python packages globally
+#
+body package_method pip_pkg
+{
+    package_changes => "bulk";
+    package_list_command => "$(pip.command) freeze";
+    package_list_update_ifelapsed => 0;
+
+    package_list_name_regex => "^([^=]+)==.+$";
+    package_list_version_regex => "^[^=]+==(.+)$";
+
+    package_installed_regex => ".*";
+    package_name_convention => "$(name)==$(version)";
+    package_delete_convention => "$(name)";
+
+    package_add_command => "$(pip.command) install";
+    package_delete_command => "$(pip.command) uninstall --yes";
+}
+
+#
+# Let pip manage Python packages in the virtual environment envdir
+#
+body package_method pip_pkg_virtualenv(envdir)
+{
+    package_changes => "bulk";
+    package_list_command => "$(envdir)/bin/pip freeze";
+    package_list_update_ifelapsed => 0;
+
+    package_list_name_regex => "^([^=]+)==.+$";
+    package_list_version_regex => "^[^=]+==(.+)$";
+
+    package_installed_regex => ".*";
+    package_name_convention => "$(name)==$(version)";
+    package_delete_convention => "$(name)";
+
+    package_add_command => "$(pip.virtualenv_cmd) $(envdir) && $(envdir)/bin/pip install";
+    package_delete_command => "$(pip.virtualenv_cmd) $(envdir) && $(envdir)/bin/pip uninstall --yes";
+}
+
+
+#
+# Wrapper bundle to install packages globally
+#
+# This only works with pull request 37:
+#   https://github.com/cfengine/core/pull/37
+#
+bundle agent pip_install_pkg(pkg_array)
+{
+    vars:
+        any::
+            "pip_install" slist => getindices($(pkg_array));
+
+    packages:
+        have_pip::
+            "$(pip_install)"
+                comment         => "Install Python package(s) globally",
+
+                package_method  => pip_pkg,
+                package_policy  => "addupdate",
+                package_select  => "==",
+                package_version => "$($(pkg_array)[$(pip_install)])";
+}
+
+#
+# Wrapper bundle to remove packages globally
+#
+bundle agent pip_uninstall_pkg(pkg_list)
+{
+    packages:
+        have_pip::
+            "$(pkg_list)"
+                comment         => "Remove Python package(s) globally",
+                
+                package_method  => pip_pkg,
+                package_policy  => "delete",
+                package_select  => "==";
+}
+
+#
+# Wrapper bundle to install packages in a virtual environment
+#
+# This only works with pull request 37:
+#   https://github.com/cfengine/core/pull/37
+bundle agent pip_install_pkg_virtualenv(pkg_array, envdir)
+{
+    vars:
+        any::
+            "pip_install" slist => getindices($(pkg_array));
+
+    packages:
+        have_pip.have_virtualenv::
+            "$(pip_install)"
+                comment         => "Install Python package(s) in a virtual environment",
+
+                package_method  => pip_pkg_virtualenv($(envdir)),
+                package_policy  => "addupdate",
+                package_select  => "==",
+                package_version => "$($(pkg_array)[$(pip_install)])";
+}
+
+#
+# Wrapper bundle to remove packages from a virtual environment
+#
+bundle agent pip_uninstall_pkg_virtualenv(pkg_list, envdir)
+{
+    packages:
+        have_pip::
+            "$(pkg_list)"
+                comment         => "Remove Python package(s) from a virtual environment",
+
+                package_method  => pip_pkg_virtualenv($(envdir)),
+                package_policy  => "delete",
+                package_select  => "==";
+}
