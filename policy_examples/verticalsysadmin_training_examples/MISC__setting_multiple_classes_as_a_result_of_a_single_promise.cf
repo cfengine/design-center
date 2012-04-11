@@ -1,0 +1,25 @@
+body common control { 
+	inputs => { "cfengine_stdlib.cf" };
+}
+
+bundle agent example {
+
+vars:
+   "slist_of_classes" slist => { "class1", "class2" };
+
+files:
+   "/etc/httpd/conf/httpd.conf"
+   edit_line => insert_lines("#test comment"),
+   classes  => if_repaired_set_these_classes("@(example.slist_of_classes)");
+
+reports:
+  class1:: "class1";
+  class2:: "class2";
+
+}
+
+body classes if_repaired_set_these_classes(list)
+{
+promise_repaired => { "@(list)" };
+}
+

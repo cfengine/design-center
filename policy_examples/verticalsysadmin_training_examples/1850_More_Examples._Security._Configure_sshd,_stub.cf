@@ -29,5 +29,6 @@ vars:
   "index" slist => getindices("$(params)");
 
 reports:
+   cfengine::
          "$(index) :  $($(params)[$(index)])";
 }

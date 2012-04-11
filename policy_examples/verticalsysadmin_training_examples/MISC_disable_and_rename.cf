@@ -1,0 +1,22 @@
+body common control {
+
+inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+
+}
+
+
+bundle agent example {
+
+files:
+   "/bin/chown"
+       rename => disable_for_good;
+}
+
+
+body rename disable_for_good
+{
+disable => "true";
+disable_mode => "000";
+}
+
+

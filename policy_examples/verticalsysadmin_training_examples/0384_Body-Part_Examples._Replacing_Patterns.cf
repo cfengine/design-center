@@ -1,0 +1,24 @@
+bundle agent example {
+
+files:
+
+  "/tmp/data.txt"
+        edit_line => transform_dogs_to_cats;
+
+}
+
+bundle edit_line transform_dogs_to_cats {
+
+  replace_patterns:
+
+      "[Dd]og"
+
+          replace_with => value("cat");
+
+}
+
+body replace_with value(x)
+{
+replace_value => "$(x)";
+occurrences => "all";
+}

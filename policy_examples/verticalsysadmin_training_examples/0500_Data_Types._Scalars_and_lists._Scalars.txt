@@ -7,3 +7,5 @@ Scalars
 - Each scalar may have one of three types: string, int or real.
 
 - A scalar variable is represented as $(identifier)
+
+  or $(bundlename.variablename) (fully qualified name)

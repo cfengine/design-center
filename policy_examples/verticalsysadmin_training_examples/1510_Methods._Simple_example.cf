@@ -1,8 +1,14 @@
+body common control {
+
+	inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+
+}
+
 bundle agent example {
 
 vars:
 
- "userlist" slist => { "alex", "ben", "charlie", "diana" };
+ "userlist" slist => { "alex", "ben", "charlie", "diana", "rob" };
 
 
 methods:
@@ -17,6 +23,7 @@ bundle agent remove_user(user) {
 
 commands:
 
- "/usr/sbin/userdel $(user)";
+ "/usr/sbin/userdel $(user)"
+      contain => silent;
 
 }

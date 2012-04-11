@@ -1,0 +1,2 @@
+I am referring to a list in scalar context but CFEngine does not do an implicit loop, it doesn't even recognize the list variable as a variable.   Why?   How to loop through a list that is stored in an array?
+
