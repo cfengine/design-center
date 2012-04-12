@@ -39,10 +39,10 @@ bundle agent cfdc_interface_settings_update(nic, config) {
 
     vars:
         # Contents of the ifdown-up script 
-        "ifdown_up_script" slist => { "#!/bin/bash",
-                                      "/sbin/ifdown $1",
-                                      "/sbin/ifup $1",
-                                    };
+        "ifdown_up_script" string => "#!/bin/bash
+/sbin/ifdown $1
+/sbin/ifup $1";
+                                    
     files:
         redhat|centos::
             "/etc/sysconfig/network-scripts/ifcfg-$(nic)"
@@ -62,7 +62,7 @@ bundle agent cfdc_interface_settings_update(nic, config) {
                 create        => "true",
                 perms         => mog("755", "root", "root"),
                 edit_defaults => empty,
-                edit_line     => append_if_no_lines("@(cfdc_interface_settings_update.ifdown_up_script)"),
+                edit_line     => append_if_no_line("$(ifdown_up_script)"),
                 handle        => "cfdc_interface_settings_update_files_usr_local_sbin_ifdown_up",
                 comment       => "We need to use this script to down and up
                                   interfaces that have configuration changed.";
