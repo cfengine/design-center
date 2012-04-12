@@ -2,35 +2,17 @@
 
     "manifest":
     {
-        "a/b/file1": { "perm": "0700", "desc": "File 1", "version": 3.14 },
-        "file2": { },
-        "main.cf": { },
+        "main.cf": { "desc": "main file", "version": 1.00 },
     },
 
     "metadata":
     {
-        "name": "Misc::mysketch", "version": 3.14, "authors": [ "Diego Z", "Ted Z" ],
-        "depends": { "Misc::nosuchsketch": { "version": 3.14 }, },
+        "name": "Misc::mysketch",
+        "version": 3.14,
+        "authors": [ "Diego Z", "Ted Z" ],
+        "depends": { "copbl": { "version": 105 }, "cfengine": { "version": "3.3.0" }, "os": [ "linux" ] },
     },
 
-    "entry_point": [ "main.cf", "mysketch_main_bundle" ],
-
-    "interface": 
-    {
-# all are mandatory
-
-# also accept "boolean"
-        "activated": { "type": "boolean" },
-        "mybool": "boolean",
-
-# note that booleans are CLASSES on the cfengine side!!!
-
-# also accept "integer"
-        "myint": { "type": "integer", "default": 0 },
-# also accept "string"
-        "mystr": { "type": "string" },
-        "os_special_path": { "type": "string", "default": { "redhat": "/etc", "windows": "c:\\" }},
-# also accept "list of 32-bit integers"
-        "hosts::deny": { "list": { "type": "integer", "bits": 32 } },
-    }
+    "entry_point": "main.cf",
+    "interface": "main.cf"
 }

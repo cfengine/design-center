@@ -14,6 +14,7 @@ use Getopt::Long;
 use Modern::Perl;               # needs apt-get libmodern-perl
 use JSON::XS;                   # needs apt-get libjson-xs-perl
 use Template;
+use Digest::MD5 qw(md5_hex);
 
 use constant SKETCH_DEF_FILE => 'sketch.json';
 
@@ -28,8 +29,9 @@ my %options =
   help       => 0,
   force      => 0,
   # switched depending on root or non-root
-  act_file   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch.activations.conf'),
-  configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch.conf'),
+  copbl_file => $> == 0 ? '/etc/cfsketch/lib/cfengine_stdlib.cf' : glob('~/.cfsketch/lib/cfengine_stdlib.cf'),
+  act_file   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch/activations.conf'),
+  configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch/cfsketch.conf'),
  );
 
 my @options_spec =
@@ -41,6 +43,7 @@ my @options_spec =
   "configfile|cf=s",
   "ipolicy=s",
   "act_file=s",
+  "copbl_file=s",
 
   "config!",
   "interactive!",
@@ -131,6 +134,7 @@ sub configure_self
 
  my %keys = (
              repolist => 1,             # array
+             copbl_file => 0,           # scalar
             );
 
  my %config;
@@ -540,7 +544,79 @@ sub missing_dependencies
   my $contents = repo_get_contents($repo);
   foreach my $dep (sort keys %$deps)
   {
-   if (exists $contents->{$dep})
+   if ($dep eq 'os' &&
+       ref $deps->{$dep} eq 'ARRAY')
+   {
+    my $uname = `/bin/uname -o`; # TODO: get this from cfengine?
+    chomp $uname;
+    foreach my $os (sort @{$deps->{$dep}})
+    {
+     if ($uname =~ m/$os/i)
+     {
+      say "Satisfied OS dependency: $uname matched $os"
+       if $verbose;
+
+      delete $deps->{$dep};
+     }
+    }
+
+    if (exists $deps->{$dep})
+    {
+     say "Unsatisfied OS dependencies: $uname did not match [@{$deps->{$dep}}]"
+      if $verbose;
+    }
+   }
+   elsif ($dep eq 'cfengine' &&
+          ref $deps->{$dep} eq 'HASH' &&
+          exists $deps->{$dep}->{version})
+   {
+    my $cfv = `cf-promises -V`; # TODO: get this from cfengine?
+    if ($cfv =~ m/version\s+(\d+\.\d+\.\d+)/)
+    {
+     my $version = $1;
+     if ($version ge $deps->{$dep}->{version})
+     {
+      say("Satisfied cfengine version dependency: $version present, needed ",
+       $deps->{$dep}->{version})
+       if $verbose;
+
+      delete $deps->{$dep};
+     }
+     else
+     {
+      say("Unsatisfied cfengine version dependency: $version present, need ",
+       $deps->{$dep}->{version})
+       if $verbose;
+     }
+    }
+    else
+    {
+     say "Unsatisfied cfengine dependency: could not get version."
+      if $verbose;
+    }
+   }
+   elsif ($dep eq 'copbl' &&
+          ref $deps->{$dep} eq 'HASH' &&
+          exists $deps->{$dep}->{version})
+   {
+    # TODO: open $options{copbl_file} and get the version
+    my $version = "106";
+    if ($version ge $deps->{$dep}->{version})
+    {
+     say("Satisfied COPBL version dependency: $version present, needed ",
+         $deps->{$dep}->{version})
+      if $verbose;
+
+     delete $deps->{$dep};
+    }
+    else
+    {
+     say("Unsatisfied COPBL version dependency: $version present, need ",
+         $deps->{$dep}->{version})
+      if $verbose;
+    }
+   }
+   elsif (exists $contents->{$dep})
    {
     my $dd = $contents->{$dep};
     # either the version is not specified or it has to match
@@ -584,21 +660,30 @@ sub find_sketches
         my $json = load_json($File::Find::name);
 
         # TODO: validate more thoroughly?  at least better messaging
-        if (defined $json && ref $json eq 'HASH' &&
+        if (
+            # the data must be valid and a hash
+            defined $json && ref $json eq 'HASH' &&
+            # the manifest must be a hash
             exists $json->{manifest}  && ref $json->{manifest}  eq 'HASH' &&
 
+            # the metadata must be a hash...
             exists $json->{metadata}  && ref $json->{metadata}  eq 'HASH' &&
 
+            # with a 'depends' key that points to a hash
             exists $json->{metadata}->{depends}  &&
             ref $json->{metadata}->{depends}  eq 'HASH' &&
 
+            # and a 'name' key
             exists $json->{metadata}->{name} &&
 
-            exists $json->{entry_point}  &&
-            ref $json->{entry_point}  eq 'ARRAY' &&
-            scalar @{$json->{entry_point}} == 2 &&
+            # entry_point has to point to a file in the manifest
+            exists $json->{entry_point} &&
+            exists $json->{manifest}->{$json->{entry_point}} &&
 
-            exists $json->{interface} && ref $json->{interface} eq 'HASH')
+            # interface has to point to a file in the manifest
+            exists $json->{interface} &&
+            exists $json->{manifest}->{$json->{interface}}
+           )
         {
          my $name = $json->{metadata}->{name};
          $json->{dir} = $File::Find::dir;
@@ -636,7 +721,7 @@ sub verify_entry_point
  my $entry     = shift @_;
  my $interface = shift @_;
 
- my $maincf = $entry->[0];
+ my $maincf = $entry;
 
  my $maincf_filename = File::Spec->catfile($dir, $maincf);
  unless (exists $mft->{$maincf} && -f $maincf_filename)
@@ -655,47 +740,34 @@ sub verify_entry_point
  if ($mcf)
  {
   $. = 0;
+  my $bundle;
+
   while (my $line = <$mcf>)
   {
-   # TODO: need better cfengine parser
-   if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/ && $1 eq $entry->[1])
+   # TODO: need better cfengine parser; this should be extracted by cf-promises
+   # when the meta: section is available
+
+   if (defined $bundle && $line =~ m/^\s*bundle\s+agent\s+meta_$bundle/)
    {
-    my $bundle = $1;
+    return $bundle;
+   }
+
+   if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/)
+   {
+    $bundle = $1;
     say "Found definition of bundle $bundle at $maincf_filename:$." if $verbose;
-
-    # verify parameters: disabled for now, I think I'd rather pass indirectly
-    # my $params = $2;
-    # $params =~ s/\s+//g;                # no spaces
-    # my %params_needed = %$interface;
-    # delete $params_needed{activated};   # this parameter is managed upstream
-    # foreach my $param (split ',', $params)
-    # {
-    #  # all :: in the parameters become __ on the cfengine side, so reverse it
-    #  $param =~ s/__/::/g;
-    #  if (exists $params_needed{$param})
-    #  {
-    #   say "Found bundle $bundle parameter $param at $maincf_filename:$." if $verbose;
-    #   delete $params_needed{$param};
-    #  }
-    #  else
-    #  {
-    #   warn "Unexpected entry point parameter $param for bundle $bundle in $maincf_filename";
-    #   return 0;
-    #  }
-    # }
-
-    # my @params_missing = sort keys %params_needed;
-    # if (scalar @params_missing)
-    # {
-    #   warn "Could not find entry point parameters [@params_missing] for bundle $bundle in $maincf_filename";
-    #   return 0;
-    # }
-
-    return 1;
    }
   }
 
-  warn "Could not find the definition of bundle $entry->[1] in $maincf_filename";
+  if (defined $bundle)
+  {
+   warn "Couldn't find the meta definition of [$bundle] in $maincf_filename";
+  }
+  else
+  {
+   warn "Couldn't find a usable bundle in $maincf_filename";
+  }
+
   return 0;
  }
  else
@@ -826,3 +898,11 @@ __DATA__
 Help for cfsketch
 
 Document the options:
+
+- need global run file for all generated
+
+- document cfsketch formats (policy, sketch.json, all .conf files)
+
+- sketch composition
+
+- activations in md5_hex("$str$salt")

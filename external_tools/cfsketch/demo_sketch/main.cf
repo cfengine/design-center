@@ -1,12 +1,22 @@
 bundle agent mysketch_main_bundle
 {
+
   vars:
       # this is an... interesting... workaround.  Thanks to Neil
       # Watson for suggesting it.  It's the only way I know to use a
-      # slist from another bundle.
+      # slist from another bundle.  This is not necessary in cfengine
+      # 3.3.0 or higher.
       "hosts__deny__channel" slist => { @{g.Misc__mysketch__hosts__deny} };
 
   reports:
     cfengine_3::
       "myint = $(g.Misc__mysketch__myint); mystr = $(g.Misc__mysketch__mystr); os_special_path = $(g.Misc__mysketch__os_special_path); denied host = $(hosts__deny__channel)";
+}
+
+bundle agent meta_mysketch_main_bundle
+{
+  vars:
+      "arguments" slist => { "foo", "bar", "baz" };
+      "argtype[foo]" string => "string";
+      "argtype[bar]" string => "slist";
 }
