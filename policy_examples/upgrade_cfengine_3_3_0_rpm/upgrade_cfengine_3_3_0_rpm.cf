@@ -1,0 +1,68 @@
+bundle agent upgrade_cfengine_3_3_0_rpm{
+    vars:
+	"bundlename" string => "upgrade_cfengine_3_3_0_rpm";
+        "dir_masterfiles" string => "/var/cfengine/masterfiles";
+
+        "files"
+            string => "sketches/upgrade_cfengine_3_3_0_rpm/files",
+            comment => "Path to sketch files relative to inputs or masterfiles";
+
+        "dir_packages" string => "$(sys.workdir)/inputs/$(files)/packages";
+
+
+        "files_refresh_interval"
+            string => "1440",
+            comment => "Time in minutes to refresh the files directory from the policy hub";
+
+        "package[cfengine-community][version]" string => "3.3.0-1";
+        "package[cfengine-community][policy]"  string => "update";
+
+	"packages" slist => getindices("$(bundlename).package");
+
+    files:
+        "$(sys.workdir)/inputs/$(files)/."
+            copy_from => sync_cp("$(dir_masterfiles)/$(files)/.", "$(sys.policy_hub)"),
+            depth_search => recurse("inf"),
+            action       => if_elapsed("$(files_refresh_interval)"),
+            comment      => "Sync sketch files directory locally";
+
+        # cf-twin is only used in the NOVA edition.
+        community_edition::
+
+	    "$(sys.workdir)/bin/cf-twin"
+                delete => tidy,
+                comment => "We need to remove cf-twin because it causes undefined symbol errors see bug 1068";
+
+            "/usr/local/sbin/cf-twin"
+                delete => tidy,
+                comment => "We need to remove cf-twin because it causes undefined symbol errors see bug 1068";
+
+    #packages:
+    #    "$(packages)"
+    #        package_policy => "$(package[$(packages)][policy])",
+    #        package_method => rpm_version("$(dir_packages)"),
+    #        package_select => ">=",
+    #        package_version => "$(package[$(packages)][version])",
+    #        package_architectures => { "$(sys.arch)" },
+    #        classes               => if_repaired("$(bundlename)_restart_cfengine"),
+    #        comment               => "Install the version $(package[$(packages)][version])
+    #                                  of the $(packages) rpm for the $(sys.arch) architecture";
+
+   processes:
+	"cf-execd"
+            restart_class => "$(bundlename)_restart_cfengine"; 
+
+    commands:
+        "/bin/rpm -UvH $(dir_packages)/$(packages)-$(package[$(packages)][version]).$(sys.arch).rpm"
+            classes => if_repaired("$(bundlename)_restart_cfengine"),
+            comment => "Versioning models from 3.2.1 -> 3.3.0 are incompatible so we just use rpm directly";
+
+        "/etc/init.d/cfengine3 restart"
+            ifvarclass => "$(bundlename)_restart_cfengine",
+            comment    => "Restart cfengine3 if its not running or after we have upgraded the rpm";
+
+    reports:
+        inform_mode::
+            "$(package[$(packages)][policy])";
+
+}
