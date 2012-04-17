@@ -1,6 +1,11 @@
-test:
-	./cfsketch.pl --repolist=/var/lib/cfsketch --install=. -v -f
-	./cfsketch.pl --repolist=/var/lib/cfsketch --activate Misc::mysketch --ip=./policies/mysketch.json -v
-	./cfsketch.pl --repolist=/var/lib/cfsketch --generate -v
-	cat /var/lib/cfsketch/Misc/mysketch/Misc__mysketch____policies_mysketch_json_cf
-	cf-agent -I -K -f /var/lib/cfsketch/Misc/mysketch/Misc__mysketch____policies_mysketch_json_cf
+REPO:=/var/tmp/cfsketch
+
+test: prep
+	./cfsketch.pl --repolist=$(REPO) --install=. -v -f
+	./cfsketch.pl --repolist=$(REPO) --activate Misc::mysketch --ip=./policies/mysketch.json -v
+	./cfsketch.pl --repolist=$(REPO) --generate -v
+	cat $(REPO)/Misc/mysketch/Misc__mysketch____policies_mysketch_json_cf
+	cf-agent -I -K -f $(REPO)/Misc/mysketch/Misc__mysketch____policies_mysketch_json_cf
+
+prep:
+	/bin/mkdir -p $(REPO)

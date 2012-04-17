@@ -374,12 +374,25 @@ sub activate
    die "Could not load activation policy from $options{ipolicy}"
     unless ref $policy eq 'HASH';
 
-   foreach my $varname (sort keys %$if)
-   {
-    die "Can't activate $sketch: its interface requires variable $varname"
-     unless exists $policy->{$varname};
+   my $entry_point = verify_entry_point($sketch,
+                                        $data->{dir},
+                                        $data->{manifest},
+                                        $data->{entry_point},
+                                        $data->{interface});
 
-    say "Satisfied by policy: $varname" if $verbose;
+   if ($entry_point)
+   {
+    my $varlist = $entry_point->{varlist};
+    foreach my $varname (sort keys %$varlist)
+    {
+     die "Can't activate $sketch: its interface requires variable $varname"
+      unless exists $policy->{$varname};
+     say "Satisfied by policy: $varname" if $verbose;
+    }
+   }
+   else
+   {
+     die "Can't activate $sketch: missing entry point in $data->{entry_point}"
    }
 
    # activation successful, now install it
@@ -571,7 +584,7 @@ sub missing_dependencies
           exists $deps->{$dep}->{version})
    {
     my $cfv = `cf-promises -V`; # TODO: get this from cfengine?
-    if ($cfv =~ m/version\s+(\d+\.\d+\.\d+)/)
+    if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
     {
      my $version = $1;
      if ($version ge $deps->{$dep}->{version})
@@ -591,7 +604,7 @@ sub missing_dependencies
     }
     else
     {
-     say "Unsatisfied cfengine dependency: could not get version."
+     say "Unsatisfied cfengine dependency: could not get version from [$cfv]."
       if $verbose;
     }
    }
@@ -731,7 +744,7 @@ sub verify_entry_point
  }
 
  my $mcf;
- unless (open($mcf, '<', $maincf))
+ unless (open($mcf, '<', $maincf_filename))
  {
   warn "Could not open $maincf_filename: $!";
   return 0;
@@ -741,15 +754,58 @@ sub verify_entry_point
  {
   $. = 0;
   my $bundle;
+  my $meta = {
+              confirmed => 0,
+              varlist => {},
+             };
 
   while (my $line = <$mcf>)
   {
+   $.++;
    # TODO: need better cfengine parser; this should be extracted by cf-promises
-   # when the meta: section is available
+   # when the meta: section is available.  It's very primitive now.
 
    if (defined $bundle && $line =~ m/^\s*bundle\s+agent\s+meta_$bundle/)
    {
-    return $bundle;
+    $meta->{confirmed} = 1;
+   }
+
+   # match "arguments" slist => { "foo", "bar", "baz" };
+   if ($meta->{confirmed} && $line =~ m/^\s*
+                                        "arguments"
+                                        \s+
+                                        slist
+                                        \s+=>\s+
+                                        \{\s+(.+)\}\s*;/x)
+   {
+    # collect variables
+    my $varlist = $1;
+    $meta->{varlist} = { map { $_ => undef } ($varlist =~ m/"([^"]+)"/g) };
+   }
+
+   # match "argtype[foo]" string => "string";
+   # or    "argtype[bar]" string => "slist";
+   if (scalar keys %{$meta->{varlist}} &&
+       $line =~ m/^\s*
+                  "argtype\[([^]]+)\]"
+                  \s+
+                  string
+                  \s+=>\s+
+                  "(string|slist)"\s*;/x)
+   {
+    if (exists $meta->{varlist}->{$1})
+    {
+     $meta->{varlist}->{$1} = $2;
+    }
+    else
+    {
+     warn "Unknown variable $1 defined in [$line]";
+    }
+   }
+
+   if ($meta->{confirmed} && $line =~ m/^\s*\}\s*/)
+   {
+    return $meta;
    }
 
    if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/)
@@ -757,9 +813,18 @@ sub verify_entry_point
     $bundle = $1;
     say "Found definition of bundle $bundle at $maincf_filename:$." if $verbose;
    }
+
   }
 
-  if (defined $bundle)
+  if (scalar keys %{$meta->{varlist}})
+  {
+   warn "Couldn't find the definition for all the variables for [$bundle] in $maincf_filename";
+  }
+  elsif ($meta->{confirmed})
+  {
+   warn "Couldn't find the closing } for [$bundle] in $maincf_filename";
+  }
+  elsif (defined $bundle)
   {
    warn "Couldn't find the meta definition of [$bundle] in $maincf_filename";
   }
