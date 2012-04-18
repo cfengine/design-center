@@ -38,7 +38,7 @@ included file COSL.txt.</pre>
  * CFEngine standard library (`cfengine_stdlib.cf`)
 
 <h4>INSTALLATION:</h4>
- Save `db_mysql.cf` as `/var/cfengine/masterfiles/blueprints/databases/db_mysql.cf` in the policy hub.
+ Save `db_mysql.cf` as `/var/cfengine/masterfiles/design-center/databases/db_mysql.cf` in the policy hub.
 
 <h4>SAMPLE USAGE:</h4>
 > <pre>body common control
