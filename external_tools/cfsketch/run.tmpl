@@ -7,18 +7,28 @@ body common control
 bundle common g
 {
   classes:
-[% FOREACH var IN booleans.keys.sort %]
-      "$var" expression => "[% UNLESS booleans.$var %]![% END %]any";
+[% FOREACH activation IN activations.keys.nsort %]
+
+ [% FOREACH var IN activations.$activation.contexts.keys.sort %]
+      "$var" expression => "[% UNLESS activations.$activation.contexts.$var.value %]![% END %]any";
+ [% END %]
+
 [% END %]
   vars:
-[% FOREACH var IN vars.keys.sort %]
-      "$var" [% types.$var %] => [% vars.$var %];
+[% FOREACH activation IN activations.keys.nsort %]
+
+ [% FOREACH var IN activations.$activation.vars.keys.sort %]
+      "$var" [% activations.$activation.vars.$var.type %] => [% activations.$activation.vars.$var.value %];
+ [% END %]
+
 [% END %]
 }
 
 bundle agent cfsketch_run
 {
   methods:
-    ${prefix}__activated::
-      "$sketch" usebundle => $entry_point;
+[% FOREACH activation IN activations.keys.nsort %]
+    ${activations.$activation.prefix}__activated::
+      "activations.$activation.sketch" usebundle => activations.$activation.entry_point;
+[% END %]
 }

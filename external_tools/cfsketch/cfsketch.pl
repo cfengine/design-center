@@ -238,6 +238,9 @@ sub generate
                                  EVAL_PERL    => 1,
                                 });
 
+   my $activation_counter = 1;
+   my $template_activations = {};
+
  ACTIVATION:
    foreach my $sketch (sort keys %$activations)
    {
@@ -259,9 +262,6 @@ sub generate
 
        my $data = $contents->{$sketch};
 
-       my $input = 'run.tmpl';
-       my $output = '';
-
        my %types;
        my %booleans;
        my %vars;
@@ -275,6 +275,11 @@ sub generate
        die "Could not load the entry point definition of $sketch"
         unless $entry_point;
 
+       my $activation = {
+                         file => $data->{file},
+                         prefix => $prefix,
+                        };
+
        my $varlist = $entry_point->{varlist};
        foreach my $k (sort keys %$varlist)
        {
@@ -286,50 +291,48 @@ sub generate
 
         if ($definition eq 'context')
         {
-         $booleans{$cfengine_k} = $v;
+         $activation->{contexts}->{$cfengine_k}->{value} = $v;
         }
         elsif ($definition eq 'slist')
         {
-         $vars{$cfengine_k} = '{ ' . join(',', map { "\"$_\"" } @$v) . ' }';
-         $types{$cfengine_k} = 'slist';
+         $activation->{vars}->{$cfengine_k}->{value} = '{ ' . join(',', map { "\"$_\"" } @$v) . ' }';
+         $activation->{vars}->{$cfengine_k}->{type} = 'slist';
         }
         else
         {
-         $vars{$cfengine_k} = "\"$v\"";
-         $types{$cfengine_k} = 'string';
+         $activation->{vars}->{$cfengine_k}->{value} = "\"$v\"";
+         $activation->{vars}->{$cfengine_k}->{type} = 'string';
         }
        }
 
-       # process input template, substituting variables
-       $template->process($input,
-                          {
-                           repo        => $repo,
-                           sketch      => $sketch,
-                           entry_point => $entry_point->{bundle},
-                           inputs      => sprintf('"%s"', $data->{file}),
-                           types       => \%types,
-                           booleans    => \%booleans,
-                           vars        => \%vars,
-                           prefix      => $prefix,
-                  }, \$output)
-        || die $template->error();
-
-       my $run_name = "${prefix}__$params.cf";
-       $run_name =~ s/[\.\/]/_/g;
-       $run_name =~ s/\.json\.cf/.cf/;
-       my $run_file = File::Spec->catfile($data->{dir}, $run_name);
-       open(my $rf, '>', $run_file)
-        or die "Could not write run file $run_file: $!";
-
-       print $rf $output;
-       close $rf;
-       say "Generated activated params $params for sketch $sketch into $run_file";
+       my $ak = sprintf('%03d', $activation_counter++);
+       $template_activations->{$ak} = $activation;
       }
+
       next ACTIVATION;
      }
     }
     die "Could not find sketch $sketch in repo list @{$options{repolist}}";
    }
+
+   my $input = 'run.tmpl';
+   my $output = '';
+
+   # process input template, substituting variables
+   $template->process($input,
+                      {
+                       activations => $activations,
+                       inputs      => join ', ', map { sprintf('"%s"', $template_activations->{$_}->{file}) } sort keys %$template_activations,
+                      }, \$output)
+    || die $template->error();
+
+   my $run_file = 'runme.cf';
+   open(my $rf, '>', $run_file)
+    or die "Could not write run file $run_file: $!";
+
+   print $rf $output;
+   close $rf;
+   say "Generated run file $run_file";
 }
 
 sub activate
