@@ -41,7 +41,7 @@ my @options_spec =
   "verbose!",
   "force!",
   "configfile|cf=s",
-  "config=s",
+  "params=s",
   "act_file=s",
   "copbl_file=s",
 
@@ -249,12 +249,12 @@ sub generate
      my $contents = repo_get_contents($repo);
      if (exists $contents->{$sketch})
      {
-      foreach my $config (@{$activations->{$sketch}})
+      foreach my $params (@{$activations->{$sketch}})
       {
-       say "Loading activation config for sketch $sketch from $config"
+       say "Loading activation params for sketch $sketch from $params"
         if $verbose;
-       my $pdata = load_json($config);
-       die "Couldn't load activation config for $sketch from $config: $!"
+       my $pdata = load_json($params);
+       die "Couldn't load activation params for $sketch from $params: $!"
         unless defined $pdata;
 
        my $data = $contents->{$sketch};
@@ -333,7 +333,7 @@ sub generate
                   }, \$output)
         || die $template->error();
 
-       my $run_name = "${prefix}__$config.cf";
+       my $run_name = "${prefix}__$params.cf";
        $run_name =~ s/[\.\/]/_/g;
        $run_name =~ s/\.json\.cf/.cf/;
        my $run_file = File::Spec->catfile($data->{dir}, $run_name);
@@ -342,7 +342,7 @@ sub generate
 
        print $rf $output;
        close $rf;
-       say "Generated activated config $config for sketch $sketch into $run_file";
+       say "Generated activated params $params for sketch $sketch into $run_file";
       }
       next ACTIVATION;
      }
@@ -355,8 +355,8 @@ sub activate
 {
  my $sketch = shift @_;
 
- die "Can't activate sketch $sketch without valid file from --config"
-  unless ($options{config} && -f $options{config});
+ die "Can't activate sketch $sketch without valid file from --params"
+  unless ($options{params} && -f $options{params});
 
  my $installed = 0;
  foreach my $repo (@{$options{repolist}})
@@ -367,12 +367,12 @@ sub activate
    my $data = $contents->{$sketch};
    my $if = $data->{interface};
 
-   # TODO: we could load the config from a pipe or a network resource too
-   say "Loading activation config from $options{config}";
-   my $config = load_json($options{config});
+   # TODO: we could load the params from a pipe or a network resource too
+   say "Loading activation params from $options{params}";
+   my $params = load_json($options{params});
 
-   die "Could not load activation config from $options{config}"
-    unless ref $config eq 'HASH';
+   die "Could not load activation params from $options{params}"
+    unless ref $params eq 'HASH';
 
    my $entry_point = verify_entry_point($sketch,
                                         $data->{dir},
@@ -386,8 +386,8 @@ sub activate
     foreach my $varname (sort keys %$varlist)
     {
      die "Can't activate $sketch: its interface requires variable $varname"
-      unless exists $config->{$varname};
-     say "Satisfied by config: $varname" if $verbose;
+      unless exists $params->{$varname};
+     say "Satisfied by params: $varname" if $verbose;
     }
    }
    else
@@ -398,15 +398,15 @@ sub activate
    # activation successful, now install it
    my $activations = load_json($options{act_file});
    ensure_dir(dirname($options{act_file}));
-   if (grep { $_ eq $options{config} } @{$activations->{$sketch}})
+   if (grep { $_ eq $options{params} } @{$activations->{$sketch}})
    {
-    say "Already active: $sketch config $options{config}";
+    say "Already active: $sketch params $options{params}";
    }
    else
    {
     $activations->{$sketch} = [
                                List::MoreUtils::uniq(@{$activations->{$sketch}},
-                                                     $options{config})
+                                                     $options{params})
                               ];
 
     open(my $ach, '>', $options{act_file})
@@ -415,7 +415,7 @@ sub activate
     print $ach $coder->encode($activations);
     close $ach;
 
-    say "Activated: $sketch config $options{config}";
+    say "Activated: $sketch params $options{params}";
    }
 
    $installed = 1;
@@ -974,7 +974,7 @@ Document the options:
 
 - need global run file for all generated
 
-- document cfsketch formats (config, sketch.json, all .conf files)
+- document cfsketch formats (params, sketch.json, all .conf files)
 
 - sketch composition
 
