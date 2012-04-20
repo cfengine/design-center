@@ -41,7 +41,7 @@ my @options_spec =
   "verbose!",
   "force!",
   "configfile|cf=s",
-  "ipolicy=s",
+  "config=s",
   "act_file=s",
   "copbl_file=s",
 
@@ -249,12 +249,12 @@ sub generate
      my $contents = repo_get_contents($repo);
      if (exists $contents->{$sketch})
      {
-      foreach my $policy (@{$activations->{$sketch}})
+      foreach my $config (@{$activations->{$sketch}})
       {
-       say "Loading activation policy for sketch $sketch from $policy"
+       say "Loading activation config for sketch $sketch from $config"
         if $verbose;
-       my $pdata = load_json($policy);
-       die "Couldn't load activation policy for $sketch from $policy: $!"
+       my $pdata = load_json($config);
+       die "Couldn't load activation config for $sketch from $config: $!"
         unless defined $pdata;
 
        my $data = $contents->{$sketch};
@@ -333,7 +333,7 @@ sub generate
                   }, \$output)
         || die $template->error();
 
-       my $run_name = "${prefix}__$policy.cf";
+       my $run_name = "${prefix}__$config.cf";
        $run_name =~ s/[\.\/]/_/g;
        $run_name =~ s/\.json\.cf/.cf/;
        my $run_file = File::Spec->catfile($data->{dir}, $run_name);
@@ -342,7 +342,7 @@ sub generate
 
        print $rf $output;
        close $rf;
-       say "Generated activated policy $policy for sketch $sketch into $run_file";
+       say "Generated activated config $config for sketch $sketch into $run_file";
       }
       next ACTIVATION;
      }
@@ -355,8 +355,8 @@ sub activate
 {
  my $sketch = shift @_;
 
- die "Can't activate sketch $sketch without valid file from --ipolicy"
-  unless ($options{ipolicy} && -f $options{ipolicy});
+ die "Can't activate sketch $sketch without valid file from --config"
+  unless ($options{config} && -f $options{config});
 
  my $installed = 0;
  foreach my $repo (@{$options{repolist}})
@@ -367,12 +367,12 @@ sub activate
    my $data = $contents->{$sketch};
    my $if = $data->{interface};
 
-   # TODO: we could load the policy from a pipe or a network resource too
-   say "Loading activation policy from $options{ipolicy}";
-   my $policy = load_json($options{ipolicy});
+   # TODO: we could load the config from a pipe or a network resource too
+   say "Loading activation config from $options{config}";
+   my $config = load_json($options{config});
 
-   die "Could not load activation policy from $options{ipolicy}"
-    unless ref $policy eq 'HASH';
+   die "Could not load activation config from $options{config}"
+    unless ref $config eq 'HASH';
 
    my $entry_point = verify_entry_point($sketch,
                                         $data->{dir},
@@ -386,8 +386,8 @@ sub activate
     foreach my $varname (sort keys %$varlist)
     {
      die "Can't activate $sketch: its interface requires variable $varname"
-      unless exists $policy->{$varname};
-     say "Satisfied by policy: $varname" if $verbose;
+      unless exists $config->{$varname};
+     say "Satisfied by config: $varname" if $verbose;
     }
    }
    else
@@ -398,15 +398,15 @@ sub activate
    # activation successful, now install it
    my $activations = load_json($options{act_file});
    ensure_dir(dirname($options{act_file}));
-   if (grep { $_ eq $options{ipolicy} } @{$activations->{$sketch}})
+   if (grep { $_ eq $options{config} } @{$activations->{$sketch}})
    {
-    say "Already active: $sketch policy $options{ipolicy}";
+    say "Already active: $sketch config $options{config}";
    }
    else
    {
     $activations->{$sketch} = [
                                List::MoreUtils::uniq(@{$activations->{$sketch}},
-                                                     $options{ipolicy})
+                                                     $options{config})
                               ];
 
     open(my $ach, '>', $options{act_file})
@@ -415,7 +415,7 @@ sub activate
     print $ach $coder->encode($activations);
     close $ach;
 
-    say "Activated: $sketch policy $options{ipolicy}";
+    say "Activated: $sketch config $options{config}";
    }
 
    $installed = 1;
@@ -966,7 +966,7 @@ Document the options:
 
 - need global run file for all generated
 
-- document cfsketch formats (policy, sketch.json, all .conf files)
+- document cfsketch formats (config, sketch.json, all .conf files)
 
 - sketch composition
 
