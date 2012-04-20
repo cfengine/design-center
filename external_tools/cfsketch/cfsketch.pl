@@ -258,8 +258,6 @@ sub generate
         unless defined $pdata;
 
        my $data = $contents->{$sketch};
-       my $if = $data->{interface};
-       my $entry = $data->{entry_point};
 
        my $input = 'run.tmpl';
        my $output = '';
@@ -268,46 +266,29 @@ sub generate
        my %booleans;
        my %vars;
 
-       foreach my $k (sort keys %$if)
+       my $entry_point = verify_entry_point($sketch,
+                                            $data->{dir},
+                                            $data->{manifest},
+                                            $data->{entry_point},
+                                            $data->{interface});
+
+       die "Could not load the entry point definition of $sketch"
+        unless $entry_point;
+
+       my $varlist = $entry_point->{varlist};
+       foreach my $k (sort keys %$varlist)
        {
         my $cfengine_k = "${prefix}::$k";
         $cfengine_k =~ s/::/__/g;
 
         my $v = $pdata->{$k};
-        my $definition = $if->{$k};
+        my $definition = $entry_point->{varlist}->{$k};
 
-        if (ref $definition ne 'HASH')
-        {
-         # TODO: add more variable types handled here, including
-         # "list of integers" and such
-         if ($definition eq 'boolean' ||
-             $definition eq 'string' ||
-             $definition eq 'integer')
-         {
-          $definition = { type => $definition };
-         }
-        }
-
-        if (ref $definition ne 'HASH')
-        {
-         die "Can't parse definition of $k: " . Dumper($definition);
-        }
-
-        my $list = 0;
-        my $def1 = $definition;
-
-        # TODO: add more variable types here
-        if (exists $definition->{list})
-        {
-         $list = 1;
-         $def1 = $definition->{list};
-        }
-
-        if ($def1->{type} eq 'boolean' && !$list)
+        if ($definition eq 'context')
         {
          $booleans{$cfengine_k} = $v;
         }
-        elsif ($list)
+        elsif ($definition eq 'slist')
         {
          $vars{$cfengine_k} = '{ ' . join(',', map { "\"$_\"" } @$v) . ' }';
          $types{$cfengine_k} = 'slist';
@@ -324,8 +305,8 @@ sub generate
                           {
                            repo        => $repo,
                            sketch      => $sketch,
-                           entry_point => $entry->[1],
-                           inputs      => sprintf('"%s"', $entry->[0]),
+                           entry_point => $entry_point->{bundle},
+                           inputs      => sprintf('"%s"', $data->{file}),
                            types       => \%types,
                            booleans    => \%booleans,
                            vars        => \%vars,
@@ -828,7 +809,7 @@ sub verify_entry_point
 
    if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/)
    {
-    $bundle = $1;
+    $meta->{bundle} = $bundle = $1;
     say "Found definition of bundle $bundle at $maincf_filename:$." if $verbose;
    }
 
