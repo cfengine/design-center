@@ -67,4 +67,25 @@ The dependencies can be "cfengine" and "copbl" fof the CFEngine and COPBL versio
 
 Finally comes the entry_point and interface.  Those two say to cfsketch "look in main.cf for the main entry bundle and the metadata that defines its interface."
 
-main.cf is your normal every day CFEngine configuration file, except that it 
+main.cf is your normal every day CFEngine configuration file, except that it has to contain two special bundles (this will almost certainly change as cfsketch integrates more tightly with cfengine metadata).  Here's an example: 
+
+    bundle agent mysketch_main_bundle(prefix)
+    {
+      reports:
+        cfengine_3::
+          "myint = $($(prefix)myint); mystr = $($(prefix)mystr); os_special_path = $($(prefix)os_special_path); denied host = $($(prefix)hosts_deny)";
+    }
+
+    bundle agent meta_mysketch_main_bundle
+    {
+      vars:
+          "arguments" slist => { "mybool", "myint", "mystr", "os_special_path", "hosts_deny" };
+
+          "argtype[mybool]"          string => "context"; # boolean
+          "argtype[myint]"           string => "string";
+          "argtype[mystr]"           string => "string";
+          "argtype[os_special_path]" string => "string";
+          "argtype[hosts_deny]"      string => "slist";
+    }
+
+The parameter metadata is obviously hacked in right now.
