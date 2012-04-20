@@ -560,8 +560,16 @@ sub missing_dependencies
    if ($dep eq 'os' &&
        ref $deps->{$dep} eq 'ARRAY')
    {
-    my $uname = `/bin/uname -o`; # TODO: get this from cfengine?
-    chomp $uname;
+    # TODO: get uname from cfengine?
+    # pick either /bin/uname or /usr/bin/uname
+    my $uname_path = -x '/bin/uname' ? '/bin/uname -o' : '/usr/bin/uname -s';
+    my $uname = 'unknown';
+    if (-x (split ' ', $uname_path)[0])
+    {
+     $uname = `$uname_path`;
+     chomp $uname;
+    }
+
     foreach my $os (sort @{$deps->{$dep}})
     {
      if ($uname =~ m/$os/i)
