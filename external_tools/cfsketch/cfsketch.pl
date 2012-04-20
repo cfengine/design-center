@@ -276,7 +276,10 @@ sub generate
         unless $entry_point;
 
        my $activation = {
-                         file => $data->{file},
+                         file => File::Spec->catfile($data->{dir}, $data->{entry_point}),
+                         entry_bundle => $entry_point->{bundle},
+                         params => $params,
+                         sketch => $sketch,
                          prefix => $prefix,
                         };
 
@@ -321,7 +324,7 @@ sub generate
    # process input template, substituting variables
    $template->process($input,
                       {
-                       activations => $activations,
+                       activations => $template_activations,
                        inputs      => join ', ', map { sprintf('"%s"', $template_activations->{$_}->{file}) } sort keys %$template_activations,
                       }, \$output)
     || die $template->error();
@@ -748,7 +751,7 @@ sub verify_entry_point
   my $bundle;
   my $meta = {
               confirmed => 0,
-              varlist => {},
+              varlist => { activated => 'context' },
              };
 
   while (my $line = <$mcf>)
@@ -772,7 +775,7 @@ sub verify_entry_point
    {
     # collect variables
     my $varlist = $1;
-    $meta->{varlist} = { map { $_ => undef } ($varlist =~ m/"([^"]+)"/g) };
+    $meta->{varlist}->{$_} = undef foreach ($varlist =~ m/"([^"]+)"/g);
    }
 
    # match "argtype[foo]" string => "string";
@@ -810,7 +813,7 @@ sub verify_entry_point
     }
    }
 
-   if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/)
+   if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/ && $1 !~ m/^meta/)
    {
     $meta->{bundle} = $bundle = $1;
     say "Found definition of bundle $bundle at $maincf_filename:$." if $verbose;
