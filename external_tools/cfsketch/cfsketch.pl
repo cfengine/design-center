@@ -793,13 +793,14 @@ sub verify_entry_point
 
    # match "argtype[foo]" string => "string";
    # or    "argtype[bar]" string => "slist";
+   # or    "argtype[bar]" string => "context";
    if (scalar keys %{$meta->{varlist}} &&
        $line =~ m/^\s*
                   "argtype\[([^]]+)\]"
                   \s+
                   string
                   \s+=>\s+
-                  "(string|slist)"\s*;/x)
+                  "(context|string|slist)"\s*;/x)
    {
     if (exists $meta->{varlist}->{$1})
     {
@@ -813,7 +814,16 @@ sub verify_entry_point
 
    if ($meta->{confirmed} && $line =~ m/^\s*\}\s*/)
    {
-    return $meta;
+    my @undefined_vars = grep { !defined $meta->{varlist}->{$_} } sort keys %{$meta->{varlist}};
+    if (scalar @undefined_vars)
+    {
+     warn "Undefined variables @undefined_vars";
+     return 0;
+    }
+    else
+    {
+     return $meta;
+    }
    }
 
    if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/)
