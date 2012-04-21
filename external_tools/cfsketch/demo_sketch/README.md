@@ -29,14 +29,37 @@ runfile generation: the runfile is a single plan to run all the sketch activatio
 Usage
 ----------
 
-TODO, see Makefile
+See `Makefile` but realize this is a prototype, so the usage may change:
+
+We use `/var/tmp`, a nice temporary location, to host our repository, as the `$(REPO)` variable..
+
+Install all the bundles in the current directory (currently one bundle lives under `demo_sketch`) into `$(REPO)`.  Ignore OS and other dependencies with `-f`.
+
+    ./cfsketch.pl --repolist=$(REPO) --install=. -v -f
+
+Activate `Misc::mysketch` (the name of the sketch installed from `demo_sketch`) with params from `./params/mysketch.json`:
+
+    ./cfsketch.pl --repolist=$(REPO) --activate Misc::mysketch --params=./params/mysketch.json -v
+
+Generate the runfile for all the activations, currently this will just go into `runme.cf`.
+
+    ./cfsketch.pl --repolist=$(REPO) --generate -v
+
+Look at `runme.cf` and you'll see how it sets up activations and policies.
+    
+    cat runme.cf
+    
+Run `runme.cf`!  Enjoy!
+
+    cf-agent -I -K -f ./runme.cf
+
 
 Sketch Layout
 ----------
 
 A valid sketch needs just a few things.  First the actual entry point, which is a file full of cfengine goodness.  We'll write one later.
 
-The other really important piece is the sketch.json file.  This file looks like this:
+The other really important piece is the `sketch.json` file.  This file looks like this:
 
     
     { 
@@ -59,15 +82,15 @@ The other really important piece is the sketch.json file.  This file looks like 
 
 This may seem like a lot of boilerplate, but in fact it's very simple and most of it can be omitted.  The order of the key-value pairs is not important.
 
-First is the manifest.  That's an array with one key for each file that's part of the sketch.  Each value is a key-value array with keys like "desc" for description and "version" for versioning individual files.
+First is the `manifest`.  That's an array with one key for each file that's part of the sketch.  Each value is a key-value array with keys like _desc_ for description and _version_ for versioning individual files.
 
 Next comes the metadata.  Simply, it says what the sketch is called (this will be used in variable scoping); the version of the whole sketch, the authors as a list, and the dependencies.
 
-The dependencies can be "cfengine" and "copbl" fof the CFEngine and COPBL versions respectively; "os" for the OS type; or any other sketch with a specific version, if needed.
+The dependencies can be _cfengine_ and _copbl_ fof the CFEngine and COPBL versions respectively; _os_ for the OS type; or any other sketch with a specific version, if needed.
 
-Finally comes the entry_point and interface.  Those two say to cfsketch "look in main.cf for the main entry bundle and the metadata that defines its interface."
+Finally comes the `entry_point` and interface.  Those two say to cfsketch "look in `main.cf` for the main entry bundle and the metadata that defines its interface."
 
-main.cf is your normal every day CFEngine configuration file, except that it has to contain two special bundles (this will almost certainly change as cfsketch integrates more tightly with cfengine metadata).  Here's an example: 
+`main.cf` is your normal every day CFEngine configuration file, except that it has to contain two special bundles (this will almost certainly change as cfsketch integrates more tightly with cfengine metadata).  Here's an example: 
 
     bundle agent mysketch_main_bundle(prefix)
     {
@@ -88,4 +111,11 @@ main.cf is your normal every day CFEngine configuration file, except that it has
           "argtype[hosts_deny]"      string => "slist";
     }
 
-The parameter metadata is obviously hacked in right now.
+The parameter metadata is obviously hacked in right now, and you should expect it to change.  So don't complain about it, you in the back.
+
+The important thing is, you define `mysketch_main_bundle` to be the entry bundle, the way to call your sketch.  This is where `sketch.json` and cfengine meet.
+
+TODO
+----------
+
+Lots of things!!!
