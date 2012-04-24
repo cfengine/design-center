@@ -121,13 +121,11 @@ Finally comes the `entry_point` and interface.  Those two say to cfsketch "look 
     bundle agent meta_mysketch_main_bundle
     {
       vars:
-          "arguments" slist => { "mybool", "myint", "mystr", "os_special_path", "hosts_deny" };
-
-          "argtype[mybool]"          string => "context"; # boolean
-          "argtype[myint]"           string => "string";
-          "argtype[mystr]"           string => "string";
-          "argtype[os_special_path]" string => "string";
-          "argtype[hosts_deny]"      string => "slist";
+          "argument[mybool]"          string => "context"; # boolean
+          "argument[myint]"           string => "string";
+          "argument[mystr]"           string => "string";
+          "argument[os_special_path]" string => "string";
+          "argument[hosts_deny]"      string => "slist";
     }
 
 The parameter metadata is obviously hacked in right now, and you should expect it to change.  So don't complain about it, you in the back.
