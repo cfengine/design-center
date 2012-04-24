@@ -33,7 +33,7 @@ See `Makefile` but realize this is a prototype, so the usage may change:
 
 We use `/var/tmp`, a nice temporary location, to host our repository, as the `$(REPO)` variable.
 
-Below, if you don't specify --repolist, it defaults to a single URL (so you can't install to it): https://github.com/tzz/design-center/blob/master (this will change to the real master design-center repo).
+Below, if you don't specify --repolist, it defaults to a single URL (so you can't install to it): https://raw.github.com/tzz/design-center/master (this will change to the real master design-center repo).
 
 List all the sketches in the repo:
 
