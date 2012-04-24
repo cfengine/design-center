@@ -91,7 +91,7 @@ if (open(my $cfh, '<', $options{configfile}))
  }
 }
 
-$options{repolist} = [ 'https://github.com/tzz/design-center/blob/master' ]
+$options{repolist} = [ 'https://raw.github.com/tzz/design-center/master' ]
  unless exists $options{repolist};
 
 my @list;
@@ -731,9 +731,9 @@ sub find_remote_sketches
   my $sketches = get($sketches_url)
    or die "Unable to retrieve $sketches_url : $!\n";
 
-  foreach my $sketch_json ($sketches =~ /(.+)/mg)
+  foreach my $sketch_dir ($sketches =~ /(.+)/mg)
   {
-   my $info = load_sketch($repo);
+   my $info = load_sketch("$repo/$sketch_dir");
    $contents{$info->{metadata}->{name}} = $info;
   }
  }
@@ -806,12 +806,12 @@ sub load_sketch
   }
   else
   {
-   warn "Could not verify bundle entry point from $File::Find::name";
+   warn "Could not verify bundle entry point from $name";
   }
  }
  else
  {
-  warn "Could not load sketch definition from $File::Find::name";
+  warn "Could not load sketch definition from $name";
  }
 
  return undef;
