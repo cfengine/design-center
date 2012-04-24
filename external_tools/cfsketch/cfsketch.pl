@@ -929,7 +929,7 @@ sub verify_entry_point
 sub is_resource_local
 {
  my $resource = shift @_;
- return ($resource =~ m,^/,);
+ return ($resource !~ m,^[a-z]+:,);
 }
 
 sub get_local_repo
