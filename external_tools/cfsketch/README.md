@@ -31,15 +31,34 @@ Usage
 
 See `Makefile` but realize this is a prototype, so the usage may change:
 
-We use `/var/tmp`, a nice temporary location, to host our repository, as the `$(REPO)` variable..
+We use `/var/tmp`, a nice temporary location, to host our repository, as the `$(REPO)` variable.
+
+Below, if you don't specify --repolist, it defaults to a single URL (so you can't install to it): https://github.com/tzz/design-center/blob/master (this will change to the real master design-center repo).
+
+List all the sketches in the repo:
+
+    ./cfsketch.pl --repolist=$(REPO) -l
 
 Install all the bundles in the current directory (currently one bundle lives under `demo_sketch`) into `$(REPO)`.  Ignore OS and other dependencies with `-f`.
 
     ./cfsketch.pl --repolist=$(REPO) --install=. -v -f
 
+You can stop here and just include the sketch .cf files that were
+installed in $(REPO), or proceed with parameters and activation.
+
 Activate `Misc::mysketch` (the name of the sketch installed from `demo_sketch`) with params from `./params/mysketch.json`:
 
     ./cfsketch.pl --repolist=$(REPO) --activate Misc::mysketch --params=./params/mysketch.json -v
+
+Admire all the activations, with their data.  Note that the data is brought in *when you activate*.
+
+    ./cfsketch.pl --list_activations
+
+    /bin/cat ~/.cfsketch/activations.conf
+
+Deactivate a sketch:
+
+    ./cfsketch.pl --deactivate Misc::mysketch --params=./params/mysketch.json
 
 Generate the runfile for all the activations, currently this will just go into `runme.cf`.
 
@@ -119,3 +138,10 @@ TODO
 ----------
 
 Lots of things!!!
+
+* uninstall for later
+
+* make COPBL included easily
+
+* support generic Git cloning eventually for a repo source
+

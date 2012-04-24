@@ -14,13 +14,16 @@ use Getopt::Long;
 use Modern::Perl;               # needs apt-get libmodern-perl
 use JSON::XS;                   # needs apt-get libjson-xs-perl
 use Template;
-use Digest::MD5 qw(md5_hex);
+use LWP::Simple;
 
 use constant SKETCH_DEF_FILE => 'sketch.json';
 
 $| = 1;                         # autoflush
 
 my $coder = JSON::XS->new()->relaxed()->utf8()->allow_nonref();
+
+# for storing JSON data so it's directly comparable
+my $canonical_coder = JSON::XS->new()->canonical()->utf8()->allow_nonref();
 
 my %options =
  (
@@ -54,7 +57,8 @@ my @options_spec =
   "remove=s@",
   "test=s@",
   "search=s@",
-  "list!",
+  "list|l!",
+  "list_activations!",
   "generate!",
  );
 
@@ -87,16 +91,30 @@ if (open(my $cfh, '<', $options{configfile}))
  }
 }
 
-foreach (@{$options{repolist}})
+$options{repolist} = [ 'https://github.com/tzz/design-center/blob/master' ]
+ unless exists $options{repolist};
+
+my @list;
+foreach my $repo (@{$options{repolist}})
 {
- my $abs = File::Spec->rel2abs($_);
- if ($abs ne $_)
+ if (is_resource_local($repo))
  {
-  say "Remapped $_ to $abs so it's not relative"
-   if $options{verbose};
-  $_ = $abs;
+  my $abs = File::Spec->rel2abs($repo);
+  if ($abs ne $repo)
+  {
+   say "Remapped $repo to $abs so it's not relative"
+    if $options{verbose};
+   $repo = $abs;
+  }
  }
+ else                                   # a remote repository
+ {
+ }
+
+ push @list, $repo;
 }
+
+$options{repolist} = \@list;
 
 say "Full configuration: ", $coder->encode(\%options) if $options{verbose};
 
@@ -112,6 +130,21 @@ if ($options{config})
 if ($options{list})
 {
  search(['.']);                   # matches everything
+ exit;
+}
+
+if ($options{list_activations})
+{
+ my $activations = load_json($options{act_file});
+ die "Can't load any activations from $options{act_file}"
+  unless defined $activations && ref $activations eq 'HASH';
+ foreach my $sketch (sort keys %$activations)
+ {
+  foreach my $pfile (sort keys %{$activations->{$sketch}})
+  {
+   say "$sketch $pfile ", $coder->encode($activations->{$sketch}->{$pfile});
+  }
+ }
  exit;
 }
 
@@ -177,7 +210,7 @@ sub search
 
  foreach my $repo (@{$options{repolist}})
  {
-  my $local = is_repo_local($repo) ? 'local' : 'remote';
+  my $local = is_resource_local($repo) ? 'local' : 'remote';
   my @sketches = search_internal($repo, $terms);
 
   my $contents = repo_get_contents($repo);
@@ -252,12 +285,12 @@ sub generate
      my $contents = repo_get_contents($repo);
      if (exists $contents->{$sketch})
      {
-      foreach my $params (@{$activations->{$sketch}})
+      foreach my $params (sort keys %{$activations->{$sketch}})
       {
-       say "Loading activation params for sketch $sketch from $params"
+       say "Loading activation for sketch $sketch (originally from $params)"
         if $verbose;
-       my $pdata = load_json($params);
-       die "Couldn't load activation params for $sketch from $params: $!"
+       my $pdata = $activations->{$sketch}->{$params};
+       die "Couldn't load activation params for $sketch: $!"
         unless defined $pdata;
 
        my $data = $contents->{$sketch};
@@ -322,10 +355,15 @@ sub generate
    my $output = '';
 
    # process input template, substituting variables
+   my $includes = join(', ',
+                       map { sprintf('"%s"',
+                                     $template_activations->{$_}->{file}) }
+                       List::MoreUtils::uniq(sort keys %$template_activations));
+
    $template->process($input,
                       {
                        activations => $template_activations,
-                       inputs      => join ', ', map { sprintf('"%s"', $template_activations->{$_}->{file}) } sort keys %$template_activations,
+                       inputs => $includes,
                       }, \$output)
     || die $template->error();
 
@@ -384,34 +422,50 @@ sub activate
 
    # activation successful, now install it
    my $activations = load_json($options{act_file});
+   $activations->{$sketch}->{$options{params}} = $params;
+
    ensure_dir(dirname($options{act_file}));
-   if (grep { $_ eq $options{params} } @{$activations->{$sketch}})
-   {
-    say "Already active: $sketch params $options{params}";
-   }
-   else
-   {
-    $activations->{$sketch} = [
-                               List::MoreUtils::uniq(@{$activations->{$sketch}},
-                                                     $options{params})
-                              ];
+   open(my $ach, '>', $options{act_file})
+    or die "Could not write activation file $options{act_file}: $!";
 
-    open(my $ach, '>', $options{act_file})
-     or die "Could not write activation file $options{act_file}: $!";
+   print $ach $coder->encode($activations);
+   close $ach;
 
-    print $ach $coder->encode($activations);
-    close $ach;
-
-    say "Activated: $sketch params $options{params}";
-   }
+   say "Activated: $sketch params $options{params}";
 
    $installed = 1;
    last;
   }
  }
 
- die "Could not activate sketch $sketch, it was not in [@{$options{repolist}}]"
+ die "Could not activate sketch $sketch, it was not in the given list of repositories [@{$options{repolist}}]"
   unless $installed;
+}
+
+sub deactivate
+{
+ my $sketch = shift @_;
+
+ die "Can't deactivate sketch $sketch without --params"
+  unless $options{params};
+
+ # activation successful, now install it
+ my $activations = load_json($options{act_file});
+
+ die "Couldn't deactivate sketch $sketch: no activation for $options{params}"
+  unless exists $activations->{$sketch}->{$options{params}};
+
+ delete $activations->{$sketch}->{$options{params}};
+
+ delete $activations->{$sketch} unless scalar keys %{$activations->{$sketch}};
+
+ open(my $ach, '>', $options{act_file})
+  or die "Could not write activation file $options{act_file}: $!";
+
+ print $ach $coder->encode($activations);
+ close $ach;
+
+ say "Deactivated: $sketch params $options{params}";
 }
 
 sub remove
@@ -420,7 +474,7 @@ sub remove
 
  foreach my $repo (@{$options{repolist}})
  {
-  next unless is_repo_local($repo);
+  next unless is_resource_local($repo);
 
   my $contents = repo_get_contents($repo);
 
@@ -483,8 +537,8 @@ sub install
    if $verbose;
 
   my $install_dir = File::Spec->catdir($dest_repo,
-                                       split('::', $sketch),
-                                      );
+                                       split('::', $sketch));
+
   if (ensure_dir($install_dir))
   {
    say "Created destination directory $install_dir" if $verbose;
@@ -492,7 +546,7 @@ sub install
    {
     my $file_spec = $data->{manifest}->{$file};
     # build a locally valid install path, while the manifest can use / separator
-    my $source = File::Spec->catfile($data->{dir}, split('/', $file));
+    my $source = is_resource_local($data->{dir}) ? File::Spec->catfile($data->{dir}, split('/', $file)) : "$data->{dir}/$file";
     my $dest = File::Spec->catfile($install_dir, split('/', $file));
 
     my $dest_dir = dirname($dest);
@@ -500,13 +554,24 @@ sub install
      unless ensure_dir($dest_dir);
 
     # TODO: maybe disable this?  It can be expensive for large files.
-    if (!$options{force} && compare($source, $dest) == 0)
+    if (!$options{force} &&
+        is_resource_local($data->{dir}) &&
+        compare($source, $dest) == 0)
     {
      warn "Manifest member $file is already installed in $dest"
       if $verbose;
     }
 
-    copy($source, $dest) or die "Aborting: copy $source -> $dest failed: $!";
+    if (is_resource_local($data->{dir}))
+    {
+     copy($source, $dest) or die "Aborting: copy $source -> $dest failed: $!";
+    }
+    else
+    {
+     my $rc = getstore($source, $dest);
+     die "Aborting: remote copy $source -> $dest failed: error code $rc"
+      unless is_success($rc)
+    }
 
     chmod oct($file_spec->{perm}), $dest if exists $file_spec->{perm};
 
@@ -532,7 +597,7 @@ sub install
  }
 }
 
-# TODO: need functions for: deactivate remove test
+# TODO: need functions for: remove test
 
 sub missing_dependencies
 {
@@ -655,6 +720,27 @@ sub missing_dependencies
  return @missing;
 }
 
+sub find_remote_sketches
+{
+ my @urls = @_;
+ my %contents;
+
+ foreach my $repo (@urls)
+ {
+  my $sketches_url = "$repo/cfsketches";
+  my $sketches = get($sketches_url)
+   or die "Unable to retrieve $sketches_url : $!\n";
+
+  foreach my $sketch_json ($sketches =~ /(.+)/mg)
+  {
+   my $info = load_sketch($repo);
+   $contents{$info->{metadata}->{name}} = $info;
+  }
+ }
+
+ return \%contents;
+}
+
 sub find_sketches
 {
  my @dirs = @_;
@@ -665,60 +751,70 @@ sub find_sketches
        my $f = $_;
        if ($f eq SKETCH_DEF_FILE)
        {
-        my $json = load_json($File::Find::name);
-
-        # TODO: validate more thoroughly?  at least better messaging
-        if (
-            # the data must be valid and a hash
-            defined $json && ref $json eq 'HASH' &&
-            # the manifest must be a hash
-            exists $json->{manifest}  && ref $json->{manifest}  eq 'HASH' &&
-
-            # the metadata must be a hash...
-            exists $json->{metadata}  && ref $json->{metadata}  eq 'HASH' &&
-
-            # with a 'depends' key that points to a hash
-            exists $json->{metadata}->{depends}  &&
-            ref $json->{metadata}->{depends}  eq 'HASH' &&
-
-            # and a 'name' key
-            exists $json->{metadata}->{name} &&
-
-            # entry_point has to point to a file in the manifest
-            exists $json->{entry_point} &&
-            exists $json->{manifest}->{$json->{entry_point}} &&
-
-            # interface has to point to a file in the manifest
-            exists $json->{interface} &&
-            exists $json->{manifest}->{$json->{interface}}
-           )
-        {
-         my $name = $json->{metadata}->{name};
-         $json->{dir} = $File::Find::dir;
-         $json->{file} = $File::Find::name;
-
-         if (verify_entry_point($name,
-                                $File::Find::dir,
-                                $json->{manifest},
-                                $json->{entry_point},
-                                $json->{interface}))
-         {
-          # note this name will be stringified even if it's not a string
-          $contents{$name} = $json;
-         }
-         else
-         {
-          warn "Could not verify bundle entry point from $File::Find::name";
-         }
-        }
-        else
-        {
-         warn "Could not load sketch definition from $File::Find::name";
-        }
+        my $info = load_sketch($File::Find::dir);
+        $contents{$info->{metadata}->{name}} = $info;
        }
       }, @dirs);
 
  return \%contents;
+}
+
+sub load_sketch
+{
+ my $dir = shift @_;
+ my $name = is_resource_local($dir) ? File::Spec->catfile($dir, SKETCH_DEF_FILE) : "$dir/" . SKETCH_DEF_FILE;
+ my $json = load_json($name);
+
+ my $info = {};
+
+ # TODO: validate more thoroughly?  at least better messaging
+ if (
+     # the data must be valid and a hash
+     defined $json && ref $json eq 'HASH' &&
+     # the manifest must be a hash
+     exists $json->{manifest}  && ref $json->{manifest}  eq 'HASH' &&
+
+     # the metadata must be a hash...
+     exists $json->{metadata}  && ref $json->{metadata}  eq 'HASH' &&
+
+     # with a 'depends' key that points to a hash
+     exists $json->{metadata}->{depends}  &&
+     ref $json->{metadata}->{depends}  eq 'HASH' &&
+
+     # and a 'name' key
+     exists $json->{metadata}->{name} &&
+
+     # entry_point has to point to a file in the manifest
+     exists $json->{entry_point} &&
+     exists $json->{manifest}->{$json->{entry_point}} &&
+
+     # interface has to point to a file in the manifest
+     exists $json->{interface} &&
+     exists $json->{manifest}->{$json->{interface}}
+    ) {
+  my $name = $json->{metadata}->{name};
+  $json->{dir} = $dir;
+  $json->{file} = $name;
+
+  if (verify_entry_point($name,
+                         $dir,
+                         $json->{manifest},
+                         $json->{entry_point},
+                         $json->{interface})) {
+   # note this name will be stringified even if it's not a string
+   return $json;
+  }
+  else
+  {
+   warn "Could not verify bundle entry point from $File::Find::name";
+  }
+ }
+ else
+ {
+  warn "Could not load sketch definition from $File::Find::name";
+ }
+
+ return undef;
 }
 
 sub verify_entry_point
@@ -731,21 +827,41 @@ sub verify_entry_point
 
  my $maincf = $entry;
 
- my $maincf_filename = File::Spec->catfile($dir, $maincf);
- unless (exists $mft->{$maincf} && -f $maincf_filename)
+ my $maincf_filename = is_resource_local($dir) ? File::Spec->catfile($dir, $maincf) : "$dir/$maincf";
+
+ my @mcf;
+ if (exists $mft->{$maincf})
  {
-  warn "Could not find sketch $name entry point '$maincf'";
-  return 0;
+  if (is_resource_local($dir))
+  {
+   unless (-f $maincf_filename)
+   {
+    warn "Could not find sketch $name entry point '$maincf'";
+    return 0;
+   }
+
+   my $mcf;
+   unless (open($mcf, '<', $maincf_filename) && $mcf)
+   {
+    warn "Could not open $maincf_filename: $!";
+    return 0;
+   }
+   @mcf = <$mcf>;
+  }
+  else
+  {
+   my $mcf = get($maincf_filename);
+   unless ($mcf)
+   {
+    warn "Could not retrieve $maincf_filename: $!";
+    return 0;
+   }
+
+   @mcf = split "\n", $mcf;
+  }
  }
 
- my $mcf;
- unless (open($mcf, '<', $maincf_filename))
- {
-  warn "Could not open $maincf_filename: $!";
-  return 0;
- }
-
- if ($mcf)
+ if (scalar @mcf)
  {
   $. = 0;
   my $bundle;
@@ -754,7 +870,7 @@ sub verify_entry_point
               varlist => { activated => 'context' },
              };
 
-  while (my $line = <$mcf>)
+  while (my $line = shift @mcf)
   {
    $.++;
    # TODO: need better cfengine parser; this should be extracted by cf-promises
@@ -765,52 +881,23 @@ sub verify_entry_point
     $meta->{confirmed} = 1;
    }
 
-   # match "arguments" slist => { "foo", "bar", "baz" };
-   if ($meta->{confirmed} && $line =~ m/^\s*
-                                        "arguments"
-                                        \s+
-                                        slist
-                                        \s+=>\s+
-                                        \{\s+(.+)\}\s*;/x)
-   {
-    # collect variables
-    my $varlist = $1;
-    $meta->{varlist}->{$_} = undef foreach ($varlist =~ m/"([^"]+)"/g);
-   }
-
-   # match "argtype[foo]" string => "string";
-   # or    "argtype[bar]" string => "slist";
-   # or    "argtype[bar]" string => "context";
-   if (scalar keys %{$meta->{varlist}} &&
+   # match "argument[foo]" string => "string";
+   # or    "argument[bar]" string => "slist";
+   # or    "argument[bar]" string => "context";
+   if ($meta->{confirmed} &&
        $line =~ m/^\s*
-                  "argtype\[([^]]+)\]"
+                  "argument\[([^]]+)\]"
                   \s+
                   string
                   \s+=>\s+
                   "(context|string|slist)"\s*;/x)
    {
-    if (exists $meta->{varlist}->{$1})
-    {
-     $meta->{varlist}->{$1} = $2;
-    }
-    else
-    {
-     warn "Unknown variable $1 defined in [$line]";
-    }
+    $meta->{varlist}->{$1} = $2;
    }
 
    if ($meta->{confirmed} && $line =~ m/^\s*\}\s*/)
    {
-    my @undefined_vars = grep { !defined $meta->{varlist}->{$_} } sort keys %{$meta->{varlist}};
-    if (scalar @undefined_vars)
-    {
-     warn "Undefined variables @undefined_vars";
-     return 0;
-    }
-    else
-    {
-     return $meta;
-    }
+    return $meta;
    }
 
    if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/ && $1 !~ m/^meta/)
@@ -821,11 +908,7 @@ sub verify_entry_point
 
   }
 
-  if (scalar keys %{$meta->{varlist}})
-  {
-   warn "Couldn't find the definition for all the variables for [$bundle] in $maincf_filename";
-  }
-  elsif ($meta->{confirmed})
+  if ($meta->{confirmed})
   {
    warn "Couldn't find the closing } for [$bundle] in $maincf_filename";
   }
@@ -840,17 +923,12 @@ sub verify_entry_point
 
   return 0;
  }
- else
- {
-  warn "Could not load $maincf_filename: $!";
-  return 0;
- }
 }
 
-sub is_repo_local
+sub is_resource_local
 {
- my $repo = shift @_;
- return -d $repo;  # just a file path
+ my $resource = shift @_;
+ return ($resource =~ m,^/,);
 }
 
 sub get_local_repo
@@ -858,7 +936,7 @@ sub get_local_repo
  my $repo;
  foreach my $target (@{$options{repolist}})
  {
-  if (is_repo_local($target))
+  if (is_resource_local($target))
   {
    $repo = $target;
    last;
@@ -875,20 +953,19 @@ sub get_local_repo
 
   return $content_cache{$repo} if exists $content_cache{$repo};
 
-  if (is_repo_local($repo))
+  my $contents;
+  if (is_resource_local($repo))
   {
-   my $contents = find_sketches($repo);
+   $contents = find_sketches($repo);
    $content_cache{$repo} = $contents;
-
-   return $contents;
   }
   else
   {
-   die "No remote repositories (i.e. $repo) are supported yet"
+   $contents = find_remote_sketches($repo);
+   $content_cache{$repo} = $contents;
   }
 
-  warn "Unhandled repo format: $repo";
-  return undef;
+  return $contents;
  }
 
  sub repo_clear_cache
@@ -904,16 +981,29 @@ sub load_json
  # TODO: improve this
  my $f = shift @_;
 
- my $j;
- unless (open($j, '<', $f))
+ my @j;
+
+ if (is_resource_local($f))
  {
-  warn "Could not inspect $f: $!";
-  return;
+  my $j;
+  unless (open($j, '<', $f) && $j)
+  {
+   warn "Could not inspect $f: $!";
+   return;
+  }
+
+  @j = <$j>;
+ }
+ else
+ {
+  my $j = get($f)
+   or die "Unable to retrieve $f";
+
+  @j = split "\n", $j;
  }
 
- if ($j)
+ if (scalar @j)
  {
-  my @j = <$j>;
   chomp @j;
   s/\n//g foreach @j;
   s/^\s*#.*//g foreach @j;
@@ -940,6 +1030,7 @@ sub load_json
      warn "Malformed include contents from $include: not a hash";
     }
    }
+   delete $ret->{include};
   }
 
   return $ret;
@@ -967,12 +1058,4 @@ __DATA__
 
 Help for cfsketch
 
-Document the options:
-
-- need global run file for all generated
-
-- document cfsketch formats (params, sketch.json, all .conf files)
-
-- sketch composition
-
-- activations in md5_hex("$str$salt")
+See README.md
