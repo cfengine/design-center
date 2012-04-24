@@ -73,6 +73,14 @@ if ($options{help})
  exit;
 }
 
+my $required_version = '3.3.0';
+my $version = cfengine_version();
+
+if ($required_version gt $version)
+{
+ die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
+}
+
 if (open(my $cfh, '<', $options{configfile}))
 {
  while (<$cfh>)
@@ -643,28 +651,19 @@ sub missing_dependencies
           ref $deps->{$dep} eq 'HASH' &&
           exists $deps->{$dep}->{version})
    {
-    my $cfv = `cf-promises -V`; # TODO: get this from cfengine?
-    if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
+    my $version = cfengine_version();
+    if ($version ge $deps->{$dep}->{version})
     {
-     my $version = $1;
-     if ($version ge $deps->{$dep}->{version})
-     {
-      say("Satisfied cfengine version dependency: $version present, needed ",
-       $deps->{$dep}->{version})
-       if $verbose;
+     say("Satisfied cfengine version dependency: $version present, needed ",
+         $deps->{$dep}->{version})
+      if $verbose;
 
-      delete $deps->{$dep};
-     }
-     else
-     {
-      say("Unsatisfied cfengine version dependency: $version present, need ",
-       $deps->{$dep}->{version})
-       if $verbose;
-     }
+     delete $deps->{$dep};
     }
     else
     {
-     say "Unsatisfied cfengine dependency: could not get version from [$cfv]."
+     say("Unsatisfied cfengine version dependency: $version present, need ",
+         $deps->{$dep}->{version})
       if $verbose;
     }
    }
@@ -1053,6 +1052,21 @@ sub remove_dir
  my $dir = shift @_;
 
  return remove_tree($dir, { verbose => $verbose });
+}
+
+sub cfengine_version
+{
+ my $cfv = `cf-promises -V`; # TODO: get this from cfengine?
+ if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
+ {
+  return $1;
+ }
+ else
+ {
+  say "Unsatisfied cfengine dependency: could not get version from [$cfv]."
+   if $verbose;
+  return 0;
+ }
 }
 
 __DATA__
