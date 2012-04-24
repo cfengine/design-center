@@ -734,6 +734,7 @@ sub find_remote_sketches
   foreach my $sketch_dir ($sketches =~ /(.+)/mg)
   {
    my $info = load_sketch("$repo/$sketch_dir");
+   next unless $info;
    $contents{$info->{metadata}->{name}} = $info;
   }
  }
@@ -752,6 +753,7 @@ sub find_sketches
        if ($f eq SKETCH_DEF_FILE)
        {
         my $info = load_sketch($File::Find::dir);
+        next unless $info;
         $contents{$info->{metadata}->{name}} = $info;
        }
       }, @dirs);
@@ -870,7 +872,7 @@ sub verify_entry_point
               varlist => { activated => 'context' },
              };
 
-  while (my $line = shift @mcf)
+  while (defined(my $line = shift @mcf))
   {
    $.++;
    # TODO: need better cfengine parser; this should be extracted by cf-promises
@@ -905,7 +907,6 @@ sub verify_entry_point
     $meta->{bundle} = $bundle = $1;
     say "Found definition of bundle $bundle at $maincf_filename:$." if $verbose;
    }
-
   }
 
   if ($meta->{confirmed})
@@ -921,7 +922,7 @@ sub verify_entry_point
    warn "Couldn't find a usable bundle in $maincf_filename";
   }
 
-  return 0;
+  return undef;
  }
 }
 
