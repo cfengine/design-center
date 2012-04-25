@@ -325,13 +325,19 @@ sub generate
                         };
 
        my $varlist = $entry_point->{varlist};
-       foreach my $k (sort keys %$varlist)
+       my $optional_varlist = $entry_point->{optional_varlist};
+       foreach my $k (sort keys %$varlist, sort keys %$optional_varlist)
        {
         my $cfengine_k = "${prefix}::$k";
         $cfengine_k =~ s/::/__/g;
 
+        # skip optional variables without a value
+        next if (exists $optional_varlist->{$k} && ! exists $pdata->{$k});
+
         my $v = $pdata->{$k};
-        my $definition = $entry_point->{varlist}->{$k};
+        my $definition = exists $optional_varlist->{$k} ?
+         $entry_point->{optional_varlist}->{$k} :
+          $entry_point->{varlist}->{$k};
 
         if ($definition eq 'context')
         {
@@ -421,6 +427,13 @@ sub activate
      die "Can't activate $sketch: its interface requires variable $varname"
       unless exists $params->{$varname};
      say "Satisfied by params: $varname" if $verbose;
+    }
+
+    $varlist = $entry_point->{optional_varlist};
+    foreach my $varname (sort keys %$varlist)
+    {
+     next unless exists $params->{$varname};
+     say "Optional satisfied by params: $varname" if $verbose;
     }
    }
    else
@@ -869,6 +882,7 @@ sub verify_entry_point
   my $meta = {
               confirmed => 0,
               varlist => { activated => 'context' },
+              optional_varlist => { },
              };
 
   while (defined(my $line = shift @mcf))
@@ -894,6 +908,20 @@ sub verify_entry_point
                   "(context|string|slist)"\s*;/x)
    {
     $meta->{varlist}->{$1} = $2;
+   }
+
+   # match "optional_argument[foo]" string => "string";
+   # or    "optional_argument[bar]" string => "slist";
+   # or    "optional_argument[bar]" string => "context";
+   if ($meta->{confirmed} &&
+       $line =~ m/^\s*
+                  "optional_argument\[([^]]+)\]"
+                  \s+
+                  string
+                  \s+=>\s+
+                  "(context|string|slist)"\s*;/x)
+   {
+    $meta->{optional_varlist}->{$1} = $2;
    }
 
    if ($meta->{confirmed} && $line =~ m/^\s*\}\s*/)
@@ -928,7 +956,7 @@ sub verify_entry_point
 sub is_resource_local
 {
  my $resource = shift @_;
- return ($resource !~ m,^[a-z]+:,);
+ return ($resource !~ m,^[a-z][a-z]+:,);
 }
 
 sub get_local_repo
