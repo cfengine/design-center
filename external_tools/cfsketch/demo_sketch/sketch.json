@@ -3,6 +3,7 @@
     "manifest":
     {
         "main.cf": { "desc": "main file", "version": 1.00 },
+        "README.md": { "documentation": true },
     },
 
     "metadata":

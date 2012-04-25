@@ -227,7 +227,11 @@ sub search
   {
    # this format is easy to parse, even if the directory has spaces,
    # because the first two fields won't have spaces
-   say "$local $sketch $contents->{$sketch}->{dir}";
+   my @docs = grep {
+    exists $contents->{$sketch}->{manifest}->{$_}->{documentation}
+   } sort keys %{$contents->{$sketch}->{manifest}};
+
+   say "$local $sketch $contents->{$sketch}->{dir} [@docs]";
   }
  }
 }
