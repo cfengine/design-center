@@ -11,6 +11,7 @@ bundle agent meta_mysketch_main_bundle
       "argument[mybool]"          string => "context"; # boolean
       "argument[myint]"           string => "string";
       "argument[mystr]"           string => "string";
+      "optional_argument[myopt]"  string => "string";
       "argument[os_special_path]" string => "string";
       "argument[hosts_deny]"      string => "slist";
 }

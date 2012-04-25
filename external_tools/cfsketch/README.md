@@ -124,6 +124,7 @@ Finally comes the `entry_point` and interface.  Those two say to cfsketch "look 
           "argument[mybool]"          string => "context"; # boolean
           "argument[myint]"           string => "string";
           "argument[mystr]"           string => "string";
+          "optional_argument[myopt]"  string => "string";
           "argument[os_special_path]" string => "string";
           "argument[hosts_deny]"      string => "slist";
     }
@@ -142,4 +143,9 @@ Lots of things!!!
 * make COPBL included easily
 
 * support generic Git cloning eventually for a repo source
+
+* support default values for optional variables
+
+* automatically render documentation files
+
 

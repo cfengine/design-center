@@ -4,5 +4,6 @@
     "mybool": false,
     "myint": 100,
     "mystr": "hello",
+    "myopt": "welcome",
     "hosts_deny": [100, 200, 300],
 }
