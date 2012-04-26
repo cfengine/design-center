@@ -1,0 +1,19 @@
+{ 
+
+    "manifest":
+    {
+        "cfengine_stdlib.cf": { "desc": "COPBL" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "CFEngine::stdlib",
+        "version": 106,
+        "authors": [ "CFEngine AS" ],
+        "depends": { "cfengine": { "version": "3.3.0" } },
+    },
+
+    "entry_point": null,
+    "interface": "cfengine_stdlib.cf"
+}

@@ -286,6 +286,7 @@ sub generate
    my $activation_counter = 1;
    my $template_activations = {};
 
+   my @inputs;
  ACTIVATION:
    foreach my $sketch (sort keys %$activations)
    {
@@ -319,6 +320,14 @@ sub generate
 
        die "Could not load the entry point definition of $sketch"
         unless $entry_point;
+
+       # for null entry_point and interface definitions, don't write
+       # anything in the runme template
+       unless (exists $entry_point->{bundle})
+       {
+        push @inputs, File::Spec->catfile($data->{dir}, $data->{interface});
+        next;
+       }
 
        my $activation = {
                          file => File::Spec->catfile($data->{dir}, $data->{entry_point}),
@@ -373,10 +382,10 @@ sub generate
    my $output = '';
 
    # process input template, substituting variables
-   my $includes = join(', ',
-                       map { sprintf('"%s"',
-                                     $template_activations->{$_}->{file}) }
-                       List::MoreUtils::uniq(sort keys %$template_activations));
+   push @inputs, $template_activations->{$_}->{file}
+    foreach sort keys %$template_activations;
+
+   my $includes = join ', ', map { "\"$_\"" } @inputs;
 
    $template->process($input,
                       {
@@ -802,14 +811,15 @@ sub load_sketch
      # and a 'name' key
      exists $json->{metadata}->{name} &&
 
-     # entry_point has to point to a file in the manifest
+     # entry_point has to point to a file in the manifest or be null
      exists $json->{entry_point} &&
-     exists $json->{manifest}->{$json->{entry_point}} &&
+     (!defined $json->{entry_point} || exists $json->{manifest}->{$json->{entry_point}}) &&
 
-     # interface has to point to a file in the manifest
+     # interface has to point to a file in the manifest or be null
      exists $json->{interface} &&
      exists $json->{manifest}->{$json->{interface}}
-    ) {
+    )
+ {
   my $name = $json->{metadata}->{name};
   $json->{dir} = $dir;
   $json->{file} = $name;
@@ -842,6 +852,15 @@ sub verify_entry_point
  my $mft       = shift @_;
  my $entry     = shift @_;
  my $interface = shift @_;
+
+ unless (defined $entry && defined $interface)
+ {
+  return {
+          confirmed => 1,
+          varlist => { activated => 'context' },
+          optional_varlist => { },
+         };
+ }
 
  my $maincf = $entry;
 
