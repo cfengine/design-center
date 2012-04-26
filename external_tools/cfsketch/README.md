@@ -107,7 +107,7 @@ Next comes the metadata.  Simply, it says what the sketch is called (this will b
 
 The dependencies can be _cfengine_ and _copbl_ fof the CFEngine and COPBL versions respectively; _os_ for the OS type; or any other sketch with a specific version, if needed.
 
-Finally comes the `entry_point` and interface.  Those two say to cfsketch "look in `main.cf` for the main entry bundle and the metadata that defines its interface."
+Finally comes the `entry_point` and interface.  Those two say to cfsketch "look in `main.cf` for the main entry bundle and the metadata that defines its interface."  You can set entry_point to null, in which case cfsketch knows your sketch doesn't have an entry point (it's just a library like COPBL or the Yale promise library).  The `interface` has to be a valid file, though.  The included "copbl" sketch demonstrates this.
 
 `main.cf` is your normal every day CFEngine configuration file, except that it has to contain two special bundles (this will almost certainly change as cfsketch integrates more tightly with cfengine metadata).  Here's an example: 
 
@@ -126,7 +126,11 @@ Finally comes the `entry_point` and interface.  Those two say to cfsketch "look 
           "argument[mystr]"           string => "string";
           "optional_argument[myopt]"  string => "string";
           "argument[os_special_path]" string => "string";
-          "argument[hosts_deny]"      string => "slist";
+          "argument[hosts_allow]"     string => "slist";
+
+          "default[os_special_path]"  string => "/no/such/path";
+          "default[hosts_allow]"      slist => { "a", "b", "c" };
+
     }
 
 The parameter metadata is obviously hacked in right now, and you should expect it to change.  So don't complain about it, you in the back.
@@ -144,8 +148,4 @@ Lots of things!!!
 
 * support generic Git cloning eventually for a repo source
 
-* support default values for optional variables
-
 * automatically render documentation files
-
-

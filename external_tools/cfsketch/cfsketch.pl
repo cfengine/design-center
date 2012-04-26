@@ -344,6 +344,12 @@ sub generate
         my $cfengine_k = "${prefix}::$k";
         $cfengine_k =~ s/::/__/g;
 
+        if (exists $entry_point->{default}->{$k} &&
+            !exists $pdata->{$k})
+        {
+         $pdata->{$k} = $entry_point->{default}->{$k};
+        }
+
         # skip optional variables without a value
         next if (exists $optional_varlist->{$k} && ! exists $pdata->{$k});
 
@@ -434,6 +440,12 @@ sub activate
 
    if ($entry_point)
    {
+    foreach my $default_k (keys %{$entry_point->{default}})
+    {
+     next if exists $params->{$default_k};
+     $params->{$default_k} = $entry_point->{default}->{$default_k};
+    }
+
     my $varlist = $entry_point->{varlist};
     foreach my $varname (sort keys %$varlist)
     {
@@ -903,9 +915,10 @@ sub verify_entry_point
   $. = 0;
   my $bundle;
   my $meta = {
-              confirmed => 0,
-              varlist => { activated => 'context' },
+              confirmed        => 0,
+              varlist          => { activated => 'context' },
               optional_varlist => { },
+              default          => {},
              };
 
   while (defined(my $line = shift @mcf))
@@ -945,6 +958,30 @@ sub verify_entry_point
                   "(context|string|slist)"\s*;/x)
    {
     $meta->{optional_varlist}->{$1} = $2;
+   }
+
+   # match "default[foo]" string => "string";
+   # match "default[foo]" slist => { "a", "b", "c" };
+   if ($meta->{confirmed} &&
+       $line =~ m/^\s*
+                  "default\[([^]]+)\]"
+                  \s+
+                  (string|slist)
+                  \s+=>\s+
+                  (.*)\s*;/x &&
+      (exists $meta->{optional_varlist}->{$1} ||
+       exists $meta->{varlist}->{$1}))
+   {
+    my $k = $1;
+    my $v = $3;
+
+    # primitive extractor of slist values
+    if ($2 eq 'slist')
+    {
+     $v = [ ($v =~ m/"([^"]+)"/g) ];
+    }
+
+    $meta->{default}->{$k} = $v;
    }
 
    if ($meta->{confirmed} && $line =~ m/^\s*\}\s*/)
