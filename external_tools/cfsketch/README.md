@@ -149,3 +149,5 @@ Lots of things!!!
 * support generic Git cloning eventually for a repo source
 
 * automatically render documentation files
+
+* use the "copbl" sketch
