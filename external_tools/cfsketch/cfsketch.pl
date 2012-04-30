@@ -32,9 +32,9 @@ my %options =
   help       => 0,
   force      => 0,
   # switched depending on root or non-root
-  copbl_file => $> == 0 ? '/etc/cfsketch/lib/cfengine_stdlib.cf' : glob('~/.cfsketch/lib/cfengine_stdlib.cf'),
-  act_file   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch/activations.conf'),
+  'act-file'   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch/activations.conf'),
   configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch/cfsketch.conf'),
+  'install-target' => undef,
  );
 
 my @options_spec =
@@ -45,8 +45,8 @@ my @options_spec =
   "force!",
   "configfile|cf=s",
   "params=s",
-  "act_file=s",
-  "copbl_file=s",
+  "act-file=s",
+  "install-target=s",
 
   "config!",
   "interactive!",
@@ -58,7 +58,7 @@ my @options_spec =
   "test=s@",
   "search=s@",
   "list|l!",
-  "list_activations!",
+  "list-activations!",
   "generate!",
  );
 
@@ -141,10 +141,10 @@ if ($options{list})
  exit;
 }
 
-if ($options{list_activations})
+if ($options{'list-activations'})
 {
- my $activations = load_json($options{act_file});
- die "Can't load any activations from $options{act_file}"
+ my $activations = load_json($options{'act-file'});
+ die "Can't load any activations from $options{'act-file'}"
   unless defined $activations && ref $activations eq 'HASH';
  foreach my $sketch (sort keys %$activations)
  {
@@ -175,7 +175,6 @@ sub configure_self
 
  my %keys = (
              repolist => 1,             # array
-             copbl_file => 0,           # scalar
             );
 
  my %config;
@@ -270,8 +269,8 @@ sub search_internal
 sub generate
 {
    # activation successful, now install it
-   my $activations = load_json($options{act_file});
-   die "Can't load any activations from $options{act_file}"
+   my $activations = load_json($options{'act-file'});
+   die "Can't load any activations from $options{'act-file'}"
     unless defined $activations && ref $activations eq 'HASH';
 
    # maybe make the run template configurable?
@@ -467,12 +466,12 @@ sub activate
    }
 
    # activation successful, now install it
-   my $activations = load_json($options{act_file});
+   my $activations = load_json($options{'act-file'});
    $activations->{$sketch}->{$options{params}} = $params;
 
-   ensure_dir(dirname($options{act_file}));
-   open(my $ach, '>', $options{act_file})
-    or die "Could not write activation file $options{act_file}: $!";
+   ensure_dir(dirname($options{'act-file'}));
+   open(my $ach, '>', $options{'act-file'})
+    or die "Could not write activation file $options{'act-file'}: $!";
 
    print $ach $coder->encode($activations);
    close $ach;
@@ -496,7 +495,7 @@ sub deactivate
   unless $options{params};
 
  # activation successful, now install it
- my $activations = load_json($options{act_file});
+ my $activations = load_json($options{'act-file'});
 
  die "Couldn't deactivate sketch $sketch: no activation for $options{params}"
   unless exists $activations->{$sketch}->{$options{params}};
@@ -505,8 +504,8 @@ sub deactivate
 
  delete $activations->{$sketch} unless scalar keys %{$activations->{$sketch}};
 
- open(my $ach, '>', $options{act_file})
-  or die "Could not write activation file $options{act_file}: $!";
+ open(my $ach, '>', $options{'act-file'})
+  or die "Could not write activation file $options{'act-file'}: $!";
 
  print $ach $coder->encode($activations);
  close $ach;
@@ -553,7 +552,7 @@ sub install
  # make sure we only work with absolute directories
  my $sketches = find_sketches(map { File::Spec->rel2abs($_) } @$sketch_dirs);
 
- my $dest_repo = get_local_repo();
+ my $dest_repo = $options{'install-target'} || get_local_repo();
 
  die "Can't install: none of [@{$options{repolist}}] exist locally!"
   unless defined $dest_repo;
@@ -701,27 +700,6 @@ sub missing_dependencies
     else
     {
      say("Unsatisfied cfengine version dependency: $version present, need ",
-         $deps->{$dep}->{version})
-      if $verbose;
-    }
-   }
-   elsif ($dep eq 'copbl' &&
-          ref $deps->{$dep} eq 'HASH' &&
-          exists $deps->{$dep}->{version})
-   {
-    # TODO: open $options{copbl_file} and get the version
-    my $version = "106";
-    if ($version ge $deps->{$dep}->{version})
-    {
-     say("Satisfied COPBL version dependency: $version present, needed ",
-         $deps->{$dep}->{version})
-      if $verbose;
-
-     delete $deps->{$dep};
-    }
-    else
-    {
-     say("Unsatisfied COPBL version dependency: $version present, need ",
          $deps->{$dep}->{version})
       if $verbose;
     }

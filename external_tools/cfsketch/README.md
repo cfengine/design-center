@@ -150,4 +150,6 @@ Lots of things!!!
 
 * automatically render documentation files
 
-* use the "copbl" sketch
+* --install-target
+
+* catch double activation by comparing canonical JSON
