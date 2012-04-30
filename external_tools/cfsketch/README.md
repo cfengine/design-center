@@ -43,6 +43,8 @@ Install all the bundles in the current directory (currently one bundle lives und
 
     ./cfsketch.pl --repolist=$(REPO) --install=. -v -f
 
+You can specify the install directory with --install-target=/a/b/c here.
+
 You can stop here and just include the sketch .cf files that were
 installed in $(REPO), or proceed with parameters and activation.
 
@@ -52,7 +54,7 @@ Activate `Misc::mysketch` (the name of the sketch installed from `demo_sketch`) 
 
 Admire all the activations, with their data.  Note that the data is brought in *when you activate*.
 
-    ./cfsketch.pl --list_activations
+    ./cfsketch.pl --list-activations
 
     /bin/cat ~/.cfsketch/activations.conf
 
