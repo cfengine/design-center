@@ -150,6 +150,3 @@ Lots of things!!!
 
 * automatically render documentation files
 
-* --install-target
-
-* catch double activation by comparing canonical JSON

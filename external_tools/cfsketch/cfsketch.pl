@@ -467,6 +467,24 @@ sub activate
 
    # activation successful, now install it
    my $activations = load_json($options{'act-file'});
+
+   if (exists $activations->{$sketch}->{$options{params}})
+   {
+    my $p = $canonical_coder->encode($activations->{$sketch}->{$options{params}});
+    my $q = $canonical_coder->encode($params);
+    if ($p eq $q)
+    {
+     if ($options{force})
+     {
+      warn "Activating duplicate parameters [$q] because of --force";
+     }
+     else
+     {
+      die "Can't activate: $sketch has already been activated with $q";
+     }
+    }
+   }
+
    $activations->{$sketch}->{$options{params}} = $params;
 
    ensure_dir(dirname($options{'act-file'}));
