@@ -15,6 +15,7 @@ use Modern::Perl;               # needs apt-get libmodern-perl
 use JSON::XS;                   # needs apt-get libjson-xs-perl
 use Template;
 use LWP::Simple;
+use Term::ReadKey;
 
 use constant SKETCH_DEF_FILE => 'sketch.json';
 
@@ -35,6 +36,7 @@ my %options =
   'act-file'   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch/activations.conf'),
   configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch/cfsketch.conf'),
   'install-target' => undef,
+  'make-package' => [],
  );
 
 my @options_spec =
@@ -51,6 +53,7 @@ my @options_spec =
   "config!",
   "interactive!",
   "repolist=s@",
+  "make-package=s@",
   "install=s@",
   "activate=s",                 # activate only one at a time
   "deactivate=s",               # deactivate only one at a time
@@ -138,6 +141,12 @@ if ($options{config})
 if ($options{list})
 {
  search(['.']);                   # matches everything
+ exit;
+}
+
+if ($options{'make-package'})
+{
+ make_packages($options{'make-package'});
  exit;
 }
 
@@ -853,6 +862,27 @@ sub load_sketch
  return undef;
 }
 
+sub make_packages
+{
+ my $todo = shift @_;
+ my @dirs;
+
+ find(sub
+      {
+       my $f = $_;
+       if ($f =~ m/readme/i &&
+           read_yes_no("Use directory $File::Find::dir (interesting file $f)?",
+                       'n'))
+       {
+        push @dirs, $File::Find::dir;
+        $File::Find::prune = 1;
+       }
+      }, @$todo);
+
+
+      die "@dirs";
+}
+
 sub verify_entry_point
 {
  my $name      = shift @_;
@@ -1151,6 +1181,51 @@ sub cfengine_version
    if $verbose;
   return 0;
  }
+}
+
+sub read_key
+{
+ my $key;
+ ReadMode 3;
+ while (not defined ($key = ReadKey(0)))
+ {
+  # No key yet
+ }
+ ReadMode 0; # Reset tty mode before exiting
+ return $key;
+}
+
+sub read_yes_no
+{
+ my $prompt = shift @_;
+ my $default = shift @_;
+
+ my $true_mode = (uc $default eq 'Y' || $default eq '1');
+
+ my $user_choice;
+
+ if ($true_mode)
+ {
+  print "$prompt (Y/n) ";
+ }
+ else
+ {
+  print "$prompt (y/N) ";
+ }
+
+ $user_choice = uc read_key();
+ print "\n";
+
+ if ($user_choice eq "\n" || $user_choice eq ' ') # ASCII space/CR
+ {
+  return $true_mode;
+ }
+ else
+ {
+  return ($user_choice eq 'Y');
+ }
+
+ return undef;                          # shouldn't get here
 }
 
 __DATA__
