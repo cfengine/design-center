@@ -144,7 +144,7 @@ if ($options{list})
  exit;
 }
 
-if ($options{'make-package'})
+if (scalar @{$options{'make-package'}})
 {
  make_packages($options{'make-package'});
  exit;
