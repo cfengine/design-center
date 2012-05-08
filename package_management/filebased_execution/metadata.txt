@@ -1,0 +1,4 @@
+author: Eystein Måløy Stenberg <eystein@cfengine.com>
+ostype: windows
+tested: Windows_2008,Windows_7
+cfengine_version: core-3.3.0,nova-2.2.0
