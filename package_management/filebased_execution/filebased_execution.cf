@@ -18,7 +18,7 @@ windows.has_packages::
       comment => "Scan for file changes in repository",
       changes => detect_content,
       classes => if_repaired("package_file_changed_$(package_list)"),
-       handle => "filebased_execution_change_$(package_list)";
+       handle => canonify("filebased_execution_change_$(package_list)");
   
 
 commands:
@@ -27,11 +27,11 @@ commands:
        comment => "Run executable file if we have not seen it or it has changed",
     ifvarclass => canonify("package_file_changed_$(package_list_executable)"),
        contain => in_shell,
-        handle => "filebased_execution_install_executable_$(package_list_executable)";
+        handle => canonify("filebased_execution_install_executable_$(package_list_executable)");
 	
   "\"$(sys.winsysdir)\msiexec.exe\" /qn /i $(package_list_msi)"
        comment => "Install msi-file if we have not seen it or it has changed",
     ifvarclass => canonify("package_file_changed_$(package_list_msi)"),
-        handle => "filebased_execution_install_msi_$(package_list_msi)";
+        handle => canonify("filebased_execution_install_msi_$(package_list_msi)");
 }
 
