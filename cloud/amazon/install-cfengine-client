@@ -1,0 +1,11 @@
+#!/bin/bash
+URL_ROOT="https://s3.amazonaws.com/my-bucket"
+PKG_NAME="cfengine-VERSION-ARCH.deb"
+HUB_ADDRESS="IP-TO-HUB"
+WORKDIR="/tmp"
+
+set -e -x
+cd "$WORKDIR"
+wget "$URL_ROOT/$PKG_NAME"
+dpkg -i "$WORKDIR/$PKG_NAME"
+/var/cfengine/bin/cf-agent -BIs "$HUB_ADDRESS"
