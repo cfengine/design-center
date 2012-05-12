@@ -17,21 +17,21 @@ Rather than killing off CFEngine daemons, these bundles will halt cf-agent runs
 
 First, you must define an class to halt execution:
 
-  body agent control
-  {
-    ...
-    abortclasses => { "cowboy" };
-  }
+    body agent control
+    {
+      ...
+      abortclasses => { "cowboy" };
+    }
 
 This alert and abort bundle should be called early in the sequence:
 
-  body common control
-  {
-    bundlesequence => {
-      "halt_agent_if_file_exists_alert(/COWBOY)",
-      "halt_agent_if_file_exists_abort(cowboy,/COWBOY)",
-      ...,
-    };
-  }
+    body common control
+    {
+      bundlesequence => {
+        "halt_agent_if_file_exists_alert(/COWBOY)",
+        "halt_agent_if_file_exists_abort(cowboy,/COWBOY)",
+        ...,
+      };
+    }
 
 
