@@ -1,0 +1,33 @@
+# -*- mode: cfengine3; indent-tabs-mode: nil; cfengine-parameters-indent: (promise pname 2); -*-
+# vi:tabstop=2:expandtab
+
+#
+# Raise alert that agent will abort
+#
+bundle agent halt_agent_if_file_exists_alert(trigger_file)
+{
+
+  classes:
+      "trigger_file_found"
+        expression => fileexists($(trigger_file)),
+        comment => "Test the existance of the abort trigger file";
+
+  reports:
+    trigger_file_found::
+      "System is under manual control!!!"
+        comment => "Alert that system is under manual control";
+
+}
+
+#
+# Abort execution of the agent if the specified file exists
+#
+bundle agent halt_agent_if_file_exists_abort(trigger_class, trigger_file)
+{
+
+  classes:
+      "$(trigger_class)"
+        expression => fileexists($(trigger_file)),
+        comment => "Test the existance of the abort trigger file";
+
+}
