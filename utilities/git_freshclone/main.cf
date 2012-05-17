@@ -14,6 +14,10 @@ bundle agent git_freshclone(params){
 #methods:
 #    "any" usebundle => git_freshclone("main.git");
 ###########################################################################
+# Note: I chose to use a "handle" for the first index instead of just using
+#       the path to the clone because I thought that format was a little bit
+#       more readable and easier to convey the intention. The first index
+#       functions a little bit like a comment.
 
 vars:
     "param_keys" slist => getindices("$(params)");
