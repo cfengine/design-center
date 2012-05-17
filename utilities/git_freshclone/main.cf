@@ -1,0 +1,81 @@
+bundle agent meta_git_freshclone{
+vars:
+    "argument[handle][path]"   string => "string";
+    "argument[handle][origin]" string => "string";
+    "argument[handle][branch]" string => "string";
+}
+
+bundle agent git_freshclone(params){
+#vars:
+#    "git[nicks_copbl][path]"     string => "/tmp/git_freshclone";
+#    "git[nicks_copbl][origin]"   string => "git://github.com/nickanderson/copbl.git";
+#    "git[nicks_copbl][branch]"   string => "master";
+#
+#methods:
+#    "any" usebundle => git_freshclone("main.git");
+###########################################################################
+
+vars:
+    "param_keys" slist => getindices("$(params)");
+
+classes:
+    "$(param_keys)_gitconfig_exists" expression => fileexists("$($(params)[$(param_keys)][path])/.git/config");
+
+# TODO make sure if it exists the git config contains the correct information
+#files:
+#    # if the git config exists, make sure it has the proper settings for origin and master
+#    "$($(params)[$(param_keys)][path])/.git/config"
+#        edit_line => 
+
+commands:
+
+    # We only need to perform cleanup operations if we did not do a fresh new clone
+    "/usr/bin/git clean -f -f -x -q -d ."
+        handle     => "git_freshclone_commands_remove_untracked",
+        contain    => in_dir("$($(params)[$(param_keys)][path])"),
+        ifvarclass => "$(param_keys)_gitconfig_exists.!git_freshclone_new_clone_$(param_keys)",
+        comment    => "Cleanup - Remove untracked files";
+
+    "/usr/bin/git reset -q --hard HEAD"
+        handle     => "git_freshclone_commands_discard_changes",
+        contain    => in_dir("$($(params)[$(param_keys)][path])"),
+        ifvarclass => "$(param_keys)_gitconfig_exists.!git_freshclone_new_clone_$(param_keys)",
+        comment    => "Cleanup - Discard any changes to index and working tree since HEAD";
+
+    "/usr/bin/git checkout $($(params)[$(param_keys)][branch])"
+        handle     => "git_freshclone_commands_checkout_branch",
+        contain    => in_dir("$($(params)[$(param_keys)][path])"),
+        ifvarclass => "$(param_keys)_gitconfig_exists.!git_freshclone_new_clone_$(param_keys)",
+        comment    => "Cleanup - Make sure we have the proper branch checked out";
+
+    "/usr/bin/git pull -q -s recursive -Xtheirs origin $($(params)[$(param_keys)][branch])"
+        handle     => "git_freshclone_commands_pull_changes",
+        contain    => in_dir("$($(params)[$(param_keys)][path])"),
+        ifvarclass => "$(param_keys)_gitconfig_exists.!git_freshclone_new_clone_$(param_keys)",
+        comment    => "Update - Make sure we have the latest changes from origin";
+
+    "/usr/bin/git reset -q --hard HEAD"
+        handle     => "git_freshclone_commands_reset_to_latest_updates",
+        contain    => in_dir("$($(params)[$(param_keys)][path])"),
+        ifvarclass => "$(param_keys)_gitconfig_exists.!git_freshclone_new_clone_$(param_keys)",
+        comment    => "Update - Make sure we have reset the working tree to the latest updates";
+
+    # This does not handle what to do if your trying to checkout to a non empty directory
+    # TODO: provide _force paramater to allow obliterating the directory if its not empty and not a checkout
+    "/usr/bin/git clone $($(params)[$(param_keys)][origin]) $($(params)[$(param_keys)][path])"
+        handle     => "git_freshclone_commands_git_clone",
+        ifvarclass => "!$(param_keys)_gitconfig_exists",
+        classes    => if_ok("git_freshclone_new_clone_$(param_keys)"),
+        comment    => "Since no git repository  exists create a new clone";
+
+reports:
+    cfengine::
+        # report if the git config exists, but not if we performed a new clone
+        "$($(params)[$(param_keys)][path])/.git/config exists",
+            ifvarclass => "$(param_keys)_gitconfig_exists.!git_freshclone_new_clone_$(param_keys)";
+
+        "New clone for $(params) created at $($(params)[$(param_keys)][path]) from $($(params)[$(param_keys)][origin])",
+            ifvarclass => canonify("git_freshclone_new_clone_$(param_keys)");
+
+}
+

@@ -1,0 +1,21 @@
+body common control {
+
+    bundlesequence => {"main",};
+    inputs => { 
+                "cfengine_stdlib.cf",
+                "sketches/git_freshclone/main.cf",
+              };
+}
+
+
+bundle agent main {
+vars:
+    "git[nicks_copbl][path]"     string => "/tmp/test2/test3/git_freshclone";
+    "git[nicks_copbl][origin]"   string => "git://github.com/nickanderson/copbl.git";
+    "git[nicks_copbl][branch]"   string => "master";
+
+# TODO: provide some way to selectivly contain the executing user
+
+methods:
+    "any" usebundle => git_freshclone("main.git");
+}
