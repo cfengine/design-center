@@ -178,17 +178,18 @@ bundle agent nagios_plugin_agent(params){
         paramaters_copied::
         #paramaters_copied.nagios_plugin_wrapper_exists::
         # This is kind of hard to read, its "plugin_wrapper handle path/plugin args"
-            "$(nagios_plugin_wrapper) $(check_handle_index) $(mycheck[$(check_handle_index)][_plugin_path])/$(mycheck[$(check_handle_index)][plugin_name]) $(mycheck[$(check_handle_index)][args])"
+            "$(nagios_plugin_wrapper)"
+               args        => "$(check_handle_index) $(mycheck[$(check_handle_index)][_plugin_path])/$(mycheck[$(check_handle_index)][plugin_name]) $(mycheck[$(check_handle_index)][args])",
                 module     => "true",
                 action     => if_elapsed("$(mycheck[$(check_handle_index)][_if_elapsed])"),
                 handle     => "nagios_plugin_agent_commands_nagios_plugin_wrapper_check_handle_index",
                 depends_on => { "nagios_plugin_agent_files_nagios_plugin_wrapper" },
                 ifvarclass => "$(mycheck[$(check_handle_index)][_execution_context])";
 
-        nagios_plugin_wrapper_exists::
-            "/bin/echo $(nagios_plugin_wrapper) $(nagios_plugin_path) $(nagios_plugin_name) $(nagios_plugin_args)"
-                module => "true";
-                #no_output => "true";
+        #nagios_plugin_wrapper_exists::
+        #    "/bin/echo $(nagios_plugin_wrapper) $(nagios_plugin_path) $(nagios_plugin_name) $(nagios_plugin_args)"
+        #        module => "true";
+        #        #no_output => "true";
     
     methods:
         paramaters_copied::
