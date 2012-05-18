@@ -4,6 +4,7 @@ bundle agent vcs_freshclone(prefix)
     any::
       "canon_prefix" string => canonify(prefix);
 
+    use_git::
       # TODO: extend this to support multiple VCSs
       "vcs_update_command" slist =>
       {
@@ -12,28 +13,31 @@ bundle agent vcs_freshclone(prefix)
         # Discard changes to index and working tree since HEAD
         "$($(prefix)vcs) reset -q --hard HEAD",
         # Check out the proper branch
-        "$($(prefix)vcs) checkout $($(prefix)branch)",
+        "$($(prefix)vcs) checkout -q $($(prefix)branch)",
         # Pull the latest changes from origin
         "$($(prefix)vcs) pull -q -s recursive -Xtheirs origin $($(prefix)branch)",
         # Reset the working tree to the latest updates
         "$($(prefix)vcs) reset -q --hard HEAD",
-      };
+      },
+      policy => "overridable";
 
       "vcs_freshclone_command" slist =>
       {
         # clone the given repository with Git
         "$($(prefix)vcs) clone -b $($(prefix)branch) $($(prefix)origin) $($(prefix)path)"
-      };
+      },
+      policy => "overridable";
 
-      "vcs_configfile" string => "$($(prefix)path)/.git/config";
+      "vcs_configfile" string => "$($(prefix)path)/.git/config",
+      policy => "overridable";
 
   classes:
       # test if the last component of the "vcs" path arg matches a known VCS
-      "$(canon_prefix)use_git" expression => strcmp(lastnode("$($(prefix)vcs)","/"), "git");
-      "$(canon_prefix)known_vcs" or => { "$(canon_prefix)use_git" };
+      "use_git" expression => strcmp(lastnode("$($(prefix)vcs)","/"), "git");
+      "known_vcs" or => { "use_git" };
 
-      "$(canon_prefix)vcsconfig_exists" expression => fileexists("$(vcs_configfile)");
-      "$(canon_prefix)path_exists" expression => fileexists("$($(prefix)path)");
+      "vcsconfig_exists" expression => fileexists("$(vcs_configfile)");
+      "path_exists" expression => fileexists("$($(prefix)path)");
 
       # TODO make sure if it exists the git config contains the correct information
       #files:
@@ -63,13 +67,13 @@ bundle agent vcs_freshclone(prefix)
       "$(vcs_update_command)"
       handle     => "vcs_update_command",
       contain    => in_dir("$($(prefix)path)"),
-      ifvarclass => "$(canon_prefix)known_vcs.$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_freshcloned",
+      ifvarclass => "known_vcs.vcsconfig_exists.!vcs_freshcloned",
       comment    => "Update an existing VCS repository in $($(prefix)path)";
 
       "$(vcs_freshclone_command)"
       handle     => "vcs_update_command",
-      ifvarclass => "$(canon_prefix)known_vcs.!$(canon_prefix)vcsconfig_exists",
-      classes    => if_ok("$(canon_prefix)vcs_freshcloned"),
+      ifvarclass => "known_vcs.!vcsconfig_exists.!vcs_freshcloned",
+      classes    => if_ok("vcs_freshcloned"),
       comment    => "Clone a VCS repository in $($(prefix)path)";
 
   reports:
@@ -77,29 +81,25 @@ bundle agent vcs_freshclone(prefix)
       "VCS is $($(prefix)vcs), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path)";
 
       "Cool, we're using Git."
-      ifvarclass => "$(canon_prefix)use_git";
+      ifvarclass => "use_git";
 
       "$($(prefix)vcs) is known.  We will look for the config file $(vcs_configfile)"
-      ifvarclass => "$(canon_prefix)known_vcs";
+      ifvarclass => "known_vcs";
 
       "Sorry, the requested VCS $($(prefix)vcs) is not handled yet."
-      ifvarclass => "!$(canon_prefix)known_vcs";
+      ifvarclass => "!known_vcs";
 
       "VCS config file $(vcs_configfile) exists"
-      ifvarclass => "$(canon_prefix)vcsconfig_exists";
+      ifvarclass => "known_vcs.vcsconfig_exists.!vcs_freshcloned";
 
       "VCS config file $(vcs_configfile) does not exist"
-      ifvarclass => "!$(canon_prefix)vcsconfig_exists";
-
-      # report if the git config exists, but not if we performed a new clone
-      "$(vcs_configfile) exists"
-      ifvarclass => "$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_freshcloned";
+      ifvarclass => "known_vcs.!vcsconfig_exists";
 
       "Sorry, we could not clone $($(prefix)origin) (branch $($(prefix)branch)) in $($(prefix)path) because that path already exists"
-      ifvarclass => "$(canon_prefix)path_exists.!$(canon_prefix)vcsconfig_exists";
+      ifvarclass => "known_vcs.path_exists.!vcsconfig_exists";
 
       "New clone of $($(prefix)origin) (branch $($(prefix)branch)) created in $($(prefix)path)"
-      ifvarclass => "$(canon_prefix)vcs_freshcloned";
+      ifvarclass => "known_vcs.vcs_freshcloned";
 
 }
 
