@@ -1,0 +1,22 @@
+{
+
+    "manifest":
+    {
+        "main.cf": { "desc": "main file", "version": 1.00 },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "utilities::git_freshclone",
+        "version": 1.00,
+        "authors": [ "Nick Anderson <nick@cmdln.org" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 },
+                     "cfengine": { "version": "3.2.1" },
+                     "os": [ "linux" ],
+                   },
+    },
+
+    "entry_point": "main.cf",
+    "interface": "main.cf"
+}
