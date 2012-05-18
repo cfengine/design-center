@@ -1,3 +1,8 @@
+vcs_freshclone 1.01
+  * rename
+  * multiple VCS support
+  * arguments have just one level (activate with cfsketch multiple times to get multiple locations)
+
 git_freshclone 1.00
   * Initial release, supports new checkouts if they do not exist
   * cleans and updates working tree and index assuming valid .git/config

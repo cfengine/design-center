@@ -2,21 +2,20 @@
 
     "manifest":
     {
-        "main.cf": { "desc": "main file", "version": 1.00 },
+        "main.cf": { "desc": "main file", "version": 1.01 },
         "README.md": { "documentation": true },
+        "params/cfengine-core.json": { "comment": "Sample parameters to check out the CFEngine core into /tmp/cfengine-core" },
     },
 
     "metadata":
     {
-        "name": "utilities::git_freshclone",
+        "name": "VCS::vcs_freshclone",
         "version": 1.00,
-        "authors": [ "Nick Anderson <nick@cmdln.org" ],
+        "authors": [ "Nick Anderson <nick@cmdln.org", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },
                      "cfengine": { "version": "3.2.1" },
-                     "os": [ "linux" ],
                    },
     },
-
     "entry_point": "main.cf",
     "interface": "main.cf"
 }

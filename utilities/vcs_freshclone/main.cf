@@ -1,0 +1,100 @@
+bundle agent vcs_freshclone(prefix)
+{
+  vars:
+    use_git::
+      "vcs_update_command" slist =>
+      {
+        # Remove untracked files
+        "$($(prefix)vcs) clean -f -f -x -q -d .",
+        # Discard changes to index and working tree since HEAD
+        "$($(prefix)vcs) reset -q --hard HEAD",
+        # Check out the proper branch
+        "$($(prefix)vcs) checkout $($(prefix)branch)",
+        # Pull the latest changes from origin
+        "$($(prefix)vcs) pull -q -s recursive -Xtheirs origin $($(prefix)branch)",
+        # Reset the working tree to the latest updates
+        "$($(prefix)vcs) reset -q --hard HEAD",
+      };
+
+      "vcs_freshclone_command" slist =>
+      {
+        # clone the given repository with Git
+        "$($(prefix)vcs) clone -b $($(prefix)branch) $($(prefix)origin) $($(prefix)patch)"
+      };
+
+      "vcs_configfile" string => "$($(prefix)path)/.git/config";
+
+  classes:
+      # test if the last component of the "vcs" path arg matches a known VCS
+      "use_git" expression => strcmp(lastnode("$($(prefix)vcs)","/"), "git");
+      "known_vcs" or => { "use_git" };
+
+      "$(prefix)vcsconfig_exists" expression => fileexists("$(vcs_configfile)");
+      "$(prefix)path_exists" expression => fileexists("$($(prefix)path)");
+
+      # TODO make sure if it exists the git config contains the correct information
+      #files:
+      #    # if the git config exists, make sure it has the proper settings for origin and master
+      #    "$(vcs_configfile)"
+      #        edit_line => 
+
+      # TODO: or maybe, optionally, just drop the config file from a
+      # template?  The below is all Git needs:
+
+# [core]
+#         repositoryformatversion = 0
+#         filemode = true
+#         bare = false
+#         logallrefupdates = true
+# [remote "origin"]
+#         fetch = +refs/heads/*:refs/remotes/origin/*
+#         url = $($(prefix)origin)
+# [branch "master"]
+#         remote = origin
+#         merge = refs/heads/master
+
+  commands:
+
+      # We only need to perform cleanup operations if we did not do a
+      # fresh new clone
+      "$(vcs_update_command)"
+      handle     => "vcs_update_command",
+      contain    => in_dir("$($(prefix)path)"),
+      ifvarclass => "known_vcs.$(prefix)vcsconfig_exists.!$(prefix)vcs_freshcloned",
+      comment    => "Update an existing VCS repository in $($(prefix)path)";
+
+      "$(vcs_freshclone_command)"
+      handle     => "vcs_update_command",
+      ifvarclass => "known_vcs.!$(prefix)vcsconfig_exists",
+      classes    => if_ok("$(prefix)vcs_freshcloned"),
+      comment    => "Clone a VCS repository in $($(prefix)path)";
+
+  reports:
+    known_vcs::
+      # report if the git config exists, but not if we performed a new clone
+      "$(vcs_configfile) exists",
+      ifvarclass => "$(prefix)vcsconfig_exists.!$(prefix)vcs_freshcloned";
+
+      "Sorry, we could not clone $($(prefix)origin) (branch $($(prefix)branch)) in $($(prefix)path) because that path already exists",
+      ifvarclass => "$(prefix)path_exists.!$(prefix)vcsconfig_exists";
+
+      "New clone of $($(prefix)origin) (branch $($(prefix)branch)) created in $($(prefix)path)",
+      ifvarclass => "$(prefix)vcs_freshcloned";
+
+    !known_vcs::
+      "Sorry, the requested VCS $($(prefix)vcs) is not handled yet.";
+
+}
+
+bundle agent meta_vcs_freshclone
+{
+  vars:
+      # acceptable values: "/usr/bin/git" for example
+      "optional_argument[vcs]" string => "string";
+
+      "argument[path]"   string => "string";
+      "argument[origin]" string => "string";
+      "argument[branch]" string => "string";
+
+      "default[vcs]"     string => "/usr/bin/git";
+}
