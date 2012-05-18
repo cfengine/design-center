@@ -163,16 +163,16 @@ bundle agent nagios_plugin_agent(params){
         "paramaters_copied" or => { "done_checking_paramaters_defined" };
         "done_checking_paramaters_defined" expression => isvariable("check_handle_index");
 
-    files:
-        # the file is part of the sketch, it might be copied in place by normal policy update,
-        # but if not we set the source to a sane default.
-          # set default to $(sys.policy_hub), path masterfiles/sketches/sketchname/cf3-nagios-plugin-wrapper/modules/nagios_plugin_wrapper
-          # overrie with "hidden" variables _source_servers (list), _source_path ?
-        "$(sys.workdir)/sketches/nagios-plugin-agent/modules/nagios_plugin_wrapper"
-            perms     => mog("755","root","root"),
-            action    => if_elapsed("60"),
-            # I am thinking depending on a remote copy is both expensive and brittle, perhaps its best to inline the script, its not long
-            copy_from => remote_cp("$(sys.work)/sketches/nagios-plugin-agent/modules/nagios_plugin_wrapper", "$(sys.policy_hub)");
+#    files:
+#        # the file is part of the sketch, it might be copied in place by normal policy update,
+#        # but if not we set the source to a sane default.
+#          # set default to $(sys.policy_hub), path masterfiles/sketches/sketchname/cf3-nagios-plugin-wrapper/modules/nagios_plugin_wrapper
+#          # overrie with "hidden" variables _source_servers (list), _source_path ?
+#        "$(sys.workdir)/inputs/sketches/nagios-plugin-agent/modules/nagios_plugin_wrapper"
+#            perms     => mog("755","root","root"),
+#            action    => if_elapsed("60"),
+#            # I am thinking depending on a remote copy is both expensive and brittle, perhaps its best to inline the script, its not long
+#            copy_from => remote_cp("$(sys.workdir)/inputs/sketches/nagios-plugin-agent/modules/nagios_plugin_wrapper", "$(sys.policy_hub)");
 
     commands:
         paramaters_copied::
@@ -191,21 +191,22 @@ bundle agent nagios_plugin_agent(params){
                 #no_output => "true";
     
     methods:
-        # Here we call bundles if requested on specific check status
-        "ok" usebundle => "$(mycheck[$(check_handle_index)][_usebundle_if_ok])",
-            ifvarclass => "$(check_handle_index)__usebundle_if_ok_defined";
+        paramaters_copied::
+            # Here we call bundles if requested on specific check status
+            "ok" usebundle => "$(mycheck[$(check_handle_index)][_usebundle_if_ok])",
+                ifvarclass => "$(check_handle_index)__usebundle_if_ok_defined";
 
-        "warning" usebundle => "$(mycheck[$(check_handle_index)][_usebundle_if_warning])",
-            ifvarclass => "$(check_handle_index)__usebundle_if_warning_defined";
+            "warning" usebundle => "$(mycheck[$(check_handle_index)][_usebundle_if_warning])",
+                ifvarclass => "$(check_handle_index)__usebundle_if_warning_defined";
 
-        "critical" usebundle => "$(mycheck[$(check_handle_index)][_usebundle_if_critical])",
-            ifvarclass => "$(check_handle_index)__usebundle_if_critical_defined";
+            "critical" usebundle => "$(mycheck[$(check_handle_index)][_usebundle_if_critical])",
+                ifvarclass => "$(check_handle_index)__usebundle_if_critical_defined";
 
-        "unknown" usebundle => "$(mycheck[$(check_handle_index)][_usebundle_if_unknown])",
-            ifvarclass => "$(check_handle_index)__usebundle_if_unknown_defined";
+            "unknown" usebundle => "$(mycheck[$(check_handle_index)][_usebundle_if_unknown])",
+                ifvarclass => "$(check_handle_index)__usebundle_if_unknown_defined";
 
-        "protocol_error" usebundle => "$(mycheck[$(check_handle_index)][_usebundle_if_protocol_error])",
-            ifvarclass => "$(check_handle_index)__usebundle_if_protocol_error_defined";
+            "protocol_error" usebundle => "$(mycheck[$(check_handle_index)][_usebundle_if_protocol_error])",
+                ifvarclass => "$(check_handle_index)__usebundle_if_protocol_error_defined";
 
    reports:
         nagios_alert::
