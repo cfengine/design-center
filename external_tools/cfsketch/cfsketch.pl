@@ -865,20 +865,22 @@ sub load_sketch
 sub make_packages
 {
  my $todo = shift @_;
+
  my @dirs;
 
  find(sub
       {
        my $f = $_;
        if ($f =~ m/readme/i &&
-           read_yes_no("Use directory $File::Find::dir (interesting file $f)?",
+           read_yes_no(sprintf("Use directory %s (interesting file %s)?",
+                               $File::Find::dir,
+                               $File::Find::name),
                        'n'))
        {
         push @dirs, $File::Find::dir;
         $File::Find::prune = 1;
        }
       }, @$todo);
-
 
       die "@dirs";
 }
