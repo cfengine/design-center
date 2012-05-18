@@ -70,7 +70,13 @@ bundle agent vcs_freshclone(prefix)
       comment    => "Clone a VCS repository in $($(prefix)path)";
 
   reports:
+    cfengine::
+      "VCS is $($(prefix)vcs), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path)";
+    use_git::
+      "Cool, we're using Git.";
     known_vcs::
+      "$($(prefix)vcs) is known.  We will look for the config file $(vcs_configfile)";
+
       # report if the git config exists, but not if we performed a new clone
       "$(vcs_configfile) exists",
       ifvarclass => "$(prefix)vcsconfig_exists.!$(prefix)vcs_freshcloned";
