@@ -1,0 +1,8 @@
+bundle agent example {
+commands:
+  customclass::
+    "/bin/echo customclass is set";
+  "/bin/echo this is always true";
+}
+
+# run cf-agent on this policy with and without -Dcustomclass

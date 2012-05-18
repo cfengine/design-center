@@ -1,0 +1,8 @@
+
+introduce passive voice synonyms for "insert_lines"  ("has_lines" or "lines")
+and "delete_lines"  ("does_not_have_lines" or "no_lines")
+to make it sound more declarative and less procedural.
+
+deprecate "insert_lines" and "delete_lines"
+
+similar for replace_patterns 

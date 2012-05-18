@@ -1,0 +1,14 @@
+body common control {
+ 	inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+}
+
+
+bundle agent example {
+
+commands:
+
+  "/bin/echo"
+     args => " \"hello $(const.dollar)USER $(const.t)adfs\"",
+     contain => in_shell;
+
+}

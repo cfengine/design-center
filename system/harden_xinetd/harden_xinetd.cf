@@ -1,0 +1,112 @@
+#######################################################
+# Disable unwanted xinetd services
+#######################################################
+
+bundle agent system_xinetd
+{
+ vars:
+
+  redhat|centos|fedora|suse::
+
+   # list all of xinetd services (case sensitive)
+
+   "xinetd_services" slist => {
+                               "chargen",
+                               "chargen-udp",
+                               "cup-lpd",
+                               "daytime",
+                               "daytime-upd",
+                               "echo",
+                               "echo-udp",
+                               "eklogin",
+                               "finger",
+                               "gssftp",
+                               "imap",
+                               "imaps",
+                               "ipop2",
+                               "ipop3",
+                               "krb5-telnet",
+                               "klogin",
+                               "kshell",
+                               "ktalk",
+                               "ntalk",
+                               "pop3s",
+                               "rexec",
+                               "rlogin",
+                               "rsh",
+                               "rsync",
+                               "servers",
+                               "services",
+                               "sgi_fam",
+                               "talk",
+                               "telnet",
+                               "tftp",
+                               "time",
+                               "time-udp",
+                               "vsftpd",
+                               "wu-ftpd",
+                              },
+                     comment => "List of xinetd to be disabled",
+                      handle => "system_xinetd_vars_xinetd_services";
+
+#
+
+ methods:
+
+   # perform the actual disable all xinetd services according to the list above
+
+  redhat|centos|fedora|suse::
+
+   "DISABLE_XINETD" usebundle => disable_xinetd("$(xinetd_services)"),
+                      comment => "Disable all xinetd services from the list",
+                       handle => "system_xinetd_methods_disable_xinetd";   
+
+}
+
+#######################################################
+
+bundle agent disable_xinetd(name)
+{
+ vars:
+
+  any::
+
+   "status"   string => execresult("/sbin/chkconfig --list $(name)", "useshell"),
+             comment => "Check the xinetd status",
+              handle => "disable_xinetd_vars_status",
+              policy => "free";
+
+#
+
+ classes:
+
+  any::
+
+   "on"  expression => regcmp(".*on.*","$(status)"),
+            comment => "Check if the service is on",
+             handle => "disable_xinetd_classes_regcmp_on";
+
+#
+   
+ commands:
+
+  on::
+
+   "/sbin/chkconfig $(name) off"
+      comment => "To disable $(name) service",
+       handle => "disable_xinetd_commands_chkconfig_off",
+      contain => silent,
+      classes => if_repaired("alert_on_terminal_$(name)");
+
+#
+
+ reports:
+
+  cfengine_3::
+
+   "disabling $(name) service."
+         comment => "Print message on terminal",
+          handle => "disable_xinetd_reports_disabling_service",
+      ifvarclass => canonify("alert_on_terminal_$(name)");
+ 
+}

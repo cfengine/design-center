@@ -1,0 +1,28 @@
+bundle agent example {
+
+    vars:
+
+        "unwanted_groups"
+
+                slist => {
+                              "games",
+			      "mail",
+			 };
+
+
+    files:
+
+        "/etc/group"
+
+            edit_line => delete_group("$(unwanted_groups)");
+
+}
+
+####################################################################
+
+bundle edit_line delete_group(group) {
+
+    delete_lines:
+        "^$(group):.*";
+}
+

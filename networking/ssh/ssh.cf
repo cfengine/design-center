@@ -78,6 +78,17 @@ bundle agent sshd_vars(params)
       "conf[_sshd_restart_cmd]" string => "/etc/init.d/sshd reload",
                                 policy => "free";
 
+    debian::
+      # OS-specific values that differ from the default
+      "conf[_sshd_config_file]" string => "/etc/ssh/sshd_config",
+                                policy => "free";
+      "conf[_sshd_start_cmd]"   string => "/usr/sbin/service ssh start",
+                                policy => "free";
+      "conf[_sshd_stop_cmd]"    string => "/usr/sbin/service ssh restart",
+                                policy => "free";
+      "conf[_sshd_restart_cmd]" string => "/usr/sbin/service ssh reload",
+                                policy => "free";
+
       # OS-specific values that differ from the default
     darwin:: # Macs
       "conf[_sshd_config_file]" string => "/etc/sshd_config",

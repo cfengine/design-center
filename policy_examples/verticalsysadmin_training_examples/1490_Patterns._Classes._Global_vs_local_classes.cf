@@ -30,11 +30,17 @@ bundle common global_classes {
 bundle agent example
 {
 
+classes:
+   "local_class"
+         expression  =>  classmatch("web[0-9]+");
+
 reports:
-
   webserver::
+    "I am a Web server - 1";
 
-    "I am a Web server";
+reports:
+   local_class::
+       "local class is set - 1";
 
 }
 
@@ -43,10 +49,12 @@ bundle agent example2
 {
 
 reports:
-
   webserver::
-
     "I am a Web server - 2";
+
+reports:
+   local_class::
+       "local class is set - 2";
 
 }
 

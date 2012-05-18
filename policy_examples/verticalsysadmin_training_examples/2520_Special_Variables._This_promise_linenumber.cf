@@ -3,6 +3,7 @@
 bundle agent example
 {
 reports:
+  cfengine::
 
      "$(this.promise_linenumber)";
      "$(this.promise_linenumber)";

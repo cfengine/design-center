@@ -1,7 +1,7 @@
 bundle agent example {
 
     files:
-      Saturday.Hr02::
+
         "/etc/nologin" 
 
             create  => "true",

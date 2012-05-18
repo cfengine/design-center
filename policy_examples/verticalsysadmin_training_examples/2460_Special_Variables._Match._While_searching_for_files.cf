@@ -16,6 +16,8 @@ files:
 bundle edit_line report_match_variables(data) {
 
 reports:
+  cfengine::
+
   "$(data)";
 
 # OUTPUT

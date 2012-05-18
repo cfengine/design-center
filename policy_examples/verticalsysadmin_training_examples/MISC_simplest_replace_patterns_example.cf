@@ -7,11 +7,12 @@ bundle agent example {
 files:
 
   "/tmp/data.txt"
-        edit_line => transform_dogs_to_cats;
+        edit_line => change_dogs_to_cats;
 
 }
 
-bundle edit_line transform_dogs_to_cats {
+
+bundle edit_line change_dogs_to_cats {
 
   replace_patterns:
 

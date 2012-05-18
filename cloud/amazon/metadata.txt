@@ -1,0 +1,4 @@
+author: Eystein Måløy Stenberg <eystein@cfengine.com>
+ostype: linux
+tested: ubuntu_10_4
+cfengine_version: core-3.2.0,nova-2.0.0

@@ -6,6 +6,14 @@
 # due to the nature of the section-aware editing, the comments
 # end up in the middle of the previous section.
 
+bundle agent example {
+
+methods:
+  "any" 
+    usebundle => delete_repo_comments_from_CentOS_repo_and_exclude_postgresql_packages;
+
+}
+
 
 bundle agent delete_repo_comments_from_CentOS_repo_and_exclude_postgresql_packages
 

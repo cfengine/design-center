@@ -1,0 +1,4 @@
+author: Sil Westerveld <sil.westerveld@sara.nl>, Bas van der Vlies <basv@sara.nl>
+ostype: linux
+tested: debian
+cfengine_version: community-3.3.0

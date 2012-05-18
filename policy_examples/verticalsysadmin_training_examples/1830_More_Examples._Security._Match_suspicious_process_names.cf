@@ -15,13 +15,12 @@ vars:
       };
 
 
+
 processes:
+  "$(suspicious_process_names)"
+      signals => { "term", "kill" };
 
- ".*"
-
-    process_select  =>
-      proc_finder("$(suspicious_process_names)"),
-    signals => { "term", "kill" };
+  
 }
 
 

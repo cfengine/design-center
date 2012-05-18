@@ -5,13 +5,11 @@ Cfengine 3 consists of a number of components.
 
 The most important to learn first are:
 
-
 * cf-promises 
 
-You can use it to syntax check your policies:
+  You can use it to syntax check your policies:
 
     cf-promises -f your_policy.cf
-
 
 
 * cf-agent

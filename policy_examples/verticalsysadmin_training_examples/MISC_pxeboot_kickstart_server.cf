@@ -32,6 +32,8 @@ body common control {
 					"run_pxe_commands_to_setup_pxeboot",
 					"start_services",
 					"configure_firewall_to_allow_bootp_and_tftp",
+                                        # not really.  i just turn off the firewall.
+			 		# be warned.
 					"configure_kickstart_file",
 				};
 }
