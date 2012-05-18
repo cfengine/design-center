@@ -1,0 +1,4 @@
+nagios_plugin_agent 1.00
+  * Initial version formatted to new sketch guidelines
+  * Add ability to execute specified bundles on different plugin return codes
+  -- Nick Anderson <nick@cmdln.org>  Thu, 17 May 2012 23:09:51 -0500
