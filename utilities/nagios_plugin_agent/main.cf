@@ -157,6 +157,8 @@ bundle agent nagios_plugin_agent(params){
         "$(check_handle_index)__usebundle_if_protocol_error_defined" 
             expression => isvariable("$(params)[$(check_handle_index)][_usebundle_if_protocol_error]");
 
+        "$(check_handle_index)_has_output"
+            expression => isvariable("nagios_plugin_wrapper.$(check_handle_index)_output");
 
         # Defauts don't get overridden until the second pass, this allows us to check for that
         # We dont want to execute the commands until after all paramaters have been copied over the defaults
@@ -211,7 +213,8 @@ bundle agent nagios_plugin_agent(params){
 
    reports:
         nagios_alert::
-            "Nagios plugin $(check_handle_index) with $(mycheck[$(check_handle_index)][plugin_name]) on $(sys.host) reports '$(nagios_plugin_wrapper.$(check_handle_index)_output)' on $(sys.date)";
+            "Nagios plugin $(check_handle_index) with $(mycheck[$(check_handle_index)][plugin_name]) on $(sys.host) reports '$(nagios_plugin_wrapper.$(check_handle_index)_output)' on $(sys.date)",
+                ifvarclass => "$(check_handle_index)_has_output";
 
 
         verbose_mode|debug::
