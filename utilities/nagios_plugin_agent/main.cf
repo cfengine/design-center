@@ -30,7 +30,7 @@ bundle agent nagios_plugin_agent(params){
     vars:
         # This is where we expect to find the nagios plugin wrapper script
         # We should default this to site.nagios_plugin_wraper or g.nagios_plugin_wrapper or global.nagios_plugin_wrapper
-        "nagios_plugin_wrapper" string => "$(sys.workdir)/inputs/sketches/nagios-plugin-agent/modules/nagios_plugin_wrapper";
+        "nagios_plugin_wrapper" string => "$(sys.workdir)/inputs/sketches/nagios_plugin_agent/modules/nagios_plugin_wrapper";
 
         "check_handle_index"    slist  => getindices("$(params)");
         # we should default nagios_plugin_path to the place you expect for both x86 or x86_64
