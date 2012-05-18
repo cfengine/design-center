@@ -295,6 +295,8 @@ sub generate
    my $template_activations = {};
 
    my @inputs;
+   my %dependencies;
+
  ACTIVATION:
    foreach my $sketch (sort keys %$activations)
    {
@@ -352,6 +354,8 @@ sub generate
         my $cfengine_k = "${prefix}::$k";
         $cfengine_k =~ s/::/__/g;
 
+        $dependencies{$_} = 1 foreach collect_dependencies($data->{metadata}->{depends});
+
         if (exists $entry_point->{default}->{$k} &&
             !exists $pdata->{$k})
         {
@@ -394,6 +398,26 @@ sub generate
 
    my $input = 'run.tmpl';
    my $output = '';
+
+   foreach my $repo (@{$options{repolist}})
+   {
+    my $contents = repo_get_contents($repo);
+    foreach my $dep (keys %dependencies)
+    {
+     if (exists $contents->{$dep})
+     {
+      push @inputs, File::Spec->catfile($contents->{$dep}->{dir},
+                                        $contents->{$dep}->{interface});
+      delete $dependencies{$dep};
+     }
+    }
+   }
+
+   my @deps = keys %dependencies;
+   if (scalar @deps)
+   {
+    die "Sorry, can't generate: unsatisfied dependencies [@deps]";
+   }
 
    # process input template, substituting variables
    push @inputs, $template_activations->{$_}->{file}
@@ -676,13 +700,15 @@ sub missing_dependencies
  my $deps = shift @_;
  my @missing;
 
+ my %tocheck = %$deps;
+
  foreach my $repo (@{$options{repolist}})
  {
   my $contents = repo_get_contents($repo);
-  foreach my $dep (sort keys %$deps)
+  foreach my $dep (sort keys %tocheck)
   {
    if ($dep eq 'os' &&
-       ref $deps->{$dep} eq 'ARRAY')
+       ref $tocheck{$dep} eq 'ARRAY')
    {
     # TODO: get uname from cfengine?
     # pick either /bin/uname or /usr/bin/uname
@@ -694,42 +720,87 @@ sub missing_dependencies
      chomp $uname;
     }
 
-    foreach my $os (sort @{$deps->{$dep}})
+    foreach my $os (sort @{$tocheck{$dep}})
     {
      if ($uname =~ m/$os/i)
      {
       say "Satisfied OS dependency: $uname matched $os"
        if $verbose;
 
-      delete $deps->{$dep};
+      delete $tocheck{$dep};
      }
     }
 
-    if (exists $deps->{$dep})
+    if (exists $tocheck{$dep})
     {
      say "Unsatisfied OS dependencies: $uname did not match [@{$deps->{$dep}}]"
       if $verbose;
     }
    }
    elsif ($dep eq 'cfengine' &&
-          ref $deps->{$dep} eq 'HASH' &&
-          exists $deps->{$dep}->{version})
+          ref $tocheck{$dep} eq 'HASH' &&
+          exists $tocheck{$dep}->{version})
    {
     my $version = cfengine_version();
-    if ($version ge $deps->{$dep}->{version})
+    if ($version ge $tocheck{$dep}->{version})
     {
      say("Satisfied cfengine version dependency: $version present, needed ",
-         $deps->{$dep}->{version})
+         $tocheck{$dep}->{version})
       if $verbose;
 
-     delete $deps->{$dep};
+     delete $tocheck{$dep};
     }
     else
     {
      say("Unsatisfied cfengine version dependency: $version present, need ",
-         $deps->{$dep}->{version})
+         $tocheck{$dep}->{version})
       if $verbose;
     }
+   }
+   elsif (exists $contents->{$dep})
+   {
+    my $dd = $contents->{$dep};
+    # either the version is not specified or it has to match
+    if (!exists $tocheck{$dep}->{version} ||
+        $dd->{metadata}->{version} >= $tocheck{$dep}->{version})
+    {
+     say "Found dependency $dep in $repo" if $verbose;
+     # TODO: test recursive dependencies, right now this will loop
+     # TODO: maybe use a CPAN graph module
+     push @missing, missing_dependencies($dd->{metadata}->{depends});
+     delete $tocheck{$dep};
+    }
+    else
+    {
+     say "Found dependency $dep in $repo but the version doesn't match"
+      if $verbose;
+    }
+   }
+  }
+ }
+
+ push @missing, sort keys %tocheck;
+ if (scalar @missing)
+ {
+  say "Unsatisfied dependencies: @missing";
+ }
+
+ return @missing;
+}
+
+sub collect_dependencies
+{
+ my $deps = shift @_;
+
+ my @collected;
+
+ foreach my $repo (@{$options{repolist}})
+ {
+  my $contents = repo_get_contents($repo);
+  foreach my $dep (sort keys %$deps)
+  {
+   if ($dep eq 'os' || $dep eq 'cfengine')
+   {
    }
    elsif (exists $contents->{$dep})
    {
@@ -741,8 +812,7 @@ sub missing_dependencies
      say "Found dependency $dep in $repo" if $verbose;
      # TODO: test recursive dependencies, right now this will loop
      # TODO: maybe use a CPAN graph module
-     push @missing, missing_dependencies($dd->{metadata}->{depends});
-     delete $deps->{$dep};
+     push @collected, $dep, collect_dependencies($dd->{metadata}->{depends});
     }
     else
     {
@@ -753,13 +823,7 @@ sub missing_dependencies
   }
  }
 
- push @missing, sort keys %$deps;
- if (scalar @missing)
- {
-  say "Unsatisfied dependencies: @missing";
- }
-
- return @missing;
+ return @collected;
 }
 
 sub find_remote_sketches
