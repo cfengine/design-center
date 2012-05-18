@@ -2,7 +2,7 @@
 
 use warnings;
 use strict;
-use List::MoreUtils;
+use List::MoreUtils qw/uniq/;
 use File::Compare;
 use File::Copy;
 use File::Find;
@@ -423,7 +423,7 @@ sub generate
    push @inputs, $template_activations->{$_}->{file}
     foreach sort keys %$template_activations;
 
-   my $includes = join ', ', map { "\"$_\"" } @inputs;
+   my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
 
    $template->process($input,
                       {
