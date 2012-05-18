@@ -1,4 +1,17 @@
-#bundle agent nagios_plugin_agent(nagios_plugin_path, nagios_plugin_name, nagios_plugin_args){
+bundle agent meta_nagios_plugin_agent{
+vars:
+    "optional_argument[handle][plugin_name]"                  string => "";
+    "optional_argument[handle][args]"                         string => "";
+    "optional_argument[handle][_plugin_path]"                 string => "";
+    "optional_argument[handle][_if_elapsed]"                  string => "";
+    "optional_argument[handle][_execution_context]"           string => "";
+    "optional_argument[handle][_usebundle_if_ok]"             string => "";
+    "optional_argument[handle][_usebundle_if_warning]"        string => "";
+    "optional_argument[handle][_usebundle_if_critical]"       string => "";
+    "optional_argument[handle][_usebundle_if_unknown]"        string => "";
+    "optional_argument[handle][_usebundle_if_protocol_error]" string => "";
+}
+
 bundle agent nagios_plugin_agent(params){
 # expects array
 # TODO: need to add a handle to this so that you can execute a plugin with the same name multiple times 

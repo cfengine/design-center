@@ -11,6 +11,8 @@ This sketch can help you run your nagios plugins. It allows you to execute a
 bundle based on the check status of a plugin and raises classes that can be
 used for other orchestration.
 ## REQUIREMENTS
+This sketch expects to be able to copy a module from the policy hub.
+Be sure to share $(def.masterfiles)/sketches/nagios-plugin-agent/modules/nagios_plugin_wrapper on $(sys.policy_hub)
 
 ## SAMPLE USAGE
 
