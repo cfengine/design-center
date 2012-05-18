@@ -1,12 +1,25 @@
 bundle agent vcs_freshclone(prefix)
 {
   vars:
-    any::
-      "canon_prefix" string => canonify(prefix);
-
     use_git::
       # TODO: extend this to support multiple VCSs
       "vcs_update_command" slist =>
+      {
+        @(git_update_command)
+      },
+      policy => "overridable";
+
+      "vcs_freshclone_command" slist =>
+      {
+        @(git_freshclone_command)
+      },
+      policy => "overridable";
+
+      "vcs_configfile" string => "$(git_configfile)",
+      policy => "overridable";
+
+    any::
+      "git_update_command" slist =>
       {
         # Remove untracked files
         "$($(prefix)vcs) clean -f -f -x -q -d .",
@@ -18,18 +31,15 @@ bundle agent vcs_freshclone(prefix)
         "$($(prefix)vcs) pull -q -s recursive -Xtheirs origin $($(prefix)branch)",
         # Reset the working tree to the latest updates
         "$($(prefix)vcs) reset -q --hard HEAD",
-      },
-      policy => "overridable";
+      };
 
-      "vcs_freshclone_command" slist =>
+      "git_freshclone_command" slist =>
       {
         # clone the given repository with Git
         "$($(prefix)vcs) clone -b $($(prefix)branch) $($(prefix)origin) $($(prefix)path)"
-      },
-      policy => "overridable";
+      };
 
-      "vcs_configfile" string => "$($(prefix)path)/.git/config",
-      policy => "overridable";
+      "git_configfile" string => "$($(prefix)path)/.git/config";
 
   classes:
       # test if the last component of the "vcs" path arg matches a known VCS
