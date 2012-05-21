@@ -5,6 +5,7 @@
         "main.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
         "params/cfengine-core.json": { "comment": "Sample parameters to check out the CFEngine core into /tmp/cfengine-core" },
+        "files/gitconfig.template": { "comment": "Git .config template to ensure compliance" },
     },
 
     "metadata":

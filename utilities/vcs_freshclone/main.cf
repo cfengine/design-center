@@ -2,7 +2,8 @@ bundle agent vcs_freshclone(prefix)
 {
   vars:
       "canon_prefix" string => canonify("$(prefix)");
-      "bundle_home"  string => dirname("$(this.promise_filename)");
+      "bundle_home"  string => dirname("$(this.promise_filename)"),
+      policy => "overridable";
 
     use_git::
       # TODO: extend this to support multiple VCSs
