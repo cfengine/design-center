@@ -1,0 +1,14 @@
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[remote "origin"]
+        fetch = +refs/heads/*:refs/remotes/origin/*
+        url = $($(vcs_freshclone.prefix)origin)
+[branch "master"]
+        remote = origin
+        merge = refs/heads/master
+[branch "$($(vcs_freshclone.prefix)branch)"]
+        remote = origin
+        merge = refs/heads/$($(vcs_freshclone.prefix)branch)

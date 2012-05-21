@@ -2,6 +2,7 @@ bundle agent vcs_freshclone(prefix)
 {
   vars:
       "canon_prefix" string => canonify("$(prefix)");
+      "bundle_home"  string => dirname("$(this.promise_filename)");
 
     use_git::
       # TODO: extend this to support multiple VCSs
@@ -54,26 +55,15 @@ bundle agent vcs_freshclone(prefix)
       use_git::
       "$(canon_prefix)vcsconfig_exists" expression => fileexists("$(git_configfile)");
 
-      # TODO make sure if it exists the git config contains the correct information
-      #files:
-      #    # if the git config exists, make sure it has the proper settings for origin and master
-      #    "$(vcs_configfile)"
-      #        edit_line => 
-
-      # TODO: or maybe, optionally, just drop the config file from a
-      # template?  The below is all Git needs:
-
-# [core]
-#         repositoryformatversion = 0
-#         filemode = true
-#         bare = false
-#         logallrefupdates = true
-# [remote "origin"]
-#         fetch = +refs/heads/*:refs/remotes/origin/*
-#         url = $($(prefix)origin)
-# [branch "master"]
-#         remote = origin
-#         merge = refs/heads/master
+  files:
+    use_git::
+      "$(git_configfile)"
+      handle => "vcs_configfile_contents",
+      comment => "Expand Git config file from template",
+      create => "false",
+      edit_defaults => empty,
+      ifvarclass => "$(canon_prefix)vcsconfig_exists",
+      edit_line => expand_template("$(bundle_home)/files/gitconfig.template");
 
   commands:
 
@@ -130,4 +120,5 @@ bundle agent meta_vcs_freshclone
       "argument[branch]" string => "string";
 
       "default[vcs]"     string => "/usr/bin/git";
+
 }
