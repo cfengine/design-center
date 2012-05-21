@@ -2,8 +2,11 @@ bundle agent vcs_freshclone(prefix)
 {
   vars:
       "canon_prefix" string => canonify("$(prefix)");
-      "bundle_home"  string => dirname("$(this.promise_filename)"),
-      policy => "overridable";
+      # disabled due to a possible this.promise_filename bug,
+      # for now use $($(prefix)bundle_home)
+
+      # "bundle_home"  string => dirname("$(this.promise_filename)"),
+      # policy => "overridable";
 
     use_git::
       # TODO: extend this to support multiple VCSs
@@ -64,7 +67,7 @@ bundle agent vcs_freshclone(prefix)
       create => "false",
       edit_defaults => empty,
       ifvarclass => "$(canon_prefix)vcsconfig_exists",
-      edit_line => expand_template("$(bundle_home)/files/gitconfig.template");
+      edit_line => expand_template("$($(prefix)bundle_home)/files/gitconfig.template");
 
   commands:
 

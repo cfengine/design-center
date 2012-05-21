@@ -348,6 +348,10 @@ sub generate
                         };
 
        my $varlist = $entry_point->{varlist};
+
+       # force-feed the bundle location here to work around a possible this.promise_filename bug
+       $varlist->{bundle_home} = $pdata->{bundle_home} = $data->{dir};
+
        my $optional_varlist = $entry_point->{optional_varlist};
        foreach my $k (sort keys %$varlist, sort keys %$optional_varlist)
        {
