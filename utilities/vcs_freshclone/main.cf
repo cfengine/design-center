@@ -2,8 +2,10 @@ bundle agent vcs_freshclone(prefix)
 {
   vars:
       "canon_prefix" string => canonify("$(prefix)");
-      # disabled due to a possible this.promise_filename bug,
-      # for now use $($(prefix)bundle_home)
+
+      # disabled due to https://cfengine.com/bugtracker/view.php?id=718
+      # for now use $($(prefix)bundle_home), which see in
+      # the bundle meta_vcs_freshclone below
 
       # "bundle_home"  string => dirname("$(this.promise_filename)"),
       # policy => "overridable";
@@ -118,11 +120,16 @@ bundle agent meta_vcs_freshclone
   vars:
       # acceptable values: "/usr/bin/git" for example
       "optional_argument[vcs]" string => "string";
+      "default[vcs]"           string => "/usr/bin/git";
 
       "argument[path]"   string => "string";
       "argument[origin]" string => "string";
       "argument[branch]" string => "string";
 
-      "default[vcs]"     string => "/usr/bin/git";
-
+      # this can't be determined from within the bundle due to:
+      # https://cfengine.com/bugtracker/view.php?id=718
+      "optional_argument[bundle_home]" string => "string";
+      # this default will probably be incorrect, either use cfsketch --generate
+      # or supply it yourself
+      "default[bundle_home]"           string => dirname("$(this.promise_filename)");
 }
