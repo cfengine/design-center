@@ -26,12 +26,11 @@ Be sure to share $(def.masterfiles)/sketches/nagios-plugin-agent/modules/nagios_
             "check[check_dummy_OK][_usebundle_if_ok]" string => "bundleifok";
             "check[check_dummy_OK][_execution_context]" string => "superdupermop";
 
-            # The execution_context needs to be looked at in depth, doesnt appear to be working.
 
-            #"check[check_dummy_DONTRUN][plugin_name]" string => "check_dummy";
-            #"check[check_dummy_DONTRUN][args]" string => "0 Test ok";
-            #"check[check_dummy_DONTRUN][_usebundle_if_ok]" string => "bundleifok";
-            #"check[check_dummy_DONTRUN][_execution_context]" string => "superdupermop";
+            "check[check_dummy_DONTRUN][plugin_name]" string => "check_dummy";
+            "check[check_dummy_DONTRUN][args]" string => "0 Test ok";
+            "check[check_dummy_DONTRUN][_usebundle_if_ok]" string => "bundleifok";
+            "check[check_dummy_DONTRUN][_execution_context]" string => "superdupermop";
 
 
             "check[check_dummy_WARN][plugin_name]" string => "check_dummy";
