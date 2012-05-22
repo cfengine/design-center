@@ -55,9 +55,9 @@ my @options_spec =
   "repolist=s@",
   "make-package=s@",
   "install=s@",
+  "remove=s@",
   "activate=s",                 # activate only one at a time
   "deactivate=s",               # deactivate only one at a time
-  "remove=s@",
   "test=s@",
   "search=s@",
   "list|l!",
@@ -335,7 +335,7 @@ sub generate
        # anything in the runme template
        unless (exists $entry_point->{bundle})
        {
-        push @inputs, File::Spec->catfile($data->{dir}, $data->{interface});
+        push @inputs, File::Spec->catfile($data->{dir}, @{$data->{interface}});
         next;
        }
 
@@ -440,7 +440,7 @@ sub generate
      if (exists $contents->{$dep})
      {
       push @inputs, File::Spec->catfile($contents->{$dep}->{dir},
-                                        $contents->{$dep}->{interface});
+                                        @{$contents->{$dep}->{interface}});
       delete $dependencies{$dep};
      }
     }
@@ -574,27 +574,45 @@ sub activate
 sub deactivate
 {
  my $sketch = shift @_;
+ my $all = shift @_;
 
- die "Can't deactivate sketch $sketch without --params"
-  unless $options{params};
+ my $all_sketches = ($sketch eq 'all');
 
- # activation successful, now install it
+ $all = 1 if ($options{params} && $options{params} eq 'all');
+
  my $activations = load_json($options{'act-file'});
 
- die "Couldn't deactivate sketch $sketch: no activation for $options{params}"
-  unless exists $activations->{$sketch}->{$options{params}};
+ if ($all_sketches)
+ {
+  $activations = {};
+  say "Deactivated: all sketch activations!";
+ }
+ elsif ($all)
+ {
+  my %info = %{$activations->{$sketch}};
+  delete $activations->{$sketch};
+  say "Deactivated: all $sketch activations (@{[ sort keys %info ]})";
+ }
+ else
+ {
+  die "Can't deactivate sketch $sketch without --params"
+   unless $options{params};
 
- delete $activations->{$sketch}->{$options{params}};
+  die "Couldn't deactivate sketch $sketch: no activation for $options{params}"
+   unless exists $activations->{$sketch}->{$options{params}};
 
- delete $activations->{$sketch} unless scalar keys %{$activations->{$sketch}};
+  delete $activations->{$sketch}->{$options{params}};
+
+  delete $activations->{$sketch} unless scalar keys %{$activations->{$sketch}};
+
+  say "Deactivated: $sketch params $options{params}";
+ }
 
  open(my $ach, '>', $options{'act-file'})
   or die "Could not write activation file $options{'act-file'}: $!";
 
  print $ach $coder->encode($activations);
  close $ach;
-
- say "Deactivated: $sketch params $options{params}";
 }
 
 sub remove
@@ -620,6 +638,7 @@ sub remove
    my $data = $contents->{$sketch};
    if (remove_dir($data->{dir}))
    {
+    deactivate($sketch, 1);             # deactivate all the activations
     say "Successfully removed $sketch from $data->{dir}";
    }
    else
@@ -633,6 +652,7 @@ sub remove
 sub install
 {
  my $sketch_dirs = shift @_;
+ my $specific_target = shift @_;
  # make sure we only work with absolute directories
  my $sketches = find_sketches(map { File::Spec->rel2abs($_) } @$sketch_dirs);
 
@@ -641,12 +661,32 @@ sub install
  die "Can't install: none of [@{$options{repolist}}] exist locally!"
   unless defined $dest_repo;
 
- foreach my $sketch (sort keys %$sketches)
+ my @targets = sort keys %$sketches;
+ if ($specific_target)
+ {
+  @targets = ($specific_target);
+ }
+
+ foreach my $sketch (@targets)
  {
   my $data = $sketches->{$sketch};
 
-  my @missing = missing_dependencies($data->{metadata}->{depends});
+  my %missing = map { $_ => 1 } missing_dependencies($data->{metadata}->{depends});
 
+  # note that this will NOT catch circular dependencies!
+  foreach my $missing (keys %missing)
+  {
+   say "Trying to find $missing dependency";
+
+   if (exists $sketches->{$missing})
+   {
+    say "Found $missing dependency, trying to install it";
+    install($sketch_dirs, $missing);
+    delete $missing{$missing};
+   }
+  }
+
+  my @missing = sort keys %missing;
   if (scalar @missing)
   {
    if ($options{force})
@@ -726,7 +766,7 @@ sub install
  }
 }
 
-# TODO: need functions for: remove test
+# TODO: need functions for: test
 
 sub missing_dependencies
 {
@@ -892,7 +932,7 @@ sub find_sketches
        if ($f eq SKETCH_DEF_FILE)
        {
         my $info = load_sketch($File::Find::dir);
-        next unless $info;
+        return unless $info;
         $contents{$info->{metadata}->{name}} = $info;
        }
       }, @dirs);
@@ -913,25 +953,35 @@ sub load_sketch
      # the data must be valid and a hash
      defined $json && ref $json eq 'HASH' &&
      # the manifest must be a hash
-     exists $json->{manifest}  && ref $json->{manifest}  eq 'HASH' &&
+     exists $json->{manifest} && ref $json->{manifest}  eq 'HASH' &&
 
      # the metadata must be a hash...
-     exists $json->{metadata}  && ref $json->{metadata}  eq 'HASH' &&
+     exists $json->{metadata} && ref $json->{metadata}  eq 'HASH' &&
 
      # with a 'depends' key that points to a hash
      exists $json->{metadata}->{depends}  &&
      ref $json->{metadata}->{depends}  eq 'HASH' &&
 
-     # and a 'name' key
-     exists $json->{metadata}->{name} &&
+     # and a non-null 'name' key
+     $json->{metadata}->{name} &&
+
+     # and a non-null 'version' key
+     $json->{metadata}->{name} &&
+
+     # and a 'authors' key that's an array
+     exists $json->{metadata}->{authors} &&
+     ref $json->{metadata}->{authors} eq 'ARRAY' &&
 
      # entry_point has to point to a file in the manifest or be null
      exists $json->{entry_point} &&
-     (!defined $json->{entry_point} || exists $json->{manifest}->{$json->{entry_point}}) &&
+     (!defined $json->{entry_point} ||
+      exists $json->{manifest}->{$json->{entry_point}}) &&
 
-     # interface has to point to a file in the manifest or be null
+     # interface has to point to a list of files in the manifest
      exists $json->{interface} &&
-     exists $json->{manifest}->{$json->{interface}}
+     ref $json->{interface} eq 'ARRAY' &&
+     # we should not have any interface files that do NOT exist in the manifest
+     ! (scalar grep { ! exists $json->{manifest}->{$_} } @{$json->{interface}})
     )
  {
   my $name = $json->{metadata}->{name};

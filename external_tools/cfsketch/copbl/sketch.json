@@ -15,5 +15,5 @@
     },
 
     "entry_point": null,
-    "interface": "cfengine_stdlib.cf"
+    "interface": [ "cfengine_stdlib.cf" ]
 }
