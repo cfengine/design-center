@@ -350,15 +350,44 @@ sub generate
        my $varlist = $entry_point->{varlist};
 
        # force-feed the bundle location here to work around a possible this.promise_filename bug
-       $varlist->{bundle_home} = $pdata->{bundle_home} = $data->{dir};
+       $varlist->{bundle_home} = 'string';
+       $pdata->{bundle_home} = $data->{dir};
+
+       # provide the metadata that could be useful
+       my @files = sort keys %{$data->{manifest}};
+       $varlist->{sketch_manifest} = 'slist';
+       $pdata->{sketch_manifest} = [ @files ];
+
+       $varlist->{sketch_manifest_docs} = 'slist';
+       $pdata->{sketch_manifest_docs} = [ sort grep { $data->{manifest}->{$_}->{documentation} } @files ];
+
+       $varlist->{sketch_manifest_cf} = 'slist';
+       $pdata->{sketch_manifest_cf} = [ sort grep { $_ =~ m/\.cf$/ } @files ];
+
+       my %leftovers = %{$data->{manifest}};
+       delete $leftovers{$_} foreach (@{$pdata->{sketch_manifest_cf}}, @{$pdata->{sketch_manifest_docs}});
+       $varlist->{sketch_manifest_extra} = 'slist';
+       $pdata->{sketch_manifest_extra} = [ sort keys %leftovers ];
+
+       $varlist->{sketch_authors} = 'slist';
+       $pdata->{sketch_authors} = [ sort @{$data->{metadata}->{authors}} ];
+
+       $dependencies{$_} = 1 foreach collect_dependencies($data->{metadata}->{depends});
+
+       $varlist->{sketch_depends} = 'slist';
+       $pdata->{sketch_depends} = [ sort keys %dependencies ];
+
+       foreach my $key (qw/version name/)
+       {
+        $varlist->{"sketch_$key"} = 'string';
+        $pdata->{"sketch_$key"} = $data->{metadata}->{$key};
+       }
 
        my $optional_varlist = $entry_point->{optional_varlist};
        foreach my $k (sort keys %$varlist, sort keys %$optional_varlist)
        {
         my $cfengine_k = "${prefix}::$k";
         $cfengine_k =~ s/::/__/g;
-
-        $dependencies{$_} = 1 foreach collect_dependencies($data->{metadata}->{depends});
 
         if (exists $entry_point->{default}->{$k} &&
             !exists $pdata->{$k})
