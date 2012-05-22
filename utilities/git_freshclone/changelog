@@ -1,0 +1,4 @@
+git_freshclone 1.00
+  * Initial release, supports new checkouts if they do not exist
+  * cleans and updates working tree and index assuming valid .git/config
+  -- Nick Anderson <nick@cmdln.org>  Fri, 18 May 2012 06:27:26 -0500
