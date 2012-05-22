@@ -1,0 +1,4 @@
+# Ignore the dot-vagrant file
+.vagrant
+# Ignore masterfiles clone
+masterfiles
