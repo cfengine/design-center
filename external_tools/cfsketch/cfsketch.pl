@@ -11,10 +11,10 @@ use File::Path qw(make_path remove_tree);
 use File::Basename;
 use Data::Dumper;
 use Getopt::Long;
-use Modern::Perl;               # needs apt-get libmodern-perl
 use JSON::XS;                   # needs apt-get libjson-xs-perl
 use Template;
 use LWP::Simple;
+# use Modern::Perl;               # needs apt-get libmodern-perl
 # use Term::ReadKey;
 
 use constant SKETCH_DEF_FILE => 'sketch.json';
@@ -94,7 +94,7 @@ if (open(my $cfh, '<', $options{configfile}))
   foreach (sort keys %$given)
   {
    next if exists $options{$_};
-   say "(read from $options{configfile}) $_ = ", $coder->encode($given->{$_})
+   print "(read from $options{configfile}) $_ = ", $coder->encode($given->{$_}), "\n"
     unless $options{quiet};
    $options{$_} = $given->{$_};
   }
@@ -113,7 +113,7 @@ foreach my $repo (@{$options{repolist}})
   my $abs = File::Spec->rel2abs($repo);
   if ($abs ne $repo)
   {
-   say "Remapped $repo to $abs so it's not relative"
+   print "Remapped $repo to $abs so it's not relative\n"
     if $options{verbose};
    $repo = $abs;
   }
@@ -127,7 +127,7 @@ foreach my $repo (@{$options{repolist}})
 
 $options{repolist} = \@list;
 
-say "Full configuration: ", $coder->encode(\%options) if $options{verbose};
+print "Full configuration: ", $coder->encode(\%options), "\n" if $options{verbose};
 
 my $verbose = $options{verbose};
 my $quiet   = $options{quiet};
@@ -159,7 +159,7 @@ if ($options{'list-activations'})
  {
   foreach my $pfile (sort keys %{$activations->{$sketch}})
   {
-   say "$sketch $pfile ", $coder->encode($activations->{$sketch}->{$pfile});
+   print "$sketch $pfile ", $coder->encode($activations->{$sketch}->{$pfile}), "\n";
   }
  }
  exit;
@@ -239,7 +239,7 @@ sub search
     exists $contents->{$sketch}->{manifest}->{$_}->{documentation}
    } sort keys %{$contents->{$sketch}->{manifest}};
 
-   say "$local $sketch $contents->{$sketch}->{dir} [@docs]";
+   print "$local $sketch $contents->{$sketch}->{dir} [@docs]\n";
   }
  }
 }
@@ -251,11 +251,11 @@ sub search_internal
 
  my @ret;
 
- say "Looking for terms [@$terms] in cfsketch repository [$repo]"
+ print "Looking for terms [@$terms] in cfsketch repository [$repo]\n"
   if $verbose;
 
  my $contents = repo_get_contents($repo);
- say "Inspecting repo contents: ", $coder->encode($contents)
+ print "Inspecting repo contents: ", $coder->encode($contents), "\n"
   if $verbose;
 
  foreach my $sketch (sort keys %$contents)
@@ -310,7 +310,7 @@ sub generate
      {
       foreach my $params (sort keys %{$activations->{$sketch}})
       {
-       say "Loading activation for sketch $sketch (originally from $params)"
+       print "Loading activation for sketch $sketch (originally from $params)\n"
         if $verbose;
        my $pdata = $activations->{$sketch}->{$params};
        die "Couldn't load activation params for $sketch: $!"
@@ -480,7 +480,7 @@ sub generate
 
    print $rf $output;
    close $rf;
-   say "Generated run file $run_file";
+   print "Generated run file $run_file\n";
 }
 
 sub activate
@@ -500,7 +500,7 @@ sub activate
    my $if = $data->{interface};
 
    # TODO: we could load the params from a pipe or a network resource too
-   say "Loading activation params from $options{params}";
+   print "Loading activation params from $options{params}\n";
    my $params = load_json($options{params});
 
    die "Could not load activation params from $options{params}"
@@ -525,14 +525,14 @@ sub activate
     {
      die "Can't activate $sketch: its interface requires variable $varname"
       unless exists $params->{$varname};
-     say "Satisfied by params: $varname" if $verbose;
+     print "Satisfied by params: $varname\n" if $verbose;
     }
 
     $varlist = $entry_point->{optional_varlist};
     foreach my $varname (sort keys %$varlist)
     {
      next unless exists $params->{$varname};
-     say "Optional satisfied by params: $varname" if $verbose;
+     print "Optional satisfied by params: $varname\n" if $verbose;
     }
    }
    else
@@ -569,7 +569,7 @@ sub activate
    print $ach $coder->encode($activations);
    close $ach;
 
-   say "Activated: $sketch params $options{params}";
+   print "Activated: $sketch params $options{params}\n";
 
    $installed = 1;
    last;
@@ -594,13 +594,13 @@ sub deactivate
  if ($all_sketches)
  {
   $activations = {};
-  say "Deactivated: all sketch activations!";
+  print "Deactivated: all sketch activations!\n";
  }
  elsif ($all)
  {
   my %info = %{$activations->{$sketch}};
   delete $activations->{$sketch};
-  say "Deactivated: all $sketch activations (@{[ sort keys %info ]})";
+  print "Deactivated: all $sketch activations (@{[ sort keys %info ]})\n";
  }
  else
  {
@@ -614,7 +614,7 @@ sub deactivate
 
   delete $activations->{$sketch} unless scalar keys %{$activations->{$sketch}};
 
-  say "Deactivated: $sketch params $options{params}";
+  print "Deactivated: $sketch params $options{params}\n";
  }
 
  open(my $ach, '>', $options{'act-file'})
@@ -648,11 +648,11 @@ sub remove
    if (remove_dir($data->{dir}))
    {
     deactivate($sketch, 1);             # deactivate all the activations
-    say "Successfully removed $sketch from $data->{dir}";
+    print "Successfully removed $sketch from $data->{dir}\n";
    }
    else
    {
-    say "Could not remove $sketch from $data->{dir}";
+    print "Could not remove $sketch from $data->{dir}\n";
    }
   }
  }
@@ -685,11 +685,11 @@ sub install
   # note that this will NOT catch circular dependencies!
   foreach my $missing (keys %missing)
   {
-   say "Trying to find $missing dependency";
+   print "Trying to find $missing dependency\n";
 
    if (exists $sketches->{$missing})
    {
-    say "Found $missing dependency, trying to install it";
+    print "Found $missing dependency, trying to install it\n";
     install($sketch_dirs, $missing);
     delete $missing{$missing};
    }
@@ -708,10 +708,10 @@ sub install
    }
   }
 
-  say sprintf('Installing %s (%s) into %s',
-              $sketch,
-              $data->{file},
-              $dest_repo)
+  printf("Installing %s (%s) into %s\n",
+         $sketch,
+         $data->{file},
+         $dest_repo)
    if $verbose;
 
   my $install_dir = File::Spec->catdir($dest_repo,
@@ -719,7 +719,7 @@ sub install
 
   if (ensure_dir($install_dir))
   {
-   say "Created destination directory $install_dir" if $verbose;
+   print "Created destination directory $install_dir\n" if $verbose;
    foreach my $file (SKETCH_DEF_FILE, sort keys %{$data->{manifest}})
    {
     my $file_spec = $data->{manifest}->{$file};
@@ -763,10 +763,10 @@ sub install
      chown $uid, $gid, $dest;
     }
 
-    say "Installed file: $source -> $dest";
+    print "Installed file: $source -> $dest\n";
    }
 
-   say "Done installing $sketch";
+   print "Done installing $sketch\n";
   }
   else
   {
@@ -806,7 +806,7 @@ sub missing_dependencies
     {
      if ($uname =~ m/$os/i)
      {
-      say "Satisfied OS dependency: $uname matched $os"
+      print "Satisfied OS dependency: $uname matched $os\n"
        if $verbose;
 
       delete $tocheck{$dep};
@@ -815,7 +815,7 @@ sub missing_dependencies
 
     if (exists $tocheck{$dep})
     {
-     say "Unsatisfied OS dependencies: $uname did not match [@{$deps->{$dep}}]"
+     print "Unsatisfied OS dependencies: $uname did not match [@{$deps->{$dep}}]\n"
       if $verbose;
     }
    }
@@ -826,17 +826,17 @@ sub missing_dependencies
     my $version = cfengine_version();
     if ($version ge $tocheck{$dep}->{version})
     {
-     say("Satisfied cfengine version dependency: $version present, needed ",
-         $tocheck{$dep}->{version})
-      if $verbose;
+     print "Satisfied cfengine version dependency: $version present, needed ",
+      $tocheck{$dep}->{version}, "\n"
+       if $verbose;
 
      delete $tocheck{$dep};
     }
     else
     {
-     say("Unsatisfied cfengine version dependency: $version present, need ",
-         $tocheck{$dep}->{version})
-      if $verbose;
+     print "Unsatisfied cfengine version dependency: $version present, need ",
+      $tocheck{$dep}->{version}, "\n"
+       if $verbose;
     }
    }
    elsif (exists $contents->{$dep})
@@ -846,7 +846,7 @@ sub missing_dependencies
     if (!exists $tocheck{$dep}->{version} ||
         $dd->{metadata}->{version} >= $tocheck{$dep}->{version})
     {
-     say "Found dependency $dep in $repo" if $verbose;
+     print "Found dependency $dep in $repo\n" if $verbose;
      # TODO: test recursive dependencies, right now this will loop
      # TODO: maybe use a CPAN graph module
      push @missing, missing_dependencies($dd->{metadata}->{depends});
@@ -854,7 +854,7 @@ sub missing_dependencies
     }
     else
     {
-     say "Found dependency $dep in $repo but the version doesn't match"
+     print "Found dependency $dep in $repo but the version doesn't match\n"
       if $verbose;
     }
    }
@@ -864,7 +864,7 @@ sub missing_dependencies
  push @missing, sort keys %tocheck;
  if (scalar @missing)
  {
-  say "Unsatisfied dependencies: @missing";
+  print "Unsatisfied dependencies: @missing\n";
  }
 
  return @missing;
@@ -891,14 +891,14 @@ sub collect_dependencies
     if (!exists $deps->{$dep}->{version} ||
         $dd->{metadata}->{version} >= $deps->{$dep}->{version})
     {
-     say "Found dependency $dep in $repo" if $verbose;
+     print "Found dependency $dep in $repo\n" if $verbose;
      # TODO: test recursive dependencies, right now this will loop
      # TODO: maybe use a CPAN graph module
      push @collected, $dep, collect_dependencies($dd->{metadata}->{depends});
     }
     else
     {
-     say "Found dependency $dep in $repo but the version doesn't match"
+     print "Found dependency $dep in $repo but the version doesn't match\n"
       if $verbose;
     }
    }
@@ -1177,7 +1177,7 @@ sub verify_entry_point
    if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/ && $1 !~ m/^meta/)
    {
     $meta->{bundle} = $bundle = $1;
-    say "Found definition of bundle $bundle at $maincf_filename:$." if $verbose;
+    print "Found definition of bundle $bundle at $maincf_filename:$.\n" if $verbose;
    }
   }
 
@@ -1292,7 +1292,7 @@ sub load_json
      $include = File::Spec->catfile(dirname($f), $include);
     }
 
-    say "Including $include";
+    print "Including $include\n";
     my $parent = load_json($include);
     if (ref $parent eq 'HASH')
     {
@@ -1336,7 +1336,7 @@ sub cfengine_version
  }
  else
  {
-  say "Unsatisfied cfengine dependency: could not get version from [$cfv]."
+  print "Unsatisfied cfengine dependency: could not get version from [$cfv].\n"
    if $verbose;
   return 0;
  }
