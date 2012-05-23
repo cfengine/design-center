@@ -10,6 +10,7 @@ use File::Compare;
 use File::Copy;
 use File::Find;
 use File::Spec;
+use Cwd;
 use File::Path qw(make_path remove_tree);
 use File::Basename;
 use Data::Dumper;
@@ -55,33 +56,37 @@ my %options =
   'act-file'   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch/activations.conf'),
   configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch/cfsketch.conf'),
   'install-target' => undef,
+  'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/tzz/design-center/master/cfsketches',
   'make-package' => [],
+  runfile => undef,
  );
 
 my @options_spec =
  (
   "quiet|qq!",
   "help!",
-  "verbose!",
-  "force!",
+  "verbose|v!",
+  "force|f!",
   "configfile|cf=s",
-  "params=s",
-  "act-file=s",
-  "install-target=s",
+  "runfile|rf=s",
+  "params|p=s",
+  "act-file|af=s",
+  "install-target|it=s",
 
   "config!",
-  "interactive!",
-  "repolist=s@",
+  "interactive|x!",
+  "repolist|rl=s@",
   # "make-package=s@",
-  "install=s@",
-  "remove=s@",
-  "activate=s",                 # activate only one at a time
-  "deactivate=s",               # deactivate only one at a time
-  "test=s@",
-  "search=s@",
-  "list|l!",
-  "list-activations!",
-  "generate!",
+  "install|i=s@",
+  "install-source|is=s",
+  "remove|r=s@",
+  "activate|a=s",                 # activate only one at a time
+  "deactivate|d=s",               # deactivate only one at a time
+  "test|t=s@",
+  "search|s=s@",
+  "list|l=s@",
+  "list-activations|la!",
+  "generate|g!",
  );
 
 GetOptions (
@@ -94,6 +99,8 @@ if ($options{help})
  print <DATA>;
  exit;
 }
+
+my $happy_root = -e '/var/cfengine/states/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs';
 
 my $required_version = '3.3.0';
 my $version = cfengine_version();
@@ -121,8 +128,11 @@ if (open(my $cfh, '<', $options{configfile}))
  }
 }
 
-$options{repolist} = [ (-e '/var/cfengine/states/am_policy_hub' ? '/var/cfengine/masterfiles/sketches' : '/var/cfengine/inputs/sketches') ]
+$options{repolist} = [ File::Spec->catfile($happy_root, 'sketches') ]
  unless exists $options{repolist};
+
+$options{'install-target'} = File::Spec->catfile($happy_root, 'sketches')
+ unless $options{'install-target'};
 
 my @list;
 foreach my $repo (@{$options{repolist}})
@@ -159,7 +169,14 @@ if ($options{config})
 
 if ($options{list})
 {
- search(['.']);                   # matches everything
+ # 'all' matches everything
+ list($options{list}->[0] eq 'all' ? ["."] : $options{list});
+ exit;
+}
+
+if ($options{search})
+{
+ search($options{search}->[0] eq 'all' ? ["."] : $options{search});
  exit;
 }
 
@@ -242,11 +259,82 @@ sub configure_self
 sub search
 {
  my $terms = shift @_;
+ my $source = $options{'install-source'};
+ my $base_dir = dirname($source);
+ my $search = search_internal($source, []);
+
+ SKETCH:
+ foreach my $sketch (sort keys %{$search->{known}})
+ {
+  my $dir = File::Spec->catdir($base_dir, $search->{known}->{$sketch});
+  foreach my $term (@$terms)
+  {
+   if ($sketch =~ m/$term/ || $dir =~ m/$term/)
+   {
+    print "$sketch $dir\n";
+    next SKETCH;
+   }
+  }
+ }
+}
+
+sub search_internal
+{
+ my $source = shift @_;
+ my $sketches = shift @_;
+
+ my %known;
+ my %todo;
+ my $local = is_resource_local($source);
+
+ if ($local)
+ {
+  open(my $invf, '<', $source)
+   or die "Could not open cfsketch inventory file $source: $!";
+
+  while (<$invf>)
+  {
+   my $line = $_;
+
+   my ($dir, $sketch, $etc) = (split ' ', $line, 3);
+   $known{$sketch} = $dir;
+
+   foreach my $s (@$sketches)
+   {
+    next unless ($sketch eq $s || $dir eq $s);
+    $todo{$sketch} = $dir;
+   }
+  }
+ }
+ else
+ {
+  my $invd = get($source)
+   or die "Unable to retrieve $source : $!\n";
+
+  my @lines = split "\n", $invd;
+  foreach my $line (@lines)
+  {
+   my ($dir, $sketch, $etc) = (split ' ', $line, 3);
+   $known{$sketch} = $dir;
+
+   foreach my $s (@$sketches)
+   {
+    next unless ($sketch eq $s || $dir eq $s);
+    $todo{$sketch} = $dir;
+   }
+  }
+ }
+
+ return { known => \%known, todo => \%todo };
+}
+
+sub list
+{
+ my $terms = shift @_;
 
  foreach my $repo (@{$options{repolist}})
  {
-  my $local = is_resource_local($repo) ? 'local' : 'remote';
-  my @sketches = search_internal($repo, $terms);
+  my @sketches = list_internal($repo, $terms);
 
   my $contents = repo_get_contents($repo);
 
@@ -255,15 +343,15 @@ sub search
    # this format is easy to parse, even if the directory has spaces,
    # because the first two fields won't have spaces
    my @docs = grep {
-    exists $contents->{$sketch}->{manifest}->{$_}->{documentation}
+    $contents->{$sketch}->{manifest}->{$_}->{documentation}
    } sort keys %{$contents->{$sketch}->{manifest}};
 
-   print "$local $sketch $contents->{$sketch}->{dir} [@docs]\n";
+   print "$sketch $contents->{$sketch}->{dir}\n\t@docs\n";
   }
  }
 }
 
-sub search_internal
+sub list_internal
 {
  my $repo  = shift @_;
  my $terms = shift @_;
@@ -493,7 +581,7 @@ sub generate
                       }, \$output)
     || die $template->error();
 
-   my $run_file = 'runme.cf';
+   my $run_file = $options{runfile} || File::Spec->catfile($happy_root, 'cfsketch-runfile.cf');
    open(my $rf, '>', $run_file)
     or die "Could not write run file $run_file: $!";
 
@@ -679,25 +767,32 @@ sub remove
 
 sub install
 {
- my $sketch_dirs = shift @_;
- my $specific_target = shift @_;
- # make sure we only work with absolute directories
- my $sketches = find_sketches(map { File::Spec->rel2abs($_) } @$sketch_dirs);
+ my $sketches = shift @_;
 
- my $dest_repo = $options{'install-target'} || get_local_repo();
+ my $dest_repo = $options{'install-target'};
 
- die "Can't install: none of [@{$options{repolist}}] exist locally!"
+ die "Can't install: no install target supplied!"
   unless defined $dest_repo;
 
- my @targets = sort keys %$sketches;
- if ($specific_target)
- {
-  @targets = ($specific_target);
- }
+ my $source = $options{'install-source'};
+ my $base_dir = dirname($source);
+ my $local = is_resource_local($source);
 
- foreach my $sketch (@targets)
+ print "Loading cfsketch inventory from $source\n";
+
+ my $search = search_internal($source, $sketches);
+ my %known = %{$search->{known}};
+ my %todo = %{$search->{todo}};
+
+ foreach my $sketch (sort keys %todo)
  {
-  my $data = $sketches->{$sketch};
+  my $dir = File::Spec->catdir($base_dir, $todo{$sketch});
+
+  # make sure we only work with absolute directories
+  my $data = load_sketch($local ? File::Spec->rel2abs($dir) : $dir);
+
+  die "Sorry, but sketch $sketch could not be loaded from $dir!"
+   unless $data;
 
   my %missing = map { $_ => 1 } missing_dependencies($data->{metadata}->{depends});
 
@@ -706,11 +801,17 @@ sub install
   {
    print "Trying to find $missing dependency\n";
 
-   if (exists $sketches->{$missing})
+   if (exists $todo{$missing})
+   {
+    print "$missing dependency is to be installed or was installed already\n";
+    delete $missing{$missing};
+   }
+   elsif (exists $known{$missing})
    {
     print "Found $missing dependency, trying to install it\n";
-    install($sketch_dirs, $missing);
+    install([$missing]);
     delete $missing{$missing};
+    $todo{$missing} = $known{$missing};
    }
   }
 
@@ -1359,6 +1460,20 @@ sub cfengine_version
    if $verbose;
   return 0;
  }
+}
+
+sub local_cfsketches_source
+{
+ my $rootdir = File::Spec->rootdir();
+ my $dir = Cwd::realpath(shift @_);
+ my $inventory = File::Spec->catfile($dir, 'cfsketches');
+
+ return $inventory if -f $inventory;
+
+ return undef if $rootdir eq $dir;
+ my $updir = Cwd::realpath(dirname($dir));
+
+ return local_cfsketches_source($updir);
 }
 
 # sub read_key

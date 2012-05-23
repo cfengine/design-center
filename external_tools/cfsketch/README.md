@@ -188,3 +188,6 @@ Lots of things!!!
 
 * automatically render documentation files
 
+* make --install work for local and URL installs, and make search work for possible install sources
+
+* make --search do "grep WORD cfsketches"
