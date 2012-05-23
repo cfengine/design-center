@@ -1,0 +1,28 @@
+#!/bin/sh
+#PREFIX=${1}
+HANDLE=${1}
+PLUGIN=${2}
+shift 2
+OUTPUT=`$PLUGIN $@`
+EXIT=$?
+# Prefix the output variable with the check handle so that we know which output
+# its for.
+/bin/echo "=${HANDLE}_output=$OUTPUT"
+
+case "$EXIT" in
+   '0')
+	echo "+nagios_plugin_${HANDLE}_ok"
+	;;
+   '1')
+	echo "+nagios_plugin_${HANDLE}_warning"
+	;;
+   '2')
+	echo "+nagios_plugin_${HANDLE}_critical"
+	;;
+   '3')
+	echo "+nagios_plugin_${HANDLE}_unknown"
+	;;
+   *)
+	echo "+nagios_plugin_${HANDLE}_protocol_error"
+	;;
+esac

@@ -1,0 +1,115 @@
+bundle agent nagios_plugin_agent(prefix)
+{
+# doc fix: TODO for Nick.  Note the multiple plugin execution is easily done with cfsketch-style prefix calling.
+      # expects array
+      # TODO: need to add a handle to this so that you can execute a plugin with the same name multiple times 
+      #       think chech_http and multiple websites
+      #
+      #       probably need to make the handle the first key in the array, possibly add a _plugin_name override if the handle is not the same as the plugin name (multiple http checks)
+      #
+      #   "check[check_handle][args]" string => "plugin arguments here";
+      #   "check[check_handle][_plugin_path]" 
+      #       string  => "/usr/lib64/nagios/plugins/",
+      #       comment => "override the directory that the plugin is installed in
+      #                   this defaults to the typical location based on your arch/distro";
+      #   "check[plugin_name][_execution_context] string => "class expression of when to execute";
+      #       comment => "This is a class restriction expression used to restrict plugin execution for defined plugin"
+
+  vars:
+      "canon_prefix" string => canonify("$(prefix)");
+      "nagios_plugin_wrapper" string => "$($(prefix)bundle_home)/modules/nagios_plugin_wrapper";
+
+  classes:
+      # Define a generic alert class if check was not OK
+      # move this to the handle name
+      "nagios_alert" or => {
+                             "nagios_plugin_$(canon_prefix)_warning",
+                             "nagios_plugin_$(canon_prefix)_critical",
+                             "nagios_plugin_$(canon_prefix)_unknown",
+                             "nagios_plugin_$(canon_prefix)_protocol_error",
+                           };
+
+      # Prefert to set a class here, instead of with files to reduce globally set classes unnecisarily
+      "$(canon_prefix)nagios_plugin_wrapper_exists"  expression => fileexists("$(nagios_plugin_wrapper)");
+
+      #    files:
+      #        # the file is part of the sketch, it might be copied in place by normal policy update,
+      #        # but if not we set the source to a sane default.
+      #          # set default to $(sys.policy_hub), path masterfiles/sketches/sketchname/cf3-nagios-plugin-wrapper/modules/nagios_plugin_wrapper
+      #          # overrie with "hidden" variables _source_servers (list), _source_path ?
+      #        "$(sys.workdir)/inputs/sketches/nagios-plugin-agent/modules/nagios_plugin_wrapper"
+      #            perms     => mog("755","root","root"),
+      #            action    => if_elapsed("60"),
+      #            # I am thinking depending on a remote copy is both expensive and brittle, perhaps its best to inline the script, its not long
+      #            copy_from => remote_cp("$(sys.workdir)/inputs/sketches/nagios-plugin-agent/modules/nagios_plugin_wrapper", "$(sys.policy_hub)");
+
+  commands:
+      # This is kind of hard to read, its "plugin_wrapper handle path/plugin args"
+      "$(nagios_plugin_wrapper)"
+      args        => "$(canon_prefix) $($(prefix)plugin_path)/$($(prefix)plugin_name) $($(prefix)args)",
+      module     => "true",
+      action     => if_elapsed("$($(prefix)if_elapsed)"),
+      handle     => "nagios_plugin_agent_commands_nagios_plugin_wrapper_$(canon_prefix)",
+      depends_on => { "nagios_plugin_agent_files_nagios_plugin_wrapper" }, # ???
+      ifvarclass => "$($(prefix)execution_context)";
+
+      #nagios_plugin_wrapper_exists::
+      #    "/bin/echo $(nagios_plugin_wrapper) $(nagios_plugin_path) $(nagios_plugin_name) $(nagios_plugin_args)"
+      #        module => "true";
+      #        #no_output => "true";
+      
+  methods:
+      # Here we call bundles if requested on specific check status
+      "ok" usebundle => "$($(prefix)usebundle)_ok",
+      ifvarclass => "$(canon_prefix)__usebundle_if_ok_defined";
+
+      "warning" usebundle => "$($(prefix)usebundle)_warning])",
+      ifvarclass => "$(canon_prefix)__usebundle_if_warning_defined";
+
+      "critical" usebundle => "$($(prefix)usebundle)_critical])",
+      ifvarclass => "$(canon_prefix)__usebundle_if_critical_defined";
+
+      "unknown" usebundle => "$($(prefix)usebundle)_unknown])",
+      ifvarclass => "$(canon_prefix)__usebundle_if_unknown_defined";
+
+      "protocol_error" usebundle => "$($(prefix)usebundle)_protocol_error])",
+      ifvarclass => "$(canon_prefix)__usebundle_if_protocol_error_defined";
+
+  reports:
+    nagios_alert::
+      "Nagios plugin $(check_handle_index) with $(mycheck[$(check_handle_index)][plugin_name]) on $(sys.host) reports '$(nagios_plugin_wrapper.$(check_handle_index)_output)' on $(sys.date)",
+      ifvarclass => "$(check_handle_index)_has_output";
+
+
+    verbose_mode|debug::
+      "plugin_name:       $($(prefix)plugin_name)";
+      "plugin_path:       $($(prefix)plugin_path)";
+      "args:              $($(prefix)args)";
+      "if_elapsed:        $($(prefix)if_elapsed)";
+      "execution_context: $($(prefix)execution_context)";
+}
+
+bundle agent meta_nagios_plugin_agent
+{
+  vars:
+      "argument[plugin_name]" string => "string";
+      "argument[args]"        string => "string";
+      "argument[usebundle]"   string => "string";
+
+      # this can't be determined from within the bundle due to:
+      # https://cfengine.com/bugtracker/view.php?id=718
+      "optional_argument[bundle_home]" string => "string";
+      # this default will probably be incorrect, either use cfsketch --generate
+      # or supply it yourself
+      "default[bundle_home]"           string => dirname("$(this.promise_filename)");
+
+      # you almost definitely want to override this for x64 vs x86
+      "optional_argument[plugin_path]" string => "string";
+      "default[plugin_path]"           string => "/usr/lib64/nagios/plugins";
+
+      "optional_argument[execution_context]" string => "string";
+      "default[execution_context]" string => "any";
+
+      "optional_argument[if_elapsed]" string => "string";
+      "default[if_elapsed]" string => "60";
+}
