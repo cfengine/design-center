@@ -121,7 +121,7 @@ if (open(my $cfh, '<', $options{configfile}))
  }
 }
 
-$options{repolist} = [ 'https://raw.github.com/tzz/design-center/master' ]
+$options{repolist} = [ (-e '/var/cfengine/states/am_policy_hub' ? '/var/cfengine/masterfiles/sketches' : '/var/cfengine/inputs/sketches') ]
  unless exists $options{repolist};
 
 my @list;
