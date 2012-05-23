@@ -15,7 +15,7 @@ use Modern::Perl;               # needs apt-get libmodern-perl
 use JSON::XS;                   # needs apt-get libjson-xs-perl
 use Template;
 use LWP::Simple;
-use Term::ReadKey;
+# use Term::ReadKey;
 
 use constant SKETCH_DEF_FILE => 'sketch.json';
 
@@ -53,7 +53,7 @@ my @options_spec =
   "config!",
   "interactive!",
   "repolist=s@",
-  "make-package=s@",
+  # "make-package=s@",
   "install=s@",
   "remove=s@",
   "activate=s",                 # activate only one at a time
@@ -1018,28 +1018,28 @@ sub load_sketch
  return undef;
 }
 
-sub make_packages
-{
- my $todo = shift @_;
+# sub make_packages
+# {
+#  my $todo = shift @_;
 
- my @dirs;
+#  my @dirs;
 
- find(sub
-      {
-       my $f = $_;
-       if ($f =~ m/readme/i &&
-           read_yes_no(sprintf("Use directory %s (interesting file %s)?",
-                               $File::Find::dir,
-                               $File::Find::name),
-                       'n'))
-       {
-        push @dirs, $File::Find::dir;
-        $File::Find::prune = 1;
-       }
-      }, @$todo);
+#  find(sub
+#       {
+#        my $f = $_;
+#        if ($f =~ m/readme/i &&
+#            read_yes_no(sprintf("Use directory %s (interesting file %s)?",
+#                                $File::Find::dir,
+#                                $File::Find::name),
+#                        'n'))
+#        {
+#         push @dirs, $File::Find::dir;
+#         $File::Find::prune = 1;
+#        }
+#       }, @$todo);
 
-      die "@dirs";
-}
+#       die "@dirs";
+# }
 
 sub verify_entry_point
 {
@@ -1342,50 +1342,50 @@ sub cfengine_version
  }
 }
 
-sub read_key
-{
- my $key;
- ReadMode 3;
- while (not defined ($key = ReadKey(0)))
- {
-  # No key yet
- }
- ReadMode 0; # Reset tty mode before exiting
- return $key;
-}
+# sub read_key
+# {
+#  my $key;
+#  ReadMode 3;
+#  while (not defined ($key = ReadKey(0)))
+#  {
+#   # No key yet
+#  }
+#  ReadMode 0; # Reset tty mode before exiting
+#  return $key;
+# }
 
-sub read_yes_no
-{
- my $prompt = shift @_;
- my $default = shift @_;
+# sub read_yes_no
+# {
+#  my $prompt = shift @_;
+#  my $default = shift @_;
 
- my $true_mode = (uc $default eq 'Y' || $default eq '1');
+#  my $true_mode = (uc $default eq 'Y' || $default eq '1');
 
- my $user_choice;
+#  my $user_choice;
 
- if ($true_mode)
- {
-  print "$prompt (Y/n) ";
- }
- else
- {
-  print "$prompt (y/N) ";
- }
+#  if ($true_mode)
+#  {
+#   print "$prompt (Y/n) ";
+#  }
+#  else
+#  {
+#   print "$prompt (y/N) ";
+#  }
 
- $user_choice = uc read_key();
- print "\n";
+#  $user_choice = uc read_key();
+#  print "\n";
 
- if ($user_choice eq "\n" || $user_choice eq ' ') # ASCII space/CR
- {
-  return $true_mode;
- }
- else
- {
-  return ($user_choice eq 'Y');
- }
+#  if ($user_choice eq "\n" || $user_choice eq ' ') # ASCII space/CR
+#  {
+#   return $true_mode;
+#  }
+#  else
+#  {
+#   return ($user_choice eq 'Y');
+#  }
 
- return undef;                          # shouldn't get here
-}
+#  return undef;                          # shouldn't get here
+# }
 
 __DATA__
 
