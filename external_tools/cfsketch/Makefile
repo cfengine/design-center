@@ -1,6 +1,7 @@
 REPO:=/var/tmp/cfsketch
 
 test: prep
+	./cfsketch.pl --deactivate all
 	./cfsketch.pl --repolist=$(REPO) --install=. -v -f
 	./cfsketch.pl --repolist=$(REPO) --activate Misc::mysketch --params=./params/mysketch.json -v -f
 	./cfsketch.pl --repolist=$(REPO) --generate -v
