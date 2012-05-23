@@ -1,11 +1,11 @@
-bundle agent vcs_freshclone(prefix)
+bundle agent vcs_mirror(prefix)
 {
   vars:
       "canon_prefix" string => canonify("$(prefix)");
 
       # disabled due to https://cfengine.com/bugtracker/view.php?id=718
       # for now use $($(prefix)bundle_home), which see in
-      # the bundle meta_vcs_freshclone below
+      # the bundle meta_vcs_mirror below
 
       # "bundle_home"  string => dirname("$(this.promise_filename)"),
       # policy => "overridable";
@@ -18,9 +18,9 @@ bundle agent vcs_freshclone(prefix)
       },
       policy => "overridable";
 
-      "vcs_freshclone_command" slist =>
+      "vcs_mirror_command" slist =>
       {
-        @(git_freshclone_command)
+        @(git_mirror_command)
       },
       policy => "overridable";
 
@@ -42,7 +42,7 @@ bundle agent vcs_freshclone(prefix)
         "$($(prefix)vcs) reset -q --hard HEAD",
       };
 
-      "git_freshclone_command" slist =>
+      "git_mirror_command" slist =>
       {
         # clone the given repository with Git
         "$($(prefix)vcs) clone -b $($(prefix)branch) $($(prefix)origin) $($(prefix)path)"
@@ -57,6 +57,7 @@ bundle agent vcs_freshclone(prefix)
       "known_vcs" or => { "use_git" };
       "$(canon_prefix)path_exists" expression => fileexists("$($(prefix)path)");
 
+      "$(canon_prefix)runas_current_user" expression => strcmp("$($(prefix)runas)", getenv("USER", 128));
       # I can't use vcs_configfile here because it doesn't converge soon enough
       use_git::
       "$(canon_prefix)vcsconfig_exists" expression => fileexists("$(git_configfile)");
@@ -79,18 +80,36 @@ bundle agent vcs_freshclone(prefix)
       "$(vcs_update_command)"
       handle     => "vcs_update_command",
       contain    => in_dir("$($(prefix)path)"),
-      ifvarclass => "$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_freshcloned",
-      comment    => "Update an existing VCS repository in $($(prefix)path)";
+      ifvarclass => "$(canon_prefix)runas_current_user.$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
+      comment    => "Update an existing VCS repository in $($(prefix)path), no user override";
 
-      "$(vcs_freshclone_command)"
+      "$(vcs_update_command)"
       handle     => "vcs_update_command",
-      ifvarclass => "!$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_freshcloned",
-      classes    => if_ok("$(canon_prefix)vcs_freshcloned"),
-      comment    => "Clone a VCS repository in $($(prefix)path)";
+      contain    => setuid_in_dir("$($(prefix)runas)", "$($(prefix)path)"),
+      ifvarclass => "!$(canon_prefix)runas_current_user.$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
+      comment    => "Update an existing VCS repository in $($(prefix)path), user override to $($(prefix)runas)";
+
+      "$(vcs_mirror_command)"
+      handle     => "vcs_update_command",
+      ifvarclass => "$(canon_prefix)runas_current_user.!$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
+      classes    => if_ok("$(canon_prefix)vcs_mirrored"),
+      comment    => "Clone a VCS repository in $($(prefix)path), no user override";
+
+      "$(vcs_mirror_command)"
+      handle     => "vcs_update_command",
+      contain    => setuid("$($(prefix)runas)"),
+      ifvarclass => "!$(canon_prefix)runas_current_user.!$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
+      classes    => if_ok("$(canon_prefix)vcs_mirrored"),
+      comment    => "Clone a VCS repository in $($(prefix)path), user override to $($(prefix)runas)";
 
   reports:
     cfengine::
-      "VCS is $($(prefix)vcs), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path)";
+      "VCS is $($(prefix)vcs), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path).  We'll load the templates from $($(prefix)bundle_home)."
+      ifvarclass => "$(canon_prefix)runas_current_user";
+
+      "VCS is $($(prefix)vcs), to be executed as user $($(prefix)runas), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path).  We'll load the templates from $($(prefix)bundle_home)."
+      ifvarclass => "!$(canon_prefix)runas_current_user";
+
 
       "Cool, we're using Git."
       ifvarclass => "use_git";
@@ -102,7 +121,7 @@ bundle agent vcs_freshclone(prefix)
       "$($(prefix)vcs) is known.  We will look for the config file $(vcs_configfile)";
 
       "VCS config file $(vcs_configfile) exists"
-      ifvarclass => "$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_freshcloned";
+      ifvarclass => "$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored";
 
       "VCS config file $(vcs_configfile) does not exist"
       ifvarclass => "!$(canon_prefix)vcsconfig_exists";
@@ -111,11 +130,17 @@ bundle agent vcs_freshclone(prefix)
       ifvarclass => "$(canon_prefix)path_exists.!$(canon_prefix)vcsconfig_exists";
 
       "New clone of $($(prefix)origin) (branch $($(prefix)branch)) created in $($(prefix)path)"
-      ifvarclass => "$(canon_prefix)vcs_freshcloned";
+      ifvarclass => "$(canon_prefix)vcs_mirrored";
 
 }
 
-bundle agent meta_vcs_freshclone
+body contain setuid_in_dir(user, dir)
+{
+      chdir => "$(dir)";
+      exec_owner => "$(user)";
+}
+
+bundle agent meta_vcs_mirror
 {
   vars:
       # acceptable values: "/usr/bin/git" for example
@@ -125,6 +150,11 @@ bundle agent meta_vcs_freshclone
       "argument[path]"   string => "string";
       "argument[origin]" string => "string";
       "argument[branch]" string => "string";
+
+      # this is not called "user" so it won't be confused with the remote user
+      "optional_argument[runas]" string => "string";
+      # as far as I know 128 is more than enough on any OS
+      "default[runas]"           string => getenv("USER", 128);
 
       # this can't be determined from within the bundle due to:
       # https://cfengine.com/bugtracker/view.php?id=718

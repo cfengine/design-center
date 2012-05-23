@@ -414,7 +414,16 @@ sub generate
         }
         else
         {
-         $activation->{vars}->{$cfengine_k}->{value} = "\"$v\"";
+         # primitive extractor of function calls
+         if ($v =~ m/^\w+\(.+\)/)
+         {
+          $activation->{vars}->{$cfengine_k}->{value} = $v;
+         }
+         else
+         {
+          $activation->{vars}->{$cfengine_k}->{value} = "\"$v\"";
+         }
+
          $activation->{vars}->{$cfengine_k}->{type} = 'string';
         }
        }
@@ -1148,10 +1157,11 @@ sub verify_entry_point
        exists $meta->{varlist}->{$1}))
    {
     my $k = $1;
+    my $type = $2;
     my $v = $3;
 
     # primitive extractor of slist values
-    if ($2 eq 'slist')
+    if ($type eq 'slist')
     {
      $v = [ ($v =~ m/"([^"]+)"/g) ];
     }

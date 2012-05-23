@@ -5,10 +5,10 @@
         logallrefupdates = true
 [remote "origin"]
         fetch = +refs/heads/*:refs/remotes/origin/*
-        url = $($(vcs_freshclone.prefix)origin)
+        url = $($(vcs_mirror.prefix)origin)
 [branch "master"]
         remote = origin
         merge = refs/heads/master
-[branch "$($(vcs_freshclone.prefix)branch)"]
+[branch "$($(vcs_mirror.prefix)branch)"]
         remote = origin
-        merge = refs/heads/$($(vcs_freshclone.prefix)branch)
+        merge = refs/heads/$($(vcs_mirror.prefix)branch)

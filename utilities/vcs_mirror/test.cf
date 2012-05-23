@@ -1,21 +1,25 @@
 body common control {
 
     bundlesequence => {"main",};
-    inputs => { 
-                "cfengine_stdlib.cf",
-                "sketches/git_freshclone/main.cf",
+    inputs => {
+                "../../external_tools/cfsketch/copbl/cfengine_stdlib.cf",
+                "./main.cf",
               };
 }
 
-
 bundle agent main {
-vars:
-    "git[nicks_copbl][path]"     string => "/tmp/test2/test3/git_freshclone";
-    "git[nicks_copbl][origin]"   string => "git://github.com/nickanderson/copbl.git";
-    "git[nicks_copbl][branch]"   string => "master";
+  vars:
+      "mirror_copbl_branch" string => "master";
+      # do not use due to bug 718 and other bugs
+      # "mirror_copbl_bundle_home" string => dirname("$(this.promise_filename)");
 
-# TODO: provide some way to selectivly contain the executing user
+      # ... so you may have to adjust this accordingly!  sorry!  not even getenv("PWD") works!
+      "mirror_copbl_bundle_home" string => "/home/tzz/source/design-center/utilities/vcs_mirror";
+      "mirror_copbl_origin" string => "git://github.com/nickanderson/copbl.git";
+      "mirror_copbl_path" string => "/tmp/test2/test3/git_mirror";
+      "mirror_copbl_runas" string => getenv("USER", 128);
+      "mirror_copbl_vcs" string => "/usr/bin/git";
 
-methods:
-    "any" usebundle => git_freshclone("main.git");
+    methods:
+        "any" usebundle => vcs_mirror("main.mirror_copbl_");
 }

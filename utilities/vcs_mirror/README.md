@@ -18,18 +18,20 @@ branch.
 
 ## SAMPLE USAGE
 
+    # note you can automate the following with cfsketch and the configuration template in params/cfengine-copbl.json
+
     bundle agent main {
     vars:
-        "git[nicks_copbl][path]"     string => "/tmp/test2/test3/git_freshclone";
-        "git[nicks_copbl][origin]"   string => "git://github.com/nickanderson/copbl.git";
-        "git[nicks_copbl][branch]"   string => "master";
+      "mirror_copbl_branch" string => "master";
+      # see main.cf and test.cf for details on why this needs to be adjusted
+      "mirror_copbl_bundle_home" string => "/wherever_you_checked_out_design_center/utilities/vcs_mirror";
+      "mirror_copbl_origin" string => "git://github.com/nickanderson/copbl.git";
+      "mirror_copbl_path" string => "/tmp/test2/test3/git_mirror";
+      "mirror_copbl_runas" string => getenv("USER", 128);
+      "mirror_copbl_vcs" string => "/usr/bin/git";
 
     methods:
-        "any" usebundle => git_freshclone("main.git");
+        "any" usebundle => git_mirror("mirror_copbl_");
     }
 
 ## TODO
-* Make sure .git/config has proper entries for origin and master 
-  (in case someone came along and changed it on us).
-
-* Provide optional container to execute under specified uid/gid
