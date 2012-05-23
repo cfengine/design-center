@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+
 use warnings;
 use strict;
 use List::MoreUtils qw/uniq/;
@@ -11,20 +14,36 @@ use File::Path qw(make_path remove_tree);
 use File::Basename;
 use Data::Dumper;
 use Getopt::Long;
-use JSON::XS;                   # needs apt-get libjson-xs-perl
 use Template;
 use LWP::Simple;
 # use Modern::Perl;               # needs apt-get libmodern-perl
 # use Term::ReadKey;
 
+my $coder;
+my $canonical_coder;
+
+BEGIN
+{
+    eval
+    {
+     require JSON::XS;
+     $coder = JSON::XS->new()->relaxed()->utf8()->allow_nonref();
+     # for storing JSON data so it's directly comparable
+     $canonical_coder = JSON::XS->new()->canonical()->utf8()->allow_nonref();
+    };
+    if ($@ )
+    {
+     warn "Falling back to plain JSON module (you should install JSON::XS)";
+     require JSON;
+     $coder = JSON->new()->relaxed()->utf8()->allow_nonref();
+     # for storing JSON data so it's directly comparable
+     $canonical_coder = JSON->new()->canonical()->utf8()->allow_nonref();
+    }
+}
+
 use constant SKETCH_DEF_FILE => 'sketch.json';
 
 $| = 1;                         # autoflush
-
-my $coder = JSON::XS->new()->relaxed()->utf8()->allow_nonref();
-
-# for storing JSON data so it's directly comparable
-my $canonical_coder = JSON::XS->new()->canonical()->utf8()->allow_nonref();
 
 my %options =
  (
