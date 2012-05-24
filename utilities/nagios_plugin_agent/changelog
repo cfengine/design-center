@@ -1,3 +1,12 @@
+nagios_plugin_agent 1.03
+  * fix plugin after reworking to cfsketch
+  * add new usebundle_not_ok option to ease a common use case of running
+    when status is anything but OK
+  * defaults are known to not work unless using cfsketch --generate
+  * module is not gaurenteed to be on executing agent where expected to be
+  handeled in later revision, for now you must have a seperate mechanism to
+  distribute the module to the proper place
+
 nagios_plugin_agent 1.02
   * rename sketch to Monitoring::nagios_plugin_agent
   * rework to make it more compatible with cfsketch

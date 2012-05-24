@@ -1,19 +1,21 @@
 bundle agent nagios_plugin_agent(prefix)
 {
-# doc fix: TODO for Nick.  Note the multiple plugin execution is easily done with cfsketch-style prefix calling.
-      # expects array
-      # TODO: need to add a handle to this so that you can execute a plugin with the same name multiple times 
-      #       think chech_http and multiple websites
-      #
-      #       probably need to make the handle the first key in the array, possibly add a _plugin_name override if the handle is not the same as the plugin name (multiple http checks)
-      #
-      #   "check[check_handle][args]" string => "plugin arguments here";
-      #   "check[check_handle][_plugin_path]" 
-      #       string  => "/usr/lib64/nagios/plugins/",
-      #       comment => "override the directory that the plugin is installed in
-      #                   this defaults to the typical location based on your arch/distro";
-      #   "check[plugin_name][_execution_context] string => "class expression of when to execute";
-      #       comment => "This is a class restriction expression used to restrict plugin execution for defined plugin"
+  # TODO: get defaults from meta bundle, I think this will necisitate forcing commands to not run on first pass
+  # TODO: get module from policyhub, determine best way to do this
+  # 
+  # expects prefix (variable prefix namespace from calling bundle), this is cfsketch-style
+  # in this example "check_dummy_OK" is the prefix, any variable prefixed with that would be 
+  # in scope for that call of this bundle
+  # vars:
+  #     "check_dummy_OK_plugin_name" string => "check_dummy";
+  #     "check_dummy_OK_args" string => "0 Test ok";
+  #     "check_dummy_OK_usebundle_if_ok" string => "handler_ok";
+  #     "check_dummy_OK_bundle_home" string => "/home/cmdln/src/github/nickanderson/design-center/utilities/nagios_plugin_agent";
+  #     "check_dummy_OK_plugin_path" string => "/usr/lib/nagios/plugins/";
+  #     "check_dummy_OK_execution_context" string => "any";
+  # methods:
+  #     "any" usebundle => nagios_plugin_agent("main.check_dummy_OK_");
+
 
   vars:
       "canon_prefix" string => canonify("$(prefix)");
@@ -29,7 +31,7 @@ bundle agent nagios_plugin_agent(prefix)
                              "nagios_plugin_$(canon_prefix)_protocol_error",
                            };
 
-      # Prefert to set a class here, instead of with files to reduce globally set classes unnecisarily
+      # Prefer to set a class here, instead of with files to reduce globally set classes unnecisarily
       "$(canon_prefix)nagios_plugin_wrapper_exists"  expression => fileexists("$(nagios_plugin_wrapper)");
 
       #    files:
@@ -43,6 +45,22 @@ bundle agent nagios_plugin_agent(prefix)
       #            # I am thinking depending on a remote copy is both expensive and brittle, perhaps its best to inline the script, its not long
       #            copy_from => remote_cp("$(sys.workdir)/inputs/sketches/nagios-plugin-agent/modules/nagios_plugin_wrapper", "$(sys.policy_hub)");
 
+    "$(canon_prefix)usebundle_if_ok_defined"
+        expression => isvariable("$(prefix)usebundle_if_ok");
+    "$(canon_prefix)usebundle_if_warning_defined"
+        expression => isvariable("$(prefix)usebundle_if_warning");
+    "$(canon_prefix)usebundle_if_critical_defined"
+        expression => isvariable("$(prefix)usebundle_if_critical");
+    "$(canon_prefix)usebundle_if_unknown_defined"
+        expression => isvariable("$(prefix)usebundle_if_unknown");
+    "$(canon_prefix)usebundle_if_protocol_error_defined"
+        expression => isvariable("$(prefix)usebundle_if_protocol_error");
+    "$(canon_prefix)usebundle_not_ok_defined"
+        expression => isvariable("$(prefix)usebundle_not_ok");
+
+    "$(canon_prefix)has_output"
+        expression => isvariable("nagios_plugin_wrapper.$(canon_prefix)_output");
+
   commands:
       # This is kind of hard to read, its "plugin_wrapper handle path/plugin args"
       "$(nagios_plugin_wrapper)"
@@ -53,33 +71,30 @@ bundle agent nagios_plugin_agent(prefix)
       depends_on => { "nagios_plugin_agent_files_nagios_plugin_wrapper" }, # ???
       ifvarclass => "$($(prefix)execution_context)";
 
-      #nagios_plugin_wrapper_exists::
-      #    "/bin/echo $(nagios_plugin_wrapper) $(nagios_plugin_path) $(nagios_plugin_name) $(nagios_plugin_args)"
-      #        module => "true";
-      #        #no_output => "true";
-      
   methods:
       # Here we call bundles if requested on specific check status
-      "ok" usebundle => "$($(prefix)usebundle)_ok",
-      ifvarclass => "$(canon_prefix)__usebundle_if_ok_defined";
+      "ok" usebundle => "$($(prefix)usebundle_if_ok)",
+      ifvarclass => "$(canon_prefix)usebundle_if_ok_defined.nagios_plugin_$(canon_prefix)_ok";
 
-      "warning" usebundle => "$($(prefix)usebundle)_warning])",
-      ifvarclass => "$(canon_prefix)__usebundle_if_warning_defined";
+      "warning" usebundle => "$($(prefix)usebundle_if_warning)",
+      ifvarclass => "$(canon_prefix)usebundle_if_warning_defined.nagios_plugin_$(canon_prefix)_warning";
 
-      "critical" usebundle => "$($(prefix)usebundle)_critical])",
-      ifvarclass => "$(canon_prefix)__usebundle_if_critical_defined";
+      "critical" usebundle => "$($(prefix)usebundle_if_critical)",
+      ifvarclass => "$(canon_prefix)usebundle_if_critical_defined.nagios_plugin_$(canon_prefix)_critical";
 
-      "unknown" usebundle => "$($(prefix)usebundle)_unknown])",
-      ifvarclass => "$(canon_prefix)__usebundle_if_unknown_defined";
+      "unknown" usebundle => "$($(prefix)usebundle_if_unknown)",
+      ifvarclass => "$(canon_prefix)usebundle_if_unknown_defined.nagios_plugin_$(canon_prefix)_unknown";
 
-      "protocol_error" usebundle => "$($(prefix)usebundle)_protocol_error])",
-      ifvarclass => "$(canon_prefix)__usebundle_if_protocol_error_defined";
+      "protocol_error" usebundle => "$($(prefix)usebundle_if_protocol_error)",
+      ifvarclass => "$(canon_prefix)usebundle_if_protocol_error_defined.nagios_plugin_$(canon_prefix)_protocol_error";
+
+      "not_ok" usebundle => "$($(prefix)usebundle_not_ok)",
+      ifvarclass => "$(canon_prefix)usebundle_not_ok_defined.nagios_alert";
 
   reports:
     nagios_alert::
-      "Nagios plugin $(check_handle_index) with $(mycheck[$(check_handle_index)][plugin_name]) on $(sys.host) reports '$(nagios_plugin_wrapper.$(check_handle_index)_output)' on $(sys.date)",
-      ifvarclass => "$(check_handle_index)_has_output";
-
+      "Nagios plugin $($(prefix)plugin_name) with on $(sys.host) reports '$(nagios_plugin_wrapper.$(canon_prefix)_output)' on $(sys.date)",
+      ifvarclass => "$(canon_prefix)has_output";
 
     verbose_mode|debug::
       "plugin_name:       $($(prefix)plugin_name)";
@@ -94,7 +109,16 @@ bundle agent meta_nagios_plugin_agent
   vars:
       "argument[plugin_name]" string => "string";
       "argument[args]"        string => "string";
-      "argument[usebundle]"   string => "string";
+
+      # Optionally call bundles on specific status
+      "optional_argument[usebundle_if_ok]"             string => "string";
+      "optional_argument[usebundle_if_warning]"        string => "string";
+      "optional_argument[usebundle_if_critical]"       string => "string";
+      "optional_argument[usebundle_if_unknown]"        string => "string";
+      "optional_argument[usebundle_if_protocol_error]" string => "string";
+      # not_ok encompases warning, critical, unknown, and protocol_error status
+      # This is probably the most common use case
+      "optional_argument[usebundle_not_ok]"            string => "string";
 
       # this can't be determined from within the bundle due to:
       # https://cfengine.com/bugtracker/view.php?id=718
