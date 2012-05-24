@@ -724,6 +724,7 @@ sub deactivate
   print "Deactivated: $sketch params $options{params}\n";
  }
 
+ ensure_dir(dirname($options{'act-file'}));
  open(my $ach, '>', $options{'act-file'})
   or die "Could not write activation file $options{'act-file'}: $!";
 
