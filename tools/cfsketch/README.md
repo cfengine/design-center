@@ -37,7 +37,7 @@ Below, if you don't specify --repolist, it defaults to a single URL (so you can'
 
 List all the sketches in the repo:
 
-    ./cfsketch.pl --repolist=$(REPO) -l
+    ./cfsketch.pl --repolist=$(REPO) -l .
 
 Install all the bundles in the current directory (currently one bundle lives under `demo_sketch`) into `$(REPO)`.  Ignore OS and other dependencies with `-f`.
 
