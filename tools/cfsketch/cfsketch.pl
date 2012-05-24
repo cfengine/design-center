@@ -100,7 +100,7 @@ if ($options{help})
  exit;
 }
 
-my $happy_root = -e '/var/cfengine/states/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs';
+my $happy_root = -e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs';
 
 my $required_version = '3.3.0';
 my $version = cfengine_version();
