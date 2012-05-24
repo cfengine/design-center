@@ -37,7 +37,7 @@ linux
 
 
     methods:
-        "any" usebundle => interface_settings_update("$(nics)", "context.$(nics)");
+        "any" usebundle => cfdc_interface_settings_update("$(nics)", "context.$(nics)");
 
 
 ## TODO
