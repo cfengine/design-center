@@ -787,7 +787,7 @@ sub install
 
  foreach my $sketch (sort keys %todo)
  {
-  my $dir = File::Spec->catdir($base_dir, $todo{$sketch});
+  my $dir = $local ? File::Spec->catdir($base_dir, $todo{$sketch}) : "$base_dir/$todo{$sketch}";
 
   # make sure we only work with absolute directories
   my $data = load_sketch($local ? File::Spec->rel2abs($dir) : $dir);
