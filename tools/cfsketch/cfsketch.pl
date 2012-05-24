@@ -56,7 +56,7 @@ my %options =
   'act-file'   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch/activations.conf'),
   configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch/cfsketch.conf'),
   'install-target' => undef,
-  'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/tzz/design-center/master/cfsketches',
+  'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
   'make-package' => [],
   runfile => undef,
  );
@@ -724,6 +724,7 @@ sub deactivate
   print "Deactivated: $sketch params $options{params}\n";
  }
 
+ ensure_dir(dirname($options{'act-file'}));
  open(my $ach, '>', $options{'act-file'})
   or die "Could not write activation file $options{'act-file'}: $!";
 
@@ -786,7 +787,7 @@ sub install
 
  foreach my $sketch (sort keys %todo)
  {
-  my $dir = File::Spec->catdir($base_dir, $todo{$sketch});
+  my $dir = $local ? File::Spec->catdir($base_dir, $todo{$sketch}) : "$base_dir/$todo{$sketch}";
 
   # make sure we only work with absolute directories
   my $data = load_sketch($local ? File::Spec->rel2abs($dir) : $dir);
