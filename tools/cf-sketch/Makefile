@@ -17,5 +17,8 @@ test: prep
 	cat runme.cf
 	cf-agent -I -K -f ./runme.cf
 
+# Eliminate all signs of cf-sketch from the system. For testing purposes.
+clean_system:
+	/bin/rm -rf /var/cfengine/inputs/sketches /var/cfengine/masterfiles/sketches /etc/cf-sketch $(HOME)/.cf-sketch
 prep:
 	/bin/mkdir -p $(REPO)
