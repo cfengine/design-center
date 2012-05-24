@@ -1,4 +1,4 @@
-external_tools/cfsketch/demo_sketch Misc::mysketch
+../tools/cf-sketch/demo_sketch Misc::mysketch
 libraries/copbl CFEngine::stdlib
 utilities/nagios_plugin_agent Monitoring::nagios_plugin_agent
 utilities/vcs_mirror VCS::vcs_mirror

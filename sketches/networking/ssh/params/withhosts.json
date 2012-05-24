@@ -1,0 +1,8 @@
+{
+  "keys":   [ "Protocol", "X11Forwarding", "UseDNS" ],
+  "values": [ "2",        "yes",           "no" ],
+
+  "hosts": [ "host1", "host2", "*" ],
+  "by_host_keys": [ "host1_ForwardX11", "host1_ForwardAgent", "host2_Port", "*_Port" ],
+  "by_host_values": [ "yes", "yes", "2222", "2022" ],
+}

@@ -53,11 +53,12 @@ my %options =
   help       => 0,
   force      => 0,
   # switched depending on root or non-root
-  'act-file'   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch/activations.conf'),
-  configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch/cfsketch.conf'),
+  'act-file'   => $> == 0 ? '/etc/cf-sketch/activations.conf' : glob('~/.cf-sketch/activations.conf'),
+  configfile => $> == 0 ? '/etc/cf-sketch/cf-sketch.conf' : glob('~/.cf-sketch/cf-sketch.conf'),
   'install-target' => undef,
   'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
   'make-package' => [],
+  cfhome => '/var/cfengine/bin',
   runfile => undef,
  );
 
@@ -67,6 +68,7 @@ my @options_spec =
   "help!",
   "verbose|v!",
   "force|f!",
+  "cfhome=s",
   "configfile|cf=s",
   "runfile|rf=s",
   "params|p=s",
@@ -105,7 +107,7 @@ my $happy_root = -e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterf
 my $required_version = '3.3.0';
 my $version = cfengine_version();
 
-if ($required_version gt $version)
+if (!$options{force} && $required_version gt $version)
 {
  die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
 }
@@ -121,7 +123,7 @@ if (open(my $cfh, '<', $options{configfile}))
   {
    next if exists $options{$_};
    print "(read from $options{configfile}) $_ = ", $coder->encode($given->{$_}), "\n"
-    unless $options{quiet};
+    if $options{verbose};
    $options{$_} = $given->{$_};
   }
   last;
@@ -156,10 +158,10 @@ foreach my $repo (@{$options{repolist}})
 
 $options{repolist} = \@list;
 
-print "Full configuration: ", $coder->encode(\%options), "\n" if $options{verbose};
-
 my $verbose = $options{verbose};
 my $quiet   = $options{quiet};
+
+print "Full configuration: ", $coder->encode(\%options), "\n" if $verbose;
 
 if ($options{config})
 {
@@ -220,6 +222,7 @@ sub configure_self
 
  my %keys = (
              repolist => 1,             # array
+             cfhome   => 0,             # string
             );
 
  my %config;
@@ -290,7 +293,7 @@ sub search_internal
  if ($local)
  {
   open(my $invf, '<', $source)
-   or die "Could not open cfsketch inventory file $source: $!";
+   or die "Could not open cf-sketch inventory file $source: $!";
 
   while (<$invf>)
   {
@@ -358,7 +361,7 @@ sub list_internal
 
  my @ret;
 
- print "Looking for terms [@$terms] in cfsketch repository [$repo]\n"
+ print "Looking for terms [@$terms] in cf-sketch repository [$repo]\n"
   if $verbose;
 
  my $contents = repo_get_contents($repo);
@@ -381,7 +384,7 @@ sub list_internal
  return @ret;
 }
 
-# generate the actual cfengine config that will run all the cfsketch bundles
+# generate the actual cfengine config that will run all the cf-sketch bundles
 sub generate
 {
    # activation successful, now install it
@@ -581,13 +584,15 @@ sub generate
                       }, \$output)
     || die $template->error();
 
-   my $run_file = $options{runfile} || File::Spec->catfile($happy_root, 'cfsketch-runfile.cf');
+   my $run_file = $options{runfile} || File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf');
    open(my $rf, '>', $run_file)
     or die "Could not write run file $run_file: $!";
 
    print $rf $output;
    close $rf;
-   print "Generated run file $run_file\n";
+   print "Generated run file $run_file\n"
+    unless $quiet;
+
 }
 
 sub activate
@@ -607,7 +612,7 @@ sub activate
    my $if = $data->{interface};
 
    # TODO: we could load the params from a pipe or a network resource too
-   print "Loading activation params from $options{params}\n";
+   print "Loading activation params from $options{params}\n" unless $quiet;
    my $params = load_json($options{params});
 
    die "Could not load activation params from $options{params}"
@@ -658,7 +663,8 @@ sub activate
     {
      if ($options{force})
      {
-      warn "Activating duplicate parameters [$q] because of --force";
+      warn "Activating duplicate parameters [$q] because of --force"
+       unless $quiet;
      }
      else
      {
@@ -676,7 +682,7 @@ sub activate
    print $ach $coder->encode($activations);
    close $ach;
 
-   print "Activated: $sketch params $options{params}\n";
+   print "Activated: $sketch params $options{params}\n" unless $quiet;
 
    $installed = 1;
    last;
@@ -701,13 +707,14 @@ sub deactivate
  if ($all_sketches)
  {
   $activations = {};
-  print "Deactivated: all sketch activations!\n";
+  print "Deactivated: all sketch activations!\n" unless $quiet;
  }
  elsif ($all)
  {
   my %info = %{$activations->{$sketch}};
   delete $activations->{$sketch};
-  print "Deactivated: all $sketch activations (@{[ sort keys %info ]})\n";
+  print "Deactivated: all $sketch activations (@{[ sort keys %info ]})\n"
+   unless $quiet;
  }
  else
  {
@@ -721,7 +728,7 @@ sub deactivate
 
   delete $activations->{$sketch} unless scalar keys %{$activations->{$sketch}};
 
-  print "Deactivated: $sketch params $options{params}\n";
+  print "Deactivated: $sketch params $options{params}\n" unless $quiet;
  }
 
  ensure_dir(dirname($options{'act-file'}));
@@ -756,11 +763,11 @@ sub remove
    if (remove_dir($data->{dir}))
    {
     deactivate($sketch, 1);             # deactivate all the activations
-    print "Successfully removed $sketch from $data->{dir}\n";
+    print "Successfully removed $sketch from $data->{dir}\n" unless $quiet;
    }
    else
    {
-    print "Could not remove $sketch from $data->{dir}\n";
+    print "Could not remove $sketch from $data->{dir}\n" unless $quiet;
    }
   }
  }
@@ -779,7 +786,7 @@ sub install
  my $base_dir = dirname($source);
  my $local = is_resource_local($source);
 
- print "Loading cfsketch inventory from $source\n";
+ print "Loading cf-sketch inventory from $source\n" if $verbose;
 
  my $search = search_internal($source, $sketches);
  my %known = %{$search->{known}};
@@ -787,6 +794,7 @@ sub install
 
  foreach my $sketch (sort keys %todo)
  {
+ print "Installing $sketch\n" unless $quiet;
   my $dir = $local ? File::Spec->catdir($base_dir, $todo{$sketch}) : "$base_dir/$todo{$sketch}";
 
   # make sure we only work with absolute directories
@@ -800,16 +808,17 @@ sub install
   # note that this will NOT catch circular dependencies!
   foreach my $missing (keys %missing)
   {
-   print "Trying to find $missing dependency\n";
+   print "Trying to find $missing dependency\n" unless $quiet;
 
    if (exists $todo{$missing})
    {
-    print "$missing dependency is to be installed or was installed already\n";
+    print "$missing dependency is to be installed or was installed already\n"
+     unless $quiet;
     delete $missing{$missing};
    }
    elsif (exists $known{$missing})
    {
-    print "Found $missing dependency, trying to install it\n";
+    print "Found $missing dependency, trying to install it\n" unless $quiet;
     install([$missing]);
     delete $missing{$missing};
     $todo{$missing} = $known{$missing};
@@ -821,7 +830,8 @@ sub install
   {
    if ($options{force})
    {
-    warn "Installing $sketch despite unsatisfied dependencies @missing";
+    warn "Installing $sketch despite unsatisfied dependencies @missing"
+     unless $quiet;
    }
    else
    {
@@ -852,6 +862,8 @@ sub install
     die "Could not make destination directory $dest_dir"
      unless ensure_dir($dest_dir);
 
+    my $changed = 1;
+
     # TODO: maybe disable this?  It can be expensive for large files.
     if (!$options{force} &&
         is_resource_local($data->{dir}) &&
@@ -859,17 +871,21 @@ sub install
     {
      warn "Manifest member $file is already installed in $dest"
       if $verbose;
+     $changed = 0;
     }
 
-    if (is_resource_local($data->{dir}))
+    if ($changed)
     {
-     copy($source, $dest) or die "Aborting: copy $source -> $dest failed: $!";
-    }
-    else
-    {
-     my $rc = getstore($source, $dest);
-     die "Aborting: remote copy $source -> $dest failed: error code $rc"
-      unless is_success($rc)
+     if (is_resource_local($data->{dir}))
+     {
+      copy($source, $dest) or die "Aborting: copy $source -> $dest failed: $!";
+     }
+     else
+     {
+      my $rc = getstore($source, $dest);
+      die "Aborting: remote copy $source -> $dest failed: error code $rc"
+       unless is_success($rc)
+      }
     }
 
     chmod oct($file_spec->{perm}), $dest if exists $file_spec->{perm};
@@ -884,10 +900,10 @@ sub install
      chown $uid, $gid, $dest;
     }
 
-    print "Installed file: $source -> $dest\n";
+    print "Installed file: $source -> $dest\n" if $changed && !$quiet;
    }
 
-   print "Done installing $sketch\n";
+   print "Done installing $sketch\n" unless $quiet;
   }
   else
   {
@@ -985,7 +1001,7 @@ sub missing_dependencies
  push @missing, sort keys %tocheck;
  if (scalar @missing)
  {
-  print "Unsatisfied dependencies: @missing\n";
+  print "Unsatisfied dependencies: @missing\n" unless $quiet;
  }
 
  return @missing;
@@ -1056,16 +1072,21 @@ sub find_sketches
  my @dirs = @_;
  my %contents;
 
- find(sub
-      {
-       my $f = $_;
-       if ($f eq SKETCH_DEF_FILE)
+ @dirs = grep { -r $_ && -x $_ } @dirs;
+
+ if (scalar @dirs)
+ {
+  find(sub
        {
-        my $info = load_sketch($File::Find::dir);
-        return unless $info;
-        $contents{$info->{metadata}->{name}} = $info;
-       }
-      }, @dirs);
+        my $f = $_;
+        if ($f eq SKETCH_DEF_FILE)
+        {
+         my $info = load_sketch($File::Find::dir);
+         return unless $info;
+         $contents{$info->{metadata}->{name}} = $info;
+        }
+       }, @dirs);
+ }
 
  return \%contents;
 }
@@ -1128,12 +1149,12 @@ sub load_sketch
   }
   else
   {
-   warn "Could not verify bundle entry point from $name";
+   warn "Could not verify bundle entry point from $name" unless $quiet;
   }
  }
  else
  {
-  warn "Could not load sketch definition from $name";
+  warn "Could not load sketch definition from $name" unless $quiet;
  }
 
  return undef;
@@ -1190,14 +1211,14 @@ sub verify_entry_point
   {
    unless (-f $maincf_filename)
    {
-    warn "Could not find sketch $name entry point '$maincf'";
+    warn "Could not find sketch $name entry point '$maincf'" unless $quiet;
     return 0;
    }
 
    my $mcf;
    unless (open($mcf, '<', $maincf_filename) && $mcf)
    {
-    warn "Could not open $maincf_filename: $!";
+    warn "Could not open $maincf_filename: $!" unless $quiet;
     return 0;
    }
    @mcf = <$mcf>;
@@ -1207,7 +1228,7 @@ sub verify_entry_point
    my $mcf = get($maincf_filename);
    unless ($mcf)
    {
-    warn "Could not retrieve $maincf_filename: $!";
+    warn "Could not retrieve $maincf_filename: $!" unless $quiet;
     return 0;
    }
 
@@ -1298,21 +1319,24 @@ sub verify_entry_point
    if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/ && $1 !~ m/^meta/)
    {
     $meta->{bundle} = $bundle = $1;
-    print "Found definition of bundle $bundle at $maincf_filename:$.\n" if $verbose;
+    print "Found definition of bundle $bundle at $maincf_filename:$.\n"
+     if $verbose;
    }
   }
 
   if ($meta->{confirmed})
   {
-   warn "Couldn't find the closing } for [$bundle] in $maincf_filename";
+   warn "Couldn't find the closing } for [$bundle] in $maincf_filename"
+    unless $quiet;
   }
   elsif (defined $bundle)
   {
-   warn "Couldn't find the meta definition of [$bundle] in $maincf_filename";
+   warn "Couldn't find the meta definition of [$bundle] in $maincf_filename"
+    unless $quiet;
   }
   else
   {
-   warn "Couldn't find a usable bundle in $maincf_filename";
+   warn "Couldn't find a usable bundle in $maincf_filename" unless $quiet;
   }
 
   return undef;
@@ -1382,7 +1406,7 @@ sub load_json
   my $j;
   unless (open($j, '<', $f) && $j)
   {
-   warn "Could not inspect $f: $!";
+   warn "Could not inspect $f: $!" unless $quiet;
    return;
   }
 
@@ -1413,7 +1437,7 @@ sub load_json
      $include = File::Spec->catfile(dirname($f), $include);
     }
 
-    print "Including $include\n";
+    print "Including $include\n" unless $quiet;
     my $parent = load_json($include);
     if (ref $parent eq 'HASH')
     {
@@ -1421,7 +1445,7 @@ sub load_json
     }
     else
     {
-     warn "Malformed include contents from $include: not a hash";
+     warn "Malformed include contents from $include: not a hash" unless $quiet;
     }
    }
    delete $ret->{include};
@@ -1450,7 +1474,7 @@ sub remove_dir
 
 sub cfengine_version
 {
- my $cfv = `cf-promises -V`; # TODO: get this from cfengine?
+ my $cfv = `$options{cfhome}/cf-promises -V`; # TODO: get this from cfengine?
  if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
  {
   return $1;
@@ -1470,6 +1494,10 @@ sub local_cfsketches_source
  my $inventory = File::Spec->catfile($dir, 'cfsketches');
 
  return $inventory if -f $inventory;
+
+ # as we go up the tree, check for 'sketches/cfsketches' as well (so we don't crawl the whole file tree)
+ my $sketches_probe = File::Spec->catfile($dir, 'sketches', 'cfsketches');
+ return $sketches_probe if -f $sketches_probe;
 
  return undef if $rootdir eq $dir;
  my $updir = Cwd::realpath(dirname($dir));
@@ -1524,6 +1552,6 @@ sub local_cfsketches_source
 
 __DATA__
 
-Help for cfsketch
+Help for cf-sketch
 
 See README.md
