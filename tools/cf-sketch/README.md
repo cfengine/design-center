@@ -29,26 +29,33 @@ runfile generation: the runfile is a single plan to run all the sketch activatio
 Usage
 ----------
 
-See `Makefile` but realize this is a prototype, so the usage may change:
+See `Makefile` but realize this is a prototype, so the usage may change.
 
-We use `/var/tmp`, a nice temporary location, to host our repository, as the `$(REPO)` variable.
+Most of the options have aliases: -s for --search, -l for --list, -is for --install-source, --it for --install-target, etc. (TODO: list all aliases?)
 
-Below, if you don't specify --repolist, it defaults to a single URL (so you can't install to it): https://raw.github.com/tzz/design-center/master (this will change to the real master design-center repo).
+You can use `/var/tmp`, a nice temporary location, to host our repository, as the `$(REPO)` variable.  But note that `$(REPO)` defaults to `/var/cfengine/inputs/sketches` or `/var/cfengine/masterfiles/sketches`.
 
-List all the sketches in the repo:
+For installations, if you don't specify `--install-source`, it defaults to either the local Design Center checkout (if you're running cf-sketch.pl from tools/cf-sketch, this will Just Work) or a single URL: https://raw.github.com/cfengine/design-center/master.
+
+For installations, if you don't specify `--install-target`, it defaults to a local directory just like `$(REPO)` above.
+
+Search for all the *available* sketches in the install source (this can be a regex):
+
+    ./cf-sketch.pl --repolist=$(REPO) -s all
+    
+Except for the `all` convenience search, this is like `grep WORD ../../sketches/cfsketches` if you're in a Design Center checkout, running from the `tools/cf-sketch` directory.
+
+List all the *installed* sketches in the repolist (this can be a regex):
 
     ./cf-sketch.pl --repolist=$(REPO) -l all
 
-Install all the bundles in the current directory (currently one bundle lives under `demo_sketch`) into `$(REPO)`.  Ignore OS and other dependencies with `-f`.
+Install sketch Misc::mysketch from the current Design Center checkout into `$(REPO)`.  Ignore OS and other dependencies with `-f`.  Remember you can use the `-i` and `-it` aliases for `--install` and `--install-target`.
 
-    ./cf-sketch.pl --repolist=$(REPO) --install=. -v -f
+    ./cf-sketch.pl --install-target=$(REPO) --install=Misc::mysketch -v -f
 
-You can specify the install directory with --install-target=/a/b/c here.
+You can stop here and just include the sketch .cf files that were installed in `$(REPO)`, or proceed with parameters and activation.
 
-You can stop here and just include the sketch .cf files that were
-installed in $(REPO), or proceed with parameters and activation.
-
-Activate `Misc::mysketch` (the name of the sketch installed from `demo_sketch`) with params from `./params/mysketch.json`:
+Activate `Misc::mysketch` (the sketch you just installed from the `demo_sketch` directory) with parameters from `./params/mysketch.json`:
 
     ./cf-sketch.pl --repolist=$(REPO) --activate Misc::mysketch --params=./params/mysketch.json -v
 
@@ -74,9 +81,9 @@ Remove (uninstall) a sketch:
 
     ./cf-sketch.pl --remove Misc::mysketch
 
-Generate the runfile for all the activations, currently this will just go into `runme.cf`.
+Generate the runfile for all the activations, currently this will just go into `/var/cfengine/inputs/cf-sketch-runfile.cf` or `/var/cfengine/masterfiles/cf-sketch-runfile.cf` but you can override with the `--runfile` parameter:
 
-    ./cf-sketch.pl --repolist=$(REPO) --generate -v
+    ./cf-sketch.pl --repolist=$(REPO) --generate --runfile ./runme.cf -v
 
 Look at `runme.cf` and you'll see how it sets up activations and policies.
     
