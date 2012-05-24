@@ -53,8 +53,8 @@ my %options =
   help       => 0,
   force      => 0,
   # switched depending on root or non-root
-  'act-file'   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch/activations.conf'),
-  configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch/cfsketch.conf'),
+  'act-file'   => $> == 0 ? '/etc/cf-sketch/activations.conf' : glob('~/.cf-sketch/activations.conf'),
+  configfile => $> == 0 ? '/etc/cf-sketch/cf-sketch.conf' : glob('~/.cf-sketch/cf-sketch.conf'),
   'install-target' => undef,
   'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
   'make-package' => [],
@@ -290,7 +290,7 @@ sub search_internal
  if ($local)
  {
   open(my $invf, '<', $source)
-   or die "Could not open cfsketch inventory file $source: $!";
+   or die "Could not open cf-sketch inventory file $source: $!";
 
   while (<$invf>)
   {
@@ -358,7 +358,7 @@ sub list_internal
 
  my @ret;
 
- print "Looking for terms [@$terms] in cfsketch repository [$repo]\n"
+ print "Looking for terms [@$terms] in cf-sketch repository [$repo]\n"
   if $verbose;
 
  my $contents = repo_get_contents($repo);
@@ -381,7 +381,7 @@ sub list_internal
  return @ret;
 }
 
-# generate the actual cfengine config that will run all the cfsketch bundles
+# generate the actual cfengine config that will run all the cf-sketch bundles
 sub generate
 {
    # activation successful, now install it
@@ -581,7 +581,7 @@ sub generate
                       }, \$output)
     || die $template->error();
 
-   my $run_file = $options{runfile} || File::Spec->catfile($happy_root, 'cfsketch-runfile.cf');
+   my $run_file = $options{runfile} || File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf');
    open(my $rf, '>', $run_file)
     or die "Could not write run file $run_file: $!";
 
@@ -779,7 +779,7 @@ sub install
  my $base_dir = dirname($source);
  my $local = is_resource_local($source);
 
- print "Loading cfsketch inventory from $source\n";
+ print "Loading cf-sketch inventory from $source\n";
 
  my $search = search_internal($source, $sketches);
  my %known = %{$search->{known}};
@@ -1524,6 +1524,6 @@ sub local_cfsketches_source
 
 __DATA__
 
-Help for cfsketch
+Help for cf-sketch
 
 See README.md

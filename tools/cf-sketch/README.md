@@ -1,24 +1,24 @@
-cfsketch: Pug edition (sketch layout and activation RFC)
+cf-sketch: Hound edition (sketch layout and activation RFC)
 ==========
 
-Welcome to cfsketch.  The flexibility of awk, the power of sed, the appeal of dd... wait that's wrong.
+Welcome to cf-sketch.  The flexibility of awk, the power of sed, the appeal of dd... wait that's wrong.
 
-Welcome to cfsketch.  A new world awaits you, citizen... wait that's wrong too, that's phase 2.  Shhh.
+Welcome to cf-sketch.  A new world awaits you, citizen... wait that's wrong too, that's phase 2.  Shhh.
 
-Welcome to cfsketch!  This is a "sortoff" tool: "sortoff like CPAN, sortoff like a package manager..."
+Welcome to cf-sketch!  This is a "sortoff" tool: "sortoff like CPAN, sortoff like a package manager..."
 
 The goal is to make Design Center sketches easy to install and manage.  So, let's talk about the terminology.
 
 Definitions
 ----------
 
-cfsketch repository: a directory hierarchy with sketches in it, local or remote.
+cf-sketch repository: a directory hierarchy with sketches in it, local or remote.
 
 parameters: data external to cfengine and the sketch, which is used to configure the sketch.  If bundles were functions, parameters would be their... ummm... parameters.  Right.
 
 parameter metadata: a way for the sketch to declare that it uses certain parameters.
 
-sketch entry point and entry bundle: the single way to run a sketch externally.  The entry point is a file; the entry bundle is a bundle in that file that has parameter metadata.  So basically it's a way for cfsketch to know what to run.
+sketch entry point and entry bundle: the single way to run a sketch externally.  The entry point is a file; the entry bundle is a bundle in that file that has parameter metadata.  So basically it's a way for cf-sketch to know what to run.
 
 sketch installation: this is how sketches are installed in a repository.
 
@@ -37,11 +37,11 @@ Below, if you don't specify --repolist, it defaults to a single URL (so you can'
 
 List all the sketches in the repo:
 
-    ./cfsketch.pl --repolist=$(REPO) -l all
+    ./cf-sketch.pl --repolist=$(REPO) -l all
 
 Install all the bundles in the current directory (currently one bundle lives under `demo_sketch`) into `$(REPO)`.  Ignore OS and other dependencies with `-f`.
 
-    ./cfsketch.pl --repolist=$(REPO) --install=. -v -f
+    ./cf-sketch.pl --repolist=$(REPO) --install=. -v -f
 
 You can specify the install directory with --install-target=/a/b/c here.
 
@@ -50,33 +50,33 @@ installed in $(REPO), or proceed with parameters and activation.
 
 Activate `Misc::mysketch` (the name of the sketch installed from `demo_sketch`) with params from `./params/mysketch.json`:
 
-    ./cfsketch.pl --repolist=$(REPO) --activate Misc::mysketch --params=./params/mysketch.json -v
+    ./cf-sketch.pl --repolist=$(REPO) --activate Misc::mysketch --params=./params/mysketch.json -v
 
-Admire all the activations, with their data.  Note that the data is brought in *when you activate*.  Also, if you ran things as root, the configuration files will be in `/etc/cfsketch` instead of `~/.cfsketch`.
+Admire all the activations, with their data.  Note that the data is brought in *when you activate*.  Also, if you ran things as root, the configuration files will be in `/etc/cf-sketch` instead of `~/.cf-sketch`.
 
-    ./cfsketch.pl --list-activations
+    ./cf-sketch.pl --list-activations
 
-    /bin/cat ~/.cfsketch/activations.conf
+    /bin/cat ~/.cf-sketch/activations.conf
 
 Deactivate a sketch:
 
-    ./cfsketch.pl --deactivate Misc::mysketch --params=./params/mysketch.json
+    ./cf-sketch.pl --deactivate Misc::mysketch --params=./params/mysketch.json
 
 Deactivate all the activations of a sketch:
 
-    ./cfsketch.pl --deactivate Misc::mysketch --params=all
+    ./cf-sketch.pl --deactivate Misc::mysketch --params=all
 
 Deactivate all the activations of all sketches:
 
-    ./cfsketch.pl --deactivate all
+    ./cf-sketch.pl --deactivate all
 
 Remove (uninstall) a sketch:
 
-    ./cfsketch.pl --remove Misc::mysketch
+    ./cf-sketch.pl --remove Misc::mysketch
 
 Generate the runfile for all the activations, currently this will just go into `runme.cf`.
 
-    ./cfsketch.pl --repolist=$(REPO) --generate -v
+    ./cf-sketch.pl --repolist=$(REPO) --generate -v
 
 Look at `runme.cf` and you'll see how it sets up activations and policies.
     
@@ -121,9 +121,9 @@ Next comes the metadata.  Simply, it says what the sketch is called (this will b
 
 The dependencies can be _cfengine_ and _copbl_ fof the CFEngine and COPBL versions respectively; _os_ for the OS type; or any other sketch with a specific version, if needed.
 
-Finally comes the `entry_point` and `interface`.  Those two say to cfsketch "look in `main.cf` for the main entry bundle and the metadata that defines its interface; and to run the bundle you need just `main.cf`"  You can set entry_point to null, in which case cfsketch knows your sketch doesn't have an entry point (it's just a library like COPBL or the Yale promise library).  The `interface` has to be a valid list of files from the manifest, though.  The `interface` files can include other files, but they are the bare minimum required to run your sketch.  The included "copbl" sketch demonstrates this.
+Finally comes the `entry_point` and `interface`.  Those two say to cf-sketch "look in `main.cf` for the main entry bundle and the metadata that defines its interface; and to run the bundle you need just `main.cf`"  You can set entry_point to null, in which case cf-sketch knows your sketch doesn't have an entry point (it's just a library like COPBL or the Yale promise library).  The `interface` has to be a valid list of files from the manifest, though.  The `interface` files can include other files, but they are the bare minimum required to run your sketch.  The included "copbl" sketch demonstrates this.
 
-`main.cf` is your normal every day CFEngine configuration file, except that it has to contain two special bundles (this will almost certainly change as cfsketch integrates more tightly with cfengine metadata).  Here's an example: 
+`main.cf` is your normal every day CFEngine configuration file, except that it has to contain two special bundles (this will almost certainly change as cf-sketch integrates more tightly with cfengine metadata).  Here's an example: 
 
     bundle agent mysketch_main_bundle(prefix)
     {
@@ -156,7 +156,7 @@ Generated file with magic dragons and pixies, AKA runme.cf
 
 `runme.cf` is a generated file that calls all the activated sketches with their parameters.
 
-In addition to the declared parameters, which see above, cfsketch will also force-feed your sketch some more metadata.  You can then use `$($(prefix)PARAMETER)` to use that metadata.  Specifically:
+In addition to the declared parameters, which see above, cf-sketch will also force-feed your sketch some more metadata.  You can then use `$($(prefix)PARAMETER)` to use that metadata.  Specifically:
 
 * `bundle_home`: the directory where the bundle was installed.  You should be able to obtain that with `dirname("$(this.promise_filename)")` but due to bug 718 in the Community Edition of CFEngine, you'll have to use this instead for now.
 
@@ -188,6 +188,3 @@ Lots of things!!!
 
 * automatically render documentation files
 
-* make --install work for local and URL installs, and make search work for possible install sources
-
-* make --search do "grep WORD cfsketches"
