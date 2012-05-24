@@ -3,7 +3,7 @@ body common control {
     bundlesequence => { "main",};
 
     inputs => {
-                "../../external_tools/cfsketch/copbl/cfengine_stdlib.cf",
+                "../../libraries/copbl/cfengine_stdlib.cf",
                 "./main.cf",
               };
 }
@@ -11,68 +11,103 @@ body common control {
 bundle agent main {
 vars:
     "check_dummy_OK_plugin_name" string => "check_dummy";
-    "check_dummy_OK_args" string => "0 Test ok";
-    "check_dummy_OK_usebundle" string => "handler_";
+    "check_dummy_OK_args" string => "0 Test_OK";
+    "check_dummy_OK_usebundle_if_ok" string => "handler_ok";
+    "check_dummy_OK_bundle_home" string => "/home/cmdln/src/github/nickanderson/design-center/utilities/nagios_plugin_agent";
+    "check_dummy_OK_plugin_path" string => "/usr/lib/nagios/plugins/";
+    "check_dummy_OK_execution_context" string => "any";
 
-# the rest left as an exercise for Nick ;)
-
-    # #  cf-agent -D superdupermop -KIf ./test.cf
-    # # this reports even when not run but it shouldnt
-    # # Maybe I am doing something wrong, maybe isvariable doesn't work with module set variables
-    # "check[check_dummy_DONTRUN][plugin_name]" string => "check_dummy";
-    # "check[check_dummy_DONTRUN][args]" string => "0 Test ok";
-    # "check[check_dummy_DONTRUN][_usebundle_if_ok]" string => "bundleifok";
-    # "check[check_dummy_DONTRUN][_execution_context]" string => "superdupermop";
+    "check_dummy_NOTOK_plugin_name" string => "check_dummy";
+    "check_dummy_NOTOK_args" string => "1 Test_NOTOK";
+    "check_dummy_NOTOK_usebundle_not_ok" string => "handler_not_ok";
+    "check_dummy_NOTOK_bundle_home" string => "/home/cmdln/src/github/nickanderson/design-center/utilities/nagios_plugin_agent";
+    "check_dummy_NOTOK_plugin_path" string => "/usr/lib/nagios/plugins/";
+    "check_dummy_NOTOK_execution_context" string => "any";
 
 
-    # "check[check_dummy_WARN][plugin_name]" string => "check_dummy";
-    # "check[check_dummy_WARN][args]" string => "1 Test warn";
-    # "check[check_dummy_WARN][_usebundle_if_warning]" string => "bundleifwarn";
+    # This check should not execute under normal circumstances (since superdupermop is not a defined class/context)
+    # to see it execute try the below invokation to define the superdupermop class
+    #  cf-agent -D superdupermop -KIf ./test.cf
+    "check_dummy_DONTRUN_plugin_name" string => "check_dummy";
+    "check_dummy_DONTRUN_args" string => "1 Test_DONTRUN";
+    "check_dummy_DONTRUN_usebundle_if_warning" string => "handler_warning";
+    "check_dummy_DONTRUN_bundle_home" string => "/home/cmdln/src/github/nickanderson/design-center/utilities/nagios_plugin_agent";
+    "check_dummy_DONTRUN_plugin_path" string => "/usr/lib/nagios/plugins/";
+    "check_dummy_DONTRUN_execution_context" string => "superdupermop";
 
-    # "check[check_dummy_CRIT][plugin_name]" string => "check_dummy";
-    # "check[check_dummy_CRIT][args]" string => "2 Test critical";
-    # "check[check_dummy_CRIT][_usebundle_if_critical]" string => "bundleifcritical";
+    "check_dummy_WARNING_plugin_name" string => "check_dummy";
+    "check_dummy_WARNING_args" string => "1 Test_WARNING";
+    "check_dummy_WARNING_usebundle_if_warning" string => "handler_warning";
+    "check_dummy_WARNING_bundle_home" string => "/home/cmdln/src/github/nickanderson/design-center/utilities/nagios_plugin_agent";
+    "check_dummy_WARNING_plugin_path" string => "/usr/lib/nagios/plugins/";
+    "check_dummy_WARNING_execution_context" string => "any";
 
-    # "check[check_dummy_UNKNOWN][plugin_name]" string => "check_dummy";
-    # "check[check_dummy_UNKNOWN][args]" string => "3 Test unknown";
-    # "check[check_dummy_UNKNOWN][_usebundle_if_critical]" string => "bundleifunknown";
+    "check_dummy_CRITICAL_plugin_name" string => "check_dummy";
+    "check_dummy_CRITICAL_args" string => "1 Test_CRITICAL";
+    "check_dummy_CRITICAL_usebundle_if_critical" string => "handler_critical";
+    "check_dummy_CRITICAL_bundle_home" string => "/home/cmdln/src/github/nickanderson/design-center/utilities/nagios_plugin_agent";
+    "check_dummy_CRITICAL_plugin_path" string => "/usr/lib/nagios/plugins/";
+    "check_dummy_CRITICAL_execution_context" string => "any";
 
-    # "check[check_dummy_PROTOERROR][plugin_name]" string => "check_dummy";
-    # "check[check_dummy_PROTOERROR][args]" string => "4 Test protocal error";
-    # "check[check_dummy_PROTOERROR][_usebundle_if_protocol_error]" string => "bundleifprotoerror";
+    "check_dummy_UNKNOWN_plugin_name" string => "check_dummy";
+    "check_dummy_UNKNOWN_args" string => "1 Test_UNKNOWN";
+    "check_dummy_UNKNOWN_usebundle_if_unknown" string => "handler_unknown";
+    "check_dummy_UNKNOWN_bundle_home" string => "/home/cmdln/src/github/nickanderson/design-center/utilities/nagios_plugin_agent";
+    "check_dummy_UNKNOWN_plugin_path" string => "/usr/lib/nagios/plugins/";
+    "check_dummy_UNKNOWN_execution_context" string => "any";
+
+    "check_dummy_PROTOCOL_ERROR_plugin_name" string => "check_dummy";
+    "check_dummy_PROTOCOL_ERROR_args" string => "1 Test_PROTOCOL_ERROR";
+    "check_dummy_PROTOCOL_ERROR_usebundle_if_protocol_error" string => "handler_protocol_error";
+    "check_dummy_PROTOCOL_ERROR_bundle_home" string => "/home/cmdln/src/github/nickanderson/design-center/utilities/nagios_plugin_agent";
+    "check_dummy_PROTOCOL_ERROR_plugin_path" string => "/usr/lib/nagios/plugins/";
+    "check_dummy_PROTOCOL_ERROR_execution_context" string => "any";
 
 methods:
+    "any" usebundle => nagios_plugin_agent("main.check_dummy_NOTOK_");
     "any" usebundle => nagios_plugin_agent("main.check_dummy_OK_");
+    "any" usebundle => nagios_plugin_agent("main.check_dummy_DONTRUN_");
+    "any" usebundle => nagios_plugin_agent("main.check_dummy_WARNING_");
+    "any" usebundle => nagios_plugin_agent("main.check_dummy_CRITICAL_");
+    "any" usebundle => nagios_plugin_agent("main.check_dummy_UNKNOWN_");
+    "any" usebundle => nagios_plugin_agent("main.check_dummy_PROTOCOL_ERROR_");
 }
 
 bundle agent handler_ok{
 reports:
     cfengine::
-        "THE CHECK WAS OK THIS IS FROM THE CALLED BUNDLE";
+        "Check called handler_ok";
+}
+
+bundle agent handler_not_ok{
+reports:
+    cfengine::
+        "Check called handler_not_ok";
 }
 
 
-bundle agent handler_warn{
+
+bundle agent handler_warning{
 reports:
     cfengine::
-        "THE CHECK WAS in WARNING  THIS IS FROM THE CALLED BUNDLE";
+        "Check called handler_warning";
 }
 
 bundle agent handler_critical{
 reports:
     cfengine::
-        "THE CHECK WAS in CRITICAL  THIS IS FROM THE CALLED BUNDLE";
+        "Check called handler_critical";
 }
 
 bundle agent handler_unknown{
 reports:
     cfengine::
-        "THE CHECK WAS in UNKNOWN  THIS IS FROM THE CALLED BUNDLE";
+        "Check called handler_unknown";
 }
 
-bundle agent handler_protoerror{
+bundle agent handler_protocol_error{
 reports:
     cfengine::
-        "THE CHECK WAS in PROTOCOL ERROR  THIS IS FROM THE CALLED BUNDLE";
+        "Check called handler_protocol_error";
 }
 
