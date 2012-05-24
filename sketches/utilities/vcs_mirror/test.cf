@@ -2,7 +2,7 @@ body common control {
 
     bundlesequence => {"main",};
     inputs => {
-                "../../external_tools/cfsketch/copbl/cfengine_stdlib.cf",
+                "../../tools/cf-sketch/copbl/cfengine_stdlib.cf",
                 "./main.cf",
               };
 }
