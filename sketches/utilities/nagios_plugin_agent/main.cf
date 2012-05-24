@@ -123,7 +123,7 @@ bundle agent meta_nagios_plugin_agent
       # this can't be determined from within the bundle due to:
       # https://cfengine.com/bugtracker/view.php?id=718
       "optional_argument[bundle_home]" string => "string";
-      # this default will probably be incorrect, either use cfsketch --generate
+      # this default will probably be incorrect, either use cf-sketch.pl --generate
       # or supply it yourself
       "default[bundle_home]"           string => dirname("$(this.promise_filename)");
 
