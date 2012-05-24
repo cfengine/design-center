@@ -58,6 +58,7 @@ my %options =
   'install-target' => undef,
   'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
   'make-package' => [],
+  cfhome => '/var/cfengine/bin',
   runfile => undef,
  );
 
@@ -67,6 +68,7 @@ my @options_spec =
   "help!",
   "verbose|v!",
   "force|f!",
+  "cfhome=s",
   "configfile|cf=s",
   "runfile|rf=s",
   "params|p=s",
@@ -105,7 +107,7 @@ my $happy_root = -e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterf
 my $required_version = '3.3.0';
 my $version = cfengine_version();
 
-if ($required_version gt $version)
+if (!$options{force} && $required_version gt $version)
 {
  die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
 }
@@ -220,6 +222,7 @@ sub configure_self
 
  my %keys = (
              repolist => 1,             # array
+             cfhome   => 0,             # string
             );
 
  my %config;
@@ -1450,7 +1453,7 @@ sub remove_dir
 
 sub cfengine_version
 {
- my $cfv = `cf-promises -V`; # TODO: get this from cfengine?
+ my $cfv = `$options{cfhome}/cf-promises -V`; # TODO: get this from cfengine?
  if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
  {
   return $1;
