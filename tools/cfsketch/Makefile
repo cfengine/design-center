@@ -3,7 +3,7 @@ REPO:=/var/tmp/cfsketch
 test-defaults:
 	./cfsketch.pl --deactivate all
 	./cfsketch.pl --install VCS::vcs_mirror --install Monitoring::nagios_plugin_agent
-	./cfsketch.pl --activate VCS::vcs_mirror --params=../../utilities/vcs_mirror/params/cfengine-copbl.json
+	./cfsketch.pl --activate VCS::vcs_mirror --params=../../sketches/utilities/vcs_mirror/params/cfengine-copbl.json
 	./cfsketch.pl --generate -v
 	(test -f /var/cfengine/inputs/cfsketch-runfile.cf && cf-agent -I -K -f /var/cfengine/inputs/cfsketch-runfile.cf) || cf-agent -I -K -f /var/cfengine/masterfiles/cfsketch-runfile.cf
 
