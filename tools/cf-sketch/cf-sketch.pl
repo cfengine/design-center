@@ -190,7 +190,7 @@ if (scalar @{$options{'make-package'}})
 
 if ($options{'list-activations'})
 {
- my $activations = load_json($options{'act-file'});
+ my $activations = load_json($options{'act-file'}, 1);
  die "Can't load any activations from $options{'act-file'}"
   unless defined $activations && ref $activations eq 'HASH';
  foreach my $sketch (sort keys %$activations)
@@ -388,7 +388,7 @@ sub list_internal
 sub generate
 {
    # activation successful, now install it
-   my $activations = load_json($options{'act-file'});
+   my $activations = load_json($options{'act-file'}, 1);
    die "Can't load any activations from $options{'act-file'}"
     unless defined $activations && ref $activations eq 'HASH';
 
@@ -653,7 +653,7 @@ sub activate
    }
 
    # activation successful, now install it
-   my $activations = load_json($options{'act-file'});
+   my $activations = load_json($options{'act-file'}, 1);
 
    if (exists $activations->{$sketch}->{$options{params}})
    {
@@ -702,7 +702,7 @@ sub deactivate
 
  $all = 1 if ($options{params} && $options{params} eq 'all');
 
- my $activations = load_json($options{'act-file'});
+ my $activations = load_json($options{'act-file'}, 1);
 
  if ($all_sketches)
  {
@@ -1398,6 +1398,7 @@ sub load_json
 {
  # TODO: improve this
  my $f = shift @_;
+ my $local_quiet = shift @_;
 
  my @j;
 
@@ -1406,7 +1407,7 @@ sub load_json
   my $j;
   unless (open($j, '<', $f) && $j)
   {
-   warn "Could not inspect $f: $!" unless $quiet;
+   warn "Could not inspect $f: $!" unless ($quiet || $local_quiet);
    return;
   }
 
