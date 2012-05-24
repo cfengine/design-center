@@ -56,7 +56,7 @@ my %options =
   'act-file'   => $> == 0 ? '/etc/cfsketch/activations.conf' : glob('~/.cfsketch/activations.conf'),
   configfile => $> == 0 ? '/etc/cfsketch/cfsketch.conf' : glob('~/.cfsketch/cfsketch.conf'),
   'install-target' => undef,
-  'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/tzz/design-center/master/cfsketches',
+  'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
   'make-package' => [],
   runfile => undef,
  );
