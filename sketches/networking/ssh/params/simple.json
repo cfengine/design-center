@@ -1,0 +1,8 @@
+{
+  "keys":   [ "Protocol", "X11Forwarding", "UseDNS" ],
+  "values": [ "2",        "yes",           "no" ],
+
+  "hosts": [],
+  "by_host_keys": [],
+  "by_host_values": [],
+}
