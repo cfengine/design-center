@@ -1,3 +1,6 @@
+nagios_plugin_agent 1.04
+  * re-impliment defaults for manual usage
+
 nagios_plugin_agent 1.03
   * fix plugin after reworking to cfsketch
   * add new usebundle_not_ok option to ease a common use case of running
