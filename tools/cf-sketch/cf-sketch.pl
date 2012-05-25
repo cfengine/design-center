@@ -399,7 +399,6 @@ sub generate
    my $run_template = get_run_template();
 
    my $template = Template->new({
-                                 INCLUDE_PATH => [dirname($run_template), dirname($0)],
                                  INTERPOLATE  => 1,
                                  EVAL_PERL    => 1,
                                 });
@@ -600,7 +599,7 @@ sub generate
 
    my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
 
-   $template->process(basename($run_template),
+   $template->process(\$run_template,
                       {
                        activations => $template_activations,
                        inputs => $includes,
@@ -1557,14 +1556,7 @@ sub local_cfsketches_source
 
 sub get_run_template
 {
-  my $path = "$configdir/runfile.tmpl";
-  return $path if -f $path;
-  # If it doesn't exist, we need to create it
-  print "Writing default template file to $path\n" if $verbose;
-  ensure_dir($configdir);
-  open(my $cfh, '>', $path)
-    or die "Could not write template file $path: $!";
-  print $cfh <<'EOT';
+ return <<'EOT';
 body common control
 {
       bundlesequence => { "cfsketch_g", "cfsketch_run" };
@@ -1607,8 +1599,6 @@ bundle agent cfsketch_run
 [% END %]
 }
 EOT
-  close $cfh;
-  return $path;
 }
 
 # sub read_key
