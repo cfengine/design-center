@@ -1559,7 +1559,7 @@ sub get_run_template
  return <<'EOT';
 body common control
 {
-      bundlesequence => { "cfsketch_g", "cfsketch_run" };
+      bundlesequence => { "cfsketch_run" };
       inputs => { $inputs };
 }
 
@@ -1593,6 +1593,7 @@ bundle common cfsketch_g
 bundle agent cfsketch_run
 {
   methods:
+      "cfsketch_g" usebundle => "cfsketch_g";
 [% FOREACH activation IN activations.keys.sort %]
     _${activation}_${activations.$activation.prefix}__activated::
       "$activation ${activations.$activation.sketch} ${activations.$activation.params}" usebundle => ${activations.$activation.entry_bundle}("cfsketch_g._${activation}_${activations.$activation.prefix}__");
