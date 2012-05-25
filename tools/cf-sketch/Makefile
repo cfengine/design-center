@@ -1,4 +1,8 @@
 REPO:=/var/tmp/cfsketch
+DST:=/usr/local/bin
+
+install:
+	/usr/bin/install cf-sketch.pl /usr/local/bin/cf-sketch
 
 test-defaults:
 	./cf-sketch.pl --deactivate all
