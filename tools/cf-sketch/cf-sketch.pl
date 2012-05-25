@@ -476,8 +476,11 @@ sub generate
 
        my %leftovers = %{$data->{manifest}};
        delete $leftovers{$_} foreach (@{$pdata->{sketch_manifest_cf}}, @{$pdata->{sketch_manifest_docs}});
-       $varlist->{sketch_manifest_extra} = 'slist';
-       $pdata->{sketch_manifest_extra} = [ sort keys %leftovers ];
+       if (scalar keys %leftovers)
+       {
+        $varlist->{sketch_manifest_extra} = 'slist';
+        $pdata->{sketch_manifest_extra} = [ sort keys %leftovers ];
+       }
 
        $varlist->{sketch_authors} = 'slist';
        $pdata->{sketch_authors} = [ sort @{$data->{metadata}->{authors}} ];
@@ -1287,7 +1290,7 @@ sub verify_entry_point
                   \s+
                   string
                   \s+=>\s+
-                  "(context|string|slist)"\s*;/x)
+                  "(context|string|slist|array)"\s*;/x)
    {
     $meta->{optional_varlist}->{$1} = $2;
    }
@@ -1324,7 +1327,7 @@ sub verify_entry_point
                   \s+
                   (string)
                   \s+=>\s+
-                  (.*)\s*;/x &&
+                  \"(.*)\"\s*;/x &&
       (exists $meta->{optional_varlist}->{$1} ||
        exists $meta->{varlist}->{$1} &&
        $meta->{varlist}->{$1} eq 'array'))
