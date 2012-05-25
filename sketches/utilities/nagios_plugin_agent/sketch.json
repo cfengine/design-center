@@ -2,7 +2,7 @@
 
     "manifest":
     {
-        "main.cf": { "desc": "main file", "version": 1.03 },
+        "main.cf": { "desc": "main file", "version": 1.04 },
         "README.md": { "documentation": true },
         "modules/nagios_plugin_wrapper": { "desc": "plugin wrapper" },
         "params/check_dummy_OK.json": { "comment": "Sample parameters to do a dummy OK check" },
@@ -11,7 +11,7 @@
     "metadata":
     {
         "name": "Monitoring::nagios_plugin_agent",
-        "version": 1.03,
+        "version": 1.04,
         "authors": [ "Robert Carleton <rbc@rbcarleton.com>", "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.2.1" }, "os": [ "linux" ] },
     },
