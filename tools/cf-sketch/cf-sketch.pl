@@ -396,10 +396,10 @@ sub generate
     unless defined $activations && ref $activations eq 'HASH';
 
    # maybe make the run template configurable?
-   my $run_template = 'run.tmpl';
+   my $run_template = get_run_template();
 
    my $template = Template->new({
-                                 INCLUDE_PATH => dirname($0),
+                                 INCLUDE_PATH => [dirname($run_template), dirname($0)],
                                  INTERPOLATE  => 1,
                                  EVAL_PERL    => 1,
                                 });
@@ -558,7 +558,6 @@ sub generate
     die "Could not find sketch $sketch in repo list @{$options{repolist}}";
    }
 
-   my $input = 'run.tmpl';
    my $output = '';
 
    foreach my $repo (@{$options{repolist}})
@@ -587,7 +586,7 @@ sub generate
 
    my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
 
-   $template->process($input,
+   $template->process(basename($run_template),
                       {
                        activations => $template_activations,
                        inputs => $includes,
@@ -1535,6 +1534,62 @@ sub local_cfsketches_source
  my $updir = Cwd::realpath(dirname($dir));
 
  return local_cfsketches_source($updir);
+}
+
+sub get_run_template
+{
+  my $path = "$configdir/runfile.tmpl";
+  return $path if -f $path;
+  # If it doesn't exist, we need to create it
+  print "Writing default template file to $path\n" if $verbose;
+  ensure_dir($configdir);
+  open(my $cfh, '>', $path)
+    or die "Could not write template file $path: $!";
+  print $cfh <<'EOT';
+body common control
+{
+      bundlesequence => { "cfsketch_g", "cfsketch_run" };
+      inputs => { $inputs };
+}
+
+bundle common cfsketch_g
+{
+  classes:
+      # contexts
+[% FOREACH activation IN activations.keys.sort %]
+ [% FOREACH var IN activations.$activation.contexts.keys.sort -%]
+      "_${activation}_$var" expression => "[% UNLESS activations.$activation.contexts.$var.value %]![% END %]any";
+ [% END %]
+[% END %]
+  vars:
+
+[% FOREACH activation IN activations.keys.nsort %]
+      # string and slist variables for ${activation}
+ [% FOREACH var IN activations.$activation.vars.keys.sort -%]
+      "_${activation}_$var" [% activations.$activation.vars.$var.type %] => [% activations.$activation.vars.$var.value %];
+ [% END %]
+
+      # array variables for ${activation}
+ [% FOREACH array_var IN activations.$activation.array_vars.keys.sort %]
+   [% FOREACH array_k IN activations.$activation.array_vars.$array_var.keys -%]
+      "_${activation}_${array_var}[$array_k]" string => "[% activations.$activation.array_vars.$array_var.$array_k %]";
+   [% END %]
+ [% END %]
+
+[% END %]
+}
+
+bundle agent cfsketch_run
+{
+  methods:
+[% FOREACH activation IN activations.keys.sort %]
+    _${activation}_${activations.$activation.prefix}__activated::
+      "$activation ${activations.$activation.sketch} ${activations.$activation.params}" usebundle => ${activations.$activation.entry_bundle}("cfsketch_g._${activation}_${activations.$activation.prefix}__");
+[% END %]
+}
+EOT
+  close $cfh;
+  return $path;
 }
 
 # sub read_key
