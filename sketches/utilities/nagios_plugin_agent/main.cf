@@ -1,6 +1,5 @@
 bundle agent nagios_plugin_agent(prefix)
 {
-  # TODO: get defaults from meta bundle, I think this will necisitate forcing commands to not run on first pass
   # TODO: get module from policyhub, determine best way to do this
   # 
   # expects prefix (variable prefix namespace from calling bundle), this is cfsketch-style
@@ -20,6 +19,48 @@ bundle agent nagios_plugin_agent(prefix)
   vars:
       "canon_prefix" string => canonify("$(prefix)");
       "nagios_plugin_wrapper" string => "$($(prefix)bundle_home)/modules/nagios_plugin_wrapper";
+
+      # Copy in non optional or defaulted parameters
+      "conf_plugin_name" string => "$($(prefix)plugin_name)";
+      "conf_args" string => "$($(prefix)args)";
+
+      # Copy in defaulted parameters
+      "conf_bundle_home" string => "$(meta_nagios_plugin_agent.default[bundle_home])",
+        policy => "free",
+        ifvarclass => "!$(canon_prefix)param_bundle_home_defined";
+
+      "conf_if_elapsed" string => "$(meta_nagios_plugin_agent.default[if_elapsed])",
+        policy => "free",
+        ifvarclass => "!$(canon_prefix)param_if_elapsed_defined";
+
+      "conf_execution_context" string => "$(meta_nagios_plugin_agent.default[execution_context])",
+        policy => "free",
+        ifvarclass => "!$(canon_prefix)param_execution_context_defined";
+
+      "conf_plugin_path" string => "$(meta_nagios_plugin_agent.default[plugin_path])",
+        policy => "free",
+        ifvarclass => "!$(canon_prefix)param_plugin_path_defined";
+
+
+      # Copy over the defaults if parameters are defined
+      "conf_bundle_home" string => "$($(prefix)bundle_home)",
+        policy => "free",
+        ifvarclass => "$(canon_prefix)param_bundle_home_defined";
+
+      "conf_execution_context" string => "$($(prefix)execution_context)",
+        policy => "free",
+        ifvarclass => "$(canon_prefix)param_execution_context_defined";
+
+      "conf_if_elapsed" string => "$($(prefix)if_elapsed)",
+        policy => "free",
+        ifvarclass => "$(canon_prefix)param_if_elapsed_defined";
+
+      "conf_plugin_path" string => "$($(prefix)plugin_path)",
+        policy => "free",
+        ifvarclass => "$(canon_prefix)param_plugin_path_defined";
+
+
+
 
   classes:
       # Define a generic alert class if check was not OK
@@ -45,6 +86,21 @@ bundle agent nagios_plugin_agent(prefix)
       #            # I am thinking depending on a remote copy is both expensive and brittle, perhaps its best to inline the script, its not long
       #            copy_from => remote_cp("$(sys.workdir)/inputs/sketches/nagios-plugin-agent/modules/nagios_plugin_wrapper", "$(sys.policy_hub)");
 
+    # Check which defaulted parameters will be overridden
+
+    "$(canon_prefix)param_bundle_home_defined"
+        expression => isvariable("$(prefix)bundle_home");
+
+    "$(canon_prefix)param_execution_context_defined"
+        expression => isvariable("$(prefix)execution_context");
+
+    "$(canon_prefix)param_if_elapsed_defined"
+        expression => isvariable("$(prefix)if_elapsed");
+
+    "$(canon_prefix)param_plugin_path_defined"
+        expression => isvariable("$(prefix)plugin_path");
+
+
     "$(canon_prefix)usebundle_if_ok_defined"
         expression => isvariable("$(prefix)usebundle_if_ok");
     "$(canon_prefix)usebundle_if_warning_defined"
@@ -61,47 +117,75 @@ bundle agent nagios_plugin_agent(prefix)
     "$(canon_prefix)has_output"
         expression => isvariable("nagios_plugin_wrapper.$(canon_prefix)_output");
 
+    "second_class_pass_done" or => {"first_class_pass_done"};
+    "first_class_pass_done" or => {"any"};
+
   commands:
+    second_class_pass_done::
       # This is kind of hard to read, its "plugin_wrapper handle path/plugin args"
       "$(nagios_plugin_wrapper)"
-      args        => "$(canon_prefix) $($(prefix)plugin_path)/$($(prefix)plugin_name) $($(prefix)args)",
-      module     => "true",
-      action     => if_elapsed("$($(prefix)if_elapsed)"),
-      handle     => "nagios_plugin_agent_commands_nagios_plugin_wrapper_$(canon_prefix)",
-      depends_on => { "nagios_plugin_agent_files_nagios_plugin_wrapper" }, # ???
-      ifvarclass => "$($(prefix)execution_context)";
+          args        => "$(canon_prefix) $(conf_plugin_path)/$(conf_plugin_name) $(conf_args)",
+          module     => "true",
+          action     => if_elapsed("$(conf_if_elapsed)"),
+          handle     => "nagios_plugin_agent_commands_nagios_plugin_wrapper_$(canon_prefix)",
+          depends_on => { "nagios_plugin_agent_files_nagios_plugin_wrapper" }, # ???
+          ifvarclass => "$(conf_execution_context)";
 
   methods:
       # Here we call bundles if requested on specific check status
-      "ok" usebundle => "$($(prefix)usebundle_if_ok)",
-      ifvarclass => "$(canon_prefix)usebundle_if_ok_defined.nagios_plugin_$(canon_prefix)_ok";
+      "ok" 
+        usebundle => "$($(prefix)usebundle_if_ok)",
+        ifvarclass => "$(canon_prefix)usebundle_if_ok_defined.nagios_plugin_$(canon_prefix)_ok";
 
-      "warning" usebundle => "$($(prefix)usebundle_if_warning)",
-      ifvarclass => "$(canon_prefix)usebundle_if_warning_defined.nagios_plugin_$(canon_prefix)_warning";
+      "warning" 
+        usebundle => "$($(prefix)usebundle_if_warning)",
+        ifvarclass => "$(canon_prefix)usebundle_if_warning_defined.nagios_plugin_$(canon_prefix)_warning";
 
-      "critical" usebundle => "$($(prefix)usebundle_if_critical)",
-      ifvarclass => "$(canon_prefix)usebundle_if_critical_defined.nagios_plugin_$(canon_prefix)_critical";
+      "critical" 
+        usebundle => "$($(prefix)usebundle_if_critical)",
+        ifvarclass => "$(canon_prefix)usebundle_if_critical_defined.nagios_plugin_$(canon_prefix)_critical";
 
-      "unknown" usebundle => "$($(prefix)usebundle_if_unknown)",
-      ifvarclass => "$(canon_prefix)usebundle_if_unknown_defined.nagios_plugin_$(canon_prefix)_unknown";
+      "unknown"
+        usebundle => "$($(prefix)usebundle_if_unknown)",
+        ifvarclass => "$(canon_prefix)usebundle_if_unknown_defined.nagios_plugin_$(canon_prefix)_unknown";
 
-      "protocol_error" usebundle => "$($(prefix)usebundle_if_protocol_error)",
-      ifvarclass => "$(canon_prefix)usebundle_if_protocol_error_defined.nagios_plugin_$(canon_prefix)_protocol_error";
+      "protocol_error"
+        usebundle => "$($(prefix)usebundle_if_protocol_error)",
+        ifvarclass => "$(canon_prefix)usebundle_if_protocol_error_defined.nagios_plugin_$(canon_prefix)_protocol_error";
 
-      "not_ok" usebundle => "$($(prefix)usebundle_not_ok)",
-      ifvarclass => "$(canon_prefix)usebundle_not_ok_defined.nagios_alert";
+      "not_ok"
+        usebundle => "$($(prefix)usebundle_not_ok)",
+        ifvarclass => "$(canon_prefix)usebundle_not_ok_defined.nagios_alert";
 
   reports:
     nagios_alert::
-      "Nagios plugin $($(prefix)plugin_name) with on $(sys.host) reports '$(nagios_plugin_wrapper.$(canon_prefix)_output)' on $(sys.date)",
+      "Nagios plugin $(conf_plugin_name) with on $(sys.host) reports '$(nagios_plugin_wrapper.$(canon_prefix)_output)' on $(sys.date)",
       ifvarclass => "$(canon_prefix)has_output";
 
     verbose_mode|debug::
-      "plugin_name:       $($(prefix)plugin_name)";
-      "plugin_path:       $($(prefix)plugin_path)";
-      "args:              $($(prefix)args)";
-      "if_elapsed:        $($(prefix)if_elapsed)";
-      "execution_context: $($(prefix)execution_context)";
+      # Required Parameters
+      "parameter plugin_name: $(conf_plugin_name)";
+      "parameter args:        $(conf_args)";
+
+      # Default values
+      "default bundle_home:       $(conf_bundle_home)",
+        ifvarclass => "!second_class_pass_done";
+      "default execution_context: $(conf_execution_context)",
+        ifvarclass => "!second_class_pass_done";
+      "default if_elapsed:        $(conf_if_elapsed)",
+        ifvarclass => "!second_class_pass_done";
+      "default plugin_path:       $(conf_plugin_path)",
+        ifvarclass => "!second_class_pass_done";
+
+      # Final values after having opportunity to override defaults with parameters
+      "final bundle_home:       $(conf_bundle_home)",
+        ifvarclass => "second_class_pass_done";
+      "final execution_context: $(conf_execution_context)",
+        ifvarclass => "second_class_pass_done";
+      "final if_elapsed:        $(conf_if_elapsed)",
+        ifvarclass => "second_class_pass_done";
+      "final plugin_path:       $(conf_plugin_path)",
+        ifvarclass => "second_class_pass_done";
 }
 
 bundle agent meta_nagios_plugin_agent
@@ -129,11 +213,16 @@ bundle agent meta_nagios_plugin_agent
 
       # you almost definitely want to override this for x64 vs x86
       "optional_argument[plugin_path]" string => "string";
-      "default[plugin_path]"           string => "/usr/lib64/nagios/plugins";
+     
+      ubuntu::
+        "default[plugin_path]"           string => "/usr/lib/nagios/plugins";
+      !ubuntu.x86_64::
+        "default[plugin_path]"           string => "/usr/lib64/nagios/plugins";
 
-      "optional_argument[execution_context]" string => "string";
-      "default[execution_context]" string => "any";
+      any::
+        "optional_argument[execution_context]" string => "string";
+        "default[execution_context]" string => "any";
 
-      "optional_argument[if_elapsed]" string => "string";
-      "default[if_elapsed]" string => "60";
+        "optional_argument[if_elapsed]" string => "string";
+        "default[if_elapsed]" string => "60";
 }
