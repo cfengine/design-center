@@ -56,24 +56,6 @@
 # The file to edit is determined automatically, but you can manually override it
 # by specifying the parameter _sshd_config_file in the params array.
 
-bundle agent sshd(prefix)
-{
-  methods:
-      "sshd_vars" usebundle => sshd_vars("$(params)");
-      "sshd_cfg"  usebundle => sshd_set_cfg("sshd_vars.conf");
-}
-
-bundle agent meta_sshd
-{
-      "argument[keys]"   string => "slist";
-      "argument[values]" string => "slist";
-
-      "argument[hosts]"  string => "slist";
-      "argument[by_host_keys]"   string => "slist";
-      "argument[by_host_values]" string => "slist";
-
-}
-
 bundle agent sshd_config(params)
 {
   methods:
@@ -167,4 +149,17 @@ bundle agent sshd_set_cfg(params)
         handle => "sshd_restart",
         comment => "Restart sshd if the configuration file was modified",
         contain => in_shell;
+}
+
+bundle agent sshd(prefix)
+{
+  methods:
+      "sshd_vars" usebundle => sshd_vars("$(prefix)params");
+      "sshd_cfg"  usebundle => sshd_set_cfg("sshd_vars.conf");
+}
+
+bundle agent meta_sshd
+{
+  vars:
+      "argument[params]" string => "array";
 }

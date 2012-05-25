@@ -1,8 +1,6 @@
 {
-  "keys":   [ "Protocol", "X11Forwarding", "UseDNS" ],
-  "values": [ "2",        "yes",           "no" ],
-
-  "hosts": [],
-  "by_host_keys": [],
-  "by_host_values": [],
+  "activated": true,
+  "params": { "Protocol" : "2", "X11Forwarding" : "yes", "UseDNS" : "no" },
+  # note how we can do a 2-level array:
+  # "host1][X11Forwarding": "yes"
 }

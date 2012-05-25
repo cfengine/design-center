@@ -1,12 +1,13 @@
 body common control
 {
-      bundlesequence => { "g", "cfsketch_run" };
+      bundlesequence => { "cfsketch_g", "cfsketch_run" };
       inputs => { $inputs };
 }
 
-bundle common g
+bundle common cfsketch_g
 {
   classes:
+      # contexts
 [% FOREACH activation IN activations.keys.sort %]
 
  [% FOREACH var IN activations.$activation.contexts.keys.sort %]
@@ -15,10 +16,19 @@ bundle common g
 
 [% END %]
   vars:
+
+      # string and slist variables
 [% FOREACH activation IN activations.keys.nsort %]
 
  [% FOREACH var IN activations.$activation.vars.keys.sort %]
       "_${activation}_$var" [% activations.$activation.vars.$var.type %] => [% activations.$activation.vars.$var.value %];
+ [% END %]
+
+      # array variables
+ [% FOREACH array_var IN activations.$activation.array_vars.keys.sort %]
+   [% FOREACH array_k IN activations.$activation.array_vars.$array_var.keys %]
+      "_${activation}_${array_var}[$array_k]" string => "[% activations.$activation.array_vars.$array_var.$array_k %]";
+   [% END %]
  [% END %]
 
 [% END %]
@@ -29,6 +39,6 @@ bundle agent cfsketch_run
   methods:
 [% FOREACH activation IN activations.keys.sort %]
     _${activation}_${activations.$activation.prefix}__activated::
-      "$activation ${activations.$activation.sketch} ${activations.$activation.params}" usebundle => ${activations.$activation.entry_bundle}("g._${activation}_${activations.$activation.prefix}__");
+      "$activation ${activations.$activation.sketch} ${activations.$activation.params}" usebundle => ${activations.$activation.entry_bundle}("cfsketch_g._${activation}_${activations.$activation.prefix}__");
 [% END %]
 }

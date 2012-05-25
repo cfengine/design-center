@@ -4,6 +4,7 @@
     {
         "ssh.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
+        "params/simple.json": { },
     },
 
     "metadata":
