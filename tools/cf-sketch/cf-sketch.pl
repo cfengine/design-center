@@ -608,8 +608,8 @@ sub activate
 {
  my $sketch = shift @_;
 
- die "Can't activate sketch $sketch without valid file from --params"
-  unless ($options{params} && -f $options{params});
+ die "Can't activate sketch $sketch without valid file or URL from --params"
+  unless ($options{params} && (-f $options{params} || !is_resource_local($options{params})));
 
  my $installed = 0;
  foreach my $repo (@{$options{repolist}})
@@ -1465,7 +1465,12 @@ sub load_json
    {
     if (dirname($include) eq '.' && ! -f $include)
     {
-     $include = File::Spec->catfile(dirname($f), $include);
+      if (is_resource_local($f)) {
+        $include = File::Spec->catfile(dirname($f), $include);
+      }
+      else {
+        $include = dirname($f)."/$include";
+      }
     }
 
     print "Including $include\n" unless $quiet;
