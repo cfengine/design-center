@@ -1,8 +1,24 @@
 bundle agent mysketch_main_bundle(prefix)
 {
+  vars:
+      "paramkeys" slist => getindices("$(prefix)arrayparams");
+      "extrakeys" slist => getindices("$(prefix)extras");
+      "denied" slist => maplist("$(this)", "$(prefix)hosts_deny");
+      "allowed" slist => maplist("$(this)", "$(prefix)hosts_allow");
+
   reports:
-    cfengine_3::
-      "myint = $($(prefix)myint); mystr = $($(prefix)mystr); os_special_path = $($(prefix)os_special_path); denied host = $($(prefix)hosts_deny)";
+    cfengine::
+      "denied host = $(denied)";
+      "allowed host = $(denied)";
+      "myint = $($(prefix)myint); mystr = $($(prefix)mystr); os_special_path = $($(prefix)os_special_path)";
+      "arrayparams $(paramkeys) = $($(prefix)arrayparams[$(paramkeys)])";
+      "extraparams $(extrakeys) = $($(prefix)extras[$(extrakeys)])";
+
+      # I think the following are bugs in cfengine
+      "bug? denied host = $($(prefix)hosts_deny)";
+      "bug? os_special_path = $($(prefix)os_special_path); denied host = $(denied)";
+      "bug? os_special_path = $($(prefix)os_special_path); denied host = $($(prefix)hosts_deny)";
+      "bug? os_special_path = $($(prefix)os_special_path); allowed host = $($(prefix)hosts_allow)";
 }
 
 bundle agent meta_mysketch_main_bundle

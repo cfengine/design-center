@@ -515,6 +515,11 @@ sub generate
         next if (exists $optional_varlist->{$k} && ! exists $pdata->{$k});
 
         my $v = $pdata->{$k};
+        my $augment_v = $pdata->{"+$k"};
+
+        die "Supplied augment variable for key $k is not an array"
+         if ($augment_v && ref $augment_v ne 'HASH');
+
         my $definition = exists $optional_varlist->{$k} ?
          $entry_point->{optional_varlist}->{$k} :
           $entry_point->{varlist}->{$k};
@@ -530,7 +535,16 @@ sub generate
         }
         elsif ($definition eq 'array')
         {
+         die "Unable to activate: provided value " .
+          $coder->encode($v) . " for key $k is not an array"
+           unless ref $v eq 'HASH';
+
          $activation->{array_vars}->{$cfengine_k} = $v;
+         if ($augment_v)
+         {
+          $activation->{array_vars}->{$cfengine_k}->{$_} = $augment_v->{$_}
+           foreach keys %$augment_v;
+         }
         }
         else
         {
