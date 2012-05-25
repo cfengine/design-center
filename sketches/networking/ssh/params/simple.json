@@ -1,0 +1,6 @@
+{
+  "activated": true,
+  "params": { "Protocol" : "2", "X11Forwarding" : "yes", "UseDNS" : "no" },
+  # note how we can do a 2-level array:
+  # "host1][X11Forwarding": "yes"
+}

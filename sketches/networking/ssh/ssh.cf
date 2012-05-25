@@ -150,3 +150,16 @@ bundle agent sshd_set_cfg(params)
         comment => "Restart sshd if the configuration file was modified",
         contain => in_shell;
 }
+
+bundle agent sshd(prefix)
+{
+  methods:
+      "sshd_vars" usebundle => sshd_vars("$(prefix)params");
+      "sshd_cfg"  usebundle => sshd_set_cfg("sshd_vars.conf");
+}
+
+bundle agent meta_sshd
+{
+  vars:
+      "argument[params]" string => "array";
+}

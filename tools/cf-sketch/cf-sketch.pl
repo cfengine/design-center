@@ -476,8 +476,11 @@ sub generate
 
        my %leftovers = %{$data->{manifest}};
        delete $leftovers{$_} foreach (@{$pdata->{sketch_manifest_cf}}, @{$pdata->{sketch_manifest_docs}});
-       $varlist->{sketch_manifest_extra} = 'slist';
-       $pdata->{sketch_manifest_extra} = [ sort keys %leftovers ];
+       if (scalar keys %leftovers)
+       {
+        $varlist->{sketch_manifest_extra} = 'slist';
+        $pdata->{sketch_manifest_extra} = [ sort keys %leftovers ];
+       }
 
        $varlist->{sketch_authors} = 'slist';
        $pdata->{sketch_authors} = [ sort @{$data->{metadata}->{authors}} ];
@@ -521,6 +524,10 @@ sub generate
         {
          $activation->{vars}->{$cfengine_k}->{value} = '{ ' . join(',', map { "\"$_\"" } @$v) . ' }';
          $activation->{vars}->{$cfengine_k}->{type} = 'slist';
+        }
+        elsif ($definition eq 'array')
+        {
+         $activation->{array_vars}->{$cfengine_k} = $v;
         }
         else
         {
@@ -1261,13 +1268,14 @@ sub verify_entry_point
    # match "argument[foo]" string => "string";
    # or    "argument[bar]" string => "slist";
    # or    "argument[bar]" string => "context";
+   # or    "argument[bar]" string => "array";
    if ($meta->{confirmed} &&
        $line =~ m/^\s*
                   "argument\[([^]]+)\]"
                   \s+
                   string
                   \s+=>\s+
-                  "(context|string|slist)"\s*;/x)
+                  "(context|string|slist|array)"\s*;/x)
    {
     $meta->{varlist}->{$1} = $2;
    }
@@ -1275,13 +1283,14 @@ sub verify_entry_point
    # match "optional_argument[foo]" string => "string";
    # or    "optional_argument[bar]" string => "slist";
    # or    "optional_argument[bar]" string => "context";
+   # or    "optional_argument[bar]" string => "array";
    if ($meta->{confirmed} &&
        $line =~ m/^\s*
                   "optional_argument\[([^]]+)\]"
                   \s+
                   string
                   \s+=>\s+
-                  "(context|string|slist)"\s*;/x)
+                  "(context|string|slist|array)"\s*;/x)
    {
     $meta->{optional_varlist}->{$1} = $2;
    }
@@ -1309,6 +1318,25 @@ sub verify_entry_point
     }
 
     $meta->{default}->{$k} = $v;
+   }
+
+   # match "default[foo][bar]" string => "moo";
+   if ($meta->{confirmed} &&
+       $line =~ m/^\s*
+                  "default\[([^]]+)\]\[([^]]+)\]"
+                  \s+
+                  (string)
+                  \s+=>\s+
+                  \"(.*)\"\s*;/x &&
+      (exists $meta->{optional_varlist}->{$1} ||
+       exists $meta->{varlist}->{$1} &&
+       $meta->{varlist}->{$1} eq 'array'))
+   {
+    my $k = $1;
+    my $array_k = $2;
+    my $array_v = $4;
+
+    $meta->{default}->{$k}->{$array_k} = $array_v;
    }
 
    if ($meta->{confirmed} && $line =~ m/^\s*\}\s*/)

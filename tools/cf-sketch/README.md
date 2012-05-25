@@ -152,6 +152,12 @@ Finally comes the `entry_point` and `interface`.  Those two say to cf-sketch "lo
           "default[os_special_path]"  string => "/no/such/path";
           "default[hosts_allow]"      slist => { "a", "b", "c" };
 
+          # we support array parameters too! 
+          "argument[arrayparams]" string => "array";
+
+          "optional_argument[extras]" string => "array";
+          "default[extras][number1]" string => "123";
+          "default[extras][number2]" string => "456";
     }
 
 The parameter metadata is obviously hacked in right now, and you should expect it to change.  So don't complain about it, you in the back.

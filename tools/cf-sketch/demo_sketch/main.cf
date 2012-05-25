@@ -18,4 +18,10 @@ bundle agent meta_mysketch_main_bundle
 
       "default[os_special_path]"  string => "/no/such/path";
       "default[hosts_allow]"      slist => { "a", "b", "c" };
+
+      "argument[arrayparams]" string => "array";
+
+      "optional_argument[extras]" string => "array";
+      "default[extras][number1]" string => "123";
+      "default[extras][number2]" string => "456";
 }

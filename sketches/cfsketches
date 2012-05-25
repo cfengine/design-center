@@ -1,4 +1,5 @@
 ../tools/cf-sketch/demo_sketch Misc::mysketch
 libraries/copbl CFEngine::stdlib
+networking/ssh Security::SSH
 utilities/nagios_plugin_agent Monitoring::nagios_plugin_agent
 utilities/vcs_mirror VCS::vcs_mirror

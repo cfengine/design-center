@@ -11,7 +11,7 @@ test-defaults:
 
 test: prep
 	./cf-sketch.pl --deactivate all
-	./cf-sketch.pl --repolist=$(REPO) --install=Misc::mysketch -v -f
+	./cf-sketch.pl --install-target=$(REPO) --install=Misc::mysketch -v -f
 	./cf-sketch.pl --repolist=$(REPO) --activate Misc::mysketch --params=./params/mysketch.json -v -f
 	./cf-sketch.pl --repolist=$(REPO) --generate -v --runfile ./runme.cf
 	cat runme.cf
