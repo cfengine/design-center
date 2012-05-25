@@ -46,6 +46,9 @@ use constant SKETCH_DEF_FILE => 'sketch.json';
 
 $| = 1;                         # autoflush
 
+# Configuration directory depending on root/non-root
+my $configdir = $> == 0 ? '/etc/cf-sketch' : glob('~/.cf-sketch');
+
 my %options =
  (
   verbose    => 0,
@@ -53,8 +56,8 @@ my %options =
   help       => 0,
   force      => 0,
   # switched depending on root or non-root
-  'act-file'   => $> == 0 ? '/etc/cf-sketch/activations.conf' : glob('~/.cf-sketch/activations.conf'),
-  configfile => $> == 0 ? '/etc/cf-sketch/cf-sketch.conf' : glob('~/.cf-sketch/cf-sketch.conf'),
+  'act-file'   => "$configdir/activations.conf",
+  configfile => "$configdir/cf-sketch.conf",
   'install-target' => undef,
   'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
   'make-package' => [],
@@ -102,7 +105,7 @@ if ($options{help})
  exit;
 }
 
-my $happy_root = -e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs';
+my $happy_root = $> != 0 ? glob("~/.cfagent/inputs") : (-e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs');
 
 my $required_version = '3.3.0';
 my $version = cfengine_version();
