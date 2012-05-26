@@ -1,0 +1,20 @@
+{
+
+    "manifest":
+    {
+        "main.cf": { "desc": "main file", "version": 1.01 },
+        "README.md": { "documentation": true },
+        "params/US_Central.json": { "comment": "Sample parameters to set timezone to US Central" },
+    },
+
+    "metadata":
+    {
+        "name": "System::tzconfig",
+        "version": 1.01,
+        "authors": [ "Nick Anderson <nick@cmdln.org>", ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.2.1" }, "os": [ "linux" ] },
+    },
+
+    "entry_point": "main.cf",
+    "interface": [ "main.cf" ]
+}
