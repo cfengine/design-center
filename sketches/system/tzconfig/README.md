@@ -28,14 +28,17 @@ linux
     bundle agent main {
 
 
+        vars:
+            "tzconfig1_timezone" string => "America/Denverdd";
+            "tzconfig2_timezone" string => "America/Chicago";
 
         methods:
             "timezone" 
-                usebundle => tzconfig("America/Denverdd"),
+                usebundle => tzconfig("main.tzconfig1_"),
                 comment => "This timezone is invalid";
 
             "timezone"
-                usebundle => tzconfig("America/Chicago"),
+                usebundle => tzconfig("main.tzconfig2_"),
                 comment   => "This is a valid timezone";
 
     }
