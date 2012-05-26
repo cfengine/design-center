@@ -1,0 +1,3 @@
+tzconfig 1.01
+  * Change to cf-sketch parameter format
+  * make zoneinfo configurable via parameter
