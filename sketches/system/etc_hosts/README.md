@@ -6,9 +6,9 @@ Nick Anderson <nick@cmdln.org>
 linux
 
 ## DESCRIPTION
-* cfdc_etc_hosts_manage_all_entries
+* configure_etc_hosts
     - edit_line based
-    - removes any entries not specified except localhost and comments
+    - optionally removes any entries not specified except localhost and comments
     - Allows single definition of each entry allowing comments for 
       knowledge management to be attached to each entry.
 
@@ -17,45 +17,15 @@ linux
 standard library
 
 ## SAMPLE USAGE
-    body common control {
-
-    }
-
-       bundlesequence  => {
-                           "main",
-                           };
-
-       inputs          => {
-                           "cfengine_stdlib.cf",
-                           "sketches/etc_hosts/etc_hosts.cf",
-                           };
-    }
-
     bundle agent main {
-       vars:
-           "hosts[192.0.2.10]"
-               string  => "mailhost.mynet.com ntp02",
-               comment => "No one should rely on DNS when resolving the mail server";
+    vars:
+        "hosts_entry[192.168.1.254]" string => "gateway.localdomain";
+        "hosts_entry[192.168.1.2]"   string => "printer";
+        "hosts_defined_only" string => "true";
 
-           "hosts[192.0.2.11]"
-               string => "ntp01.mynet.com ntp02",
-               comment => "No one should rely on DNS when resolving local time servers";
-
-           "hosts[192.0.2.12]"
-               string => "ntp02.mynet.com ntp02",
-               comment => "No one should rely on DNS when resolving local time servers";
-
-           # you can use classes to restrict which nodes would get this setting
-           am_db_node::
-               "hosts[192.0.2.20]"
-                   string  => "clusterscan.mynet.com clusterscan",
-                   comment => "DB nodes should get an entry for the db cluster so they arent
-                               relying on DNS";
-
-
-       methods:
-           "any" usebundle => cfdc_etc_hosts_manage_all_entries("main.hosts");
+    methods:
+        "etc_hosts"
+            usebundle => configure_etc_hosts("main.hosts_");
 
     }
-
 
