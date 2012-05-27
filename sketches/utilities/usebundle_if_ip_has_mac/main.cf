@@ -1,0 +1,66 @@
+bundle agent meta_usebundle_if_ip_has_mac{
+vars:
+    "argument[ip]"        string => "string";
+    "argument[usebundle]" string => "string";
+    "argument[maclist]"   string => "slist";
+}
+
+bundle agent usebundle_if_ip_has_mac(prefix){
+# execute a bundle if an ip has a known mac addres
+# Usefull for performing operatings under certain network conditions.
+# Consider when networks overlap in multiple enviornments and the agent may
+# migrate between them like a laptop.
+#
+# Important note, the bundle to call may not take any paramaters
+#   vars:
+#       "detect_work_ip"          string => "192.168.1.254";
+#       "detect_work_usebundle"   string => "autocommit_documentation";
+#       "detect_work_maclist"     slist  => { "62:3c:b4:57:b8:b3" };
+#
+#       "detect_home_ip"          string => "192.168.1.1";
+#       "detect_home_usebundle"   string => "backup_family_pictures";
+#       "detect_home_maclist"     slist  => { "98:2c:be:27:e8:c9" };
+#
+#   methods:
+#       "any" usebundle => usebundle_if_ip_has_mac("bundle.detect_work_");
+#       "any" usebundle => usebundle_if_ip_has_mac("bundle.detect_home_");
+#
+    vars:
+        "canon_prefix" string => canonify("$(prefix)");
+
+        # Copy in parameters
+        "conf_usebundle" string => "$($(prefix)usebundle)";
+        "conf_ip"         string => "$($(prefix)ip)";
+        "conf_maclist"    slist  => { "@($(prefix)maclist)" };
+
+        linux::
+            "ip_mac_detected"
+                string     => execresult("/usr/sbin/arp $(conf_ip)", "useshell"),
+                ifvarclass => "can_ping_ip",
+                comment    => "If we can ping the ip, get the arp entry";
+
+            "known_macs"
+                slist      => { "@(conf_maclist)" },
+                comment    => "Import the list locally";
+
+    classes:
+        linux::
+            "can_ping_ip"      expression => returnszero("/bin/ping -qc 1 $(conf_ip) > /dev/null 2>&1", "useshell");
+            "ip_has_known_mac" expression => regcmp(".*\s$(known_macs)\s.*", "$(ip_mac_detected)");
+
+    methods:
+        linux::
+            "exec_bundle" 
+                usebundle => "$(conf_usebundle)",
+                ifvarclass => "can_ping_ip.ip_has_known_mac",
+                comment    => "Call requested bundle";
+
+    reports:
+        debug::
+            "param_usebundle: $(conf_usebundle)";
+            "param_ip: $(conf_ip)";
+            "param_mac: $(conf_maclist)";
+        (debug|verbose_mode).can_ping_ip.ip_has_known_mac::
+            "calling $(conf_usebundle) because $(conf_ip) has known mac $(ip_mac_detected)";
+
+}

@@ -1,0 +1,4 @@
+usebundle_if_mac_has_ip 1.01
+  * cfsketchify
+  * remove cfdc prefix to bundle, i dont see anyone else doing it and there is
+  probably a better way to identify the source of a sketch
