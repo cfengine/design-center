@@ -1,4 +1,11 @@
-bundle agent cfdc_etc_hosts_manage_all_entries(config) {
+bundle agent meta_configure_etc_hosts{
+vars:
+   "argument[entry]" string => "array";
+   "optional_argument[defined_only]" string => "string",
+        comment => "Must be true or yes to activate"; 
+
+}
+bundle agent configure_etc_hosts(prefix) {
 # Used for enforcing the complete contents of /etc/hosts
 # Warning: This is somewhat draconian, but it might be more desireable
 # than distributing a hand edited file since the definition of each element
@@ -26,7 +33,7 @@ bundle agent cfdc_etc_hosts_manage_all_entries(config) {
 #    replaced if you provide an entry for it
 #
 # If you want additional exclusions in addition to localhost and # comments see
-# the delete_lines regex in cfdc_etc_hosts_manage_all_entries_delete_nonmanaged
+# the delete_lines regex in configure_etc_hosts_delete_nonmanaged
 # Usage:
 #   body common control {
 #
@@ -65,15 +72,20 @@ bundle agent cfdc_etc_hosts_manage_all_entries(config) {
 #
 #
 #       methods:
-#           "any" usebundle => cfdc_etc_hosts_manage_all_entries("main.hosts");
+#           "any" usebundle => configure_etc_hosts("main.hosts");
 #
 #    }
-
+# "hosts_entry[ip]" string => "names";
+# "hosts_defined_only" string => "true/yes";
 
     vars:
+        "canon_prefix" string => canonify("$(prefix)");
         "ip" 
-            slist   => getindices("$(config)"),
+            slist   => getindices("$(prefix)entry"),
             comment => "We need the list of IPs to look for in the hosts file";
+
+        "config[$(ip)]"
+            string => "$($(prefix)entry[$(ip)])";
 
         "esc_ips[$(ip)]" 
             string  => escape("$(ip)"),
@@ -93,19 +105,24 @@ bundle agent cfdc_etc_hosts_manage_all_entries(config) {
                 string  => "$(sys.winsysdir)\drivers\etc\hosts",
                 comment => "Path to the systems hosts file";
 
+    classes:
+        "only_allow_defined_entries" expression => regcmp("(?i)yes|true", "$($(prefix)defined_only)");
+
     files:
         "$(hosts)"
             create      =>  "true",
-            edit_line   =>  replace_or_add("^$(esc_ips[$(ip)])\s.*", "$(ip)    $($(config)[$(ip)])"),
+            edit_line   =>  replace_or_add("^$(esc_ips[$(ip)])\s.*", "$(ip)    $(config[$(ip)])"),
             comment     =>  "Fix hosts entry to be as defined.";
 
+        # We only need to delete nonmanaged entries if we  specify the only_defined flag
         "$(hosts)"
-            edit_line   => cfdc_etc_hosts_manage_all_entries_delete_nonmanaged("@(cfdc_etc_hosts_manage_all_entries.ip)"),
+            edit_line   => configure_etc_hosts_delete_nonmanaged("@(configure_etc_hosts.ip)"),
+            ifvarclass  => "only_allow_defined_entries",
             comment     => "Delete lines that do not match our managed ip list";
 
         "$(hosts)"
             create      =>  "true",
-            edit_line   =>  cfdc_etc_hosts_manage_all_entries_prepend_if_no_line("$(CFEnotice)"),
+            edit_line   =>  configure_etc_hosts_prepend_if_no_line("$(CFEnotice)"),
             comment     =>  "Notice that the file is managed by CFEngine";
 
         # I have no idea what windows permissions should be for this file
@@ -114,9 +131,12 @@ bundle agent cfdc_etc_hosts_manage_all_entries(config) {
                 perms   => mog("644", "root", "root"),
                 comment => "Set proper permissions so everyone can read it"; 
 
+    reports:
+        debug::
+            "$(ip)    $(config[$(ip)])";
 }
 
-bundle edit_line cfdc_etc_hosts_manage_all_entries_prepend_if_no_line(string) {
+bundle edit_line configure_etc_hosts_prepend_if_no_line(string) {
     insert_lines:
     "$(string)" 
         location => start,
@@ -124,7 +144,7 @@ bundle edit_line cfdc_etc_hosts_manage_all_entries_prepend_if_no_line(string) {
 }
 
 
-bundle edit_line cfdc_etc_hosts_manage_all_entries_delete_nonmanaged(ips){
+bundle edit_line configure_etc_hosts_delete_nonmanaged(ips){
     vars:
         "regex" 
             string  => join ("|", "ips"),

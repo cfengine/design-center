@@ -1,0 +1,22 @@
+body common control {
+
+    bundlesequence => { "main",};
+
+    inputs => {
+                "../../libraries/copbl/cfengine_stdlib.cf",
+                "./main.cf",
+              };
+}
+
+bundle agent main {
+vars:
+    "hosts_entry[192.168.1.254]" string => "gateway";
+    "hosts_entry[192.168.1.2]"   string => "printer";
+    "hosts_defined_only" string => "YeS";
+
+methods:
+    "etc_hosts"
+        usebundle => configure_etc_hosts("main.hosts_");
+
+}
+
