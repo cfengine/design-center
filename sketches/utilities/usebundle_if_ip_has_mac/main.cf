@@ -1,10 +1,3 @@
-bundle agent meta_usebundle_if_ip_has_mac{
-vars:
-    "argument[ip]"        string => "string";
-    "argument[usebundle]" string => "string";
-    "argument[maclist]"   string => "slist";
-}
-
 bundle agent usebundle_if_ip_has_mac(prefix){
 # execute a bundle if an ip has a known mac addres
 # Usefull for performing operatings under certain network conditions.
@@ -20,6 +13,8 @@ bundle agent usebundle_if_ip_has_mac(prefix){
 #       "detect_home_ip"          string => "192.168.1.1";
 #       "detect_home_usebundle"   string => "backup_family_pictures";
 #       "detect_home_maclist"     slist  => { "98:2c:be:27:e8:c9" };
+#       # optional argument if your arp command is not in /usr/sbin
+#       "detect_home_arp_command" string => "/my/special/arp";
 #
 #   methods:
 #       "any" usebundle => usebundle_if_ip_has_mac("bundle.detect_work_");
@@ -29,13 +24,14 @@ bundle agent usebundle_if_ip_has_mac(prefix){
         "canon_prefix" string => canonify("$(prefix)");
 
         # Copy in parameters
-        "conf_usebundle" string => "$($(prefix)usebundle)";
-        "conf_ip"         string => "$($(prefix)ip)";
-        "conf_maclist"    slist  => { "@($(prefix)maclist)" };
+        "conf_usebundle"   string => "$($(prefix)usebundle)";
+        "conf_ip"          string => "$($(prefix)ip)";
+        "conf_maclist"     slist  => { "@($(prefix)maclist)" };
+        "conf_arp_command" string => "$($(prefix)arp_command)";
 
         linux::
             "ip_mac_detected"
-                string     => execresult("/usr/sbin/arp $(conf_ip)", "useshell"),
+                string     => execresult("$(conf_arp_command) $(conf_ip)", "useshell"),
                 ifvarclass => "can_ping_ip",
                 comment    => "If we can ping the ip, get the arp entry";
 
@@ -63,4 +59,15 @@ bundle agent usebundle_if_ip_has_mac(prefix){
         (debug|verbose_mode).can_ping_ip.ip_has_known_mac::
             "calling $(conf_usebundle) because $(conf_ip) has known mac $(ip_mac_detected)";
 
+}
+
+bundle agent meta_usebundle_if_ip_has_mac
+{
+  vars:
+      "argument[ip]"        string => "string";
+      "argument[usebundle]" string => "string";
+      "argument[maclist]"   string => "slist";
+
+      "optional_argument[arp_command]" string => "string";
+      "default[arp_command]"           string => "/usr/sbin/arp";
 }
