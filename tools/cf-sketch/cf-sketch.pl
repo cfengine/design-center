@@ -15,7 +15,6 @@ use File::Path qw(make_path remove_tree);
 use File::Basename;
 use Data::Dumper;
 use Getopt::Long;
-use Template;
 use LWP::Simple;
 # use Modern::Perl;               # needs apt-get libmodern-perl
 # use Term::ReadKey;
@@ -395,14 +394,6 @@ sub generate
    die "Can't load any activations from $options{'act-file'}"
     unless defined $activations && ref $activations eq 'HASH';
 
-   # maybe make the run template configurable?
-   my $run_template = get_run_template();
-
-   my $template = Template->new({
-                                 INTERPOLATE  => 1,
-                                 EVAL_PERL    => 1,
-                                });
-
    my $activation_counter = 1;
    my $template_activations = {};
 
@@ -571,8 +562,6 @@ sub generate
     die "Could not find sketch $sketch in repo list @{$options{repolist}}";
    }
 
-   my $output = '';
-
    foreach my $repo (@{$options{repolist}})
    {
     my $contents = repo_get_contents($repo);
@@ -599,12 +588,8 @@ sub generate
 
    my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
 
-   $template->process(\$run_template,
-                      {
-                       activations => $template_activations,
-                       inputs => $includes,
-                      }, \$output)
-    || die $template->error();
+   # maybe make the run template configurable?
+   my $output = make_runfile($template_activations, $includes);
 
    my $run_file = $options{runfile} || File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf');
    open(my $rf, '>', $run_file)
@@ -1538,8 +1523,8 @@ sub cfengine_version
 
 sub local_cfsketches_source
 {
- my $rootdir = File::Spec->rootdir();
- my $dir = Cwd::realpath(shift @_);
+ my $rootdir   = File::Spec->rootdir();
+ my $dir       = Cwd::realpath(shift @_);
  my $inventory = File::Spec->catfile($dir, 'cfsketches');
 
  return $inventory if -f $inventory;
@@ -1554,50 +1539,100 @@ sub local_cfsketches_source
  return local_cfsketches_source($updir);
 }
 
+sub make_runfile
+{
+ my $activations = shift @_;
+ my $inputs      = shift @_;
+
+ my $template = get_run_template();
+
+ my $contexts = '';
+ my $vars     = '';
+ my $methods  = '';
+
+ foreach my $a (keys %$activations)
+ {
+  foreach my $context (sort keys %{$activations->{$a}->{contexts}})
+  {
+   $contexts .= sprintf('      "_%s_%s" expression => "%sany";' . "\n",
+                        $a,
+                        $context,
+                        $activations->{$a}->{contexts}->{$context} ? '' : '!')
+  }
+
+  $vars .= "       # string and slist variables for activation $a\n";
+
+  foreach my $var (sort keys %{$activations->{$a}->{vars}})
+  {
+   $vars .= sprintf('       "_%s_%s" %s => %s;' . "\n",
+                    $a,
+                    $var,
+                    $activations->{$a}->{vars}->{$var}->{type},
+                    $activations->{$a}->{vars}->{$var}->{value});
+  }
+
+  $vars .= "       # array variables for activation $a\n";
+  foreach my $avar (sort keys %{$activations->{$a}->{array_vars}})
+  {
+   foreach my $ak (sort keys %{$activations->{$a}->{array_vars}->{$avar}})
+   {
+    $vars .= sprintf('       "_%s_%s[%s]" string => "%s";' . "\n",
+                     $a,
+                     $avar,
+                     $ak,
+                     $activations->{$a}->{array_vars}->{$avar}->{$ak});
+   }
+  }
+
+  $methods .= sprintf('    _%s_%s__activated::',
+                      $a,
+                      $activations->{$a}->{prefix});
+  $methods .= sprintf('      "%s %s %s" usebundle => %s("cfsketch_g._%s_%s__");',
+                      $a,
+                      $activations->{$a}->{sketch},
+                      $activations->{$a}->{params},
+                      $activations->{$a}->{entry_bundle},
+                      $a,
+                      $activations->{$a}->{prefix});
+
+# [% FOREACH activation IN activations.keys.sort %]
+#     _${activation}_${activations.$activation.prefix}__activated::
+#       "$activation ${activations.$activation.sketch} ${activations.$activation.params}" usebundle => ${activations.$activation.entry_bundle}("cfsketch_g._${activation}_${activations.$activation.prefix}__");
+# [% END %]
+
+ }
+
+ $template =~ s/__INPUTS__/$inputs/g;
+ $template =~ s/__CONTEXTS__/$contexts/g;
+ $template =~ s/__VARS__/$vars/g;
+ $template =~ s/__METHODS__/$methods/g;
+
+ return $template;
+}
+
 sub get_run_template
 {
  return <<'EOT';
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => { $inputs };
+      inputs => { __INPUTS__ };
 }
 
 bundle common cfsketch_g
 {
   classes:
       # contexts
-[% FOREACH activation IN activations.keys.sort %]
- [% FOREACH var IN activations.$activation.contexts.keys.sort -%]
-      "_${activation}_$var" expression => "[% UNLESS activations.$activation.contexts.$var.value %]![% END %]any";
- [% END %]
-[% END %]
+__CONTEXTS__
   vars:
-
-[% FOREACH activation IN activations.keys.nsort %]
-      # string and slist variables for ${activation}
- [% FOREACH var IN activations.$activation.vars.keys.sort -%]
-      "_${activation}_$var" [% activations.$activation.vars.$var.type %] => [% activations.$activation.vars.$var.value %];
- [% END %]
-
-      # array variables for ${activation}
- [% FOREACH array_var IN activations.$activation.array_vars.keys.sort %]
-   [% FOREACH array_k IN activations.$activation.array_vars.$array_var.keys -%]
-      "_${activation}_${array_var}[$array_k]" string => "[% activations.$activation.array_vars.$array_var.$array_k %]";
-   [% END %]
- [% END %]
-
-[% END %]
+__VARS__
 }
 
 bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-[% FOREACH activation IN activations.keys.sort %]
-    _${activation}_${activations.$activation.prefix}__activated::
-      "$activation ${activations.$activation.sketch} ${activations.$activation.params}" usebundle => ${activations.$activation.entry_bundle}("cfsketch_g._${activation}_${activations.$activation.prefix}__");
-[% END %]
+__METHODS__
 }
 EOT
 }
