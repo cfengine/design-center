@@ -1,0 +1,4 @@
+configure_etc_hosts 2.0
+  * cfsketchify
+  * Added parameter to toggle deleting undefined entries
+  * renamed from cfdc_etc_hosts_manage_all_entries

@@ -1,0 +1,4 @@
+{
+    "entry": { "192.168.1.254": "gateway", "192.168.1.2": "printer" },
+    "defined_only": "true",
+}
