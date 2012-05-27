@@ -1,13 +1,3 @@
-bundle agent meta_tzconfig{
-  vars:
-    "argument[timezone]" string => "string";
-    "optional_argument[zoneinfo]" string => "string";
-
-    linux::
-        "default[zoneinfo]"  string => "/usr/share/zoneinfo";
-    
-}
-
 bundle agent tzconfig(prefix) {
 # "tzconfig_timezone" string => "America/Chicago";
 # "timezone" usebundle => tzconfig("bundle.tzconfig_");
@@ -89,6 +79,16 @@ bundle agent tzconfig(prefix) {
 
 }
 
+bundle agent meta_tzconfig
+{
+  vars:
+    "argument[timezone]" string => "string";
+    "optional_argument[zoneinfo]" string => "string";
+
+    linux::
+        "default[zoneinfo]"  string => "/usr/share/zoneinfo";
+}
+
 body copy_from tzconfig_copy_zoneinfo(source){
     # Copy the file any symlinks reference this is superiour to symlinking
     # There have been bugs in the past that cause things to not function
@@ -97,5 +97,3 @@ body copy_from tzconfig_copy_zoneinfo(source){
     copylink_patterns => { ".*", };
     compare => "hash";
 }
-
-
