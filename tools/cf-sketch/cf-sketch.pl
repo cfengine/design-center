@@ -871,6 +871,7 @@ sub install
  my $sketches = shift @_;
 
  my $dest_repo = $options{'install-target'};
+ push @{$options{repolist}}, $dest_repo unless grep { $_ eq $dest_repo } @{$options{repolist}};
 
  die "Can't install: no install target supplied!"
   unless defined $dest_repo;
