@@ -124,7 +124,10 @@ if (open(my $cfh, '<', $options{configfile}))
 
   foreach (sort keys %$given)
   {
-   next if exists $options{$_};
+# Was this here for a reason? Prevents any options that are given
+# default values in %options at the top from being set from the
+# config file - Diego
+#   next if exists $options{$_};
    print "(read from $options{configfile}) $_ = ", $coder->encode($given->{$_}), "\n"
     if $options{verbose};
    $options{$_} = $given->{$_};
