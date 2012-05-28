@@ -11,6 +11,8 @@
     {
         "name": "Security::SSH",
         "version": 1.02,
+        "license": true,
+        "folio": [],
         "authors": [ "Diego Zamboni <diego.zamboni@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },
                      "cfengine": { "version": "3.2.1" },

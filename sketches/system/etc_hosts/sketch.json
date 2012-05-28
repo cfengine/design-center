@@ -11,6 +11,8 @@
     {
         "name": "System::etc_hosts",
         "version": 2.0,
+        "license": true,
+        "folio": [],
         "authors": [ "Nick Anderson <nick@cmdln.org>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.2.1" }, "os": [ "linux" ] },
     },
