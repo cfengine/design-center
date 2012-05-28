@@ -76,6 +76,7 @@ my @options_spec =
   "params|p=s",
   "act-file|af=s",
   "install-target|it=s",
+  "json!",
 
   "config!",
   "interactive|x!",
@@ -91,6 +92,7 @@ my @options_spec =
   "list|l:s@",
   "list-activations|la!",
   "generate|g!",
+  "api=s",
  );
 
 GetOptions (
@@ -209,7 +211,7 @@ if ($options{'list-activations'})
  exit;
 }
 
-foreach my $word (qw/search install activate deactivate remove test generate/)
+foreach my $word (qw/search install activate deactivate remove test generate api/)
 {
  if ($options{$word})
  {
@@ -607,6 +609,82 @@ sub generate
    print "Generated run file $run_file\n"
     unless $quiet;
 
+}
+
+sub api
+{
+ my $sketch = shift @_;
+
+ my $found = 0;
+ foreach my $repo (@{$options{repolist}})
+ {
+  my $contents = repo_get_contents($repo);
+  if (exists $contents->{$sketch})
+  {
+   my $data = $contents->{$sketch};
+   my $if = $data->{interface};
+
+   my $entry_point = verify_entry_point($sketch,
+                                        $data->{dir},
+                                        $data->{manifest},
+                                        $data->{entry_point},
+                                        $data->{interface});
+
+   if ($entry_point)
+   {
+     $found = 1;
+     my @mandatory_args = grep { $_ ne 'activated' } keys %{$entry_point->{varlist}};
+     my @optional_args = keys %{$entry_point->{optional_varlist}};
+     local $Data::Dumper::Terse = 1;
+     local $Data::Dumper::Indent = 0;
+     my %defaults = map { $_ => Dumper($entry_point->{default}->{$_})} @optional_args;
+     my %empty_values = ( 'context' => 'false',
+                          'string'  => '',
+                          'slist'   => [],
+                          'array'   => {},
+                        );
+     if ($options{json}) {
+       my %params = ();
+       $params{$_} = $empty_values{$entry_point->{varlist}->{$_}} foreach (@mandatory_args);
+       $params{$_} = $entry_point->{default}->{$_} foreach (@optional_args);
+       print $coder->pretty(1)->encode(\%params)."\n";
+     }
+     else {
+       print "Sketch $sketch\n";
+       if ($data->{entry_point}) {
+         print "  Entry bundle name: $entry_point->{bundle}\n";
+         if (scalar @mandatory_args) {
+           print "  Mandatory arguments:\n";
+           foreach my $arg (@mandatory_args) {
+             print "    $arg: $entry_point->{varlist}->{$arg}\n";
+           }
+         }
+         else {
+           print "  No mandatory arguments.\n";
+         }
+         if (scalar @optional_args) {
+           print "  Optional arguments:\n";
+           foreach my $arg (@optional_args) {
+             print "    $arg: $entry_point->{optional_varlist}->{$arg} (default value: $defaults{$arg})\n";
+           }
+         }
+         else {
+           print "  No optional arguments.\n";
+         }
+       }
+       else {
+         print "  This is a library sketch - no entry point defined.\n";
+       }
+     }
+   }
+   else {
+     die "I cannot find API information about $sketch.\n";
+   }
+ }
+}
+ unless ($found) {
+   die "I could not find sketch $sketch. It doesn't seem to be installed.\n";
+ }
 }
 
 sub activate
