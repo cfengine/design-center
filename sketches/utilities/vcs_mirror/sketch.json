@@ -12,7 +12,7 @@
     {
         "name": "VCS::vcs_mirror",
         "version": 1.02,
-        "license": false,
+        "license": true,
         "folio": [],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },

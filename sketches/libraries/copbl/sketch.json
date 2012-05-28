@@ -10,7 +10,7 @@
     {
         "name": "CFEngine::stdlib",
         "version": 106,
-        "license": false,
+        "license": true,
         "folio": [],
         "authors": [ "CFEngine AS" ],
         "depends": { "cfengine": { "version": "3.3.0" } },

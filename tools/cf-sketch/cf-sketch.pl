@@ -487,15 +487,18 @@ sub generate
        $varlist->{sketch_authors} = 'slist';
        $pdata->{sketch_authors} = [ sort @{$data->{metadata}->{authors}} ];
 
+       $varlist->{sketch_folio} = 'slist';
+       $pdata->{sketch_folio} = [ sort @{$data->{metadata}->{folio}} ];
+
        $dependencies{$_} = 1 foreach collect_dependencies($data->{metadata}->{depends});
 
        $varlist->{sketch_depends} = 'slist';
        $pdata->{sketch_depends} = [ sort keys %dependencies ];
 
-       foreach my $key (qw/version name/)
+       foreach my $key (qw/version name license/)
        {
         $varlist->{"sketch_$key"} = 'string';
-        $pdata->{"sketch_$key"} = $data->{metadata}->{$key};
+        $pdata->{"sketch_$key"} = '' . $data->{metadata}->{$key};
        }
 
        my $optional_varlist = $entry_point->{optional_varlist};
