@@ -10,6 +10,8 @@
     {
         "name": "Misc::mysketch",
         "version": 3.14,
+        "license": false,
+        "folio": [],
         "authors": [ "Diego Z", "Ted Z" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.3.0" }, "os": [ "linux" ] },
     },

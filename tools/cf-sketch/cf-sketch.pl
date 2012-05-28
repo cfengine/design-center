@@ -1209,11 +1209,18 @@ sub load_sketch
      $json->{metadata}->{name} &&
 
      # and a non-null 'version' key
-     $json->{metadata}->{name} &&
+     $json->{metadata}->{version} &&
+
+     # and a non-null 'license' key
+     $json->{metadata}->{license} &&
 
      # and a 'authors' key that's an array
      exists $json->{metadata}->{authors} &&
      ref $json->{metadata}->{authors} eq 'ARRAY' &&
+
+     # and a 'folio' key that's an array
+     exists $json->{metadata}->{folio} &&
+     ref $json->{metadata}->{folio} eq 'ARRAY' &&
 
      # entry_point has to point to a file in the manifest or be null
      exists $json->{entry_point} &&
