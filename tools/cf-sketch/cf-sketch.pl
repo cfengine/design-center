@@ -16,8 +16,6 @@ use File::Basename;
 use Data::Dumper;
 use Getopt::Long;
 use LWP::Simple;
-# use Modern::Perl;               # needs apt-get libmodern-perl
-# use Term::ReadKey;
 
 my $coder;
 my $canonical_coder;
@@ -1193,49 +1191,69 @@ sub load_sketch
  my $json = load_json($name);
 
  my $info = {};
+ my @messages;
 
- # TODO: validate more thoroughly?  at least better messaging
- if (
-     # the data must be valid and a hash
-     defined $json && ref $json eq 'HASH' &&
-     # the manifest must be a hash
-     exists $json->{manifest} && ref $json->{manifest}  eq 'HASH' &&
+ # stage 1: the data must be valid and a hash
+ unless (defined $json && ref $json eq 'HASH')
+ {
+  push @messages, "Invalid JSON data";
+ }
 
-     # the metadata must be a hash...
-     exists $json->{metadata} && ref $json->{metadata}  eq 'HASH' &&
+ # stage 2: check top-level manifest and metadata keys
+ unless (scalar @messages)
+ {
+  # the manifest must be a hash
+  push @messages, "Invalid manifest" unless (exists $json->{manifest} && ref $json->{manifest} eq 'HASH');
+   
+  # the metadata must be a hash
+  push @messages, "Invalid metadata" unless (exists $json->{metadata} && ref $json->{metadata} eq 'HASH');
+  
+  # the interface must be an array
+  push @messages, "Invalid interface" unless (exists $json->{interface} && ref $json->{interface} eq 'ARRAY');
+ }
 
-     # with a 'depends' key that points to a hash
-     exists $json->{metadata}->{depends}  &&
-     ref $json->{metadata}->{depends}  eq 'HASH' &&
+ # stage 3: check metadata details
+ unless (scalar @messages)
+ {
+  # need a 'depends' key that points to a hash
+  push @messages, "Invalid dependencies structure" unless (exists $json->{metadata}->{depends}  &&
+                                                           ref $json->{metadata}->{depends}  eq 'HASH');
 
-     # and a non-null 'name' key
-     $json->{metadata}->{name} &&
+  foreach my $scalar (qw/name version license/)
+  {
+   push @messages, "Missing or undefined metadata element $scalar" unless $json->{metadata}->{$scalar};
+  }
+  
+  foreach my $array (qw/authors folio/)
+  {
+   push @messages, "Missing, invalid, or undefined metadata array $array" unless ($json->{metadata}->{$array} &&
+                                                                                  ref $json->{metadata}->{$array} eq 'ARRAY');
+  }
+ }
 
-     # and a non-null 'version' key
-     $json->{metadata}->{version} &&
+ # stage 4: check entry_point and interface
+ unless (scalar @messages)
+ {
+  push @messages, "Missing entry_point" unless exists $json->{entry_point};
+ }
+  
+ # entry_point has to point to a file in the manifest or be null
+ unless (scalar @messages || !defined $json->{entry_point})
+ {
+  push @messages, "entry_point $json->{entry_point} not in manifest"
+   unless exists $json->{manifest}->{$json->{entry_point}};
+ }
+     
+ # we should not have any interface files that do NOT exist in the manifest
+ unless (scalar @messages)
+ {
+  foreach (@{$json->{interface}})
+  {
+   push @messages, "interface file $_ not in manifest" unless exists $json->{manifest}->{$_};
+  }
+ }
 
-     # and a non-null 'license' key
-     $json->{metadata}->{license} &&
-
-     # and a 'authors' key that's an array
-     exists $json->{metadata}->{authors} &&
-     ref $json->{metadata}->{authors} eq 'ARRAY' &&
-
-     # and a 'folio' key that's an array
-     exists $json->{metadata}->{folio} &&
-     ref $json->{metadata}->{folio} eq 'ARRAY' &&
-
-     # entry_point has to point to a file in the manifest or be null
-     exists $json->{entry_point} &&
-     (!defined $json->{entry_point} ||
-      exists $json->{manifest}->{$json->{entry_point}}) &&
-
-     # interface has to point to a list of files in the manifest
-     exists $json->{interface} &&
-     ref $json->{interface} eq 'ARRAY' &&
-     # we should not have any interface files that do NOT exist in the manifest
-     ! (scalar grep { ! exists $json->{manifest}->{$_} } @{$json->{interface}})
-    )
+ if (!scalar @messages) # there are no errors, so go on...
  {
   my $name = $json->{metadata}->{name};
   $json->{dir} = $dir;
@@ -1256,7 +1274,7 @@ sub load_sketch
  }
  else
  {
-  warn "Could not load sketch definition from $name" unless $quiet;
+  warn "Could not load sketch definition from $name: [@{[join '; ', @messages]}]" unless $quiet;
  }
 
  return undef;
@@ -1695,12 +1713,6 @@ sub make_runfile
                       $activations->{$a}->{entry_bundle},
                       $a,
                       $activations->{$a}->{prefix});
-
-# [% FOREACH activation IN activations.keys.sort %]
-#     _${activation}_${activations.$activation.prefix}__activated::
-#       "$activation ${activations.$activation.sketch} ${activations.$activation.params}" usebundle => ${activations.$activation.entry_bundle}("cfsketch_g._${activation}_${activations.$activation.prefix}__");
-# [% END %]
-
  }
 
  $template =~ s/__INPUTS__/$inputs/g;
@@ -1737,51 +1749,6 @@ __METHODS__
 }
 EOT
 }
-
-# sub read_key
-# {
-#  my $key;
-#  ReadMode 3;
-#  while (not defined ($key = ReadKey(0)))
-#  {
-#   # No key yet
-#  }
-#  ReadMode 0; # Reset tty mode before exiting
-#  return $key;
-# }
-
-# sub read_yes_no
-# {
-#  my $prompt = shift @_;
-#  my $default = shift @_;
-
-#  my $true_mode = (uc $default eq 'Y' || $default eq '1');
-
-#  my $user_choice;
-
-#  if ($true_mode)
-#  {
-#   print "$prompt (Y/n) ";
-#  }
-#  else
-#  {
-#   print "$prompt (y/N) ";
-#  }
-
-#  $user_choice = uc read_key();
-#  print "\n";
-
-#  if ($user_choice eq "\n" || $user_choice eq ' ') # ASCII space/CR
-#  {
-#   return $true_mode;
-#  }
-#  else
-#  {
-#   return ($user_choice eq 'Y');
-#  }
-
-#  return undef;                          # shouldn't get here
-# }
 
 __DATA__
 
