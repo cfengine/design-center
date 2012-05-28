@@ -1323,6 +1323,12 @@ sub verify_entry_point
     {
      $v = [ ($v =~ m/"([^"]+)"/g) ];
     }
+    # remove quotes from string values
+    if ($type eq 'string')
+    {
+     $v =~ s/^["'](.*)["']$/$1/;
+    }
+
 
     $meta->{default}->{$k} = $v;
    }
