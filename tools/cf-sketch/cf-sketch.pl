@@ -89,7 +89,7 @@ my @options_spec =
   "deactivate|d=s",               # deactivate only one at a time
   "test|t=s@",
   "search|s=s@",
-  "list|l=s@",
+  "list|l:s@",
   "list-activations|la!",
   "generate|g!",
  );
@@ -175,7 +175,8 @@ if ($options{config})
 if ($options{list})
 {
  # 'all' matches everything
- list($options{list}->[0] eq 'all' ? ["."] : $options{list});
+ list(($options{list}->[0] eq 'all' || $options{list}->[0] eq '') ?
+      ["."] : $options{list});
  exit;
 }
 
