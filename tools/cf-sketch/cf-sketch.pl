@@ -88,7 +88,7 @@ my @options_spec =
   "deactivate|d=s",               # deactivate only one at a time
   "test|t=s@",
   "search|s=s@",
-  "list|l=s@",
+  "list|l:s@",
   "list-activations|la!",
   "generate|g!",
  );
@@ -123,7 +123,10 @@ if (open(my $cfh, '<', $options{configfile}))
 
   foreach (sort keys %$given)
   {
-   next if exists $options{$_};
+# Was this here for a reason? Prevents any options that are given
+# default values in %options at the top from being set from the
+# config file - Diego
+#   next if exists $options{$_};
    print "(read from $options{configfile}) $_ = ", $coder->encode($given->{$_}), "\n"
     if $options{verbose};
    $options{$_} = $given->{$_};
@@ -174,7 +177,8 @@ if ($options{config})
 if ($options{list})
 {
  # 'all' matches everything
- list($options{list}->[0] eq 'all' ? ["."] : $options{list});
+ list(($options{list}->[0] eq 'all' || $options{list}->[0] eq '') ?
+      ["."] : $options{list});
  exit;
 }
 
@@ -233,9 +237,12 @@ sub configure_self
  {
   foreach my $key (sort keys %keys)
   {
-   print "$key: ";
+   my $defvalue = (ref($options{$key}) eq 'ARRAY') ? 
+       join(',', @{$options{$key}}) : $options{$key};
+   print "$key [$defvalue]: ";
    my $answer = <>;             # TODO: use the right Readline module
    chomp $answer;
+   $answer ||= $defvalue;
    $config{$key} = $keys{$key} ? [split ',', $answer] : $answer;
   }
  }
