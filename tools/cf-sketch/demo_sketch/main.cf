@@ -28,12 +28,13 @@ bundle agent meta_mysketch_main_bundle
       "argument[myint]"           string => "string";
       "argument[mystr]"           string => "string";
       "optional_argument[myopt]"  string => "string";
-      "argument[os_special_path]" string => "string";
+      "optional_argument[os_special_path]" string => "string";
       "argument[hosts_deny]"      string => "slist";
-      "argument[hosts_allow]"     string => "slist";
+      "optional_argument[hosts_allow]"     string => "slist";
 
       "default[os_special_path]"  string => "/no/such/path";
       "default[hosts_allow]"      slist => { "a", "b", "c" };
+      "default[myopt]"            string => "default value";
 
       "argument[arrayparams]" string => "array";
 
