@@ -235,9 +235,12 @@ sub configure_self
  {
   foreach my $key (sort keys %keys)
   {
-   print "$key: ";
+   my $defvalue = (ref($options{$key}) eq 'ARRAY') ? 
+       join(',', @{$options{$key}}) : $options{$key};
+   print "$key [$defvalue]: ";
    my $answer = <>;             # TODO: use the right Readline module
    chomp $answer;
+   $answer ||= $defvalue;
    $config{$key} = $keys{$key} ? [split ',', $answer] : $answer;
   }
  }
