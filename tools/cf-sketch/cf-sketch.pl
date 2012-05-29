@@ -78,8 +78,7 @@ my @options_spec =
   "install-target|it=s",
   "json!",
 
-  "config!",
-  "interactive|x!",
+  "save-config",
   "repolist|rl=s@",
   # "make-package=s@",
   "install|i=s@",
@@ -170,9 +169,9 @@ my $quiet   = $options{quiet};
 
 print "Full configuration: ", $coder->encode(\%options), "\n" if $verbose;
 
-if ($options{config})
+if ($options{'save-config'})
 {
- configure_self($options{configfile}, $options{interactive}, shift);
+ configure_self($options{configfile});
  exit;
 }
 
@@ -225,49 +224,26 @@ foreach my $word (qw/search install activate deactivate remove test generate api
 sub configure_self
 {
  my $cf    = shift @_;
- my $inter = shift @_;
- my $data  = shift @_;
 
  my %keys = (
-             repolist => 1,             # array
-             cfhome   => 0,             # string
+             'repolist' => 1,             # array
+             'cfhome'   => 0,             # string
+             'install-source' => 0,       # string
             );
 
  my %config;
 
- if ($inter)
- {
-  foreach my $key (sort keys %keys)
-  {
-   my $defvalue = (ref($options{$key}) eq 'ARRAY') ? 
-       join(',', @{$options{$key}}) : $options{$key};
-   print "$key [$defvalue]: ";
-   my $answer = <>;             # TODO: use the right Readline module
-   chomp $answer;
-   $answer ||= $defvalue;
-   $config{$key} = $keys{$key} ? [split ',', $answer] : $answer;
-  }
- }
- else
- {
-  die "You need to pass a filename to --config if you don't --interactive"
-   unless $data;
-
-  open(my $dfh, '<', $data)
-   or die "Could not open configuration input file $data: $!";
-
-  while (<$dfh>)
-  {
-   my ($key, $v) = split ',', $_, 2;
-   $config{$key} = [split ',', $v];
-  }
+ foreach my $key (sort keys %keys) {
+   $config{$key} = $options{$key};
+   print "Saving option $key=".tersedump($config{$key})."\n"
+     if $verbose;
  }
 
  ensure_dir(dirname($cf));
  open(my $cfh, '>', $cf)
   or die "Could not write configuration input file $cf: $!";
 
- print $cfh $coder->encode(\%config);
+ print $cfh $coder->pretty(1)->encode(\%config);
 }
 
 sub search
@@ -1726,6 +1702,13 @@ bundle agent cfsketch_run
 __METHODS__
 }
 EOT
+}
+
+sub tersedump
+{
+  local $Data::Dumper::Terse = 1;
+  local $Data::Dumper::Indent = 0;
+  return Dumper(shift);
 }
 
 # sub read_key
