@@ -1,0 +1,18 @@
+{ 
+
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "Misc::badsketch",
+        "version": 3.14,
+        "depends": 1,
+    },
+
+    "entry_point": "main.cf",
+    "interface": [ "notmain.cf" ]
+}
