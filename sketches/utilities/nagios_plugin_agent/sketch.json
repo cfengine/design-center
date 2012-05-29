@@ -13,7 +13,7 @@
         "name": "Monitoring::nagios_plugin_agent",
         "version": 1.04,
         "license": true,
-        "folio": [],
+        "portfolio": [],
         "authors": [ "Robert Carleton <rbc@rbcarleton.com>", "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.2.1" }, "os": [ "linux" ] },
     },
