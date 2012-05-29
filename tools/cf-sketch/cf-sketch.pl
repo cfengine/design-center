@@ -48,7 +48,10 @@ $| = 1;                         # autoflush
 # Configuration directory depending on root/non-root
 my $configdir = $> == 0 ? '/etc/cf-sketch' : glob('~/.cf-sketch');
 
-my %options =
+my %options = ();
+
+# Default values
+my %def_options =
  (
   verbose    => 0,
   quiet      => 0,
@@ -94,15 +97,43 @@ my @options_spec =
   "api=s",
  );
 
+# Options given on the command line
+my %cmd_options;
 GetOptions (
-            \%options,
+            \%cmd_options,
             @options_spec,
            );
 
-if ($options{help})
+if ($cmd_options{help})
 {
  print <DATA>;
  exit;
+}
+
+# Options given on the config file
+my %cfgfile_options;
+my $cfgfile = $cmd_options{configfile} || $def_options{configfile};
+if (open(my $cfh, '<', $cfgfile))
+{
+  # slurp the entire file
+  my $jsontxt = join("", <$cfh>);
+  my $given = $coder->decode($jsontxt);
+
+  foreach (sort keys %$given)
+  {
+   print "(read from $cfgfile) $_ = ", $coder->encode($given->{$_}), "\n"
+    if $cfgfile_options{verbose};
+   $cfgfile_options{$_} = $given->{$_};
+  }
+}
+
+# Now we merge all three sources of options: Default options are
+# overriden by config-file options, which are overriden by
+# command-line options
+foreach my $ptr (\%def_options, \%cfgfile_options, \%cmd_options) {
+  foreach my $key (keys %$ptr) {
+    $options{$key} = $ptr->{$key};
+  }
 }
 
 my $happy_root = $> != 0 ? glob("~/.cfagent/inputs") : (-e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs');
@@ -115,29 +146,10 @@ if (!$options{force} && $required_version gt $version)
  die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
 }
 
-if (open(my $cfh, '<', $options{configfile}))
-{
- while (<$cfh>)
- {
-  # only look at the first line of the file
-  my $given = $coder->decode($_);
-
-  foreach (sort keys %$given)
-  {
-# Was this here for a reason? Prevents any options that are given
-# default values in %options at the top from being set from the
-# config file - Diego
-#   next if exists $options{$_};
-   print "(read from $options{configfile}) $_ = ", $coder->encode($given->{$_}), "\n"
-    if $options{verbose};
-   $options{$_} = $given->{$_};
-  }
-  last;
- }
-}
-
 $options{repolist} = [ File::Spec->catfile($happy_root, 'sketches') ]
  unless exists $options{repolist};
+# Allow both comma-separated values and multiple occurrences of --repolist
+$options{repolist} = [ split(/,/, join(',', @{$options{repolist}})) ];
 
 $options{'install-target'} = File::Spec->catfile($happy_root, 'sketches')
  unless $options{'install-target'};
