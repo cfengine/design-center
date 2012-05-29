@@ -48,7 +48,10 @@ $| = 1;                         # autoflush
 # Configuration directory depending on root/non-root
 my $configdir = $> == 0 ? '/etc/cf-sketch' : glob('~/.cf-sketch');
 
-my %options =
+my %options = ();
+
+# Default values
+my %def_options =
  (
   verbose    => 0,
   quiet      => 0,
@@ -78,8 +81,7 @@ my @options_spec =
   "install-target|it=s",
   "json!",
 
-  "config!",
-  "interactive|x!",
+  "save-config",
   "repolist|rl=s@",
   # "make-package=s@",
   "install|i=s@",
@@ -95,15 +97,43 @@ my @options_spec =
   "api=s",
  );
 
+# Options given on the command line
+my %cmd_options;
 GetOptions (
-            \%options,
+            \%cmd_options,
             @options_spec,
            );
 
-if ($options{help})
+if ($cmd_options{help})
 {
  print <DATA>;
  exit;
+}
+
+# Options given on the config file
+my %cfgfile_options;
+my $cfgfile = $cmd_options{configfile} || $def_options{configfile};
+if (open(my $cfh, '<', $cfgfile))
+{
+  # slurp the entire file
+  my $jsontxt = join("", <$cfh>);
+  my $given = $coder->decode($jsontxt);
+
+  foreach (sort keys %$given)
+  {
+   print "(read from $cfgfile) $_ = ", $coder->encode($given->{$_}), "\n"
+    if $cfgfile_options{verbose};
+   $cfgfile_options{$_} = $given->{$_};
+  }
+}
+
+# Now we merge all three sources of options: Default options are
+# overriden by config-file options, which are overriden by
+# command-line options
+foreach my $ptr (\%def_options, \%cfgfile_options, \%cmd_options) {
+  foreach my $key (keys %$ptr) {
+    $options{$key} = $ptr->{$key};
+  }
 }
 
 my $happy_root = $> != 0 ? glob("~/.cfagent/inputs") : (-e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs');
@@ -116,29 +146,10 @@ if (!$options{force} && $required_version gt $version)
  die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
 }
 
-if (open(my $cfh, '<', $options{configfile}))
-{
- while (<$cfh>)
- {
-  # only look at the first line of the file
-  my $given = $coder->decode($_);
-
-  foreach (sort keys %$given)
-  {
-# Was this here for a reason? Prevents any options that are given
-# default values in %options at the top from being set from the
-# config file - Diego
-#   next if exists $options{$_};
-   print "(read from $options{configfile}) $_ = ", $coder->encode($given->{$_}), "\n"
-    if $options{verbose};
-   $options{$_} = $given->{$_};
-  }
-  last;
- }
-}
-
 $options{repolist} = [ File::Spec->catfile($happy_root, 'sketches') ]
  unless exists $options{repolist};
+# Allow both comma-separated values and multiple occurrences of --repolist
+$options{repolist} = [ split(/,/, join(',', @{$options{repolist}})) ];
 
 $options{'install-target'} = File::Spec->catfile($happy_root, 'sketches')
  unless $options{'install-target'};
@@ -170,9 +181,9 @@ my $quiet   = $options{quiet};
 
 print "Full configuration: ", $coder->encode(\%options), "\n" if $verbose;
 
-if ($options{config})
+if ($options{'save-config'})
 {
- configure_self($options{configfile}, $options{interactive}, shift);
+ configure_self($options{configfile});
  exit;
 }
 
@@ -225,49 +236,26 @@ foreach my $word (qw/search install activate deactivate remove test generate api
 sub configure_self
 {
  my $cf    = shift @_;
- my $inter = shift @_;
- my $data  = shift @_;
 
  my %keys = (
-             repolist => 1,             # array
-             cfhome   => 0,             # string
+             'repolist' => 1,             # array
+             'cfhome'   => 0,             # string
+             'install-source' => 0,       # string
             );
 
  my %config;
 
- if ($inter)
- {
-  foreach my $key (sort keys %keys)
-  {
-   my $defvalue = (ref($options{$key}) eq 'ARRAY') ? 
-       join(',', @{$options{$key}}) : $options{$key};
-   print "$key [$defvalue]: ";
-   my $answer = <>;             # TODO: use the right Readline module
-   chomp $answer;
-   $answer ||= $defvalue;
-   $config{$key} = $keys{$key} ? [split ',', $answer] : $answer;
-  }
- }
- else
- {
-  die "You need to pass a filename to --config if you don't --interactive"
-   unless $data;
-
-  open(my $dfh, '<', $data)
-   or die "Could not open configuration input file $data: $!";
-
-  while (<$dfh>)
-  {
-   my ($key, $v) = split ',', $_, 2;
-   $config{$key} = [split ',', $v];
-  }
+ foreach my $key (sort keys %keys) {
+   $config{$key} = $options{$key};
+   print "Saving option $key=".tersedump($config{$key})."\n"
+     if $verbose;
  }
 
  ensure_dir(dirname($cf));
  open(my $cfh, '>', $cf)
   or die "Could not write configuration input file $cf: $!";
 
- print $cfh $coder->encode(\%config);
+ print $cfh $coder->pretty(1)->encode(\%config);
 }
 
 sub search
@@ -1726,6 +1714,13 @@ bundle agent cfsketch_run
 __METHODS__
 }
 EOT
+}
+
+sub tersedump
+{
+  local $Data::Dumper::Terse = 1;
+  local $Data::Dumper::Indent = 0;
+  return Dumper(shift);
 }
 
 # sub read_key
