@@ -241,6 +241,8 @@ sub configure_self
              'install-source' => 0,       # string
             );
 
+ print "Saving configuration keys [@{[sort keys %keys]}] to file $cf\n" unless $quiet;
+
  my %config;
 
  foreach my $key (sort keys %keys) {
