@@ -1694,10 +1694,10 @@ sub make_runfile
    }
   }
 
-  $methods .= sprintf('    _%s_%s__activated::',
+  $methods .= sprintf('    _%s_%s__activated::' . "\n",
                       $a,
                       $activations->{$a}->{prefix});
-  $methods .= sprintf('      "%s %s %s" usebundle => %s("cfsketch_g._%s_%s__");',
+  $methods .= sprintf('      "%s %s %s" usebundle => %s("cfsketch_g._%s_%s__");' . "\n",
                       $a,
                       $activations->{$a}->{sketch},
                       $activations->{$a}->{params},
