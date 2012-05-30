@@ -61,6 +61,7 @@ my %def_options =
   'install-target' => undef,
   'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
   'make-package' => [],
+  params => [],
   cfhome => '/var/cfengine/bin',
   runfile => undef,
  );
@@ -74,7 +75,7 @@ my @options_spec =
   "cfhome=s",
   "configfile|cf=s",
   "runfile|rf=s",
-  "params|p=s",
+  "params|p=s@",
   "act-file|af=s",
   "install-target|it=s",
   "json!",
@@ -685,8 +686,30 @@ sub activate
 {
  my $sketch = shift @_;
 
- die "Can't activate sketch $sketch without valid file or URL from --params"
-  unless ($options{params} && (-f $options{params} || !is_resource_local($options{params})));
+ die "Can't activate sketch $sketch without --params"
+  unless scalar @{$options{params}};
+
+ my $params = {};
+
+ my $p = $options{params};
+ my $pname = join "; ", @$p;
+
+ if (scalar @$p && -f $p->[0] || !is_resource_local($p->[0]))
+ {
+  print "Loading activation params from $p->[0]\n" unless $quiet;
+  $params = load_json($p->[0]);
+
+  die "Could not load activation params from $p->[0]"
+   unless ref $params eq 'HASH';
+
+  shift @$p;
+ }
+ 
+ foreach my $extra (@$p)
+ {
+  next unless $extra =~ m/([^=]+)=(.*)/;
+  $params->{$1} = $2;
+ }
 
  my $installed = 0;
  foreach my $repo (@{$options{repolist}})
@@ -696,13 +719,6 @@ sub activate
   {
    my $data = $contents->{$sketch};
    my $if = $data->{interface};
-
-   # TODO: we could load the params from a pipe or a network resource too
-   print "Loading activation params from $options{params}\n" unless $quiet;
-   my $params = load_json($options{params});
-
-   die "Could not load activation params from $options{params}"
-    unless ref $params eq 'HASH';
 
    my $entry_point = verify_entry_point($sketch,
                                         $data->{dir},
@@ -741,9 +757,9 @@ sub activate
    # activation successful, now install it
    my $activations = load_json($options{'act-file'}, 1);
 
-   if (exists $activations->{$sketch}->{$options{params}})
+   if (exists $activations->{$sketch}->{$pname})
    {
-    my $p = $canonical_coder->encode($activations->{$sketch}->{$options{params}});
+    my $p = $canonical_coder->encode($activations->{$sketch}->{$pname});
     my $q = $canonical_coder->encode($params);
     if ($p eq $q)
     {
@@ -759,7 +775,7 @@ sub activate
     }
    }
 
-   $activations->{$sketch}->{$options{params}} = $params;
+   $activations->{$sketch}->{$pname} = $params;
 
    ensure_dir(dirname($options{'act-file'}));
    open(my $ach, '>', $options{'act-file'})
@@ -768,7 +784,7 @@ sub activate
    print $ach $coder->encode($activations);
    close $ach;
 
-   print "Activated: $sketch params $options{params}\n" unless $quiet;
+   print "Activated: $sketch params $pname\n" unless $quiet;
 
    $installed = 1;
    last;
