@@ -1,9 +1,9 @@
 # The CFEngine Design Center
 
-Welcome to the CFEngine Design Center, a repository for community-contributed content.
+Welcome to the CFEngine Design Center, a place for CFEngine community
+members and developers to share code and information.
 
-*This is still a work in progress, it has not been oficially announced, but it's available for your perusal.*
+To get started, please read the documentation
+[in the wiki](https://github.com/cfengine/design-center/wiki).
 
-Please see the [wiki](https://github.com/cfengine/design-center/wiki/) for available documentation.
-
-If you have any feedback, we would love to hear from you, send us a message to community@cfengine.com.
+If you have any feedback, we would love to hear from you, send us a message to <design-center@cfengine.com>.
