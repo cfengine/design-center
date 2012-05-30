@@ -10,8 +10,8 @@
     {
         "name": "CFEngine::stdlib",
         "version": 106,
-        "license": true,
-        "portfolio": [],
+        "license": "MIT",
+        "portfolio": [ "cfdc" ],
         "authors": [ "CFEngine AS" ],
         "depends": { "cfengine": { "version": "3.3.0" } },
     },
