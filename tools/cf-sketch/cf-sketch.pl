@@ -239,7 +239,9 @@ sub configure_self
  my %keys = (
              'repolist' => 1,             # array
              'cfhome'   => 0,             # string
-             'install-source' => 0,       # string
+             'install-source' => 0,
+             'act-file' => 0,
+             'runfile' => 0,
             );
 
  print "Saving configuration keys [@{[sort keys %keys]}] to file $cf\n" unless $quiet;
