@@ -535,6 +535,9 @@ sub generate
           $activation->{array_vars}->{$cfengine_k}->{$_} = $augment_v->{$_}
            foreach keys %$augment_v;
          }
+
+         die "Sorry, but you can't activate with an empty list in $k"
+          unless scalar keys %{$activation->{array_vars}->{$cfengine_k}};
         }
         else
         {
@@ -1219,6 +1222,11 @@ sub load_sketch
   {
    push @messages, "Missing, invalid, or undefined metadata array $array" unless ($json->{metadata}->{$array} &&
                                                                                   ref $json->{metadata}->{$array} eq 'ARRAY');
+  }
+
+  unless (scalar @messages)
+  {
+   push @messages, "Portfolio metadata can't be empty" unless scalar @{$json->{metadata}->{portfolio}};
   }
  }
 
