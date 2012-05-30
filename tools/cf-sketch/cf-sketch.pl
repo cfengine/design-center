@@ -1589,7 +1589,7 @@ sub load_json
  {
   chomp @j;
   s/\n//g foreach @j;
-  s/^\s*#.*//g foreach @j;
+  s/^\s*(#|\/\/).*//g foreach @j;
   my $ret = $coder->decode(join '', @j);
 
   if (ref $ret eq 'HASH' &&
@@ -1675,6 +1675,42 @@ sub local_cfsketches_source
  return local_cfsketches_source($updir);
 }
 
+sub recurse_print
+{
+ my $ref = shift @_;
+ my $prefix = shift @_;
+
+ my @print;
+                      # $_->{path},
+                      # $_->{type},
+                      # $_->{value}) foreach @toprint;
+
+ # recurse for hashes
+ if (ref $ref eq 'HASH')
+ {
+  push @print, recurse_print($ref->{$_}, $prefix . "[$_]")
+   foreach sort keys %$ref;
+ }
+ elsif (ref $ref eq 'ARRAY')
+ {
+  push @print, {
+                path => $prefix,
+                type => 'slist',
+                value => '{' . join(", ", map { "\"$_\"" } @$ref) . '}'
+               };
+ }
+ else
+ {
+  push @print, {
+                path => $prefix,
+                type => 'string',
+                value => "\"$ref\""
+               };
+ }
+
+ return @print;
+}
+
 sub make_runfile
 {
  my $activations = shift @_;
@@ -1688,14 +1724,28 @@ sub make_runfile
 
  foreach my $a (keys %$activations)
  {
+  $contexts .= "       # contexts for activation $a\n";
   foreach my $context (sort keys %{$activations->{$a}->{contexts}})
   {
    $contexts .= sprintf('      "_%s_%s" expression => "%sany";' . "\n",
                         $a,
                         $context,
-                        $activations->{$a}->{contexts}->{$context} ? '' : '!')
+                        $activations->{$a}->{contexts}->{$context}->{value} ? '' : '!')
   }
 
+  $vars .= "       # string versions of the contexts for activation $a\n";
+  foreach my $context (sort keys %{$activations->{$a}->{contexts}})
+  {
+   my @context_hack = split '__', $context;
+   my $short_context = pop @context_hack;
+   my $context_prefix = join '__', @context_hack, '';
+
+   $vars .= sprintf('      "_%s_%scontexts_text[%s]" string => "%s";' . "\n",
+                    $a,
+                    $context_prefix,
+                    $short_context,
+                    $activations->{$a}->{contexts}->{$context}->{value} ? 'ON' : 'OFF')
+  }
   $vars .= "       # string and slist variables for activation $a\n";
 
   foreach my $var (sort keys %{$activations->{$a}->{vars}})
@@ -1712,11 +1762,15 @@ sub make_runfile
   {
    foreach my $ak (sort keys %{$activations->{$a}->{array_vars}->{$avar}})
    {
-    $vars .= sprintf('       "_%s_%s[%s]" string => "%s";' . "\n",
-                     $a,
-                     $avar,
-                     $ak,
-                     $activations->{$a}->{array_vars}->{$avar}->{$ak});
+    my $av = $activations->{$a}->{array_vars}->{$avar}->{$ak};
+    my @toprint = recurse_print($av, '');
+    $vars .= sprintf('       "_%s_%s[%s]%s" %s => %s;' . "\n",
+                      $a,
+                      $avar,
+                      $ak,
+                      $_->{path},
+                      $_->{type},
+                      $_->{value}) foreach @toprint;
    }
   }
 
