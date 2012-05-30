@@ -1,4 +1,5 @@
 ../tools/cf-sketch/demo_sketch Misc::mysketch
+databases/db_install Database::Install
 libraries/copbl CFEngine::stdlib
 networking/ssh Security::SSH
 system/etc_hosts System::etc_hosts

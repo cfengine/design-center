@@ -1,0 +1,32 @@
+{
+
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+
+        "params/mysql.json": { "comment": "Install MySQL: common parameters" },
+        "params/mysql_server.json": { "comment": "Install MySQL server" },
+        "params/mysql_client.json": { "comment": "Install MySQL client" },
+
+        "params/postgresql.json": { "comment": "Install PostgreSQL: common parameters" },
+        "params/postgresql_server.json": { "comment": "Install PostgreSQL server" },
+        "params/postgresql_client.json": { "comment": "Install PostgreSQL client" },
+
+        "params/sqlite.json": { "comment": "Install SQLite" },
+
+    },
+
+    "metadata":
+    {
+        "name": "Database::Install",
+        "version": 1.00,
+        "license": "MIT",
+        "portfolio": [ "cfdc" ],
+        "authors": [ "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.3.0" }, "os": [ "linux" ] },
+    },
+
+    "entry_point": "main.cf",
+    "interface": [ "main.cf" ]
+}

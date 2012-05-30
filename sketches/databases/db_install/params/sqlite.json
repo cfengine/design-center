@@ -1,0 +1,12 @@
+{
+    "activated": true,
+    "server": false,
+    "db": "sqlite",
+    "purge": false,
+    "bycontext":
+    {
+        "redhat|centos|fedora": { "packages": [ "sqlite", "sqlite-devel" ] },
+        "suse|SuSE": { "packages": [ "sqlite3", "sqlite3-devel" ] },
+        "debian|ubuntu": { "packages": [ "sqlite3", "libsqlite3-dev", "sqlite3-doc" ] }
+    }
+}

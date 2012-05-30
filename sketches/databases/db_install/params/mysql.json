@@ -1,0 +1,15 @@
+{
+    "activated": true,
+    "db": "mysql",
+    "purge": false,
+    "bycontext":
+    {
+        "redhat|centos|fedora": { "packages": [ "mysql" ], "server_packages": [ "mysql-server", "perl-DBD-MySQL" ], "start_command": "/etc/init.d/mysqld restart", "process_match": ".*mysqld.*" },
+
+        "!ubuntu_12.(debian|ubuntu)": { "packages": [ "mysql-client-5.1", "mysql-client-core-5.1", "mysql-common", "libmysqlclient16", "libdbd-mysql-perl", "libdbi-perl", "libnet-daemon-perl", "libplrpc-perl" ], "server_packages": [ "mysql-server-5.1", "mysql-server-core-5.1", "libhtml-template-perl" ], "start_command": "/etc/init.d/mysql restart", "process_match": "/usr/sbin/mysqld.*" },
+
+        "ubuntu_12": { "packages": [ "mysql-client", "mysql-common", "libmysqlclient18", "libdbd-mysql-perl", "libdbi-perl", "libnet-daemon-perl", "libplrpc-perl" ], "server_packages": [ "mysql-server-5.1", "mysql-server-core-5.1", "libhtml-template-perl" ], "start_command": "/etc/init.d/mysql restart", "process_match": "/usr/sbin/mysqld.*" },
+
+        "suse|SuSe": { "packages": [ "mysql-community-server-client", "libmysqlclient16", "libmysqlclient_r16" ], "server_packages": [ "mysql-community-server" ], "start_command": "/etc/init.d/mysql restart", "process_match": "/usr/sbin/mysqld.*" }
+    }
+}
