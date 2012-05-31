@@ -80,7 +80,7 @@ my @options_spec =
   "install-target|it=s",
   "json!",
 
-  "save-config",
+  "save-config|config-save!",
   "repolist|rl=s@",
   # "make-package=s@",
   "install|i=s@",
@@ -221,7 +221,8 @@ if ($options{'list-activations'})
  exit;
 }
 
-foreach my $word (qw/search install activate deactivate remove test generate api/)
+my @callable = qw/search install activate deactivate remove test generate api/;
+foreach my $word (@callable)
 {
  if ($options{$word})
  {
@@ -229,8 +230,14 @@ foreach my $word (qw/search install activate deactivate remove test generate api
   no strict 'refs';
   $word->($options{$word});
   use strict 'refs';
+  exit;
  }
 }
+
+push @callable, 'list', 'search', 'save-config';
+print "Sorry, $0 doesn't know what you want to do.  You have to specify one of " .
+ join(" or ", map { "--$_" } @callable) . ".\n";
+exit 1;
 
 sub configure_self
 {
