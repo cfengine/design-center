@@ -62,7 +62,7 @@ my %def_options =
   'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
   'make-package' => [],
   params => [],
-  cfhome => '/var/cfengine/bin',
+  cfhome => join (':', split(':', $ENV{PATH}||''), '/var/cfengine/bin', '/usr/sbin', '/usr/local/bin', '/usr/local/sbin'),
   runfile => undef,
  );
 
@@ -211,11 +211,16 @@ if ($options{'list-activations'})
  my $activations = load_json($options{'act-file'}, 1);
  die "Can't load any activations from $options{'act-file'}"
   unless defined $activations && ref $activations eq 'HASH';
+ my $activation_id = 1;
  foreach my $sketch (sort keys %$activations)
  {
   foreach my $pfile (sort keys %{$activations->{$sketch}})
   {
-   print "$sketch $pfile ", $coder->encode($activations->{$sketch}->{$pfile}), "\n";
+   print "$activation_id\t$sketch $pfile ",
+    $coder->encode($activations->{$sketch}->{$pfile}),
+     "\n";
+
+   $activation_id++;
   }
  }
  exit;
@@ -806,12 +811,12 @@ sub activate
 
 sub deactivate
 {
- my $sketch = shift @_;
- my $all = shift @_;
+ my $sketch     = shift @_;
+ my $all_params = shift @_;
 
  my $all_sketches = ($sketch eq 'all');
 
- $all = 1 if ($options{params} && $options{params} eq 'all');
+ $all_params = 1 if (scalar @{$options{params}} && $options{params}->[0] eq 'all');
 
  my $activations = load_json($options{'act-file'}, 1);
 
@@ -820,7 +825,7 @@ sub deactivate
   $activations = {};
   print "Deactivated: all sketch activations!\n" unless $quiet;
  }
- elsif ($all)
+ elsif ($all_params)
  {
   my %info = %{$activations->{$sketch}};
   delete $activations->{$sketch};
@@ -832,14 +837,36 @@ sub deactivate
   die "Can't deactivate sketch $sketch without --params"
    unless $options{params};
 
-  die "Couldn't deactivate sketch $sketch: no activation for $options{params}"
-   unless exists $activations->{$sketch}->{$options{params}};
+  my %byid;
+  my $activation_id = 1;
+  foreach my $sketch (sort keys %$activations)
+  {
+   foreach my $pfile (sort keys %{$activations->{$sketch}})
+   {
+    $byid{$activation_id++} = [ $sketch, $pfile ];
+   }
+  }
 
-  delete $activations->{$sketch}->{$options{params}};
+  my $requested = $sketch;
+  my $params = scalar @{$options{params}} ? $options{params}->[0] : '[--params not given]';
+
+  # deactivating by ID
+  if (exists $byid{$requested})
+  {
+   $sketch = $byid{$requested}->[0];
+   $params =  $byid{$requested}->[1];
+   print "Removing activation ID $requested => $sketch $params\n"
+    unless $quiet;
+  }
+
+  die "Couldn't deactivate sketch $sketch: no activation for $params"
+   unless exists $activations->{$sketch}->{$params};
+
+  delete $activations->{$sketch}->{$params};
 
   delete $activations->{$sketch} unless scalar keys %{$activations->{$sketch}};
 
-  print "Deactivated: $sketch params $options{params}\n" unless $quiet;
+  print "Deactivated: $sketch $params\n" unless $quiet;
  }
 
  ensure_dir(dirname($options{'act-file'}));
@@ -873,7 +900,7 @@ sub remove
    my $data = $contents->{$sketch};
    if (remove_dir($data->{dir}))
    {
-    deactivate($sketch, 1);             # deactivate all the activations
+    deactivate($sketch, 'all');       # deactivate all the activations
     print "Successfully removed $sketch from $data->{dir}\n" unless $quiet;
    }
    else
@@ -1649,18 +1676,39 @@ sub remove_dir
  return remove_tree($dir, { verbose => $verbose });
 }
 
-sub cfengine_version
 {
- my $cfv = `$options{cfhome}/cf-promises -V`; # TODO: get this from cfengine?
- if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
+ my $promises_binary;
+ sub cfengine_version
  {
-  return $1;
- }
- else
- {
-  print "Unsatisfied cfengine dependency: could not get version from [$cfv].\n"
+  my $promises_name = 'cf-promises';
+
+  unless ($promises_binary)
+  {
+   foreach my $check_path (split ':', $options{cfhome})
+   {
+    my $check = "$check_path/$promises_name";
+    $promises_binary = $check if -x $check;
+    last if $promises_binary;
+   }
+  }
+
+  die "Sorry, but we couldn't find $promises_name in the search path $options{cfhome}.  Please set \$PATH or use the --cfhome parameter!"
+   unless $promises_binary;
+
+  print "Excellent, we found $promises_binary to interface with CFEngine\n"
    if $verbose;
-  return 0;
+
+  my $cfv = `$promises_binary -V`;     # TODO: get this from cfengine?
+  if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
+  {
+   return $1;
+  }
+  else
+  {
+   print "Unsatisfied cfengine dependency: could not get version from [$cfv].\n"
+    if $verbose;
+   return 0;
+  }
  }
 }
 
