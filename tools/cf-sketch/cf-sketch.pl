@@ -647,7 +647,7 @@ sub api
      local $Data::Dumper::Terse = 1;
      local $Data::Dumper::Indent = 0;
      my %defaults = map { $_ => Dumper($entry_point->{default}->{$_})} @optional_args;
-     my %empty_values = ( 'context' => 'false',
+     my %empty_values = ( 'context' => '!any',
                           'string'  => '',
                           'slist'   => [],
                           'array'   => {},
@@ -751,16 +751,23 @@ sub activate
     my $varlist = $entry_point->{varlist};
     foreach my $varname (sort keys %$varlist)
     {
-     die "Can't activate $sketch: its interface requires variable $varname"
+     if ($varname eq 'activated' && ! exists $params->{$varname})
+     {
+      print "Inserting artificial 'activated' boolean set to 'any' so it's always true.\n"
+       unless $quiet;
+      $params->{$varname} = 'any';
+     }
+
+     die "Can't activate $sketch: its interface requires variable '$varname'"
       unless exists $params->{$varname};
-     print "Satisfied by params: $varname\n" if $verbose;
+     print "Satisfied by params: '$varname'\n" if $verbose;
     }
 
     $varlist = $entry_point->{optional_varlist};
     foreach my $varname (sort keys %$varlist)
     {
      next unless exists $params->{$varname};
-     print "Optional satisfied by params: $varname\n" if $verbose;
+     print "Optional satisfied by params: '$varname'\n" if $verbose;
     }
    }
    else
@@ -1782,10 +1789,22 @@ sub make_runfile
   $contexts .= "       # contexts for activation $a\n";
   foreach my $context (sort keys %{$activations->{$a}->{contexts}})
   {
-   $contexts .= sprintf('      "_%s_%s" expression => "%sany";' . "\n",
+   my $value = $activations->{$a}->{contexts}->{$context}->{value};
+   my $print;
+
+   if (ref $value eq '' && $value ne '0' && $value ne '1') # a string, not a boolean!
+   {
+    $print = $value;
+   }
+   else                                 # this will take a JSON boolean, or 0/1
+   {
+    $print = $value ? 'any' : '!any';
+   }
+
+   $contexts .= sprintf('      "_%s_%s" expression => "%s";' . "\n",
                         $a,
                         $context,
-                        $activations->{$a}->{contexts}->{$context}->{value} ? '' : '!')
+                        $print)
   }
 
   $vars .= "       # string versions of the contexts for activation $a\n";
