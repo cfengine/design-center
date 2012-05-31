@@ -62,7 +62,7 @@ my %def_options =
   'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
   'make-package' => [],
   params => [],
-  cfhome => '/var/cfengine/bin',
+  cfhome => join (':', split(':', $ENV{PATH}||''), '/var/cfengine/bin', '/usr/sbin', '/usr/local/bin', '/usr/local/sbin'),
   runfile => undef,
  );
 
@@ -80,7 +80,7 @@ my @options_spec =
   "install-target|it=s",
   "json!",
 
-  "save-config",
+  "save-config|config-save!",
   "repolist|rl=s@",
   # "make-package=s@",
   "install|i=s@",
@@ -211,17 +211,23 @@ if ($options{'list-activations'})
  my $activations = load_json($options{'act-file'}, 1);
  die "Can't load any activations from $options{'act-file'}"
   unless defined $activations && ref $activations eq 'HASH';
+ my $activation_id = 1;
  foreach my $sketch (sort keys %$activations)
  {
   foreach my $pfile (sort keys %{$activations->{$sketch}})
   {
-   print "$sketch $pfile ", $coder->encode($activations->{$sketch}->{$pfile}), "\n";
+   print "$activation_id\t$sketch $pfile ",
+    $coder->encode($activations->{$sketch}->{$pfile}),
+     "\n";
+
+   $activation_id++;
   }
  }
  exit;
 }
 
-foreach my $word (qw/search install activate deactivate remove test generate api/)
+my @callable = qw/search install activate deactivate remove test generate api/;
+foreach my $word (@callable)
 {
  if ($options{$word})
  {
@@ -229,8 +235,14 @@ foreach my $word (qw/search install activate deactivate remove test generate api
   no strict 'refs';
   $word->($options{$word});
   use strict 'refs';
+  exit;
  }
 }
+
+push @callable, 'list', 'search', 'save-config';
+print "Sorry, $0 doesn't know what you want to do.  You have to specify one of " .
+ join(" or ", map { "--$_" } @callable) . ".\n";
+exit 1;
 
 sub configure_self
 {
@@ -635,7 +647,7 @@ sub api
      local $Data::Dumper::Terse = 1;
      local $Data::Dumper::Indent = 0;
      my %defaults = map { $_ => Dumper($entry_point->{default}->{$_})} @optional_args;
-     my %empty_values = ( 'context' => 'false',
+     my %empty_values = ( 'context' => '!any',
                           'string'  => '',
                           'slist'   => [],
                           'array'   => {},
@@ -739,16 +751,23 @@ sub activate
     my $varlist = $entry_point->{varlist};
     foreach my $varname (sort keys %$varlist)
     {
-     die "Can't activate $sketch: its interface requires variable $varname"
+     if ($varname eq 'activated' && ! exists $params->{$varname})
+     {
+      print "Inserting artificial 'activated' boolean set to 'any' so it's always true.\n"
+       unless $quiet;
+      $params->{$varname} = 'any';
+     }
+
+     die "Can't activate $sketch: its interface requires variable '$varname'"
       unless exists $params->{$varname};
-     print "Satisfied by params: $varname\n" if $verbose;
+     print "Satisfied by params: '$varname'\n" if $verbose;
     }
 
     $varlist = $entry_point->{optional_varlist};
     foreach my $varname (sort keys %$varlist)
     {
      next unless exists $params->{$varname};
-     print "Optional satisfied by params: $varname\n" if $verbose;
+     print "Optional satisfied by params: '$varname'\n" if $verbose;
     }
    }
    else
@@ -799,12 +818,12 @@ sub activate
 
 sub deactivate
 {
- my $sketch = shift @_;
- my $all = shift @_;
+ my $sketch     = shift @_;
+ my $all_params = shift @_;
 
  my $all_sketches = ($sketch eq 'all');
 
- $all = 1 if ($options{params} && $options{params} eq 'all');
+ $all_params = 1 if (scalar @{$options{params}} && $options{params}->[0] eq 'all');
 
  my $activations = load_json($options{'act-file'}, 1);
 
@@ -813,7 +832,7 @@ sub deactivate
   $activations = {};
   print "Deactivated: all sketch activations!\n" unless $quiet;
  }
- elsif ($all)
+ elsif ($all_params)
  {
   my %info = %{$activations->{$sketch}};
   delete $activations->{$sketch};
@@ -825,14 +844,36 @@ sub deactivate
   die "Can't deactivate sketch $sketch without --params"
    unless $options{params};
 
-  die "Couldn't deactivate sketch $sketch: no activation for $options{params}"
-   unless exists $activations->{$sketch}->{$options{params}};
+  my %byid;
+  my $activation_id = 1;
+  foreach my $sketch (sort keys %$activations)
+  {
+   foreach my $pfile (sort keys %{$activations->{$sketch}})
+   {
+    $byid{$activation_id++} = [ $sketch, $pfile ];
+   }
+  }
 
-  delete $activations->{$sketch}->{$options{params}};
+  my $requested = $sketch;
+  my $params = scalar @{$options{params}} ? $options{params}->[0] : '[--params not given]';
+
+  # deactivating by ID
+  if (exists $byid{$requested})
+  {
+   $sketch = $byid{$requested}->[0];
+   $params =  $byid{$requested}->[1];
+   print "Removing activation ID $requested => $sketch $params\n"
+    unless $quiet;
+  }
+
+  die "Couldn't deactivate sketch $sketch: no activation for $params"
+   unless exists $activations->{$sketch}->{$params};
+
+  delete $activations->{$sketch}->{$params};
 
   delete $activations->{$sketch} unless scalar keys %{$activations->{$sketch}};
 
-  print "Deactivated: $sketch params $options{params}\n" unless $quiet;
+  print "Deactivated: $sketch $params\n" unless $quiet;
  }
 
  ensure_dir(dirname($options{'act-file'}));
@@ -866,7 +907,7 @@ sub remove
    my $data = $contents->{$sketch};
    if (remove_dir($data->{dir}))
    {
-    deactivate($sketch, 1);             # deactivate all the activations
+    deactivate($sketch, 'all');       # deactivate all the activations
     print "Successfully removed $sketch from $data->{dir}\n" unless $quiet;
    }
    else
@@ -1589,7 +1630,7 @@ sub load_json
  {
   chomp @j;
   s/\n//g foreach @j;
-  s/^\s*#.*//g foreach @j;
+  s/^\s*(#|\/\/).*//g foreach @j;
   my $ret = $coder->decode(join '', @j);
 
   if (ref $ret eq 'HASH' &&
@@ -1642,18 +1683,39 @@ sub remove_dir
  return remove_tree($dir, { verbose => $verbose });
 }
 
-sub cfengine_version
 {
- my $cfv = `$options{cfhome}/cf-promises -V`; # TODO: get this from cfengine?
- if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
+ my $promises_binary;
+ sub cfengine_version
  {
-  return $1;
- }
- else
- {
-  print "Unsatisfied cfengine dependency: could not get version from [$cfv].\n"
+  my $promises_name = 'cf-promises';
+
+  unless ($promises_binary)
+  {
+   foreach my $check_path (split ':', $options{cfhome})
+   {
+    my $check = "$check_path/$promises_name";
+    $promises_binary = $check if -x $check;
+    last if $promises_binary;
+   }
+  }
+
+  die "Sorry, but we couldn't find $promises_name in the search path $options{cfhome}.  Please set \$PATH or use the --cfhome parameter!"
+   unless $promises_binary;
+
+  print "Excellent, we found $promises_binary to interface with CFEngine\n"
    if $verbose;
-  return 0;
+
+  my $cfv = `$promises_binary -V`;     # TODO: get this from cfengine?
+  if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
+  {
+   return $1;
+  }
+  else
+  {
+   print "Unsatisfied cfengine dependency: could not get version from [$cfv].\n"
+    if $verbose;
+   return 0;
+  }
  }
 }
 
@@ -1675,6 +1737,42 @@ sub local_cfsketches_source
  return local_cfsketches_source($updir);
 }
 
+sub recurse_print
+{
+ my $ref = shift @_;
+ my $prefix = shift @_;
+
+ my @print;
+                      # $_->{path},
+                      # $_->{type},
+                      # $_->{value}) foreach @toprint;
+
+ # recurse for hashes
+ if (ref $ref eq 'HASH')
+ {
+  push @print, recurse_print($ref->{$_}, $prefix . "[$_]")
+   foreach sort keys %$ref;
+ }
+ elsif (ref $ref eq 'ARRAY')
+ {
+  push @print, {
+                path => $prefix,
+                type => 'slist',
+                value => '{' . join(", ", map { "\"$_\"" } @$ref) . '}'
+               };
+ }
+ else
+ {
+  push @print, {
+                path => $prefix,
+                type => 'string',
+                value => "\"$ref\""
+               };
+ }
+
+ return @print;
+}
+
 sub make_runfile
 {
  my $activations = shift @_;
@@ -1688,14 +1786,40 @@ sub make_runfile
 
  foreach my $a (keys %$activations)
  {
+  $contexts .= "       # contexts for activation $a\n";
   foreach my $context (sort keys %{$activations->{$a}->{contexts}})
   {
-   $contexts .= sprintf('      "_%s_%s" expression => "%sany";' . "\n",
+   my $value = $activations->{$a}->{contexts}->{$context}->{value};
+   my $print;
+
+   if (ref $value eq '' && $value ne '0' && $value ne '1') # a string, not a boolean!
+   {
+    $print = $value;
+   }
+   else                                 # this will take a JSON boolean, or 0/1
+   {
+    $print = $value ? 'any' : '!any';
+   }
+
+   $contexts .= sprintf('      "_%s_%s" expression => "%s";' . "\n",
                         $a,
                         $context,
-                        $activations->{$a}->{contexts}->{$context} ? '' : '!')
+                        $print)
   }
 
+  $vars .= "       # string versions of the contexts for activation $a\n";
+  foreach my $context (sort keys %{$activations->{$a}->{contexts}})
+  {
+   my @context_hack = split '__', $context;
+   my $short_context = pop @context_hack;
+   my $context_prefix = join '__', @context_hack, '';
+
+   $vars .= sprintf('      "_%s_%scontexts_text[%s]" string => "%s";' . "\n",
+                    $a,
+                    $context_prefix,
+                    $short_context,
+                    $activations->{$a}->{contexts}->{$context}->{value} ? 'ON' : 'OFF')
+  }
   $vars .= "       # string and slist variables for activation $a\n";
 
   foreach my $var (sort keys %{$activations->{$a}->{vars}})
@@ -1712,11 +1836,15 @@ sub make_runfile
   {
    foreach my $ak (sort keys %{$activations->{$a}->{array_vars}->{$avar}})
    {
-    $vars .= sprintf('       "_%s_%s[%s]" string => "%s";' . "\n",
-                     $a,
-                     $avar,
-                     $ak,
-                     $activations->{$a}->{array_vars}->{$avar}->{$ak});
+    my $av = $activations->{$a}->{array_vars}->{$avar}->{$ak};
+    my @toprint = recurse_print($av, '');
+    $vars .= sprintf('       "_%s_%s[%s]%s" %s => %s;' . "\n",
+                      $a,
+                      $avar,
+                      $ak,
+                      $_->{path},
+                      $_->{type},
+                      $_->{value}) foreach @toprint;
    }
   }
 
