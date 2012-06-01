@@ -649,7 +649,7 @@ sub api
      local $Data::Dumper::Terse = 1;
      local $Data::Dumper::Indent = 0;
      my %defaults = map { $_ => Dumper($entry_point->{default}->{$_})} @optional_args;
-     my %empty_values = ( 'context' => '!any',
+     my %empty_values = ( 'context' => '',
                           'string'  => '',
                           'slist'   => [],
                           'array'   => {},
