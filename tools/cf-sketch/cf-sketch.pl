@@ -252,6 +252,7 @@ sub configure_self
              'repolist' => 1,             # array
              'cfhome'   => 0,             # string
              'install-source' => 0,
+             'install-target' => 0,
              'act-file' => 0,
              'runfile' => 0,
             );
