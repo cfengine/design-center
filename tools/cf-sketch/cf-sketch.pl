@@ -279,11 +279,12 @@ sub search
  my $source = $options{'install-source'};
  my $base_dir = dirname($source);
  my $search = search_internal($source, []);
+ my $local_dir = is_resource_local($base_dir);
 
  SKETCH:
  foreach my $sketch (sort keys %{$search->{known}})
  {
-  my $dir = File::Spec->catdir($base_dir, $search->{known}->{$sketch});
+  my $dir = $local_dir ? File::Spec->catdir($base_dir, $search->{known}->{$sketch}) : "$base_dir/$search->{known}->{$sketch}";
   foreach my $term (@$terms)
   {
    if ($sketch =~ m/$term/ || $dir =~ m/$term/)
@@ -302,9 +303,9 @@ sub search_internal
 
  my %known;
  my %todo;
- my $local = is_resource_local($source);
+ my $local_dir = is_resource_local($source);
 
- if ($local)
+ if ($local_dir)
  {
   open(my $invf, '<', $source)
    or die "Could not open cf-sketch inventory file $source: $!";
@@ -930,7 +931,7 @@ sub install
 
  my $source = $options{'install-source'};
  my $base_dir = dirname($source);
- my $local = is_resource_local($source);
+ my $local_dir = is_resource_local($source);
 
  print "Loading cf-sketch inventory from $source\n" if $verbose;
 
@@ -941,10 +942,10 @@ sub install
  foreach my $sketch (sort keys %todo)
  {
  print "Installing $sketch\n" unless $quiet;
-  my $dir = $local ? File::Spec->catdir($base_dir, $todo{$sketch}) : "$base_dir/$todo{$sketch}";
+  my $dir = $local_dir ? File::Spec->catdir($base_dir, $todo{$sketch}) : "$base_dir/$todo{$sketch}";
 
   # make sure we only work with absolute directories
-  my $data = load_sketch($local ? File::Spec->rel2abs($dir) : $dir);
+  my $data = load_sketch($local_dir ? File::Spec->rel2abs($dir) : $dir);
 
   die "Sorry, but sketch $sketch could not be loaded from $dir!"
    unless $data;
