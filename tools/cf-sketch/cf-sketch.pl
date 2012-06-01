@@ -644,8 +644,8 @@ sub api
    if ($entry_point)
    {
      $found = 1;
-     my @mandatory_args = grep { $_ ne 'activated' } keys %{$entry_point->{varlist}};
-     my @optional_args = keys %{$entry_point->{optional_varlist}};
+     my @mandatory_args = sort keys %{$entry_point->{varlist}};
+     my @optional_args = sort keys %{$entry_point->{optional_varlist}};
      local $Data::Dumper::Terse = 1;
      local $Data::Dumper::Indent = 0;
      my %defaults = map { $_ => Dumper($entry_point->{default}->{$_})} @optional_args;
