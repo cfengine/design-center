@@ -2,6 +2,7 @@
 databases/db_install Database::Install
 libraries/copbl CFEngine::stdlib
 networking/ssh Security::SSH
+package_management/yumrepo Repository::Yum::Maintain
 system/etc_hosts System::etc_hosts
 system/tzconfig System::tzconfig
 utilities/nagios_plugin_agent Monitoring::nagios_plugin_agent
