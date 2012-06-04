@@ -64,6 +64,7 @@ my %def_options =
   params => [],
   cfhome => join (':', split(':', $ENV{PATH}||''), '/var/cfengine/bin', '/usr/sbin', '/usr/local/bin', '/usr/local/sbin'),
   runfile => undef,
+  standalone => 1,
  );
 
 my @options_spec =
@@ -619,7 +620,7 @@ sub generate
 
    print $rf $output;
    close $rf;
-   print "Generated run file $run_file\n"
+   print "Generated ".($standalone?"standalone":"non-standalone")." run file $run_file\n"
     unless $quiet;
 
 }
