@@ -1,0 +1,2 @@
+The three sketches db_mysql, db_postgresql and db_sqlite have
+been unified and replaced by db_install.
