@@ -16,17 +16,44 @@
 #   DB_PASSWORD
 #   _htmlroot
 #   _wp_dir (final wordpress install directory)
-bundle agent wp_install(params)
+bundle agent wp_install(prefix)
 {
+  vars:
+      "canon_prefix" string => canonify("$(prefix)");
+      "contexts"     slist  => getindices("$(prefix)bycontext");
   methods:
-      "wp_vars"  usebundle => wp_vars("$(params)");
+      "wp_vars"
+        usebundle => wp_vars("$(prefix)", "$(contexts)"),
+        classes => always("$(canon_prefix)prepared"),
+        ifvarclass => "$(contexts)";
       "wp_pkgs"  usebundle => wp_packages_installed("wp_vars.conf");
       "wp_svcs"  usebundle => wp_services_up("wp_vars.conf");
       "wp_tar"   usebundle => wp_tarball_is_present("wp_vars.conf");
       "wp_xpnd"  usebundle => wp_tarball_is_unrolled("wp_vars.conf"); 
       "wp_mysql" usebundle => wp_mysql_configuration("wp_vars.conf"); 
       "wp_cfgcp" usebundle => wp_config_exists("wp_vars.conf");
-      "wp_cfg"   usebundle => wp_is_properly_configured("wp_vars.conf");
+      "wp_cfg"   usebundle => wp_is_properly_configured("wp_vars.conf", "$(prefix)wp_params");
+}
+
+bundle agent meta_wp_install
+{
+  vars:
+      "argument[wp_dir]"                string => "string",
+        comment => "Directory where wordpress will be installed";
+      # Wordpress configuration parameters
+      "argument[wp_params]"             string => "array",
+        comment => "Parameters to insert into Wordpress config file.";
+      # General configuration parameters
+      "optional_argument[tarfile]"      string => "string",
+        comment => "Where to store the downloaded wordpress tar file";
+      "default[tarfile]"                string => "/root/wordpress-latest.tar.gz";
+      "optional_argument[downloadurl]"  string => "string",
+        comment => "Download URL for the wordpress.tar.gz file";
+      "default[downloadurl]"            string => "http://wordpress.org/latest.tar.gz";
+
+      # look in the params to see how we fill in system-specific
+      # variables and paths per system we support
+      "argument[bycontext]"       string => "array";
 }
 
 # Make sure wordpress is configured correctly. It must be installed already.
@@ -42,34 +69,19 @@ bundle agent wp_config(params)
 
 #############################################
 
-bundle agent wp_vars(params)
+bundle agent wp_vars(prefix, context)
 {
   vars:
-      "wp_dir"             string => "$($(params)[_wp_dir])";
+      "class_prefix" string => lastnode("$(prefix)", "\."); # strip out the bundle prefix
+
+      "wp_dir"             string => "$($(prefix)wp_dir)";
       # Default configuration values. Internal parameters start with _
-      "conf[_tarfile]"      string => "/root/wordpress-latest.tar.gz",
-                            policy => "overridable";
-      "conf[_downloadurl]"  string => "http://wordpress.org/latest.tar.gz",
-                            policy => "overridable";
-      "conf[_wp_config]"    string => "$(wp_dir)/wp-config.php",
-                            policy => "overridable";
-      "conf[_wp_cfgsample]" string => "$(wp_dir)/wp-config-sample.php",
-                            policy => "overridable";
-    debian::
-      "conf[_sys_servicecmd]" string => "/usr/sbin/service",
-                              policy => "overridable";
-      "conf[_sys_apachesrv]"  string => "apache2",
-                              policy => "overridable";
-    redhat::
-      "conf[_sys_servicecmd]" string => "/sbin/service",
-                              policy => "overridable";
-      "conf[_sys_apachesrv]"  string => "httpd",
-                              policy => "overridable";
-    any::
-      # Copy configuration parameters passed, into a local array
-      "param_keys"          slist  => getindices("$(params)");
-      "conf[$(param_keys)]" string => "$($(params)[$(param_keys)])",
-                            policy => "overridable";
+      "conf[_tarfile]"      string => "$($(prefix)tarfile)";
+      "conf[_downloadurl]"  string => "$($(prefix)downloadurl)";
+      "conf[_wp_config]"    string => "$(wp_dir)/wp-config.php";
+      "conf[_wp_cfgsample]" string => "$(wp_dir)/wp-config-sample.php";
+      "conf[_sys_servicecmd]" string => "$($(prefix)bycontext[$(context)][service_command])";
+      "conf[_sys_apachesrc]"  string => "$($(prefix)bycontext[$(context)][apache_srv])";
 }
 
 bundle agent wp_report_params(params)
@@ -206,20 +218,15 @@ bundle agent wp_config_exists(params)
 
 #############################################
 
-bundle agent wp_is_properly_configured(params)
+bundle agent wp_is_properly_configured(params, wp_array)
 {
   vars:
-      "allparams" slist => getindices("$(params)");
-    secondpass::
-      "wpparams"  slist => grep("[^_].*", "allparams");
-
-  classes:
-      "secondpass" expression => isvariable("allparams");
+      "wpparams" slist => getindices("$(wp_array)");
 
   files:
     "$($(params)[_wp_config])"
-      edit_line => replace_or_add("define\('$(wpparams)', *(?!'$($(params)[$(wpparams)]))'.*",
-				  "define('$(wpparams)', '$($(params)[$(wpparams)])');");
+      edit_line => replace_or_add("define\('$(wpparams)', *(?!'$($(wp_array)[$(wpparams)]))'.*",
+				  "define('$(wpparams)', '$($(wp_array)[$(wpparams)])');");
 }
 
 #############################################
