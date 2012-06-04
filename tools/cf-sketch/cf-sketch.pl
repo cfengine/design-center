@@ -1391,7 +1391,7 @@ sub verify_entry_point
   {
    unless (-f $maincf_filename)
    {
-    warn "Could not find sketch $name entry point '$maincf'" unless $quiet;
+    warn "Could not find sketch $name entry point '$maincf_filename'" unless $quiet;
     return 0;
    }
 
@@ -1442,13 +1442,14 @@ sub verify_entry_point
    # or    "argument[bar]" string => "slist";
    # or    "argument[bar]" string => "context";
    # or    "argument[bar]" string => "array";
+   # optionally with a comma instead of a semicolon at the end
    if ($meta->{confirmed} &&
        $line =~ m/^\s*
                   "argument\[([^]]+)\]"
                   \s+
                   string
                   \s+=>\s+
-                  "(context|string|slist|array)"\s*;/x)
+                  "(context|string|slist|array)"\s*[;,]/x)
    {
     $meta->{varlist}->{$1} = $2;
    }
@@ -1457,26 +1458,28 @@ sub verify_entry_point
    # or    "optional_argument[bar]" string => "slist";
    # or    "optional_argument[bar]" string => "context";
    # or    "optional_argument[bar]" string => "array";
+   # optionally with a comma instead of a semicolon at the end
    if ($meta->{confirmed} &&
        $line =~ m/^\s*
                   "optional_argument\[([^]]+)\]"
                   \s+
                   string
                   \s+=>\s+
-                  "(context|string|slist|array)"\s*;/x)
+                  "(context|string|slist|array)"\s*[;,]/x)
    {
     $meta->{optional_varlist}->{$1} = $2;
    }
 
    # match "default[foo]" string => "string";
    # match "default[foo]" slist => { "a", "b", "c" };
+   # optionally with a comma instead of a semicolon at the end
    if ($meta->{confirmed} &&
        $line =~ m/^\s*
                   "default\[([^]]+)\]"
                   \s+
                   (string|slist)
                   \s+=>\s+
-                  (.*)\s*;/x &&
+                  (.*)\s*[;,]/x &&
       (exists $meta->{optional_varlist}->{$1} ||
        exists $meta->{varlist}->{$1}))
    {
