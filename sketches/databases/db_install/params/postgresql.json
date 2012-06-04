@@ -1,11 +1,32 @@
 {
-    "activated": true,
-    "db": "postgresql",
-    "purge": false,
-    "bycontext":
-    {
-        "redhat|centos|fedora|suse|SuSE": { "packages": [ "postgresql", "postgresql-libs" ], "server_packages": [ "postgresql-server" ], "start_command": "/etc/init.d/postgresql restart", "process_match": "/usr/bin/postmaster.*" },
-
-        "debian|ubuntu": { "packages": [ "postgresql-client-8.4", "postgresql-client-common", "postgresql-doc-8.4", "libpq5" ], "server_packages": [ "postgresql-8.4",  "postgresql-common" ], "start_command": "/etc/init.d/postgresql-8.4 restart", "process_match": ".*postgres.*" }
-    }
+   "activated" : true,
+   "db" : "postgresql",
+   "purge" : false,
+   "bycontext" : {
+      "redhat|centos|fedora|suse|SuSE" : {
+         "packages" : [
+            "postgresql",
+            "postgresql-libs"
+         ],
+         "process_match" : "/usr/bin/postmaster.*",
+         "start_command" : "/etc/init.d/postgresql restart",
+         "server_packages" : [
+            "postgresql-server"
+         ]
+      },
+      "debian|ubuntu" : {
+         "packages" : [
+            "postgresql-client-8.4",
+            "postgresql-client-common",
+            "postgresql-doc-8.4",
+            "libpq5"
+         ],
+         "process_match" : ".*postgres.*",
+         "start_command" : "/etc/init.d/postgresql-8.4 restart",
+         "server_packages" : [
+            "postgresql-8.4",
+            "postgresql-common"
+         ]
+      }
+   }
 }
