@@ -79,6 +79,7 @@ my @options_spec =
   "act-file|af=s",
   "install-target|it=s",
   "json!",
+  "standalone!",
 
   "save-config|config-save!",
   "repolist|rl=s@",
@@ -410,6 +411,7 @@ sub generate
 
    my $activation_counter = 1;
    my $template_activations = {};
+   my $standalone = $options{'standalone'};
 
    my @inputs;
    my %dependencies;
@@ -609,7 +611,7 @@ sub generate
    my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
 
    # maybe make the run template configurable?
-   my $output = make_runfile($template_activations, $includes);
+   my $output = make_runfile($template_activations, $includes, $standalone);
 
    my $run_file = $options{runfile} || File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf');
    open(my $rf, '>', $run_file)
@@ -1391,7 +1393,7 @@ sub verify_entry_point
   {
    unless (-f $maincf_filename)
    {
-    warn "Could not find sketch $name entry point '$maincf'" unless $quiet;
+    warn "Could not find sketch $name entry point '$maincf_filename'" unless $quiet;
     return 0;
    }
 
@@ -1442,13 +1444,14 @@ sub verify_entry_point
    # or    "argument[bar]" string => "slist";
    # or    "argument[bar]" string => "context";
    # or    "argument[bar]" string => "array";
+   # optionally with a comma instead of a semicolon at the end
    if ($meta->{confirmed} &&
        $line =~ m/^\s*
                   "argument\[([^]]+)\]"
                   \s+
                   string
                   \s+=>\s+
-                  "(context|string|slist|array)"\s*;/x)
+                  "(context|string|slist|array)"\s*[;,]/x)
    {
     $meta->{varlist}->{$1} = $2;
    }
@@ -1457,26 +1460,28 @@ sub verify_entry_point
    # or    "optional_argument[bar]" string => "slist";
    # or    "optional_argument[bar]" string => "context";
    # or    "optional_argument[bar]" string => "array";
+   # optionally with a comma instead of a semicolon at the end
    if ($meta->{confirmed} &&
        $line =~ m/^\s*
                   "optional_argument\[([^]]+)\]"
                   \s+
                   string
                   \s+=>\s+
-                  "(context|string|slist|array)"\s*;/x)
+                  "(context|string|slist|array)"\s*[;,]/x)
    {
     $meta->{optional_varlist}->{$1} = $2;
    }
 
    # match "default[foo]" string => "string";
    # match "default[foo]" slist => { "a", "b", "c" };
+   # optionally with a comma instead of a semicolon at the end
    if ($meta->{confirmed} &&
        $line =~ m/^\s*
                   "default\[([^]]+)\]"
                   \s+
                   (string|slist)
                   \s+=>\s+
-                  (.*)\s*;/x &&
+                  (.*)\s*[;,]/x &&
       (exists $meta->{optional_varlist}->{$1} ||
        exists $meta->{varlist}->{$1}))
    {
@@ -1779,12 +1784,23 @@ sub make_runfile
 {
  my $activations = shift @_;
  my $inputs      = shift @_;
+ my $standalone  = shift @_;
 
  my $template = get_run_template();
 
  my $contexts = '';
  my $vars     = '';
  my $methods  = '';
+ my $commoncontrol = '';
+
+ if ($standalone)
+ {
+  $commoncontrol=q(body common control
+{
+      bundlesequence => { "cfsketch_run" };
+      inputs => { @(cfsketch_g.inputs) };
+});
+ }
 
  foreach my $a (keys %$activations)
  {
@@ -1866,6 +1882,7 @@ sub make_runfile
  $template =~ s/__CONTEXTS__/$contexts/g;
  $template =~ s/__VARS__/$vars/g;
  $template =~ s/__METHODS__/$methods/g;
+ $template =~ s/__COMMONCONTROL__/$commoncontrol/g;
 
  return $template;
 }
@@ -1873,11 +1890,7 @@ sub make_runfile
 sub get_run_template
 {
  return <<'EOT';
-body common control
-{
-      bundlesequence => { "cfsketch_run" };
-      inputs => { __INPUTS__ };
-}
+__COMMONCONTROL__
 
 bundle common cfsketch_g
 {
@@ -1885,6 +1898,9 @@ bundle common cfsketch_g
       # contexts
 __CONTEXTS__
   vars:
+       # Files that need to be loaded for this to work.
+       "inputs" slist => { __INPUTS__ };
+
 __VARS__
 }
 

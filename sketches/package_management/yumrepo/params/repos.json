@@ -1,0 +1,11 @@
+{
+    "activated": true,
+    "install_tools": true,
+    "ifelapsed": "60",
+    "repos": 
+    {
+        "/var/www/html/repo_mirror/updates": { "name": "updates", "perms": { "m": "755", "o": "root", "g": "root" }, },
+        "/var/www/html/repo_mirror/custom": { "name": "custom", "perms": { "m": "755", "o": "root", "g": "root" },  },
+        "/var/www/html/repo_mirror/updates1": { "name": "updates1", "perms": { "m": "755", "o": "root", "g": "root" },  }
+    }
+}
