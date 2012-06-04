@@ -79,6 +79,7 @@ my @options_spec =
   "act-file|af=s",
   "install-target|it=s",
   "json!",
+  "standalone!",
 
   "save-config|config-save!",
   "repolist|rl=s@",
@@ -410,6 +411,7 @@ sub generate
 
    my $activation_counter = 1;
    my $template_activations = {};
+   my $standalone = $options{'standalone'};
 
    my @inputs;
    my %dependencies;
@@ -609,7 +611,7 @@ sub generate
    my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
 
    # maybe make the run template configurable?
-   my $output = make_runfile($template_activations, $includes);
+   my $output = make_runfile($template_activations, $includes, $standalone);
 
    my $run_file = $options{runfile} || File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf');
    open(my $rf, '>', $run_file)
@@ -1779,12 +1781,23 @@ sub make_runfile
 {
  my $activations = shift @_;
  my $inputs      = shift @_;
+ my $standalone  = shift @_;
 
  my $template = get_run_template();
 
  my $contexts = '';
  my $vars     = '';
  my $methods  = '';
+ my $commoncontrol = '';
+
+ if ($standalone)
+ {
+  $commoncontrol=q(body common control
+{
+      bundlesequence => { "cfsketch_run" };
+      inputs => { @(cfsketch_g.inputs) };
+});
+ }
 
  foreach my $a (keys %$activations)
  {
@@ -1866,6 +1879,7 @@ sub make_runfile
  $template =~ s/__CONTEXTS__/$contexts/g;
  $template =~ s/__VARS__/$vars/g;
  $template =~ s/__METHODS__/$methods/g;
+ $template =~ s/__COMMONCONTROL__/$commoncontrol/g;
 
  return $template;
 }
@@ -1873,11 +1887,7 @@ sub make_runfile
 sub get_run_template
 {
  return <<'EOT';
-body common control
-{
-      bundlesequence => { "cfsketch_run" };
-      inputs => { __INPUTS__ };
-}
+__COMMONCONTROL__
 
 bundle common cfsketch_g
 {
@@ -1885,6 +1895,9 @@ bundle common cfsketch_g
       # contexts
 __CONTEXTS__
   vars:
+       # Files that need to be loaded for this to work.
+       "inputs" slist => { __INPUTS__ };
+
 __VARS__
 }
 
