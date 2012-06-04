@@ -1,0 +1,25 @@
+{
+
+    "manifest":
+    {
+        "yumrepo.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+        "params/repos.json": { },
+    },
+
+    "metadata":
+    {
+        "name": "Repository::Yum::Maintain",
+        "version": 1.01,
+        "license": "MIT",
+        "portfolio": [ "cfdc" ],
+        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "tested": [ "redhat_5", "centos_5" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 },
+                     "cfengine": { "version": "3.2.1" },
+                     "os": [ "linux" ]
+                   }
+    },
+    "entry_point": "yumrepo.cf",
+    "interface": [ "yumrepo.cf" ]
+}

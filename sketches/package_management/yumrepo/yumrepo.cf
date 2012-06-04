@@ -1,68 +1,101 @@
-bundle agent yumrepo_install_tools {
-# Install tools required to manage yum repositories
-    packages:
-        redhat|centos::
-            "createrepo"
-                package_policy => "add",
-                package_method => yum_rpm,
-                comment        => "createrepo is needed to create and update
-                                   the metadata for a yum repository";
+bundle agent yumrepo_maintain(prefix)
+{
+  vars:
+      "repos" slist => getindices("$(prefix)repos");
+
+      # Install tools required to manage yum repositories
+  packages:
+    redhat|centos::
+      "createrepo"
+      package_policy => "add",
+      package_method => yum_rpm,
+      ifvarclass => "$(prefix)install_tools",
+      comment => "createrepo is needed to create and update the metadata for a yum repository";
+
+  methods:
+      "maintain $(repos)" usebundle => yumrepo_maintain_repo("$(repos)", "$(prefix)"),
+      action => if_elapsed("$($(prefix)ifelapsed)"),
+      comment => "We might not want to constantly search for changed packages";
 }
 
-bundle agent yumrepo_maintain_repo(path) {
-# Creates repomd (xml-rpm-metadata) repository 
+bundle agent meta_yumrepo_maintain
+{
+  vars:
+      "argument[install_tools]" string => "context";
+
+      # normally we want to pause between executions
+      "optional_argument[ifelapsed]" string => "string";
+      "default[ifelapsed]" string => "60";
+
+      # look in params/repos.json to see how we fill in the paths per
+      # system we support
+      "argument[repos]" string => "array";
+
+}
+
+bundle agent yumrepo_maintain_repo(path, prefix)
+{
+# Creates repomd (xml-rpm-metadata) repository
 # Updates metadata if any packages are added changed or removed
-# Expects full path to repository directory
-#    vars:
-#        "updates_repo" string => "/var/www/html/repo_mirror/updates";
-#        "custom_repo" string => "/var/www/html/repo_mirror/custom";
-#        "list_o_repos" slist => { "/var/www/html/repo_mirror/updates1",
-#                                   "/var/www/html/repo_mirror/updates2",
-#                                };
-#
-#    methods:
-#        "supplemental_repo" usebundle => yumrepo_maintain_repo("/var/www/html/repo_mirror/supplemental");
-#        "updates_repo" usebundle => yumrepo_maintain_repo("$(updates_repo)");
-#
-#        "multiple_repos" 
-#            usebundle  => yumrepo_maintain_repo("$(list_o_repos)"),
-#            action     => if_elapsed("60"),
-#            comment    => "We might not want to constantly search for changed packages";
 
-    files:
-        "$(path)/."
-            create => "true",
-            perms  => mog("755", "root", "root"),
-            comment => "Ensure repository root directory exists";
+# see README.md and test.cf for usage and parameters; this bundle
+# REQUIRES you to go through the yumrepo_maintain() bundle and
+# interface.
+  vars:
+      "canon_prefix" string => canonify("$(prefix)_$(path)");
+      "repo" string => "$(prefix)repos[$(path)]";
+      "name" string => "$($(repo)[name])";
+      "mode" string => "$($(repo)[perms][m])";
+      "owner" string => "$($(prefix)repos[$(path)][perms][o])";
+      "group" string => "$($(prefix)repos[$(path)][perms][g])";
 
-        # Only check 1 level deep otherwise you will be detecting the change in the metadata itself as well.
-        # That in turn will lead to an execution of creatrepo --update each time.
-        "$(path)"
-            changes         => detect_content,
-            depth_search    => recurse("1"),
-            classes         => if_repaired("yumrepo_maintain_repo_$(path)_needs_metadata_update"),
-            comment         => "If any changes are detected we need to signal to update the metadata";
+  files:
+      "$(path)/."
+      create => "true",
+      perms => mog("$(mode)",
+                   "$(owner)",
+                   "$(group)"),
+      classes => if_repaired("$(canon_prefix)_metadata_updated"),
+      comment => "Ensure repository root directory exists with the right permissions and ownership.";
 
-    classes:
-        "yumrepo_maintain_repo_$(path)_exists"    
-            expression  => fileexists("$(path)/repodata/repomd.xml"),
-            comment     => "Check if a repo exists yet";
+      # Only check 1 level deep otherwise you will be detecting the
+      # change in the metadata itself as well.  That in turn will lead
+      # to an execution of creatrepo --update each time.
+      "$(path)"
+      changes => detect_content,
+      depth_search => recurse("1"),
+      classes => if_repaired("$(canon_prefix)_needs_metadata_update"),
+      comment => "If any changes are detected we need to signal to update the metadata";
+
+  classes:
+      "$(canon_prefix)_repomd_exists"
+      expression => fileexists("$(path)/repodata/repomd.xml"),
+      comment => "Check if a repo exists yet";
 
 
-    commands:
-        "/usr/bin/createrepo $(path)"
-            ifvarclass => not(canonify("yumrepo_maintain_repo_$(path)_exists")),
-            comment => "Create repository if one does not exist";
+  commands:
+      "/usr/bin/createrepo $(path)"
+      ifvarclass => not("$(canon_prefix)_repomd_exists"),
+      comment => "Create repository if one does not exist";
 
-        # We only want to update the repo once per run. The metadata has not 
-        # yet been updated. Update it and signal that it has been updated if 
-        # the command returns zero.
-        "/usr/bin/createrepo --update $(path)"
-            ifvarclass => "yumrepo_maintain_repo_$(path)_needs_metadata_update",
-            classes    => if_repaired("yumrepo_maintain_repo_$(path)_metadata_updated"),
-            comment    => "We need to update the metadata since a change was detected";
+      # We only want to update the repo once per run. The metadata has not
+      # yet been updated. Update it and signal that it has been updated if
+      # the command returns zero.
+      "/usr/bin/createrepo --update $(path)"
+      ifvarclass => "$(canon_prefix)_needs_metadata_update",
+      classes => if_repaired("$(canon_prefix)_metadata_updated"),
+      comment => "We need to update the metadata since a change was detected";
 
+  reports:
+    cfengine::
+      "Checked Yum repository $(name) in $(path), mode $(mode), owner $(owner), group $(group)";
+
+      "Yum repository $(name) in $(path) was initialized"
+      ifvarclass => not("$(canon_prefix)_repomd_exists");
+
+      "Yum repository $(name) in $(path) needed a metadata update"
+      ifvarclass => "$(canon_prefix)_needs_metadata_update";
+
+      "Yum repository $(name) in $(path) had a successful metadata update"
+      ifvarclass => "$(canon_prefix)_metadata_updated";
 }
-
-
-
