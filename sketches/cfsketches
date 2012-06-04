@@ -7,3 +7,4 @@ system/tzconfig System::tzconfig
 utilities/nagios_plugin_agent Monitoring::nagios_plugin_agent
 utilities/usebundle_if_ip_has_mac Utilities::usebundle_if_ip_has_mac
 utilities/vcs_mirror VCS::vcs_mirror
+web_apps/wordpress WebApps::wordpress_install

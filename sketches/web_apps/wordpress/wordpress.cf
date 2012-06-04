@@ -74,14 +74,19 @@ bundle agent wp_vars(prefix, context)
   vars:
       "class_prefix" string => lastnode("$(prefix)", "\."); # strip out the bundle prefix
 
-      "wp_dir"             string => "$($(prefix)wp_dir)";
+      "wp_dir"             string => "$($(prefix)bycontext[$(context)][wp_dir])";
       # Default configuration values. Internal parameters start with _
+      "conf[_htmlroot]"     string => "$($(prefix)bycontext[$(context)][htmlroot])";
       "conf[_tarfile]"      string => "$($(prefix)tarfile)";
       "conf[_downloadurl]"  string => "$($(prefix)downloadurl)";
       "conf[_wp_config]"    string => "$(wp_dir)/wp-config.php";
       "conf[_wp_cfgsample]" string => "$(wp_dir)/wp-config-sample.php";
-      "conf[_sys_servicecmd]" string => "$($(prefix)bycontext[$(context)][service_command])";
-      "conf[_sys_apachesrc]"  string => "$($(prefix)bycontext[$(context)][apache_srv])";
+      "conf[_sys_servicecmd]" string => "$($(prefix)bycontext[$(context)][service_cmd])";
+      "conf[_sys_apachesrv]"  string => "$($(prefix)bycontext[$(context)][apache_srv])";
+      "conf[_httpd_process]"  string => "$($(prefix)bycontext[$(context)][httpd_process])";
+      "conf[_sys_mysqlsrv]"   string => "$($(prefix)bycontext[$(context)][mysql_srv])";
+      "conf[_mysql_process]"  string => "$($(prefix)bycontext[$(context)][mysql_process])";
+      "wp_packages"  slist => { "@($(prefix)bycontext[$(context)][packages])" };
 }
 
 bundle agent wp_report_params(params)
@@ -95,23 +100,8 @@ bundle agent wp_report_params(params)
 
 bundle agent wp_packages_installed(params)
 {
-  vars:
-    debian::
-      "desired_package" slist => { 
-                                   "apache2", 
-                                   "php5",
-                                   "php5-mysql",
-                                   "mysql-server",
-                                 };
-    redhat::
-      "desired_package" slist => { 
-                                   "httpd",
-                                   "php",
-                                   "php-mysql",
-                                   "mysql-server",
-                                 };
   packages:
-      "$(desired_package)"
+      "$(wp_vars.wp_packages)"
         package_policy => "add",
         package_method => generic,
         classes => if_repaired("packages_added");
@@ -128,16 +118,12 @@ bundle agent wp_packages_installed(params)
 bundle agent wp_services_up(params)
 {
   processes:
-    debian::
-      "/usr/sbin/mysqld" restart_class => "start_mysqld";
-      "/usr/sbin/apache2"  restart_class => "start_httpd";
-    redhat::
-      "^mysqld" restart_class => "start_mysqld";
-      "^httpd"  restart_class => "start_httpd";
+      "$($(params)[_mysql_process])" restart_class => "start_mysqld";
+      "$($(params)[_httpd_process])"  restart_class => "start_httpd";
 
   commands:
     start_mysqld::
-      "$($(params)[_sys_servicecmd]) mysql start";
+      "$($(params)[_sys_servicecmd]) $($(params)[_sys_mysqlsrv]) start";
 
     start_httpd::
       "$($(params)[_sys_servicecmd]) $($(params)[_sys_apachesrv]) start" ;
