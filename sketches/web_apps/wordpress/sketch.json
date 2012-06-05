@@ -5,6 +5,7 @@
         "wordpress.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
 
+        "params/wordpress-base.json": { "comment": "Base configuration parameters for different platforms" },
         "params/wordpress.json": { "comment": "Example configuration parameters" },
     },
 

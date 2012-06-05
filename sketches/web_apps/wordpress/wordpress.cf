@@ -30,7 +30,7 @@ bundle agent wp_install(prefix)
       "wp_svcs"  usebundle => wp_services_up("wp_vars.conf");
       "wp_tar"   usebundle => wp_tarball_is_present("wp_vars.conf");
       "wp_xpnd"  usebundle => wp_tarball_is_unrolled("wp_vars.conf"); 
-      "wp_mysql" usebundle => wp_mysql_configuration("wp_vars.conf"); 
+      "wp_mysql" usebundle => wp_mysql_configuration("wp_vars.conf", "$(prefix)wp_params"); 
       "wp_cfgcp" usebundle => wp_config_exists("wp_vars.conf");
       "wp_cfg"   usebundle => wp_is_properly_configured("wp_vars.conf", "$(prefix)wp_params");
 }
@@ -56,17 +56,6 @@ bundle agent meta_wp_install
       "argument[bycontext]"       string => "array";
 }
 
-# Make sure wordpress is configured correctly. It must be installed already.
-# Mandatory parameters in the "params" array:
-#   _wp_dir (directory where wordpress is installed)
-bundle agent wp_config(params)
-{
-  methods:
-      "wp_vars"  usebundle => wp_vars("$(params)");
-      "wp_cfgcp" usebundle => wp_config_exists("wp_vars.conf");
-      "wp_cfg"   usebundle => wp_is_properly_configured("wp_vars.conf");
-}
-
 #############################################
 
 bundle agent wp_vars(prefix, context)
@@ -74,9 +63,10 @@ bundle agent wp_vars(prefix, context)
   vars:
       "class_prefix" string => lastnode("$(prefix)", "\."); # strip out the bundle prefix
 
-      "wp_dir"             string => "$($(prefix)bycontext[$(context)][wp_dir])";
+      "wp_dir"             string => "$($(prefix)wp_dir)";
       # Default configuration values. Internal parameters start with _
       "conf[_htmlroot]"     string => "$($(prefix)bycontext[$(context)][htmlroot])";
+      "conf[_wp_dir]"       string => "$($(prefix)wp_dir)";
       "conf[_tarfile]"      string => "$($(prefix)tarfile)";
       "conf[_downloadurl]"  string => "$($(prefix)downloadurl)";
       "conf[_wp_config]"    string => "$(wp_dir)/wp-config.php";
@@ -142,7 +132,7 @@ bundle agent wp_tarball_is_present(params)
         comment => "Downloading latest version of WordPress.";
 
   reports:
-    wordpress_tarball_is_present::
+    wordpress_tarball_is_present.verbose::
       "WordPress tarball is on disk.";
 }
 
@@ -155,7 +145,7 @@ bundle agent wp_tarball_is_unrolled(params)
       "wordpress_final_dir_is_present" expression => fileexists("$($(params)[_wp_dir])");
 
   reports:
-    wordpress_final_dir_is_present::
+    wordpress_final_dir_is_present.verbose::
       "WordPress directory is present.";
 
   commands:
@@ -170,14 +160,14 @@ bundle agent wp_tarball_is_unrolled(params)
 
 #############################################
 
-bundle agent wp_mysql_configuration(params)
+bundle agent wp_mysql_configuration(params, wpparams)
 {
   commands:
       "/usr/bin/mysql -u root -e \"
-      CREATE DATABASE IF NOT EXISTS $($(params)[DB_NAME]);
-      GRANT ALL PRIVILEGES ON $($(params)[DB_NAME]).*
-      TO '$($(params)[DB_USER])'@localhost
-      IDENTIFIED BY '$($(params)[DB_PASSWORD])';
+      CREATE DATABASE IF NOT EXISTS $($(wpparams)[DB_NAME]);
+      GRANT ALL PRIVILEGES ON $($(wpparams)[DB_NAME]).*
+      TO '$($(wpparams)[DB_USER])'@localhost
+      IDENTIFIED BY '$($(wpparams)[DB_PASSWORD])';
       FLUSH PRIVILEGES;\"
 ";
 }
@@ -196,9 +186,9 @@ bundle agent wp_config_exists(params)
         copy_from => backup_local_cp("$($(params)[_wp_cfgsample])");
 
   reports:
-    wordpress_config_file_exists::
+    wordpress_config_file_exists.verbose::
       "WordPress config file $($(params)[_wp_config]) is present";
-    !wordpress_config_file_exists::
+    !wordpress_config_file_exists.verbose::
       "WordPress config file $($(params)[_wp_config]) is not present";
 }
 

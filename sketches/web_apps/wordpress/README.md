@@ -1,58 +1,45 @@
 # Install and configure Wordpress
 
-Original author: Aleksey Tsalolikhin. Enhancements and maintenance: Diego Zamboni.
+Authors: Aleksey Tsalolikhin, Diego Zamboni.
 
-This sketch contains bundles to install and configure a Wordpress installation.
+This sketch installs and configures a Wordpress installation.
 
-## Sample usage
+## Usage
 
-    body common control
-    {
-      bundlesequence => { wp_install("g.wp_config") };
-      inputs => { "cfengine_stdlib.cf", "sketches/wordpress/wordpress.cf" };
-    }
+Install the sketch using cf-sketch:
+
+    cf-sketch --install WebApps::wordpress_install
     
-    bundle common g
+Look at `params/wordpress.json` for the minimum set of parameters that
+you need to configure:
+
     {
-    vars:
-      "wp_config[DB_NAME]"      string => "wordpress";
-      "wp_config[DB_USER]"      string => "wordpress";
-      "wp_config[DB_PASSWORD]"  string => "lopsa10linux";
-      debian::
-        "wp_config[_htmlroot]"     string => "/var/www";
-      redhat::
-        "wp_config[_htmlroot]"     string => "/var/www/html";
-      any::
-        "wp_config[_wp_dir]"       string => "$(wp_config[_htmlroot])/blog";
+       "wp_dir" : "/var/www/wordpress",
+       "wp_params" : {
+         "DB_NAME" : "wordpress_db",
+         "DB_USER" : "wordpress_user",
+         "DB_PASSWORD" : "wordpress_pass"
+       },
+        "include": [ "wordpress-base.json" ],
     }
 
-Any parameters in `params` that do not start with an underscore (`_`)
-will be edited/added to the `wp-config.php` file. You can use this to
-modify any other Wordpress parameters you want, for example:
+The `params/wordpress-base.json` file contains system-specific
+parameters that you can also configure. As shipped, this file contains
+the parameters for `debian`, `redhat` and `centos` systems.
 
-    "wp_config[AUTH_KEY]" string => "foobarbaz";
+Once you have configured the parameters file, enable the sketch using
+cf-sketch:
 
-## Public entry points
+    cf-sketch --activate WebApps::wordpress_install --params /var/cfengine/masterfiles/params/wordpress.json 
 
-- bundle agent wp_install(params)
+Finally, you can generate the runfile, either as a standalone file, or
+ready to be included in other policy files:
 
-  Make sure wordpress is installed and configured correctly.
-  Mandatory parameters in the "params" array:
-  
-  - `DB_NAME`
-  - `DB_USER`
-  - `DB_PASSWORD`
-  - `_htmlroot`
-  - `_wp_dir` (final wordpress install directory)
-  
-- bundle agent wp_config(params)
+    cf-sketch --generate
+    
+    cf-sketch --generate --no-standalone
 
-  Make sure wordpress is configured correctly. It must be installed already.
-  Mandatory parameters in the "params" array:
-
-  - `_wp_dir` (directory where wordpress is installed)
-
-## Steps followed by `wp_install`
+## Steps followed by the sketch
 
 1. Install Infrastructure:
    1. Install httpd and mod_php and PHP MySQL client.
