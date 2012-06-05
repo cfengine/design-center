@@ -16,60 +16,67 @@
 #   DB_PASSWORD
 #   _htmlroot
 #   _wp_dir (final wordpress install directory)
-bundle agent wp_install(params)
+bundle agent wp_install(prefix)
 {
+  vars:
+      "canon_prefix" string => canonify("$(prefix)");
+      "contexts"     slist  => getindices("$(prefix)bycontext");
   methods:
-      "wp_vars"  usebundle => wp_vars("$(params)");
+      "wp_vars"
+        usebundle => wp_vars("$(prefix)", "$(contexts)"),
+        classes => always("$(canon_prefix)prepared"),
+        ifvarclass => "$(contexts)";
       "wp_pkgs"  usebundle => wp_packages_installed("wp_vars.conf");
       "wp_svcs"  usebundle => wp_services_up("wp_vars.conf");
       "wp_tar"   usebundle => wp_tarball_is_present("wp_vars.conf");
       "wp_xpnd"  usebundle => wp_tarball_is_unrolled("wp_vars.conf"); 
-      "wp_mysql" usebundle => wp_mysql_configuration("wp_vars.conf"); 
+      "wp_mysql" usebundle => wp_mysql_configuration("wp_vars.conf", "$(prefix)wp_params"); 
       "wp_cfgcp" usebundle => wp_config_exists("wp_vars.conf");
-      "wp_cfg"   usebundle => wp_is_properly_configured("wp_vars.conf");
+      "wp_cfg"   usebundle => wp_is_properly_configured("wp_vars.conf", "$(prefix)wp_params");
 }
 
-# Make sure wordpress is configured correctly. It must be installed already.
-# Mandatory parameters in the "params" array:
-#   _wp_dir (directory where wordpress is installed)
-bundle agent wp_config(params)
+bundle agent meta_wp_install
 {
-  methods:
-      "wp_vars"  usebundle => wp_vars("$(params)");
-      "wp_cfgcp" usebundle => wp_config_exists("wp_vars.conf");
-      "wp_cfg"   usebundle => wp_is_properly_configured("wp_vars.conf");
+  vars:
+      "argument[wp_dir]"                string => "string",
+        comment => "Directory where wordpress will be installed";
+      # Wordpress configuration parameters
+      "argument[wp_params]"             string => "array",
+        comment => "Parameters to insert into Wordpress config file.";
+      # General configuration parameters
+      "optional_argument[tarfile]"      string => "string",
+        comment => "Where to store the downloaded wordpress tar file";
+      "default[tarfile]"                string => "/root/wordpress-latest.tar.gz";
+      "optional_argument[downloadurl]"  string => "string",
+        comment => "Download URL for the wordpress.tar.gz file";
+      "default[downloadurl]"            string => "http://wordpress.org/latest.tar.gz";
+
+      # look in the params to see how we fill in system-specific
+      # variables and paths per system we support
+      "argument[bycontext]"       string => "array";
 }
 
 #############################################
 
-bundle agent wp_vars(params)
+bundle agent wp_vars(prefix, context)
 {
   vars:
-      "wp_dir"             string => "$($(params)[_wp_dir])";
+      "class_prefix" string => lastnode("$(prefix)", "\."); # strip out the bundle prefix
+
+      "wp_dir"             string => "$($(prefix)wp_dir)";
       # Default configuration values. Internal parameters start with _
-      "conf[_tarfile]"      string => "/root/wordpress-latest.tar.gz",
-                            policy => "overridable";
-      "conf[_downloadurl]"  string => "http://wordpress.org/latest.tar.gz",
-                            policy => "overridable";
-      "conf[_wp_config]"    string => "$(wp_dir)/wp-config.php",
-                            policy => "overridable";
-      "conf[_wp_cfgsample]" string => "$(wp_dir)/wp-config-sample.php",
-                            policy => "overridable";
-    debian::
-      "conf[_sys_servicecmd]" string => "/usr/sbin/service",
-                              policy => "overridable";
-      "conf[_sys_apachesrv]"  string => "apache2",
-                              policy => "overridable";
-    redhat::
-      "conf[_sys_servicecmd]" string => "/sbin/service",
-                              policy => "overridable";
-      "conf[_sys_apachesrv]"  string => "httpd",
-                              policy => "overridable";
-    any::
-      # Copy configuration parameters passed, into a local array
-      "param_keys"          slist  => getindices("$(params)");
-      "conf[$(param_keys)]" string => "$($(params)[$(param_keys)])",
-                            policy => "overridable";
+      "conf[_htmlroot]"     string => "$($(prefix)bycontext[$(context)][htmlroot])";
+      "conf[_wp_dir]"       string => "$($(prefix)wp_dir)";
+      "conf[_tarfile]"      string => "$($(prefix)tarfile)";
+      "conf[_downloadurl]"  string => "$($(prefix)downloadurl)";
+      "conf[_wp_config]"    string => "$(wp_dir)/wp-config.php";
+      "conf[_wp_cfgsample]" string => "$(wp_dir)/wp-config-sample.php";
+      "conf[_sys_servicecmd]" string => "$($(prefix)bycontext[$(context)][service_cmd])";
+      "conf[_sys_apachesrv]"  string => "$($(prefix)bycontext[$(context)][apache_srv])";
+      "conf[_httpd_process]"  string => "$($(prefix)bycontext[$(context)][httpd_process])";
+      "conf[_sys_mysqlsrv]"   string => "$($(prefix)bycontext[$(context)][mysql_srv])";
+      "conf[_mysql_process]"  string => "$($(prefix)bycontext[$(context)][mysql_process])";
+      "wp_packages"  slist => { "@($(prefix)bycontext[$(context)][packages])" };
 }
 
 bundle agent wp_report_params(params)
@@ -83,23 +90,8 @@ bundle agent wp_report_params(params)
 
 bundle agent wp_packages_installed(params)
 {
-  vars:
-    debian::
-      "desired_package" slist => { 
-                                   "apache2", 
-                                   "php5",
-                                   "php5-mysql",
-                                   "mysql-server",
-                                 };
-    redhat::
-      "desired_package" slist => { 
-                                   "httpd",
-                                   "php",
-                                   "php-mysql",
-                                   "mysql-server",
-                                 };
   packages:
-      "$(desired_package)"
+      "$(wp_vars.wp_packages)"
         package_policy => "add",
         package_method => generic,
         classes => if_repaired("packages_added");
@@ -116,16 +108,12 @@ bundle agent wp_packages_installed(params)
 bundle agent wp_services_up(params)
 {
   processes:
-    debian::
-      "/usr/sbin/mysqld" restart_class => "start_mysqld";
-      "/usr/sbin/apache2"  restart_class => "start_httpd";
-    redhat::
-      "^mysqld" restart_class => "start_mysqld";
-      "^httpd"  restart_class => "start_httpd";
+      "$($(params)[_mysql_process])" restart_class => "start_mysqld";
+      "$($(params)[_httpd_process])"  restart_class => "start_httpd";
 
   commands:
     start_mysqld::
-      "$($(params)[_sys_servicecmd]) mysql start";
+      "$($(params)[_sys_servicecmd]) $($(params)[_sys_mysqlsrv]) start";
 
     start_httpd::
       "$($(params)[_sys_servicecmd]) $($(params)[_sys_apachesrv]) start" ;
@@ -144,7 +132,7 @@ bundle agent wp_tarball_is_present(params)
         comment => "Downloading latest version of WordPress.";
 
   reports:
-    wordpress_tarball_is_present::
+    wordpress_tarball_is_present.verbose::
       "WordPress tarball is on disk.";
 }
 
@@ -157,7 +145,7 @@ bundle agent wp_tarball_is_unrolled(params)
       "wordpress_final_dir_is_present" expression => fileexists("$($(params)[_wp_dir])");
 
   reports:
-    wordpress_final_dir_is_present::
+    wordpress_final_dir_is_present.verbose::
       "WordPress directory is present.";
 
   commands:
@@ -172,14 +160,14 @@ bundle agent wp_tarball_is_unrolled(params)
 
 #############################################
 
-bundle agent wp_mysql_configuration(params)
+bundle agent wp_mysql_configuration(params, wpparams)
 {
   commands:
       "/usr/bin/mysql -u root -e \"
-      CREATE DATABASE IF NOT EXISTS $($(params)[DB_NAME]);
-      GRANT ALL PRIVILEGES ON $($(params)[DB_NAME]).*
-      TO '$($(params)[DB_USER])'@localhost
-      IDENTIFIED BY '$($(params)[DB_PASSWORD])';
+      CREATE DATABASE IF NOT EXISTS $($(wpparams)[DB_NAME]);
+      GRANT ALL PRIVILEGES ON $($(wpparams)[DB_NAME]).*
+      TO '$($(wpparams)[DB_USER])'@localhost
+      IDENTIFIED BY '$($(wpparams)[DB_PASSWORD])';
       FLUSH PRIVILEGES;\"
 ";
 }
@@ -198,28 +186,23 @@ bundle agent wp_config_exists(params)
         copy_from => backup_local_cp("$($(params)[_wp_cfgsample])");
 
   reports:
-    wordpress_config_file_exists::
+    wordpress_config_file_exists.verbose::
       "WordPress config file $($(params)[_wp_config]) is present";
-    !wordpress_config_file_exists::
+    !wordpress_config_file_exists.verbose::
       "WordPress config file $($(params)[_wp_config]) is not present";
 }
 
 #############################################
 
-bundle agent wp_is_properly_configured(params)
+bundle agent wp_is_properly_configured(params, wp_array)
 {
   vars:
-      "allparams" slist => getindices("$(params)");
-    secondpass::
-      "wpparams"  slist => grep("[^_].*", "allparams");
-
-  classes:
-      "secondpass" expression => isvariable("allparams");
+      "wpparams" slist => getindices("$(wp_array)");
 
   files:
     "$($(params)[_wp_config])"
-      edit_line => replace_or_add("define\('$(wpparams)', *(?!'$($(params)[$(wpparams)]))'.*",
-				  "define('$(wpparams)', '$($(params)[$(wpparams)])');");
+      edit_line => replace_or_add("define\('$(wpparams)', *(?!'$($(wp_array)[$(wpparams)]))'.*",
+				  "define('$(wpparams)', '$($(wp_array)[$(wpparams)])');");
 }
 
 #############################################
