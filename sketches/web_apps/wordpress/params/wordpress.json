@@ -1,0 +1,9 @@
+{
+   "wp_dir" : "/var/www/wordpress",
+   "wp_params" : {
+     "DB_NAME" : "wordpress_db",
+     "DB_USER" : "wordpress_user",
+     "DB_PASSWORD" : "wordpress_pass"
+   },
+    "include": [ "wordpress-base.json" ],
+}

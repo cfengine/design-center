@@ -1,0 +1,53 @@
+{
+   "activated" : true,
+   "wp_dir" : "/var/www/wordpress",
+   "wp_params" : {
+     "DB_NAME" : "wordpress_db",
+     "DB_USER" : "wordpress_user",
+     "DB_PASSWORD" : "wordpress_pass"
+   },
+   "bycontext" : {
+     "debian": {
+       "htmlroot" : "/var/www",
+       "packages" : [
+         "apache2", 
+         "php5",
+         "php5-mysql",
+         "mysql-server"
+       ],
+       "mysql_process" : "/usr/sbin/mysqld",
+       "httpd_process" : "/usr/sbin/apache2",
+       "service_cmd" : "/usr/sbin/service",
+       "apache_srv" : "apache2",
+       "mysql_srv" : "mysqld"
+     },
+     "redhat": {
+       "htmlroot" : "/var/www/html",
+       "packages" : [
+         "httpd",
+         "php",
+         "php-mysql",
+         "mysql-server"
+       ],
+       "mysql_process" : "^mysqld",
+       "httpd_process" : "^httpd",
+       "service_cmd" : "/sbin/service",
+       "apache_srv" : "httpd",
+       "mysql_srv" : "mysqld"
+     },
+     "centos": {
+       "htmlroot" : "/var/www/html",
+       "packages" : [
+         "httpd",
+         "php",
+         "php-mysql",
+         "mysql-server"
+       ],
+       "mysql_process" : "/usr/libexec/mysqld",
+       "httpd_process" : "/usr/sbin/httpd",
+       "service_cmd" : "/sbin/service",
+       "apache_srv" : "httpd",
+       "mysql_srv" : "mysqld"
+     },
+   }
+}
