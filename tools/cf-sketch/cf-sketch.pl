@@ -80,7 +80,7 @@ my @options_spec =
   "act-file|af=s",
   "install-target|it=s",
   "json!",
-  "standalone!",
+  "standalone|st!",
 
   "save-config|config-save!",
   "repolist|rl=s@",
