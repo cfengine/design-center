@@ -15,18 +15,18 @@ linux
 standard library
 
 ## SAMPLE USAGE
-body common control
-{
-      bundlesequence => { "main" };
-      inputs => {
+    body common control
+    {
+          bundlesequence => { "main" };
+          inputs => {
                 "../../libraries/copbl/cfengine_stdlib.cf",
                 "./main.cf",
               };
-}
+    }
 
-bundle agent main
-{
-vars:
+    bundle agent main
+    {
+    vars:
        "Repo__apt_repos[contrib-debian-wheezy][distrib]"             string => "debian";
        "Repo__apt_repos[contrib-debian-wheezy][file]"                string => "/tmp/contrib.list";
        "Repo__apt_repos[contrib-debian-wheezy][perms][g]"            string => "root";
@@ -39,9 +39,8 @@ vars:
        "Repo__apt_repos[contrib-debian-wheezy][version_distrib]"     string => "wheezy";
        "Repo__apt_repos__defined_only"                               string => "no";
 
-
-methods:
+    methods:
       "Repository::apt::Maintain" usebundle => configure_apt_sources_list("main.Repo__apt_");
 
-}
+    }
 
