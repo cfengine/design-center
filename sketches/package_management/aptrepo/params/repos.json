@@ -1,0 +1,53 @@
+{
+    "defined_only": "no",
+    "ifelapsed": "60",
+    "repos": 
+    {
+        "main-debian-wheezy":
+        { 
+            "section": "main",  
+            "file": "/etc/apt/sources.list.d/main.list",
+            "perms": 
+            { 
+                "m": "644", 
+                "o": "root", 
+                "g": "root", 
+            }, 
+            "repo_url": "http.us.debian.org", 
+            "distrib": "debian", 
+            "version_distrib": "wheezy",  
+            "repo_type": { "deb-src": "true", "deb": "true", }
+        },
+        "contrib-debian-wheezy":
+        { 
+            "section": "contrib",  
+            "file": "/etc/apt/sources.list.d/contrib.list",
+            "perms": 
+            { 
+                "m": "644", 
+                "o": "root", 
+                "g": "root",
+            }, 
+            "repo_url": "ftp.fr.debian.org", 
+            "distrib": "debian", 
+            "version_distrib": "wheezy",  
+            "repo_type": { "deb-src": "false", "deb": "true", }
+        },
+        "universe-ubuntu-precise":
+        { 
+            "section": "universe",  
+            "file": "/etc/apt/sources.list.d/universe.list",
+            "perms": 
+            { 
+                "m": "644", 
+                "o": "root", 
+                "g": "root",
+            }, 
+            "repo_url": "us.archive.ubuntu.com", 
+            "distrib": "ubuntu", 
+            "version_distrib": "precise",  
+            "repo_type": { "deb-src": "true", "deb": "true", }
+        },
+
+    },
+}
