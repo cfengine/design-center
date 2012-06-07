@@ -1778,7 +1778,7 @@ sub recurse_print
  else
  {
   # convert to a 1/0 boolean
-  $ref = ! ! $ref if is_json_boolean($ref)
+  $ref = ! ! $ref if is_json_boolean($ref);
   push @print, {
                 path => $prefix,
                 type => 'string',
