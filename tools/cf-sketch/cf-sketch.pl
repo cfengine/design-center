@@ -1764,7 +1764,7 @@ sub recurse_print
  # recurse for hashes
  if (ref $ref eq 'HASH')
  {
-  push @print, recurse_print($ref->{$_}, $prefix . "[$_]")
+  push @print, recurse_print($ref->{$_}, $prefix . "[$_]", $unquote_scalars)
    foreach sort keys %$ref;
  }
  elsif (ref $ref eq 'ARRAY')
