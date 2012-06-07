@@ -5,6 +5,7 @@
         "main.cf": { "desc": "main file", "version": 1.0 },
         "README.md": { "documentation": true },
         "params/example.json": { "comment": "Example parameters" },
+        "test.cf": { "comment": "Standalone test policy" },
     },
 
     "metadata":
