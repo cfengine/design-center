@@ -1,26 +1,32 @@
-bundle agent set_hostname(hostname, domain) {
+bundle agent meta_cfdc_set_hostname{
+vars:
+    "argument[hostname]" string => "string";
+    "argument[domain]"   string => "string";
+}
+
+bundle agent cfdc_set_hostname(prefix) {
 # Expects desired shorthostname and domain name both as strings;
 # Usage:
 #   vars:
-#       "hostname" string => "jim";
-#       "domain"   string => "bob.com";
+#       "fqdn_hostname" string => "jim";
+#       "fqdn_domain"   string => "bob.com";
 #
 #   methods:
-#       "hostname" usebundle => set_hostname("$(hostname)", "$(domain)");
+#       "hostname" usebundle => cfdc_set_hostname("main.fqdn_");
 #
     vars:
         # Stuff these into an array on redhat style systems
         # It's a convienant with the way redhat configs work
-        redhat|centos::
-            "config[HOSTNAME]"  string => "$(hostname)";
-            "config[NISDOMAIN]" string => "$(domain)";
+        redhat::
+            "config[HOSTNAME]"  string => "$($(prefix)_hostname)";
+            "config[NISDOMAIN]" string => "$($(prefix)_domain)";
     files:
-        redhat|centos::
+        redhat::
             "/etc/sysconfig/network"
                 create    => "true",
                 perms     => mog("644", "root", "root"),
                 edit_line => set_variable_values("set_hostname.config"),
-                classes   => if_repaired("set_hostname_update_running_hostname"),
+                classes   => if_repaired("$(canon_prefix)_set_hostname_update_running_hostname"),
                 comment   => "While the official redhat docs state that you
                               should set HOSTNAME to the fqdn, it is apparently
                               incorrect. If you do this the hostname command
@@ -30,12 +36,14 @@ bundle agent set_hostname(hostname, domain) {
                               recently bit me.";
 
     commands:
-        set_hostname_update_running_hostname.(redhat|centos)::
+        redhat::
             "/bin/hostname $(hostname)"
+                ifvarclass => "$(canon_prefix)_set_hostname_update_running_hostname"
                 comment => "Update the hostname on the running system so we
                             dont have to wait for a reboot";
 
             "/bin/domainname $(domain)"
+                ifvarclass => "$(canon_prefix)_set_hostname_update_running_hostname"
                 comment => "Update the domainname on the running system so
                             we dont have to reboot for it";
 
