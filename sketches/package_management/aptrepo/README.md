@@ -1,4 +1,4 @@
-# cfdc_configure_apt_sources_list - Manage your deb repositories in /etc/apt/sources.list.d/ files
+# cfdc_configure_apt_sources_list - Manage your deb repositories in /etc/apt/sources.list.d/ files or /etc/apt/sources.list
 ## AUTHOR
 Jean Remond <cfengine@remond.re>
 
