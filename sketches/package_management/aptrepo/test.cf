@@ -24,7 +24,7 @@ vars:
 
 
 methods:
-      "Repository::apt::Maintain" usebundle => configure_apt_sources_list("main.Repo__apt_");
+      "Repository::apt::Maintain" usebundle => cfdc_configure_apt_sources_list("main.Repo__apt_");
 
 }
 

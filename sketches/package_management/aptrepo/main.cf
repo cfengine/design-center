@@ -1,4 +1,4 @@
-bundle agent configure_apt_sources_list(prefix) {
+bundle agent cfdc_configure_apt_sources_list(prefix) {
 # Used for enforcing the complete contents of /etc/apt/sources.list.d/*.list
 
     vars:
@@ -43,8 +43,8 @@ bundle agent configure_apt_sources_list(prefix) {
     files:
           "$(apt_sources_list_file[$(apt_sources_list)])" 
             create        =>  "true",
-            edit_defaults =>  configure_apt_sources_list_empty_if_ask,
-            edit_line     =>  configure_apt_sources_list_prepend_if_no_line("$(CFEnotice)"),
+            edit_defaults =>  cfdc_configure_apt_sources_list_empty_if_ask,
+            edit_line     =>  cfdc_configure_apt_sources_list_prepend_if_no_line("$(CFEnotice)"),
             comment       =>  "Create $(apt_sources_list_file[$(apt_sources_list)]) and notice that the file is managed by CFEngine";
 
           "$(apt_sources_list_file[$(apt_sources_list)])" 
@@ -55,10 +55,10 @@ bundle agent configure_apt_sources_list(prefix) {
 
     reports:
         debug::
-            "$(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(apt_sources_list_distrib[$(apt_sources_list)])/ $(apt_sources_list_version_distrib[$(apt_sources_list)]) $(apt_sources_list_section[$(apt_sources_list)])";
+        "$(apt_sources_list) : $(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(apt_sources_list_distrib[$(apt_sources_list)])/ $(apt_sources_list_version_distrib[$(apt_sources_list)]) $(apt_sources_list_section[$(apt_sources_list)])";
 }
 
-bundle agent meta_configure_apt_sources_list
+bundle agent meta_cfdc_configure_apt_sources_list
 {
   vars:
       "argument[repos]" string => "array";
@@ -67,14 +67,14 @@ bundle agent meta_configure_apt_sources_list
 
 }
 
-bundle edit_line configure_apt_sources_list_prepend_if_no_line(string) {
+bundle edit_line cfdc_configure_apt_sources_list_prepend_if_no_line(string) {
     insert_lines:
     "$(string)" 
         location => start,
         comment => "Prepend a line to the file if it doesn't already exist";
 }
 
-body edit_defaults configure_apt_sources_list_empty_if_ask
+body edit_defaults cfdc_configure_apt_sources_list_empty_if_ask
 {
     edit_backup => "false";
     max_file_size => "300000";

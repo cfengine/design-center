@@ -1,4 +1,4 @@
-# configure_apt_sources_list - Manage your deb repositories in /etc/apt/sources.list.d/ files
+# cfdc_configure_apt_sources_list - Manage your deb repositories in /etc/apt/sources.list.d/ files
 ## AUTHOR
 Jean Remond <cfengine@remond.re>
 
@@ -6,7 +6,7 @@ Jean Remond <cfengine@remond.re>
 linux
 
 ## DESCRIPTION
-* configure_apt_sources_list
+* cfdc_configure_apt_sources_list
     - edit_line based
     - optionally removes any files not specified 
 
@@ -40,7 +40,7 @@ standard library
        "Repo__apt_repos__defined_only"                               string => "no";
 
     methods:
-      "Repository::apt::Maintain" usebundle => configure_apt_sources_list("main.Repo__apt_");
+      "Repository::apt::Maintain" usebundle => cfdc_configure_apt_sources_list("main.Repo__apt_");
 
     }
 
