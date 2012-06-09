@@ -34,7 +34,8 @@ standard library
        "Repo__apt_repos[contrib-debian-wheezy][repo_url]"            string => "ftp.fr.debian.org";
        "Repo__apt_repos[contrib-debian-wheezy][section]"             string => "contrib";
        "Repo__apt_repos[contrib-debian-wheezy][version_distrib]"     string => "wheezy";
-       "Repo__apt_repos__defined_only"                               string => "no";
+       "Repo__apt_defined_only"                                      string => "no";
+       "Repo__apt_multiple_sources_list_files"                       string => "yes";
 
     methods:
       "Repository::apt::Maintain" usebundle => cfdc_configure_apt_sources_list("main.Repo__apt_");

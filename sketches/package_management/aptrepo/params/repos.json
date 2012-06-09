@@ -1,6 +1,7 @@
 {
     "defined_only": "no",
     "ifelapsed": "60",
+    "multiple_sources_list_files": "yes",
     "repos": 
     {
         "main-debian-wheezy":
