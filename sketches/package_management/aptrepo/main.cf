@@ -8,8 +8,6 @@ bundle agent cfdc_configure_apt_sources_list(prefix) {
             slist   => getindices("$(prefix)repos"),
             comment => "We need the list of repo to look for in the sources.list.d directory";
 
-        "perms_list"    
-            slist   => { "m", "o", "g", };
         "repo_type"    
             slist   => { "deb-src", "deb", };
 
@@ -17,8 +15,6 @@ bundle agent cfdc_configure_apt_sources_list(prefix) {
             string  => "$($(prefix)repos[$(apt_sources_list)][section])";
         "apt_sources_list_file[$(apt_sources_list)]" 
             string  => "$($(prefix)repos[$(apt_sources_list)][file])";
-        "apt_sources_list_perms[$(apt_sources_list)][$(perms_list)]" 
-            string  => "$($(prefix)repos[$(apt_sources_list)][perms][$(perms_list)])";
         "apt_sources_list_repo_url[$(apt_sources_list)]" 
             string  => "$($(prefix)repos[$(apt_sources_list)][repo_url])";
         "apt_sources_list_distrib[$(apt_sources_list)]" 

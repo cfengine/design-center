@@ -29,9 +29,6 @@ standard library
     vars:
        "Repo__apt_repos[contrib-debian-wheezy][distrib]"             string => "debian";
        "Repo__apt_repos[contrib-debian-wheezy][file]"                string => "/tmp/contrib.list";
-       "Repo__apt_repos[contrib-debian-wheezy][perms][g]"            string => "root";
-       "Repo__apt_repos[contrib-debian-wheezy][perms][m]"            string => "644";
-       "Repo__apt_repos[contrib-debian-wheezy][perms][o]"            string => "root";
        "Repo__apt_repos[contrib-debian-wheezy][repo_type][deb]"      string => "true";
        "Repo__apt_repos[contrib-debian-wheezy][repo_type][deb-src]"  string => "false";
        "Repo__apt_repos[contrib-debian-wheezy][repo_url]"            string => "ftp.fr.debian.org";
