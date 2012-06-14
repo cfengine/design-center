@@ -10,7 +10,7 @@
     {
         "name": "CFEngine::stdlib",
         "version": 106,
-        "license": "MIT",
+        "license": "LGPL",
         "portfolio": [ "cfdc" ],
         "authors": [ "CFEngine AS" ],
         "depends": { "cfengine": { "version": "3.3.0" } },
