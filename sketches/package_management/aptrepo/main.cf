@@ -1,0 +1,106 @@
+bundle agent cfdc_configure_apt_sources_list(prefix) {
+# Used for enforcing the complete contents of /etc/apt/sources.list.d/*.list
+
+    vars:
+        "canon_prefix" 
+            string  => canonify("$(prefix)");
+        "sources_list_file" 
+            string  => "/etc/apt/sources.list";
+
+        "apt_sources_list" 
+            slist   => getindices("$(prefix)repos"),
+            comment => "We need the list of repo to look for in the sources.list.d directory";
+
+        "repo_type"    
+            slist   => { "deb-src", "deb", };
+
+        "apt_sources_list_section[$(apt_sources_list)]" 
+            string  => "$($(prefix)repos[$(apt_sources_list)][section])";
+        "apt_sources_list_file[$(apt_sources_list)]" 
+            string  => "$($(prefix)repos[$(apt_sources_list)][file])";
+        "apt_sources_list_repo_url[$(apt_sources_list)]" 
+            string  => "$($(prefix)repos[$(apt_sources_list)][repo_url])";
+        "apt_sources_list_distrib[$(apt_sources_list)]" 
+            string  => "$($(prefix)repos[$(apt_sources_list)][distrib])";
+        "apt_sources_list_version_distrib[$(apt_sources_list)]" 
+            string  => "$($(prefix)repos[$(apt_sources_list)][version_distrib])";
+        "apt_sources_list_repo_type[$(apt_sources_list)][repo_type][$(repo_type)]" 
+            string  => "$($(prefix)repos[$(apt_sources_list)][repo_type][$(repo_type)])";
+
+
+        "CFEnotice" 
+            string  => "# This file is managed by CFEngine, manual edits will be reverted",
+            comment => "It's nice to let people know why the file keep magically reverting on them";
+
+    classes:
+        "only_allow_defined_entries" 
+            expression => regcmp("(?i)yes|true", "$($(prefix)defined_only)");
+        "multiple_sources_list_files" 
+            expression => regcmp("(?i)yes|true", "$($(prefix)multiple_sources_list_files)");
+        "$(apt_sources_list_repo_type[$(apt_sources_list)][repo_type][$(repo_type)])_active_repo" 
+            expression => regcmp("(?i)yes|true", "$(apt_sources_list_repo_type[$(apt_sources_list)][repo_type][$(repo_type)])" );
+
+    files:
+      multiple_sources_list_files::
+          "$(apt_sources_list_file[$(apt_sources_list)])" 
+            create        =>  "true",
+            edit_defaults =>  cfdc_configure_apt_sources_list_empty_if_ask,
+            edit_line     =>  cfdc_configure_apt_sources_list_prepend_if_no_line("$(CFEnotice)"),
+            comment       =>  "Create $(apt_sources_list_file[$(apt_sources_list)]) and notice that the file is managed by CFEngine";
+
+          "$(apt_sources_list_file[$(apt_sources_list)])" 
+            edit_defaults =>  std_defs,
+            edit_line     =>  append_if_no_line("$(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(apt_sources_list_distrib[$(apt_sources_list)])/ $(apt_sources_list_version_distrib[$(apt_sources_list)]) $(apt_sources_list_section[$(apt_sources_list)])"),
+            ifvarclass    => "$(apt_sources_list_repo_type[$(apt_sources_list)][repo_type][$(repo_type)])_active_repo", 
+            comment       =>  "Complete or fix $(apt_sources_list_file[$(apt_sources_list)]) to be as defined.";
+
+      !multiple_sources_list_files::
+          "$(sources_list_file)" 
+            create        =>  "true",
+            edit_defaults =>  cfdc_configure_apt_sources_list_empty_if_ask,
+            edit_line     =>  cfdc_configure_apt_sources_list_prepend_if_no_line("$(CFEnotice)"),
+            comment       =>  "Create $(sources_list_file) and notice that the file is managed by CFEngine";
+
+          "$(sources_list_file)" 
+            edit_defaults =>  std_defs,
+            edit_line     =>  append_if_no_line("$(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(apt_sources_list_distrib[$(apt_sources_list)])/ $(apt_sources_list_version_distrib[$(apt_sources_list)]) $(apt_sources_list_section[$(apt_sources_list)])"),
+            ifvarclass    => "$(apt_sources_list_repo_type[$(apt_sources_list)][repo_type][$(repo_type)])_active_repo", 
+            comment       =>  "Complete or fix $(sources_list_file) to be as defined.";
+
+    reports:
+        debug::
+            "Generate multiple files : $($(prefix)multiple_sources_list_files)";
+        debug.multiple_sources_list_files::
+        "$(apt_sources_list) @@ file $(apt_sources_list_file[$(apt_sources_list)]) @@ $(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(apt_sources_list_distrib[$(apt_sources_list)])/ $(apt_sources_list_version_distrib[$(apt_sources_list)]) $(apt_sources_list_section[$(apt_sources_list)])";
+        debug.!multiple_sources_list_files::
+        "$(apt_sources_list) @@ file $(sources_list_file)  @@ $(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(apt_sources_list_distrib[$(apt_sources_list)])/ $(apt_sources_list_version_distrib[$(apt_sources_list)]) $(apt_sources_list_section[$(apt_sources_list)])";
+}
+
+bundle agent meta_cfdc_configure_apt_sources_list
+{
+  vars:
+      "argument[repos]" string => "array";
+      "argument[defined_only]" string => "string",
+        comment => "Must be true or yes to activate";
+      "argument[multiple_sources_list_files]" string => "string",
+        comment => "Must be true or yes to activate, if not activated, all the configuration will be in$(sources_list_file) ";
+
+}
+
+bundle edit_line cfdc_configure_apt_sources_list_prepend_if_no_line(string) {
+    insert_lines:
+    "$(string)" 
+        location => start,
+        comment => "Prepend a line to the file if it doesn't already exist";
+}
+
+body edit_defaults cfdc_configure_apt_sources_list_empty_if_ask
+{
+    edit_backup => "false";
+    max_file_size => "300000";
+  !only_allow_defined_entries::
+    empty_file_before_editing => "false";
+  only_allow_defined_entries::
+    empty_file_before_editing => "true";
+}
+
