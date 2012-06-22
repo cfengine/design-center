@@ -10,7 +10,7 @@
     {
         "name": "Yale::stdlib",
         "version": "1.0.0",
-        "license": "MIT",
+        "license": "none",
         "portfolio": [ "cfdc", "yale" ],
         "authors": [ "Yale University" ],
         "depends": { "cfengine": { "version": "3.3.0" } },
