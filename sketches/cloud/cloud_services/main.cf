@@ -1,0 +1,135 @@
+bundle agent cloud_services(prefix)
+{
+  classes:
+
+  vars:
+      "canon_prefix" string => canonify("$(prefix)");
+      "contexts"     slist  => getindices("$(prefix)bycontext");
+
+  methods:
+      # this is freakin' awesome
+      "params" usebundle => cloud_context("$(prefix)", "$(contexts)"),
+      classes => always("$(canon_prefix)prepared"),
+      ifvarclass => "$(contexts)";
+
+  services:
+      "$(cloud_context.count) $(cloud_context.class)"
+      service_policy => "$(cloud_context.state)",
+      service_method => cloud_services_handler,
+      ifvarclass => "$(canon_prefix)prepared";
+}
+
+bundle agent meta_cloud_services
+{
+  vars:
+      # look in params/demo.json to see how we fill in the needed services
+      "argument[install_cfengine]" string => "context";
+      "argument[ec2]"              string => "array";
+      "argument[bycontext]"        string => "array";
+
+}
+
+bundle agent cloud_context(prefix, context)
+{
+  vars:
+      "active_context" string => "$(context)";
+      "active_prefix" string => "$(prefix)";
+
+      "stype" string => "$($(prefix)bycontext[$(context)][stype])",
+      comment => "Service type in context $(context)",
+      handle => "cpan_install_$(prefix)_stype";
+
+      "count" string => "$($(prefix)bycontext[$(context)][count])",
+      comment => "Desired service instance count in context $(context)",
+      handle => "cpan_install_$(prefix)_count";
+
+      "class" string => "$($(prefix)bycontext[$(context)][class])",
+      comment => "Service instance class in context $(context)",
+      handle => "cpan_install_$(prefix)_class";
+
+      "state" string => "$($(prefix)bycontext[$(context)][state])",
+      comment => "Whether service is to be 'start'ed or 'stop'ped in context $(context)",
+      handle => "cpan_install_$(prefix)_state";
+
+  reports:
+    cfengine::
+      "Loading parameters for context $(context)";
+}
+
+# this is unused, but quiets down a false alert from cfengine's syntax checker
+bundle agent standard_services(service, state)
+{
+  vars:
+}
+
+body service_method cloud_services_handler
+{
+      service_bundle => $(cloud_context.stype)("$(sys.ipv4)", "$(this.promiser)", "$(this.service_policy)");
+      service_dependence_chain => "start_parent_services";
+}
+
+bundle agent ec2(hub, service, state)
+{
+  classes:
+      "parsed_ok" expression => regextract(
+                                            "(\d+) (\S+)",
+                                            "$(service)",
+                                            "params"
+                                          );
+
+      "start"   expression => strcmp("start",  "$(state)");
+      "stop"    expression => strcmp("stop",   "$(state)");
+
+      "count_determined" expression => isvariable("current_count");
+
+    parsed_ok.count_determined::
+      "change_not_needed" expression => strcmp("$(instances)", "$(current_count)");
+      "bootstrap_needed" expression => isgreaterthan("$(instances)", "$(current_count)");
+      "decom_needed" expression => islessthan("$(instances)", "$(current_count)");
+
+  vars:
+    parsed_ok::
+      "class" string => "$(params[2])";
+      "prefix" string => "$(cloud_context.active_prefix)";
+
+      "ec2_param_names" slist => getindices("$(prefix)ec2");
+      "ec2_params" slist => maplist("--ec2 $(this)=$($(prefix)ec2[$(this)])", "ec2_param_names");
+
+      "shim" string => concat("$($(prefix)bundle_home)/scripts/shim.pl ", join(" ", "ec2_params"), " --hub=$(hub) --install_cfengine=$($(prefix)contexts_text[install_cfengine]) ec2");
+
+      "current_count" string => execresult("$(shim) count $(class)", "useshell");
+
+    parsed_ok.start::
+      "instances" string => "$(params[1])";
+      # catch "stop" and "disable"
+    parsed_ok.!start::
+      "instances" string => "0";
+
+  commands:
+    count_determined.!change_not_needed::
+      "$(shim) control $(instances) $(class)";
+
+  reports:
+
+    count_determined::
+      "Current count of service '$(service)' = $(current_count)";
+      "To run a command, e.g. ssh to all machine (but beware, this works best if you have just a few instances): $(shim) run $(class) 'ssh -i YOUR-PRIVATE-SSH-KEY -l ubuntu'";
+      "To see the console output of all the machines: $(shim) console $(class)";
+      "To list all the machines (just node names or all info, including DNS): $(shim) [list|list-full] $(class)";
+    !parsed_ok::
+      "Sorry, service '$(service)' could not be parsed to pass to the shim!";
+    count_determined.start.change_not_needed::
+      "Service '$(service)' does not need to be started by the shim: $(instances) instances of class $(class) already exist";
+    count_determined.stop.change_not_needed::
+      "Service '$(service)' does not need to be stopped by the shim: we have $(instances) instances of class $(class)";
+    count_determined.start.!change_not_needed::
+      "Service '$(service)' will be started by the shim: $(instances) instances of class $(class) (current $(current_count))";
+    count_determined.stop.!change_not_needed::
+      "Service '$(service)' will be stopped by the shim: $(instances) instances (current $(current_count)) of class $(class) ";
+    bootstrap_needed::
+      "Bootstrapping will be needed";
+    decom_needed::
+      "Decom will be needed";
+    cfengine::
+      "Goal: put service '$(service)' in state $(state).";
+}

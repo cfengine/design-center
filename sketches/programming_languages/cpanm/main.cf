@@ -1,0 +1,52 @@
+bundle agent cpan_install(prefix)
+{
+  classes:
+
+  vars:
+      "canon_prefix" string => canonify("$(prefix)");
+      "contexts"     slist  => getindices("$(prefix)bycontext");
+
+  methods:
+      # this is freakin' awesome
+      "params" usebundle => cpan_context("$(prefix)", "$(contexts)"),
+      classes => always("$(canon_prefix)prepared"),
+      ifvarclass => "$(contexts)";
+
+  commands:
+
+   "$(cpan_context.cpanm_program) $(cpan_context.extra_params) $(cpan_context.packages)"
+      comment => "Install CPAN packages with App::cpanminus",
+      handle => "cpan_install_packages_add",
+      action => log_repaired("stdout","$(prefix) $(cpan_context.packages) was installed");
+}
+
+bundle agent meta_cpan_install
+{
+  vars:
+      # look in params/demo.json to see how we fill in the packages
+      # and cpanm path and extra parameters per system we support
+      "argument[bycontext]"       string => "array";
+
+}
+
+bundle agent cpan_context(prefix, context)
+{
+  vars:
+      "active_context" string => "$(context)";
+
+      "cpanm_program" string => "$($(prefix)bycontext[$(context)][cpanm_program])",
+      comment => "Path to cpanm in context $(context)",
+      handle => "cpan_install_$(prefix)_cpanm_program";
+
+      "extra_params" string => "$($(prefix)bycontext[$(context)][extra_params])",
+      comment => "Extra parameters for cpanm in context $(context)",
+      handle => "cpan_install_$(prefix)_cpanm_extra_params";
+
+      "packages" slist => { "@($(prefix)bycontext[$(context)][packages])" },
+      comment => "List of CPAN packages to install in context $(context)",
+      handle => "cpan_install_$(prefix)_packages";
+
+  reports:
+    cfengine::
+      "Loading parameters for context $(context)";
+}

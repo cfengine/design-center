@@ -1,0 +1,28 @@
+# This test file uses params/mysql_server.json with some minor adjustments for readability
+
+body common control
+{
+      bundlesequence => { "cfsketch_run" };
+      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "./main.cf" };
+}
+
+bundle common cfsketch_g
+{
+  classes:
+      # contexts
+       # contexts for activation 001
+      "cpan_install_test_activated" expression => "any";
+
+  vars:
+       # array variables for activation 001
+       "cpan_install_test_bycontext[any][cpanm_program]" string => "/usr/local/bin/cpanm";
+       "cpan_install_test_bycontext[any][extra_params]" string => "";
+       "cpan_install_test_bycontext[any][packages]" slist => {"Every"};
+}
+
+bundle agent cfsketch_run
+{
+  methods:
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "test from params/demo.json" usebundle => cpan_install("cfsketch_g.cpan_install_test_");
+}
