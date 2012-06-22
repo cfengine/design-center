@@ -1,0 +1,6 @@
+{
+   "trigger_file": "/COWBOY",
+   "abort_class": "cowboy",
+   "alert": "true",
+   "abort": "true", 
+}

@@ -1,0 +1,22 @@
+body common control {
+
+    bundlesequence => { "main",};
+
+    inputs => {
+                "../../libraries/copbl/cfengine_stdlib.cf",
+                "./main.cf",
+              };
+}
+
+bundle agent main {
+vars:
+    "cowboy_abort_class"   string => "cowboy";
+    "cowboy_trigger_file"  string => "/COWBOY";
+    "cowboy_alert"         string => "true"; # True and yes are valid settings
+    "cowboy_abort"         string => "yes";  # True and Yes are valid settings
+
+methods:
+    "any" 
+        usebundle => cfdc_halt_agent_if_file_exists("main.cowboy_"),
+        comment   => "Allow for manual intervention with cowboy mode";
+}

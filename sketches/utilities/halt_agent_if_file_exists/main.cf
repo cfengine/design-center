@@ -1,0 +1,79 @@
+# -*- mode: cfengine3; indent-tabs-mode: nil; cfengine-parameters-indent: (promise pname 2); -*-
+# vi:tabstop=2:expandtab
+
+
+bundle agent meta_cfdc_halt_agent_if_file_exists{
+  vars:
+    "argument[trigger_file]"   string => "string";
+    "argument[abort_class]"    string => "string";
+
+    # Control behavior when trigger file exists, set these to true or yes
+    "optional_argument[alert]" 
+        string => "string",
+        comment => "Must be true or yes to activate";
+
+    "optional_argument[abort]" 
+        string => "string",
+        comment => "Must be true or yes to activate";
+}
+
+bundle agent cfdc_halt_agent_if_file_exists(prefix){
+  vars:
+    "canon_prefix"  string => canonify("$(prefix)");
+    "trigger_file"  string => "$($(prefix)trigger_file)"; 
+    "abort_class"   string => "$($(prefix)abort_class)"; 
+    "alert"         string => "$($(prefix)alert)"; 
+    "abort"         string => "$($(prefix)abort)"; 
+
+  classes:
+   "$(canon_prefix)_cfdc_halt_agent_if_file_exists_alert" expression => regcmp("(?i)yes|true", "$(alert)"); 
+   "$(canon_prefix)_cfdc_halt_agent_if_file_exists_abort" expression => regcmp("(?i)yes|true", "$(abort)"); 
+
+  methods:
+    "any"
+        usebundle  => cfdc_halt_agent_if_file_exists_alert("$(trigger_file)"),
+        ifvarclass => "$(canon_prefix)_cfdc_halt_agent_if_file_exists_alert",
+        comment    => "Raise alert that agent might abort if $(trigger_file) exists";
+
+    "any"
+        usebundle  => cfdc_halt_agent_if_file_exists_abort("$(abort_class)","$(trigger_file)"),
+        ifvarclass => "$(canon_prefix)_cfdc_halt_agent_if_file_exists_abort",
+        comment    => "Abort execution of the agent if the $(trigger_file) exists";
+
+
+  reports:
+    debug::
+      "trigger_file: $(trigger_file)";
+      "abort_class: $(abort_class)";
+      "alert: $(alert)";
+      "abort: $(abort)";
+}
+
+#
+# Raise alert that agent will abort
+#
+bundle agent cfdc_halt_agent_if_file_exists_alert(trigger_file)
+{
+  classes:
+      "trigger_file_found"
+        expression => fileexists($(trigger_file)),
+        comment => "Test the existance of the abort trigger file";
+
+  reports:
+    trigger_file_found::
+      "System is under manual control!!!"
+        comment => "Alert that system is under manual control";
+
+}
+
+#
+# Abort execution of the agent if the specified file exists
+#
+bundle agent cfdc_halt_agent_if_file_exists_abort(abort_class, trigger_file)
+{
+  classes:
+      "$(abort_class)"
+        expression => fileexists($(trigger_file)),
+        comment => "Test the existance of the abort trigger file";
+
+}
