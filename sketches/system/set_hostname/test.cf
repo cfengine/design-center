@@ -1,0 +1,15 @@
+body common control {
+
+    bundlesequence => {"main" };
+
+    inputs => {"../../libraries/copbl/cfengine_stdlib.cf", "main.cf"};
+}
+bundle agent main {
+vars:
+    "fqdn_hostname" string => "www";
+    "fqdn_domain"   string => "example.com";
+
+methods:
+    "hostname" usebundle => cfdc_set_hostname("main.fqdn_");
+
+}
