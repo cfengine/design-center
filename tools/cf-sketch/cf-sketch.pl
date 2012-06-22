@@ -1745,10 +1745,16 @@ sub local_cfsketches_source
  return local_cfsketches_source($updir);
 }
 
+sub is_json_boolean
+{
+ return ((ref shift) =~ m/JSON.*Boolean/);
+}
+
 sub recurse_print
 {
- my $ref = shift @_;
- my $prefix = shift @_;
+ my $ref             = shift @_;
+ my $prefix          = shift @_;
+ my $unquote_scalars = shift @_;
 
  my @print;
                       # $_->{path},
@@ -1758,7 +1764,7 @@ sub recurse_print
  # recurse for hashes
  if (ref $ref eq 'HASH')
  {
-  push @print, recurse_print($ref->{$_}, $prefix . "[$_]")
+  push @print, recurse_print($ref->{$_}, $prefix . "[$_]", $unquote_scalars)
    foreach sort keys %$ref;
  }
  elsif (ref $ref eq 'ARRAY')
@@ -1771,10 +1777,12 @@ sub recurse_print
  }
  else
  {
+  # convert to a 1/0 boolean
+  $ref = ! ! $ref if is_json_boolean($ref);
   push @print, {
                 path => $prefix,
                 type => 'string',
-                value => "\"$ref\""
+                value => $unquote_scalars ? $ref : "\"$ref\""
                };
  }
 
