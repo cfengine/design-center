@@ -55,6 +55,7 @@ my %def_options =
   quiet      => 0,
   help       => 0,
   force      => 0,
+  'dry-run'  => 0,
   # switched depending on root or non-root
   'act-file'   => "$configdir/activations.conf",
   configfile => "$configdir/cf-sketch.conf",
@@ -70,6 +71,7 @@ my %def_options =
 my @options_spec =
  (
   "quiet|qq!",
+  "dryrun|n!",
   "help!",
   "verbose|v!",
   "force|f!",
@@ -179,6 +181,7 @@ $options{repolist} = \@list;
 
 my $verbose = $options{verbose};
 my $quiet   = $options{quiet};
+my $dryrun  = $options{'dry-run'};
 
 print "Full configuration: ", $coder->encode(\%options), "\n" if $verbose;
 
@@ -269,11 +272,8 @@ sub configure_self
      if $verbose;
  }
 
- ensure_dir(dirname($cf));
- open(my $cfh, '>', $cf)
-  or die "Could not write configuration input file $cf: $!";
-
- print $cfh $coder->pretty(1)->encode(\%config);
+ maybe_ensure_dir(dirname($cf));
+ maybe_write_file($cf, 'configuration input', $coder->pretty(1)->encode(\%config));
 }
 
 sub search
@@ -615,11 +615,8 @@ sub generate
    my $output = make_runfile($template_activations, $includes, $standalone);
 
    my $run_file = $options{runfile} || File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf');
-   open(my $rf, '>', $run_file)
-    or die "Could not write run file $run_file: $!";
 
-   print $rf $output;
-   close $rf;
+   maybe_write_file($run_file, 'run', $output);
    print "Generated ".($standalone?"standalone":"non-standalone")." run file $run_file\n"
     unless $quiet;
 
@@ -803,13 +800,8 @@ sub activate
 
    $activations->{$sketch}->{$pname} = $params;
 
-   ensure_dir(dirname($options{'act-file'}));
-   open(my $ach, '>', $options{'act-file'})
-    or die "Could not write activation file $options{'act-file'}: $!";
-
-   print $ach $coder->encode($activations);
-   close $ach;
-
+   maybe_ensure_dir(dirname($options{'act-file'}));
+   maybe_write_file($options{'act-file'}, 'activation', $coder->encode($activations));
    print "Activated: $sketch params $pname\n" unless $quiet;
 
    $installed = 1;
@@ -881,12 +873,8 @@ sub deactivate
   print "Deactivated: $sketch $params\n" unless $quiet;
  }
 
- ensure_dir(dirname($options{'act-file'}));
- open(my $ach, '>', $options{'act-file'})
-  or die "Could not write activation file $options{'act-file'}: $!";
-
- print $ach $coder->encode($activations);
- close $ach;
+ maybe_ensure_dir(dirname($options{'act-file'}));
+ maybe_write_file($options{'act-file'}, 'activation', $coder->encode($activations));
 }
 
 sub remove
@@ -910,7 +898,7 @@ sub remove
    next unless scalar @matches;
    $sketch = shift @matches;
    my $data = $contents->{$sketch};
-   if (remove_dir($data->{dir}))
+   if (maybe_remove_dir($data->{dir}))
    {
     deactivate($sketch, 'all');       # deactivate all the activations
     print "Successfully removed $sketch from $data->{dir}\n" unless $quiet;
@@ -999,7 +987,7 @@ sub install
   my $install_dir = File::Spec->catdir($dest_repo,
                                        split('::', $sketch));
 
-  if (ensure_dir($install_dir))
+  if (maybe_ensure_dir($install_dir))
   {
    print "Created destination directory $install_dir\n" if $verbose;
    foreach my $file (SKETCH_DEF_FILE, sort keys %{$data->{manifest}})
@@ -1011,7 +999,7 @@ sub install
 
     my $dest_dir = dirname($dest);
     die "Could not make destination directory $dest_dir"
-     unless ensure_dir($dest_dir);
+     unless maybe_ensure_dir($dest_dir);
 
     my $changed = 1;
 
@@ -1027,19 +1015,36 @@ sub install
 
     if ($changed)
     {
-     if (is_resource_local($data->{dir}))
+     if ($dryrun)
      {
-      copy($source, $dest) or die "Aborting: copy $source -> $dest failed: $!";
+      print "DRYRUN: skipping installation of $source to $dest\n";
      }
      else
      {
-      my $rc = getstore($source, $dest);
-      die "Aborting: remote copy $source -> $dest failed: error code $rc"
-       unless is_success($rc)
+      if (is_resource_local($data->{dir}))
+      {
+       copy($source, $dest) or die "Aborting: copy $source -> $dest failed: $!";
       }
+      else
+      {
+       my $rc = getstore($source, $dest);
+       die "Aborting: remote copy $source -> $dest failed: error code $rc"
+        unless is_success($rc)
+      }
+     }
     }
 
-    chmod oct($file_spec->{perm}), $dest if exists $file_spec->{perm};
+    if (exists $file_spec->{perm})
+    {
+     if ($dryrun)
+     {
+      print "DRYRUN: skipping chmod $file_spec->{perm} $dest\n";
+     }
+     else
+     {
+      chmod oct($file_spec->{perm}), $dest;
+     }
+    }
 
     if (exists $file_spec->{user})
     {
@@ -1048,7 +1053,14 @@ sub install
      my ($login,$pass,$uid,$gid) = getpwnam($file_spec->{user})
       or die "$file_spec->{user} not in passwd file";
 
-     chown $uid, $gid, $dest;
+     if ($dryrun)
+     {
+      print "DRYRUN: skipping chown $uid:$gid $dest\n";
+     }
+     else
+     {
+      chown $uid, $gid, $dest;
+     }
     }
 
     print "Installed file: $source -> $dest\n" if $changed && !$quiet;
@@ -1690,6 +1702,49 @@ sub remove_dir
 
  return remove_tree($dir, { verbose => $verbose });
 }
+
+sub maybe_ensure_dir
+{
+   if ($dryrun)
+   {
+    print "DRYRUN: will not ensure/create directory $_[0]\n";
+    return 1;
+   }
+
+   return ensure_dir($_[0]);
+}
+
+sub maybe_remove_dir
+{
+   if ($dryrun)
+   {
+    print "DRYRUN: will not remove directory $_[0]\n";
+    return 1;
+   }
+
+   return remove_dir($_[0]);
+}
+
+sub maybe_write_file
+{
+ my $file = shift @_;
+ my $desc = shift @_;
+ my $data = shift @_;
+
+ if ($dryrun)
+ {
+  print "DRYRUN: will not write $desc file $file with data\n$data";
+ }
+ else
+ {
+  open(my $fh, '>', $file)
+   or die "Could not write $desc file $file: $!";
+
+  print $fh $data;
+  close $fh;
+ }
+}
+
 
 {
  my $promises_binary;
