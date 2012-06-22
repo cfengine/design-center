@@ -60,7 +60,7 @@ if ($command eq 'control')
 
  my $image = $ec2->describe_images($options{ec2}->{ami});
 
- die "Can't authenticate against EC2: please check the AWS secret and access keys";
+# die "Can't authenticate against EC2: please check the AWS secret and access keys";
 
  # get some information about the image
  my $architecture = $image->architecture;
