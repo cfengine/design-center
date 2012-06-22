@@ -1,4 +1,5 @@
 ../tools/cf-sketch/demo_sketch Misc::mysketch
+cloud/cloud_services Cloud::Services
 databases/db_install Database::Install
 libraries/copbl CFEngine::stdlib
 networking/ssh Security::SSH

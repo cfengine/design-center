@@ -1,0 +1,24 @@
+{
+
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+        "params/demo.json": { "comment": "simple demo" },
+        "scripts/shim.pl": { "perm": 755, "comment": "simple demo" },
+
+    },
+
+    "metadata":
+    {
+        "name": "Cloud::Services",
+        "version": 1.00,
+        "license": "MIT",
+        "portfolio": [ "cfdc" ],
+        "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.3.0" }, "os": [ "linux" ] },
+    },
+
+    "entry_point": "main.cf",
+    "interface": [ "main.cf" ]
+}
