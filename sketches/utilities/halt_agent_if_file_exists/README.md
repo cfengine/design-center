@@ -1,6 +1,7 @@
 # halt_agent_if_file_exists - 
 ## AUTHOR
 Ben Heilman <bheilman@enova.com>
+Nick Anderson <nick@cmdln.org>
 
 ## PLATFORM
 linux
@@ -25,12 +26,19 @@ First, you must define an class to halt execution:
 
 This alert and abort bundle should be called early in the sequence:
 
-    body common control
+    bundle agent main
     {
-      bundlesequence => {
-        "halt_agent_if_file_exists_alert(/COWBOY)",
-        "halt_agent_if_file_exists_abort(cowboy,/COWBOY)",
-        ...,
+      vars:
+        "cowboy_abort_class"   string => "cowboy";
+        "cowboy_trigger_file"  string => "/COWBOY";
+        "cowboy_alert"         string => "true"; # True and yes are valid settings
+        "cowboy_abort"         string => "yes";  # True and Yes are valid settings
+
+      methods:
+        "any" 
+            usebundle => cfdc_halt_agent_if_file_exists("main.cowboy_"),
+            comment   => "Allow for manual intervention with cowboy mode";
+
       };
     }
 
