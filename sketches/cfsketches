@@ -2,6 +2,7 @@
 cloud/cloud_services Cloud::Services
 databases/db_install Database::Install
 libraries/copbl CFEngine::stdlib
+libraries/yale Yale::stdlib
 networking/ssh Security::SSH
 package_management/yumrepo Repository::Yum::Maintain
 programming_languages/cpanm Packages::CPAN::cpanm
