@@ -55,7 +55,7 @@ my %def_options =
   quiet      => 0,
   help       => 0,
   force      => 0,
-  dryrun     => 0,
+  'dry-run'  => 0,
   # switched depending on root or non-root
   'act-file'   => "$configdir/activations.conf",
   configfile => "$configdir/cf-sketch.conf",
@@ -181,7 +181,7 @@ $options{repolist} = \@list;
 
 my $verbose = $options{verbose};
 my $quiet   = $options{quiet};
-my $dryrun  = $options{dryrun};
+my $dryrun  = $options{'dry-run'};
 
 print "Full configuration: ", $coder->encode(\%options), "\n" if $verbose;
 
