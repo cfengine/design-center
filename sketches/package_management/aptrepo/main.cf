@@ -10,9 +10,15 @@ bundle agent cfdc_configure_apt_sources_list(prefix) {
         "apt_sources_list" 
             slist   => getindices("$(prefix)repos"),
             comment => "We need the list of repo to look for in the sources.list.d directory";
+        "canon_apt_sources_list[$(apt_sources_list)]"
+            string  => canonify("$(apt_sources_list)");
+        "contexts"     
+            slist   => getindices("$(prefix)bycontext");
 
         "repo_type"    
             slist   => { "deb-src", "deb", };
+        "canon_repo_type[$(repo_type)]"
+            string  => canonify("$(repo_type)");
 
         # file to write
         "apt_sources_list_file[$(apt_sources_list)]" 
@@ -33,8 +39,6 @@ bundle agent cfdc_configure_apt_sources_list(prefix) {
         "apt_sources_list_version_distrib[$(apt_sources_list)]" 
             string  => "$($(prefix)repos[$(apt_sources_list)][version_distrib])";
 
-
-
         "CFEnotice" 
             string  => "# This file is managed by CFEngine, manual edits will be reverted",
             comment => "It's nice to let people know why the file keep magically reverting on them";
@@ -44,8 +48,17 @@ bundle agent cfdc_configure_apt_sources_list(prefix) {
             expression => regcmp("(?i)yes|true", "$($(prefix)defined_only)");
         "multiple_sources_list_files" 
             expression => regcmp("(?i)yes|true", "$($(prefix)multiple_sources_list_files)");
-        "$(apt_sources_list_repo_type[$(apt_sources_list)][repo_type][$(repo_type)])_active_repo" 
+        "apt_sources_list_repo_type_$(canon_apt_sources_list[$(apt_sources_list)])_$(canon_repo_type[$(repo_type)])_active_repo" 
             expression => regcmp("(?i)yes|true", "$(apt_sources_list_repo_type[$(apt_sources_list)][repo_type][$(repo_type)])" );
+        "apt_sources_list_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])" 
+            expression => isvariable("$(prefix)repos[$(apt_sources_list)][distrib]");
+        "apt_sources_list_version_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])" 
+            expression => isvariable("$(prefix)repos[$(apt_sources_list)][version_distrib]");
+
+    methods:
+      "default_vars" usebundle   => asl_vars("$(prefix)", "$(contexts)"),
+                     classes     => always("$(contexts)_vars_determined"),
+                     ifvarclass  => "$(contexts)";
 
     files:
       multiple_sources_list_files::
@@ -58,8 +71,52 @@ bundle agent cfdc_configure_apt_sources_list(prefix) {
           "$(apt_sources_list_file[$(apt_sources_list)])" 
             edit_defaults =>  std_defs,
             edit_line     =>  append_if_no_line("$(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(apt_sources_list_distrib[$(apt_sources_list)])/ $(apt_sources_list_version_distrib[$(apt_sources_list)]) $(apt_sources_list_section[$(apt_sources_list)])"),
-            ifvarclass    => "$(apt_sources_list_repo_type[$(apt_sources_list)][repo_type][$(repo_type)])_active_repo", 
-            comment       =>  "Complete or fix $(apt_sources_list_file[$(apt_sources_list)]) to be as defined.";
+            ifvarclass    =>  and("$(contexts)_vars_determined",
+                                  "apt_sources_list_repo_type_$(canon_apt_sources_list[$(apt_sources_list)])_$(canon_repo_type[$(repo_type)])_active_repo",
+                                  "apt_sources_list_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])",
+                                  "apt_sources_list_version_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])"
+                               ),
+            comment       =>  "Complete or fix $(apt_sources_list_file[$(apt_sources_list)]) with distrib and version_distrib defined.";
+
+          "$(apt_sources_list_file[$(apt_sources_list)])" 
+            edit_defaults =>  std_defs,
+            edit_line     =>  append_if_no_line("$(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(asl_vars.conf[distrib])/ $(apt_sources_list_version_distrib[$(apt_sources_list)]) $(apt_sources_list_section[$(apt_sources_list)])"),
+            ifvarclass    =>  and("$(contexts)_vars_determined",
+                                  "apt_sources_list_repo_type_$(canon_apt_sources_list[$(apt_sources_list)])_$(canon_repo_type[$(repo_type)])_active_repo",
+                                  not("apt_sources_list_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])"),
+                                  "apt_sources_list_version_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])"
+                               ),
+            comment       =>  "Complete or fix $(apt_sources_list_file[$(apt_sources_list)]) with distrib not defined and version_distrib defined.";
+
+          "$(apt_sources_list_file[$(apt_sources_list)])" 
+            edit_defaults =>  std_defs,
+            edit_line     =>  append_if_no_line("$(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(apt_sources_list_distrib[$(apt_sources_list)])/ $(asl_vars.conf[version_distrib]) $(apt_sources_list_section[$(apt_sources_list)])"),
+            ifvarclass    =>  and("$(contexts)_vars_determined",
+                                  "apt_sources_list_repo_type_$(canon_apt_sources_list[$(apt_sources_list)])_$(canon_repo_type[$(repo_type)])_active_repo",
+                                  "apt_sources_list_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])",
+                                  not("apt_sources_list_version_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])")
+                               ),
+            comment       =>  "Complete or fix $(apt_sources_list_file[$(apt_sources_list)]) with distrib defined and version_distrib not defined.";
+
+          "$(apt_sources_list_file[$(apt_sources_list)])" 
+            edit_defaults =>  std_defs,
+            edit_line     =>  append_if_no_line("$(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(asl_vars.conf[distrib])/ $(asl_vars.conf[version_distrib]) $(apt_sources_list_section[$(apt_sources_list)])"),
+            ifvarclass    =>  and("$(contexts)_vars_determined",
+                                  "apt_sources_list_repo_type_$(canon_apt_sources_list[$(apt_sources_list)])_$(canon_repo_type[$(repo_type)])_active_repo",
+                                  not("apt_sources_list_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])"),
+                                  not("apt_sources_list_version_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])")
+                               ),
+            comment       =>  "Complete or fix $(apt_sources_list_file[$(apt_sources_list)]) with distrib and version_distrib not defined.";
+
+          "$(apt_sources_list_file[$(apt_sources_list)])" 
+            edit_defaults =>  std_defs,
+            edit_line     =>  append_if_no_line("$(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(asl_vars.conf[distrib])/ $(apt_sources_list_version_distrib[$(apt_sources_list)]) $(apt_sources_list_section[$(apt_sources_list)])"),
+            ifvarclass    =>  and("$(contexts)_vars_determined",
+                                  "apt_sources_list_repo_type_$(canon_apt_sources_list[$(apt_sources_list)])_$(canon_repo_type[$(repo_type)])_active_repo",
+                                  not("apt_sources_list_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])"),
+                                  "apt_sources_list_version_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])"
+                               ),
+            comment       =>  "Complete or fix $(apt_sources_list_file[$(apt_sources_list)]) with distrib not defined and version_distrib defined.";
 
       !multiple_sources_list_files::
           "$(sources_list_file)" 
@@ -71,8 +128,20 @@ bundle agent cfdc_configure_apt_sources_list(prefix) {
           "$(sources_list_file)" 
             edit_defaults =>  std_defs,
             edit_line     =>  append_if_no_line("$(repo_type) http://$(apt_sources_list_repo_url[$(apt_sources_list)])/$(apt_sources_list_distrib[$(apt_sources_list)])/ $(apt_sources_list_version_distrib[$(apt_sources_list)]) $(apt_sources_list_section[$(apt_sources_list)])"),
-            ifvarclass    => "$(apt_sources_list_repo_type[$(apt_sources_list)][repo_type][$(repo_type)])_active_repo", 
+            ifvarclass    =>  and("$(contexts)_vars_determined",
+                                  "apt_sources_list_repo_type_$(canon_apt_sources_list[$(apt_sources_list)])_$(canon_repo_type[$(repo_type)])_active_repo",
+                                  "apt_sources_list_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])",
+                                  "apt_sources_list_version_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])"
+                               ),
             comment       =>  "Complete or fix $(sources_list_file) to be as defined.";
+
+    commands:
+        !debug::
+            "/bin/echo $(apt_sources_list) @@ $(asl_vars.conf[distrib]) @@ $(asl_vars.conf[version_distrib])",
+            ifvarclass => "apt_sources_list_distrib_defined_$(canon_apt_sources_list[$(apt_sources_list)])";
+
+            "/bin/echo $(apt_sources_list) @@ $(repo_type) @@ $(apt_sources_list_repo_type[$(apt_sources_list)][repo_type][$(repo_type)])",
+            ifvarclass => "apt_sources_list_repo_type_$(canon_apt_sources_list[$(apt_sources_list)])_$(canon_repo_type[$(repo_type)])_active_repo";
 
     reports:
         debug::
@@ -92,6 +161,9 @@ bundle agent meta_cfdc_configure_apt_sources_list
       "argument[multiple_sources_list_files]" string => "string",
         comment => "Must be true or yes to activate, if not activated, all the configuration will be in $(sources_list_file) ";
 
+      "argument[bycontext]"                   string => "array";
+
+
 }
 
 bundle edit_line cfdc_configure_apt_sources_list_prepend_if_no_line(string) {
@@ -109,5 +181,15 @@ body edit_defaults cfdc_configure_apt_sources_list_empty_if_ask
     empty_file_before_editing => "false";
   only_allow_defined_entries::
     empty_file_before_editing => "true";
+}
+
+bundle agent asl_vars(prefix, context)
+{
+  vars:
+      "conf[distrib]"          string => "$($(prefix)bycontext[$(context)][distrib])";
+      "conf[version_distrib]"  string => "$($(prefix)bycontext[$(context)][version_distrib])";
+    reports:
+        debug::
+            "asl_vars @@ $(prefix) @@ $(context) @@ $(conf[distrib]) @@ $(conf[version_distrib])";
 }
 

@@ -1,5 +1,5 @@
 {
-    "distrib": 
+    "bycontext": 
     {
         "debian_wheezy":
         { 
@@ -7,7 +7,7 @@
             "version_distrib": "wheezy",  
             "repo_type": { "deb-src": "false", "deb": "true", }
         },
-        "ubuntu_precise":
+        "ubuntu_12":
         { 
             "distrib": "ubuntu", 
             "version_distrib": "precise",  
