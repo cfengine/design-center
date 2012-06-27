@@ -1,0 +1,26 @@
+{
+    "activated": true,
+    "bycontext":
+    {
+        "ubuntu":
+        {
+            "tasks":
+            {
+                "tunnels": { "runas": "tzz", "when": "* * * * *", "commands": ["/home/tzz/bin/ubuntu-tunnels.pl"] },
+                "task2": { "runas": "root", "when": "0 * * * *", "commands": ["/home/tzz/bin/tunnels2.pl"] }
+            },
+            "crontab_path": "don't use",
+            "crond_path": "/etc/cron.d"
+        },
+        "darwin":
+        {
+            "tasks":
+            {
+                "tunnels": { "runas": "tzz", "when": "* * * * *", "commands": ["/home/tzz/bin/tunnels.pl"] },
+                "task3": { "runas": "root", "when": "0 * * * *", "commands": ["/home/tzz/bin/tunnels3.pl"] }
+            },
+            "crontab_path": "/usr/bin/crontab",
+            "crond_path": "nonesuch"
+        }
+    }
+}

@@ -1,0 +1,143 @@
+bundle agent cron(prefix)
+{
+  classes:
+
+  vars:
+      "contexts" slist  => getindices("$(prefix)bycontext");
+      "canon_prefix" string => canonify("$(prefix)");
+
+  methods:
+      # this is freakin' awesome
+      "params" usebundle => cron_context("$(prefix)", "$(contexts)"),
+      classes => always("$(canon_prefix)prepared"),
+      ifvarclass => "$(contexts)";
+
+      # this forces us to execute only if we got a valid context
+      "launcher" usebundle => cron_launcher("$(prefix)"),
+      ifvarclass => "$(canon_prefix)prepared";
+
+}
+
+bundle agent meta_cron
+{
+  vars:
+      # see README.md for usage
+      "argument[bycontext]" string => "array";
+}
+
+bundle agent cron_launcher(prefix)
+{
+  classes:
+      "has_crond" expression => fileexists("$(cron_context.crond_path)");
+      "has_crontab" expression => fileexists("$(cron_context.crontab_path)");
+
+  vars:
+      "class_prefix" string => lastnode("$(prefix)", "\."); # strip out the bundle prefix
+
+  methods:
+    has_crond::
+      "crond" usebundle => crond_manage("$(prefix)", "cron_context.active_tasks", "$(cron_context.tasks)");
+
+    has_crontab::
+      "crontab" usebundle => crontab_manage("$(prefix)", "cron_context.active_tasks",  "$(cron_context.tasks)");
+
+  reports:
+    cfengine::
+
+    has_crond::
+      "We have crond in '$(cron_context.crond_path)'";
+    has_crontab::
+      "We have crontab in '$(cron_context.crontab_path)'";
+    !has_crond::
+      "We don't have crond in '$(cron_context.crond_path)'";
+    !has_crontab::
+      "We don't have crontab in '$(cron_context.crontab_path)'";
+
+}
+
+bundle agent cron_context(prefix, context)
+{
+  vars:
+      "tasks" slist => getindices("$(prefix)bycontext[$(context)][tasks]");
+      "crontab_path" string => "$($(prefix)bycontext[$(context)][crontab_path])";
+      "crond_path" string => "$($(prefix)bycontext[$(context)][crond_path])";
+
+      "active_context" string => "$(context)";
+      "active_tasks[$(tasks)]" string => "$(prefix)bycontext[$(context)][tasks][$(tasks)]";
+
+  reports:
+    unused::
+      "Loading parameters for context $(context), task $(tasks)";
+      "Active task prefixes $(tasks) => $(active_tasks[$(tasks)])";
+}
+
+bundle agent crond_manage(prefix, task_array_ref, task)
+{
+  vars:
+      "tprefix" string => "$($(task_array_ref)[$(task)])";
+      "runas" string => "$($(tprefix)[runas])";
+      "when" string => "$($(tprefix)[when])";
+      "commands" slist => { "@($(tprefix)[commands])" };
+
+      "lines" slist => maplist("#managed by cfengine cron sketch$(const.endl)$(when) $(runas) $(this)", @(commands));
+
+  files:
+      "$(cron_context.crond_path)/cron-sketch-$(task)"
+      edit_line => append_if_no_lines("@(crond_manage.lines)"),
+      edit_defaults => empty,
+      create => "true";
+
+  reports:
+    cfengine::
+      "crond manage: Activating '$(cron_context.crond_path)/cron-sketch-$(task)': run as $(runas) at times '$(when)', command '$(commands)'";
+}
+
+bundle agent crontab_manage(prefix, task_array_ref, task)
+{
+  classes:
+      "bin_grep" expression => fileexists("/bin/grep");
+  vars:
+    bin_grep::
+      "grep" string => "/bin/grep";
+    !bin_grep::
+      "grep" string => "/usr/bin/grep";
+
+    any::
+      "tprefix" string => "$($(task_array_ref)[$(task)])";
+      "runas" string => "$($(tprefix)[runas])";
+      "when" string => "$($(tprefix)[when])";
+      "commands" slist => { "@($(tprefix)[commands])" };
+
+      "marker" string => "MANAGED_BY_CFENGINE_CRON_SKETCH";
+      "lines" slist => maplist("$(when) $(marker)=1 $(this)", @(commands));
+
+      "fingerprint" string => concat("$(prefix)$(task)_", ago(0,0,0,0,0,0));
+      "unique" string => hash("$(fingerprint)","md5");
+      "canon_prefix" string => canonify("$(prefix)_$(task)");
+
+  files:
+      "/tmp/$(unique).cron"
+      edit_line => append_if_no_lines("@(crontab_manage.lines)"),
+      edit_defaults => empty,
+      create => "true",
+      classes => if_ok("$(canon_prefix)prepared");
+
+      "/tmp/$(unique).cron"
+      delete => tidy,
+      ifvarclass => "$(canon_prefix)prepared3";
+
+  commands:
+      "$(cron_context.crontab_path) -u $(runas) -l | $(grep) -v $(marker) >> /tmp/$(unique).cron || echo OK",
+      contain => in_shell,
+      classes => if_ok("$(canon_prefix)prepared2"),
+      ifvarclass => "$(canon_prefix)prepared";
+
+      "$(cron_context.crontab_path) -u $(runas) /tmp/$(unique).cron",
+      contain => in_shell,
+      classes => if_ok("$(canon_prefix)prepared3"),
+      ifvarclass => "$(canon_prefix)prepared2";
+
+  reports:
+    cfengine::
+      "crontab manage: Activating '$(cron_context.crontab_path)/cron-sketch-$(task)': run as $(runas) at times '$(when)', command '$(commands)'";
+}
