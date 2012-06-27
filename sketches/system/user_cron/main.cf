@@ -1,4 +1,4 @@
-bundle agent cfdc_cron(prefix) 
+bundle agent cfdc_user_cron(prefix) 
 {
   vars:
       "canon_prefix" 
@@ -7,7 +7,7 @@ bundle agent cfdc_cron(prefix)
       "crons" 
           slist   => getindices("$(prefix)cron"),
           comment => "We need the list of repo to look for in the sources.list.d directory";
-      "canon_crons[$(crons)]" 
+      "canon_user_crons[$(crons)]" 
           string  => canonify("$(crons)");
 
       "cron_line[$(crons)]" 
@@ -25,26 +25,26 @@ bundle agent cfdc_cron(prefix)
   files:
     !only_allow_defined_entries::
       "$(cron_file[$(crons)])"
-        handle        => "cronjobs_add_files_crontab",
+        handle        => "cronjobs_add_files_user_crontab",
         comment       => "Promise table entries",
         create        => "true",
-        classes       => if_repaired("cronjobs_add_$(crons)_crontab_repaired"),
+        classes       => if_repaired("cronjobs_add_$(crons)_user_crontab_repaired"),
         ifvarclass    => "cronjobs_dump_$(crons)",
         edit_defaults => std_defs,
         edit_line     => append_if_no_lines( "${cron_line[$(crons)]}" );
 
     only_allow_defined_entries::
       "$(cron_file[$(crons)])"
-        handle        => "cronjobs_add_files_crontab",
+        handle        => "cronjobs_add_files_user_crontab",
         comment       => "Promise table entries",
         create        => "true",
         edit_defaults => empty;
 
       "$(cron_file[$(crons)])"
-        handle        => "cronjobs_add_files_crontab",
+        handle        => "cronjobs_add_files_user_crontab",
         comment       => "Promise table entries",
         create        => "true",
-        classes       => if_repaired("cronjobs_add_$(crons)_crontab_repaired"),
+        classes       => if_repaired("cronjobs_add_$(crons)_user_crontab_repaired"),
         edit_line     => append_if_no_lines( "${cron_line[$(crons)]}" );
 
   commands:
@@ -52,15 +52,15 @@ bundle agent cfdc_cron(prefix)
     !only_allow_defined_entries::
       "/usr/bin/crontab" 
         args          => "-u $($(prefix)cron[$(crons)][user]) -l > $(cron_file[$(crons)])",
-        handle        => "cronjobs_read_$(crons)_commands_crontab",
+        handle        => "cronjobs_read_$(crons)_commands_user_crontab",
         classes       => if_repaired("cronjobs_dump_$(crons)"),
         contain       => in_shell_and_silent,
         comment       => "Dump cron tables to compare.";
 
     any::
       "/usr/bin/crontab $(cron_file[$(crons)])",
-        handle        => "cronjobs_add_$(crons)_commands_crontab",
-        ifvarclass    => "cronjobs_add_$(crons)_crontab_repaired|only_allow_defined_entries",
+        handle        => "cronjobs_add_$(crons)_commands_user_crontab",
+        ifvarclass    => "cronjobs_add_$(crons)_user_crontab_repaired|only_allow_defined_entries",
         comment       => "Reread cron tables if it was edited.";
 
   reports:
@@ -70,7 +70,7 @@ bundle agent cfdc_cron(prefix)
       "main @@ $(sys.crontab) @@ $(prefix) @@ ";
 }
 
-bundle agent meta_cfdc_cron
+bundle agent meta_cfdc_user_cron
 {
   vars:
       "argument[cron]"                       string => "array";

@@ -10,8 +10,8 @@
             "day_of_month": "1",  
             "month": "6",  
             "day_of_week": "*",  
-            "user": "sky",  
-            "command": "/bin/echo test > /dev/null 2>&1",  
+            "user": "user",  
+            "command": "/bin/echo cron_1 > /dev/null 2>&1",  
         },
         "cron_2":
         { 
@@ -20,8 +20,8 @@
             "day_of_month": "2",  
             "month": "6",  
             "day_of_week": "*",  
-            "user": "sky",  
-            "command": "/bin/echo test_2 > /dev/null 2>&1",  
+            "user": "user",  
+            "command": "/bin/echo cron_2 > /dev/null 2>&1",  
         },
 
     },
