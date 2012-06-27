@@ -1,0 +1,28 @@
+{
+    "defined_only": "no",
+    "prefix_file": "/tmp/cron_",
+    "cron": 
+    {
+        "cron_1":
+        { 
+            "minute": "*",  
+            "hour": "*",  
+            "day_of_month": "1",  
+            "month": "6",  
+            "day_of_week": "*",  
+            "user": "sky",  
+            "command": "/bin/echo test > /dev/null 2>&1",  
+        },
+        "cron_2":
+        { 
+            "minute": "0",  
+            "hour": "1",  
+            "day_of_month": "2",  
+            "month": "6",  
+            "day_of_week": "*",  
+            "user": "sky",  
+            "command": "/bin/echo test_2 > /dev/null 2>&1",  
+        },
+
+    },
+}
