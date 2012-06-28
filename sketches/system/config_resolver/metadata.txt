@@ -1,5 +1,0 @@
-author:Nick Anderson <nick@cmdln.org>
-ostype:linux
-tested:redhat, centos, ubuntu
-cfengine_version: community-3.2.1
-
