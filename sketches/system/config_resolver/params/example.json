@@ -1,0 +1,15 @@
+{
+    "defined_only": "no",
+    "_empty": "yes",
+    "ifelapsed": "60",
+    "bycontext" : {
+      "_debug": { "file": "/tmp/resolv.conf", },
+      "!_debug": { "file": "/etc/resolv.conf", },
+    },
+    "resolver":
+    {
+        "nameserver": [ "8.8.8.8", "8.8.4.4", ],
+        "search": [ "example.net", "example.org", ],
+        "domain": [ "example.com", ],
+    },
+}
