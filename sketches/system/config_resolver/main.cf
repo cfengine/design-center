@@ -1,0 +1,138 @@
+bundle agent cfdc_config_resolver(conf) 
+{
+  vars:
+    any::
+      "rs_conf"  string  => "$(conf)resolver";
+
+#      "key" 
+#          slist   => getindices("$(rs_conf)"),
+#          comment => "We need the list of elements to configure";
+
+      "contexts" slist   => getindices("$(conf)bycontext");
+
+      "rsconf[nameserver]" slist   => { "@($(conf)resolver[nameserver])", };
+      "rsconf[search]"     slist   => { "@($(conf)resolver[search])", };
+      "rsconf[domain]"     slist   => { "@($(conf)resolver[domain])", };
+      "rsconf[options]"    slist   => { "@($(conf)resolver[options])", };
+      "rsconf[sortlist]"   slist   => { "@($(conf)resolver[sortlist])", };
+
+  classes:
+      "only_allow_defined_entries" expression => regcmp("(?i)yes|true", "$($(conf)defined_only)");
+      "empty_file"                 expression => regcmp("(?i)yes|true", "$($(conf)_empty)");
+      "nameserver_set"             expression => isvariable("$(conf)resolver[nameserver]");
+      "sortlist_set"               expression => isvariable("$(conf)resolver[sortlist]");
+      "options_set"                expression => isvariable("$(conf)resolver[options]");
+      "domain_set"                 expression => isvariable("$(conf)resolver[domain]");
+      "search_set"                 expression => isvariable("$(conf)resolver[search]");
+
+  methods:
+  # this is freakin' awesomeO
+      "params" usebundle => crs_context("$(conf)", "$(contexts)"),
+          ifvarclass => "$(contexts)";
+
+  files:
+      "$(crs_context.file_to_edit)"
+        handle        => "cfdc_config_resolver_files_$(crs_context.file_to_edit)",
+        create        => "true",
+        edit_defaults => cfdc_config_resolver_empty_if_ask,
+        ifvarclass    => "$(crs_context.active_context)",
+        comment       => "Empty resolver file : $(crs_context.file_to_edit)";
+
+# does not work when you mix array and list
+#      "$(crs_context.file_to_edit)"
+#        handle        => "cfdc_config_resolver_files_$(crs_context.file_to_edit)",
+#        edit_line     => cfdc_config_resolver_append_if_no_lines("$(conf)","$(key)", "$(rsconf[$(key)])"),
+#        ifvarclass    => "$(crs_context.active_context).$(key)_set",
+#        comment       => "configure resolver settings in $(crs_context.file_to_edit)";
+
+      "$(crs_context.file_to_edit)"
+        handle        => "cfdc_config_resolver_files_$(crs_context.file_to_edit)",
+        edit_line     => cfdc_config_resolver_append_if_no_lines("$(conf)","nameserver", "$(rsconf[nameserver])"),
+        ifvarclass    => "$(crs_context.active_context).nameserver_set",
+        comment       => "configure resolver settings in $(crs_context.file_to_edit)";
+
+      "$(crs_context.file_to_edit)"
+        handle        => "cfdc_config_resolver_files_$(crs_context.file_to_edit)",
+        edit_line     => cfdc_config_resolver_append_if_no_lines("$(conf)","search", "$(rsconf[search])"),
+        ifvarclass    => "$(crs_context.active_context).search_set",
+        comment       => "configure resolver settings in $(crs_context.file_to_edit)";
+
+      "$(crs_context.file_to_edit)"
+        handle        => "cfdc_config_resolver_files_$(crs_context.file_to_edit)",
+        edit_line     => cfdc_config_resolver_append_if_no_lines("$(conf)","domain", "$(rsconf[domain])"),
+        ifvarclass    => "$(crs_context.active_context).domain_set",
+        comment       => "configure resolver settings in $(crs_context.file_to_edit)";
+
+      "$(crs_context.file_to_edit)"
+        handle        => "cfdc_config_resolver_files_$(crs_context.file_to_edit)",
+        edit_line     => cfdc_config_resolver_append_if_no_lines("$(conf)","options", "$(rsconf[options])"),
+        ifvarclass    => "$(crs_context.active_context).options_set",
+        comment       => "configure resolver settings in $(crs_context.file_to_edit)";
+
+      "$(crs_context.file_to_edit)"
+        handle        => "cfdc_config_resolver_files_$(crs_context.file_to_edit)",
+        edit_line     => cfdc_config_resolver_append_if_no_lines("$(conf)","sortlist", "$(rsconf[sortlist])"),
+        ifvarclass    => "$(crs_context.active_context).sortlist_set",
+        comment       => "configure resolver settings in $(crs_context.file_to_edit)";
+
+reports:
+      _debug.nameserver_set::
+          "main  @@ $(rsconf[nameserver]) @@";
+      _debug.search_set::
+          "main  @@ $(rsconf[search]) @@";
+      _debug.domain_set::
+          "main  @@ $(rsconf[domain]) @@";
+      _debug::
+          "main  @@ active_context : $(crs_context.active_context) @@ file to edit : $(crs_context.file_to_edit) @@ defined_only : $($(conf)defined_only) @@";
+      _debug.empty_file::
+          "main  @@ empty_file : yes";
+}
+
+bundle agent meta_cfdc_config_resolver(conf) 
+{
+vars:
+    "argument[resolver]"                    string => "array";
+    "argument[bycontext]"                   string => "array";
+    "argument[defined_only]"                string => "string",
+        comment => "Must be true or yes to activate";
+    "argument[_empty]"                      string => "string",
+        comment => "Must be true or yes to activate";
+}
+
+
+bundle agent crs_context(prefix, context)
+{
+vars:
+    "active_context" string => "$(context)";
+    "file_to_edit"   string => "$($(prefix)bycontext[$(context)][file])";
+
+reports:
+    _debug::
+        "crs   @@ Loading parameters for context $(context), file to edit $(file_to_edit)";
+        "crs   @@ $(prefix) @@ $(context)";
+}
+
+body edit_defaults cfdc_config_resolver_empty_if_ask
+{
+    edit_backup => "false";
+    max_file_size => "300000";
+    !empty_file::
+        empty_file_before_editing => "false";
+    empty_file::
+        empty_file_before_editing => "true";
+}
+
+bundle edit_line cfdc_config_resolver_append_if_no_lines(conf,key,list)
+{
+classes:
+      "only_allow_defined_entries" expression => regcmp("(?i)yes|true", "$($(conf)defined_only)");
+delete_lines:
+    only_allow_defined_entries::
+      "$(key).*",
+        comment => "Reset $(key) lines from resolver";
+insert_lines:
+      "$(key) $(list)"
+        comment => "Append lines to the file if they don't already exist";
+}
+
+
