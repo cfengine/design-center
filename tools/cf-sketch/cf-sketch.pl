@@ -62,7 +62,7 @@ my %def_options =
   'install-target' => undef,
   'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
   'make-package' => [],
-  params => [],
+  params => {},
   cfhome => join (':', split(':', $ENV{PATH}||''), '/var/cfengine/bin', '/usr/sbin', '/usr/local/bin', '/usr/local/sbin'),
   runfile => undef,
   standalone => 1,
@@ -78,26 +78,31 @@ my @options_spec =
   "cfhome=s",
   "configfile|cf=s",
   "runfile|rf=s",
-  "params|p=s@",
   "act-file|af=s",
   "install-target|it=s",
   "json!",
   "standalone|st!",
 
   "save-config|config-save!",
+  "save-metarun=s",
   "repolist|rl=s@",
   # "make-package=s@",
   "install|i=s@",
   "install-source|is=s",
   "remove|r=s@",
-  "activate|a=s",                 # activate only one at a time
-  "deactivate|d=s",               # deactivate only one at a time
+  "params|p=s%",
+  "activate|a=s%",
+  "deactivate|d=s%",
+  "deactivaten|dn=i@",
+  "deactivate-all|da!",
   "test|t=s@",
   "search|s=s@",
   "list|l:s@",
   "list-activations|la!",
   "generate|g!",
   "api=s",
+
+  "metarun=s",
  );
 
 # Options given on the command line
@@ -113,11 +118,33 @@ if ($cmd_options{help})
  exit;
 }
 
-# Options given on the config file
-my %cfgfile_options;
-my $cfgfile = $cmd_options{configfile} || $def_options{configfile};
-if (open(my $cfh, '<', $cfgfile))
+my $metarun = $cmd_options{metarun};
+
+if ($metarun)
 {
+ if (open(my $mfh, '<', $metarun))
+ {
+  # slurp the entire file
+  my $jsontxt = join("", <$mfh>);
+  my $meta = $coder->decode($jsontxt);
+
+  die "Malformed metarun file: no 'options' key"
+   unless exists $meta->{options};
+
+  %options = %{$meta->{options}};
+ }
+ else
+ {
+  die "Could not load metarun file $metarun: $!";
+ }
+}
+else
+{
+ # Options given on the config file
+ my %cfgfile_options;
+ my $cfgfile = $cmd_options{configfile} || $def_options{configfile};
+ if (open(my $cfh, '<', $cfgfile))
+ {
   # slurp the entire file
   my $jsontxt = join("", <$cfh>);
   my $given = $coder->decode($jsontxt);
@@ -128,15 +155,16 @@ if (open(my $cfh, '<', $cfgfile))
     if $cfgfile_options{verbose};
    $cfgfile_options{$_} = $given->{$_};
   }
-}
+ }
 
-# Now we merge all three sources of options: Default options are
-# overriden by config-file options, which are overriden by
-# command-line options
-foreach my $ptr (\%def_options, \%cfgfile_options, \%cmd_options) {
+ # Now we merge all three sources of options: Default options are
+ # overriden by config-file options, which are overriden by
+ # command-line options
+ foreach my $ptr (\%def_options, \%cfgfile_options, \%cmd_options) {
   foreach my $key (keys %$ptr) {
-    $options{$key} = $ptr->{$key};
+   $options{$key} = $ptr->{$key};
   }
+ }
 }
 
 my $happy_root = $> != 0 ? glob("~/.cfagent/inputs") : (-e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs');
@@ -185,6 +213,17 @@ my $dryrun  = $options{'dry-run'};
 
 print "Full configuration: ", $coder->encode(\%options), "\n" if $verbose;
 
+my $save_metarun = delete $options{'save-metarun'};
+if ($save_metarun)
+{
+ maybe_ensure_dir(dirname($save_metarun));
+ maybe_write_file($save_metarun,
+                  'metarun file',
+                  $coder->pretty(1)->encode({ options => \%options }));
+ print "Saved metarun file $save_metarun\n";
+ exit;
+}
+
 if ($options{'save-config'})
 {
  configure_self($options{configfile});
@@ -231,7 +270,15 @@ if ($options{'list-activations'})
  exit;
 }
 
-my @callable = qw/search install activate deactivate remove test generate api/;
+if ($options{'deactivate-all'})
+{
+ $options{deactivate} = { all => '' };
+}
+
+my @nonterminal = qw/deactivate deactivaten remove install activate generate/;
+my @terminal = qw/test api search/;
+my @callable = (@nonterminal, @terminal);
+
 foreach my $word (@callable)
 {
  if ($options{$word})
@@ -240,11 +287,16 @@ foreach my $word (@callable)
   no strict 'refs';
   $word->($options{$word});
   use strict 'refs';
-  exit;
+
+  # exit unless the command was non-terminal...
+  exit unless grep { $_ eq $word } @nonterminal;
  }
 }
 
-push @callable, 'list', 'search', 'save-config';
+# now exit if any non-terminal commands were specified
+exit if grep { $options{$_} } @nonterminal;
+
+push @callable, 'list', 'save-config';
 print "Sorry, $0 doesn't know what you want to do.  You have to specify one of " .
  join(" or ", map { "--$_" } @callable) . ".\n";
 exit 1;
@@ -700,177 +752,167 @@ sub api
 
 sub activate
 {
- my $sketch = shift @_;
+ my $aspec = shift @_;
 
- die "Can't activate sketch $sketch without --params"
-  unless scalar @{$options{params}};
-
- my $params = {};
-
- my $p = $options{params};
- my $pname = join "; ", @$p;
-
- if (scalar @$p && -f $p->[0] || !is_resource_local($p->[0]))
+ foreach my $sketch (sort keys %$aspec)
  {
-  print "Loading activation params from $p->[0]\n" unless $quiet;
-  $params = load_json($p->[0]);
+  my $pfile = $aspec->{$sketch};
 
-  die "Could not load activation params from $p->[0]"
-   unless ref $params eq 'HASH';
+  print "Loading activation params from $pfile\n" unless $quiet;
+  my $aparams = load_json($pfile);
 
-  shift @$p;
- }
- 
- foreach my $extra (@$p)
- {
-  next unless $extra =~ m/([^=]+)=(.*)/;
-  $params->{$1} = $2;
- }
+  die "Could not load activation params from $pfile"
+   unless ref $aparams eq 'HASH';
 
- my $installed = 0;
- foreach my $repo (@{$options{repolist}})
- {
-  my $contents = repo_get_contents($repo);
-  if (exists $contents->{$sketch})
+  foreach my $extra (sort keys %{$options{params}})
   {
-   my $data = $contents->{$sketch};
-   my $if = $data->{interface};
+   $aparams->{$extra} = $options{params}->{$extra};
+   printf("Overriding aparams %s from the command line, value %s\n",
+          $extra, $options{params}->{$extra})
+    if $verbose;
+  }
 
-   my $entry_point = verify_entry_point($sketch,
-                                        $data->{dir},
-                                        $data->{manifest},
-                                        $data->{entry_point},
-                                        $data->{interface});
-
-   if ($entry_point)
+  my $installed = 0;
+  foreach my $repo (@{$options{repolist}})
+  {
+   my $contents = repo_get_contents($repo);
+   if (exists $contents->{$sketch})
    {
-    foreach my $default_k (keys %{$entry_point->{default}})
-    {
-     next if exists $params->{$default_k};
-     $params->{$default_k} = $entry_point->{default}->{$default_k};
-    }
+    my $data = $contents->{$sketch};
+    my $if = $data->{interface};
 
-    my $varlist = $entry_point->{varlist};
-    foreach my $varname (sort keys %$varlist)
+    my $entry_point = verify_entry_point($sketch,
+                                         $data->{dir},
+                                         $data->{manifest},
+                                         $data->{entry_point},
+                                         $data->{interface});
+
+    if ($entry_point)
     {
-     if ($varname eq 'activated' && ! exists $params->{$varname})
+     foreach my $default_k (keys %{$entry_point->{default}})
      {
-      print "Inserting artificial 'activated' boolean set to 'any' so it's always true.\n"
-       unless $quiet;
-      $params->{$varname} = 'any';
+      next if exists $aparams->{$default_k};
+      $aparams->{$default_k} = $entry_point->{default}->{$default_k};
      }
 
-     die "Can't activate $sketch: its interface requires variable '$varname'"
-      unless exists $params->{$varname};
-     print "Satisfied by params: '$varname'\n" if $verbose;
-    }
+     my $varlist = $entry_point->{varlist};
+     foreach my $varname (sort keys %$varlist)
+     {
+      if ($varname eq 'activated' && ! exists $aparams->{$varname})
+      {
+       print "Inserting artificial 'activated' boolean set to 'any' so it's always true.\n"
+        unless $quiet;
+       $aparams->{$varname} = 'any';
+      }
 
-    $varlist = $entry_point->{optional_varlist};
-    foreach my $varname (sort keys %$varlist)
-    {
-     next unless exists $params->{$varname};
-     print "Optional satisfied by params: '$varname'\n" if $verbose;
+      die "Can't activate $sketch: its interface requires variable '$varname'"
+       unless exists $aparams->{$varname};
+      print "Satisfied by aparams: '$varname'\n" if $verbose;
+     }
+
+     $varlist = $entry_point->{optional_varlist};
+     foreach my $varname (sort keys %$varlist)
+     {
+      next unless exists $aparams->{$varname};
+      print "Optional satisfied by aparams: '$varname'\n" if $verbose;
+     }
     }
-   }
-   else
-   {
+    else
+    {
      die "Can't activate $sketch: missing entry point in $data->{entry_point}"
-   }
+    }
 
-   # activation successful, now install it
-   my $activations = load_json($options{'act-file'}, 1);
+    # activation successful, now install it
+    my $activations = load_json($options{'act-file'}, 1);
 
-   if (exists $activations->{$sketch}->{$pname})
-   {
-    my $p = $canonical_coder->encode($activations->{$sketch}->{$pname});
-    my $q = $canonical_coder->encode($params);
-    if ($p eq $q)
+    if (exists $activations->{$sketch}->{$pfile})
     {
-     if ($options{force})
+     my $p = $canonical_coder->encode($activations->{$sketch}->{$pfile});
+     my $q = $canonical_coder->encode($aparams);
+     if ($p eq $q)
      {
-      warn "Activating duplicate parameters [$q] because of --force"
-       unless $quiet;
-     }
-     else
-     {
-      die "Can't activate: $sketch has already been activated with $q";
+      if ($options{force})
+      {
+       warn "Activating duplicate parameters [$q] because of --force"
+        unless $quiet;
+      }
+      else
+      {
+       die "Can't activate: $sketch has already been activated with $q";
+      }
      }
     }
+
+    $activations->{$sketch}->{$pfile} = $aparams;
+
+    maybe_ensure_dir(dirname($options{'act-file'}));
+    maybe_write_file($options{'act-file'}, 'activation', $coder->encode($activations));
+    print "Activated: $sketch aparams $pfile\n" unless $quiet;
+
+    $installed = 1;
+    last;
    }
+  }
 
-   $activations->{$sketch}->{$pname} = $params;
+  die "Could not activate sketch $sketch, it was not in the given list of repositories [@{$options{repolist}}]"
+   unless $installed;
+ }
+}
 
-   maybe_ensure_dir(dirname($options{'act-file'}));
-   maybe_write_file($options{'act-file'}, 'activation', $coder->encode($activations));
-   print "Activated: $sketch params $pname\n" unless $quiet;
+sub deactivaten
+{
+ my $nums = shift @_;
 
-   $installed = 1;
-   last;
+ my $deactivations = {};
+
+ my $activations = load_json($options{'act-file'}, 1);
+ my $offset = 1;
+ foreach my $sketch (sort keys %$activations)
+ {
+  foreach my $pfile (sort keys %{$activations->{$sketch}})
+  {
+   if (grep { $_ == $offset } @$nums)
+   {
+    $deactivations->{$sketch} = $pfile;
+   }
   }
  }
-
- die "Could not activate sketch $sketch, it was not in the given list of repositories [@{$options{repolist}}]"
-  unless $installed;
+ deactivate($deactivations);
 }
 
 sub deactivate
 {
- my $sketch     = shift @_;
- my $all_params = shift @_;
-
- my $all_sketches = ($sketch eq 'all');
-
- $all_params = 1 if (scalar @{$options{params}} && $options{params}->[0] eq 'all');
+ my $aspec = shift @_;
 
  my $activations = load_json($options{'act-file'}, 1);
 
- if ($all_sketches)
+ foreach my $sketch (sort keys %$aspec)
  {
-  $activations = {};
-  print "Deactivated: all sketch activations!\n" unless $quiet;
- }
- elsif ($all_params)
- {
-  my %info = %{$activations->{$sketch}};
-  delete $activations->{$sketch};
-  print "Deactivated: all $sketch activations (@{[ sort keys %info ]})\n"
-   unless $quiet;
- }
- else
- {
-  die "Can't deactivate sketch $sketch without --params"
-   unless $options{params};
+  my $pfile = $aspec->{$sketch};
 
-  my %byid;
-  my $activation_id = 1;
-  foreach my $sketch (sort keys %$activations)
+  my $all_sketches = ($sketch eq 'all');
+  my $all_params = ($pfile eq 'all');
+
+  if ($all_sketches)
   {
-   foreach my $pfile (sort keys %{$activations->{$sketch}})
-   {
-    $byid{$activation_id++} = [ $sketch, $pfile ];
-   }
+   $activations = {};
+   print "Deactivated: all sketch activations!\n" unless $quiet;
+   last;
   }
-
-  my $requested = $sketch;
-  my $params = scalar @{$options{params}} ? $options{params}->[0] : '[--params not given]';
-
-  # deactivating by ID
-  if (exists $byid{$requested})
+  elsif ($all_params)
   {
-   $sketch = $byid{$requested}->[0];
-   $params =  $byid{$requested}->[1];
-   print "Removing activation ID $requested => $sketch $params\n"
+   my %info = %{$activations->{$sketch}};
+   delete $activations->{$sketch};
+   print "Deactivated: all $sketch activations (@{[ sort keys %info ]})\n"
     unless $quiet;
   }
+  else
+  {
+   delete $activations->{$sketch}->{$pfile};
+   delete $activations->{$sketch} unless scalar keys %{$activations->{$sketch}};
 
-  die "Couldn't deactivate sketch $sketch: no activation for $params"
-   unless exists $activations->{$sketch}->{$params};
-
-  delete $activations->{$sketch}->{$params};
-
-  delete $activations->{$sketch} unless scalar keys %{$activations->{$sketch}};
-
-  print "Deactivated: $sketch $params\n" unless $quiet;
+   print "Deactivated: $sketch $pfile\n" unless $quiet;
+  }
  }
 
  maybe_ensure_dir(dirname($options{'act-file'}));
@@ -900,7 +942,7 @@ sub remove
    my $data = $contents->{$sketch};
    if (maybe_remove_dir($data->{dir}))
    {
-    deactivate($sketch, 'all');       # deactivate all the activations
+    deactivate({$sketch => 'all'});       # deactivate all the activations
     print "Successfully removed $sketch from $data->{dir}\n" unless $quiet;
    }
    else
