@@ -1,5 +1,0 @@
-author:Ben Heilman <bheilman@enova.com>
-ostype:linux
-tested:debian
-cfengine_version:3.3.0
-

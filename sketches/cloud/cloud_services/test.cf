@@ -1,0 +1,65 @@
+# This test file uses params/demo.json with some minor adjustments for readability
+
+# run it with:
+
+# cf-agent -KI -f test.cf -Dstart1_ec2
+# cf-agent -KI -f test.cf -Dstop1_ec2
+
+
+body common control
+{
+      bundlesequence => { "cfsketch_run" };
+      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "./main.cf" };
+}
+
+bundle common cfsketch_g
+{
+  classes:
+      # contexts
+       # contexts for activation 001
+      "cloud_services_test_activated" expression => "any";
+      "cloud_services_test_install_cfengine" expression => "any";
+
+  vars:
+       # string versions of the contexts for activation 001
+      "cloud_services_test_contexts_text[activated]" string => "ON";
+      "cloud_services_test_contexts_text[install_cfengine]" string => "ON";
+
+
+
+  vars:
+       # string versions of the contexts for activation 001
+      "cloud_services_test_contexts_text[activated]" string => "ON";
+      "cloud_services_test_contexts_text[install_cfengine]" string => "ON";
+       # string and slist variables for activation 001
+
+      # you will probably want to adjust this if you're not in the
+      # same directory as test.cf
+       "cloud_services_test_bundle_home" string => dirname("$(this.promise_filename)");
+       # array variables for activation 001
+       "cloud_services_test_bycontext[start1_ec2][class]" string => "cfworker";
+       "cloud_services_test_bycontext[start1_ec2][count]" string => "1";
+       "cloud_services_test_bycontext[start1_ec2][state]" string => "start";
+       "cloud_services_test_bycontext[start1_ec2][stype]" string => "ec2";
+       "cloud_services_test_bycontext[stop1_ec2][class]" string => "cfworker";
+       "cloud_services_test_bycontext[stop1_ec2][count]" string => "0";
+       "cloud_services_test_bycontext[stop1_ec2][state]" string => "stop";
+       "cloud_services_test_bycontext[stop1_ec2][stype]" string => "ec2";
+       "cloud_services_test_ec2[ami]" string => "ami-b89842d1";
+       "cloud_services_test_ec2[aws_access_key]" string => "akey1";
+       "cloud_services_test_ec2[aws_secret_key]" string => "skey1";
+       "cloud_services_test_ec2[instance_type]" string => "m1.small";
+       "cloud_services_test_ec2[region]" string => "us-east-1";
+       "cloud_services_test_ec2[security_group]" string => "mygroup";
+       "cloud_services_test_ec2[ssh_pub_key]" string => "/var/tmp/mysshkey.pub";
+  reports:
+    cfengine::
+      "we will look for the shim script in $(cloud_services_test_bundle_home)/scripts";
+}
+
+bundle agent cfsketch_run
+{
+  methods:
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "test from your own demo.json" usebundle => cloud_services("cfsketch_g.cloud_services_test_");
+}

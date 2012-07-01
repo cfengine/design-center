@@ -1,0 +1,24 @@
+{
+
+    "manifest":
+    {
+        "main.cf": { "desc": "main file", "version": 1.0 },
+        "README.md": { "documentation": true },
+        "params/example.json": { "comment": "Example parameters" },
+        "test.cf": { "comment": "Standalone test policy" },
+        "changelog": { "comment": "changelog" },
+    },
+
+    "metadata":
+    {
+        "name": "Utilities::halt_agent_if_file_exists",
+        "version": 1.1,
+        "license": "MIT",
+        "portfolio": [ "cfdc" ],
+        "authors": [ "Ben Heilman <bheilman@enova.com>", "Nick Anderson <nick@cmdln.org>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.2.1" }, "os": [ "linux" ] },
+    },
+
+    "entry_point": "main.cf",
+    "interface": [ "main.cf" ]
+}

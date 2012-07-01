@@ -1,0 +1,4 @@
+set_hostname 1.01
+  * cf-sketchify - prefix with cfdc, add metadata, add test etc ...
+  * switch to cfsketch prefix style API
+  * Move out from unsupported

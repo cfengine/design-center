@@ -9,8 +9,8 @@
     "metadata":
     {
         "name": "CFEngine::stdlib",
-        "version": 106,
-        "license": "MIT",
+        "version": 107,
+        "license": "LGPL",
         "portfolio": [ "cfdc" ],
         "authors": [ "CFEngine AS" ],
         "depends": { "cfengine": { "version": "3.3.0" } },

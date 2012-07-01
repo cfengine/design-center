@@ -6,7 +6,7 @@ Nick Anderson <nick@cmdln.org>
 linux
 
 ## DESCRIPTION
-* set_hostname - Make sure the hostname and domainname of the system are set
+* cfdc_set_hostname - Make sure the hostname and domainname of the system are set
   properly. Different distributions do things differently, specifically this
   is useful to correct hostname setting on redhat style machines. Contrary to
   official redhat documentation HOSTNAME in /etc/sysconfig/network should not
@@ -19,25 +19,13 @@ linux
 
 ## SAMPLE USAGE
 ### set_hostname
-    body common control {
-
-        bundlesequence  => {
-                            "main",
-                            };
-
-        inputs          => {
-                            "cfengine_stdlib.cf",
-                            "sketches/set_hostname/set_hostname.cf",
-                            };
-    }
-
     bundle agent main {
 
+        vars:
+            "fqdn_hostname" string => "node1";
+            "fqdn_domain"   string => "example.com";
 
         methods:
-            "any" usebundle => set_hostname("node1", "domain.com");
+            "any" usebundle => cfdc_set_hostname("main.fqdn_");
 
     }
-
-
-

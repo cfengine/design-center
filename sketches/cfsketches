@@ -1,9 +1,13 @@
 ../tools/cf-sketch/demo_sketch Misc::mysketch
+cloud/cloud_services Cloud::Services
 databases/db_install Database::Install
 libraries/copbl CFEngine::stdlib
+libraries/yale Yale::stdlib
 networking/ssh Security::SSH
 package_management/yumrepo Repository::Yum::Maintain
 package_management/aptrepo Repository::apt::Maintain
+programming_languages/cpanm Packages::CPAN::cpanm
+system/cron System::cron
 system/etc_hosts System::etc_hosts
 system/tzconfig System::tzconfig
 system/user_cron System::user_cron
