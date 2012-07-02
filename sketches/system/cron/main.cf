@@ -123,12 +123,12 @@ bundle agent cfdc_crontab_manage(prefix, task_array_ref, task)
       edit_line      => append_if_no_lines("$(cfdc_crontab_manage.lines[$(task)])"),
       edit_defaults  => std_defs,
       create         => "true",
-      classes        => if_ok("$(canon_prefix[$(task)])prepared2"),
+      classes        => if_ok("$(canon_prefix[$(task)])if_lines_added"),
       ifvarclass     => "$(canon_prefix[$(task)])prepared";
 
       "/tmp/$(unique[$(task)]).cron"
       delete         => tidy,
-      ifvarclass     => "$(canon_prefix[$(task)])prepared3";
+      ifvarclass     => "$(canon_prefix[$(task)])if_crontab_changed";
 
   commands:
       "$(cfdc_cron_context.crontab_path) -u $(runas[$(task)]) -l > /tmp/$(unique[$(task)]).cron || echo OK",
@@ -137,8 +137,8 @@ bundle agent cfdc_crontab_manage(prefix, task_array_ref, task)
 
       "$(cfdc_cron_context.crontab_path) -u $(runas[$(task)]) /tmp/$(unique[$(task)]).cron",
       contain        => in_shell,
-      classes        => if_ok("$(canon_prefix[$(task)])prepared3"),
-      ifvarclass     => "$(canon_prefix[$(task)])prepared2";
+      classes        => if_ok("$(canon_prefix[$(task)])if_crontab_changed"),
+      ifvarclass     => "$(canon_prefix[$(task)])if_lines_added";
 
   reports:
     debug::
