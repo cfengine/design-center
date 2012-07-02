@@ -10,6 +10,8 @@ body common control
 bundle common cfsketch_g
 {
   vars:
+
+       "cron_test_defined_only" string => "yes";
        "cron_test_bycontext[darwin][crond_path]" string => "nonesuch";
        "cron_test_bycontext[darwin][crontab_path]" string => "/usr/bin/crontab";
        "cron_test_bycontext[darwin][tasks][task3][commands]" slist => {"/home/tzz/bin/tunnels3.pl"};

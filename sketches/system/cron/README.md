@@ -22,7 +22,8 @@ file uses).
 
 ## ## Classes
 
-None.
+* debug : show some debugging lines, in order to make sure each value is 
+  at the right place.
 
 ## ## Variables
 
@@ -47,6 +48,8 @@ None.
        "cron_test_bycontext[darwin][tasks][task3][runas]" string => "root";
        "cron_test_bycontext[darwin][tasks][task3][when]" string => "0 * * * *";
 
+* $(prefix)defined_only: !! only for crontab management !!
+  allow to empty the user crontab, only the defined cron remains
 ## REQUIREMENTS
 
 CFEngine::stdlib (the COPBL)

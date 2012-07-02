@@ -5,6 +5,7 @@
         "main.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
         "params/repos.json": { },
+        "params/repos-base.json": { "desc": "default values"},
     },
 
     "metadata":
