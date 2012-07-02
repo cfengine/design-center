@@ -10,7 +10,6 @@ programming_languages/cpanm Packages::CPAN::cpanm
 system/cron System::cron
 system/etc_hosts System::etc_hosts
 system/tzconfig System::tzconfig
-system/user_cron System::user_cron
 utilities/nagios_plugin_agent Monitoring::nagios_plugin_agent
 utilities/usebundle_if_ip_has_mac Utilities::usebundle_if_ip_has_mac
 utilities/vcs_mirror VCS::vcs_mirror
