@@ -1,7 +1,18 @@
 {
     "activated": true,
+    "defined_only": "yes",
     "bycontext":
     {
+        "debian":
+        {
+            "tasks":
+            {
+                "test1_crontab": { "runas": "jremond", "when": "* * * * *", "commands": ["/bin/echo test1 &> /dev/null"] },
+                "test2_crontab": { "runas": "jremond", "when": "* 0 * * *", "commands": ["/bin/echo test2 &> /dev/null"] },
+            },
+            "crontab_path": "/usr/bin/crontab",
+            "crond_path": "don't use"
+        },
         "ubuntu":
         {
             "tasks":

@@ -47,6 +47,8 @@ None.
        "cron_test_bycontext[darwin][tasks][task3][runas]" string => "root";
        "cron_test_bycontext[darwin][tasks][task3][when]" string => "0 * * * *";
 
+* $(prefix)defined_only: allow to empty the user crontab 
+  in that case, only the defined cron remains
 ## REQUIREMENTS
 
 CFEngine::stdlib (the COPBL)
