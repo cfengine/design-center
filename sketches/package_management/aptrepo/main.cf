@@ -14,7 +14,7 @@ bundle agent cfdc_configure_apt_sources_list(prefix) {
       "canon_apt_sources_list[$(apt_sources_list)]"
           string  => canonify("$(apt_sources_list)");
       "contexts"     
-          slist   => getindices("$(prefix)bycontext");
+          slist   => getindices("$(prefix)default_values");
 
       "repo_type"    
           slist   => { "deb-src", "deb", };
@@ -120,7 +120,7 @@ bundle agent meta_cfdc_configure_apt_sources_list
         comment => "Must be true or yes to activate";
       "argument[multiple_sources_list_files]" string => "string",
         comment => "Must be true or yes to activate, if not activated, all the configuration will be in $(sources_list_file) ";
-      "argument[bycontext]"                   string => "array";
+      "argument[default_values]"                   string => "array";
 }
 
 bundle edit_line cfdc_configure_apt_sources_list_prepend_if_no_line(string) {
@@ -151,8 +151,8 @@ bundle agent asl_vars(prefix, context)
       "apt_sources_list" 
             slist   => getindices("$(prefix)repos"),
             comment => "We need the list of repo to look for in the sources.list.d directory";
-      "conf[distrib]"          string => "$($(prefix)bycontext[$(context)][distrib])";
-      "conf[version_distrib]"  string => "$($(prefix)bycontext[$(context)][version_distrib])";
+      "conf[distrib]"          string => "$($(prefix)default_values[$(context)][distrib])";
+      "conf[version_distrib]"  string => "$($(prefix)default_values[$(context)][version_distrib])";
       unique_sources_list_files::
       # file to edit
       "apt_sources_list_file[$(apt_sources_list)]" 
