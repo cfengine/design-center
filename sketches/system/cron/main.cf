@@ -66,7 +66,7 @@ bundle agent cfdc_cron_context(prefix, context)
       "active_tasks[$(tasks)]"  string => "$(prefix)bycontext[$(context)][tasks][$(tasks)]";
 
   reports:
-    unused.debug::
+    debug::
       "Loading parameters for context $(context), task $(tasks)";
       "Active task prefixes $(tasks) => $(active_tasks[$(tasks)])";
 }
@@ -108,39 +108,53 @@ bundle agent cfdc_crontab_manage(prefix, task_array_ref, task)
       "marker"                 string => "MANAGED_BY_CFENGINE_CRON_SKETCH";
       "lines[$(task)]"         slist  => maplist("$(when[$(task)]) $(marker)=1 $(this)", "@(commands[$(task)])");
 
-      "fingerprint[$(task)]"   string => concat("$(prefix)$(task)_", ago(0,0,0,0,0,0));
+      "fingerprint[$(task)]"   string => concat("$(runas[$(task)])_", ago(0,0,0,0,0,0));
       "unique[$(task)]"        string => hash("$(fingerprint[$(task)])","md5");
       "canon_prefix[$(task)]"  string => canonify("$(prefix)_$(task)");
 
   files:
     only_allow_defined_entries::
       "/tmp/$(unique[$(task)]).cron"
+      edit_line      => append_if_no_lines("$(cfdc_crontab_manage.lines[$(task)])"),
       edit_defaults  => empty,
-      create         => "true";
+      create         => "true",
+      classes        => if_ok_define_and_cancel("$(canon_prefix[$(task)])_if_lines_added",only_allow_defined_entries),
+      ifvarclass     => "$(canon_prefix[$(task)])_prepared";
 
-    any::
+    !only_allow_defined_entries::
       "/tmp/$(unique[$(task)]).cron"
       edit_line      => append_if_no_lines("$(cfdc_crontab_manage.lines[$(task)])"),
       edit_defaults  => std_defs,
       create         => "true",
-      classes        => if_ok("$(canon_prefix[$(task)])if_lines_added"),
-      ifvarclass     => "$(canon_prefix[$(task)])prepared";
+      classes        => if_ok("$(canon_prefix[$(task)])_if_lines_added"),
+      ifvarclass     => "$(canon_prefix[$(task)])_prepared";
 
+    any::
       "/tmp/$(unique[$(task)]).cron"
       delete         => tidy,
-      ifvarclass     => "$(canon_prefix[$(task)])if_crontab_changed";
+      ifvarclass     => "$(canon_prefix[$(task)])_if_crontab_changed|($(canon_prefix[$(task)])_prepared.!$(canon_prefix[$(task)])_if_lines_added)";
 
   commands:
-      "$(cfdc_cron_context.crontab_path) -u $(runas[$(task)]) -l > /tmp/$(unique[$(task)]).cron || echo OK",
+      "$(cfdc_cron_context.crontab_path) -u $(runas[$(task)]) -l > /tmp/$(unique[$(task)]).cron",
       contain        => in_shell,
-      classes        => if_ok("$(canon_prefix[$(task)])prepared");
+      classes        => if_ok("$(canon_prefix[$(task)])_prepared");
 
       "$(cfdc_cron_context.crontab_path) -u $(runas[$(task)]) /tmp/$(unique[$(task)]).cron",
       contain        => in_shell,
-      classes        => if_ok("$(canon_prefix[$(task)])if_crontab_changed"),
-      ifvarclass     => "$(canon_prefix[$(task)])if_lines_added";
+      classes        => if_ok("$(canon_prefix[$(task)])_if_crontab_changed"),
+      ifvarclass     => "$(canon_prefix[$(task)])_if_lines_added";
 
   reports:
     debug::
-      "crontab manage: Activating '$(cfdc_cron_context.crontab_path)/cron-sketch-$(task)': run as $(runas[$(task)]) at times '$(when[$(task)])', command '$(commands[$(task)])' @@ $(lines[$(task)]) @@ $($(prefix)defined_only)";
+      "crontab manage: Activating '$(cfdc_cron_context.crontab_path)/cron-sketch-$(task)': run as $(runas[$(task)]) at times '$(when[$(task)])', command '$(commands[$(task)])' @@ $(lines[$(task)]) @@ ";
+    only_allow_defined_entries.debug::
+      "@@ Crontab may be emptied ! @@";
+}
+
+body classes if_ok_define_and_cancel(dcl,cl)
+{
+    promise_repaired => { "$(dcl)" };
+    promise_kept => { "$(dcl)" };
+    cancel_repaired => { "$(cl)" };
+    cancel_kept => { "$(cl)" };
 }
