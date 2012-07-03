@@ -16,6 +16,7 @@ use File::Basename;
 use Data::Dumper;
 use Getopt::Long;
 use LWP::Simple;
+use LWP::Protocol::https;
 
 my $coder;
 my $canonical_coder;
