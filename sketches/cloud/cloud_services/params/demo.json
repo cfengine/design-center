@@ -1,0 +1,33 @@
+{
+ "activated" : true,
+ "install_cfengine" : true,
+ "ec2":
+ {
+     "ami": "ami-b89842d1",
+     "instance_type": "m1.small",
+     "region": "us-east-1",
+     "security_group": "mygroup",
+     "aws_access_key": "akey1",
+     "aws_secret_key": "skey1",
+     "ssh_pub_key": "/var/tmp/mysshkey.pub"
+ },
+
+ "bycontext":
+ {
+  "start1_ec2":
+  {
+      "stype": "ec2",
+      "count": "1",
+      "class": "cfworker",
+      "state": "start"
+  },
+
+  "stop1_ec2":
+  {
+      "stype": "ec2",
+      "count": "0",
+      "class": "cfworker",
+      "state": "stop"
+  }
+ }
+}

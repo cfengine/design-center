@@ -1,0 +1,21 @@
+{ 
+
+    "manifest":
+    {
+        "library.cf": { "desc": "Yale stdlib" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "Yale::stdlib",
+        "version": "1.0.0",
+        "license": "MIT",
+        "portfolio": [ "cfdc", "yale" ],
+        "authors": [ "Yale University" ],
+        "depends": { "cfengine": { "version": "3.3.0" } },
+    },
+
+    "entry_point": null,
+    "interface": [ "library.cf" ]
+}

@@ -512,9 +512,9 @@ changed_crontab::
 
 
 
-##
+##-------------------------------------------------------
 ## editing bodies
-##
+##-------------------------------------------------------
 
 body edit_field quoted_var(newval,method)
 {
@@ -569,15 +569,15 @@ select_start => "\[$(x)\]\s*";
 select_end => "\[.*\]\s*";
 }
 
-##
+##-------------------------------------------------------
 ## edit_defaults
-##
+##-------------------------------------------------------
 
 body edit_defaults std_defs
 {
 empty_file_before_editing => "false";
 edit_backup => "false";
-max_file_size => "300000";
+#max_file_size => "300000";
 }
 
 ##
@@ -586,7 +586,7 @@ body edit_defaults empty
 {
 empty_file_before_editing => "true";
 edit_backup => "false";
-max_file_size => "300000";
+#max_file_size => "300000";
 }
 
 ##
@@ -596,9 +596,9 @@ body edit_defaults no_backup
 edit_backup => "false";
 }
 
-##
+##-------------------------------------------------------
 ## location
-##
+##-------------------------------------------------------
 
 body location start
 {
@@ -622,9 +622,9 @@ select_line_matching => "$(str)";
 }
 
 
-##
+##-------------------------------------------------------
 ## replace_with
-##
+##-------------------------------------------------------
 
 ##
 
@@ -646,14 +646,22 @@ occurrences => "all";
 ## agent bodyparts
 ####################################################
 
-##
+##-------------------------------------------------------
 ## action
-##
+##-------------------------------------------------------
 
 body action if_elapsed(x)
 {
 ifelapsed => "$(x)";
 expireafter => "$(x)";
+}
+
+##
+
+body action if_elapsed_day
+{
+ifelapsed => "1440";    # 60 x 24
+expireafter => "1400";
 }
 
 ##
@@ -721,9 +729,9 @@ body action log_verbose
 log_level => "verbose";
 }
 
-##
+##-------------------------------------------------------
 ## contain
-##
+##-------------------------------------------------------
 
 body contain silent
 {
@@ -812,9 +820,9 @@ chroot => "$(root)";
 }
 
 
-##
+##-------------------------------------------------------
 ## classes
-##
+##-------------------------------------------------------
 
 
 body classes if_repaired(x)
@@ -866,15 +874,23 @@ promise_kept => { "$(x)" };
 
 ##
 
+body classes if_ok_cancel(x)
+{
+cancel_repaired => { "$(x)" };
+cancel_kept => { "$(x)" };
+}
+
+##
+
 body classes cmd_repair(code,cl)
 {
 repaired_returncodes => { "$(code)" };
 promise_repaired => { "$(cl)" };
 }
 
-##
+##-------------------------------------------------------
 ## Persistent classes
-##
+##-------------------------------------------------------
 
 body classes state_repaired(x)
 {
@@ -920,9 +936,9 @@ body classes always(x)
 ## files promises
 ##..................................................
 
-##
+##-------------------------------------------------------
 ## copy_from
-##
+##-------------------------------------------------------
 
 body copy_from secure_cp(from,server)
 {
@@ -1029,9 +1045,9 @@ compare     => "mtime";
 copy_backup => "false";
 }
 
-##
+##-------------------------------------------------------
 ## link_from
-##
+##-------------------------------------------------------
 
 body link_from ln_s(x)
 {
@@ -1051,9 +1067,9 @@ link_children => "true";
 when_linking_children => "if_no_such_file"; # "override_file";
 }
 
-##
+##-------------------------------------------------------
 ## perms
-##
+##-------------------------------------------------------
 
 body perms m(mode)
 {
@@ -1092,9 +1108,9 @@ body perms owner(user)
 owners => { "$(user)" };
 }
 
-##
+##-------------------------------------------------------
 ## ACLS (extended Unix perms)
-##
+##-------------------------------------------------------
 
 body acl access_generic(acl)
 # default/inherited ACLs are left unchanged,
@@ -1133,9 +1149,9 @@ aces => { "user:Administrator:rwx" };
 aces => { "user:root:rwx" };
 }
 
-##
+##-------------------------------------------------------
 ## depth_search
-##
+##-------------------------------------------------------
 
 body depth_search recurse(d)
 
@@ -1159,9 +1175,9 @@ body depth_search include_base
 include_basedir => "true";
 }
 
-##
+##-------------------------------------------------------
 ## delete
-##
+##-------------------------------------------------------
 
 body delete tidy
 
@@ -1170,9 +1186,9 @@ dirlinks => "delete";
 rmdirs   => "true";
 }
 
-##
+##-------------------------------------------------------
 ## rename
-##
+##-------------------------------------------------------
 
 body rename disable
 {
@@ -1193,9 +1209,9 @@ body rename to(file)
 newname => "$(file)";
 }
 
-##
+##-------------------------------------------------------
 ## file_select
-##
+##-------------------------------------------------------
 
 body file_select name_age(name,days)
 {
@@ -1258,9 +1274,9 @@ leaf_name  => { @(names)};
 file_result => "!leaf_name";
 }
 
-##
+##-------------------------------------------------------
 ## changes
-##
+##-------------------------------------------------------
 
 body changes detect_all_change
 
@@ -1354,8 +1370,8 @@ body package_method apt
 {
 package_changes => "bulk";
 package_list_command => "/usr/bin/dpkg -l";
-package_list_name_regex    => "ii\s+([^\s]+).*";
-package_list_version_regex => "ii\s+[^\s]+\s+([^\s]+).*";
+package_list_name_regex    => ".i\s+([^\s]+).*";
+package_list_version_regex => ".i\s+[^\s]+\s+([^\s]+).*";
 package_installed_regex => ".*"; # all reported are installed
 package_name_convention => "$(name)";
 
@@ -1389,8 +1405,8 @@ package_list_command => "/usr/bin/dpkg -l";
 # set it to "0" to avoid caching of list during upgrade
 package_list_update_ifelapsed => "240";
 
-package_list_name_regex    => "ii\s+([^\s]+).*";
-package_list_version_regex => "ii\s+[^\s]+\s+([^\s]+).*";
+package_list_name_regex    => ".i\s+([^\s]+).*";
+package_list_version_regex => ".i\s+[^\s]+\s+([^\s]+).*";
 
 package_installed_regex => ".*"; # all reported are installed
 
@@ -1433,6 +1449,24 @@ package_add_command => "/bin/rpm -ivh ";
 package_update_command => "/bin/rpm -Uvh ";
 package_delete_command => "/bin/rpm -e --nodeps";
 package_noverify_regex => ".*[^\s].*";
+}
+
+##
+
+body package_method windows_feature
+{
+package_changes => "individual";
+
+package_name_convention   => "$(name)";
+package_delete_convention => "$(name)";
+
+package_installed_regex => ".*";
+package_list_name_regex => "(.*)";
+package_list_version_regex => "(.*)";  # FIXME: the listing does not give version, so takes name for version too now
+
+package_add_command    => "$(sys.winsysdir)\\WindowsPowerShell\\v1.0\\powershell.exe -Command \"Import-Module ServerManager; Add-WindowsFeature -Name\"";
+package_delete_command => "$(sys.winsysdir)\\WindowsPowerShell\\v1.0\\powershell.exe -Command \"Import-Module ServerManager; Remove-WindowsFeature -confirm:$false -Name\"";
+package_list_command   => "$(sys.winsysdir)\\WindowsPowerShell\\v1.0\\powershell.exe -Command \"Import-Module ServerManager; Get-WindowsFeature | where {$_.installed -eq $True} |foreach {$_.Name}\"";
 }
 
 ##
@@ -1679,8 +1713,8 @@ redhat::
 debian::
  package_changes => "bulk";
  package_list_command => "/usr/bin/dpkg -l";
- package_list_name_regex    => "ii\s+([^\s]+).*";
- package_list_version_regex => "ii\s+[^\s]+\s+([^\s]+).*";
+ package_list_name_regex    => ".i\s+([^\s]+).*";
+ package_list_version_regex => ".i\s+[^\s]+\s+([^\s]+).*";
  package_installed_regex => ".*"; # all reported are installed
  package_name_convention => "$(name)";
  package_list_update_ifelapsed => "240";		# 4 hours
@@ -1794,9 +1828,9 @@ match_range => irange("$(lower)","$(upper)");
 out_of_range_define => { "$(name)_out_of_range" };
 }
 
-##
+##-------------------------------------------------------
 ## service promises
-##
+##-------------------------------------------------------
 
 body service_method bootstart
 {
@@ -1816,8 +1850,88 @@ windows::
 }
 
 ##
+
+bundle agent standard_services(service,state)
+{
+ # DATA, 
+
+vars:
+
+ linux::
+
+  "startcommand[varnish]" string => "/etc/init.d/varnish start";
+  "stopcommand[varnish]"  string => "/etc/init.d/varnish stop";
+  "pattern[varnish]"      string => ".*varnish.*";
+
+ suse|redhat::
+
+  "startcommand[www]" string => "/etc/init.d/apache2 start";
+  "stopcommand[www]"  string => "/etc/init.d/apache2 stop";
+  "pattern[www]"      string => ".*httpd.*";
+
+  "startcommand[mysql]" string => "/etc/init.d/mysqld start";
+  "stopcommand[mysql]"  string => "/etc/init.d/mysqld stop";
+  "pattern[mysql]"      string => ".*mysqld.*";
+
+  "startcommand[tomcat]" string => "/etc/init.d/tomcat5 start";
+  "stopcommand[tomcat]"  string => "/etc/init.d/tomcat5 stop";
+  "pattern[tomcat]"      string => ".*tomcat5.*";
+
+ debian|ubuntu::
+
+  "startcommand[www]"     string => "/etc/init.d/httpd stop";
+  "stopcommand[www]"      string => "/etc/init.d/httpd stop";
+  "pattern[www]"          string => ".*apache2.*";
+
+  "startcommand[mysql]" string => "/etc/init.d/mysql start";
+  "stopcommand[mysql]"  string => "/etc/init.d/mysql stop";
+  "pattern[mysql]"      string => ".*mysqld.*";
+
+  "startcommand[tomcat]" string => "/etc/init.d/tomcat6 start";
+  "stopcommand[tomcat]"  string => "/etc/init.d/tomcat6 stop";
+  "pattern[tomcat]"      string => ".*tomcat6.*";
+
+
+
+ # METHODS that implement these ............................................
+
+classes:
+
+  "start" expression => strcmp("start","$(state)");
+  "stop"  expression => strcmp("stop","$(state)");
+
+# Do we want to include the packages here too?
+
+processes:
+
+  start::
+
+    "$(pattern)"
+
+             comment => "Verify that the service appears in the process table",
+       restart_class => "restart_$(service)";
+
+  stop::
+
+    "$(pattern)"
+
+            comment => "Verify that the service does not appear in the process",
+       process_stop => "$(stopcommand[$(service)])",
+            signals => { "term", "kill"};
+
+  commands:
+
+   "$(startcommand[$(service)])"
+
+            comment => "Execute command to restart the $(service) service",
+         ifvarclass => "restart_$(service)";
+
+}
+
+
+##-------------------------------------------------------
 ## database promises
-##
+##-------------------------------------------------------
 
 body database_server local_mysql(username, password)
 {
@@ -1839,9 +1953,9 @@ db_server_type => "postgres";
 db_server_connection_db => "postgres";
 }
 
-##
+##-------------------------------------------------------
 ## guest_environment promises
-##
+##-------------------------------------------------------
 
 body environment_resources kvm(name, arch, cpu_count, mem_kb, disk_file)
 {
@@ -1894,6 +2008,22 @@ body match_value scan_changing_file(line)
 {
 select_line_matching => "$(line)";
 track_growing_file => "false";
+}
+
+##
+
+body match_value single_value(regex)
+{
+select_line_matching => "$(regex)";
+extraction_regex => "($(regex))";
+}
+
+##
+
+body match_value line_match_value(line_match, extract_regex)
+{
+select_line_matching => "$(line_match)";
+extraction_regex => "$(extract_regex)";
 }
 
 ##

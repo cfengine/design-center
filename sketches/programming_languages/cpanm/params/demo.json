@@ -1,0 +1,25 @@
+{
+ "activated" : true,
+ "bycontext":
+ {
+  "!solaris":
+  {
+   "cpanm_program": "/usr/local/bin/cpanm",
+   "extra_params": "",
+   "packages" :
+   [
+    "Every",
+   ],
+  },
+
+  "solaris":
+  {
+   "cpanm_program": "/opt/local/bin/cpanm",
+   "extra_params": "--local-lib=/opt/cpan",
+   "packages":
+   [
+    "Solaris::NoSuchPackage"
+   ],
+  }
+ }
+}
