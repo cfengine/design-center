@@ -31,6 +31,6 @@
             "version_distrib": "precise",  
             "repo_type": { "deb-src": "true", "deb": "true", }
         },
-
     },
+    "include": [ "repos-base.json" ],
 }
