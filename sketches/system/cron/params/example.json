@@ -1,0 +1,37 @@
+{
+    "activated": true,
+    "defined_only": "yes",
+    "bycontext":
+    {
+        "debian":
+        {
+            "tasks":
+            {
+                "test1_crontab": { "runas": "jremond", "when": "* * * * *", "commands": ["/bin/echo test1 &> /dev/null"] },
+                "test2_crontab": { "runas": "jremond", "when": "* 0 * * *", "commands": ["/bin/echo test2 &> /dev/null"] },
+            },
+            "crontab_path": "/usr/bin/crontab",
+            "crond_path": "don't use"
+        },
+        "ubuntu":
+        {
+            "tasks":
+            {
+                "tunnels": { "runas": "tzz", "when": "* * * * *", "commands": ["/home/tzz/bin/ubuntu-tunnels.pl"] },
+                "task2": { "runas": "root", "when": "0 * * * *", "commands": ["/home/tzz/bin/tunnels2.pl"] }
+            },
+            "crontab_path": "don't use",
+            "crond_path": "/etc/cron.d"
+        },
+        "darwin":
+        {
+            "tasks":
+            {
+                "tunnels": { "runas": "tzz", "when": "* * * * *", "commands": ["/home/tzz/bin/tunnels.pl"] },
+                "task3": { "runas": "root", "when": "0 * * * *", "commands": ["/home/tzz/bin/tunnels3.pl"] }
+            },
+            "crontab_path": "/usr/bin/crontab",
+            "crond_path": "nonesuch"
+        }
+    }
+}

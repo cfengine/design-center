@@ -1,0 +1,18 @@
+{
+    "default_values": 
+    {
+        "debian_wheezy":
+        { 
+            "distrib": "debian", 
+            "version_distrib": "wheezy",  
+            "repo_type": { "deb-src": "false", "deb": "true", }
+        },
+        "ubuntu_12":
+        { 
+            "distrib": "ubuntu", 
+            "version_distrib": "precise",  
+            "repo_type": { "deb-src": "false", "deb": "true", }
+        },
+
+    },
+}

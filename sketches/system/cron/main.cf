@@ -1,0 +1,160 @@
+bundle agent cfdc_cron(prefix)
+{
+  vars:
+      "contexts" slist  => getindices("$(prefix)bycontext");
+      "canon_prefix" string => canonify("$(prefix)");
+
+  methods:
+      # this is freakin' awesome
+      "params" usebundle     => cfdc_cron_context("$(prefix)", "$(contexts)"),
+               classes       => always("$(canon_prefix)prepared"),
+               ifvarclass    => "$(contexts)";
+
+      # this forces us to execute only if we got a valid context
+      "launcher" usebundle   => cfdc_cron_launcher("$(prefix)"),
+                 ifvarclass  => "$(canon_prefix)prepared";
+
+}
+
+bundle agent meta_cfdc_cron
+{
+  vars:
+      # see README.md for usage
+      "argument[bycontext]"     string => "array";
+      "argument[defined_only]"  string => "string",
+        comment => "Must be true or yes to activate";
+}
+
+bundle agent cfdc_cron_launcher(prefix)
+{
+  classes:
+      "has_crond"    expression => fileexists("$(cfdc_cron_context.crond_path)");
+      "has_crontab"  expression => fileexists("$(cfdc_cron_context.crontab_path)");
+
+  vars:
+      "class_prefix" string => lastnode("$(prefix)", "\."); # strip out the bundle prefix
+
+  methods:
+    has_crond::
+      "crond"   usebundle => cfdc_crond_manage("$(prefix)", "cfdc_cron_context.active_tasks", "$(cfdc_cron_context.tasks)");
+
+    has_crontab::
+      "crontab" usebundle => cfdc_crontab_manage("$(prefix)", "cfdc_cron_context.active_tasks",  "$(cfdc_cron_context.tasks)");
+
+  reports:
+    cfengine.debug::
+
+    has_crond.debug::
+      "We have crond in '$(cfdc_cron_context.crond_path)'";
+    has_crontab.debug::
+      "We have crontab in '$(cfdc_cron_context.crontab_path)'";
+    !has_crond.debug::
+      "We don't have crond in '$(cfdc_cron_context.crond_path)'";
+    !has_crontab.debug::
+      "We don't have crontab in '$(cron_context.crontab_path)'";
+
+}
+
+bundle agent cfdc_cron_context(prefix, context)
+{
+  vars:
+      "tasks"                   slist  => getindices("$(prefix)bycontext[$(context)][tasks]");
+      "crontab_path"            string => "$($(prefix)bycontext[$(context)][crontab_path])";
+      "crond_path"              string => "$($(prefix)bycontext[$(context)][crond_path])";
+
+      "active_context"          string => "$(context)";
+      "active_tasks[$(tasks)]"  string => "$(prefix)bycontext[$(context)][tasks][$(tasks)]";
+
+  reports:
+    debug::
+      "Loading parameters for context $(context), task $(tasks)";
+      "Active task prefixes $(tasks) => $(active_tasks[$(tasks)])";
+}
+
+bundle agent cfdc_crond_manage(prefix, task_array_ref, task)
+{
+  vars:
+      "tprefix"   string => "$($(task_array_ref)[$(task)])";
+      "runas"     string => "$($(tprefix)[runas])";
+      "when"      string => "$($(tprefix)[when])";
+      "commands"  slist  => { "@($(tprefix)[commands])" };
+
+      "lines"     slist  => maplist("#managed by cfengine cron sketch$(const.endl)$(when) $(runas) $(this)", @(commands));
+
+  files:
+      "$(cfdc_cron_context.crond_path)/cron-sketch-$(task)"
+      edit_line => append_if_no_lines("@(crond_manage.lines)"),
+      edit_defaults => empty,
+      create => "true";
+
+  reports:
+    cfengine.debug::
+      "crond manage: Activating '$(cron_context.crond_path)/cron-sketch-$(task)': run as $(runas) at times '$(when)', command '$(commands)'";
+}
+
+bundle agent cfdc_crontab_manage(prefix, task_array_ref, task)
+{
+  classes:
+      "only_allow_defined_entries"
+          expression => regcmp("(?i)yes|true", "$($(prefix)defined_only)");
+
+  vars:
+    any::
+      "tprefix"                string => "$($(task_array_ref)[$(task)])";
+      "runas[$(task)]"         string => "$($(tprefix)[runas])";
+      "when[$(task)]"          string => "$($(tprefix)[when])";
+      "commands[$(task)]"      slist  => { "@($(tprefix)[commands])" };
+
+      "marker"                 string => "MANAGED_BY_CFENGINE_CRON_SKETCH";
+      "lines[$(task)]"         slist  => maplist("$(when[$(task)]) $(marker)=1 $(this)", "@(commands[$(task)])");
+
+      "fingerprint[$(task)]"   string => concat("$(runas[$(task)])_", ago(0,0,0,0,0,0));
+      "unique[$(task)]"        string => hash("$(fingerprint[$(task)])","md5");
+      "canon_prefix[$(task)]"  string => canonify("$(prefix)_$(task)");
+
+  files:
+    only_allow_defined_entries::
+      "/tmp/$(unique[$(task)]).cron"
+      edit_line      => append_if_no_lines("$(cfdc_crontab_manage.lines[$(task)])"),
+      edit_defaults  => empty,
+      create         => "true",
+      classes        => if_ok_define_and_cancel("$(canon_prefix[$(task)])_if_lines_added",only_allow_defined_entries),
+      ifvarclass     => "$(canon_prefix[$(task)])_prepared";
+
+    !only_allow_defined_entries::
+      "/tmp/$(unique[$(task)]).cron"
+      edit_line      => append_if_no_lines("$(cfdc_crontab_manage.lines[$(task)])"),
+      edit_defaults  => std_defs,
+      create         => "true",
+      classes        => if_ok("$(canon_prefix[$(task)])_if_lines_added"),
+      ifvarclass     => "$(canon_prefix[$(task)])_prepared";
+
+    any::
+      "/tmp/$(unique[$(task)]).cron"
+      delete         => tidy,
+      ifvarclass     => "$(canon_prefix[$(task)])_if_crontab_changed|($(canon_prefix[$(task)])_prepared.!$(canon_prefix[$(task)])_if_lines_added)";
+
+  commands:
+      "$(cfdc_cron_context.crontab_path) -u $(runas[$(task)]) -l > /tmp/$(unique[$(task)]).cron",
+      contain        => in_shell,
+      classes        => if_ok("$(canon_prefix[$(task)])_prepared");
+
+      "$(cfdc_cron_context.crontab_path) -u $(runas[$(task)]) /tmp/$(unique[$(task)]).cron",
+      contain        => in_shell,
+      classes        => if_ok("$(canon_prefix[$(task)])_if_crontab_changed"),
+      ifvarclass     => "$(canon_prefix[$(task)])_if_lines_added";
+
+  reports:
+    debug::
+      "crontab manage: Activating '$(cfdc_cron_context.crontab_path)/cron-sketch-$(task)': run as $(runas[$(task)]) at times '$(when[$(task)])', command '$(commands[$(task)])' @@ $(lines[$(task)]) @@ ";
+    only_allow_defined_entries.debug::
+      "@@ Crontab may be emptied ! @@";
+}
+
+body classes if_ok_define_and_cancel(dcl,cl)
+{
+    promise_repaired => { "$(dcl)" };
+    promise_kept => { "$(dcl)" };
+    cancel_repaired => { "$(cl)" };
+    cancel_kept => { "$(cl)" };
+}
