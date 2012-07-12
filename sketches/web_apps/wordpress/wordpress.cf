@@ -177,7 +177,7 @@ bundle agent wp_mysql_configuration(params, wpparams)
 bundle agent wp_config_exists(params)
 {
   classes:
-     "wordpress_config_file_exists"
+      "wordpress_config_file_exists"
         expression => fileexists("$($(params)[_wp_config])");
 
   files:
@@ -200,9 +200,9 @@ bundle agent wp_is_properly_configured(params, wp_array)
       "wpparams" slist => getindices("$(wp_array)");
 
   files:
-    "$($(params)[_wp_config])"
-      edit_line => replace_or_add("define\('$(wpparams)', *(?!'$($(wp_array)[$(wpparams)]))'.*",
-				  "define('$(wpparams)', '$($(wp_array)[$(wpparams)])');");
+      "$($(params)[_wp_config])"
+        edit_line => replace_or_add("define\('$(wpparams)', *(?!'$($(wp_array)[$(wpparams)]))'.*",
+				    "define('$(wpparams)', '$($(wp_array)[$(wpparams)])');");
 }
 
 #############################################
@@ -238,9 +238,9 @@ bundle edit_line wp_insert_HTTP_allow_rule_before_the_accept_established_tcp_con
 
 body location wp_before_the_accept_established_tcp_conns_rule
 {
-      before_after => "before";
-      first_last => "first";
-      select_line_matching => "^-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT.*";
+        before_after => "before";
+        first_last => "first";
+        select_line_matching => "^-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT.*";
 }
 
 # Todo:
