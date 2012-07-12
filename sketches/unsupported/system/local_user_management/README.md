@@ -6,20 +6,22 @@ Nick Anderson <nick@cmdln.org>
 linux
 
 ## DESCRIPTION
-* local_user_management_add_users_fileedit takes care of initalizing new users then 
+* `local_user_management_add_users_fileedit` takes care of initalizing new users then 
   can optionally enforce users passwd and shadow entries as defined. Tries to stick
-  with edit_line based functionality instead of calling out to system tools. 
+  with `edit_line` based functionality instead of calling out to system tools. 
   In addition to adding new users, there is a convienance option to add a named 
   group if one is defined and it does not exist.
 
 ## REQUIREMENTS
-* local_user_management_add_users_fileedit
+* `local_user_management_add_users_fileedit`
     - perl
     - copbl svn 105 or greater
 
 
 ## SAMPLE USAGE
-### local_user_management_add_users_fileedit
+
+### `local_user_management_add_users_fileedit`
+
 User Definition API
 "users[username][option] string => "value";
 Options
