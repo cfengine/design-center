@@ -70,6 +70,9 @@ if ($command eq 'control')
  my $public_key = $options{ec2}->{ssh_pub_key};
 
  my $key = $ec2->import_key_pair('shim-ec2-key', $public_key);
+ if (!$key) {
+  die $ec2->error unless $ec2->error =~ /already exists/;
+ }
 
  my @current_instances = find_tagged_ec2_instances($client_class);
 
