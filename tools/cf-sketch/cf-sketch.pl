@@ -5,7 +5,6 @@ use lib "$FindBin::Bin/../lib";
 
 use warnings;
 use strict;
-use List::MoreUtils qw/uniq/;
 use File::Compare;
 use File::Copy;
 use File::Find;
@@ -1661,6 +1660,18 @@ sub get_local_repo
 }
 
 # Utility functions follow
+
+sub uniq
+{
+  # Uniquify, preserving order
+  my @result = ();
+  my %seen = ();
+  foreach (@_) {
+    push @result, $_ unless exists($seen{$_});
+    $seen{$_}=1;
+  }
+  return @result;
+}
 
 sub load_json
 {
