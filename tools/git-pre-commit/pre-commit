@@ -1,29 +1,49 @@
 #!/bin/bash
 # Author: Nick Anderson <nick@cmdln.org>
-# Simple git pre-commit script to ensure the important files have proper syntax
+# git pre-commit hook to check CFEngine policy for syntax errors
 
-# Run checks on promises.cf and failsafe.cf from the root of the repository
-# (we expect thats where the files exist)
 
-POLICYCHECK=$(/var/cfengine/bin/cf-promises -f $(git rev-parse --show-toplevel)/promises.cf)
-FAILSAFECHECK=$(/var/cfengine/bin/cf-promises -f $(git rev-parse --show-toplevel)/failsafe.cf)
+cfpromises="/var/cfengine/bin/cf-promises"
 
-if [[ $POLICYCHECK != "" ]]; then
-    #/var/cfengine/bin/cf-promises -f $(git rev-parse --show-toplevel)/promises.cf
-    echo $POLICYCHECK
-    echo promises.cf check FAILED syntax check Aborting, we dont allow broken commits
-    exit 1
+# List of files to check with cf-promises, this is relative to 
+# masterfiles promises.cf and failsafe.cf are the standard entry
+# points. You might want to add any other entry points you use.
+checkfiles="promises.cf failsafe.cf"
+
+ERRORS=0
+
+# Directory to create temporary checkout
+tmp="/tmp"
+#tmpdir=$(mktemp --directory --dry-run --tmpdir=$tmp)
+tmpdir=$(mktemp --directory --tmpdir=$tmp)
+if [ $? -eq 1 ]; then
+  let ERRORS++
+  echo Creation of temporary directory in $tmp FAILED
+  exit $ERRORS
 fi
 
-if [[ $FAILSAFECHECK != "" ]]; then
-    #/var/cfengine/bin/cf-promises -f $(git rev-parse --show-toplevel)/failsafe.cf
-    echo $FAILSAFECHECK
-    echo failsafe.cf FAILED syntax check. Aborting, we dont allow broken commits
-    exit 1
+# Checkout a copy of the current index into a temporary directory for testing
+git checkout-index --prefix=$tmpdir/ -af
+if [ $? -eq 1 ]; then
+  let ERRORS++
+  echo Checkout to $tmpdir FAILED
+  exit $ERRORS
+  rm  -rf $tmpdir
 fi
 
+for file in $checkfiles; do
+  $cfpromises -f $tmpdir/$file 
+  if [ $? -eq 1 ]; then
+    let ERRORS++
+    echo Syntax check on $file FAILED
+  fi
+done
 
-echo "###########################################################################"
-echo "#                         Syntax Check All Clear                          #"
-echo "###########################################################################"
+# Cleanup temporary checkout
+rm -rf $tmpdir
+
+if [ $ERRORS -gt 0 ]; then
+  echo Aborting, we dont allow broken commits
+  exit $ERRORS
+fi
 
