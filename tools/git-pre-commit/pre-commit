@@ -2,13 +2,30 @@
 # Author: Nick Anderson <nick@cmdln.org>
 # git pre-commit hook to check CFEngine policy for syntax errors
 
-
-cfpromises="/var/cfengine/bin/cf-promises"
-
 # List of files to check with cf-promises, this is relative to 
 # masterfiles promises.cf and failsafe.cf are the standard entry
 # points. You might want to add any other entry points you use.
 checkfiles="promises.cf failsafe.cf"
+
+
+# I try to guess which cf-promises you want to use by looking in the
+# common locations, but you can manually specify path to cf-promises
+# cfpromises="/var/cfengine/bin/cf-promises"
+
+commoncfbin="/var/cfengine/bin /usr/sbin /usr/local/bin /usr/local/sbin"
+if [ !-x $cfpromises ]; then
+  for dir in $commoncfbin; do
+    if [ -x $dir/cf-promises ]; then
+      cfpromises="$dir/cf-promises"
+      break
+    fi
+  done
+  if [ !-x $cfpromises ]; then
+      echo "Unable to find cf-promises, please specify the path manually" 1>&2
+      echo "in $0 or install into one of the common locations ($commoncfbin)" 1>&2
+      exit 1
+  fi
+fi
 
 ERRORS=0
 
