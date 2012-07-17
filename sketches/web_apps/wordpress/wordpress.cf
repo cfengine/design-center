@@ -183,7 +183,8 @@ bundle agent wp_config_exists(params)
   files:
     !wordpress_config_file_exists::
       "$($(params)[_wp_config])"
-        copy_from => backup_local_cp("$($(params)[_wp_cfgsample])");
+        copy_from => backup_local_cp("$($(params)[_wp_cfgsample])"),
+        perms => m("644");
 
   reports:
     wordpress_config_file_exists.verbose::
@@ -202,7 +203,8 @@ bundle agent wp_is_properly_configured(params, wp_array)
   files:
       "$($(params)[_wp_config])"
         edit_line => replace_or_add("define\('$(wpparams)', *(?!'$($(wp_array)[$(wpparams)]))'.*",
-				    "define('$(wpparams)', '$($(wp_array)[$(wpparams)])');");
+				    "define('$(wpparams)', '$($(wp_array)[$(wpparams)])');"),
+        perms => m("644");
 }
 
 #############################################
