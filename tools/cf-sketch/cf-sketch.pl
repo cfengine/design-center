@@ -1080,6 +1080,8 @@ sub install
   if (maybe_ensure_dir($install_dir))
   {
    print "Created destination directory $install_dir\n" if $verbose;
+   print "Checking and installing sketch files.\n" unless $quiet;
+   my $anything_changed = 0;
    foreach my $file (SKETCH_DEF_FILE, sort keys %{$data->{manifest}})
    {
     my $file_spec = $data->{manifest}->{$file};
@@ -1098,7 +1100,7 @@ sub install
         is_resource_local($data->{dir}) &&
         compare($source, $dest) == 0)
     {
-     color_warn "Manifest member $file is already installed in $dest"
+     color_warn "  Manifest member $file is already installed in $dest"
       if $verbose;
      $changed = 0;
     }
@@ -1107,7 +1109,7 @@ sub install
     {
      if ($dryrun)
      {
-      print YELLOW "DRYRUN: skipping installation of $source to $dest\n";
+      print YELLOW "  DRYRUN: skipping installation of $source to $dest\n";
      }
      else
      {
@@ -1128,7 +1130,7 @@ sub install
     {
      if ($dryrun)
      {
-      print YELLOW "DRYRUN: skipping chmod $file_spec->{perm} $dest\n";
+      print YELLOW "  DRYRUN: skipping chmod $file_spec->{perm} $dest\n";
      }
      else
      {
@@ -1145,7 +1147,7 @@ sub install
 
      if ($dryrun)
      {
-      print YELLOW "DRYRUN: skipping chown $uid:$gid $dest\n";
+      print YELLOW "  DRYRUN: skipping chown $uid:$gid $dest\n";
      }
      else
      {
@@ -1153,10 +1155,18 @@ sub install
      }
     }
 
-    print "Installed file: $source -> $dest\n" if $changed && !$quiet;
+    print "  $source -> $dest\n" if $changed && $verbose;
+    $anything_changed += $changed;
    }
 
-   print GREEN "Done installing $sketch\n" unless $quiet;
+   unless ($quiet) {
+     if ($anything_changed) {
+       print GREEN "Done installing $sketch\n";
+     }
+     else {
+       print GREEN "Everything was up to date - nothing changed.\n";
+     }
+   }
   }
   else
   {
