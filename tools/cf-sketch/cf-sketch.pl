@@ -898,6 +898,7 @@ sub deactivaten
    {
     $deactivations->{$sketch} = $pfile;
    }
+   $offset++;
   }
  }
  deactivate($deactivations);
