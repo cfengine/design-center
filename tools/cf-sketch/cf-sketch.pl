@@ -949,7 +949,7 @@ sub deactivate
   }
   elsif ($all_params)
   {
-   my %info = %{$activations->{$sketch}};
+   my %info = %{$activations->{$sketch}||{}};
    delete $activations->{$sketch};
    print GREEN "Deactivated: all $sketch activations (@{[ sort keys %info ]})\n"
     unless $quiet;
