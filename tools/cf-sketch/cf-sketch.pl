@@ -16,6 +16,7 @@ use Data::Dumper;
 use Getopt::Long;
 use LWP::Simple;
 use LWP::Protocol::https;
+use Term::ANSIColor qw(:constants);
 
 my $coder;
 my $canonical_coder;
@@ -56,6 +57,8 @@ $| = 1;                         # autoflush
 my %options = ();
 
 # Default values
+# Color enabled by default if STDOUT is connected to a tty (i.e. not redirected or piped somewhere).
+my $color = -t STDOUT;
 my %def_options =
  (
   verbose    => 0,
@@ -74,6 +77,7 @@ my %def_options =
   runfile => File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf'),
   standalone => 1,
   repolist => [ File::Spec->catfile($happy_root, 'sketches') ],
+  color => $color,
  );
 
 # This list contains both the help information and the command-line
@@ -114,6 +118,7 @@ my @options_desc =
   "verbose|v",                 "Produce additional output.",
   "dryrun|n",                  "Do not do anything, just indicate what would be done.",
   "help",                      "This help message.",
+  "color!",                    "Colorize output, enabled by default if running on a terminal.",
   "params|p=s%",               "With --activate, override certain parameter values.|param=value",
   "force|f",                   "Ignore dependency/OS/architecture checks. Use with --install and --activate.",
   "cfpath=s",                  "Where to look for CFEngine binaries. Default: $def_options{cfpath}.",
@@ -141,6 +146,11 @@ GetOptions (
             \%cmd_options,
             @options_spec,
            );
+
+# Disable color if needed
+unless ((exists($cmd_options{color}) && $cmd_options{color}) || (!exists($cmd_options{color}) && $def_options{color})) {
+    $ENV{ANSI_COLORS_DISABLED}=1;
+}
 
 if ($cmd_options{help})
 {
@@ -367,7 +377,7 @@ sub search
   {
    if ($sketch =~ m/$term/ || $dir =~ m/$term/)
    {
-    print "$sketch $dir\n";
+    print GREEN, "$sketch", RESET, " $dir\n";
     next SKETCH;
    }
   }
@@ -442,7 +452,7 @@ sub list
     $contents->{$sketch}->{manifest}->{$_}->{documentation}
    } sort keys %{$contents->{$sketch}->{manifest}};
 
-   print "$sketch $contents->{$sketch}->{dir}\n\t@docs\n";
+   print GREEN, "$sketch", RESET, " $contents->{$sketch}->{dir}\n";
   }
  }
 }
@@ -2113,6 +2123,7 @@ sub _sprintlist {
 
   # Finishing touches - insert first line and line prefixes, if any.
   $str.="$space$line";
+  $fline = GREEN . $fline . RESET;
   $str=~s/^$space/$fline/;
   $str=~s/^/$lp/mg if $lp;
   return $str;
