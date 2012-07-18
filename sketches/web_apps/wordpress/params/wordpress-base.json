@@ -13,6 +13,7 @@
          "apache2", 
          "php5",
          "php5-mysql",
+         "libapache2-mod-php5",
          "mysql-server"
        ],
        "mysql_process" : "/usr/sbin/mysqld",
