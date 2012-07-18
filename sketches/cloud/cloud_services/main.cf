@@ -113,6 +113,7 @@ bundle agent ec2(hub, service, state)
 
     count_determined::
       "Current count of service '$(service)' = $(current_count)";
+    count_determined.cloud_services_verbose::
       "To run a command, e.g. ssh to all machine (but beware, this works best if you have just a few instances): $(shim) run $(class) 'ssh -i YOUR-PRIVATE-SSH-KEY -l ubuntu'";
       "To see the console output of all the machines: $(shim) console $(class)";
       "To list all the machines (just node names or all info, including DNS): $(shim) [list|list-full] $(class)";
