@@ -39,12 +39,19 @@ BEGIN
     }
 }
 
+###### Some basic constants and settings.
+
 use constant SKETCH_DEF_FILE => 'sketch.json';
+
+# Inputs directory depending on root/non-root/policy hub
+my $happy_root = $> != 0 ? glob("~/.cfagent/inputs") : (-e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs');
+# Configuration directory depending on root/non-root
+my $configdir = $> == 0 ? '/etc/cf-sketch' : glob('~/.cf-sketch');
 
 $| = 1;                         # autoflush
 
-# Configuration directory depending on root/non-root
-my $configdir = $> == 0 ? '/etc/cf-sketch' : glob('~/.cf-sketch');
+
+######
 
 my %options = ();
 
@@ -59,51 +66,74 @@ my %def_options =
   # switched depending on root or non-root
   'act-file'   => "$configdir/activations.conf",
   configfile => "$configdir/cf-sketch.conf",
-  'install-target' => undef,
+  'install-target' => File::Spec->catfile($happy_root, 'sketches'),
   'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
   'make-package' => [],
   params => {},
-  cfhome => join (':', split(':', $ENV{PATH}||''), '/var/cfengine/bin', '/usr/sbin', '/usr/local/bin', '/usr/local/sbin'),
-  runfile => undef,
+  cfpath => join (':', uniq(split(':', $ENV{PATH}||''), '/var/cfengine/bin', '/usr/sbin', '/usr/local/bin', '/usr/local/sbin')),
+  runfile => File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf'),
   standalone => 1,
+  repolist => [ File::Spec->catfile($happy_root, 'sketches') ],
  );
 
-my @options_spec =
+# This list contains both the help information and the command-line
+# argument specifications. It is stored as a list so that order can
+# be preserved when printing the help message.
+# Format for each pair is "argspec", "Help text|argname"
+# argspec is a Getopt::Long-style argument specification.
+# "Help text" is the text that will be printed in the help message
+# for this option. For options that take an argument, its human-
+# readable description should be given at the end as "|argname",
+# it will be automatically printed in the help message
+# (so that the help reads "--search regex" and not
+# just "--search string", for example).
+# If argspec starts with three dashes, it is ignored as an
+# argument spec, and the text will simply be printed in the
+# help output.
+my @options_desc =
  (
-  "quiet|qq!",
-  "dryrun|n!",
-  "help!",
-  "verbose|v!",
-  "force|f!",
-  "cfhome=s",
-  "configfile|cf=s",
-  "runfile|rf=s",
-  "act-file|af=s",
-  "install-target|it=s",
-  "json!",
-  "standalone|st!",
+  "---", "Usage: $0 verb [verb-argument] [options]",
+  "---", "\nVerbs:\n",
+  "search|s=s@",               "Search sketch repository, use 'all' to show everything.|regex",
+  "list|l:s@",                 "Search list of installed sketches, use 'all' or no argument to show everything.|[regex]",
+  "list-activations|la",       "List activated sketches, including their activation parameters.",
+  "install|i=s@",              "Install or update the given sketch.|sketch",
+  "activate|a=s%",             "Activate the given sketch with the given JSON parameters file.|sketch=paramfile",
+  "deactivate|d=s%",           "Deactivate given sketch with given parameters file.|sketch=paramfile",
+  "deactivaten|dn=i@",         "Deactivate sketches by number, as shown by --list-activations.|n",
+  "deactivate-all|da",         "Deactivate all sketches.",
+  "remove|r=s@",               "Remove given sketch.|sketch",
+  "api=s",                     "Show the API (required/optional parameters) of the given sketch.|sketch",
+  "generate|g",                "Generate CFEngine runfile to execute activated sketches.",
+  "save-config|config-save",   "Save configuration parameters so that they are automatically loaded in the future.",
+  "metarun=s",                 "Load and execute a metarun file of the form { options => \%options }, which indicates the entire behavior for this run.|file",
+  "save-metarun=s",            "Save the parameters and actions of the current execution to the named file, for future use with --metarun.|file",
 
-  "save-config|config-save!",
-  "save-metarun=s",
-  "repolist|rl=s@",
+  "---", "\nOptions:\n",
+  "quiet|q",                   "Supress non-essential output.",
+  "verbose|v",                 "Produce additional output.",
+  "dryrun|n",                  "Do not do anything, just indicate what would be done.",
+  "help",                      "This help message.",
+  "params|p=s%",               "With --activate, override certain parameter values.|param=value",
+  "force|f",                   "Ignore dependency/OS/architecture checks. Use with --install and --activate.",
+  "cfpath=s",                  "Where to look for CFEngine binaries. Default: $def_options{cfpath}.",
+  "configfile|cf=s",           "Configuration file to use. Default: $def_options{configfile}.|file",
+  "runfile|rf=s",              "Where --generate will store the runfile. Default: $def_options{runfile}.|file",
+  "act-file|af=s",             "Where the information about activated sketches will be stored. Default: $def_options{'act-file'}.|file",
+  "install-target|it=s",       "Where sketches will be installed. Default: $def_options{'install-target'}.|dir",
+  "json",                      "With --api, produce output in JSON format instead of human-readable format.",
+  "standalone|st!",            "With --generate, produce a standalone file (including body common control). Enabled by default, negate with --no-standalone.",
+  "install-source|is=s",       "Location (file path or URL) of a cfsketches catalog file that contains the list of sketches available for installation. Default: $def_options{'install-source'}.|loc",
+  "repolist|rl=s@",            "Comma-separated list of local directories to search for installed sketches for activation, deactivation, removal, or runfile generation. Default: ".join(', ', @{$def_options{repolist}}).".|dirs",
   # "make-package=s@",
-  "install|i=s@",
-  "install-source|is=s",
-  "remove|r=s@",
-  "params|p=s%",
-  "activate|a=s%",
-  "deactivate|d=s%",
-  "deactivaten|dn=i@",
-  "deactivate-all|da!",
-  "test|t=s@",
-  "search|s=s@",
-  "list|l:s@",
-  "list-activations|la!",
-  "generate|g!",
-  "api=s",
-
-  "metarun=s",
+#  "test|t=s@",
+  "---", "\nPlease see https://github.com/cfengine/design-center/wiki for the full cf-sketch documentation.",
  );
+
+# Convert to hash so we can extract keys for @options_spec
+my %options_desc = @options_desc;
+# Extract just the keys, minus the internal formatting-related elements
+my @options_spec = grep(!/^---/, keys %options_desc);
 
 # Options given on the command line
 my %cmd_options;
@@ -114,7 +144,7 @@ GetOptions (
 
 if ($cmd_options{help})
 {
- print <DATA>;
+ print_help();
  exit;
 }
 
@@ -167,8 +197,6 @@ else
  }
 }
 
-my $happy_root = $> != 0 ? glob("~/.cfagent/inputs") : (-e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs');
-
 my $required_version = '3.3.0';
 my $version = cfengine_version();
 
@@ -177,13 +205,8 @@ if (!$options{force} && $required_version gt $version)
  die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
 }
 
-$options{repolist} = [ File::Spec->catfile($happy_root, 'sketches') ]
- unless exists $options{repolist};
 # Allow both comma-separated values and multiple occurrences of --repolist
 $options{repolist} = [ split(/,/, join(',', @{$options{repolist}})) ];
-
-$options{'install-target'} = File::Spec->catfile($happy_root, 'sketches')
- unless $options{'install-target'};
 
 my @list;
 foreach my $repo (@{$options{repolist}})
@@ -307,7 +330,7 @@ sub configure_self
 
  my %keys = (
              'repolist' => 1,             # array
-             'cfhome'   => 0,             # string
+             'cfpath'   => 0,             # string
              'install-source' => 0,
              'install-target' => 0,
              'act-file' => 0,
@@ -666,7 +689,7 @@ sub generate
    # maybe make the run template configurable?
    my $output = make_runfile($template_activations, $includes, $standalone);
 
-   my $run_file = $options{runfile} || File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf');
+   my $run_file = $options{runfile};
 
    maybe_write_file($run_file, 'run', $output);
    print "Generated ".($standalone?"standalone":"non-standalone")." run file $run_file\n"
@@ -1808,7 +1831,7 @@ sub maybe_write_file
 
   unless ($promises_binary)
   {
-   foreach my $check_path (split ':', $options{cfhome})
+   foreach my $check_path (split ':', $options{cfpath})
    {
     my $check = "$check_path/$promises_name";
     $promises_binary = $check if -x $check;
@@ -1816,7 +1839,7 @@ sub maybe_write_file
    }
   }
 
-  die "Sorry, but we couldn't find $promises_name in the search path $options{cfhome}.  Please set \$PATH or use the --cfhome parameter!"
+  die "Sorry, but we couldn't find $promises_name in the search path $options{cfpath}.  Please set \$PATH or use the --cfpath parameter!"
    unless $promises_binary;
 
   print "Excellent, we found $promises_binary to interface with CFEngine\n"
@@ -2038,8 +2061,104 @@ sub tersedump
   return Dumper(shift);
 }
 
-__DATA__
+# These two functions are code I wrote ~15 years ago. I know, it's
+# ugly. I'll fix it when I get some free time.
+#
+# Returns an indented string containing a list. Syntax is:
+# _sprintlist($listref[, $firstline[, $separator[, $indent
+#             [, $break[, $linelen[, $lineprefix]]]]])
+# All lines are indented by $indent spaces (default
+# 15). If $firstline is given, that string is inserted in the
+# indentation of the first line (it is truncated to $indent spaces
+# unless $break is true, in which case the list is pushed to the next
+# line). Normally the list elements are separated by commas and spaces
+# ", ". If $separator is given, that string is used as a separator.
+# Lines are wrapped to $linelen characters, unless it is specified as
+# some other value. A value of 0 for $linelen makes it not do line wrapping.
+# If $lineprefix is given, it is printed at the beginning of each line.
+sub _sprintlist {
+  my $listref=shift;
+  my @list=@$listref;
+  my $fline=shift;
+  my $separator=shift || ", ";
+  my $indent=shift;
+  $indent=15 unless defined($indent);
+  my $space=" " x $indent;
+  $fline||=$space;
+  my $break=shift || 0;
+  my $linelen=shift;
+  $linelen=80 unless defined($linelen);
+  my $lp=shift||"";
+  $linelen-=length($lp);
+  if (!$break || length($fline)<=$indent) {
+    $fline=substr("$fline$space", 0, length($space));
+  }
+  else {
+    # length($fline)>$indent
+    $fline="$fline\n$space";
+  }
+  my $str="";
+  my $line="";
+  foreach (@list) {
+    $line.=$separator if $line;
+    if ($linelen && length($line)+length($_)+length($space)>=$linelen) {
+      $line=~s/\s*$//;
+      $str.="$space$line\n";
+      $line="";
+    }
+    $line.="$_";
+  }
+  $str.="$space$line";
+  $str=~s/^$space/$fline/;
+  $str=~s/^/$lp/mg if $lp;
+  return $str;
+}
 
-Help for cf-sketch
+# Gets a string, and returns it nicely formatted and word-wrapped. It
+# uses _sprintlist as a backend. Its syntax is the same as
+# _sprintlist, except that is gets a string instead of a list ref, and
+# that $separator is not used because we automatically break on white
+# space.
+# Syntax: _sprintstr($string[, $firstline[, $indent[, $break[, $linelen
+#		[, $lineprefix]]]]]);
+# See _sprintlist for the meaning of each parameter.
+sub _sprintstr {
+  my ($str, $fl, $ind, $br, $len, $lp)=@_;
+  $ind||=0;
+  # Split string into \n-separated parts.
+  my @strs=($str=~/([^\n]+\n?|[^\n]*\n)/g);
+  # Now process each line separately
+  my $s;
+  my $result;
+  foreach $s (@strs) {
+    # Store end of lines at the end of the string
+    my $eols=($s=~/(\n*)$/)[0];
+    # Split in words.
+    my @words=(split(/\s+/, $s));
+    $result.=_sprintlist(\@words,$fl," ",$ind,$br,$len, $lp).$eols;
+    # The $firstline is only needed at the beginning of the first string.
+    $fl=undef;
+  }
+  return $result;
+}
 
-See README.md
+sub print_help {
+  # This code is destructive on @options_desc - it's OK because the
+  # program always exits after printing help.
+  while (my ($cmd, $spec) = (shift @options_desc, shift @options_desc)) {
+    last unless defined($cmd);
+    if ($cmd =~ /^---/) {
+      print _sprintstr($spec, "", 0)."\n";
+    }
+    else {
+      my ($desc, $argname)=split(/\|/, $spec);
+      my $arg = $argname ? " $argname" : "";
+      my $negatable = ($cmd =~ /!/) ? "[no-]" : "";
+      $cmd =~ s/[:=](.).*$//;
+      my @variations = map { length($_)>2 ? "--$negatable$_" : "-$_" } split(/[|!]/, $cmd);
+      my $maincmd = shift @variations;
+      my $cmdstr = "$maincmd$arg" . (@variations ? " (".join(" ", @variations).")" : "");
+      print _sprintstr($desc, $cmdstr, 30, 1)."\n";
+    }
+  }
+}
