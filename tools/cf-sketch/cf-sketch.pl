@@ -2061,9 +2061,6 @@ sub tersedump
   return Dumper(shift);
 }
 
-# These two functions are code I wrote ~15 years ago. I know, it's
-# ugly. I'll fix it when I get some free time.
-#
 # Returns an indented string containing a list. Syntax is:
 # _sprintlist($listref[, $firstline[, $separator[, $indent
 #             [, $break[, $linelen[, $lineprefix]]]]])
@@ -2077,19 +2074,20 @@ sub tersedump
 # some other value. A value of 0 for $linelen makes it not do line wrapping.
 # If $lineprefix is given, it is printed at the beginning of each line.
 sub _sprintlist {
-  my $listref=shift;
+  my ($listref, $fline, $separator, $indent, $break, $linelen, $lp) = @_;
+  # Figure out default arguments
   my @list=@$listref;
-  my $fline=shift;
-  my $separator=shift || ", ";
-  my $indent=shift;
-  $indent=15 unless defined($indent);
+  $separator ||= ", ";
+  $indent = 15 unless defined($indent);
   my $space=" " x $indent;
-  $fline||=$space;
-  my $break=shift || 0;
-  my $linelen=shift;
-  $linelen=80 unless defined($linelen);
-  my $lp=shift||"";
-  $linelen-=length($lp);
+  $fline ||= $space;
+  $break ||= 0;
+  $linelen ||= 80;
+  $lp ||= "";
+
+  $linelen -= length($lp);
+
+  # Figure out how to print the first line
   if (!$break || length($fline)<=$indent) {
     $fline=substr("$fline$space", 0, length($space));
   }
@@ -2097,6 +2095,9 @@ sub _sprintlist {
     # length($fline)>$indent
     $fline="$fline\n$space";
   }
+
+  # Now go through the list, appending until we fill
+  # each line. Lather, rinse, repeat.
   my $str="";
   my $line="";
   foreach (@list) {
@@ -2108,6 +2109,8 @@ sub _sprintlist {
     }
     $line.="$_";
   }
+
+  # Finishing touches - insert first line and line prefixes, if any.
   $str.="$space$line";
   $str=~s/^$space/$fline/;
   $str=~s/^/$lp/mg if $lp;
@@ -2124,18 +2127,18 @@ sub _sprintlist {
 # See _sprintlist for the meaning of each parameter.
 sub _sprintstr {
   my ($str, $fl, $ind, $br, $len, $lp)=@_;
-  $ind||=0;
-  # Split string into \n-separated parts.
-  my @strs=($str=~/([^\n]+\n?|[^\n]*\n)/g);
-  # Now process each line separately
+  # Split string into \n-separated parts, preserving all empty fields.
+  my @strs = split(/\n/, $str, -1);
+  # Now process each line separately, to preserve EOLs that were
+  # originally present in the string.
   my $s;
   my $result;
-  foreach $s (@strs) {
-    # Store end of lines at the end of the string
-    my $eols=($s=~/(\n*)$/)[0];
+  while (defined($s=shift @strs)) {
     # Split in words.
     my @words=(split(/\s+/, $s));
-    $result.=_sprintlist(\@words,$fl," ",$ind,$br,$len, $lp).$eols;
+    $result.=_sprintlist(\@words,$fl," ",$ind,$br,$len, $lp);
+    # Add EOL if needed (if there are still more lines to process)
+    $result.="\n" if scalar(@strs);
     # The $firstline is only needed at the beginning of the first string.
     $fl=undef;
   }
