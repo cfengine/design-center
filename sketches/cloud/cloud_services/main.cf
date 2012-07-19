@@ -56,12 +56,6 @@ bundle agent cloud_context(prefix, context)
       "Loading parameters for context $(context)";
 }
 
-# this is unused, but quiets down a false alert from cfengine's syntax checker
-bundle agent standard_services(service, state)
-{
-  vars:
-}
-
 body service_method cloud_services_handler
 {
       service_bundle => $(cloud_context.stype)("$(sys.ipv4)", "$(this.promiser)", "$(this.service_policy)");
