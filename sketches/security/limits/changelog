@@ -1,0 +1,3 @@
+security_limits 1.0
+  * supports complete file management
+  * supports specific definition presence/absence
