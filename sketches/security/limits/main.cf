@@ -53,19 +53,20 @@ files:
   debug_security_limits::
     "/tmp/limits.conf"
       create => "true",
-      edit_line => security_limits_set_limits_selective("$(prefix)", "$(items)", "$(types)", "$(domains)"),
+      edit_line => security_limits_set_limits_selective("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       classes => if_repaired("security_limits_repaired"),
       ifvarclass => "partially_managed";
 
     "/tmp/limits.conf"
       create => "true",
-      edit_line => security_limits_set_limits_complete("$(prefix)", "$(items)", "$(types)", "$(domains)"),
+      edit_defaults => empty,
+      edit_line => security_limits_set_limits_complete("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       classes => if_repaired("security_limits_repaired"),
       ifvarclass => "completely_managed";
 
     "/tmp/limits.conf"
       create => "true",
-      edit_line => security_limits_set_limits_removal("$(prefix)", "$(items)", "$(types)", "$(domains)"),
+      edit_line => security_limits_set_limits_removal("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       classes => if_repaired("security_limits_repaired"),
       ifvarclass => "removal_managed";
 
@@ -73,22 +74,22 @@ files:
   !debug_security_limits::
     "/etc/security/limits.conf"
       create => "true",
+      edit_line => security_limits_set_limits_removal("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       perms => mog("644", "root", "root"),
-      edit_line => security_limits_set_limits_selective("$(prefix)", "$(items)", "$(types)", "$(domains)"),
       classes => if_repaired("security_limits_repaired"),
       ifvarclass => "partially_managed";
 
     "/etc/security/limits.conf"
       create => "true",
+      edit_line => security_limits_set_limits_removal("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       perms => mog("644", "root", "root"),
-      edit_line => security_limits_set_limits_complete("$(prefix)", "$(items)", "$(types)", "$(domains)"),
       classes => if_repaired("security_limits_repaired"),
       ifvarclass => "completely_managed";
 
     "/etc/security/limits.conf"
       create => "true",
+      edit_line => security_limits_set_limits_removal("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       perms => mog("644", "root", "root"),
-      edit_line => security_limits_set_limits_complete("$(prefix)", "$(items)", "$(types)", "$(domains)"),
       classes => if_repaired("security_limits_repaired"),
       ifvarclass => "removal_managed";
 
@@ -107,42 +108,54 @@ reports:
 }
 
 bundle edit_line security_limits_set_limits_removal(prefix, items, types, domains){
+vars:
+  "myitems" slist => { @(items) };
+  "mytypes" slist => { @(types) };
+  "mydomains" slist => { @(domains) };
+
 classes:
-  "$(domains)_$(types)_$(items)_defined" expression => isvariable("$(prefix)[$(domains)][$(types)][$(items)]");
+  "$(mydomains)_$(mytypes)_$(myitems)_defined" expression => isvariable("$(prefix)[$(mydomains)][$(mytypes)][$(myitems)]");
 
 delete_lines:
-  "^\s*$(domains)\s+$(types)\s+$(items)\s+.*"
-    ifvarclass => canonify("$(domains)_$(types)_$(items)_defined");
+  "^\s*$(mydomains)\s+$(mytypes)\s+$(myitems)\s+.*"
+    ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
 }
 
 bundle edit_line security_limits_set_limits_selective(prefix, items, types, domains){
+vars:
+  "myitems" slist => { @(items) };
+  "mytypes" slist => { @(types) };
+  "mydomains" slist => { @(domains) };
+
 classes:
-  "$(domains)_$(types)_$(items)_defined" expression => isvariable("$(prefix)[$(domains)][$(types)][$(items)]");
+  "$(mydomains)_$(mytypes)_$(myitems)_defined" expression => isvariable("$(prefix)[$(mydomains)][$(mytypes)][$(myitems)]");
 
 insert_lines:
   "# This file is selectively managed by CFEngine, manual edits may be reverted";
-  "$(domains) $(types) $(items) $($(prefix)[$(domains)][$(types)][$(items)])"
-    ifvarclass => and(canonify("$(domains)_$(types)_$(items)_defined"), canonify("replace_done_$(edit.filename)_$(domains)_$(types)_$(items)"));
+  "$(mydomains) $(mytypes) $(myitems) $($(prefix)[$(mydomains)][$(mytypes)][$(myitems)])"
+    ifvarclass => and(canonify("$(mydomains)_$(mytypes)_$(myitems)_defined"), canonify("replace_done_$(edit.filename)_$(mydomains)_$(mytypes)_$(myitems)"));
 
 replace_patterns:
-  "^\s*($(domains)\s+$(types)\s+$(items)\s+(?!$($(prefix)[$(domains)][$(types)][$(items)])$)).*$"
-    replace_with => value("$(domains) $(types) $(items) $($(prefix)[$(domains)][$(types)][$(items)])"),
-    classes => always("replace_done_$(edit.filename)_$(domains)_$(types)_$(items)"),
-    ifvarclass => canonify("$(domains)_$(types)_$(items)_defined");
+  "^\s*($(mydomains)\s+$(mytypes)\s+$(myitems)\s+(?!$($(prefix)[$(mydomains)][$(mytypes)][$(myitems)])$)).*$"
+    replace_with => value("$(mydomains) $(mytypes) $(myitems) $($(prefix)[$(mydomains)][$(mytypes)][$(myitems)])"),
+    classes => always("replace_done_$(edit.filename)_$(mydomains)_$(mytypes)_$(myitems)"),
+    ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
 
 }
 
 bundle edit_line security_limits_set_limits_complete(prefix, items, types, domains){
-classes:
-  "$(domains)_$(types)_$(items)_defined" expression => isvariable("$(prefix)[$(domains)][$(types)][$(items)]");
+vars:
+  "myitems" slist => { @(items) };
+  "mytypes" slist => { @(types) };
+  "mydomains" slist => { @(domains) };
 
-delete_lines:
-  ".*";
+classes:
+  "$(mydomains)_$(mytypes)_$(myitems)_defined" expression => isvariable("$(prefix)[$(mydomains)][$(mytypes)][$(myitems)]");
 
 insert_lines:
   "# This file is completely managed by CFEngine, manual edits will be reverted";
-  "$(domains) $(types) $(items) $($(prefix)[$(domains)][$(types)][$(items)])"
-    ifvarclass => canonify("$(domains)_$(types)_$(items)_defined");
+  "$(mydomains) $(mytypes) $(myitems) $($(prefix)[$(mydomains)][$(mytypes)][$(myitems)])"
+    ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
 
 }
 
