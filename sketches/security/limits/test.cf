@@ -1,0 +1,25 @@
+body common control {
+
+    bundlesequence => {"main",};
+
+    inputs => {"../../../cfengine_stdlib.cf","main.cf",};
+}
+
+bundle agent main{
+vars:
+  "limits_[loadgen][soft][nproc]" string => "2047";
+  "limits_[loadgen][hard][nproc]" string => "16384";
+  "limits_[loadgen][soft][nofile]" string => "999999";
+  "limits_[loadgen][hard][nofile]" string => "999999";
+  "limits_mgmt_policy" string => "present";
+  "limits_debug" string => "true";
+
+  "limits1_[loadgen][soft][nproc]" string => "any";
+  "limits1_mgmt_policy" string => "absent";
+  "limits1_debug" string => "true";
+
+
+methods:
+  "any" usebundle => security_limits("main.limits_");
+  "any" usebundle => security_limits("main.limits1_");
+}
