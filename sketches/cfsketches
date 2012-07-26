@@ -11,6 +11,7 @@ system/cron System::cron
 system/config_resolver System::config_resolver
 system/etc_hosts System::etc_hosts
 system/tzconfig System::tzconfig
+utilities/halt_agent_if_file_exists Utilities::halt_agent_if_file_exists
 utilities/nagios_plugin_agent Monitoring::nagios_plugin_agent
 utilities/usebundle_if_ip_has_mac Utilities::usebundle_if_ip_has_mac
 utilities/vcs_mirror VCS::vcs_mirror
