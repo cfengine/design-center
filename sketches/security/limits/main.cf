@@ -68,7 +68,7 @@ files:
     "/etc/security/limits.conf"
       create => "true",
       handle => "security_limits_files_etc_security_limits_conf_partially_managed",
-      edit_line => security_limits_set_limits_removal("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
+      edit_line => security_limits_set_limits_selective("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       perms => mog("644", "root", "root"),
       classes => if_repaired("security_limits_repaired"),
       ifvarclass => "partially_managed";
@@ -76,7 +76,7 @@ files:
     "/etc/security/limits.conf"
       create => "true",
       handle => "security_limits_files_etc_security_limits_conf_completely_managed",
-      edit_line => security_limits_set_limits_removal("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
+      edit_line => security_limits_set_limits_complete("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       edit_defaults => empty,
       perms => mog("644", "root", "root"),
       classes => if_repaired("security_limits_repaired"),
