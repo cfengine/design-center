@@ -1,15 +1,5 @@
-bundle agent meta_security_limits{
-vars:
-  "argument[domain][type][item]" string => "array";
-  "optional_argument[mgmt_policy]" string => "string";
-  "optional_argument[debug]" string => "string";
-
-  # The default behavior is to only manage defined entries
-  "default[mgmt_policy]" string => "present";
-
-}
-
-bundle agent security_limits(prefix){
+bundle agent security_limits(prefix)
+{
 # limits_[domain][type][item] string => "value";
 # limits_mgmt_policy
 # limits_debug
@@ -112,6 +102,17 @@ reports:
   security_limits_repaired.!debug_security_limits::
     "I repaired the /etc/security/limits.conf file";
 
+}
+
+bundle agent meta_security_limits
+{
+  vars:
+      "argument[domain][type][item]" string => "array";
+      "optional_argument[mgmt_policy]" string => "string";
+      "optional_argument[debug]" string => "string";
+
+      # The default behavior is to only manage defined entries
+      "default[mgmt_policy]" string => "present";
 }
 
 bundle edit_line security_limits_set_limits_removal(prefix, items, types, domains){
