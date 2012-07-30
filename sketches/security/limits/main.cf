@@ -29,6 +29,12 @@ vars:
 
   "domains" slist => getindices("$(prefix)");
 
+    debug_security_limits::
+      "filename" string => "/tmp/limits.conf";
+
+    !debug_security_limits::
+      "filename" string => "/etc/security/limits.conf";
+
 classes:
   "$(domains)_$(types)_$(items)_defined" expression => isvariable("$(prefix)[$(domains)][$(types)][$(items)]");
   "completely_managed" expression => regcmp("(?i)only|complete|full|whole", "$($(prefix)mgmt_policy)");
@@ -40,51 +46,26 @@ classes:
   "partially_managed" and => { "!completely_managed", "!removal_managed" };
 
 files:
-  debug_security_limits::
-    "/tmp/limits.conf"
-      handle => "security_limits_files_tmp_limits_conf_partially_managed",
+    "$(filename)"
       create => "true",
-      edit_line => security_limits_set_limits_selective("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
-      classes => if_repaired("security_limits_repaired"),
-      ifvarclass => "partially_managed";
-
-    "/tmp/limits.conf"
-      handle => "security_limits_files_tmp_limits_conf_completely_managed",
-      create => "true",
-      edit_defaults => empty,
-      edit_line => security_limits_set_limits_complete("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
-      classes => if_repaired("security_limits_repaired"),
-      ifvarclass => "completely_managed";
-
-    "/tmp/limits.conf"
-      handle => "security_limits_files_tmp_limits_conf_removal_managed",
-      create => "true",
-      edit_line => security_limits_set_limits_removal("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
-      classes => if_repaired("security_limits_repaired"),
-      ifvarclass => "removal_managed";
-
-
-  !debug_security_limits::
-    "/etc/security/limits.conf"
-      create => "true",
-      handle => "security_limits_files_etc_security_limits_conf_partially_managed",
+      handle => "security_limits_files_limits_conf_partially_managed",
       edit_line => security_limits_set_limits_selective("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       perms => mog("644", "root", "root"),
       classes => if_repaired("security_limits_repaired"),
       ifvarclass => "partially_managed";
 
-    "/etc/security/limits.conf"
+    "$(filename)"
       create => "true",
-      handle => "security_limits_files_etc_security_limits_conf_completely_managed",
+      handle => "security_limits_files_limits_conf_completely_managed",
       edit_line => security_limits_set_limits_complete("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       edit_defaults => empty,
       perms => mog("644", "root", "root"),
       classes => if_repaired("security_limits_repaired"),
       ifvarclass => "completely_managed";
 
-    "/etc/security/limits.conf"
+    "$(filename)"
       create => "true",
-      handle => "security_limits_files_etc_security_limits_conf_removal_managed",
+      handle => "security_limits_files_limits_conf_removal_managed",
       edit_line => security_limits_set_limits_removal("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       perms => mog("644", "root", "root"),
       classes => if_repaired("security_limits_repaired"),
@@ -96,12 +77,8 @@ reports:
   debug_security_limits::
     "Security limits policy in debug mode";
 
-  security_limits_repaired.debug_security_limits::
-    "I repaired the /tmp/limits.conf file";
-
-  security_limits_repaired.!debug_security_limits::
-    "I repaired the /etc/security/limits.conf file";
-
+  security_limits_repaired::
+    "I repaired the $(filename) file";
 }
 
 bundle agent meta_security_limits
