@@ -7,6 +7,7 @@ networking/ssh Security::SSH
 package_management/yumrepo Repository::Yum::Maintain
 package_management/aptrepo Repository::apt::Maintain
 programming_languages/cpanm Packages::CPAN::cpanm
+security/limits Security::security_limits
 system/cron System::cron
 system/config_resolver System::config_resolver
 system/etc_hosts System::etc_hosts
