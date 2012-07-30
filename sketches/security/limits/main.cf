@@ -1,14 +1,3 @@
-bundle agent meta_security_limits{
-vars:
-  "argument[domain][type][item]" string => "array";
-  "optional_argument[mgmt_policy]" string => "string";
-  "optional_argument[debug]" string => "string";
-
-  # The default behavior is to only manage defined entries
-  "default[mgmt_policy]" string => "present";
-
-}
-
 bundle agent security_limits(prefix){
 # limits_[domain][type][item] string => "value";
 # limits_mgmt_policy
@@ -86,7 +75,7 @@ files:
     "/etc/security/limits.conf"
       create => "true",
       handle => "security_limits_files_etc_security_limits_conf_completely_managed",
-      edit_line => security_limits_set_limits_removal("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
+      edit_line => security_limits_set_limits_complete("$(prefix)", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       edit_defaults => empty,
       perms => mog("644", "root", "root"),
       classes => if_repaired("security_limits_repaired"),
@@ -166,6 +155,17 @@ insert_lines:
   "# This file is managed by CFEngine, manual edits may be reverted";
   "$(mydomains) $(mytypes) $(myitems) $($(prefix)[$(mydomains)][$(mytypes)][$(myitems)])"
     ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
+
+}
+
+bundle agent meta_security_limits{
+vars:
+  "argument[domain][type][item]" string => "array";
+  "optional_argument[mgmt_policy]" string => "string";
+  "optional_argument[debug]" string => "string";
+
+  # The default behavior is to only manage defined entries
+  "default[mgmt_policy]" string => "present";
 
 }
 

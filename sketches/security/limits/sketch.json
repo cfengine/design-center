@@ -5,7 +5,7 @@
         "README.md": { "documentation": true },
         "test.cf": { "comment": "Test policy" },
         "changelog": { "comment": "changelog" },
-    }
+    },
     
     "metadata":
     {
@@ -14,7 +14,7 @@
         "license": "MIT",
         "portfolio": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>" ],
-        "depends": { "CFEngine::stdlib": {"version": 105}, "cfengine": {"version", "3.2.1"}, "os": [ "linux" ] },
+        "depends": { "CFEngine::stdlib": {"version": 105}, "cfengine": {"version": "3.2.1"}, "os": [ "linux" ] },
     },
     "entry_point": "main.cf",
     "interface": [ "main.cf" ]
