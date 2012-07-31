@@ -18,9 +18,8 @@ in this repository.
 
 # TODO
 TODO: edit manual and getting started to reflect:
-
---deactivate-all (same as --deactivate all=1)
---deactivate is a hash now: SKETCH=PFILE or SKETCH=all or all=1
+--deactivate is removed
+--deactivate-all
 --deactivaten is a list of offsets
 --params is a hash now, and applies to all activations, and can only be k=v
 --activate is a hash now: SKETCH=PFILE
