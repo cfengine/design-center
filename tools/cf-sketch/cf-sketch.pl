@@ -117,7 +117,6 @@ my @options_desc =
   "list-activations|la",       "List activated sketches, including their activation parameters.",
   "install|i=s@",              "Install or update the given sketch.|sketch",
   "activate|a=s%",             "Activate the given sketch with the given JSON parameters file.|sketch=paramfile",
-  "deactivate|d=s%",           "Deactivate given sketch with given parameters file.|sketch=paramfile",
   "deactivaten|dn=i@",         "Deactivate sketches by number, as shown by --list-activations.|n",
   "deactivate-all|da",         "Deactivate all sketches.",
   "remove|r=s@",               "Remove given sketch.|sketch",
@@ -302,13 +301,20 @@ if ($options{'list-activations'})
  my $activations = load_json($options{'act-file'}, 1);
  color_die "Can't load any activations from $options{'act-file'}"
   unless defined $activations && ref $activations eq 'HASH';
+
  my $activation_id = 1;
  foreach my $sketch (sort keys %$activations)
  {
-  foreach my $pfile (sort keys %{$activations->{$sketch}})
+  if ('HASH' eq ref $activations->{$sketch})
   {
-   print BOLD GREEN."$activation_id\t".YELLOW."$sketch".BLUE." $pfile ".RESET,
-    $coder->encode($activations->{$sketch}->{$pfile}),
+   color_warn "Skipping unusable activations for sketch $sketch!";
+   next;
+  }
+
+  foreach my $activation (@{$activations->{$sketch}})
+  {
+   print BOLD GREEN."$activation_id\t".YELLOW."$sketch".RESET,
+    $coder->encode($activation),
      "\n";
 
    $activation_id++;
@@ -319,10 +325,10 @@ if ($options{'list-activations'})
 
 if ($options{'deactivate-all'})
 {
- $options{deactivate} = { all => '' };
+ $options{deactivaten} = '.*';
 }
 
-my @nonterminal = qw/deactivate deactivaten remove install activate generate/;
+my @nonterminal = qw/deactivaten remove install activate generate/;
 my @terminal = qw/test api search/;
 my @callable = (@nonterminal, @terminal);
 
@@ -527,11 +533,17 @@ sub generate
      my $contents = repo_get_contents($repo);
      if (exists $contents->{$sketch})
      {
-      foreach my $params (sort keys %{$activations->{$sketch}})
+      if ('HASH' eq ref $activations->{$sketch})
       {
-       print "Loading activation for sketch $sketch (originally from $params)\n"
+       color_warn "Skipping unusable activations for sketch $sketch!\n";
+       next;
+      }
+
+      my $activation_id = 1;
+      foreach my $pdata (@{$activations->{$sketch}})
+      {
+       print "Loading activation $activation_id for sketch $sketch\n"
         if $verbose;
-       my $pdata = $activations->{$sketch}->{$params};
        color_die "Couldn't load activation params for $sketch: $!"
         unless defined $pdata;
 
@@ -561,7 +573,8 @@ sub generate
        my $activation = {
                          file => File::Spec->catfile($data->{dir}, $data->{entry_point}),
                          entry_bundle => $entry_point->{bundle},
-                         params => $params,
+                         activation_id => $activation_id,
+                         pdata  => $pdata,
                          sketch => $sketch,
                          prefix => $prefix,
                         };
@@ -675,7 +688,8 @@ sub generate
        }
 
        my $ak = sprintf('%03d', $activation_counter++);
-       $template_activations->{$ak} = $activation;
+       $template_activations->{$ak} = $activation; # the activation counter is 1..N globally!
+       $activation_id++;        # the activation ID is 1..N per sketch
       }
 
       next ACTIVATION;
@@ -872,9 +886,15 @@ sub activate
     # activation successful, now install it
     my $activations = load_json($options{'act-file'}, 1);
 
-    if (exists $activations->{$sketch}->{$pfile})
+    if ('HASH' eq ref $activations->{$sketch})
     {
-     my $p = $canonical_coder->encode($activations->{$sketch}->{$pfile});
+     color_warn "Ignoring old-style activations for sketch $sketch!";
+     $activations->{$sketch} = [];
+    }
+
+    foreach my $check (@{$activations->{$sketch}})
+    {
+     my $p = $canonical_coder->encode($check);
      my $q = $canonical_coder->encode($aparams);
      if ($p eq $q)
      {
@@ -890,11 +910,12 @@ sub activate
      }
     }
 
-    $activations->{$sketch}->{$pfile} = $aparams;
+    push @{$activations->{$sketch}}, $aparams;
+    my $activation_id = scalar @{$activations->{$sketch}};
 
     maybe_ensure_dir(dirname($options{'act-file'}));
     maybe_write_file($options{'act-file'}, 'activation', $coder->encode($activations));
-    print GREEN "Activated: $sketch aparams $pfile\n" unless $quiet;
+    print GREEN "Activated: $sketch $activation_id aparams $pfile\n" unless $quiet;
 
     $installed = 1;
     last;
@@ -908,63 +929,70 @@ sub activate
 
 sub deactivaten
 {
- my $nums = shift @_;
-
- my $deactivations = {};
+ my $nums_or_name = shift @_;
 
  my $activations = load_json($options{'act-file'}, 1);
- my $offset = 1;
- foreach my $sketch (sort keys %$activations)
+ my %modified;
+
+ if ('' eq ref $nums_or_name)     # as a string or regex, this can only come internally
  {
-  foreach my $pfile (sort keys %{$activations->{$sketch}})
+  foreach my $sketch (sort keys %$activations)
   {
-   if (grep { $_ == $offset } @$nums)
-   {
-    $deactivations->{$sketch} = $pfile;
-   }
-   $offset++;
-  }
- }
- deactivate($deactivations);
-}
-
-sub deactivate
-{
- my $aspec = shift @_;
-
- my $activations = load_json($options{'act-file'}, 1);
-
- foreach my $sketch (sort keys %$aspec)
- {
-  my $pfile = $aspec->{$sketch};
-
-  my $all_sketches = ($sketch eq 'all');
-  my $all_params = ($pfile eq 'all');
-
-  if ($all_sketches)
-  {
-   $activations = {};
-   print GREEN "Deactivated: all sketch activations!\n" unless $quiet;
-   last;
-  }
-  elsif ($all_params)
-  {
-   my %info = %{$activations->{$sketch}||{}};
+   next unless $sketch =~ m/$nums_or_name/;
    delete $activations->{$sketch};
-   print GREEN "Deactivated: all $sketch activations (@{[ sort keys %info ]})\n"
+   $modified{$sketch}++;
+   print GREEN "Deactivated: all $sketch activations\n"
     unless $quiet;
   }
-  else
-  {
-   delete $activations->{$sketch}->{$pfile};
-   delete $activations->{$sketch} unless scalar keys %{$activations->{$sketch}};
+ }
+ elsif ('ARRAY' eq ref $nums_or_name)
+ {
+  my @deactivations;
 
-   print GREEN "Deactivated: $sketch $pfile\n" unless $quiet;
+  my $offset = 1;
+  foreach my $sketch (sort keys %$activations)
+  {
+   if ('HASH' eq ref $activations->{$sketch})
+   {
+    color_warn "Ignoring old-style activations for sketch $sketch!";
+    $activations->{$sketch} = [];
+    $modified{$sketch}++;
+    print GREEN "Deactivated: all $sketch activations\n"
+     unless $quiet;
+   }
+
+   my @new_activations;
+
+   foreach my $activation (@{$activations->{$sketch}})
+   {
+    if (grep { $_ == $offset } @$nums_or_name)
+    {
+     $modified{$sketch}++;
+     print GREEN "Deactivated: $sketch activation $offset\n" unless $quiet;
+    }
+    else
+    {
+     push @new_activations, $activation;
+    }
+    $offset++;
+   }
+
+   if (exists $modified{$sketch})
+   {
+    $activations->{$sketch} = \@new_activations;
+   }
   }
  }
+ else
+ {
+  color_die "Sorry, I can't handle parameters " . $coder->encode($nums_or_name);
+ }
 
- maybe_ensure_dir(dirname($options{'act-file'}));
- maybe_write_file($options{'act-file'}, 'activation', $coder->encode($activations));
+ if (scalar keys %modified)
+ {
+  maybe_ensure_dir(dirname($options{'act-file'}));
+  maybe_write_file($options{'act-file'}, 'activation', $coder->encode($activations));
+ }
 }
 
 sub remove
@@ -990,7 +1018,7 @@ sub remove
    my $data = $contents->{$sketch};
    if (maybe_remove_dir($data->{dir}))
    {
-    deactivate({$sketch => 'all'});       # deactivate all the activations
+    deactivaten($sketch);       # deactivate all the activations of the sketch
     print GREEN "Successfully removed $sketch from $data->{dir}\n" unless $quiet;
    }
    else
@@ -2048,7 +2076,7 @@ sub make_runfile
   $methods .= sprintf('      "%s %s %s" usebundle => %s("cfsketch_g._%s_%s__");' . "\n",
                       $a,
                       $activations->{$a}->{sketch},
-                      $activations->{$a}->{params},
+                      $activations->{$a}->{activation_id},
                       $activations->{$a}->{entry_bundle},
                       $a,
                       $activations->{$a}->{prefix});
