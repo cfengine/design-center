@@ -28,6 +28,7 @@ branch.
       "mirror_copbl_origin" string => "git://github.com/nickanderson/copbl.git";
       "mirror_copbl_path" string => "/tmp/test2/test3/git_mirror";
       "mirror_copbl_runas" string => getenv("USER", 128);
+      "mirror_copbl_umask" string => "022";
       "mirror_copbl_vcs" string => "/usr/bin/git";
 
     methods:
