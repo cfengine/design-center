@@ -79,6 +79,7 @@ my %def_options =
   quiet      => 0,
   help       => 0,
   force      => 0,
+  fullpaths  => 1,
   'dry-run'  => 0,
   # switched depending on root or non-root
   'act-file'   => "$configdir/activations.conf",
@@ -123,6 +124,7 @@ my @options_desc =
   "remove|r=s@",               "Remove given sketch.|sketch",
   "api=s",                     "Show the API (required/optional parameters) of the given sketch.|sketch",
   "generate|g",                "Generate CFEngine runfile to execute activated sketches.",
+  "fullpath|fp",               "Use full paths in the CFEngine runfile (off by default)",
   "save-config|config-save",   "Save configuration parameters so that they are automatically loaded in the future.",
   "metarun=s",                 "Load and execute a metarun file of the form { options => \%options }, which indicates the entire behavior for this run.|file",
   "save-metarun=s",            "Save the parameters and actions of the current execution to the named file, for future use with --metarun.|file",
@@ -542,7 +544,7 @@ sub generate
        my %vars;
 
        my $entry_point = verify_entry_point($sketch,
-                                            $data->{dir},
+                                            $data->{fulldir},
                                             $data->{manifest},
                                             $data->{entry_point},
                                             $data->{interface});
@@ -735,7 +737,7 @@ sub api
    my $if = $data->{interface};
 
    my $entry_point = verify_entry_point($sketch,
-                                        $data->{dir},
+                                        $data->{fulldir},
                                         $data->{manifest},
                                         $data->{entry_point},
                                         $data->{interface});
@@ -829,7 +831,7 @@ sub activate
     my $if = $data->{interface};
 
     my $entry_point = verify_entry_point($sketch,
-                                         $data->{dir},
+                                         $data->{fulldir},
                                          $data->{manifest},
                                          $data->{entry_point},
                                          $data->{interface});
@@ -1339,16 +1341,19 @@ sub find_sketches
 
  if (scalar @dirs)
  {
-  find(sub
-       {
-        my $f = $_;
-        if ($f eq SKETCH_DEF_FILE)
+  foreach my $topdir (@dirs)
+  {
+   find(sub
         {
-         my $info = load_sketch($File::Find::dir);
-         return unless $info;
-         $contents{$info->{metadata}->{name}} = $info;
-        }
-       }, @dirs);
+         my $f = $_;
+         if ($f eq SKETCH_DEF_FILE)
+         {
+          my $info = load_sketch($File::Find::dir, $topdir);
+          return unless $info;
+          $contents{$info->{metadata}->{name}} = $info;
+         }
+        }, $topdir);
+  }
  }
 
  return \%contents;
@@ -1356,7 +1361,9 @@ sub find_sketches
 
 sub load_sketch
 {
- my $dir = shift @_;
+ my $dir    = shift @_;
+ my $topdir = shift @_;
+
  my $name = is_resource_local($dir) ? File::Spec->catfile($dir, SKETCH_DEF_FILE) : "$dir/" . SKETCH_DEF_FILE;
  my $json = load_json($name);
 
@@ -1374,10 +1381,10 @@ sub load_sketch
  {
   # the manifest must be a hash
   push @messages, "Invalid manifest" unless (exists $json->{manifest} && ref $json->{manifest} eq 'HASH');
-   
+
   # the metadata must be a hash
   push @messages, "Invalid metadata" unless (exists $json->{metadata} && ref $json->{metadata} eq 'HASH');
-  
+
   # the interface must be an array
   push @messages, "Invalid interface" unless (exists $json->{interface} && ref $json->{interface} eq 'ARRAY');
  }
@@ -1393,7 +1400,7 @@ sub load_sketch
   {
    push @messages, "Missing or undefined metadata element $scalar" unless $json->{metadata}->{$scalar};
   }
-  
+
   foreach my $array (qw/authors portfolio/)
   {
    push @messages, "Missing, invalid, or undefined metadata array $array" unless ($json->{metadata}->{$array} &&
@@ -1411,14 +1418,14 @@ sub load_sketch
  {
   push @messages, "Missing entry_point" unless exists $json->{entry_point};
  }
-  
+
  # entry_point has to point to a file in the manifest or be null
  unless (scalar @messages || !defined $json->{entry_point})
  {
   push @messages, "entry_point $json->{entry_point} not in manifest"
    unless exists $json->{manifest}->{$json->{entry_point}};
  }
-     
+
  # we should not have any interface files that do NOT exist in the manifest
  unless (scalar @messages)
  {
@@ -1431,11 +1438,12 @@ sub load_sketch
  if (!scalar @messages) # there are no errors, so go on...
  {
   my $name = $json->{metadata}->{name};
-  $json->{dir} = $dir;
+  $json->{dir} = $options{fullpath} ? $dir : File::Spec->abs2rel( $dir, $topdir );
+  $json->{fulldir} = $dir;
   $json->{file} = $name;
 
   if (verify_entry_point($name,
-                         $dir,
+                         $json->{fulldir},
                          $json->{manifest},
                          $json->{entry_point},
                          $json->{interface})) {
