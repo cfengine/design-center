@@ -2,7 +2,7 @@ body common control {
 
     bundlesequence => {"main",};
     inputs => {
-                "../../tools/cf-sketch/copbl/cfengine_stdlib.cf",
+                "../../libraries/copbl/cfengine_stdlib.cf",
                 "./main.cf",
               };
 }
@@ -14,10 +14,11 @@ bundle agent main {
       # "mirror_copbl_bundle_home" string => dirname("$(this.promise_filename)");
 
       # ... so you may have to adjust this accordingly!  sorry!  not even getenv("PWD") works!
-      "mirror_copbl_bundle_home" string => "/home/tzz/source/design-center/utilities/vcs_mirror";
+      "mirror_copbl_bundle_home" string => "/home/tzz/source/design-center/sketches/utilities/vcs_mirror";
       "mirror_copbl_origin" string => "git://github.com/nickanderson/copbl.git";
       "mirror_copbl_path" string => "/tmp/test2/test3/git_mirror";
       "mirror_copbl_runas" string => getenv("USER", 128);
+      "mirror_copbl_umask" string => "022";
       "mirror_copbl_vcs" string => "/usr/bin/git";
 
     methods:
