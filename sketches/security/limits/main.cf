@@ -1,0 +1,149 @@
+bundle agent security_limits(prefix)
+{
+# limits_[domain][type][item] string => "value";
+# limits_mgmt_policy
+# limits_debug
+vars:
+  "items" slist => { "core",
+                     "data",
+                     "fsize",
+                     "memlock",
+                     "nofile",
+                     "rss",
+                     "stack",
+                     "cpu",
+                     "nproc",
+                     "as",
+                     "maxlogins",
+                     "maxsyslogins",
+                     "priority",
+                     "locks",
+                     "sigpending",
+                     "msqqueue",
+                     "nice",
+                     "rtprio",
+                     "chroot",
+                   };
+
+  "types" slist => { "soft", "hard" };
+
+  "domains" slist => getindices("$(prefix)domains");
+
+    debug_security_limits::
+      "filename" string => "$($(prefix)debug_filename)";
+
+    !debug_security_limits::
+      "filename" string => "/etc/security/limits.conf";
+
+classes:
+  "completely_managed" expression => regcmp("(?i)only|complete|full|whole", "$($(prefix)mgmt_policy)");
+  "partially_managed" expression => regcmp("(?i)present|exists|partial|defined|selective|exist", "$($(prefix)mgmt_policy)");
+  "removal_managed" expression => regcmp("(?i)absent|delete|remove|removal|clear", "$($(prefix)mgmt_policy)");
+
+      # note that cf-sketch will set $($(prefix)contexts_text[CTXT] ON or OFF
+      "debug_security_limits" expression => regcmp("(?i)yes|true|on", "$($(prefix)contexts_text[debug])");
+
+  # This effectively defaults to partially managed
+  "partially_managed" and => { "!completely_managed", "!removal_managed" };
+
+files:
+    "$(filename)"
+      create => "true",
+      handle => "security_limits_files_limits_conf_partially_managed",
+      edit_line => security_limits_set_limits_selective("$(prefix)domains", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
+      perms => mog("644", "root", "root"),
+      classes => if_repaired("security_limits_repaired"),
+      ifvarclass => "partially_managed";
+
+    "$(filename)"
+      create => "true",
+      handle => "security_limits_files_limits_conf_completely_managed",
+      edit_line => security_limits_set_limits_complete("$(prefix)domains", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
+      edit_defaults => empty,
+      perms => mog("644", "root", "root"),
+      classes => if_repaired("security_limits_repaired"),
+      ifvarclass => "completely_managed";
+
+    "$(filename)"
+      create => "true",
+      handle => "security_limits_files_limits_conf_removal_managed",
+      edit_line => security_limits_set_limits_removal("$(prefix)domains", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
+      perms => mog("644", "root", "root"),
+      classes => if_repaired("security_limits_repaired"),
+      ifvarclass => "removal_managed";
+
+reports:
+  debug_security_limits::
+    "Security limits policy in debug mode";
+
+  security_limits_repaired::
+    "I repaired the $(filename) file";
+}
+
+bundle agent meta_security_limits
+{
+  vars:
+      #"argument[domains][domain][type][item]" string => "array";
+      "argument[domains]" string => "array";
+      "argument[debug]" string => "context";
+      "argument[debug_filename]" string => "string";
+      "optional_argument[mgmt_policy]" string => "string";
+
+      # The default behavior is to only manage defined entries
+      "default[mgmt_policy]" string => "present";
+}
+
+bundle edit_line security_limits_set_limits_removal(prefix, items, types, domains){
+vars:
+  "myitems" slist => { @(items) };
+  "mytypes" slist => { @(types) };
+  "mydomains" slist => { @(domains) };
+
+classes:
+  "$(mydomains)_$(mytypes)_$(myitems)_defined" expression => isvariable("$(prefix)[$(mydomains)][$(mytypes)][$(myitems)]");
+
+insert_lines:
+  "# This file is managed by CFEngine, manual edits may be reverted";
+
+delete_lines:
+  "^\s*$(mydomains)\s+$(mytypes)\s+$(myitems)\s+.*"
+    ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
+}
+
+bundle edit_line security_limits_set_limits_selective(prefix, items, types, domains){
+vars:
+  "myitems" slist => { @(items) };
+  "mytypes" slist => { @(types) };
+  "mydomains" slist => { @(domains) };
+
+classes:
+  "$(mydomains)_$(mytypes)_$(myitems)_defined" expression => isvariable("$(prefix)[$(mydomains)][$(mytypes)][$(myitems)]");
+
+insert_lines:
+  "# This file is managed by CFEngine, manual edits may be reverted";
+  "$(mydomains) $(mytypes) $(myitems) $($(prefix)[$(mydomains)][$(mytypes)][$(myitems)])"
+    ifvarclass => and(canonify("$(mydomains)_$(mytypes)_$(myitems)_defined"), canonify("replace_done_$(edit.filename)_$(mydomains)_$(mytypes)_$(myitems)"));
+
+replace_patterns:
+  "^\s*($(mydomains)\s+$(mytypes)\s+$(myitems)\s+(?!$($(prefix)[$(mydomains)][$(mytypes)][$(myitems)])$)).*$"
+    replace_with => value("$(mydomains) $(mytypes) $(myitems) $($(prefix)[$(mydomains)][$(mytypes)][$(myitems)])"),
+    classes => always("replace_done_$(edit.filename)_$(mydomains)_$(mytypes)_$(myitems)"),
+    ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
+
+}
+
+bundle edit_line security_limits_set_limits_complete(prefix, items, types, domains){
+vars:
+  "myitems" slist => { @(items) };
+  "mytypes" slist => { @(types) };
+  "mydomains" slist => { @(domains) };
+
+classes:
+  "$(mydomains)_$(mytypes)_$(myitems)_defined" expression => isvariable("$(prefix)[$(mydomains)][$(mytypes)][$(myitems)]");
+
+insert_lines:
+  "# This file is managed by CFEngine, manual edits may be reverted";
+  "$(mydomains) $(mytypes) $(myitems) $($(prefix)[$(mydomains)][$(mytypes)][$(myitems)])"
+    ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
+
+}
