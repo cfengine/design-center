@@ -79,7 +79,7 @@ my %def_options =
   quiet      => 0,
   help       => 0,
   force      => 0,
-  fullpaths  => 1,
+  fullpath   => 0,
   'dry-run'  => 0,
   # switched depending on root or non-root
   'act-file'   => "$configdir/activations.conf",
