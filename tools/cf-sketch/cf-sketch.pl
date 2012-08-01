@@ -117,7 +117,7 @@ my @options_desc =
   "list-activations|la",       "List activated sketches, including their activation parameters.",
   "install|i=s@",              "Install or update the given sketch.|sketch",
   "activate|a=s%",             "Activate the given sketch with the given JSON parameters file.|sketch=paramfile",
-  "deactivaten|dn=i@",         "Deactivate sketches by number, as shown by --list-activations.|n",
+  "deactivate|d=s@",           "Deactivate sketches by number, as shown by --list-activations, or by name (regular expression).|n",
   "deactivate-all|da",         "Deactivate all sketches.",
   "remove|r=s@",               "Remove given sketch.|sketch",
   "api=s",                     "Show the API (required/optional parameters) of the given sketch.|sketch",
@@ -325,10 +325,10 @@ if ($options{'list-activations'})
 
 if ($options{'deactivate-all'})
 {
- $options{deactivaten} = '.*';
+ $options{deactivate} = '.*';
 }
 
-my @nonterminal = qw/deactivaten remove install activate generate/;
+my @nonterminal = qw/deactivate remove install activate generate/;
 my @terminal = qw/test api search/;
 my @callable = (@nonterminal, @terminal);
 
@@ -927,14 +927,14 @@ sub activate
  }
 }
 
-sub deactivaten
+sub deactivate
 {
  my $nums_or_name = shift @_;
 
  my $activations = load_json($options{'act-file'}, 1);
  my %modified;
 
- if ('' eq ref $nums_or_name)     # as a string or regex, this can only come internally
+ if ('' eq ref $nums_or_name)     # a string or regex
  {
   foreach my $sketch (sort keys %$activations)
   {
@@ -1018,7 +1018,7 @@ sub remove
    my $data = $contents->{$sketch};
    if (maybe_remove_dir($data->{dir}))
    {
-    deactivaten($sketch);       # deactivate all the activations of the sketch
+    deactivate($sketch);       # deactivate all the activations of the sketch
     print GREEN "Successfully removed $sketch from $data->{dir}\n" unless $quiet;
    }
    else

@@ -18,9 +18,8 @@ in this repository.
 
 # TODO
 TODO: edit manual and getting started to reflect:
---deactivate is removed
+--deactivate is the old deactivaten and it also takes a regex matching sketch names
 --deactivate-all
---deactivaten is a list of offsets
 --params is a hash now, and applies to all activations, and can only be k=v
 --activate is a hash now: SKETCH=PFILE
 --save-metarun MFILE.json (saves %options)
