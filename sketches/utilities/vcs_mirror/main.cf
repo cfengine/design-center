@@ -50,6 +50,25 @@ bundle agent vcs_mirror(prefix)
 
       "git_configfile" string => "$($(prefix)path)/.git/config";
 
+      "git_config_template" string => "
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[remote \"origin\"]
+        fetch = +refs/heads/*:refs/remotes/origin/*
+        url = $($(vcs_mirror.prefix)origin)
+[branch \"master\"]
+        remote = origin
+        merge = refs/heads/master
+[branch \"$($(vcs_mirror.prefix)branch)\"]
+        remote = origin
+        merge = refs/heads/$($(vcs_mirror.prefix)branch)
+",
+      comment => "The $(git_configfile) template.",
+      handle => "update_vars_git_config_template";
+
   classes:
       # test if the last component of the "vcs" path arg matches a known VCS
       # TODO: use_git and known_vcs are global, so you can't mix VCSs in one run!!!
@@ -66,11 +85,10 @@ bundle agent vcs_mirror(prefix)
     use_git::
       "$(git_configfile)"
       handle => "vcs_configfile_contents",
-      comment => "Expand Git config file from template",
+      comment => "Expand Git config file from variable",
       create => "false",
       edit_defaults => empty,
-      ifvarclass => "$(canon_prefix)vcsconfig_exists",
-      edit_line => expand_template("$($(prefix)bundle_home)/files/gitconfig.template");
+      edit_line => insert_lines("$(git_config_template)");
 
   commands:
 
@@ -105,10 +123,10 @@ bundle agent vcs_mirror(prefix)
 
   reports:
     cfengine::
-      "VCS is $($(prefix)vcs), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path).  We'll load the templates from $($(prefix)bundle_home)."
+      "VCS is $($(prefix)vcs), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path)."
       ifvarclass => "$(canon_prefix)runas_current_user";
 
-      "VCS is $($(prefix)vcs), to be executed as user $($(prefix)runas), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path).  We'll load the templates from $($(prefix)bundle_home)."
+      "VCS is $($(prefix)vcs), to be executed as user $($(prefix)runas), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path)."
       ifvarclass => "!$(canon_prefix)runas_current_user";
 
 
