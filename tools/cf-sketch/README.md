@@ -19,6 +19,7 @@ in this repository.
 # TODO
 TODO: edit manual and getting started to reflect:
 
+--fullpath (off by default)
 --deactivate-all (same as --deactivate all=1)
 --deactivate is a hash now: SKETCH=PFILE or SKETCH=all or all=1
 --deactivaten is a list of offsets
