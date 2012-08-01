@@ -20,6 +20,7 @@ in this repository.
 TODO: edit manual and getting started to reflect:
 --deactivate is the old deactivaten and it also takes a regex matching sketch names
 --deactivate-all
+--fullpath (off by default)
 --params is a hash now, and applies to all activations, and can only be k=v
 --activate is a hash now: SKETCH=PFILE
 --save-metarun MFILE.json (saves %options)
