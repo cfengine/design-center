@@ -1,0 +1,7 @@
+{
+ "activated": true,
+ "path": "/tmp/thrift-perl-lib",
+ "origin":"http://svn.apache.org/repos/asf/thrift/trunk/lib/perl",
+ "branch": "",
+ "vcs": "/usr/bin/svn"
+}
