@@ -2,14 +2,11 @@ body common control {
 
     bundlesequence => {"main"};
 
-    inputs => { "../../../cfengine_stdlib.cf", "main.cf" };
+    inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 }
 
 bundle agent main {
 vars:
-  "test1_allow_content_start" string => "This is the seed text, and should be removed";
-  "test1_deny_content_start"  string => "This is the seed text, and should be removed";
-  "test1_allow_content_after" string => "";
   "test1_debug" string => "true";
   "test1_test_filename" string => "/tmp/test1";
   "test1_mgmt_policy" string => "complete";

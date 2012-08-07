@@ -35,29 +35,36 @@ vars:
 ###########################################################################
 
   # Build allow rules that have optional parts
-  "allow_rule_$(allow_rules)" 
+  "allow_rule[$(allow_rules)]" 
     string => "$(allowed_daemons_$(allow_rules)) : $(allowed_clients_$(allow_rules)) : $(allowed_options_$(allow_rules))",
     policy => "free",
     ifvarclass => "allow_$(allow_rules)_has_options";
 
   # Build allow rules without optional parts
-  "allow_rule_$(allow_rules)" 
+  "allow_rule[$(allow_rules)]" 
     string => "$(allowed_daemons_$(allow_rules)) : $(allowed_clients_$(allow_rules))",
     policy => "free",
     ifvarclass => "!allow_$(allow_rules)_has_options";
 
   # Build deny rules that have optional parts
-  "deny_rule_$(deny_rules)" 
+  "deny_rule[$(deny_rules)]" 
     string => "$(denied_daemons_$(deny_rules)) : $(denied_clients_$(deny_rules)) : $(denied_options_$(deny_rules))",
     policy => "free",
     ifvarclass => "deny_$(deny_rules)_has_options";
 
   # Build allow rules without optional parts
-  "deny_rule_$(deny_rules)" 
+  "deny_rule[$(deny_rules)]" 
     string => "$(denied_daemons_$(deny_rules)) : $(denied_clients_$(deny_rules))",
     policy => "free",
     ifvarclass => "!deny_$(deny_rules)_has_options";
 
+  # Build list of allow and deny rules from arrays. 
+  # The lists are needed for full file management.
+  # This must be done on the second var pass since classes are needed
+  # to build the arrays we are getting values from.
+  first_class_pass::
+  "allow_rule_list" slist => getvalues("allow_rule");
+  "deny_rule_list"  slist => getvalues("deny_rule");
 
   # Choose files to operate on based on test parameter
   test_security_tcpwrappers::
@@ -109,7 +116,7 @@ files:
       perms => mog("644", "root", "root"),
       classes => if_repaired("$(bundle)_repaired_allow"),
       edit_defaults => empty,
-      edit_line => append_if_no_line("$(allow_rule_$(allow_rules))"),
+      edit_line => append_if_no_lines("@(security_tcpwrappers.allow_rule_list)"),
       comment => "Completely managed hosts.allow leaves less room for
                   unexpected behavior from stray admins.";
 
@@ -119,7 +126,7 @@ files:
       perms => mog("644", "root", "root"),
       classes => if_repaired("$(bundle)_repaired_deny"),
       edit_defaults => empty,
-      edit_line => append_if_no_line("$(deny_rule_$(deny_rules))");
+      edit_line => append_if_no_lines("@(security_tcpwrappers.deny_rule_list)");
 
   # If we are only partially mangaging the file we can only promise
   # about the defined rules
@@ -129,14 +136,14 @@ files:
       create => "true",
       perms => mog("644", "root", "root"),
       classes => if_repaired("$(bundle)_repaired_allow"),
-      edit_line => append_if_no_line("$(allow_rule_$(allow_rules))");
+      edit_line => append_if_no_lines("@(security_tcpwrappers.allow_rule_list)");
 
     "$(deny_filename)"
       handle => "$(bundle)_files_deny_partial",
       create => "true",
       perms => mog("644", "root", "root"),
       classes => if_repaired("$(bundle)_repaired_deny"),
-      edit_line => append_if_no_line("$(deny_rule_$(deny_rules))");
+      edit_line => append_if_no_lines("@(security_tcpwrappers.deny_rule_list)");
 
   # If we are managing removal we only ensure specific rules do not exist
   second_class_pass.mgmt_policy_entries_absent::
@@ -156,7 +163,17 @@ files:
 
 
 reports:
+  second_class_pass::
+    # Report when files have been repaired
+    "I repaired $(allow_filename)",
+      ifvarclass => "$(bundle)_repaired_allow";
+
+    "I repaired $(deny_filename)",
+      ifvarclass => "$(bundle)_repaired_deny";
+
   debug_security_tcpwrappers.second_class_pass::
+    # Allow and Deny Rules
+
     # Report File management policy
     "$(allow_filename) content is fully managed",
       ifvarclass => "mgmt_policy_full_file";
@@ -178,7 +195,7 @@ reports:
 
 
     # Report individual rules
-    "ALLOW RULE for $(allow_rules) | $(allow_rule_$(allow_rules))";
+    "ALLOW RULE for $(allow_rules) | $(allow_rule[$(allow_rules)])";
 
-    "DENY RULE for $(deny_rules) | $(deny_rule_$(deny_rules))";
+    "DENY RULE for $(deny_rules) | $(deny_rule[$(deny_rules)])";
 }
