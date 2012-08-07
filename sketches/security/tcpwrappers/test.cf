@@ -1,0 +1,45 @@
+body common control {
+
+    bundlesequence => {"main"};
+
+    inputs => { "../../../cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent main {
+vars:
+  "test1_allow_content_start" string => "This is the seed text, and should be removed";
+  "test1_deny_content_start"  string => "This is the seed text, and should be removed";
+  "test1_allow_content_after" string => "";
+  "test1_debug" string => "true";
+  "test1_test_filename" string => "/tmp/test1";
+  "test1_mgmt_policy" string => "complete";
+  "test1_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
+  "test1_allow[ssh][clients]" slist => { "ALL", "192.168.0.1/24" };
+  "test1_allow[myapp][daemons]" slist => { "myprocess"  };
+  "test1_allow[myapp][clients]" slist => { "192.168.1.12" };
+  "test1_deny[insecure][daemons]" slist => { "snmpd" };
+  "test1_deny[insecure][clients]" slist => { "ALL" };
+
+  "test2_debug" string => "true";
+  "test2_test_filename" string => "/tmp/test2";
+  "test2_mgmt_policy" string => "partial";
+  "test2_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
+  "test2_allow[ssh][clients]" slist => { "ALL" };
+  "test2_deny[insecure][daemons]" slist => { "snmpd" };
+  "test2_deny[insecure][clients]" slist => { "ALL" };
+  "test2_allow[ssh][options]" slist => { "option1", "option2" };
+
+  "test3_debug" string => "true";
+  "test3_test_filename" string => "/tmp/test3";
+  "test3_mgmt_policy" string => "partial";
+  "test3_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
+  "test3_allow[ssh][clients]" slist => { "ALL" };
+  "test3_deny[insecure][daemons]" slist => { "snmpd" };
+  "test3_deny[insecure][clients]" slist => { "ALL" };
+  "test3_allow[ssh][options]" slist => { "option1", "option2" };
+
+methods:
+  "test" usebundle => security_tcpwrappers("main.test1_");
+  "test" usebundle => security_tcpwrappers("main.test2_");
+  "test" usebundle => security_tcpwrappers("main.test3_");
+}
