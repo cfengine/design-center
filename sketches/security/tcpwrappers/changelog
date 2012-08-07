@@ -1,0 +1,3 @@
+Security::tcpwrappers 1.0
+  * Inital sketch
+  * supports full_file, entry_present, or entry_absent definitions
