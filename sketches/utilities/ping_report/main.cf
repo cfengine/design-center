@@ -1,0 +1,53 @@
+bundle agent ping_report(prefix){
+# prefix_count string => "1"; default 1
+# prefix_hosts slist => { "192.168.35.100" };
+# prefix_report_success string => "true|false"; default false
+# prefix_report_failure string => "true|false";  default false
+vars:
+  "bundle" string => "ping_report";
+  # Import hostlist locally
+  "ping_hosts" slist => { "@($(prefix)hosts)" };
+
+  param_count_provided::
+    "ping_count"
+      string => "$($(prefix)count)",
+      policy => "free";
+
+  !param_count_provided::
+    "ping_count"
+      string => "1",
+      policy => "free";
+
+classes:
+  "param_count_provided" expression => isvariable("$(prefix)count");
+  "ping_report_success"  expression => regcmp("(?i)true|on", "$($(prefix)report_success)");
+  "ping_report_failure"  expression => regcmp("(?i)true|on", "$($(prefix)report_failure)");
+
+commands:
+  "/bin/ping"
+    args => "-c $(ping_count) $(ping_hosts)",
+    contain => silent,
+    classes => if_repaired("$(bundle)_$(ping_hosts)_is_pingable");
+
+reports:
+  ping_report_success::
+    "I am able to ping $(ping_hosts)",
+      ifvarclass => canonify("$(bundle)_$(ping_hosts)_is_pingable"); 
+
+  ping_report_failure::
+    "I am unable to ping $(ping_hosts)",
+      ifvarclass => not(canonify("$(bundle)_$(ping_hosts)_is_pingable")); 
+}
+
+bundle agent meta_ping_report{
+vars:
+  "argument[hosts]"                   string => "slist"; 
+
+  "optional_argument[count]"          string => "string"; 
+  "optional_argument[report_success]" string => "context"; 
+  "optional_argument[report_failure]" string => "context"; 
+
+  "default[count]"                    string => "1"; 
+  "default[report_success]"           string => "false"; 
+  "default[report_failure]"           string => "false"; 
+}
