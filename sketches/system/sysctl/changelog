@@ -1,0 +1,7 @@
+System::sysctl 1.0
+  * Supported management policies
+  *  entries_present - ensure specified entries exist
+  *  entries_absent - ensure specified entries dont exist
+  *  defined_only - ensure only specified entries exist aka full file
+  *  vars_absent - Ensure no setting for specified var exists
+  * Test and debug modes
