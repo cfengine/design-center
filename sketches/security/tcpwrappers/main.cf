@@ -199,3 +199,19 @@ reports:
 
     "DENY RULE for $(deny_rules) | $(deny_rule[$(deny_rules)])";
 }
+
+bundle agent meta_security_tcpwrappers{
+vars:
+# "prefix_allow[label][daemons]" slist => { "" };
+# "prefix_allow[label][clients]" slist => { "" };
+# "prefix_allow[label][options]" slist => { "" };
+# "prefix_deny[label][daemons]" slist => { "" };
+# "prefix_deny[label][clients]" slist => { "" };
+# "prefix_deny[label][options]" slist => { "" };
+
+  "optional_argument[debug]" string => "context";
+  "optional_argument[test_filename]"  string => "string";
+  "optional_argument[mgmt_policy]" string => "string";
+
+  "default[mgmt_policy]" string => "entries_present";
+}
