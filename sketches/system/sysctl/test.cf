@@ -11,14 +11,14 @@ body common control {
 bundle agent main {
 
 vars:
-  "test1_var[net.ipv4.tcp_tw_reuse]" string => "1";
+  "test1_vars[net.ipv4.tcp_tw_reuse]" string => "1";
   "test1_test_file" string => "/tmp/sysctl.conf";
   "test1_debug" string => "on";
   #"test1_mgmt_policy" string => "entries_present";
   #"test1_mgmt_policy" string => "defined_only";
   #"test1_mgmt_policy" string => "entries_absent";
-  "test1_mgmt_policy" string => "var_absent";
-  #"test1_mgmt_policy" string => "entries_present|entries_absent|defined_only|var_absent";
+  "test1_mgmt_policy" string => "vars_absent";
+  #"test1_mgmt_policy" string => "entries_present|entries_absent|defined_only|vars_absent";
 
 methods:
   "test1" usebundle => sysctl("main.test1_");

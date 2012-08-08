@@ -1,5 +1,5 @@
 bundle agent sysctl(prefix){
-# "prefix_var[net.ipv4.tcp_tw_reuse]" string => "1";
+# "prefix_vars[net.ipv4.tcp_tw_reuse]" string => "1";
 # "prefix_test_file" string => "/tmp/sysctl";
 # "prefix_debug" string => "on";
 # "prefix_mgmt_policy" string => "entries_present|entries_absent|defined_only|var_absent";
@@ -8,18 +8,18 @@ bundle agent sysctl(prefix){
 #      for example net.ipv4.tcp_tw_reuse=1 would not exist, but 
 #      net.ipv4.tcp_tw_reuse=2 would be left alone.
 #   defined_only promises that only the defined values are present
-#   var_absent promises that the var is not set to anything.
+#   vars_absent promises that the var is not set to anything.
 #      for example net.ipv4.tcp_tw_reuse=* would be removed 
 
 vars:
-  "mgmt_policies" slist => {"entries_present", "entries_absent", "var_absent", "defined_only"};
+  "mgmt_policies" slist => {"entries_present", "entries_absent", "vars_absent", "defined_only"};
 
   "mgmt_policy"
     string => "$(mgmt_policies)",
     policy => "free",
     ifvarclass => "mgmt_policy_$(mgmt_policies)";
 
-  "sysctl_vars" slist => getindices("$(prefix)var");
+  "sysctl_vars" slist => getindices("$(prefix)vars");
 
   test_sysctl::
     "filename"
@@ -43,7 +43,7 @@ classes:
 files:
   "$(filename)"
     create => "true",
-    edit_line => set_variable_values("$(prefix)var"),
+    edit_line => set_variable_values("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
     ifvarclass => "mgmt_policy_entries_present",
     comment => "Ensure specific defined values are set as promised
@@ -52,7 +52,7 @@ files:
   "$(filename)"
     create => "true",
     edit_defaults => empty,
-    edit_line => set_variable_values("$(prefix)var"),
+    edit_line => set_variable_values("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
     ifvarclass => "mgmt_policy_defined_only",
     comment => "Ensure specific defined values are set as promised
@@ -60,7 +60,7 @@ files:
 
   "$(filename)"
     create => "true",
-    edit_line => sysctl_del_variable_values("$(prefix)var"),
+    edit_line => sysctl_del_variable_values("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
     ifvarclass => "mgmt_policy_entries_absent",
     comment => "Ensure specific defined values are set as promised
@@ -68,7 +68,7 @@ files:
 
   "$(filename)"
     create => "true",
-    edit_line => sysctl_del_variable_entries("$(prefix)var"),
+    edit_line => sysctl_del_variable_entries("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
     ifvarclass => "mgmt_policy_var_absent",
     comment => "Ensure specific defined values are set as promised
@@ -87,7 +87,7 @@ reports:
       ifvarclass => "test_sysctl";
     "Management Policy: $(mgmt_policies)",
       ifvarclass => "mgmt_policy_$(mgmt_policies)";
-    "Specified Sysctl Var: $(sysctl_vars)=$($(prefix)var[$(sysctl_vars)])";
+    "Specified Sysctl Var: $(sysctl_vars)=$($(prefix)vars[$(sysctl_vars)])";
     "I repaired $(filename), sysctl needs to be reloaded",
       ifvarclass => "sysctl_needs_reloaded";
     "I successfully reloaded sysctl",
