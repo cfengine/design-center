@@ -6,6 +6,7 @@
         "README.md": { "documentation": true },
         "test.cf": {"comment": "Test Policy"},
         "changelog": {"comment": "changelog"},
+        "sketch.json": {"comment": "Sketch definition"},
     },
 
     "metadata":

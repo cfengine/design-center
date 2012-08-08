@@ -94,6 +94,20 @@ reports:
       ifvarclass => "reloaded_sysctl";
 
 }
+bundle agent meta_sysctl
+# Metadata defining sketch api
+{
+  "argument[vars]"                 string => "array";
+  "optional_argument[test_file]"   string => "string";
+  "optional_argument[debug]"       string => "string";
+  "optional_argument[mgmt_policy]" string => "string";
+
+
+  "default[test_file]"   string => "/etc/sysctl.conf";
+  "default[debug]"       string => "no";
+  "default[mgmt_policy]" string => "entries_present";
+
+}
 
 bundle edit_line sysctl_del_variable_values(v)
  # Sets the RHS of variables in the file of the form
