@@ -1,0 +1,4 @@
+Utilities::ping_report 1.0
+  * Initial version
+  * option to report on either success and or failed ping
+  * option to specifcy ping count

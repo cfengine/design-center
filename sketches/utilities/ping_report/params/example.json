@@ -1,0 +1,8 @@
+{
+   "report_success" : "true",
+   "hosts" : [ "localhost", "127.0.0.1", "boogie.woogie"],
+   "count" : "2",
+   "activated" : "true",
+   "report_failure" : "treu"
+}
+
