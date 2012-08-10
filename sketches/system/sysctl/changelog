@@ -2,6 +2,7 @@ System::sysctl 1.1
   * Change file editing mode parameter names
   * Add empty_first option to be combined with ensure_present for full file
     content promise.
+  * Add test and example policies.
 
 System::sysctl 1.0
   * Supported management policies
