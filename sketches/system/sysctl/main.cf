@@ -12,7 +12,7 @@ bundle agent sysctl(prefix){
 #      for example net.ipv4.tcp_tw_reuse=* would be removed 
 
 vars:
-  "mgmt_policies" slist => {"ensure_present", "ensure_absent", "vars_absent", "defined_only"};
+  "mgmt_policies" slist => {"ensure_present", "ensure_absent", "vars_absent"};
 
   "mgmt_policy"
     string => "$(mgmt_policies)",
@@ -36,6 +36,7 @@ classes:
   "test_sysctl" expression => isvariable("$(prefix)test_file");
 
   "mgmt_policy_$(mgmt_policies)" expression => regcmp("(?i)$(mgmt_policies)", "$($(prefix)mgmt_policy)");
+  "empty_first" expression => regcmp("(?i)yes|true", "$($(prefix)empty_first)");
 
   "second_class_pass" and => {"first_class_pass"};
   "first_class_pass"  and => {"any"};
@@ -54,7 +55,7 @@ files:
     edit_defaults => empty,
     edit_line => set_variable_values("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
-    ifvarclass => "mgmt_policy_defined_only",
+    ifvarclass => "empty_first",
     comment => "Ensure specific defined values are set as promised
                 because of the $(mgmt_policy) management policy.";
 
@@ -97,15 +98,19 @@ reports:
 bundle agent meta_sysctl
 # Metadata defining sketch api
 {
+vars:
   "argument[vars]"                 string => "array";
+
   "optional_argument[test_file]"   string => "string";
   "optional_argument[debug]"       string => "string";
   "optional_argument[mgmt_policy]" string => "string";
+  "optional_argument[empty_first]" string => "string";
 
 
   "default[test_file]"   string => "/etc/sysctl.conf";
   "default[debug]"       string => "no";
   "default[mgmt_policy]" string => "ensure_present";
+  "default[empty_first]" string => "false";
 
 }
 
