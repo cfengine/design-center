@@ -1,3 +1,7 @@
+Security::tcpwrappers 1.1
+  * Change edit mode language to be more consistent with other sketches
+  * Move full file managment option into empty_first parameter
+  * Add cf-sketch support, example and test policy
 Security::tcpwrappers 1.0
   * Inital sketch
   * supports full_file, entry_present, or entry_absent definitions
