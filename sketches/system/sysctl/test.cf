@@ -1,3 +1,8 @@
+#cf-agent -KIf ./test.cf  | grep "Test Result"
+#R: Test Result: ensure_present OK
+#R: Test Result: ensure_absent OK
+#R: Test Result: vars_absent OK
+#R: Test Result: ensure_present_empty_first OK
 body common control {
 
     bundlesequence => { "main" };
@@ -19,8 +24,113 @@ vars:
   #"test1_mgmt_policy" string => "ensure_absent";
   "test1_mgmt_policy" string => "vars_absent";
   #"test1_mgmt_policy" string => "ensure_present|ensure_absent|defined_only|vars_absent";
+  #"tests" slist => {"ensure_present", "ensure_absent", "vars_absent", "ensure_present_empty_first"};
+  "tests" slist => {"ensure_present", "ensure_absent", "vars_absent", "ensure_present_empty_first" };
 
 methods:
-  "test1" usebundle => sysctl("main.test1_");
+  "test" usebundle => "test_$(tests)";
 }
 
+bundle agent test_ensure_present_empty_first{
+vars:
+  "test_before" string => "This line should not remain
+net.ipv4.tcp_tw_reuse=1
+someothervalue=100 this should not remain";
+
+  "test_after" string => "net.ipv4.tcp_tw_reuse=1";
+
+  "test_vars[net.ipv4.tcp_tw_reuse]" string => "1";
+  "test_test_file"                   string => "/tmp/sysctl_test_ensure_present_empty_first";
+  "test_debug"                       string => "on";
+  "test_mgmt_policy"                 string => "ensure_present";
+  "test_empty_first"                 string => "true";
+
+methods:
+  "init" usebundle => init_test("test_ensure_present_empty_first.test_");
+  "test" usebundle => sysctl("test_ensure_present_empty_first.test_");
+  "verify" usebundle => verify_test("test_ensure_present_empty_first.test_", "ensure_present_empty_first");
+}
+
+bundle agent test_vars_absent{
+vars:
+  "test_before" string => "This line should remain
+net.ipv4.tcp_tw_reuse=1
+net.ipv4.tcp_tw_reuse=100 this should remain";
+
+  "test_after" string => "This line should remain";
+
+  "test_vars[net.ipv4.tcp_tw_reuse]" string => "1";
+  "test_test_file" string => "/tmp/sysctl_test_vars_absent";
+  "test_debug" string => "on";
+  "test_mgmt_policy" string => "vars_absent";
+
+methods:
+  "init" usebundle => init_test("test_vars_absent.test_");
+  "test" usebundle => sysctl("test_vars_absent.test_");
+  "verify" usebundle => verify_test("test_vars_absent.test_", "vars_absent");
+}
+
+bundle agent test_ensure_absent{
+vars:
+  "test_before" string => "This line should remain
+net.ipv4.tcp_tw_reuse=1
+net.ipv4.tcp_tw_reuse=100 this should remain";
+
+  "test_after" string => "This line should remain
+net.ipv4.tcp_tw_reuse=100 this should remain";
+
+  "test_vars[net.ipv4.tcp_tw_reuse]" string => "1";
+  "test_test_file" string => "/tmp/sysctl_test_ensure_absent";
+  "test_debug" string => "on";
+  "test_mgmt_policy" string => "ensure_absent";
+
+methods:
+  "init" usebundle => init_test("test_ensure_absent.test_");
+  "test" usebundle => sysctl("test_ensure_absent.test_");
+  "verify" usebundle => verify_test("test_ensure_absent.test_", "ensure_absent");
+}
+bundle agent test_ensure_present{
+vars:
+  "test_before" string => "This line should remain";
+  "test_after" string => "This line should remain
+net.ipv4.tcp_tw_reuse=1";
+
+  "test_vars[net.ipv4.tcp_tw_reuse]" string => "1";
+  "test_test_file" string => "/tmp/sysctl_test_ensure_present";
+  "test_debug" string => "on";
+  "test_mgmt_policy" string => "ensure_present";
+
+methods:
+  "init" usebundle => init_test("test_ensure_present.test_");
+  "test" usebundle => sysctl("test_ensure_present.test_");
+  "verify" usebundle => verify_test("test_ensure_present.test_", "ensure_present");
+}
+
+bundle agent init_test(prefix){
+files:
+  "$($(prefix)test_file)"
+    create => "true",
+    edit_defaults => empty,
+    edit_line => append_if_no_line("$($(prefix)before)");
+
+  "$($(prefix)test_file)_after"
+    create => "true",
+    edit_defaults => empty,
+    edit_line => append_if_no_line("$($(prefix)after)");
+}
+
+bundle agent verify_test(prefix, test){
+commands:
+  "/usr/bin/diff"
+    args => "$($(prefix)test_file) $($(prefix)test_file)_after",
+    contain => silent,
+    classes => if_ok("$(test)_test_ok");
+
+reports:
+  cfengine::
+    "Test Result: $(test) OK",
+      ifvarclass => "$(test)_test_ok";
+    "Test Result: $(test) FAILED",
+      ifvarclass => "!$(test)_test_ok";
+
+}
