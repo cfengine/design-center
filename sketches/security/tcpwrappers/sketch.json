@@ -7,6 +7,7 @@
         "example.cf": {"comment": "Example Policy"},
         "sketch.json": {"comment": "Sketch metadata"},
         "changelog": {"comment": "changelog"},
+        "params/params.json": {"comment": "Example json parameters for cf-sketch"},
     },
 
     "metadata":
