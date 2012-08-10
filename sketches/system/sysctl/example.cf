@@ -1,0 +1,23 @@
+body common control {
+
+    bundlesequence => { "main" };
+
+    inputs => { 
+                "../../libraries/copbl/cfengine_stdlib.cf",
+                "./main.cf",
+              };
+}
+
+bundle agent main {
+
+vars:
+  "test1_vars[net.ipv4.tcp_tw_reuse]" string => "1";
+  "test1_test_file" string => "/tmp/sysctl.conf";
+  "test1_debug" string => "on";
+  "test1_mgmt_policy" string => "ensure_present";
+  "test1_empty_first" string => "true";
+
+methods:
+  "test1" usebundle => sysctl("main.test1_");
+}
+

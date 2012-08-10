@@ -5,6 +5,7 @@
         "main.cf": { "desc": "main file", "version": 1.00 },
         "README.md": { "documentation": true },
         "test.cf": {"comment": "Test Policy"},
+        "example.cf": {"comment": "Example Policy"},
         "changelog": {"comment": "changelog"},
         "sketch.json": {"comment": "Sketch definition"},
         "params/example.json": {"comment": "Example parameters for use with cf-sketch"},
