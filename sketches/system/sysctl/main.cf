@@ -46,34 +46,32 @@ files:
     create => "true",
     edit_line => set_variable_values("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
-    ifvarclass => "mgmt_policy_ensure_present",
-    comment => "Ensure specific defined values are set as promised
-                because of the $(mgmt_policy) management policy.";
+    ifvarclass => "mgmt_policy_ensure_present.!empty_first",
+    comment => "Only ensure specific defined values are present";
 
   "$(filename)"
     create => "true",
+    handle => "sysctl_files_empty_first",
     edit_defaults => empty,
     edit_line => set_variable_values("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
-    ifvarclass => "empty_first",
-    comment => "Ensure specific defined values are set as promised
-                because of the $(mgmt_policy) management policy.";
+    ifvarclass => "mgmt_policy_ensure_present.empty_first",
+    comment => "Empty file before ensuring specified values are present,
+                this effectively promises the full file content.";
 
   "$(filename)"
     create => "true",
     edit_line => sysctl_del_variable_values("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
     ifvarclass => "mgmt_policy_ensure_absent",
-    comment => "Ensure specific defined values are set as promised
-                because of the $(mgmt_policy) management policy.";
+    comment => "Only ensure specific defined values are absent.";
 
   "$(filename)"
     create => "true",
     edit_line => sysctl_del_variable_entries("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
     ifvarclass => "mgmt_policy_vars_absent",
-    comment => "Ensure specific defined values are set as promised
-                because of the $(mgmt_policy) management policy.";
+    comment => "Ensure the variables defined do not exist at all not matter their value.";
 
 commands:
   "/sbin/sysctl"
@@ -88,6 +86,8 @@ reports:
       ifvarclass => "test_sysctl";
     "Management Policy: $(mgmt_policies)",
       ifvarclass => "mgmt_policy_$(mgmt_policies)";
+    "$(filename) will be emptied before editing",
+      ifvarclass => "empty_first";
     "Specified Sysctl Var: $(sysctl_vars)=$($(prefix)vars[$(sysctl_vars)])";
     "I repaired $(filename), sysctl needs to be reloaded",
       ifvarclass => "sysctl_needs_reloaded";
