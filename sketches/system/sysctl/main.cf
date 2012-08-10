@@ -71,7 +71,7 @@ files:
     create => "true",
     edit_line => sysctl_del_variable_entries("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
-    ifvarclass => "mgmt_policy_var_absent",
+    ifvarclass => "mgmt_policy_vars_absent",
     comment => "Ensure specific defined values are set as promised
                 because of the $(mgmt_policy) management policy.";
 
