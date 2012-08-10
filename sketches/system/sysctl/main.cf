@@ -2,9 +2,9 @@ bundle agent sysctl(prefix){
 # "prefix_vars[net.ipv4.tcp_tw_reuse]" string => "1";
 # "prefix_test_file" string => "/tmp/sysctl";
 # "prefix_debug" string => "on";
-# "prefix_mgmt_policy" string => "entries_present|entries_absent|defined_only|var_absent";
-#   entries_present promises that the specific setting exists
-#   entries_absent promises that the specific setting does not exist
+# "prefix_mgmt_policy" string => "ensure_present|ensure_absent|defined_only|var_absent";
+#   ensure_present promises that the specific setting exists
+#   ensure_absent promises that the specific setting does not exist
 #      for example net.ipv4.tcp_tw_reuse=1 would not exist, but 
 #      net.ipv4.tcp_tw_reuse=2 would be left alone.
 #   defined_only promises that only the defined values are present
@@ -12,7 +12,7 @@ bundle agent sysctl(prefix){
 #      for example net.ipv4.tcp_tw_reuse=* would be removed 
 
 vars:
-  "mgmt_policies" slist => {"entries_present", "entries_absent", "vars_absent", "defined_only"};
+  "mgmt_policies" slist => {"ensure_present", "ensure_absent", "vars_absent", "defined_only"};
 
   "mgmt_policy"
     string => "$(mgmt_policies)",
@@ -45,7 +45,7 @@ files:
     create => "true",
     edit_line => set_variable_values("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
-    ifvarclass => "mgmt_policy_entries_present",
+    ifvarclass => "mgmt_policy_ensure_present",
     comment => "Ensure specific defined values are set as promised
                 because of the $(mgmt_policy) management policy.";
 
@@ -62,7 +62,7 @@ files:
     create => "true",
     edit_line => sysctl_del_variable_values("$(prefix)vars"),
     classes => if_repaired("sysctl_needs_reloaded"),
-    ifvarclass => "mgmt_policy_entries_absent",
+    ifvarclass => "mgmt_policy_ensure_absent",
     comment => "Ensure specific defined values are set as promised
                 because of the $(mgmt_policy) management policy.";
 
@@ -105,7 +105,7 @@ bundle agent meta_sysctl
 
   "default[test_file]"   string => "/etc/sysctl.conf";
   "default[debug]"       string => "no";
-  "default[mgmt_policy]" string => "entries_present";
+  "default[mgmt_policy]" string => "ensure_present";
 
 }
 
