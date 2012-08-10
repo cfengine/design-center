@@ -1,3 +1,8 @@
+#cf-agent -Kf ./test.cf  | grep Test
+#R: Test: ensure_absent OK
+#R: Test: ensure_present OK
+#R: Test: ensure_present_empty_first OK
+#
 body common control {
 
     bundlesequence => {"main"};
