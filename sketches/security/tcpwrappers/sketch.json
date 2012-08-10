@@ -1,9 +1,11 @@
 {
     "manifest":
     {
-        "main.cf": {"desc": "main file", "version":, 1.0 },
+        "main.cf": {"desc": "main file", "version": 1.0 },
         "README.md": {"documentation": true},
         "test.cf": {"comment": "Test Policy"},
+        "example.cf": {"comment": "Example Policy"},
+        "sketch.json": {"comment": "Sketch metadata"},
         "changelog": {"comment": "changelog"},
     },
 

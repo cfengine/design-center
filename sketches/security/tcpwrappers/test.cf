@@ -6,37 +6,114 @@ body common control {
 }
 
 bundle agent main {
+ methods:
+  "test ensure_absent" usebundle => test_ensure_absent;
+  "test ensure_absent" usebundle => test_ensure_present;
+  "test ensure_absent" usebundle => test_ensure_present_empty_first;
+}
+
+bundle agent test_ensure_absent{
 vars:
-  "test1_debug" string => "true";
-  "test1_test_filename" string => "/tmp/test1";
-  "test1_mgmt_policy" string => "complete";
-  "test1_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
-  "test1_allow[ssh][clients]" slist => { "ALL", "192.168.0.1/24" };
-  "test1_allow[myapp][daemons]" slist => { "myprocess"  };
-  "test1_allow[myapp][clients]" slist => { "192.168.1.12" };
-  "test1_deny[insecure][daemons]" slist => { "snmpd" };
-  "test1_deny[insecure][clients]" slist => { "ALL" };
+  "bundle" string => "test_ensure_absent";
 
-  "test2_debug" string => "true";
-  "test2_test_filename" string => "/tmp/test2";
-  "test2_mgmt_policy" string => "partial";
-  "test2_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
-  "test2_allow[ssh][clients]" slist => { "ALL" };
-  "test2_deny[insecure][daemons]" slist => { "snmpd" };
-  "test2_deny[insecure][clients]" slist => { "ALL" };
-  "test2_allow[ssh][options]" slist => { "option1", "option2" };
+  "test_allow_before" string => "
+THIS IS AN EXTRA LINE, NO PROMISE HAS BEEN MADE ABOUT ITS ABSENSE
+sshd,sshd1 : ALL
+The sshd,sshd1 : ALL line should be removed
+";
 
-  "test3_debug" string => "true";
-  "test3_test_filename" string => "/tmp/test3";
-  "test3_mgmt_policy" string => "partial";
-  "test3_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
-  "test3_allow[ssh][clients]" slist => { "ALL" };
-  "test3_deny[insecure][daemons]" slist => { "snmpd" };
-  "test3_deny[insecure][clients]" slist => { "ALL" };
-  "test3_allow[ssh][options]" slist => { "option1", "option2" };
+  "test_allow_after" string => "
+THIS IS AN EXTRA LINE, NO PROMISE HAS BEEN MADE ABOUT ITS ABSENSE
+The sshd,sshd1 : ALL line should be removed
+";
+
+  "test_debug" string => "true";
+  "test_test_filename" string => "/tmp/test_ensure_absent";
+  "test_mgmt_policy" string => "ensure_absent";
+  "test_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
+  "test_allow[ssh][clients]" slist => { "ALL" };
 
 methods:
-  "test" usebundle => security_tcpwrappers("main.test1_");
-  "test" usebundle => security_tcpwrappers("main.test2_");
-  "test" usebundle => security_tcpwrappers("main.test3_");
+  "test" usebundle => init_test("$(bundle).test_");
+  "test" usebundle => do_test_ensure_absent("$(bundle).test_");
+  "test" usebundle => verify_test("$(bundle).test_", "ensure_absent");
+}
+bundle agent test_ensure_present_empty_first{
+vars:
+  "bundle" string => "test_ensure_present_empty_first";
+
+  "test_allow_before" string => "THIS IS AN EXTRA LINE, It should not exist";
+
+  "test_allow_after" string => "sshd,sshd1 : ALL";
+
+  "test_debug" string => "true";
+  "test_test_filename" string => "/tmp/test_ensure_present_empty_first";
+  "test_mgmt_policy" string => "ensure_present";
+  "test_empty_first" string => "true";
+  "test_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
+  "test_allow[ssh][clients]" slist => { "ALL" };
+
+methods:
+  "test" usebundle => init_test("$(bundle).test_");
+  "test" usebundle => do_test_ensure_absent("$(bundle).test_");
+  "test" usebundle => verify_test("$(bundle).test_", "ensure_present_empty_first");
+}
+
+bundle agent test_ensure_present{
+vars:
+  "bundle" string => "test_ensure_present";
+
+  "test_allow_before" string => "
+THIS IS AN EXTRA LINE, NO PROMISE HAS BEEN MADE ABOUT ITS PRESENCE 
+The sshd,sshd1 : ALL line should be added
+";
+
+  "test_allow_after" string => "
+THIS IS AN EXTRA LINE, NO PROMISE HAS BEEN MADE ABOUT ITS PRESENCE 
+The sshd,sshd1 : ALL line should be added
+
+sshd,sshd1 : ALL";
+
+  "test_debug" string => "true";
+  "test_test_filename" string => "/tmp/test_ensure_present";
+  "test_mgmt_policy" string => "ensure_present";
+  "test_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
+  "test_allow[ssh][clients]" slist => { "ALL" };
+
+methods:
+  "test" usebundle => init_test("$(bundle).test_");
+  "test" usebundle => do_test_ensure_absent("$(bundle).test_");
+  "test" usebundle => verify_test("$(bundle).test_", "ensure_present");
+}
+bundle agent init_test(prefix){
+files:
+  "$($(prefix)test_filename).allow"
+    create => "true",
+    edit_defaults => empty,
+    edit_line => append_if_no_line("$($(prefix)allow_before)");
+
+  "$($(prefix)test_filename).allow_after"
+    create => "true",
+    edit_defaults => empty,
+    edit_line => append_if_no_line("$($(prefix)allow_after)");
+}
+
+bundle agent do_test_ensure_absent(prefix){
+methods:
+  "test" usebundle => tcpwrappers("$(prefix)");
+}
+
+bundle agent verify_test(prefix, test){
+commands:
+  "/usr/bin/diff"
+    args => "$($(prefix)test_filename).allow $($(prefix)test_filename).allow_after",
+    contain => silent,
+    classes => if_ok("test_ok");
+
+reports:
+  test_ok::
+    "Test: $(test) OK";
+  !test_ok::
+    "Test: $(test) FAILED";
+
 }
