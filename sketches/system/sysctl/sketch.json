@@ -7,6 +7,7 @@
         "test.cf": {"comment": "Test Policy"},
         "changelog": {"comment": "changelog"},
         "sketch.json": {"comment": "Sketch definition"},
+        "params/example.json": {"comment": "Example parameters for use with cf-sketch"},
     },
 
     "metadata":
