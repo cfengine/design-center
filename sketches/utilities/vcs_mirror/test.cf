@@ -1,8 +1,9 @@
 body common control {
 
-    bundlesequence => {"main",};
+    bundlesequence => {"validators", "main"};
     inputs => {
                 "../../libraries/copbl/cfengine_stdlib.cf",
+                "../../libraries/validators/validators.cf",
                 "./main.cf",
               };
 }
@@ -31,7 +32,7 @@ bundle agent main {
 
     methods:
         "any" usebundle => cfdc_vcs_mirror.vcs_mirror("main.mirror_copbl_");
-        "any" usebundle => vcs_mirror("main.mirror_thrift_");
-        "any" usebundle => vcs_mirror("main.mirror_thrift_defaults_");
-        "any" usebundle => vcs_mirror("main.mirror_invalid_");
+        "any" usebundle => cfdc_vcs_mirror.vcs_mirror("main.mirror_thrift_");
+        "any" usebundle => cfdc_vcs_mirror.vcs_mirror("main.mirror_thrift_defaults_");
+        "any" usebundle => cfdc_vcs_mirror.vcs_mirror("main.mirror_invalid_");
 }
