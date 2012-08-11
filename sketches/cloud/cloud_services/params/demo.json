@@ -12,6 +12,14 @@
      "ssh_pub_key": "/var/tmp/mysshrsakey.pub"
  },
 
+ "vcli":
+ {
+     "user": "root",
+     "password": "cfengine",
+     "datastore": "datastore1",
+     "fullpath": "/vmfs/volumes/4fda02bc-744a4c6e-40f2-08002781db6f"
+ },
+
  "bycontext":
  {
   "start1_ec2":
@@ -28,6 +36,30 @@
       "count": "0",
       "class": "cfworker",
       "state": "stop"
+  },
+
+  "start1_vcli":
+  {
+      "stype": "vcli",
+      "count": "1",
+      "class": "cfworker",
+      "state": "start"
+  },
+
+  "stop1_vcli":
+  {
+      "stype": "vcli",
+      "count": "0",
+      "class": "cfworker",
+      "state": "stop"
+  }
+
+  "disable1_vcli":
+  {
+      "stype": "vcli",
+      "count": "0",
+      "class": "cfworker",
+      "state": "disable"
   }
  }
 }

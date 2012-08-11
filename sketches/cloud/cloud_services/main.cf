@@ -17,6 +17,14 @@ bundle agent cloud_services(prefix)
       service_policy => "$(cloud_context.state)",
       service_method => cloud_services_handler,
       ifvarclass => "$(canon_prefix)prepared";
+
+  reports:
+    verbose::
+      "Invoking cloud_services: $(cloud_context.count) $(cloud_context.class)"
+      ifvarclass => "$(canon_prefix)prepared";
+
+      "Not invoking cloud_services, no match for context $(contexts)"
+      ifvarclass => "!$(canon_prefix)prepared";
 }
 
 bundle agent meta_cloud_services
@@ -25,6 +33,7 @@ bundle agent meta_cloud_services
       # look in params/demo.json to see how we fill in the needed services
       "argument[install_cfengine]" string => "context";
       "argument[ec2]"              string => "array";
+      "argument[vcli]"             string => "array";
       "argument[bycontext]"        string => "array";
 
 }
@@ -37,23 +46,23 @@ bundle agent cloud_context(prefix, context)
 
       "stype" string => "$($(prefix)bycontext[$(context)][stype])",
       comment => "Service type in context $(context)",
-      handle => "cpan_install_$(prefix)_stype";
+      handle => "cloud_context_$(prefix)_stype";
 
       "count" string => "$($(prefix)bycontext[$(context)][count])",
       comment => "Desired service instance count in context $(context)",
-      handle => "cpan_install_$(prefix)_count";
+      handle => "cloud_context_$(prefix)_count";
 
       "class" string => "$($(prefix)bycontext[$(context)][class])",
       comment => "Service instance class in context $(context)",
-      handle => "cpan_install_$(prefix)_class";
+      handle => "cloud_context_$(prefix)_class";
 
       "state" string => "$($(prefix)bycontext[$(context)][state])",
       comment => "Whether service is to be 'start'ed or 'stop'ped in context $(context)",
-      handle => "cpan_install_$(prefix)_state";
+      handle => "cloud_context_$(prefix)_state";
 
   reports:
     cfengine::
-      "Loading parameters for context $(context)";
+      "Loading parameters for context $(context): type = '$(stype)', count = '$(count)', class = '$(class)', state = '$(state)'";
 }
 
 body service_method cloud_services_handler
@@ -126,5 +135,321 @@ bundle agent ec2(hub, service, state)
     decom_needed::
       "Decom will be needed";
     cfengine::
-      "Goal: put service '$(service)' in state $(state).";
+      "EC2 goal: put service '$(service)' in state $(state).";
 }
+
+bundle agent vcli(hub, service, state)
+{
+  classes:
+      "parsed_ok" expression => regextract(
+                                            "(\d+) (\S+)",
+                                            "$(service)",
+                                            "params"
+                                          );
+
+      "start"   expression => strcmp("start",   "$(state)");
+      "stop"    expression => strcmp("stop",    "$(state)");
+      "disable" expression => strcmp("disable", "$(state)");
+
+    parsed_ok::
+      "count_determined" expression => regcmp("\d+", "$(current_count)");
+
+    parsed_ok.count_determined::
+      "bootstrap_needed" expression => isgreaterthan("$(instances)", "$(current_count)");
+      "decom_needed" expression => islessthan("$(instances)", "$(current_count)");
+
+  vars:
+    !count_determined::
+      # for testing, use the Perl or hard-coded counts
+      # "current_count" string => execresult("$(VMCMD_COUNT)", "useshell");
+      "current_count" string => execresult("/usr/bin/perl -e'print int rand 3'", "useshell");
+      # "current_count" string => "1";
+
+    parsed_ok::
+      "class"  string => "$(params[2])";
+      "prefix" string => "$(cloud_context.active_prefix)";
+
+      "vifs"   string => "/usr/bin/vifs";
+      "vmcmd"  string => "/usr/bin/vmware-cmd";
+      "u"      string => "$($(prefix)vcli[user])";
+      "p"      string => "$($(prefix)vcli[password])";
+      "path"   string => "$($(prefix)vcli[fullpath])";
+      "ds"     string => "$($(prefix)vcli[datastore])";
+
+      "VIFS_COPY"       string => "$(vifs) --server $(hub) --username $(u) --password $(p) -c";
+      "VIFS_DELETE"     string => "$(vifs) --server $(hub) --username $(u) --password $(p) -r";
+      "VIFS_DIR"        string => "$(vifs) --server $(hub) --username $(u) --password $(p) -D";
+      "VIFS_GET"        string => "$(vifs) --server $(hub) --username $(u) --password $(p) -get";
+      "VIFS_MKDIR"      string => "$(vifs) --server $(hub) --username $(u) --password $(p) -M";
+      "VIFS_PUT"        string => "$(vifs) --server $(hub) --username $(u) --password $(p) -put";
+      "VMCMD_GETSTATE"  string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx getstate";
+      "VMCMD_LIST"      string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -l";
+      "VMCMD_COUNT"     string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -l | /bin/wc -l"; # TODO: find out if this counts properly
+      "VMCMD_REG"       string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -s register";
+      "VMCMD_START"     string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx start";
+      "VMCMD_STOP"      string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx stop soft";
+      "VMCMD_UNREG"     string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -s unregister $(path)/$(vm_name)/$(vm_name).vmx";
+      "VMKFSTOOLS"      string => "/usr/bin/vmkfstools --server $(hub) --username $(u) --password $(p) -i";
+
+    parsed_ok.start::
+      "instances" string => "$(params[1])";
+      # catch "stop" and "disable"
+    parsed_ok.!start::
+      "instances" string => "0";
+
+    bootstrap_needed::
+      "bootstrap_counts" ilist => { "$(instances)", "-$(current_count)" };
+      "instances_needed" real => sum("bootstrap_counts");
+
+    decom_needed::
+      "decom_counts" ilist => { "-$(instances)", "$(current_count)" };
+      "instances_needed" real => sum("decom_counts");
+
+  commands:
+    bootstrap_needed::
+      "add $(instances_needed) $(class)";
+
+    decom_needed.stop::
+      "decom $(instances_needed) $(class)";
+
+    decom_needed.disable::
+      "delete $(instances_needed) $(class)";
+
+  reports:
+    count_determined::
+      "Current count of service '$(service)' = $(current_count)";
+    !parsed_ok::
+      "Sorry, service '$(service)' could not be parsed to pass to the shim!";
+    start.!bootstrap_needed.!decom_needed::
+      "Service '$(service)' does not need to be started: $(instances) instances of class $(class) already exist";
+    stop.!bootstrap_needed.!decom_needed::
+      "Service '$(service)' does not need to be stopped: we have $(instances) instances of class $(class)";
+    disable.!bootstrap_needed.!decom_needed::
+      "Service '$(service)' does not need to be disabled: we have $(instances) instances of class $(class)";
+    start.(bootstrap_needed||decom_needed)::
+      "Service '$(service)' will be started: $(instances) instances of class $(class) (current $(current_count))";
+    stop.(bootstrap_needed||decom_needed)::
+      "Service '$(service)' will be stopped: $(instances) instances (current $(current_count)) of class $(class) ";
+    disable.(bootstrap_needed||decom_needed)::
+      "Service '$(service)' will be disabled: $(instances) instances (current $(current_count)) of class $(class) ";
+    bootstrap_needed::
+      "Bootstrapping will be needed, needed $(instances_needed)";
+    decom_needed::
+      "Decom will be needed, unwanted $(instances_needed)";
+    cfengine::
+      "vcli goal: put service '$(service)' in state $(state); parsed into '$(params[1])' and '$(params[2])'.  Currently we have $(current_count) instances.";
+      "The current_count was obtained from $(VMCMD_COUNT)";
+}
+
+# # -----------------------------------------------------------------------------
+
+# bundle agent vcli_main
+# {
+#  vars:
+
+#   10_0_0_118::
+
+#    "vms" slist => { "ubuntu-12.04-i386-client1","ubuntu-12.04-i386-client2" };
+
+# #
+
+#  methods:
+
+#   10_0_0_118::
+
+#    "CLONE"  usebundle =>   vmware_clone(
+#                                        "def.esxi[10.0.0.147]",
+#                                        "10.0.0.147",
+#                                        "ubuntu-12.04-i386",
+#                                        "ubuntu-12.04-i386-client1"
+#                                        );
+
+# #   "START"  usebundle =>  vmware_start(
+# #                                       "def.esxi[10.0.0.147]",
+# #                                       "10.0.0.147",
+# #                                       "ubuntu-12.04-i386-client1"
+# #                                      );
+
+# #   "STOP"   usebundle =>   vmware_stop(
+# #                                       "def.esxi[10.0.0.147]",
+# #                                       "10.0.0.147",
+# #                                       "$(vms)"
+# #                                      );
+
+# #   "DELETE" usebundle => vmware_delete(
+# #                                       "def.esxi[10.0.0.147]",
+# #                                       "10.0.0.147",
+# #                                       "ubuntu-12.04-i386-client1"
+# #                                      );
+
+
+# }
+
+# # -----------------------------------------------------------------------------
+
+# bundle agent vmware_clone(inputs,server,vm_source,vm_clone)
+# {
+#  vars:
+
+#   any::
+
+#    "parameters" slist => getindices("$(inputs)");
+
+#    "reg_status" string => execresult("$(vcli.VMCMD_LIST)","noshell");
+
+# #
+
+#  classes:
+
+#   any::
+
+#    "have_source_dir"  expression => returnszero("$(vcli.VIFS_DIR) \"[$(vcli.ds)] $(vm_source)/\" > /dev/null","useshell");
+#    "have_clone_dir"   expression => returnszero("$(vcli.VIFS_DIR) \"[$(vcli.ds)] $(vm_clone)/\"  > /dev/null","useshell");
+#    "have_clone_vmx"   expression => fileexists("/tmp/$(vm_clone).vmx");
+#    "clone_registered" expression => regcmp(".*$(vm_clone).*","$(reg_status)");
+   
+# #
+
+#   files:
+
+#    clean_up::
+#     "/tmp/$(vm_clone).vmx.*"
+#        delete => tidy;
+    
+#    have_clone_vmx.!clone_registered::
+#     "/tmp/$(vm_clone).vmx"
+#        edit_line => reconfigurevmx("$(vm_source)","$(vm_clone)"),
+#          classes => if_repaired("then_upload");
+
+# #
+
+#  commands:
+
+#   have_source_dir.!have_clone_dir::
+#    "$(vcli.VIFS_MKDIR) \"[$(vcli.ds)] $(vm_clone)/\"";
+#    "$(vcli.VMKFSTOOLS) \"[$(vcli.ds)] $(vm_source)/$(vm_source).vmdk\" \"[$(vcli.ds)] $(vm_clone)/$(vm_clone).vmdk\"";
+#    "$(vcli.VIFS_COPY) \"[$(vcli.ds)] $(vm_source)/$(vm_source).nvram\" \"[$(vcli.ds)] $(vm_clone)/$(vm_clone).nvram\"";
+
+#   !have_clone_vmx.!have_clone_dir::
+#    "$(vcli.VIFS_GET) \"[$(vcli.ds)] $(vm_source)/$(vm_source).vmx\" /tmp/$(vm_clone).vmx";
+
+#   then_upload::
+#    "$(vcli.VIFS_PUT) /tmp/$(vm_clone).vmx \"[$(vcli.ds)] $(vm_clone)/$(vm_clone).vmx\""
+#       classes => if_repaired("register_vm");
+
+#   register_vm.!clone_registered::
+#    "$(vcli.VMCMD_REG) $(def.esxi[$(server)][fullpath])/$(vm_clone)/$(vm_clone).vmx"
+#       classes => if_repaired("clean_up");
+       
+# }
+
+# #####
+
+# bundle edit_line reconfigurevmx(s,c)
+# {
+#  delete_lines:
+#   ".*uuid.*";
+#   ".*extendedConfigFile.*";
+#   ".*$(s).*";
+#   ".*sched.swap.derivedName.*";
+
+#  insert_lines:
+#   "nvram = \"$(c).nvram\"";
+#   "displayName = \"$(c)\"";
+#   "scsi0:0.fileName = \"$(c).vmdk\"";
+# }
+
+# # -----------------------------------------------------------------------------
+
+# bundle agent vmware_start(inputs,server,vm_name)
+# {
+#  vars:
+
+#   any::
+
+#    "parameters" slist => getindices("$(inputs)");
+
+#    "reg_status" string => execresult("$(vcli.VMCMD_LIST)","noshell");
+#    "vm_status"  string => execresult("$(vcli.VMCMD_GETSTATE)","noshell");
+
+
+# #
+
+#  classes:
+
+#   any::
+
+#    "vm_registered"   expression => regcmp(".*$(vm_name).*","$(reg_status)");
+#    "vm_is_off"       expression => regcmp(".*off","$(vm_status)");
+#    "vm_is_suspended" expression => regcmp(".*suspended","$(vm_status)");
+
+#    "no_reg_status"   not => isvariable("reg_status");
+
+# #
+
+#  commands:
+#   vm_registered.(vm_is_off|vm_is_suspended)::
+#    "$(vcli.VMCMD_START)";
+ 
+# }
+
+# # -----------------------------------------------------------------------------
+
+# bundle agent vmware_stop(inputs,server,vm_name)
+# {
+#  vars:
+
+#   any::
+
+#    "parameters" slist => getindices("$(inputs)");
+
+#    "reg_status" string => execresult("$(vcli.VMCMD_LIST)","noshell");
+#    "vm_status"  string => execresult("$(vcli.VMCMD_GETSTATE)","noshell");
+
+# #
+
+#  classes:
+
+#   any::
+#    "vm_registered"   expression => regcmp(".*$(vm_name).*","$(reg_status)");
+#    "vm_is_on"        expression => regcmp(".*on","$(vm_status)");
+
+# #
+
+#  commands:
+#   vm_registered.vm_is_on::
+#    "$(vcli.VMCMD_STOP)";
+ 
+# }
+
+# # -----------------------------------------------------------------------------
+
+# bundle agent vmware_delete(inputs,server,vm_name)
+# {
+#  vars:
+
+#   any::
+
+#    "parameters" slist => getindices("$(inputs)");
+
+#    "reg_status" string => execresult("$(vcli.VMCMD_LIST)","noshell");
+#    "vm_status"  string => execresult("$(vcli.VMCMD_GETSTATE)","noshell");
+
+# #
+
+#  classes:
+
+#   any::
+#    "vm_registered"   expression => regcmp(".*$(vm_name).*","$(reg_status)");
+#    "vm_is_on"        expression => regcmp(".*on","$(vm_status)");
+
+# #
+
+#  commands:
+#   vm_registered::
+#    "$(vcli.VMCMD_STOP)";
+#    "$(vcli.VMCMD_UNREG)";
+#    "$(vcli.VIFS_DELETE) \"[$(vcli.ds)] $(vm_name)\" -f";
+
+ 
+# }
