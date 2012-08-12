@@ -35,7 +35,7 @@ execresult("/usr/sbin/lsof -i -n -P | \
 /bin/sort -n | \
 /usr/bin/xargs echo", "useshell");  # this is our
    # actual configuration.
-# we tell Cfengine to use a shell with "useshell"
+# we tell CFEngine to use a shell with "useshell"
 # to do a pipeline.
 
 

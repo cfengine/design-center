@@ -5,7 +5,7 @@ bundle agent example {
         "/etc/nologin" 
 
             create  => "true",
-            comment => "Prevent non-root users from logging into the system.";
+            comment => "Prevent non-root users from logging in, for maintenance";
 
 }
 

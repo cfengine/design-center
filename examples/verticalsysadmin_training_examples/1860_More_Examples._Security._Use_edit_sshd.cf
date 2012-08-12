@@ -1,7 +1,7 @@
 # an example of a methods bundle accessing an
 # array from the parent bundle.
 #
-# Arrays are not a data type in Cfengine; they
+# Arrays are not a data type in CFEngine; they
 # are a data structure.
 #
 # Arrays cannot be "passed" as variables to a

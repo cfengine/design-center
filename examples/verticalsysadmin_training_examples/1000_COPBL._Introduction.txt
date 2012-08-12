@@ -1,8 +1,8 @@
-Cfengine ships with a standard library of promise
+CFEngine ships with a standard library of promise
 bodies dealing with common aspects of system
 administration.  
 
-As of Cfengine 3.1.5, there are 88 promise bodies
+As of CFEngine 3.1.5, there are 88 promise bodies
 in cfengine_stdlib.cf.
 
 As of CFEngine 3.2.1, there are 99 promise bodies
