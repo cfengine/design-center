@@ -105,7 +105,7 @@ bundle agent ec2(hub, service, state)
     parsed_ok.start::
       "instances" string => "$(params[1])";
       # catch "stop" and "disable"
-    parsed_ok.!start::
+    parsed_ok.stop::
       "instances" string => "0";
 
   commands:
@@ -147,23 +147,22 @@ bundle agent vcli(hub, service, state)
                                             "params"
                                           );
 
-      "start"   expression => strcmp("start",   "$(state)");
-      "stop"    expression => strcmp("stop",    "$(state)");
-      "disable" expression => strcmp("disable", "$(state)");
+      "start" expression => strcmp("start", "$(state)");
+      "stop"  expression => strcmp("stop",  "$(state)");
 
     parsed_ok::
       "count_determined" expression => regcmp("\d+", "$(current_count)");
 
     parsed_ok.count_determined::
-      "bootstrap_needed" expression => isgreaterthan("$(instances)", "$(current_count)");
-      "decom_needed" expression => islessthan("$(instances)", "$(current_count)");
+      "bootstrap_needed"   expression => isgreaterthan("$(instances)", "$(current_count)");
+      "decom_needed"       expression => islessthan("$(instances)", "$(current_count)");
 
   vars:
     !count_determined::
       # for testing, use the Perl or hard-coded counts
       # "current_count" string => execresult("$(VMCMD_COUNT)", "useshell");
       "current_count" string => execresult("/usr/bin/perl -e'print int rand 3'", "useshell");
-      # "current_count" string => "1";
+      #"current_count" string => "1";
 
     parsed_ok::
       "class"  string => "$(params[2])";
@@ -193,51 +192,39 @@ bundle agent vcli(hub, service, state)
 
     parsed_ok.start::
       "instances" string => "$(params[1])";
-      # catch "stop" and "disable"
-    parsed_ok.!start::
+      # catch "stop"
+    parsed_ok.stop::
       "instances" string => "0";
 
     bootstrap_needed::
-      "bootstrap_counts" ilist => { "$(instances)", "-$(current_count)" };
-      "instances_needed" real => sum("bootstrap_counts");
+      "instances_needed" string => execresult("/usr/bin/expr $(instances) - $(current_count)", "noshell");
 
     decom_needed::
-      "decom_counts" ilist => { "-$(instances)", "$(current_count)" };
-      "instances_needed" real => sum("decom_counts");
+      "instances_needed" string => execresult("/usr/bin/expr $(current_count) - $(instances)", "noshell");
 
   commands:
     bootstrap_needed::
-      "add $(instances_needed) $(class)";
+      "/bin/echo VM add $(instances_needed) $(class)";
 
     decom_needed.stop::
-      "decom $(instances_needed) $(class)";
-
-    decom_needed.disable::
-      "delete $(instances_needed) $(class)";
+      "/bin/echo VM decom $(instances_needed) $(class)";
 
   reports:
-    count_determined::
+    verbose.count_determined::
       "Current count of service '$(service)' = $(current_count)";
     !parsed_ok::
       "Sorry, service '$(service)' could not be parsed to pass to the shim!";
     start.!bootstrap_needed.!decom_needed::
       "Service '$(service)' does not need to be started: $(instances) instances of class $(class) already exist";
     stop.!bootstrap_needed.!decom_needed::
-      "Service '$(service)' does not need to be stopped: we have $(instances) instances of class $(class)";
-    disable.!bootstrap_needed.!decom_needed::
-      "Service '$(service)' does not need to be disabled: we have $(instances) instances of class $(class)";
+      "Service '$(service)' does not need to be stopped: we only have $(instances) instances of class $(class)";
     start.(bootstrap_needed||decom_needed)::
       "Service '$(service)' will be started: $(instances) instances of class $(class) (current $(current_count))";
     stop.(bootstrap_needed||decom_needed)::
       "Service '$(service)' will be stopped: $(instances) instances (current $(current_count)) of class $(class) ";
-    disable.(bootstrap_needed||decom_needed)::
-      "Service '$(service)' will be disabled: $(instances) instances (current $(current_count)) of class $(class) ";
-    bootstrap_needed::
-      "Bootstrapping will be needed, needed $(instances_needed)";
-    decom_needed::
-      "Decom will be needed, unwanted $(instances_needed)";
     cfengine::
       "vcli goal: put service '$(service)' in state $(state); parsed into '$(params[1])' and '$(params[2])'.  Currently we have $(current_count) instances.";
+    verbose::
       "The current_count was obtained from $(VMCMD_COUNT)";
 }
 

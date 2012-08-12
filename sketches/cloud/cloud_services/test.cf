@@ -64,11 +64,6 @@ bundle common cfsketch_g
       "cloud_services_vcli_test_bycontext[stop1_vcli][count]" string => "0";
       "cloud_services_vcli_test_bycontext[stop1_vcli][state]" string => "stop";
       "cloud_services_vcli_test_bycontext[stop1_vcli][stype]" string => "vcli";
-      # possible bug: service policy "disable" is folded into "stop"
-      "cloud_services_vcli_test_bycontext[disable1_vcli][class]" string => "cfworker";
-      "cloud_services_vcli_test_bycontext[disable1_vcli][count]" string => "0";
-      "cloud_services_vcli_test_bycontext[disable1_vcli][state]" string => "disable";
-      "cloud_services_vcli_test_bycontext[disable1_vcli][stype]" string => "vcli";
       "cloud_services_vcli_test_vcli[datastore]" string => "datastore1";
       "cloud_services_vcli_test_vcli[fullpath]" string => "/vmfs/volumes/4fda02bc-744a4c6e-40f2-08002781db6f";
       "cloud_services_vcli_test_vcli[password]" string => "cfengine";
