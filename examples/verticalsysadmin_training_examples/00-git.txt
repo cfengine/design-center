@@ -1,6 +1,12 @@
-Installing and Using Git (for RHEL 5 systems)
-  to use the CFEngine Community Code Sharing Repo
-  ("Design Center") 
+Installing and Using Git
+========================
+
+The examples used in this class are kept in the GitHub version control service.
+
+These examples are included in the CFEngine Community Code Sharing Repo ("Design Center")
+
+Installing Git (for RHEL 5 systems)
+-----------------------------------
 
 rpm -ihv  http://dl.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm 
 
@@ -8,19 +14,43 @@ yum -y install git
 
 
 
-1. During class, stay in 
+Using Git During Class
+----------------------
 
+# Download Aleksey's clone of the CFEngine Design Center
+# (I don't have commit access to Design Center, so I've
+# forked it and make changes in my own fork.  CFEngine
+# pulls in my changes into the CFEngine Design Center repo.)
+
+cd ~
+mkdir git_atsaloli
+cd git_atsaloli
 git clone git://github.com/atsaloli/design-center.git
+
 cd design-center
+
+# Add Aleksey's repo as a remote repository, so you can
+# download edits or additions made in class
+ 
 git remote add upstream git://github.com/atsaloli/design-center.git
-git pull upstream # use this to pull in changes commited by Aleksey
 
-  Note: Aleksey's practical examples are under
-        design-center/policy-examples/verticalsysadmin_training_examples
+# Use 'git pull' to sync your local directory with Aleksey's repo
+git pull upstream
 
 
-2. After class:  Use this URL instead, it is the master CFngine repo,
-   they pull in the verticalsysadmin_training_examples from Aleksey's
-   repo:
+Aleksey's examples are under
+design-center/examples/verticalsysadmin_training_examples
 
-       git clone git://github.com/cfengine/design-center.git
+
+Using Git After Class
+---------------------
+
+Switching to the CFEngine master repository:
+
+cd ~
+mkdir cfengine_repo
+cd cfengine_repo
+git clone git://github.com/cfengine/design-center.git
+cd design-center
+git remote add upstream git://github.com/cfengine/design-center.git
+git pull upstream  # get the latest version from the upstream
