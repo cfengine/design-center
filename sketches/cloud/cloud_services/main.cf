@@ -60,6 +60,10 @@ bundle agent cloud_context(prefix, context)
       comment => "Whether service is to be 'start'ed or 'stop'ped in context $(context)",
       handle => "cloud_context_$(prefix)_state";
 
+      "disable_ssl_verify" string => "$($(prefix)bycontext[$(context)][disable_ssl_verify])",
+      comment => "Whether the SSL verification should be disabled in context $(context)",
+      handle => "cloud_context_$(prefix)_disable_ssl_verify";
+
   reports:
     cfengine::
       "Loading parameters for context $(context): type = '$(stype)', count = '$(count)', class = '$(class)', state = '$(state)'";
@@ -150,6 +154,8 @@ bundle agent vcli(hub, service, state)
       "start" expression => strcmp("start", "$(state)");
       "stop"  expression => strcmp("stop",  "$(state)");
 
+      "ssl_noverify" expression => strcmp("$(cloud_context.disable_ssl_verify)", "1");
+
     parsed_ok::
       "count_determined" expression => regcmp("\d+", "$(current_count)");
 
@@ -168,14 +174,25 @@ bundle agent vcli(hub, service, state)
       # hard-code the count for testing
       "current_count" string => "2";
 
+    ssl_noverify::
+      "cmd_prefix" string => "/usr/bin/env PERL_LWP_SSL_VERIFY_HOSTNAME=0 ";
+    !ssl_noverify::
+      "cmd_prefix" string => "";
+
     parsed_ok::
       "class"  string => "$(params[2])";
       "prefix" string => "$(cloud_context.active_prefix)";
 
       "master_image" string => "ubuntu-12.04-i386-master";
       "child_prefix" string => "ubuntu-12.04-i386-clone-";
-      "vifs"   string => "/usr/bin/vifs";
-      "vmcmd"  string => "/usr/bin/vmware-cmd";
+
+      "grep"  string => "/bin/grep";
+      "wc"    string => "/bin/wc";
+      "tail"  string => "/bin/tail";
+      "vifs"  string => "$(cmd_prefix)/usr/bin/vifs";
+      "vmcmd" string => "$(cmd_prefix)/usr/bin/vmware-cmd";
+      "vmkfs" string => "$(cmd_prefix)/usr/bin/vmkfstools";
+
       "u"      string => "$($(prefix)vcli[user])";
       "p"      string => "$($(prefix)vcli[password])";
       "path"   string => "$($(prefix)vcli[fullpath])";
@@ -189,13 +206,13 @@ bundle agent vcli(hub, service, state)
       "VIFS_PUT"        string => "$(vifs) --server $(hub) --username $(u) --password $(p) -put";
       "VMCMD_GETSTATE"  string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx getstate";
       "VMCMD_LIST"      string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -l";
-      "VMCMD_COUNT"     string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -l | /bin/wc -l"; # TODO: find out if this counts properly
-      "VMCMD_FIND_LAST" string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -l | /bin/grep -v $(master_image) | /bin/tail -1"; # TODO: find out if this gives us the last VM correctly
+      "VMCMD_COUNT"     string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -l | $(grep) -v $(master_image) | $(grep) $(child_prefix) | $(wc) -l"; # TODO: find out if this counts properly
+      "VMCMD_FIND_LAST" string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -l | $(grep) -v $(master_image) | $(grep) $(child_prefix) | $(tail) -1"; # TODO: find out if this gives us the last VM correctly
       "VMCMD_REG"       string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -s register";
       "VMCMD_START"     string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx start";
       "VMCMD_STOP"      string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx stop soft";
       "VMCMD_UNREG"     string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -s unregister $(path)/$(vm_name)/$(vm_name).vmx";
-      "VMKFSTOOLS"      string => "/usr/bin/vmkfstools --server $(hub) --username $(u) --password $(p) -i";
+      "VMKFSTOOLS"      string => "$(vmkfs) --server $(hub) --username $(u) --password $(p) -i";
 
     parsed_ok.start::
       "instances" string => "$(params[1])";

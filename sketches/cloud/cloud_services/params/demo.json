@@ -43,7 +43,8 @@
       "stype": "vcli",
       "count": "1",
       "class": "cfworker",
-      "state": "start"
+      "state": "start",
+      "disable_ssl_verify": "1"
   },
 
   "stop1_vcli":
@@ -51,7 +52,8 @@
       "stype": "vcli",
       "count": "0",
       "class": "cfworker",
-      "state": "stop"
+      "state": "stop",
+      "disable_ssl_verify": "1"
   }
 
   "disable1_vcli":
@@ -59,7 +61,8 @@
       "stype": "vcli",
       "count": "0",
       "class": "cfworker",
-      "state": "disable"
+      "state": "disable",
+      "disable_ssl_verify": "1"
   }
  }
 }
