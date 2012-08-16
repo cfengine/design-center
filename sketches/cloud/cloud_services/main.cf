@@ -197,22 +197,23 @@ bundle agent vcli(hub, service, state)
       "p"      string => "$($(prefix)vcli[password])";
       "path"   string => "$($(prefix)vcli[fullpath])";
       "ds"     string => "$($(prefix)vcli[datastore])";
+      "srv"     string => "$($(prefix)vcli[esxi_server])";
 
-      "VIFS_COPY"       string => "$(vifs) --server $(hub) --username $(u) --password $(p) -c";
-      "VIFS_DELETE"     string => "$(vifs) --server $(hub) --username $(u) --password $(p) -r";
-      "VIFS_DIR"        string => "$(vifs) --server $(hub) --username $(u) --password $(p) -D";
-      "VIFS_GET"        string => "$(vifs) --server $(hub) --username $(u) --password $(p) -get";
-      "VIFS_MKDIR"      string => "$(vifs) --server $(hub) --username $(u) --password $(p) -M";
-      "VIFS_PUT"        string => "$(vifs) --server $(hub) --username $(u) --password $(p) -put";
-      "VMCMD_GETSTATE"  string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx getstate";
-      "VMCMD_LIST"      string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -l";
-      "VMCMD_COUNT"     string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -l | $(grep) -v $(master_image) | $(grep) $(child_prefix) | $(wc) -l"; # TODO: find out if this counts properly
-      "VMCMD_FIND_LAST" string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -l | $(grep) -v $(master_image) | $(grep) $(child_prefix) | $(tail) -1"; # TODO: find out if this gives us the last VM correctly
-      "VMCMD_REG"       string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -s register";
-      "VMCMD_START"     string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx start";
-      "VMCMD_STOP"      string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx stop soft";
-      "VMCMD_UNREG"     string => "$(vmcmd) -H $(hub) -U $(u) -P $(p) -s unregister $(path)/$(vm_name)/$(vm_name).vmx";
-      "VMKFSTOOLS"      string => "$(vmkfs) --server $(hub) --username $(u) --password $(p) -i";
+      "VIFS_COPY"       string => "$(vifs) --server $(srv) --username $(u) --password $(p) -c";
+      "VIFS_DELETE"     string => "$(vifs) --server $(srv) --username $(u) --password $(p) -r";
+      "VIFS_DIR"        string => "$(vifs) --server $(srv) --username $(u) --password $(p) -D";
+      "VIFS_GET"        string => "$(vifs) --server $(srv) --username $(u) --password $(p) -get";
+      "VIFS_MKDIR"      string => "$(vifs) --server $(srv) --username $(u) --password $(p) -M";
+      "VIFS_PUT"        string => "$(vifs) --server $(srv) --username $(u) --password $(p) -put";
+      "VMCMD_GETSTATE"  string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx getstate";
+      "VMCMD_LIST"      string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) -l";
+      "VMCMD_COUNT"     string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) -l | $(grep) -v $(master_image) | $(grep) $(child_prefix) | $(wc) -l"; # TODO: find out if this counts properly
+      "VMCMD_FIND_LAST" string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) -l | $(grep) -v $(master_image) | $(grep) $(child_prefix) | $(tail) -1"; # TODO: find out if this gives us the last VM correctly
+      "VMCMD_REG"       string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) -s register";
+      "VMCMD_START"     string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx start";
+      "VMCMD_STOP"      string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx stop soft";
+      "VMCMD_UNREG"     string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) -s unregister $(path)/$(vm_name)/$(vm_name).vmx";
+      "VMKFSTOOLS"      string => "$(vmkfs) --server $(srv) --username $(u) --password $(p) -i";
 
     parsed_ok.start::
       "instances" string => "$(params[1])";
