@@ -54,7 +54,7 @@
       "class": "cfworker",
       "state": "stop",
       "disable_ssl_verify": "1"
-  }
+  },
 
   "disable1_vcli":
   {
