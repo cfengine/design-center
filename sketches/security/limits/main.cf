@@ -31,13 +31,18 @@ vars:
 
   "domains" slist => getindices("$(prefix)domains");
 
-    debug_security_limits::
-      "filename" string => "$($(prefix)debug_filename)";
+    test_security_limits::
+      "filename"
+        string => "$($(prefix)test_filename)",
+        policy => "free";
 
-    !debug_security_limits::
-      "filename" string => "/etc/security/limits.conf";
+    !test_security_limits::
+      "filename"
+        string => "/etc/security/limits.conf",
+        policy => "free";
 
 classes:
+  "test_security_limits" expression => isvariable("$(prefix)test_filename");
   "empty_first" expression => regcmp("(?i)yes|true", "$($(prefix)empty_first)");
   "mgmt_policy_$(mgmt_policies)" expression => regcmp("(?i)$(mgmt_policies)", "$($(prefix)mgmt_policy)");
 
@@ -94,7 +99,7 @@ bundle agent meta_security_limits
       #"argument[domains][domain][type][item]" string => "array";
       "argument[domains]" string => "array";
       "argument[debug]" string => "context";
-      "argument[debug_filename]" string => "string";
+      "argument[test_filename]" string => "string";
       "optional_argument[mgmt_policy]" string => "string";
       "optional_argument[empty_first]" string => "string";
 
