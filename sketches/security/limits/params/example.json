@@ -1,6 +1,7 @@
 {
     "activated": true,
     "debug": true,
+    "empty_first": false,
     "debug_filename": "/tmp/limits.conf",
     "domains": { "*": { "soft": { "core": "1024" } } }
 }
