@@ -5,7 +5,7 @@
    "allow" : { "sshd":{ "daemons": [ "sshd", "sshd1" ]},
                "sshd":{ "clients": [ "ALL"] },
              },
-   "deny" : { "defalut": {"daemons": [ "ALL" ]},
+   "deny" : { "default": {"daemons": [ "ALL" ]},
               "default": {"clients": [ "ALL" ]}
             },
    "mgmt_policy" : "ensure_present",
