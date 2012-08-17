@@ -224,7 +224,7 @@ bundle agent vcli(hub, service, state)
     bootstrap_needed::
       "instances_needed" string => execresult("/usr/bin/expr $(instances) - $(current_count)", "noshell");
       "next_instance_offset" string => execresult("/usr/bin/expr 1 + $(current_count)", "noshell");
-      "next_instance" string => "$(child_prefix)-$(next_instance_offset)";
+      "next_instance" string => "$(child_prefix)$(next_instance_offset)";
 
     decom_needed::
       "instances_needed" string => execresult("/usr/bin/expr $(current_count) - $(instances)", "noshell");
