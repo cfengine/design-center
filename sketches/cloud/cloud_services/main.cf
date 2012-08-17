@@ -174,9 +174,11 @@ bundle agent vcli(hub, service, state)
       # hard-code the count for testing
       "current_count" string => "2";
 
-    ssl_noverify::
+    debug::
+      "cmd_prefix" string => "/bin/echo ";
+    !debug.ssl_noverify::
       "cmd_prefix" string => "/usr/bin/env PERL_LWP_SSL_VERIFY_HOSTNAME=0 ";
-    !ssl_noverify::
+    !debug.!ssl_noverify::
       "cmd_prefix" string => "";
 
     parsed_ok::
@@ -199,21 +201,28 @@ bundle agent vcli(hub, service, state)
       "ds"     string => "$($(prefix)vcli[datastore])";
       "srv"     string => "$($(prefix)vcli[esxi_server])";
 
-      "VIFS_COPY"       string => "$(vifs) --server $(srv) --username $(u) --password $(p) -c";
-      "VIFS_DELETE"     string => "$(vifs) --server $(srv) --username $(u) --password $(p) -r";
-      "VIFS_DIR"        string => "$(vifs) --server $(srv) --username $(u) --password $(p) -D";
-      "VIFS_GET"        string => "$(vifs) --server $(srv) --username $(u) --password $(p) -get";
-      "VIFS_MKDIR"      string => "$(vifs) --server $(srv) --username $(u) --password $(p) -M";
-      "VIFS_PUT"        string => "$(vifs) --server $(srv) --username $(u) --password $(p) -put";
-      "VMCMD_GETSTATE"  string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx getstate";
-      "VMCMD_LIST"      string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) -l";
-      "VMCMD_COUNT"     string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) -l | $(grep) -v $(master_image) | $(grep) $(child_prefix) | $(wc) -l"; # TODO: find out if this counts properly
-      "VMCMD_FIND_LAST" string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) -l | $(grep) -v $(master_image) | $(grep) $(child_prefix) | $(tail) -1"; # TODO: find out if this gives us the last VM correctly
-      "VMCMD_REG"       string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) -s register";
-      "VMCMD_START"     string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx start";
-      "VMCMD_STOP"      string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) $(path)/$(vm_name)/$(vm_name).vmx stop soft";
-      "VMCMD_UNREG"     string => "$(vmcmd) -H $(srv) -U $(u) -P $(p) -s unregister $(path)/$(vm_name)/$(vm_name).vmx";
+      "VIFS_BASE"       string => "$(vifs) --server $(srv) --username $(u) --password $(p)";
+      "VIFS_COPY"       string => "$(VIFS_BASE) -c";
+      "VIFS_DELETE"     string => "$(VIFS_BASE) -r";
+      "VIFS_DIR"        string => "$(VIFS_BASE) -D";
+      "VIFS_GET"        string => "$(VIFS_BASE) -get";
+      "VIFS_MKDIR"      string => "$(VIFS_BASE) -M";
+      "VIFS_PUT"        string => "$(VIFS_BASE) -put";
+
+      "VMCMD_BASE"      string => "$(vmcmd) -H $(srv) -U $(u) -P $(p)";
+      "VMCMD_PREFIX"    string => "$(VMCMD_BASE) $(path)";
+      "VMCMD_STOP_LAST"  string => "$(VMCMD_PREFIX)/$(last_instance)/$(last_instance).vmx stop soft";
+      "VMCMD_UNREG_LAST" string => "$(VMCMD_BASE) -s unregister $(path)/$(last_instance)/$(last_instance).vmx";
+
+      "VMCMD_LIST"      string => "$(VMCMD_BASE) -l";
+      "VMCMD_LIST_OURS" string => "$(VMCMD_LIST) | $(grep) -v $(master_image) | $(grep) $(child_prefix)";
+      "VMCMD_COUNT"     string => "$(VMCMD_LIST_OURS) | $(wc) -l";
+      "VMCMD_FIND_LAST" string => "$(VMCMD_LIST_OURS) | $(tail) -1";
+      "VMCMD_REG"       string => "$(VMCMD_BASE) -s register";
       "VMKFSTOOLS"      string => "$(vmkfs) --server $(srv) --username $(u) --password $(p) -i";
+
+      "our_instances_str" string => execresult("$(VMCMD_LIST_OURS)", "noshell");
+      "our_instances" slist => splitstring("$(our_instances_str)","$(const.n)","100000");
 
     parsed_ok.start::
       "instances" string => "$(params[1])";
@@ -228,12 +237,15 @@ bundle agent vcli(hub, service, state)
 
     decom_needed::
       "instances_needed" string => execresult("/usr/bin/expr $(current_count) - $(instances)", "noshell");
-      "last_instance" string => execresult("/bin/echo '[[[$(VMCMD_FIND_LAST)]]]'", "noshell");
+      "last_instance" string => execresult("$(VMCMD_FIND_LAST)", "noshell");
 
   methods:
+
+      # always start all our client instances
+      "START"  usebundle => vmware_start("$(our_instances)");
+
     bootstrap_needed::
       "CLONE"  usebundle => vmware_clone("$(master_image)", "$(next_instance)");
-      "START"  usebundle => vmware_start("$(next_instance)");
 
     decom_needed::
       "STOP"   usebundle => vmware_stop("$(last_instance)");
@@ -329,7 +341,7 @@ bundle agent vmware_start(vm_name)
   vars:
     any::
       "reg_status" string => execresult("$(vcli.VMCMD_LIST)","noshell");
-      "vm_status"  string => execresult("$(vcli.VMCMD_GETSTATE)","noshell");
+      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","noshell");
 
       #
 
@@ -344,7 +356,7 @@ bundle agent vmware_start(vm_name)
       #
   commands:
     vm_registered.(vm_is_off|vm_is_suspended)::
-      "$(vcli.VMCMD_START)";
+      "$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx start";
 }
 
 # -----------------------------------------------------------------------------
@@ -355,8 +367,8 @@ bundle agent vmware_stop(vm_name)
     any::
       "parameters" slist => getindices("$(inputs)");
 
-      "reg_status" string => execresult("$(vcli.VMCMD_LIST)","noshell");
-      "vm_status"  string => execresult("$(vcli.VMCMD_GETSTATE)","noshell");
+      "reg_status" string => execresult("$(vcli.VMCMD_LIST_OURS)","noshell");
+      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","noshell");
 
       #
 
@@ -381,7 +393,7 @@ bundle agent vmware_delete(vm_name)
       "parameters" slist => getindices("$(inputs)");
 
       "reg_status" string => execresult("$(vcli.VMCMD_LIST)","noshell");
-      "vm_status"  string => execresult("$(vcli.VMCMD_GETSTATE)","noshell");
+      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","noshell");
 
       #
 
