@@ -1,17 +1,17 @@
 Using the emacs syntax highlighter
 ----------------------------------
 
-1) Get Emacs 23.1
+1) Get Emacs 24.1
 
 2) Open a .cf file `C-x C-f FILENAME.cf'
 
 3) Explicitly activate the mode `M-x cfengine3-mode' (M-x is Alt-x or
-Esc-x usually)
+   Esc-x usually)
 
 4) If you want it to always happen, add this to ~/.emacs:
 
 (add-to-list 'auto-mode-alist ("\\.cf\\'" . cfengine3-mode))
 
-5) In 23.2 cfengine-mode will be aliases to cfengine3-mode, but for now
-it's aliased to cfengine-auto-mode, which tries to figure out if you're
-using 2 or 3 and defaults to 2.
+5) In 24.2 cfengine-mode will be aliased to cfengine3-mode, but for
+   now it's aliased to cfengine-auto-mode, which tries to figure out if
+   you're using 2 or 3 and defaults to 2.
