@@ -1,56 +1,35 @@
 Installing and Using Git
 ========================
 
-The examples used in this class are kept in the GitHub version control service.
+The examples used in this class are kept on GitHub.
 
-These examples are included in the CFEngine Community Code Sharing Repo ("Design Center")
+Install the git client to download the latest version
+of the examples.
 
 Installing Git (for RHEL 5 systems)
 -----------------------------------
 
 rpm -ihv  http://dl.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm 
 
-yum -y install git 
+yum install git 
 
 
+Using Git
+---------
 
-Using Git During Class
-----------------------
+1. Download Aleksey's fork of the CFEngine Design Center.
 
-# Download Aleksey's clone of the CFEngine Design Center
-# (I don't have commit access to Design Center, so I've
-# forked it and make changes in my own fork.  CFEngine
-# pulls in my changes into the CFEngine Design Center repo.)
+    git clone git://github.com/atsaloli/design-center.git git_atsaloli
 
-cd ~
-mkdir git_atsaloli
-cd git_atsaloli
-git clone git://github.com/atsaloli/design-center.git
+2. Go to the Training Examples directory.
 
-cd design-center
+    cd git_atsaloli/examples/verticalsysadmin_training_examples	
 
-# Add Aleksey's repo as a remote repository, so you can
-# download edits or additions made in class
+3. Add Aleksey's repo as a remote repository, so you can
+   pull down edits or additions Aleksey makes in class.
  
-git remote add upstream git://github.com/atsaloli/design-center.git
+    git remote add upstream git://github.com/atsaloli/design-center.git
 
-# Use 'git pull' to sync your local directory with Aleksey's repo
-git pull upstream
+4. Sync your local copy from Aleksey's master on github.
 
-
-Aleksey's examples are under
-design-center/examples/verticalsysadmin_training_examples
-
-
-Using Git After Class
----------------------
-
-Switching to the CFEngine master repository:
-
-cd ~
-mkdir cfengine_repo
-cd cfengine_repo
-git clone git://github.com/cfengine/design-center.git
-cd design-center
-git remote add upstream git://github.com/cfengine/design-center.git
-git pull upstream  # get the latest version from the upstream
+    git pull upstream
