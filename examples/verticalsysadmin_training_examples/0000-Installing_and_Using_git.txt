@@ -25,11 +25,6 @@ Using Git
 
     cd git_atsaloli/examples/verticalsysadmin_training_examples	
 
-3. Add Aleksey's repo as a remote repository, so you can
-   pull down edits or additions Aleksey makes in class.
- 
-    git remote add upstream git://github.com/atsaloli/design-center.git
+3. Sync your local copy from Aleksey's master on github.
 
-4. Sync your local copy from Aleksey's master on github.
-
-    git pull upstream
+    git pull origin
