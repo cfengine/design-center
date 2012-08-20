@@ -7,6 +7,7 @@ package_management/aptrepo Repository::apt::Maintain
 package_management/yumrepo Repository::Yum::Maintain
 programming_languages/cpanm Packages::CPAN::cpanm
 security/limits Security::security_limits
+security/tcpwrappers Security::tcpwrappers
 system/config_resolver System::config_resolver
 system/cron System::cron
 system/etc_hosts System::etc_hosts
