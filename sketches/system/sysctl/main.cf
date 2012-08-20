@@ -1,0 +1,171 @@
+bundle agent sysctl(prefix){
+# "prefix_vars[net.ipv4.tcp_tw_reuse]" string => "1";
+# "prefix_test_file" string => "/tmp/sysctl";
+# "prefix_debug" string => "on";
+# "prefix_mgmt_policy" string => "ensure_present|ensure_absent|defined_only|var_absent";
+#   ensure_present promises that the specific setting exists
+#   ensure_absent promises that the specific setting does not exist
+#      for example net.ipv4.tcp_tw_reuse=1 would not exist, but 
+#      net.ipv4.tcp_tw_reuse=2 would be left alone.
+#   defined_only promises that only the defined values are present
+#   vars_absent promises that the var is not set to anything.
+#      for example net.ipv4.tcp_tw_reuse=* would be removed 
+
+vars:
+  "mgmt_policies" slist => {"ensure_present", "ensure_absent", "vars_absent"};
+
+  "mgmt_policy"
+    string => "$(mgmt_policies)",
+    policy => "free",
+    ifvarclass => "mgmt_policy_$(mgmt_policies)";
+
+  "sysctl_vars" slist => getindices("$(prefix)vars");
+
+  test_sysctl::
+    "filename"
+      string => "$($(prefix)test_file)",
+      policy => "free";
+
+  !test_sysctl::
+    "filename"
+      string => "/etc/sysctl.conf",
+      policy => "free";
+
+classes:
+  "debug_sysctl" expression => regcmp("(?i)on", "$($(prefix)debug)");
+  "test_sysctl" expression => isvariable("$(prefix)test_file");
+
+  "mgmt_policy_$(mgmt_policies)" expression => regcmp("(?i)$(mgmt_policies)", "$($(prefix)mgmt_policy)");
+  "empty_first" expression => regcmp("(?i)yes|true", "$($(prefix)empty_first)");
+
+  "second_class_pass" and => {"first_class_pass"};
+  "first_class_pass"  and => {"any"};
+
+files:
+  "$(filename)"
+    create => "true",
+    edit_line => set_variable_values("$(prefix)vars"),
+    classes => if_repaired("sysctl_needs_reloaded"),
+    ifvarclass => "mgmt_policy_ensure_present.!empty_first",
+    comment => "Only ensure specific defined values are present";
+
+  "$(filename)"
+    create => "true",
+    handle => "sysctl_files_empty_first",
+    edit_defaults => empty,
+    edit_line => set_variable_values("$(prefix)vars"),
+    classes => if_repaired("sysctl_needs_reloaded"),
+    ifvarclass => "mgmt_policy_ensure_present.empty_first",
+    comment => "Empty file before ensuring specified values are present,
+                this effectively promises the full file content.";
+
+  "$(filename)"
+    create => "true",
+    edit_line => sysctl_del_variable_values("$(prefix)vars"),
+    classes => if_repaired("sysctl_needs_reloaded"),
+    ifvarclass => "mgmt_policy_ensure_absent",
+    comment => "Only ensure specific defined values are absent.";
+
+  "$(filename)"
+    create => "true",
+    edit_line => sysctl_del_variable_entries("$(prefix)vars"),
+    classes => if_repaired("sysctl_needs_reloaded"),
+    ifvarclass => "mgmt_policy_vars_absent",
+    comment => "Ensure the variables defined do not exist at all not matter their value.";
+
+commands:
+  "/sbin/sysctl"
+    args => "-p",
+    classes => if_repaired("sysctl_reloaded"),
+    comment => "Reload sysctl after repairing configuration";
+
+reports:
+  debug_sysctl::
+    "DEBUG is turned on for sysctl";
+    "Test File: $($(prefix)test_file)",
+      ifvarclass => "test_sysctl";
+    "Management Policy: $(mgmt_policies)",
+      ifvarclass => "mgmt_policy_$(mgmt_policies)";
+    "$(filename) will be emptied before editing",
+      ifvarclass => "empty_first";
+    "Specified Sysctl Var: $(sysctl_vars)=$($(prefix)vars[$(sysctl_vars)])";
+    "I repaired $(filename), sysctl needs to be reloaded",
+      ifvarclass => "sysctl_needs_reloaded";
+    "I successfully reloaded sysctl",
+      ifvarclass => "reloaded_sysctl";
+
+}
+bundle agent meta_sysctl
+# Metadata defining sketch api
+{
+vars:
+  "argument[vars]"                 string => "array";
+
+  "optional_argument[test_file]"   string => "string";
+  "optional_argument[debug]"       string => "string";
+  "optional_argument[mgmt_policy]" string => "string";
+  "optional_argument[empty_first]" string => "string";
+
+
+  "default[test_file]"   string => "/etc/sysctl.conf";
+  "default[debug]"       string => "no";
+  "default[mgmt_policy]" string => "ensure_present";
+  "default[empty_first]" string => "false";
+
+}
+
+bundle edit_line sysctl_del_variable_values(v)
+ # Sets the RHS of variables in the file of the form
+ #   LHS = RHS
+ # Adds a new line if no LHS exists, repairs RHS values if one does exist
+ #
+ # To use:
+ #   1) Define an array, where the keys are the LHS and the values are the RHS
+ #        "stuff[lhs-1]" string => "rhs1";
+ #        "stuff[lhs-2]" string => "rhs2";
+ #   2) The parameter passed to the edit_line promise is the fully qualified
+ #      name of the array (i.e., "bundlename.stuff") WITHOUT any "$" or "@"
+
+{
+vars:
+
+  "index" slist => getindices("$(v)");
+
+  # Be careful if the index string contains funny chars
+
+  "cindex[$(index)]" string => canonify("$(index)");
+
+delete_lines:
+
+  "$(index)=$($(v)[$(index)])",
+
+         comment => "Delete a specific variable";
+}
+
+bundle edit_line sysctl_del_variable_entries(v)
+ # Sets the RHS of variables in the file of the form
+ #   LHS = RHS
+ # Adds a new line if no LHS exists, repairs RHS values if one does exist
+ #
+ # To use:
+ #   1) Define an array, where the keys are the LHS and the values are the RHS
+ #        "stuff[lhs-1]" string => "rhs1";
+ #        "stuff[lhs-2]" string => "rhs2";
+ #   2) The parameter passed to the edit_line promise is the fully qualified
+ #      name of the array (i.e., "bundlename.stuff") WITHOUT any "$" or "@"
+
+{
+vars:
+
+  "index" slist => getindices("$(v)");
+
+  # Be careful if the index string contains funny chars
+
+  "cindex[$(index)]" string => canonify("$(index)");
+
+delete_lines:
+
+  "$(index)=.*",
+
+         comment => "Delete a variable";
+}
