@@ -5,7 +5,8 @@
         "main.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
         "params/demo.json": { "comment": "simple demo" },
-        "scripts/shim.pl": { "perm": 755, "comment": "simple demo" },
+        "scripts/shim.pl": { "perm": 755, "comment": "EC2 shim to start/stop service" },
+        "modules/vcli_decision": { "perm": 755, "comment": "VMWare decision module" },
 
     },
 

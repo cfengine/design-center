@@ -5,6 +5,7 @@ bundle agent cloud_services(prefix)
   vars:
       "canon_prefix" string => canonify("$(prefix)");
       "contexts"     slist  => getindices("$(prefix)bycontext");
+      "home"         string => "$($(prefix)bundle_home)";
 
   methods:
       # this is freakin' awesome
@@ -151,35 +152,25 @@ bundle agent vcli(hub, service, state)
                                             "params"
                                           );
 
-      "start" expression => strcmp("start", "$(state)");
-      "stop"  expression => strcmp("stop",  "$(state)");
-
       "ssl_noverify" expression => strcmp("$(cloud_context.disable_ssl_verify)", "1");
 
     parsed_ok::
-      "count_determined" expression => regcmp("\d+", "$(current_count)");
+      "decided" expression => usemodule("$(vcli_decision_module)",
+                                        "$(vcli_decision_args)");
 
-    parsed_ok.count_determined::
-      "bootstrap_needed"   expression => isgreaterthan("$(instances)", "$(current_count)");
-      "decom_needed"       expression => islessthan("$(instances)", "$(current_count)");
+    decided::
+      "vcli_decision_valid" expression => regcmp("[^$]+","$(vcli_decision.current_count)");
 
   vars:
-    !count_determined::
-      # for testing, use the Perl or hard-coded counts
-      # "current_count" string => execresult("$(VMCMD_COUNT)", "useshell");
-
-      # the following will randomly return a number between 0 and 2
-      # "current_count" string => execresult("/usr/bin/perl -e'print int rand 3'", "useshell");
-
-      # hard-code the count for testing
-      "current_count" string => "2";
-
     debug::
-      "cmd_prefix" string => "/bin/echo ";
+      "cmd_prefix" string => "/bin/echo ",
+      policy => "free";
     !debug.ssl_noverify::
-      "cmd_prefix" string => "/usr/bin/env PERL_LWP_SSL_VERIFY_HOSTNAME=0 ";
+      "cmd_prefix" string => "/usr/bin/env PERL_LWP_SSL_VERIFY_HOSTNAME=0 ",
+      policy => "free";
     !debug.!ssl_noverify::
-      "cmd_prefix" string => "";
+      "cmd_prefix" string => "",
+      policy => "free";
 
     parsed_ok::
       "class"  string => "$(params[2])";
@@ -188,9 +179,10 @@ bundle agent vcli(hub, service, state)
       "master_image" string => "ubuntu-12.04-i386-master";
       "child_prefix" string => "ubuntu-12.04-i386-clone-";
 
-      "grep"  string => "/bin/grep";
-      "wc"    string => "/bin/wc";
-      "tail"  string => "/bin/tail";
+      # NB: these are in /bin or /usr/bin... but it varies on many
+      # systems, so we'll just accept whatever is in the PATH
+      "grep"  string => "grep";
+
       "vifs"  string => "$(cmd_prefix)/usr/bin/vifs";
       "vmcmd" string => "$(cmd_prefix)/usr/bin/vmware-cmd";
       "vmkfs" string => "$(cmd_prefix)/usr/bin/vmkfstools";
@@ -211,63 +203,42 @@ bundle agent vcli(hub, service, state)
 
       "VMCMD_BASE"      string => "$(vmcmd) -H $(srv) -U $(u) -P $(p)";
       "VMCMD_PREFIX"    string => "$(VMCMD_BASE) $(path)";
-      "VMCMD_STOP_LAST"  string => "$(VMCMD_PREFIX)/$(last_instance)/$(last_instance).vmx stop soft";
-      "VMCMD_UNREG_LAST" string => "$(VMCMD_BASE) -s unregister $(path)/$(last_instance)/$(last_instance).vmx";
 
       "VMCMD_LIST"      string => "$(VMCMD_BASE) -l";
-      "VMCMD_LIST_OURS" string => "$(VMCMD_LIST) | $(grep) -v $(master_image) | $(grep) $(child_prefix)";
-      "VMCMD_COUNT"     string => "$(VMCMD_LIST_OURS) | $(wc) -l";
-      "VMCMD_FIND_LAST" string => "$(VMCMD_LIST_OURS) | $(tail) -1";
+      "VMCMD_LIST_OURS" string => "$(VMCMD_LIST) | $(grep) -v $(master_image) | $(grep) $(child_prefix) | $(grep) $(path)";
       "VMCMD_REG"       string => "$(VMCMD_BASE) -s register";
       "VMKFSTOOLS"      string => "$(vmkfs) --server $(srv) --username $(u) --password $(p) -i";
 
-      "our_instances_str" string => execresult("$(VMCMD_LIST_OURS)", "noshell");
-      "our_instances" slist => splitstring("$(our_instances_str)","$(const.n)","100000");
+      "vcli_decision_module" string => "../masterfiles/sketches/$(cloud_services.home)/modules/vcli_decision";
+      "vcli_decision_args" string => "'$(VMCMD_LIST_OURS)' '$(state)' '$(params[1])' '$(child_prefix)' '$(path)'";
 
-    parsed_ok.start::
-      "instances" string => "$(params[1])";
-      # catch "stop"
-    parsed_ok.stop::
-      "instances" string => "0";
-
-    bootstrap_needed::
-      "instances_needed" string => execresult("/usr/bin/expr $(instances) - $(current_count)", "noshell");
-      "next_instance_offset" string => execresult("/usr/bin/expr 1 + $(current_count)", "noshell");
-      "next_instance" string => "$(child_prefix)$(next_instance_offset)";
-
-    decom_needed::
-      "instances_needed" string => execresult("/usr/bin/expr $(current_count) - $(instances)", "noshell");
-      "last_instance" string => execresult("$(VMCMD_FIND_LAST)", "noshell");
+    vcli_decision_valid::
+      "VMCMD_STOP"  string => "$(VMCMD_PREFIX)/$(vcli_decision.decom_instance)/$(vcli_decision.decom_instance).vmx stop soft";
+      "VMCMD_UNREG" string => "$(VMCMD_BASE) -s unregister $(path)/$(vcli_decision.decom_instance)/$(vcli_decision.decom_instance).vmx";
 
   methods:
+    vcli_decision_valid.bootstrap_needed::
+      # clone the needed bootstraps
+      "CLONE"  usebundle => vmware_clone("$(master_image)", "$(vcli_decision.bootstrap_instance)");
+      "START"  usebundle => vmware_start("$(vcli_decision.bootstrap_instance)");
+      # start all our client instances if a bootstrap is needed
+      "START"  usebundle => vmware_start("$(vcli_decision.our_instances)");
 
-      # always start all our client instances
-      "START"  usebundle => vmware_start("$(our_instances)");
-
-    bootstrap_needed::
-      "CLONE"  usebundle => vmware_clone("$(master_image)", "$(next_instance)");
-
-    decom_needed::
-      "STOP"   usebundle => vmware_stop("$(last_instance)");
-      "DELETE" usebundle => vmware_delete("$(last_instance)");
+    vcli_decision_valid.decom_needed::
+      "STOP"   usebundle => vmware_stop("$(vcli_decision.decom_instance)");
+      "DELETE" usebundle => vmware_delete("$(vcli_decision.decom_instance)");
 
   reports:
-    verbose.count_determined::
-      "Current count of service '$(service)' = $(current_count)";
-    !parsed_ok::
-      "Sorry, service '$(service)' could not be parsed to pass to the shim!";
-    !bootstrap_needed.!decom_needed::
-      "Service '$(service)' does not need to be started or stopped: $(instances) instances of class $(class) already exist";
-    bootstrap_needed::
-      "Service '$(service)' requires bootstrap: requested $(instances) instances of class $(class) (current $(current_count))";
-    decom_needed::
-      "Service '$(service)' requires decom: requested $(instances) instances of class $(class) (current $(current_count))";
-    cfengine::
-      "vcli goal: put service '$(service)' in state $(state); parsed into '$(params[1])' and '$(params[2])'.  Currently we have $(current_count) instances.";
-    decom_needed::
-      "decom is needed";
+    vcli_decision_valid.bootstrap_needed::
+      "Service '$(service)' requires bootstrap: requested instance $(vcli_decision.bootstrap_instance) of class $(class) (current $(vcli_decision.current_count))";
+    vcli_decision_valid.decom_needed::
+      "Service '$(service)' requires decom: requested instance $(vcli_decision.decom_instance) of class $(class) (current $(vcli_decision.current_count))";
+    vcli_decision_valid.nothing_needed::
+      "Service '$(service)' requires no action: it already has $(vcli_decision.current_count) instances of class $(class)";
+    !vcli_decision_valid::
+      "The vcli_decision module \"$(vcli_decision_module) $(vcli_decision_args)\"could not be executed";
     verbose::
-      "The current_count was obtained from [[[$(VMCMD_COUNT)]]]";
+      "We will list our client instances with '$(VMCMD_LIST_OURS)'";
 }
 
 # -----------------------------------------------------------------------------
@@ -276,7 +247,8 @@ bundle agent vmware_clone(vm_source, vm_clone)
 {
   vars:
     any::
-      "reg_status" string => execresult("$(vcli.VMCMD_LIST)","noshell");
+      "reg_status" string => execresult("$(vcli.VMCMD_LIST)","useshell"),
+      policy => "free";
 
       #
 
@@ -316,6 +288,10 @@ bundle agent vmware_clone(vm_source, vm_clone)
     register_vm.!clone_registered::
       "$(vcli.VMCMD_REG) $(vcli.path)/$(vm_clone)/$(vm_clone).vmx"
       classes => if_repaired("clean_up");
+
+  reports:
+    verbose::
+      "###### cloning VM $(vm_source) into VM $(vm_clone) ######";
 }
 
 #####
@@ -339,14 +315,17 @@ bundle edit_line reconfigurevmx(s,c)
 bundle agent vmware_start(vm_name)
 {
   vars:
-    any::
-      "reg_status" string => execresult("$(vcli.VMCMD_LIST)","noshell");
-      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","noshell");
+    vm_valid::
+      "reg_status" string => execresult("$(vcli.VMCMD_LIST)","useshell"),
+      policy => "free";
+      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
+      policy => "free";
 
       #
 
   classes:
     any::
+      "vm_valid"        expression => regcmp("[^ ]+","$(vm_name)");
       "vm_registered"   expression => regcmp(".*$(vm_name).*","$(reg_status)");
       "vm_is_off"       expression => regcmp(".*off","$(vm_status)");
       "vm_is_suspended" expression => regcmp(".*suspended","$(vm_status)");
@@ -355,9 +334,24 @@ bundle agent vmware_start(vm_name)
 
       #
   commands:
-    vm_registered.(vm_is_off|vm_is_suspended)::
+    vm_valid.vm_registered.(vm_is_off|vm_is_suspended)::
       "$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx start";
+
+  reports:
+    verbose::
+      "###### checking if VM $(vm_name) needs to be started ######";
+    verbose.vm_valid::
+      "###### VM $(vm_name) IS VALID ######";
+    verbose.!vm_valid::
+      "###### VM $(vm_name) IS INVALID ######";
+    verbose.vm_registered::
+      "###### VM $(vm_name) IS REGISTERED ######";
+    verbose.vm_is_off::
+      "###### VM $(vm_name) IS OFF ######";
+    verbose.vm_is_suspended::
+      "###### VM $(vm_name) IS SUSPENDED ######";
 }
+
 
 # -----------------------------------------------------------------------------
 
@@ -367,8 +361,10 @@ bundle agent vmware_stop(vm_name)
     any::
       "parameters" slist => getindices("$(inputs)");
 
-      "reg_status" string => execresult("$(vcli.VMCMD_LIST_OURS)","noshell");
-      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","noshell");
+      "reg_status" string => execresult("$(vcli.VMCMD_LIST_OURS)","useshell"),
+      policy => "free";
+      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
+      policy => "free";
 
       #
 
@@ -382,6 +378,14 @@ bundle agent vmware_stop(vm_name)
   commands:
     vm_registered.vm_is_on::
       "$(vcli.VMCMD_STOP)";
+
+  reports:
+    verbose::
+      "###### checking if VM $(vm_name) needs to be stopped ######";
+    verbose.vm_registered::
+      "###### VM $(vm_name) is registered ######";
+    verbose.vm_is_on::
+      "###### VM $(vm_name) is running ######";
 }
 
 # -----------------------------------------------------------------------------
@@ -392,8 +396,10 @@ bundle agent vmware_delete(vm_name)
     any::
       "parameters" slist => getindices("$(inputs)");
 
-      "reg_status" string => execresult("$(vcli.VMCMD_LIST)","noshell");
-      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","noshell");
+      "reg_status" string => execresult("$(vcli.VMCMD_LIST)","useshell"),
+      policy => "free";
+      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
+      policy => "free";
 
       #
 
