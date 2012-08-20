@@ -1,20 +1,20 @@
 bundle agent example
 {
 
-classes:
-    "solinux"
-        comment => "Set a custom class based on built-in classes",
-        expression => "linux|solaris";
+  classes:
+      "solinux"
+              comment => "Set a custom class based on built-in classes",
+           expression => "linux|solaris";
 
 
-# "cf-agent --verbose" shows: 
-#
-# cf3>      +  Private classes augmented: 
-# cf3>      +       solinux
+      # "cf-agent --verbose" shows: 
+      #
+      # cf3>      +  Private classes augmented: 
+      # cf3>      +       solinux
 
 
-reports:
+  reports:
     solinux::
-        "Yay!! I am on Solaris or Linux."
-             comment => "This is a comment.";
+      "Yay!! I am on Solaris or Linux."
+              comment => "This is a comment.";
 }

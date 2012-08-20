@@ -1,14 +1,14 @@
 bundle agent example {
 
-files:
+  files:
 
-  "/tmp/testfile"
+      "/tmp/testfile"
 
-     perms => acceptable_groups;
-}
+                perms => acceptable_groups;
+                     }
 
 body perms acceptable_groups {
 
-groups => {"root", "games", "mail" };
+               groups => {"root", "games", "mail" };
 
-}
+                             }

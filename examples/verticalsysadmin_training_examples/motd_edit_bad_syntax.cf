@@ -1,22 +1,22 @@
 bundle agent example {
 
-files:
+  files:
 
-   "/etc/motd"
+      "/etc/motd"
 
-        create  => "true",
-        edit_line => file_contains_proper_info;
-}
+              create  => "true",
+            edit_line => file_contains_proper_info;
+                     }
 
 bundle edit_line  file_contains_proper_info {
 
-delete_lines: 
-  ".*";
+  delete_lines: 
+      ".*";
 
-insert_lines: "Unauthorized use forbidden.";
+      insert_lines: "Unauthorized use forbidden.";
 
-reports:
-     Saturday|Sunday::
-       insert_lines: "Go home it's the weekend.";
-          
-}
+  reports:
+    Saturday|Sunday::
+      insert_lines: "Go home it's the weekend.";
+      
+                                            }

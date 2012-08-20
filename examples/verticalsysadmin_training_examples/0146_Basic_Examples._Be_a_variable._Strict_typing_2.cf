@@ -1,13 +1,13 @@
 bundle agent example {
 
-    vars:
+  vars:
 
-        "my_int"
+      "my_int"
 
-            int => "hello world";
+                  int => "hello world";
 
-    commands:
+  commands:
 
-        "/bin/echo my int is $(my_int)";
+      "/bin/echo my int is $(my_int)";
 
-}
+                     }

@@ -25,4 +25,4 @@ embedded databases and converts them to human readable form
 cf-hub
 
 A data aggregator used as part of the commercial product
-and not available in the community edition of Cfengine. 
+and not available in the community edition of CFEngine. 

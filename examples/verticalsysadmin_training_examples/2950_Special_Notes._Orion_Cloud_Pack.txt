@@ -5,7 +5,7 @@ Essential Files
 promises.cf            Main configuration file.
 update.cf              Update configuration.
 failsafe.cf            Failsafe configuration.
-cfengine_stdlib.cf     Cfengine standard library.
+cfengine_stdlib.cf     CFEngine standard library.
 
 
 Maintenance Examples

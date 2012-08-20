@@ -10,16 +10,16 @@
 
 
 body common control {
-    bundlesequence =>  {"example",};
-}
+       bundlesequence =>  {"example",};
+                    }
 
 bundle agent example {
 
   files:
 
-    "/tmp/nologin"
+      "/tmp/nologin"
 
-        create => "true",
-        comment => "Mortal users can't log in while system is in maintenance mode";
+               create => "true",
+              comment => "Mortal users can't log in while system is in maintenance mode";
 
-}
+                     }

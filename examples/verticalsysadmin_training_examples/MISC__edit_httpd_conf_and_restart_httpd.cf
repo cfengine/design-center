@@ -1,11 +1,11 @@
 bundle agent example {
 
-files:
-   "/etc/httpd/conf/httpd.conf"
-       edit_line => SetServerName("myserver.example.com"),
-       classes => if_repaired("reload_httpd");
+  files:
+      "/etc/httpd/conf/httpd.conf"
+            edit_line => SetServerName("myserver.example.com"),
+              classes => if_repaired("reload_httpd");
 
-commands:
-  reload_httpd::
-       "/etc/init.d/httpd reload";
-}
+  commands:
+    reload_httpd::
+      "/etc/init.d/httpd reload";
+                     }

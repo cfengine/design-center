@@ -1,17 +1,17 @@
 bundle agent example {
 
-    vars:
+  vars:
 
-        "my_list"
+      "my_list"
 
-            ilist => { "1", "2", "3" };
+                ilist => { "1", "2", "3" };
 
 
 
-    reports:
-      linux::
+  reports:
+    linux::
 
-        "Iterating over the values in @(my_list):  $(my_list)";
+      "Iterating over the values in @(my_list):  $(my_list)";
 
-}
+                     }
 

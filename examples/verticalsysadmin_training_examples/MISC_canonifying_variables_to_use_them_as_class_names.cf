@@ -1,23 +1,23 @@
 bundle agent example {
 
-vars:
-   "myarray[loc@t!on]" string  => "Bloomington";
-   "myarray[t!me###]"     string  => "first week of April";
+  vars:
+      "myarray[loc@t!on]" string  => "Bloomington";
+      "myarray[t!me###]"     string  => "first week of April";
 
 
-   "index" slist =>  getindices("myarray");
+      "index" slist =>  getindices("myarray");
 
-    
-   "cindex[$(index)]" string => canonify("$(index)");
+      
+      "cindex[$(index)]" string => canonify("$(index)");
 
 
-reports:
+  reports:
 
-   cfengine::
+    cfengine::
 
       "Original keys: $(index)";
       "Canonified keys: $(cindex[$(index)])";
-}
+                     }
 #############################################################
 # Data Structures:
 

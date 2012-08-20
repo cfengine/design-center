@@ -1,16 +1,16 @@
 bundle agent example
 {
-vars:
+  vars:
 
-   "myvar" string => getenv("USER","20");
+      "myvar" string => getenv("USER","20");
 
 
-classes:
+  classes:
 
-  "isdefined" not => strcmp("$(myvar)","");
+      "isdefined" not => strcmp("$(myvar)","");
 
-reports:
-  isdefined::
-   "I am running as user $(myvar)";
+  reports:
+    isdefined::
+      "I am running as user $(myvar)";
 
 }

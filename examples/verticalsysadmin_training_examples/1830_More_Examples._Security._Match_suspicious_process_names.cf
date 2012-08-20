@@ -2,25 +2,25 @@ bundle agent example
 
 {
 
-vars:
+  vars:
 
-  "suspicious_process_names" slist =>
+      "suspicious_process_names" slist =>
       {
-          "sniff",
-          "eggdrop",
-          "r00t",
-          "^\./",
-          "john",
-          "crack"
+        "sniff",
+        "eggdrop",
+        "r00t",
+        "^\./",
+        "john",
+        "crack"
       };
 
 
 
-processes:
-  "$(suspicious_process_names)"
-      signals => { "term", "kill" };
+  processes:
+      "$(suspicious_process_names)"
+              signals => { "term", "kill" };
 
-  
+      
 }
 
 
@@ -29,8 +29,8 @@ processes:
 body process_select proc_finder(pattern)
 
 {
-     command => ".*$(pattern).*";
+              command => ".*$(pattern).*";
 
-     process_result => "command";
+       process_result => "command";
 }
 

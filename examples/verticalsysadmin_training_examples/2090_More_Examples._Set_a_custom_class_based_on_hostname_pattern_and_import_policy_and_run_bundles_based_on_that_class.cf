@@ -1,18 +1,18 @@
 body common control
 {
 
-    inputs => {
-        @(global.global_policy),
-        "$(global.country_name)/$(global.country_name).cf",
-   };
+               inputs => {
+                           @(global.global_policy),
+                           "$(global.country_name)/$(global.country_name).cf",
+                         };
 
 
 
- ITALY::
-    bundlesequence => { "global_policy", "italy" };
+    ITALY::
+       bundlesequence => { "global_policy", "italy" };
 
- GERMANY::
-    bundlesequence => { "global_policy", "germany" };
+    GERMANY::
+       bundlesequence => { "global_policy", "germany" };
 
 }
 
@@ -21,31 +21,31 @@ bundle common global
 # common bundles are included in bundlesequence automatically 
 {
 
- classes:
+  classes:
 
-   "ITALY"
-        expression => classmatch("mil.*");
+      "ITALY"
+           expression => classmatch("mil.*");
 
-   "GERMANY"
-        expression => classmatch("ber.*");
+      "GERMANY"
+           expression => classmatch("ber.*");
 
 
 
-    vars:
-                "country_name" string => "undefined",
-                    policy => "overridable";
+  vars:
+      "country_name" string => "undefined",
+               policy => "overridable";
 
-                "global_policy" slist => { "global_policy.cf" };  # list of policy files
-                                                                  # you want imported
-                                                                  # globally
+      "global_policy" slist => { "global_policy.cf" };  # list of policy files
+      # you want imported
+      # globally
 
-        ITALY::
-                "country_name" string => "italy",
-                    policy => "overridable";
+    ITALY::
+      "country_name" string => "italy",
+               policy => "overridable";
 
-        GERMANY::
-                "country_name" string => "germany",
-                    policy => "overridable";
+    GERMANY::
+      "country_name" string => "germany",
+               policy => "overridable";
 
 }
 

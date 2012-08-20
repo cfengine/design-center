@@ -5,21 +5,21 @@
 bundle agent example {
 
 
-    reports:
-      Morning::
-        "Good morning, world";
+  reports:
+    Morning::
+      "Good morning, world";
 
-    reports:
-      Afternoon::
-        "Good afternoon, world";
+  reports:
+    Afternoon::
+      "Good afternoon, world";
 
-    reports:
-      Evening::
-        "Good evening, world";
+  reports:
+    Evening::
+      "Good evening, world";
 
-    reports:
-      Night::
-        "Good night, world";
+  reports:
+    Night::
+      "Good night, world";
 
 
-}
+                     }

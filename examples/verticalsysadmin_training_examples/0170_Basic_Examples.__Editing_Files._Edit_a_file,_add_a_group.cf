@@ -3,20 +3,20 @@
 
 bundle agent example {
 
-    files:
+  files:
 
-        "/etc/group"
+      "/etc/group"
 
             edit_line => cfengine_group_is_present;
 
-}
+                     }
 
 
 bundle edit_line cfengine_group_is_present {
 
-    insert_lines: 
+  insert_lines: 
 
-        "cfengine:x:502:";
+      "cfengine:x:502:";
 
-}
+                                           }
 

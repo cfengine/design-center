@@ -2,20 +2,20 @@
 
 bundle agent example {
 
-    processes:
+  processes:
 
-         ".*"
+      ".*"
 
-             process_select  => vsize_exceeds("30000"),
-             signals => { "term", "kill" };
+      process_select  => vsize_exceeds("30000"),
+              signals => { "term", "kill" };
 
-}
+                     }
 
 ########################################################
 
 body process_select vsize_exceeds(vsize_limit) {
 
-    vsize => irange("$(vsize_limit)","inf"); # vsize is over
-                                             # $(vsize_limit)
-    process_result => "vsize";
-}
+                vsize => irange("$(vsize_limit)","inf"); # vsize is over
+      # $(vsize_limit)
+       process_result => "vsize";
+                                               }

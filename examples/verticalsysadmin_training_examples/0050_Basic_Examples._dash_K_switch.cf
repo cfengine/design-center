@@ -1,6 +1,6 @@
 bundle agent example {
 
-    commands:
+  commands:
 
-        "/bin/date";
-}
+      "/bin/date";
+                     }

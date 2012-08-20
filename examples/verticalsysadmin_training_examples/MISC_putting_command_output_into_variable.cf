@@ -1,11 +1,11 @@
 bundle agent example {
 
-vars:
-  "my_result"
-     string => execresult("/bin/ls /tmp", "noshell");
+  vars:
+      "my_result"
+               string => execresult("/bin/ls /tmp", "noshell");
 
-reports:
-  linux::
-    "Variable is $(my_result)";
+  reports:
+    linux::
+      "Variable is $(my_result)";
 
-}
+                     }

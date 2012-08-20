@@ -18,76 +18,76 @@
 
 body common control {
 
-	version => "1.1 21-Oct-2011";
+              version => "1.1 21-Oct-2011";
 
-	host_licenses_paid => "10";
+   host_licenses_paid => "10";
 
-	inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 
-	bundlesequence =>	{
-					"db_cluster_is_installed",
+       bundlesequence =>        {
+                                  "db_cluster_is_installed",
 
-					"pg_hba_conf_trusts_local_users",
+                                  "pg_hba_conf_trusts_local_users",
 
-					"db_cluster_is_running",
+                                  "db_cluster_is_running",
 
-					"database_exists",
+                                  "database_exists",
 
-					"schema_exists_and_is_correct",
-				};
+                                  "schema_exists_and_is_correct",
+                                };
 
-}
+                    }
 
 ################################################
 
 bundle agent db_cluster_is_installed {
 
-packages:
+  packages:
 
 
-	"postgresql-server"
+      "postgresql-server"
 
-		package_policy => "add",
-		package_method => yum,
-		classes => if_repaired("start_postgres");
+       package_policy => "add",
+       package_method => yum,
+              classes => if_repaired("start_postgres");
 
-	"postgresql"
-		package_policy => "add",
-		package_method => yum;
-
-
-commands:
-
-  start_postgres::
-
-	"/sbin/service postgresql start";
+      "postgresql"
+       package_policy => "add",
+       package_method => yum;
 
 
-}
+  commands:
+
+    start_postgres::
+
+      "/sbin/service postgresql start";
+
+
+                                     }
 
 ################################################
 
 bundle agent pg_hba_conf_trusts_local_users {
 
 
-files:
-	"/var/lib/pgsql/data/pg_hba.conf"
+  files:
+      "/var/lib/pgsql/data/pg_hba.conf"
 
-# this is a regular comment
+      # this is a regular comment
 
-		edit_line => trust_local_users,
-		comment => "Allow root to access the DB cluster so CFEngine can set up the database and table schema",
-		# the above was a Knowledge Management comment
-		classes => if_repaired("reload_postgres");
+            edit_line => trust_local_users,
+              comment => "Allow root to access the DB cluster so CFEngine can set up the database and table schema",
+      # the above was a Knowledge Management comment
+              classes => if_repaired("reload_postgres");
 
-commands:
+  commands:
 
-  reload_postgres::
+    reload_postgres::
 
-	"/sbin/service postgresql reload";
+      "/sbin/service postgresql reload";
 
 
-}
+                                            }
 
 
 ################################################
@@ -96,20 +96,20 @@ commands:
 bundle agent db_cluster_is_running {
 
 
-processes:
+  processes:
 
-	"postgres"
+      "postgres"
 
-		restart_class => "start_postgres";
+        restart_class => "start_postgres";
 
 
-commands:
+  commands:
 
-  start_postgres::
+    start_postgres::
 
-	"/sbin/service postgresql start";
+      "/sbin/service postgresql start";
 
-}
+                                   }
 
 
 
@@ -118,12 +118,12 @@ commands:
 
 bundle agent database_exists {
 
-commands:
+  commands:
 
-	"/usr/bin/createdb -U postgres conference >/dev/null 2>/dev/null"
-		contain => in_shell;
+      "/usr/bin/createdb -U postgres conference >/dev/null 2>/dev/null"
+              contain => in_shell;
 
-}
+                             }
 
 
 ################################################
@@ -131,50 +131,50 @@ commands:
 
 bundle agent schema_exists_and_is_correct {
 
-vars:
-   "create_and_verify"
-        slist => { "create", "verify" };
+  vars:
+      "create_and_verify"
+                slist => { "create", "verify" };
 
 
-databases:
+  databases:
 
 
-	"conference/speakers"
+      "conference/speakers"
 
-		database_operation => "$(create_and_verify)",
-		database_type => "sql",
-		database_columns => { 
-                        "speaker_name,varchar,50",
-                        "speaker_bio,varchar,600",
-                        "speaker_affiliation,varchar,50",
-                        },
-		database_server => demo_postgres_server;
-
-
-	"conference/rooms"
-
-		database_operation => "$(create_and_verify)",
-		database_type => "sql",
-		database_columns => { 
-                        "room_name,varchar,256",
-                        "room_number_of_seats,integer",
-                        },
-		database_server => demo_postgres_server;
+   database_operation => "$(create_and_verify)",
+        database_type => "sql",
+     database_columns => { 
+                           "speaker_name,varchar,50",
+                           "speaker_bio,varchar,600",
+                           "speaker_affiliation,varchar,50",
+                         },
+      database_server => demo_postgres_server;
 
 
-	"conference/talks"
+      "conference/rooms"
 
-		database_operation => "$(create_and_verify)",
-		database_type => "sql",
-		database_columns => { 
-                        "speaker_name,varchar,256",
-                        "room_name,varchar,256",
-                        "start_time,date",
-                        },
-		database_server => demo_postgres_server;
+   database_operation => "$(create_and_verify)",
+        database_type => "sql",
+     database_columns => { 
+                           "room_name,varchar,256",
+                           "room_number_of_seats,integer",
+                         },
+      database_server => demo_postgres_server;
 
 
-}
+      "conference/talks"
+
+   database_operation => "$(create_and_verify)",
+        database_type => "sql",
+     database_columns => { 
+                           "speaker_name,varchar,256",
+                           "room_name,varchar,256",
+                           "start_time,date",
+                         },
+      database_server => demo_postgres_server;
+
+
+                                          }
 
 
 ################################################
@@ -182,25 +182,25 @@ databases:
 
 body database_server demo_postgres_server {
 
-    db_server_owner => "postgres";
+      db_server_owner => "postgres";
 
-    db_server_password => "";
+   db_server_password => "";
 
-    db_server_host => "localhost";
+       db_server_host => "localhost";
 
-    db_server_type => "postgres";
+       db_server_type => "postgres";
 
-    db_server_connection_db => "postgres";
+db_server_connection_db => "postgres";
 
-}
+                                          }
 
 ################################################
 
 bundle edit_line trust_local_users {
 
-    delete_lines: ".*";
+      delete_lines: ".*";
 
-    insert_lines: "
+      insert_lines: "
 # !!! This file is under CFEngine control.  Do not edit
 # it directly or your changes may be overwritten.
 #
@@ -208,4 +208,4 @@ bundle edit_line trust_local_users {
 local   all         all                               trust
 ";
 
-}
+                                   }

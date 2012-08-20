@@ -1,23 +1,23 @@
 body common control {
 
-   inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 
-}
+                    }
 
 
 bundle agent example {
 
-    vars:
+  vars:
 
-        "config[awesome]" string => "on";
+      "config[awesome]" string => "on";
 
-        "config[cool]" string => "high";
+      "config[cool]" string => "high";
 
-    files:
+  files:
 
-        "/tmp/example.conf"
+      "/tmp/example.conf"
 
             edit_line => set_variable_values("example.config"),
-            create => "true";
-}
+               create => "true";
+                     }
 

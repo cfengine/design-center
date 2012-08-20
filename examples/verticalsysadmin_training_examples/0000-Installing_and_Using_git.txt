@@ -1,0 +1,30 @@
+Installing and Using Git
+========================
+
+The examples used in this class are kept on GitHub.
+
+Install the git client to download the latest version
+of the examples.
+
+Installing Git (for RHEL 5 systems)
+-----------------------------------
+
+rpm -ihv  http://dl.fedoraproject.org/pub/epel/5/i386/epel-release-5-4.noarch.rpm 
+
+yum install git 
+
+
+Using Git
+---------
+
+1. Download Aleksey's fork of the CFEngine Design Center.
+
+    git clone git://github.com/atsaloli/design-center.git git_atsaloli
+
+2. Go to the Training Examples directory.
+
+    cd git_atsaloli/examples/verticalsysadmin_training_examples	
+
+3. Sync your local copy from Aleksey's master on github.
+
+    git pull origin

@@ -1,24 +1,24 @@
 bundle agent example {
 
-    storage:
+  storage:
 
-        "/dev/shm"
+      "/dev/shm"
 
-            volume  => check_sanity_and_min_free_space("99%");
+              volume  => check_sanity_and_min_free_space("99%");
 
 
-        "/"
-            volume  => check_sanity_and_min_free_space("30%");
+      "/"
+              volume  => check_sanity_and_min_free_space("30%");
 
-}
+                     }
 
 body volume check_sanity_and_min_free_space(free) {
 
-    freespace      => "$(free)";
+       freespace      => "$(free)";
 
-    check_foreign  => "on";   # do sanity check foreign (remote) volumes
+       check_foreign  => "on";   # do sanity check foreign (remote) volumes
 
-    sensible_size  => "100K";  # Min size used (in bytes)
+       sensible_size  => "100K";  # Min size used (in bytes)
 
-    sensible_count => "10";    # Min files/dirs at top level
-}
+       sensible_count => "10";    # Min files/dirs at top level
+                                                  }

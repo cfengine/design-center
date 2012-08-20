@@ -1,14 +1,14 @@
 bundle agent example {
 
-    commands:
+  commands:
 
-        any::
+    any::
 
-             "/bin/echo hello world";
+      "/bin/echo hello world";
 
-      linux&Hr08::
+    linux&Hr08::
 
-             "/bin/echo Linux system AND we are in the 8th hour.";
+      "/bin/echo Linux system AND we are in the 8th hour.";
 
       
-}
+                     }

@@ -6,13 +6,13 @@
 bundle agent example
 
 {
-files:
+  files:
 
-  "/tmp/test_from"
+      "/tmp/test_from"
 
-    file_select => modified_over_a_year_ago,
-    transformer => "/bin/echo DETECTED $(this.promiser) MATCHING FILTER",
-    depth_search => recurse("inf");
+          file_select => modified_over_a_year_ago,
+          transformer => "/bin/echo DETECTED $(this.promiser) MATCHING FILTER",
+         depth_search => recurse("inf");
 
 }
 
@@ -21,11 +21,11 @@ files:
 body file_select modified_over_a_year_ago
 
 {
-mtime => irange(ago(100,0,0,0,0,0),ago(1,0,0,0,0,0));   # modified more than a year ago
-# ago (Years, Months, Days, Hours, Minutes, Seconds)
-# example: 20 minutes and 30 seconds ago:  ago(0,0,0,0,20,30);
+                mtime => irange(ago(100,0,0,0,0,0),ago(1,0,0,0,0,0));   # modified more than a year ago
+      # ago (Years, Months, Days, Hours, Minutes, Seconds)
+      # example: 20 minutes and 30 seconds ago:  ago(0,0,0,0,20,30);
 
-file_result => "mtime";
+          file_result => "mtime";
 }
 
 ############################################
@@ -33,6 +33,6 @@ file_result => "mtime";
 body depth_search recurse(d)
 
 {
-depth => "$(d)";
+                depth => "$(d)";
 }
 

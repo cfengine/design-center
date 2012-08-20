@@ -3,14 +3,14 @@
 
 body reporter control
 {
- any::
+    any::
 
-  reports => { 
-             "last_seen" 
-             };
+              reports => { 
+                           "last_seen" 
+                         };
 
-  build_directory => "$(sys.workdir)/reports";
-  report_output   => "text";
-  style_sheet => "/cf_enterprise.css";
+      build_directory => "$(sys.workdir)/reports";
+      report_output   => "text";
+          style_sheet => "/cf_enterprise.css";
 
 }

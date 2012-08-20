@@ -12,35 +12,35 @@
 bundle agent load_balancer_configured_with_live_webhosts(webhosts_list)
 {
 
-reports:
-load_balancer_hosts::
-"I am a load balancer!!";
+  reports:
+    load_balancer_hosts::
+      "I am a load balancer!!";
 
 
 
-# set variable containing HTTP response from each web server
-vars:
+      # set variable containing HTTP response from each web server
+  vars:
 
-  "my80"
-    string => readtcp("$(webhosts_list)","80","GET /index.php
+      "my80"
+               string => readtcp("$(webhosts_list)","80","GET /index.php
 HTTP/1.1$(const.r)$(const.n)Host: $(webhosts_list)$(const.r)$(const.n)$(const.r)$(const.n)",20);
 
- 
-# set server_ok class if response contains HTTP 200 OK
+      
+      # set server_ok class if response contains HTTP 200 OK
 
-classes:
-  "server_ok"
-    expression => regcmp(".*200 OK.*\n.*","$(my80)");
+  classes:
+      "server_ok"
+           expression => regcmp(".*200 OK.*\n.*","$(my80)");
 
 
-# make sure each live (OK) web server is in the haproxy.conf
+      # make sure each live (OK) web server is in the haproxy.conf
 
-files:
+  files:
 
-  server_ok&load_balancer_hosts::
+    server_ok&load_balancer_hosts::
 
-"/etc/haproxy.conf"
-edit_line => append_if_no_line(" server $(webhosts_list)
+      "/etc/haproxy.conf"
+            edit_line => append_if_no_line(" server $(webhosts_list)
 $(webhosts_list):80 maxconn 32");
 
 
