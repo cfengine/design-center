@@ -1,0 +1,9 @@
+{
+   "activated" : "",
+   "test_file" : "/etc/sysctl.conf",
+   "debug" : "no",
+   "vars" : { "net.ipv4.tcp_tw_reuse": 1 },
+   "mgmt_policy" : "ensure_present",
+   "empty_first" : "false"
+}
+
