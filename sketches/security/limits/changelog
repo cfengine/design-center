@@ -1,3 +1,7 @@
+security_limits 1.1
+  * Seperate debug and test_filename logic
+  * Add tests
+  * Add better example
 security_limits 1.0
   * supports complete file management
   * supports specific definition presence/absence

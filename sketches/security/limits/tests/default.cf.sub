@@ -1,0 +1,154 @@
+bundle common G
+{
+classes:
+  "bin_$(cmds)" expression => fileexists("/bin/$(cmds)");
+  "usr_bin_$(cmds)" expression => fileexists("/usr/bin/$(cmds)");
+
+  "temp_declared" not => strcmp(getenv("TEMP", "65536"), "");
+
+vars:
+  "cwd" string => execresult("/bin/pwd", "noshell");
+  "cmds" slist => { "sort", "touch", "grep", "gzip" };
+
+  "$(cmds)"  string => "/bin/$(cmds)",
+      ifvarclass => "bin_$(cmds)";
+  "$(cmds)"  string => "/usr/bin/$(cmds)",
+      ifvarclass => "!bin_$(cmds).usr_bin_$(cmds)";
+
+  temp_declared::
+    "testroot" string => getenv("TEMP", "65535");
+    "testdir" string => concat(getenv("TEMP", "65535"), "/TEST.cfengine");
+    "testfile" string => concat(getenv("TEMP", "65535"), "/TEST.cfengine");
+
+  !temp_declared::
+    "testroot" string => "/tmp";
+    "testdir" string => "/tmp/TEST.cfengine";
+    "testfile" string => "/tmp/TEST.cfengine";
+
+}
+
+bundle common paths_init(filename)
+{
+classes:
+  "filename_absolute" expression => regcmp("/.*", "$(filename)");
+}
+
+bundle common paths(filename)
+{
+vars:
+  filename_absolute::
+    "input_file"
+      string => "$(filename)";
+  !filename_absolute::
+    "input_file"
+      string => "$(G.cwd)/$(filename)";
+}
+
+bundle agent default(filename)
+{
+vars:
+    "tests" slist => { "init", "test", "check" };
+
+methods:
+  "any"
+    usebundle => paths_init("$(filename)");
+  "any"
+    usebundle => paths("$(filename)");
+
+  AUTO::
+    "any" usebundle => "$(tests)";
+
+reports:
+    !AUTO::
+    "# You must either specify '-D AUTO' or run the following commands:";
+    "cf-agent -f ./$(filename) -b $(tests)";
+}
+
+#######################################################
+
+bundle agent default_sort(infile, outfile)
+{
+commands:
+    "$(G.sort) $(infile) > $(outfile)"
+    contain => default_shell_command;
+}
+
+bundle agent default_check_diff(file1, file2, test)
+{
+methods:
+        "any" usebundle => check_diff("$(file1)", "$(file2)", "$(test)", "no");
+}
+
+bundle agent sorted_check_diff(file1, file2, test)
+{
+methods:
+        "any" usebundle => default_sort("$(file1)", "$(file1).sort");
+        "any" usebundle => default_sort("$(file2)", "$(file2).sort");
+        "any" usebundle => check_diff("$(file1).sort", "$(file2).sort", "$(test)", "no");
+}
+
+bundle agent check_diff(file1, file2, test, expected_difference)
+{
+vars:
+    DEBUG.!no_difference::
+        "file1r" string => readfile("$(file1)", "99999999");
+        "file1h" string => execresult("/usr/bin/hexdump -C $(file1)", "useshell");
+        "file2r" string => readfile("$(file2)", "99999999");
+        "file2h" string => execresult("/usr/bin/hexdump -C $(file2)", "useshell");
+        "diffu"  string => execresult("/usr/bin/diff -u $(file2) $(file1)", "noshell");
+
+classes:
+    "no_difference" expression => returnszero(
+        "/usr/bin/diff -q $(file1) $(file2)",
+        "useshell");
+
+        "expected_difference" expression => strcmp("$(expected_difference)", "yes");
+
+reports:
+    no_difference.!expected_difference::
+    "$(test) Pass";
+    !no_difference.expected_difference::
+    "$(test) Pass";
+    !no_difference.!expected_difference::
+    "$(test) FAIL";
+    no_difference.expected_difference::
+    "$(test) FAIL";
+
+    DEBUG.!no_difference.!expected_difference::
+        "$(file1) and $(file2) differ:";
+        "$(file1): <$(file1r)>";
+        "$(file2): <$(file2r)>";
+        "hexdump $(file1):
+$(file1h)";
+        "hexdump $(file2):
+$(file2h)";
+        "$(diffu)";
+    DEBUG.no_difference.expected_difference::
+        "Contents of $(file1) and $(file) is the same.";
+}
+
+body contain default_shell_command
+{
+useshell => "true";
+}
+
+#######################################################
+
+# Uses rm -rf instead of selecting and deleting files to avoid side-effects in
+# tests due to problems in file deleletion promises.
+
+bundle agent default_fini(file)
+{
+commands:
+  "/bin/rm -rf $(file)*"
+    contain => useshell;
+  "/bin/rm -rf $(sys.workdir)/state/cf_state.*"
+    contain => useshell;
+}
+
+body contain useshell
+{
+  useshell => "true";
+  chdir => "/";
+}
+
