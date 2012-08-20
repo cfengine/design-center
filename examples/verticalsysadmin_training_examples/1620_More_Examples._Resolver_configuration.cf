@@ -1,26 +1,26 @@
 bundle agent example
 {
-    vars:
+  vars:
 
-          "resolvers" slist => { "128.39.89.10", "158.36.85.10", "129.241.1.99" };
+      "resolvers" slist => { "128.39.89.10", "158.36.85.10", "129.241.1.99" };
 
-    files:
+  files:
 
-          "$(sys.resolv)"
+      "$(sys.resolv)"
 
-               edit_line => set_my_resolv_conf("iu.hio.no cfengine.com",@(example.resolvers));
+            edit_line => set_my_resolv_conf("iu.hio.no cfengine.com",@(example.resolvers));
 }
 
 
 bundle edit_line set_my_resolv_conf(search,list)
 {
-    delete_lines:
+  delete_lines:
 
-        "search.*";
-        "nameserver.*";
+      "search.*";
+      "nameserver.*";
 
-    insert_lines:
+  insert_lines:
 
-         "search $(search)";
-         "nameserver $(list)";
+      "search $(search)";
+      "nameserver $(list)";
 }

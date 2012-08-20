@@ -10,13 +10,13 @@
 bundle agent example
 
 {
-files:
+  files:
 
-  "/tmp/test_from" 
+      "/tmp/test_from" 
 
-    file_select => compound_filter,
-    transformer => "/bin/echo DETECTED $(this.promiser) MATCHING COMPOUND FILTER",
-    depth_search => recurse("inf");
+          file_select => compound_filter,
+          transformer => "/bin/echo DETECTED $(this.promiser) MATCHING COMPOUND FILTER",
+         depth_search => recurse("inf");
 
 }
 
@@ -26,11 +26,11 @@ body file_select compound_filter
 
 {
 
-search_mode => { "777" };
-leaf_name => { ".*\.pdf" , ".*\.fdf" };  # leaf_name = regex to match
+          search_mode => { "777" };
+            leaf_name => { ".*\.pdf" , ".*\.fdf" };  # leaf_name = regex to match
 
 
-file_result => "leaf_name|mode";   # this is a class expression
+          file_result => "leaf_name|mode";   # this is a class expression
 }
 
 ############################################
@@ -38,6 +38,6 @@ file_result => "leaf_name|mode";   # this is a class expression
 body depth_search recurse(d)
 
 {
-depth => "$(d)";
+                depth => "$(d)";
 }
 

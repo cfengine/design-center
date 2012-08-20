@@ -1,28 +1,28 @@
 body common control {
 
-   bundlesequence => { "example", "example2" };
+       bundlesequence => { "example", "example2" };
 
-}
+                    }
 
 
 
 bundle agent global_classes {
 
-# Classes defined in common bundles are global.
-#
-# They appear in the Defined Classes section at the start of
-# verbose output.
-#
-# Classes defined in all other bundles are local
+      # Classes defined in common bundles are global.
+      #
+      # They appear in the Defined Classes section at the start of
+      # verbose output.
+      #
+      # Classes defined in all other bundles are local
 
 
   classes:
 
-     "webserver"
+      "webserver"
 
-         expression  =>  classmatch("web[0-9]+");
+          expression  =>  classmatch("web[0-9]+");
 
-}
+                            }
 
 
 
@@ -32,16 +32,16 @@ bundle agent example
 
   classes:
 
-     "webserver"
+      "webserver"
 
-         expression  =>  classmatch("web[0-9]+");
+          expression  =>  classmatch("web[0-9]+");
 
 
-reports:
+  reports:
 
-  webserver::
+    webserver::
 
-    "I am a Web server - 1";
+      "I am a Web server - 1";
 
 }
 
@@ -49,11 +49,11 @@ reports:
 bundle agent example2
 {
 
-reports:
+  reports:
 
-  webserver::
+    webserver::
 
-    "I am a Web server - 2";
+      "I am a Web server - 2";
 
 }
 

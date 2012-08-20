@@ -1,20 +1,20 @@
 bundle agent example {
 
-    processes:
+  processes:
 
-        "^cupsd"
+      "^cupsd"
 
-            restart_class => "restart_cups",
-            comment => "We DO want print services";
-
-
-    commands:
-
-      restart_cups::
-
-          "/etc/init.d/cups"
-
-               args => "start";
+        restart_class => "restart_cups",
+              comment => "We DO want print services";
 
 
-}
+  commands:
+
+    restart_cups::
+
+      "/etc/init.d/cups"
+
+                 args => "start";
+
+
+                     }

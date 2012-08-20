@@ -1,21 +1,21 @@
 
 bundle agent example {
 
-    files:
+  files:
 
-        "/tmp/testfile"
+      "/tmp/testfile"
 
-            delete => tidy;
+               delete => tidy;
 
-}
+                     }
 
 #################################################
 
 body delete tidy {
 
-dirlinks => "delete";
-rmdirs   => "true";
+             dirlinks => "delete";
+             rmdirs   => "true";
 
-}
+                 }
 
 

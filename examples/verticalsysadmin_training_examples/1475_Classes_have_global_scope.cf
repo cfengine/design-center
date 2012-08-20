@@ -4,40 +4,40 @@
 
 body common control {
 
-    inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 
-}
+                    }
 
 
 bundle agent example {
 
-   vars:
-     "mycomment" string => "Let's keep a low profile and not advertise what software we are running";
-  
+  vars:
+      "mycomment" string => "Let's keep a low profile and not advertise what software we are running";
+      
 
-    files:
+  files:
 
-        "/etc/httpd/conf.d/welcome.conf"
+      "/etc/httpd/conf.d/welcome.conf"
 
-            comment => "$(mycomment)",
+              comment => "$(mycomment)",
             edit_line => comment_out_everything,
-            classes => if_repaired("reload_httpd");
+              classes => if_repaired("reload_httpd");
 
 
-}
+                     }
 
 bundle agent example2 {
-    commands:
-      reload_httpd::
-        "/etc/init.d/httpd reload";
-}
+  commands:
+    reload_httpd::
+      "/etc/init.d/httpd reload";
+                      }
 
 bundle edit_line comment_out_everything {
 
   replace_patterns:
 
-    "^([^#].*)"
+      "^([^#].*)"
 
-      replace_with => comment("#$(example.mycomment)# ");
+         replace_with => comment("#$(example.mycomment)# ");
 
-}
+                                        }

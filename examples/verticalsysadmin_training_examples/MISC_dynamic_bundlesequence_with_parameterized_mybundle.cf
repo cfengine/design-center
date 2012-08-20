@@ -34,49 +34,49 @@
 
 bundle common g
 {
-   # Define NTP servers in a specific order per site.
+      # Define NTP servers in a specific order per site.
 
-   # You could define everything here in "main" and change the references
-   # there in "methods:" if you wanted to.
+      # You could define everything here in "main" and change the references
+      # there in "methods:" if you wanted to.
 
-   vars:
+  vars:
 
-       site_x::
-           "ntpservers" slist => {
-               "ntp-sitex.our.org",
-               "ntp-sitey.our.org",
-               };
+    site_x::
+      "ntpservers" slist => {
+                              "ntp-sitex.our.org",
+                              "ntp-sitey.our.org",
+                            };
 
-       site_y::
-           "ntpservers" slist => {
-               "ntp-sitey.our.org",
-               "ntp-sitex.our.org",
-               };
+    site_y::
+      "ntpservers" slist => {
+                              "ntp-sitey.our.org",
+                              "ntp-sitex.our.org",
+                            };
 }
 
 bundle agent main
 {
-   methods:
+  methods:
 
-       site_x::
-           "site_x" usebundle =>
-               system_ntpclient_configure(@(g.ntpservers));
+    site_x::
+      "site_x" usebundle =>
+      system_ntpclient_configure(@(g.ntpservers));
 
-       site_y::
-           "site_y" usebundle =>
-               system_ntpclient_configure(@(g.ntpservers));
+    site_y::
+      "site_y" usebundle =>
+      system_ntpclient_configure(@(g.ntpservers));
 }
 
 body common control
 {
-   bundlesequence => {
-       "main"
-   };
+       bundlesequence => {
+                           "main"
+                         };
 
-   # Building a per-site inputs list is beyond the scope of this
-   # example.
-   inputs => {
-       "/var/cfengine/inputs/cfengine_stdlib.cf",
-       "ntp.cf"
-   };
+      # Building a per-site inputs list is beyond the scope of this
+      # example.
+               inputs => {
+                           "/var/cfengine/inputs/cfengine_stdlib.cf",
+                           "ntp.cf"
+                         };
 }

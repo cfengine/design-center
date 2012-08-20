@@ -1,10 +1,10 @@
 bundle agent example {
 
-    processes:
+  processes:
 
-        "eggdrop" 
+      "eggdrop" 
 
-            signals => { "term", "kill" },
-            comment => "We don't want IRC bots on our Web servers.";
- 
-}
+              signals => { "term", "kill" },
+              comment => "We don't want IRC bots on our Web servers.";
+      
+                     }

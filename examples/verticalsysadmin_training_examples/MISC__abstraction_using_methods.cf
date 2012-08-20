@@ -3,14 +3,14 @@
 
 bundle agent example {
 
-methods:
+  methods:
 
-   "any"  
+      "any"  
 
-      usebundle => groupadd("cfengine");
+            usebundle => groupadd("cfengine");
 
 
-}
+                     }
 
 
 #####################################################################
@@ -19,28 +19,28 @@ methods:
 bundle agent groupadd(groupname) {
 
 
-    commands:
+  commands:
       linux:: "/usr/sbin/groupadd" args => "$(groupname)";
       aix::   "/sbin/addgroup" args => "$(groupname)";
       hpux::  "/usr/sbin/addgroup" args => "$(groupname)";
 
-}
+                                 }
 
 
 bundle agent addgroup(groupname) {
 
-    vars:
+  vars:
 
-        linux:: "groupadd_utility"  string =>  "/usr/sbin/groupadd";
-        hpux::  "groupadd_utility"  string =>  "/usr/sbin/addgroup";
-        aix::   "groupadd_utility"  string =>  "/sbin/addgroup";
+      linux:: "groupadd_utility"  string =>  "/usr/sbin/groupadd";
+      hpux::  "groupadd_utility"  string =>  "/usr/sbin/addgroup";
+      aix::   "groupadd_utility"  string =>  "/sbin/addgroup";
 
 
-    commands:
+  commands:
 
-        "$(groupadd_utility)"
+      "$(groupadd_utility)"
 
-               args => "$(groupname)",
-               comment => "Ensure specified group '$(groupname)' group is present.";
+                 args => "$(groupname)",
+              comment => "Ensure specified group '$(groupname)' group is present.";
 
-}
+                                 }

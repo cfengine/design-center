@@ -15,26 +15,26 @@
 
 body common control {
 
-  inputs => {
-               "/var/cfengine/inputs/cfengine_stdlib.cf",
-               "1870_More_Examples__Security__edit_sshd.cf"
-            };
+               inputs => {
+                           "/var/cfengine/inputs/cfengine_stdlib.cf",
+                           "1870_More_Examples__Security__edit_sshd.cf"
+                         };
 
-}
+                    }
 
 #########################################################
 
 
 bundle agent example
 {
-vars:
-  "sshdconfig" string => "/etc/ssh/sshd_config";
+  vars:
+      "sshdconfig" string => "/etc/ssh/sshd_config";
 
-  # SSHD configuration to set
-  "sshd[Protocol]"                                string => "2";
-  "sshd[X11Forwarding]"                           string => "yes";
-  "sshd[UseDNS]"                                  string => "no";
+      # SSHD configuration to set
+      "sshd[Protocol]"                                string => "2";
+      "sshd[X11Forwarding]"                           string => "yes";
+      "sshd[UseDNS]"                                  string => "no";
 
-methods:
-  "any"    usebundle => edit_sshd("$(sshdconfig)", "example.sshd");
+  methods:
+      "any"    usebundle => edit_sshd("$(sshdconfig)", "example.sshd");
 }

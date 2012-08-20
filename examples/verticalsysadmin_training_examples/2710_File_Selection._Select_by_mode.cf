@@ -4,13 +4,13 @@
 bundle agent example
 
 {
-files:
+  files:
 
-  "/tmp/test_from" 
+      "/tmp/test_from" 
 
-    file_select => mode_777,
-    transformer => "/bin/echo DETECTED $(this.promiser) MATCHING MODE 777",
-    depth_search => recurse("inf");
+          file_select => mode_777,
+          transformer => "/bin/echo DETECTED $(this.promiser) MATCHING MODE 777",
+         depth_search => recurse("inf");
 
 }
 
@@ -19,8 +19,8 @@ files:
 body file_select mode_777
 
 {
-search_mode => { "777" };
-file_result => "mode";
+          search_mode => { "777" };
+          file_result => "mode";
 }
 
 ############################################
@@ -28,6 +28,6 @@ file_result => "mode";
 body depth_search recurse(d)
 
 {
-depth => "$(d)";
+                depth => "$(d)";
 }
 
