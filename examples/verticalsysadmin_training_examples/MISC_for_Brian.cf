@@ -7,11 +7,11 @@
 
 bundle agent example {
 
-reports:
-  cfengine::
-    "$(global.mylist)";
-  
-}
+  reports:
+    cfengine::
+      "$(global.mylist)";
+      
+                     }
 ##################################################3
 
 
@@ -19,12 +19,12 @@ bundle common global
 # common bundles are included in bundlesequence automatically 
 {
 
-vars: "web_servers" slist => { "web1", "web2", "my-hostname-has-dashes", };
+      vars: "web_servers" slist => { "web1", "web2", "my-hostname-has-dashes", };
 
-vars: "mylist" slist => { "main" }, policy => "overridable";
+      vars: "mylist" slist => { "main" }, policy => "overridable";
 
-vars: "mylist"
-    slist => { @(mylist), "web" },
-    policy => "overridable";
-    #ifvarclass => canonify("$(web_servers)");
+      vars: "mylist"
+                slist => { @(mylist), "web" },
+               policy => "overridable";
+      #ifvarclass => canonify("$(web_servers)");
 }

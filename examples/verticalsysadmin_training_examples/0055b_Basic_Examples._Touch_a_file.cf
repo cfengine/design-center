@@ -1,10 +1,10 @@
 bundle agent example {
 
-    files:
+  files:
 
-        "$(sys.workdir)/i_am_alive" 
+      "$(sys.workdir)/i_am_alive" 
 
-            create  => "true",
-            touch   => "true",
-            comment => "Update timestamp on this file so my sysadmin knows I am alive and faithful.";
-}
+              create  => "true",
+              touch   => "true",
+              comment => "Update timestamp on this file so my sysadmin knows I am alive and faithful.";
+                     }

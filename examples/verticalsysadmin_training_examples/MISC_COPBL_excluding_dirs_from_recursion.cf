@@ -1,6 +1,6 @@
 body common control {
-inputs => {"/var/cfengine/inputs/cfengine_stdlib.cf"};
-}
+               inputs => {"/var/cfengine/inputs/cfengine_stdlib.cf"};
+                    }
 
 #######################################################
 #
@@ -14,19 +14,19 @@ inputs => {"/var/cfengine/inputs/cfengine_stdlib.cf"};
 bundle agent example
 
 {
-vars:
+  vars:
 
-  "skip"
+      "skip"
 
-    slist  =>  {"/tmp/test_from/bigdir"};
+               slist  =>  {"/tmp/test_from/bigdir"};
 
-files:
+  files:
 
-  "/tmp/test_from" 
+      "/tmp/test_from" 
 
-    file_select => compound_filter,
-    transformer => "/bin/echo DETECTED $(this.promiser) MATCHING COMPOUND FILTER",
-    depth_search => recurse_ignore("inf", @(skip));
+          file_select => compound_filter,
+          transformer => "/bin/echo DETECTED $(this.promiser) MATCHING COMPOUND FILTER",
+         depth_search => recurse_ignore("inf", @(skip));
 
 }
 
@@ -36,9 +36,9 @@ body file_select compound_filter
 
 {
 
-search_mode => { "777" };
-leaf_name => { ".*\.pdf" , ".*\.fdf" };  # leaf_name = regex to match
+          search_mode => { "777" };
+            leaf_name => { ".*\.pdf" , ".*\.fdf" };  # leaf_name = regex to match
 
 
-file_result => "leaf_name|mode";   # this is a class expression
+          file_result => "leaf_name|mode";   # this is a class expression
 }

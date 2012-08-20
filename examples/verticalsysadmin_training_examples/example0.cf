@@ -1,7 +1,7 @@
 body common control
 {
 
-	inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 }
 
 bundle agent 
@@ -9,21 +9,21 @@ example
 {
 
 
-files:
+  files:
 
-"/etc/passwd"
+      "/etc/passwd"
 
-   classes => if_else ("file_exists", "file_does_not_exist");
+              classes => if_else ("file_exists", "file_does_not_exist");
 
 
-reports:
+  reports:
 
-  file_exists::
+    file_exists::
 
-     "file exists!";
+      "file exists!";
 
-  file_does_not_exist::
+    file_does_not_exist::
 
-     "file does not exist :(";
+      "file does not exist :(";
 }
 

@@ -1,26 +1,26 @@
 bundle agent example {
 
-files:
+  files:
 
-  "/tmp/file.txt"
+      "/tmp/file.txt"
 
-     edit_line => comment_out_dogs;
+            edit_line => comment_out_dogs;
 
-}
+                     }
 
 bundle edit_line comment_out_dogs {
 
-replace_patterns:
+  replace_patterns:
 
-   "^.*(dog).*$"
+      "^.*(dog).*$"
 
-     replace_with => comment("#");
+         replace_with => comment("#");
 
-       
-}
+      
+                                  }
 
 body replace_with comment(c)
 {
-replace_value => "$(c) $(match.1)";
-occurrences => "all";
+        replace_value => "$(c) $(match.1)";
+          occurrences => "all";
 }

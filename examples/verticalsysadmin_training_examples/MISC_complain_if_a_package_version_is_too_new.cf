@@ -1,29 +1,29 @@
 body common control {
 
-   inputs  =>  { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+              inputs  =>  { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 
-}
+                    }
 
 
 
 bundle agent example {
-packages:
+  packages:
 
-  "lsof"
+      "lsof"
 
-     package_method => yum,
-     package_policy => "add", # ensure package is installed
-     package_select => "<=",
-     package_version => "4.78-2",
-     classes => if_else("we_have_4_78_2_or_lesser","we_have_greater_than_4_78_2"),
-     comment => "Ensure our version of lsof is not greater than 4.78-2.  Let's say 4.78-3 and above in
+       package_method => yum,
+       package_policy => "add", # ensure package is installed
+       package_select => "<=",
+      package_version => "4.78-2",
+              classes => if_else("we_have_4_78_2_or_lesser","we_have_greater_than_4_78_2"),
+              comment => "Ensure our version of lsof is not greater than 4.78-2.  Let's say 4.78-3 and above in
 troduce a new feature that is not compatible with our in-house application.";
 
-reports:
-   we_have_greater_than_4_78_2::
-     "your lsof version is > 4.78-2";
-   we_have_4_78_2_or_lesser::
-     "your lsof version is <= 4.78-2";
+  reports:
+    we_have_greater_than_4_78_2::
+      "your lsof version is > 4.78-2";
+    we_have_4_78_2_or_lesser::
+      "your lsof version is <= 4.78-2";
 
 
-}
+                     }

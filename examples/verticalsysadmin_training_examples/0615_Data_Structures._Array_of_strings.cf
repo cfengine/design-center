@@ -1,18 +1,18 @@
 bundle agent example {
 
-    vars:
-        "cfengine_components[cf-monitord]" string => "The monitor";
+  vars:
+      "cfengine_components[cf-monitord]" string => "The monitor";
 
-        "cfengine_components[cf-serverd]" string => "The server";
+      "cfengine_components[cf-serverd]" string => "The server";
 
-        "cfengine_components[cf-execd]" string => "The executor";
+      "cfengine_components[cf-execd]" string => "The executor";
 
-        "component_names"
-	    slist => getvalues("cfengine_components");
+      "component_names"
+                slist => getvalues("cfengine_components");
 
-    reports:
-      linux::
+  reports:
+    linux::
 
-        "$(cfengine_components[cf-execd])";
+      "$(cfengine_components[cf-execd])";
 
-}
+                     }

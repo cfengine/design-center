@@ -2,9 +2,9 @@
 
 bundle agent example
 {
-reports:
+  reports:
 
-     "$(this.promise_filename)";
+      "$(this.promise_filename)";
 }
 
 # Here is what cf-agent would output: 

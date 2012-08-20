@@ -2,11 +2,6 @@
 
 (If you finish early, please study the Reference
 Manual, chapters 1 - 4.)
-w b
-one
-
-http://www.example.com/
-three
 
 1. Write a policy to signal TERM and then KILL to anyklasdjf
 process matching "trn".

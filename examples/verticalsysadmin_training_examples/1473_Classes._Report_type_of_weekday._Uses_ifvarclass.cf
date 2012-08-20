@@ -3,25 +3,25 @@
 
 bundle agent example {
 
-    reports:
-      Saturday|Sunday::
-        "Hello world!  I love weekends!";
+  reports:
+    Saturday|Sunday::
+      "Hello world!  I love weekends!";
 
-    vars:
-         "weekdays"
-             slist => { "Monday", 
-                       "Tuesday",
-                       "Wednesday",
-                       "Thursday",
-                       "Friday",
-                      };
+  vars:
+      "weekdays"
+                slist => { "Monday", 
+                           "Tuesday",
+                           "Wednesday",
+                           "Thursday",
+                           "Friday",
+                         };
 
 
-    reports:
-      linux::
-        "Hello world!  I love $(weekdays)s!"
-             ifvarclass => "$(weekdays)"; 
-             # ifvarclass: variable classes ANDed
-             # with any regular classes (converts variable to a class)
+  reports:
+    linux::
+      "Hello world!  I love $(weekdays)s!"
+           ifvarclass => "$(weekdays)"; 
+      # ifvarclass: variable classes ANDed
+      # with any regular classes (converts variable to a class)
 
-}
+                     }

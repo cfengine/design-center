@@ -7,43 +7,43 @@
 
 bundle agent example {
 
-    processes:
+  processes:
 
-         ".*"
+      ".*"
 
-             process_select  => vsize_exceeds("apache", "httpd", "30000"),
-             process_count => set_class("big_apache_httpd_procs");
-    
-    commands:
-        big_apache_httpd_procs::
-             "/usr/sbin/httpd -k graceful";
-    
+      process_select  => vsize_exceeds("apache", "httpd", "30000"),
+        process_count => set_class("big_apache_httpd_procs");
+      
+  commands:
+    big_apache_httpd_procs::
+      "/usr/sbin/httpd -k graceful";
+      
 
-}
+                     }
 
 ########################################################
 
 body process_select vsize_exceeds(process_owner, command, vsize_limit) {
-   
-    process_owner => { "apache" };  # username of process owner
+      
+        process_owner => { "apache" };  # username of process owner
 
-    command => "/usr/sbin/httpd.*";  # username of process owner
+              command => "/usr/sbin/httpd.*";  # username of process owner
 
-    vsize => irange("$(vsize_limit)","inf"); # vsize is over
-                                             # $(vsize_limit)
-    process_result => "process_owner&command&vsize";
-}
+                vsize => irange("$(vsize_limit)","inf"); # vsize is over
+      # $(vsize_limit)
+       process_result => "process_owner&command&vsize";
+                                                                       }
 
 ########################################################
 
 body process_count set_class(classname)
 
 {
-match_range => "1,inf"; # Integer range for acceptable number of matches for this process
-                      # (In this case, one or more processes
+          match_range => "1,inf"; # Integer range for acceptable number of matches for this process
+      # (In this case, one or more processes
 
 
-in_range_define => { "$(classname)" }; # List of classes to define if the matches are in range.
+      in_range_define => { "$(classname)" }; # List of classes to define if the matches are in range.
 
 }
 

@@ -18,43 +18,43 @@
 
 bundle agent example {
 
-vars:
+  vars:
 
- "site"
-    string => readfile( "/etc/site" , "3" );
+      "site"
+               string => readfile( "/etc/site" , "3" );
 
-files:
- "/etc/sysconfig/autofs"
-    edit_line => create_our_autofs("$(site)"),
-    create => "true";
-}
+  files:
+      "/etc/sysconfig/autofs"
+            edit_line => create_our_autofs("$(site)"),
+               create => "true";
+                     }
 
 
 #####################################################
 
 bundle edit_line create_our_autofs(site) {
 
-delete_lines:
-  ".*";
+  delete_lines:
+      ".*";
 
-# /templates/autofs.tmpl
+      # /templates/autofs.tmpl
 
-insert_lines:
+  insert_lines:
 
-   "/templates/autofs.tmpl"
-       insert_type => "file";		# insert copy of template 
+      "/templates/autofs.tmpl"
+          insert_type => "file";                # insert copy of template 
 
-replace_patterns:
+  replace_patterns:
 
-   "__SITE__"
+      "__SITE__"
 
-      replace_with =>  our_replace_body("$(site)");
-}
+         replace_with =>  our_replace_body("$(site)");
+                                         }
 
 #####################################################
 
 body replace_with our_replace_body(site) {
 
-  replace_value => "$(site)";
+        replace_value => "$(site)";
 
-}
+                                         }

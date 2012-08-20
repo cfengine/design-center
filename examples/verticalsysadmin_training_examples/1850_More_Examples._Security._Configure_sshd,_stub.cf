@@ -11,24 +11,24 @@
 
 bundle agent example
 {
-vars:
+  vars:
 
-  "sshd[Protocol]"                                string => "2";
-  "sshd[X11Forwarding]"                           string => "yes";
-  "sshd[UseDNS]"                                  string => "no";
+      "sshd[Protocol]"                                string => "2";
+      "sshd[X11Forwarding]"                           string => "yes";
+      "sshd[UseDNS]"                                  string => "no";
 
-methods:
-  "any"    usebundle => edit_sshd("example.sshd");
+  methods:
+      "any"    usebundle => edit_sshd("example.sshd");
 }
 
 
 
 bundle agent edit_sshd(params)
 {
-vars:
-  "index" slist => getindices("$(params)");
+  vars:
+      "index" slist => getindices("$(params)");
 
-reports:
-   cfengine::
-         "$(index) :  $($(params)[$(index)])";
+  reports:
+    cfengine::
+      "$(index) :  $($(params)[$(index)])";
 }

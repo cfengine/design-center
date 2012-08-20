@@ -1,36 +1,36 @@
 body common control {
 
-	inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 
-}
+                    }
 
 bundle agent example {
 
-vars:
+  vars:
 
- "badusers" slist => {
-                       "alex",
-                       "ben",
-                       "charlie",
-                       "diana",
-                       "joe"
-                     };
+      "badusers" slist => {
+                            "alex",
+                            "ben",
+                            "charlie",
+                            "diana",
+                            "joe"
+                          };
 
-#####################################################
+      #####################################################
 
-methods:
+  methods:
 
- "any" usebundle => lock_user("$(badusers)");
+      "any" usebundle => lock_user("$(badusers)");
 
-}
+                     }
 
 ###########################################
 
 bundle agent lock_user(user) {
 
-    files:
-       "/etc/shadow"
+  files:
+      "/etc/shadow"
 
-           edit_line => set_user_field("$(user)",2,"!LOCKED");
+            edit_line => set_user_field("$(user)",2,"!LOCKED");
 
-}
+                             }

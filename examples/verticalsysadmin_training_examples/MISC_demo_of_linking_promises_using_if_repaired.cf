@@ -1,19 +1,19 @@
 body common control {
-	inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-}
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+                    }
 
 bundle agent example {
 
-files:
-    "/tmp/httpd.conf"
-	create => "true",
-	edit_line => insert_lines("ServerName localhost"),
-	classes => if_repaired("httpd_restart_needed");
+  files:
+      "/tmp/httpd.conf"
+               create => "true",
+            edit_line => insert_lines("ServerName localhost"),
+              classes => if_repaired("httpd_restart_needed");
 
 
-commands:
-  httpd_restart_needed::
-    "/etc/init.d/httpd reload";
+  commands:
+    httpd_restart_needed::
+      "/etc/init.d/httpd reload";
 
 
-}
+                     }

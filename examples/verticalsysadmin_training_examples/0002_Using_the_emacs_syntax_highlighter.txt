@@ -1,0 +1,26 @@
+Using the emacs syntax highlighter
+----------------------------------
+
+1) Get latest stable Emacs (Emacs 24.1.2)
+
+2) Remove the cfengine syntax highlighter rules files that ship with Emacs 24.1.2 (this cfengine.el is out of date) compared to the one on in the CFEngine repository:
+
+ share/emacs/24.1/lisp/progmodes/cfengine.elc
+ share/emacs/24.1/lisp/progmodes/cfengine.el.gz
+
+3) Replace it by installing the "cfengine.el" file from 
+https://raw.github.com/cfengine/core/master/contrib/cfengine.el
+to the progmodes directory from #2 above.
+
+2) Open a .cf file `C-x C-f FILENAME.cf'
+
+3) Explicitly activate the mode `M-x cfengine3-mode' (M-x is Alt-x or
+   Esc-x usually)
+
+4) If you want it to always happen, add this to ~/.emacs:
+
+(add-to-list 'auto-mode-alist ("\\.cf\\'" . cfengine3-mode))
+
+5) In 24.2 cfengine-mode will be aliased to cfengine3-mode, but for
+   now it's aliased to cfengine-auto-mode, which tries to figure out if
+   you're using 2 or 3 and defaults to 2.

@@ -1,4 +1,4 @@
-There is a special promise type in Cfengine 3 called "methods"
+There is a special promise type in CFEngine 3 called "methods"
 that promises to call another promise bundle.  
 
 

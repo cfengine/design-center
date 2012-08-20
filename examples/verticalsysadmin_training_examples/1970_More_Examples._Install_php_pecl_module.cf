@@ -6,7 +6,7 @@
 body common control
 
 {
-inputs          => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+      inputs          => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 }
 
 ################################################################
@@ -14,40 +14,40 @@ inputs          => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 
 bundle agent php_pecl_http_extension_is_installed_and_integrated {
 
-files:
+  files:
 
       "/etc/php.ini"
 
-       edit_line => tell_php_to_load_http_extension;
+            edit_line => tell_php_to_load_http_extension;
 
 
 
-classes:
+  classes:
 
-  "pecl_http_module_exists" expression => fileexists("/usr/lib64/php/modules/http.so");
+      "pecl_http_module_exists" expression => fileexists("/usr/lib64/php/modules/http.so");
 
 
-commands:
+  commands:
 
-  !pecl_http_module_exists::
+    !pecl_http_module_exists::
 
-    "/usr/bin/yes ' ' | /usr/bin/pecl install pecl_http && /usr/bin/chcon -t textrel_shlib_t /usr/lib64/php/modules/http.so"  # force the install to be non-interactive - let the pecl install pecl_http use the default settings.  Then set SELinux label.
+      "/usr/bin/yes ' ' | /usr/bin/pecl install pecl_http && /usr/bin/chcon -t textrel_shlib_t /usr/lib64/php/modules/http.so"  # force the install to be non-interactive - let the pecl install pecl_http use the default settings.  Then set SELinux label.
 
-       contain => in_shell;  # so we can do a pipeline
-} 
+              contain => in_shell;  # so we can do a pipeline
+                                                                 } 
 
 
 ###############################################################
 
 
 bundle edit_line tell_php_to_load_http_extension {
-    vars:
-        "dynamically_load_http_module" string => "extension=http.so   ; In-house module XYZ requires HttpRequest which is provided by pecl_http"; # this is the text we want in /etc/php.ini
+  vars:
+      "dynamically_load_http_module" string => "extension=http.so   ; In-house module XYZ requires HttpRequest which is provided by pecl_http"; # this is the text we want in /etc/php.ini
 
-     insert_lines:
-       "$(dynamically_load_http_module)"
-           location => in_Dynamic_Extensions_section;
-}
+  insert_lines:
+      "$(dynamically_load_http_module)"
+             location => in_Dynamic_Extensions_section;
+                                                 }
 
 
 ###############################################################
@@ -56,9 +56,9 @@ bundle edit_line tell_php_to_load_http_extension {
 body location in_Dynamic_Extensions_section
 
 {
-before_after => "after";
-first_last => "first";
-select_line_matching => "; Dynamic Extensions ;";
+         before_after => "after";
+           first_last => "first";
+ select_line_matching => "; Dynamic Extensions ;";
 }
 
 # reloading the httpd if php.ini was edited 

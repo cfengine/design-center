@@ -10,7 +10,7 @@
 
 bundle common g
 {
-vars: "myusers"  slist => { "joe", "mary", "ann" };
+      vars: "myusers"  slist => { "joe", "mary", "ann" };
 
 }
 
@@ -18,9 +18,9 @@ vars: "myusers"  slist => { "joe", "mary", "ann" };
 bundle agent example
 
 {
-vars: "mylist" slist => { @(g.myusers) };
+      vars: "mylist" slist => { @(g.myusers) };
 
-reports:
-  linux::
-  "$(mylist)"; 
+  reports:
+    linux::
+      "$(mylist)"; 
 }
