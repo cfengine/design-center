@@ -14,10 +14,6 @@ Note: the removal of defined limits ignores the limit value. It only looks for
 
 ## SAMPLE USAGE
 
-    # Run with cf-agent -KIf ./test -D debug_complete
-    #          cf-agent -KIf ./test -D debug_partial
-    #          cf-agent -KIf ./test -D debug_absent
-    #
     body common control {
 
         bundlesequence => {"main",};
@@ -27,31 +23,16 @@ Note: the removal of defined limits ignores the limit value. It only looks for
 
     bundle agent main{
     vars:
-      "limits_debug_filename" string => "/tmp/limits.conf";
 
-      debug_complete::
+      oracle_10::
         # This will manage the whole file, only these defined entries allowed
-        "limits_domains[testuser][soft][nproc]" string => "DEBUG_COMPLETE";
-        "limits_domains[testuser][hard][nproc]" string => "DEBUG_COMPLETE";
-        "limits_domains[testuser][soft][nofile]" string => "DEBUG_COMPLETE";
-        "limits_domains[testuser][hard][nofile]" string => "DEBUG_COMPLETE";
-        "limits_mgmt_policy" string => "complete";
-        "limits_contexts_text[debug]" string => "ON";
+        "limits_domains[oracle][soft][nproc]" string => "2047";
+        "limits_domains[oracle][hard][nproc]" string => "16384";
+        "limits_domains[oracle][soft][nofile]" string => "1024";
+        "limits_domains[oracle][hard][nofile]" string => "65536";
+        "limits_mgmt_policy" string => "ensure_present";
 
-        
-      debug_partial::
-        # This will only manage the testuser soft nproc entry
-        "limits_domains[testuser][soft][nproc]" string => "DEBUG_PARTIAL";
-        "limits_mgmt_policy" string => "present";
-        "limits_contexts_text[debug]" string => "ON";
-    
-      debug_absent::
-        # This will remove any limit for testuser soft nproc
-        "limits_domains[testuser][soft][nproc]" string => "DEBUG_ABSENT";
-        "limits_mgmt_policy" string => "absent";
-        "limits_contexts_text[debug]" string => "ON";
 
     methods:
-      debug_complete|debug_absent|debug_partial::
-        "any" usebundle => security_limits("main.limits_");
+        "Security Limits" usebundle => security_limits("main.limits_");
     }
