@@ -36,7 +36,6 @@ bundle agent meta_cloud_services
       "argument[ec2]"              string => "array";
       "argument[vcli]"             string => "array";
       "argument[bycontext]"        string => "array";
-
 }
 
 bundle agent cloud_context(prefix, context)
@@ -176,8 +175,8 @@ bundle agent vcli(hub, service, state)
       "class"  string => "$(params[2])";
       "prefix" string => "$(cloud_context.active_prefix)";
 
-      "master_image" string => "ubuntu-12.04-i386-master";
-      "child_prefix" string => "ubuntu-12.04-i386-clone-";
+      "master_image" string => "$($(prefix)vcli[master_image])";
+      "child_prefix" string => "$($(prefix)vcli[child_prefix])";
 
       # NB: these are in /bin or /usr/bin or... but it varies on many
       # systems, so we'll just accept whatever is in the PATH
@@ -194,7 +193,7 @@ bundle agent vcli(hub, service, state)
       "p"      string => "$($(prefix)vcli[password])";
       "path"   string => "$($(prefix)vcli[fullpath])";
       "ds"     string => "$($(prefix)vcli[datastore])";
-      "srv"     string => "$($(prefix)vcli[esxi_server])";
+      "srv"    string => "$($(prefix)vcli[esxi_server])";
 
       "VIFS_BASE"       string => "$(vifs) --server $(srv) --username $(u) --password $(p)";
       "VIFS_COPY"       string => "$(VIFS_BASE) -c";
