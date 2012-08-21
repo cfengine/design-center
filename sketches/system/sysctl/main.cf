@@ -74,10 +74,11 @@ files:
     comment => "Ensure the variables defined do not exist at all not matter their value.";
 
 commands:
-  "/sbin/sysctl"
-    args => "-p",
-    classes => if_repaired("sysctl_reloaded"),
-    comment => "Reload sysctl after repairing configuration";
+  sysctl_needs_reloaded::
+    "/sbin/sysctl"
+      args => "-p",
+      classes => if_repaired("sysctl_reloaded"),
+      comment => "Reload sysctl after repairing configuration";
 
 reports:
   debug_sysctl::
