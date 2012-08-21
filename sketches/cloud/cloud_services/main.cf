@@ -154,12 +154,12 @@ bundle agent vcli(hub, service, state)
 
       "ssl_noverify" expression => strcmp("$(cloud_context.disable_ssl_verify)", "1");
 
-    parsed_ok::
-      "decided" expression => usemodule("$(vcli_decision_module)",
-                                        "$(vcli_decision_args)");
+    parsed_ok.!decided::
+      "decided" expression => usemodule("$(perl)",
+                                        "$(vcli_decision_module) $(vcli_decision_args)");
 
     decided::
-      "vcli_decision_valid" expression => regcmp("[^$]+","$(vcli_decision.current_count)");
+      "vcli_decision_valid" expression => regcmp("[^$]+","$(perl.current_count)");
 
   vars:
     debug::
@@ -179,9 +179,12 @@ bundle agent vcli(hub, service, state)
       "master_image" string => "ubuntu-12.04-i386-master";
       "child_prefix" string => "ubuntu-12.04-i386-clone-";
 
-      # NB: these are in /bin or /usr/bin... but it varies on many
+      # NB: these are in /bin or /usr/bin or... but it varies on many
       # systems, so we'll just accept whatever is in the PATH
       "grep"  string => "grep";
+
+      # adjust for your Perl install, but any Perl should be able to handle this
+      "perl"  string => "../../../usr/bin/perl";
 
       "vifs"  string => "$(cmd_prefix)/usr/bin/vifs";
       "vmcmd" string => "$(cmd_prefix)/usr/bin/vmware-cmd";
@@ -209,36 +212,37 @@ bundle agent vcli(hub, service, state)
       "VMCMD_REG"       string => "$(VMCMD_BASE) -s register";
       "VMKFSTOOLS"      string => "$(vmkfs) --server $(srv) --username $(u) --password $(p) -i";
 
-      "vcli_decision_module" string => "../masterfiles/sketches/$(cloud_services.home)/modules/vcli_decision";
-      "vcli_decision_args" string => "'$(VMCMD_LIST_OURS)' '$(state)' '$(params[1])' '$(child_prefix)' '$(path)'";
+      "vcli_decision_module" string => "sketches/$(cloud_services.home)/modules/vcli_decision";
+      "vcli_decision_args" string => "'$(VMCMD_LIST_OURS)' '$(state)' '$(params[1])' '$(child_prefix)'";
 
     vcli_decision_valid::
-      "VMCMD_STOP"  string => "$(VMCMD_PREFIX)/$(vcli_decision.decom_instance)/$(vcli_decision.decom_instance).vmx stop soft";
-      "VMCMD_UNREG" string => "$(VMCMD_BASE) -s unregister $(path)/$(vcli_decision.decom_instance)/$(vcli_decision.decom_instance).vmx";
+      "VMCMD_STOP"  string => "$(VMCMD_PREFIX)/$(perl.decom_instance)/$(perl.decom_instance).vmx stop soft";
+      "VMCMD_UNREG" string => "$(VMCMD_BASE) -s unregister $(path)/$(perl.decom_instance)/$(perl.decom_instance).vmx";
 
   methods:
     vcli_decision_valid.bootstrap_needed::
       # clone the needed bootstraps
-      "CLONE"  usebundle => vmware_clone("$(master_image)", "$(vcli_decision.bootstrap_instance)");
-      "START"  usebundle => vmware_start("$(vcli_decision.bootstrap_instance)");
+      "CLONE"  usebundle => vmware_clone("$(master_image)", "$(perl.bootstrap_instance)");
+      "START"  usebundle => vmware_start("$(perl.bootstrap_instance)");
       # start all our client instances if a bootstrap is needed
-      "START"  usebundle => vmware_start("$(vcli_decision.our_instances)");
+      "START"  usebundle => vmware_start("$(perl.our_instances)");
 
     vcli_decision_valid.decom_needed::
-      "STOP"   usebundle => vmware_stop("$(vcli_decision.decom_instance)");
-      "DELETE" usebundle => vmware_delete("$(vcli_decision.decom_instance)");
+      # "STOP"   usebundle => vmware_stop("$(perl.decom_instance)");
+      "DELETE" usebundle => vmware_delete("$(perl.decom_instance)");
 
   reports:
     vcli_decision_valid.bootstrap_needed::
-      "Service '$(service)' requires bootstrap: requested instance $(vcli_decision.bootstrap_instance) of class $(class) (current $(vcli_decision.current_count))";
+      "Service '$(service)' requires bootstrap: requested instance $(perl.bootstrap_instance) of class $(class) (current $(perl.current_count))";
     vcli_decision_valid.decom_needed::
-      "Service '$(service)' requires decom: requested instance $(vcli_decision.decom_instance) of class $(class) (current $(vcli_decision.current_count))";
+      "Service '$(service)' requires decom: requested instance $(perl.decom_instance) of class $(class) (current $(perl.current_count))";
     vcli_decision_valid.nothing_needed::
-      "Service '$(service)' requires no action: it already has $(vcli_decision.current_count) instances of class $(class)";
+      "Service '$(service)' requires no action: it already has $(perl.current_count) instances of class $(class)";
     !vcli_decision_valid::
       "The vcli_decision module \"$(vcli_decision_module) $(vcli_decision_args)\"could not be executed";
     verbose::
       "We will list our client instances with '$(VMCMD_LIST_OURS)'";
+      "The vifs commands will start with $(VIFS_BASE)";
 }
 
 # -----------------------------------------------------------------------------
@@ -292,6 +296,10 @@ bundle agent vmware_clone(vm_source, vm_clone)
   reports:
     verbose::
       "###### cloning VM $(vm_source) into VM $(vm_clone) ######";
+    verbose.have_source_dir::
+      "The source directory \"[$(vcli.ds)] $(vm_source)/\" exists";
+    verbose.have_clone_dir::
+      "The clone target directory \"[$(vcli.ds)] $(vm_clone)/\" exists.  Remove it with \"$(vcli.VIFS_DELETE) \"[$(vcli.ds)] $(vm_clone)\" -f\"";
 }
 
 #####
@@ -394,7 +402,7 @@ bundle agent vmware_delete(vm_name)
 {
   vars:
     any::
-      "parameters" slist => getindices("$(inputs)");
+      "canon_prefix" string => canonify("$(vm_name)");
 
       "reg_status" string => execresult("$(vcli.VMCMD_LIST)","useshell"),
       policy => "free";
@@ -412,7 +420,25 @@ bundle agent vmware_delete(vm_name)
 
   commands:
     vm_registered::
-      "$(vcli.VMCMD_STOP)";
-      "$(vcli.VMCMD_UNREG)";
-      "$(vcli.VIFS_DELETE) \"[$(vcli.ds)] $(vm_name)\" -f";
+      "$(vcli.VMCMD_STOP)"
+      classes => if_ok("$(canon_prefix)_stopped");
+
+      "$(vcli.VMCMD_UNREG)"
+      classes => if_ok("$(canon_prefix)_unregistered"),
+      ifvarclass => "$(canon_prefix)_stopped";
+
+      "$(vcli.VIFS_DELETE) \"[$(vcli.ds)] $(vm_name)\" -f"
+      classes => if_ok("$(canon_prefix)_deleted"),
+      ifvarclass => "$(canon_prefix)_unregistered";
+
+  reports:
+    verbose::
+      "$(vm_name) was stopped"
+      ifvarclass => "$(canon_prefix)_stopped";
+
+      "$(vm_name) was unregistered"
+      ifvarclass => "$(canon_prefix)_unregistered";
+
+      "$(vm_name) was deleted"
+      ifvarclass => "$(canon_prefix)_deleted";
 }

@@ -8,15 +8,12 @@ my $lister       = shift @ARGV;
 my $state        = shift @ARGV;
 my $count        = shift @ARGV;
 my $child_prefix = shift @ARGV;
-my $path         = shift @ARGV;
 
 my @i;
 open F, "$lister|" or die "Could not open instance lister $lister: $!";
 while (<F>)
 {
- chomp;
- s,^$path/,,;
- push @i, $_;
+ push @i, $1 if m/($child_prefix\d+)/;
 }
 
 $count = 0 if 'start' ne $state;
