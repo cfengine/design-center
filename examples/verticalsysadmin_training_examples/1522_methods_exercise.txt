@@ -1,0 +1,21 @@
+                       EXERCISE
+
+Practice using "methods" type promises
+
+Write a policy that has two bundles.
+
+The first bundle does something visible (such as a
+reports type promise that says "bundle1") AND calls
+the second bundle.
+
+The second bundle reports "bundle2".
+
+Run your policy?  What output do you see and in what
+order?  Why?
+
+
+EXERCISE 10. Methods (continued).
+
+Now parameterize the 2nd bundle -- have the
+first bundle feed it an argument, and have the
+2nd bundle display that argument.
