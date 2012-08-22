@@ -583,7 +583,7 @@ sub generate
 
        # force-feed the bundle location here to work around a possible this.promise_filename bug
        $varlist->{bundle_home} = 'string';
-       $pdata->{bundle_home} = '$(sys.workdir)/inputs/sketches/$data->{dir}';
+       $pdata->{bundle_home} = '$(sys.workdir)/inputs/sketches/' . $data->{dir};
 
        # provide the metadata that could be useful
        my @files = sort keys %{$data->{manifest}};
