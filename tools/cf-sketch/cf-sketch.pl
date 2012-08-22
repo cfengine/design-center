@@ -1010,10 +1010,13 @@ sub remove
    my @matches = grep
    {
     # accept sketch name or directory
-    ($_ eq $sketch) || ($contents->{$_}->{dir} eq $sketch)
+    ($_ eq $sketch) || ($contents->{$_}->{dir} eq $sketch) || ($contents->{$_}->{fulldir} eq $sketch)
    } keys %$contents;
 
-   next unless scalar @matches;
+   unless (scalar @matches) {
+     color_warn "I did not find an installed sketch that matches '$sketch' - not removing it.\n";
+     next;
+   }
    $sketch = shift @matches;
    my $data = $contents->{$sketch};
    if (maybe_remove_dir($data->{dir}))
