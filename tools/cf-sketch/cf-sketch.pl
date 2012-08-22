@@ -472,7 +472,7 @@ sub list
     $contents->{$sketch}->{manifest}->{$_}->{documentation}
    } sort keys %{$contents->{$sketch}->{manifest}};
 
-   print GREEN, "$sketch", RESET, " $contents->{$sketch}->{dir}\n";
+   print GREEN, "$sketch", RESET, " $contents->{$sketch}->{fulldir}\n";
   }
  }
 }
