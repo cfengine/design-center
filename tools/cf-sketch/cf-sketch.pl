@@ -472,7 +472,7 @@ sub list
     $contents->{$sketch}->{manifest}->{$_}->{documentation}
    } sort keys %{$contents->{$sketch}->{manifest}};
 
-   print GREEN, "$sketch", RESET, " $contents->{$sketch}->{dir}\n";
+   print GREEN, "$sketch", RESET, " $contents->{$sketch}->{fulldir}\n";
   }
  }
 }
@@ -505,6 +505,17 @@ sub list_internal
  }
 
  return @ret;
+}
+
+# Produce the appropriate input directory depending on --fullpath
+sub inputfile {
+  my @paths=@_;
+  if ($options{fullpath}) {
+      return File::Spec->catfile(@paths);
+  }
+  else {
+      return File::Spec->catfile('sketches', @paths);
+  }
 }
 
 # generate the actual cfengine config that will run all the cf-sketch bundles
@@ -566,7 +577,7 @@ sub generate
        # anything in the runme template
        unless (exists $entry_point->{bundle})
        {
-        push @inputs, File::Spec->catfile($data->{dir}, @{$data->{interface}});
+        push @inputs, inputfile($data->{dir}, @{$data->{interface}});
         next;
        }
 
@@ -583,7 +594,7 @@ sub generate
 
        # force-feed the bundle location here to work around a possible this.promise_filename bug
        $varlist->{bundle_home} = 'string';
-       $pdata->{bundle_home} = $data->{dir};
+       $pdata->{bundle_home} = $options{fullpath} ? $data->{fulldir} : '$(sys.workdir)/inputs/sketches/' . $data->{dir};
 
        # provide the metadata that could be useful
        my @files = sort keys %{$data->{manifest}};
@@ -705,8 +716,8 @@ sub generate
     {
      if (exists $contents->{$dep})
      {
-      push @inputs, File::Spec->catfile($contents->{$dep}->{dir},
-                                        @{$contents->{$dep}->{interface}});
+      push @inputs, inputfile($contents->{$dep}->{dir},
+                              @{$contents->{$dep}->{interface}});
       delete $dependencies{$dep};
      }
     }
@@ -719,7 +730,7 @@ sub generate
    }
 
    # process input template, substituting variables
-   push @inputs, $template_activations->{$_}->{file}
+   push @inputs, inputfile($template_activations->{$_}->{file})
     foreach sort keys %$template_activations;
 
    my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
@@ -1010,20 +1021,23 @@ sub remove
    my @matches = grep
    {
     # accept sketch name or directory
-    ($_ eq $sketch) || ($contents->{$_}->{dir} eq $sketch)
+    ($_ eq $sketch) || ($contents->{$_}->{dir} eq $sketch) || ($contents->{$_}->{fulldir} eq $sketch)
    } keys %$contents;
 
-   next unless scalar @matches;
+   unless (scalar @matches) {
+     color_warn "I did not find an installed sketch that matches '$sketch' - not removing it.\n";
+     next;
+   }
    $sketch = shift @matches;
    my $data = $contents->{$sketch};
-   if (maybe_remove_dir($data->{dir}))
+   if (maybe_remove_dir($data->{fulldir}))
    {
     deactivate($sketch);       # deactivate all the activations of the sketch
-    print GREEN "Successfully removed $sketch from $data->{dir}\n" unless $quiet;
+    print GREEN "Successfully removed $sketch from $data->{fulldir}\n" unless $quiet;
    }
    else
    {
-    print RED "Could not remove $sketch from $data->{dir}\n" unless $quiet;
+    print RED "Could not remove $sketch from $data->{fulldir}\n" unless $quiet;
    }
   }
  }
