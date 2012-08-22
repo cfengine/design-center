@@ -1,23 +1,23 @@
 body common control {
 
-    inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 
-}
+                    }
 
 ###########################################################
 
 bundle agent example {
 
-    vars:
-        "master_location"
-            string => "/var/cfengine/masterfiles";
+  vars:
+      "master_location"
+               string => "/var/cfengine/masterfiles";
 
-    files:
-      centos::
-        "/etc/httpd/conf.d/welcome.conf"
+  files:
+    centos::
+      "/etc/httpd/conf.d/welcome.conf"
 
-            comment      => "make sure welcome.conf matches master copy",
-            copy_from    => remote_cp("$(master_location)/welcome.conf","205.186.147.195"),
-            action       => immediate;
+         comment      => "make sure welcome.conf matches master copy",
+         copy_from    => remote_cp("$(master_location)/welcome.conf","205.186.147.195"),
+         action       => immediate;
 
-}
+                     }

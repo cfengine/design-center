@@ -1,16 +1,16 @@
 body common control {
-    inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-}
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+                    }
 
 
 bundle agent example {
 
-    files:
+  files:
 
-        "/tmp/testfile.*"
+      "/tmp/testfile.*"
 
-            delete => tidy;
+               delete => tidy;
 
-     # shell equivalent:  rm -r /tmp/testfile
+      # shell equivalent:  rm -r /tmp/testfile
 
-}
+                     }

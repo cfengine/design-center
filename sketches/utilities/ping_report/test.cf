@@ -1,0 +1,18 @@
+body common control {
+
+    bundlesequence => { "main" };
+
+    inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf"};
+}
+
+bundle agent main {
+vars:
+  "test1_count" string => "2";
+  "test1_hosts" slist => {"localhost", "127.0.0.1", "boogie.woogie"};
+  "test1_report_success" string => "true";
+  "test1_report_failure" string => "on";
+
+methods:
+  "test1" usebundle => ping_report("main.test1_");
+
+}

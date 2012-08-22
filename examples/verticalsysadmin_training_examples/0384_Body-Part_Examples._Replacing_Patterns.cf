@@ -1,11 +1,11 @@
 bundle agent example {
 
-files:
+  files:
 
-  "/tmp/data.txt"
-        edit_line => transform_dogs_to_cats;
+      "/tmp/data.txt"
+            edit_line => transform_dogs_to_cats;
 
-}
+                     }
 
 bundle edit_line transform_dogs_to_cats {
 
@@ -13,12 +13,12 @@ bundle edit_line transform_dogs_to_cats {
 
       "[Dd]og"
 
-          replace_with => value("cat");
+         replace_with => value("cat");
 
-}
+                                        }
 
 body replace_with value(x)
 {
-replace_value => "$(x)";
-occurrences => "all";
+        replace_value => "$(x)";
+          occurrences => "all";
 }

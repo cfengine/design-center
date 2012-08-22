@@ -1,23 +1,23 @@
 body common control {
-  inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-}
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+                    }
 
 bundle agent example {
 
-files:
+  files:
 
-  "/tmp/file.txt"
+      "/tmp/file.txt"
 
-     create => "true",
-     edit_line => insert_lines("$(sys.date)"), # guarantees an edit
-     edit_defaults => timestamp,
-     repository => "/var/cfengine/repository",
-     comment => "Save all history of edits to this important file.";
-}
+               create => "true",
+            edit_line => insert_lines("$(sys.date)"), # guarantees an edit
+        edit_defaults => timestamp,
+           repository => "/var/cfengine/repository",
+              comment => "Save all history of edits to this important file.";
+                     }
 
 body edit_defaults timestamp
 {
-edit_backup => "timestamp";
+          edit_backup => "timestamp";
 }
 
 #

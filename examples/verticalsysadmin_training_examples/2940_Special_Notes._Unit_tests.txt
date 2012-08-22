@@ -3,4 +3,4 @@
 
 They don't all work, but most do.
 
-Potentially useful in learning Cfengine.
+Potentially useful in learning CFEngine.

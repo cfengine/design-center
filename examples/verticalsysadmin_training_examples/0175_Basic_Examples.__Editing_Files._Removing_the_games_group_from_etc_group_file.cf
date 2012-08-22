@@ -1,18 +1,18 @@
 bundle agent example {
 
-    files:
+  files:
 
-        "/etc/group"
+      "/etc/group"
 
             edit_line => delete_group("games:x:[0-9]+:");
-                                     # note the parameter
-                                     # you can parameterize bundles
-}
+      # note the parameter
+      # you can parameterize bundles
+                     }
 
 
 bundle edit_line delete_group(group) {
 
-    delete_lines:
-        "$(group).*";
-}
+  delete_lines:
+      "$(group).*";
+                                     }
 

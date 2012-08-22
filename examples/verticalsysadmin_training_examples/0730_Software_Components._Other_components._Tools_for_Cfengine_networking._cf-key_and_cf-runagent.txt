@@ -1,7 +1,7 @@
-Other components of Cfengine:
+Other components of CFEngine:
 
 
-Tools used in Cfengine inter-node communication:
+Tools used in CFEngine inter-node communication:
 
 
 cf-key

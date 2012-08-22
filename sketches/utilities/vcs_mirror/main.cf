@@ -50,6 +50,25 @@ bundle agent vcs_mirror(prefix)
 
       "git_configfile" string => "$($(prefix)path)/.git/config";
 
+      "git_config_template" string => "
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[remote \"origin\"]
+        fetch = +refs/heads/*:refs/remotes/origin/*
+        url = $($(vcs_mirror.prefix)origin)
+[branch \"master\"]
+        remote = origin
+        merge = refs/heads/master
+[branch \"$($(vcs_mirror.prefix)branch)\"]
+        remote = origin
+        merge = refs/heads/$($(vcs_mirror.prefix)branch)
+",
+      comment => "The $(git_configfile) template.",
+      handle => "update_vars_git_config_template";
+
   classes:
       # test if the last component of the "vcs" path arg matches a known VCS
       # TODO: use_git and known_vcs are global, so you can't mix VCSs in one run!!!
@@ -66,11 +85,10 @@ bundle agent vcs_mirror(prefix)
     use_git::
       "$(git_configfile)"
       handle => "vcs_configfile_contents",
-      comment => "Expand Git config file from template",
+      comment => "Expand Git config file from variable",
       create => "false",
       edit_defaults => empty,
-      ifvarclass => "$(canon_prefix)vcsconfig_exists",
-      edit_line => expand_template("$($(prefix)bundle_home)/files/gitconfig.template");
+      edit_line => insert_lines("$(git_config_template)");
 
   commands:
 
@@ -79,35 +97,36 @@ bundle agent vcs_mirror(prefix)
       # fresh new clone
       "$(vcs_update_command)"
       handle     => "vcs_update_command",
-      contain    => in_dir("$($(prefix)path)"),
+      contain    => umask_in_dir("$($(prefix)path)", "$($(prefix)umask)"),
       ifvarclass => "$(canon_prefix)runas_current_user.$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
       comment    => "Update an existing VCS repository in $($(prefix)path), no user override";
 
       "$(vcs_update_command)"
-      handle     => "vcs_update_command",
-      contain    => setuid_in_dir("$($(prefix)runas)", "$($(prefix)path)"),
+      handle     => "vcs_update_with_user_command",
+      contain    => setuid_umask_in_dir("$($(prefix)runas)", "$($(prefix)path)", "$($(prefix)umask)"),
       ifvarclass => "!$(canon_prefix)runas_current_user.$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
       comment    => "Update an existing VCS repository in $($(prefix)path), user override to $($(prefix)runas)";
 
       "$(vcs_mirror_command)"
-      handle     => "vcs_update_command",
+      handle     => "vcs_mirror_command",
+      contain    => umask_in_dir("/", "$($(prefix)umask)"),
       ifvarclass => "$(canon_prefix)runas_current_user.!$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
       classes    => if_ok("$(canon_prefix)vcs_mirrored"),
       comment    => "Clone a VCS repository in $($(prefix)path), no user override";
 
       "$(vcs_mirror_command)"
-      handle     => "vcs_update_command",
-      contain    => setuid("$($(prefix)runas)"),
+      handle     => "vcs_mirror_with_user_command",
+      contain    => setuid_umask_in_dir("$($(prefix)runas)", "/", "$($(prefix)umask)"),
       ifvarclass => "!$(canon_prefix)runas_current_user.!$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
       classes    => if_ok("$(canon_prefix)vcs_mirrored"),
       comment    => "Clone a VCS repository in $($(prefix)path), user override to $($(prefix)runas)";
 
   reports:
     cfengine::
-      "VCS is $($(prefix)vcs), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path).  We'll load the templates from $($(prefix)bundle_home)."
+      "VCS is $($(prefix)vcs), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path)."
       ifvarclass => "$(canon_prefix)runas_current_user";
 
-      "VCS is $($(prefix)vcs), to be executed as user $($(prefix)runas), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path).  We'll load the templates from $($(prefix)bundle_home)."
+      "VCS is $($(prefix)vcs), to be executed as user $($(prefix)runas), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path)."
       ifvarclass => "!$(canon_prefix)runas_current_user";
 
 
@@ -134,10 +153,17 @@ bundle agent vcs_mirror(prefix)
 
 }
 
-body contain setuid_in_dir(user, dir)
+body contain setuid_umask_in_dir(user, dir, umask)
 {
       chdir => "$(dir)";
       exec_owner => "$(user)";
+      umask => "$(umask)";
+}
+
+body contain umask_in_dir(dir, umask)
+{
+      chdir => "$(dir)";
+      umask => "$(umask)";
 }
 
 bundle agent meta_vcs_mirror
@@ -155,6 +181,10 @@ bundle agent meta_vcs_mirror
       "optional_argument[runas]" string => "string";
       # as far as I know 128 is more than enough on any OS
       "default[runas]"           string => getenv("USER", 128);
+
+      # this changes the umask from the default 077
+      "optional_argument[umask]" string => "string";
+      "default[umask]"           string => "077";
 
       # this can't be determined from within the bundle due to:
       # https://cfengine.com/bugtracker/view.php?id=718

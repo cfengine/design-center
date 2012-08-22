@@ -6,6 +6,6 @@ bundle agent example {
 
   commands:
 
-     "/bin/echo $(this.promiser)";
+      "/bin/echo $(this.promiser)";
 
-}
+                     }

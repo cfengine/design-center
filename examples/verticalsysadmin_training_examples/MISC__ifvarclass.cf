@@ -1,15 +1,15 @@
 bundle agent example {
 
 
-vars:  "fruit"  string =>  "banana";
+      vars:  "fruit"  string =>  "banana";
 
-reports:
+  reports:
 
-  linux::
+    linux::
 
-       "I love bananas for breakfast"
+      "I love bananas for breakfast"
 
            ifvarclass => "$(fruit)";
 
-}
+                     }
 

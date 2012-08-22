@@ -1,0 +1,9 @@
+Example: Promise Body
+---------------------
+
+files:             
+
+    "/etc/nologin"  
+
+        create  => "true",                                     # body
+        comment => "Prevent non-root users from logging in";   # body

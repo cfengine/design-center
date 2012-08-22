@@ -1,18 +1,18 @@
 bundle agent example {
 
-files:
+  files:
 
-  "/etc/motd"
+      "/etc/motd"
 
-    edit_line => ExpandMeFrom("/tmpl/motd.tmpl");
-}
+            edit_line => ExpandMeFrom("/tmpl/motd.tmpl");
+                     }
 
 bundle edit_line ExpandMeFrom(source) {
 
-insert_lines:
+  insert_lines:
 
-    "$(source)"
+      "$(source)"
 
-       insert_type => "file",
+          insert_type => "file",
        expand_scalars => "true";
-}
+                                      }

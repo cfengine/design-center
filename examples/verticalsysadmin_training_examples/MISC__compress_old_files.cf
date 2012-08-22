@@ -10,13 +10,13 @@
 bundle agent example
 
 {
-files:
+  files:
 
-  "/tmp/test_from" 
+      "/tmp/test_from" 
 
-    file_select => days_old("1"),
-    transformer => "/bin/gzip $(this.promiser)",
-    depth_search => recurse("inf");
+          file_select => days_old("1"),
+          transformer => "/bin/gzip $(this.promiser)",
+         depth_search => recurse("inf");
 
 }
 
@@ -25,15 +25,15 @@ files:
 body depth_search recurse(d)
 
 {
-depth => "$(d)";
+                depth => "$(d)";
 }
 
 ##########################################
 
 body file_select days_old(days)
 {
-mtime       => irange(0,ago(0,0,"$(days)",0,0,0));
-file_result => "mtime";
+          mtime       => irange(0,ago(0,0,"$(days)",0,0,0));
+          file_result => "mtime";
 }
 
 

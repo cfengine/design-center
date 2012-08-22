@@ -4,8 +4,8 @@
 bundle agent example
 {
 
-commands:
+  commands:
 
-   "/usr/local/sbin/a/really/long/path/printf \"Line 1 of multiline output\nLine 2 of multiline output\nLine 3 of multiline output\"";
+      "/usr/local/sbin/a/really/long/path/printf \"Line 1 of multiline output\nLine 2 of multiline output\nLine 3 of multiline output\"";
 
 }

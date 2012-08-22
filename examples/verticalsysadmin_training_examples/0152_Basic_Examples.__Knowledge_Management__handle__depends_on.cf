@@ -1,15 +1,15 @@
 bundle agent example {
 
-files:
+  files:
 
-   "/tmp/testfile"
+      "/tmp/testfile"
 
-        handle => "create_testfile", # a name for this promise.
-                                     # can be used with depends_on 
-                                     # attribute in another promise
-                                     # to document dependency
+               handle => "create_testfile", # a name for this promise.
+      # can be used with depends_on 
+      # attribute in another promise
+      # to document dependency
 
-        depends_on => { "another_promise" } ,
+           depends_on => { "another_promise" } ,
 
-        create  => "true";
-}
+              create  => "true";
+                     }

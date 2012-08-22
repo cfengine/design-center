@@ -1,6 +1,6 @@
 body common control
 {
-inputs         => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+       inputs         => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 }
 
 
@@ -10,17 +10,17 @@ inputs         => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 bundle agent example
 {
 
-vars:
+  vars:
 
-   # A standard location for the source point
-   "master_location" string => "/var/cfengine/masterfiles";
+      # A standard location for the source point
+      "master_location" string => "/var/cfengine/masterfiles";
 
-files:
+  files:
 
-   "/var/cfengine/inputs"
+      "/var/cfengine/inputs"
 
-	comment      => "Update the policy files from the master",
-	copy_from    => local_cp("$(master_location)"),
-	depth_search => recurse("inf");
+         comment      => "Update the policy files from the master",
+         copy_from    => local_cp("$(master_location)"),
+         depth_search => recurse("inf");
 
 }

@@ -1,13 +1,13 @@
 bundle agent example {
 
-    files:
+  files:
 
-        "/etc/nologin" 
+      "/etc/nologin" 
 
-            create  => "true",
-            comment => "Prevent non-root users from logging into the system.";
+              create  => "true",
+              comment => "Prevent non-root users from logging in, for maintenance";
 
-}
+                     }
 
 # Example output
 #  >> Using command line specified bundlesequence

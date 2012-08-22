@@ -23,11 +23,10 @@ branch.
     bundle agent main {
     vars:
       "mirror_copbl_branch" string => "master";
-      # see main.cf and test.cf for details on why this needs to be adjusted
-      "mirror_copbl_bundle_home" string => "/wherever_you_checked_out_design_center/utilities/vcs_mirror";
       "mirror_copbl_origin" string => "git://github.com/nickanderson/copbl.git";
       "mirror_copbl_path" string => "/tmp/test2/test3/git_mirror";
       "mirror_copbl_runas" string => getenv("USER", 128);
+      "mirror_copbl_umask" string => "022";
       "mirror_copbl_vcs" string => "/usr/bin/git";
 
     methods:

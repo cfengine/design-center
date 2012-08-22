@@ -1,0 +1,26 @@
+{
+
+    "manifest":
+    {
+        "main.cf": { "desc": "main file", "version": 1.2 },
+        "README.md": { "documentation": true },
+        "test.cf": {"comment": "Test Policy"},
+        "example.cf": {"comment": "Example Policy"},
+        "changelog": {"comment": "changelog"},
+        "sketch.json": {"comment": "Sketch definition"},
+        "params/example.json": {"comment": "Example parameters for use with cf-sketch"},
+    },
+
+    "metadata":
+    {
+        "name": "System::sysctl",
+        "version": 1.3,
+        "license": "MIT",
+        "portfolio": [ "cfdc" ],
+        "authors": [ "Nick Anderson <nick@cmdln.org>", ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.2.1" }, "os": [ "linux" ] },
+    },
+
+    "entry_point": "main.cf",
+    "interface": [ "main.cf" ]
+}

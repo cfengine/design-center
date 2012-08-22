@@ -1,0 +1,14 @@
+{
+   "activated" : "",
+   "test_filename" : null,
+   "debug" : "false",
+   "allow" : { "sshd":{ "daemons": [ "sshd", "sshd1" ]},
+               "sshd":{ "clients": [ "ALL"] },
+             },
+   "deny" : { "default": {"daemons": [ "ALL" ]},
+              "default": {"clients": [ "ALL" ]}
+            },
+   "mgmt_policy" : "ensure_present",
+   "empty_first" : "false"
+}
+
