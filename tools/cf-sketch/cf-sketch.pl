@@ -1019,14 +1019,14 @@ sub remove
    }
    $sketch = shift @matches;
    my $data = $contents->{$sketch};
-   if (maybe_remove_dir($data->{dir}))
+   if (maybe_remove_dir($data->{fulldir}))
    {
     deactivate($sketch);       # deactivate all the activations of the sketch
-    print GREEN "Successfully removed $sketch from $data->{dir}\n" unless $quiet;
+    print GREEN "Successfully removed $sketch from $data->{fulldir}\n" unless $quiet;
    }
    else
    {
-    print RED "Could not remove $sketch from $data->{dir}\n" unless $quiet;
+    print RED "Could not remove $sketch from $data->{fulldir}\n" unless $quiet;
    }
   }
  }
