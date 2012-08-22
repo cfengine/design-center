@@ -507,6 +507,17 @@ sub list_internal
  return @ret;
 }
 
+# Produce the appropriate input directory depending on --fullpath
+sub inputfile {
+  my @paths=@_;
+  if ($options{fullpath}) {
+      return File::Spec->catfile(@paths);
+  }
+  else {
+      return File::Spec->catfile('sketches', @paths);
+  }
+}
+
 # generate the actual cfengine config that will run all the cf-sketch bundles
 sub generate
 {
@@ -566,7 +577,7 @@ sub generate
        # anything in the runme template
        unless (exists $entry_point->{bundle})
        {
-        push @inputs, File::Spec->catfile($data->{dir}, @{$data->{interface}});
+        push @inputs, inputfile($data->{dir}, @{$data->{interface}});
         next;
        }
 
@@ -705,8 +716,8 @@ sub generate
     {
      if (exists $contents->{$dep})
      {
-      push @inputs, File::Spec->catfile($contents->{$dep}->{dir},
-                                        @{$contents->{$dep}->{interface}});
+      push @inputs, inputfile($contents->{$dep}->{dir},
+                              @{$contents->{$dep}->{interface}});
       delete $dependencies{$dep};
      }
     }
@@ -719,7 +730,7 @@ sub generate
    }
 
    # process input template, substituting variables
-   push @inputs, $template_activations->{$_}->{file}
+   push @inputs, inputfile($template_activations->{$_}->{file})
     foreach sort keys %$template_activations;
 
    my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
