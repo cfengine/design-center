@@ -1,0 +1,49 @@
+                   EXERCISE
+Running CFEngine Non-Interactive (as a Service)
+
+Demonstrate CFEngine running in non-interactive
+mode, using /var/cfengine/inputs/promises.cf as its
+input:
+
+
+1. Specify a bundlesequence in your policy from exercise 5
+(that creates an /etc/motd file that always says Unauth.
+Use Forbidden, and "go home, it's the weekend" on the weekend.
+
+Add to this policy:
+
+   body common control {
+
+        bundlesequence =>  { "..." };
+
+   }
+
+
+2. Copy this modified exercise 5 to /var/cfengine/inputs/promises.cf, and
+
+3. Make your failsafe.cf identical to promises.cf:
+
+      cd /var/cfengine/inputs
+      ln -s promises.cf failsafe.cf
+
+4. Check the syntax of the default input file (promises.cf):
+
+      cf-promises
+
+5. Run CFengine from command line once to make sure
+   it all works:
+
+      cf-agent
+
+6. Restart CFEngine service to reload the policy.
+
+      /etc/init.d/cfengine3 restart
+
+
+7. Make sure you don't have an /etc/motd file: 
+ 
+     rm /etc/motd
+
+8. Watch CFEngine create /etc/motd within 5 minutes.
+
+     watch ls -l /etc/motd 2>/dev/null
