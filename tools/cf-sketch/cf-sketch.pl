@@ -344,9 +344,7 @@ foreach my $word (@callable)
 exit if grep { $options{$_} } @nonterminal;
 
 push @callable, 'list', 'save-config';
-print RED "Sorry, $0 doesn't know what you want to do.  You have to specify one of " .
- join(" or ", map { "--$_" } @callable) . ".\n";
-exit 1;
+color_die "Sorry, I don't know what you want to do.  You have to specify a valid verb. Run $0 --help to see the complete list.\n";
 
 sub configure_self
 {
