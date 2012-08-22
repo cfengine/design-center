@@ -1,0 +1,68 @@
+bundle agent yumrepo_install_tools {
+# Install tools required to manage yum repositories
+    packages:
+        redhat|centos::
+            "createrepo"
+                package_policy => "add",
+                package_method => yum_rpm,
+                comment        => "createrepo is needed to create and update
+                                   the metadata for a yum repository";
+}
+
+bundle agent yumrepo_maintain_repo(path) {
+# Creates repomd (xml-rpm-metadata) repository 
+# Updates metadata if any packages are added changed or removed
+# Expects full path to repository directory
+#    vars:
+#        "updates_repo" string => "/var/www/html/repo_mirror/updates";
+#        "custom_repo" string => "/var/www/html/repo_mirror/custom";
+#        "list_o_repos" slist => { "/var/www/html/repo_mirror/updates1",
+#                                   "/var/www/html/repo_mirror/updates2",
+#                                };
+#
+#    methods:
+#        "supplemental_repo" usebundle => yumrepo_maintain_repo("/var/www/html/repo_mirror/supplemental");
+#        "updates_repo" usebundle => yumrepo_maintain_repo("$(updates_repo)");
+#
+#        "multiple_repos" 
+#            usebundle  => yumrepo_maintain_repo("$(list_o_repos)"),
+#            action     => if_elapsed("60"),
+#            comment    => "We might not want to constantly search for changed packages";
+
+    files:
+        "$(path)/."
+            create => "true",
+            perms  => mog("755", "root", "root"),
+            comment => "Ensure repository root directory exists";
+
+        # Only check 1 level deep otherwise you will be detecting the change in the metadata itself as well.
+        # That in turn will lead to an execution of creatrepo --update each time.
+        "$(path)"
+            changes         => detect_content,
+            depth_search    => recurse("1"),
+            classes         => if_repaired("yumrepo_maintain_repo_$(path)_needs_metadata_update"),
+            comment         => "If any changes are detected we need to signal to update the metadata";
+
+    classes:
+        "yumrepo_maintain_repo_$(path)_exists"    
+            expression  => fileexists("$(path)/repodata/repomd.xml"),
+            comment     => "Check if a repo exists yet";
+
+
+    commands:
+        "/usr/bin/createrepo $(path)"
+            ifvarclass => not(canonify("yumrepo_maintain_repo_$(path)_exists")),
+            comment => "Create repository if one does not exist";
+
+        # We only want to update the repo once per run. The metadata has not 
+        # yet been updated. Update it and signal that it has been updated if 
+        # the command returns zero.
+        "/usr/bin/createrepo --update $(path)"
+            ifvarclass => "yumrepo_maintain_repo_$(path)_needs_metadata_update",
+            classes    => if_repaired("yumrepo_maintain_repo_$(path)_metadata_updated"),
+            comment    => "We need to update the metadata since a change was detected";
+
+}
+
+
+
