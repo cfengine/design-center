@@ -14,8 +14,6 @@ use File::Path qw(make_path remove_tree);
 use File::Basename;
 use Data::Dumper;
 use Getopt::Long;
-use LWP::Simple;
-use LWP::Protocol::https;
 use Term::ANSIColor qw(:constants);
 
 $Term::ANSIColor::AUTORESET = 1;
@@ -436,7 +434,7 @@ sub search_internal
  }
  else
  {
-  my $invd = get($source)
+  my $invd = lwp_get_remote($source)
    or color_die "Unable to retrieve $source : $!\n";
 
   my @lines = split "\n", $invd;
@@ -1346,7 +1344,7 @@ sub find_remote_sketches
  foreach my $repo (@urls)
  {
   my $sketches_url = "$repo/cfsketches";
-  my $sketches = get($sketches_url)
+  my $sketches = lwp_get_remote($sketches_url)
    or color_die "Unable to retrieve $sketches_url : $!\n";
 
   foreach my $sketch_dir ($sketches =~ /(.+)/mg)
@@ -1556,7 +1554,7 @@ sub verify_entry_point
   }
   else
   {
-   my $mcf = get($maincf_filename);
+   my $mcf = lwp_get_remote($maincf_filename);
    unless ($mcf)
    {
     color_warn "Could not retrieve $maincf_filename: $!" unless $quiet;
@@ -1710,6 +1708,17 @@ sub is_resource_local
  return ($resource !~ m,^[a-z][a-z]+:,);
 }
 
+sub lwp_get_remote
+{
+ my $resource = shift @_;
+ require LWP::Simple;
+
+ require LWP::Protocol::https
+  if $resource =~ m/^https/;
+
+ return get($resource);
+}
+
 sub get_local_repo
 {
  my $repo;
@@ -1788,7 +1797,7 @@ sub load_json
  }
  else
  {
-  my $j = get($f)
+  my $j = lwp_get_remote($f)
    or color_die "Unable to retrieve $f";
 
   @j = split "\n", $j;
