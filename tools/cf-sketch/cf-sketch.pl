@@ -1711,10 +1711,26 @@ sub is_resource_local
 sub lwp_get_remote
 {
  my $resource = shift @_;
- require LWP::Simple;
+ eval
+ {
+  require LWP::Simple;
+ };
+ if ($@ )
+ {
+  color_die "Could not load LWP::Simple (you should install libwww-perl)";
+ }
 
- require LWP::Protocol::https
-  if $resource =~ m/^https/;
+ if ($resource =~ m/^https/)
+ {
+  eval
+  {
+   require LWP::Protocol::https;
+  };
+  if ($@ )
+  {
+   color_die "Could not load LWP::Protocol::https (you should install it)";
+  }
+ }
 
  return get($resource);
 }
@@ -1905,7 +1921,8 @@ sub maybe_write_file
 
 {
  my $promises_binary;
- sub cfengine_version
+
+ sub cfengine_promises_binary
  {
   my $promises_name = 'cf-promises';
 
@@ -1925,7 +1942,13 @@ sub maybe_write_file
   print "Excellent, we found $promises_binary to interface with CFEngine\n"
    if $verbose;
 
-  my $cfv = `$promises_binary -V`;     # TODO: get this from cfengine?
+  return $promises_binary;
+ }
+
+ sub cfengine_version
+ {
+  my $pb = cfengine_promises_binary();
+  my $cfv = `$pb -V`;     # TODO: get this from cfengine?
   if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
   {
    return $1;
