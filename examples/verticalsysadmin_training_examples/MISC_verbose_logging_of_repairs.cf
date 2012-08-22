@@ -2,24 +2,31 @@ bundle agent example
 
 {
 
-files:
+  files:
 
+<<<<<<< HEAD
    "/tmp/newfile3"
 
 	handle => "newfile3_exists",
 	create => "true",
 	action => log("Created very important file $(this.promiser)");
+=======
+      "/tmp/newfile3"
+               handle => "newfile3_exists",
+               create => "true",
+               action => log_repaired_verbose("Created very important file");
+>>>>>>> 4d4eb9f12eb20502ce4e4223ba1c92e4ab348de7
 }
 
 body action log(message) 
 {       
-log_string => "$(sys.date) In $(this.promise_filename) on line $(this.promise_linenumber), in promise $(this.handle):  $(message)";
-log_repaired => "stdout";
+           log_string => "$(sys.date) In $(this.promise_filename) on line $(this.promise_linenumber), in promise $(this.handle):  $(message)";
+         log_repaired => "stdout";
 }
 
 
 body agent control {
 
-syslog => "true";
+               syslog => "true";
 
-}
+                   }

@@ -1,19 +1,23 @@
 bundle agent example {
 
-files:
+  files:
 
-   "/etc/motd"
+      "/etc/motd"
 
-        create  => "true",
-        edit_line => file_contains_proper_greetings;
-}
+              create  => "true",
+            edit_line => file_contains_proper_greetings;
+                     }
 
 ####################################################
 
 bundle edit_line  file_contains_proper_greetings {
 
+<<<<<<< HEAD
 insert_lines:
 
     "Good morning!";
+=======
+      insert_lines: "Good morning!";
+>>>>>>> 4d4eb9f12eb20502ce4e4223ba1c92e4ab348de7
 
-}
+                                                 }

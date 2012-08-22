@@ -1,7 +1,7 @@
 bundle agent example {
 
-    files:
+  files:
 
-        "/tmp/hello" create  => "true";
-        "/tmp/world" create  => "true";
-}
+      "/tmp/hello" create  => "true";
+      "/tmp/world" create  => "true";
+                     }

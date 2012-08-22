@@ -1,7 +1,7 @@
 
 body common control
 {
-version => "$Id: 1610_More_Examples._Embedding_RCS_Id_tag.cf,v 1.2 2012/02/23 08:16:02 root Exp root $";
+              version => "$Id: 1610_More_Examples._Embedding_RCS_Id_tag.cf,v 1.2 2012/02/23 08:16:02 root Exp root $";
 }
 
 
@@ -11,8 +11,8 @@ version => "$Id: 1610_More_Examples._Embedding_RCS_Id_tag.cf,v 1.2 2012/02/23 08
 bundle agent example
 {
 
-commands:
-  linux::
-    "/bin/echo hello world, i love wednesdays and coffee";
+  commands:
+    linux::
+      "/bin/echo hello world, i love wednesdays and coffee";
 }
 

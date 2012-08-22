@@ -12,10 +12,10 @@
 bundle agent example
 
 {
-files:
+  files:
 
-  "/tmp/.*.txt"
-      edit_line => grep_dash_l("hello world");
+      "/tmp/.*.txt"
+            edit_line => grep_dash_l("hello world");
 }
 
 ########################################################
@@ -24,15 +24,15 @@ files:
 
 bundle edit_line grep_dash_l(regex)
 {
-classes:
+  classes:
 
-    "ok" expression => regline("$(regex)","$(edit.filename)");
+      "ok" expression => regline("$(regex)","$(edit.filename)");
 
 
-reports:
+  reports:
 
- ok::
+    ok::
 
-   "File $(edit.filename) has a line with \"$(regex)\" in it";
+      "File $(edit.filename) has a line with \"$(regex)\" in it";
 
 }

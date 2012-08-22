@@ -7,13 +7,13 @@
 bundle agent example
 
 {
-files:
+  files:
 
-  "/tmp/pdfs" 
+      "/tmp/pdfs" 
 
-    file_select => pdf_files,
-    transformer => "/usr/bin/gzip $(this.promiser)",
-    depth_search => recurse("inf");
+          file_select => pdf_files,
+          transformer => "/usr/bin/gzip $(this.promiser)",
+         depth_search => recurse("inf");
 
 }
 
@@ -22,10 +22,10 @@ files:
 body file_select pdf_files
 
 {
-leaf_name => { ".*.pdf" , ".*.fdf" };  # leaf_name = regex to match on
-                                       # the file NAME (ignoring the 
-                                       # full directory path)
-file_result => "leaf_name";
+            leaf_name => { ".*.pdf" , ".*.fdf" };  # leaf_name = regex to match on
+      # the file NAME (ignoring the 
+      # full directory path)
+          file_result => "leaf_name";
 }
 
 ############################################
@@ -33,7 +33,7 @@ file_result => "leaf_name";
 body depth_search recurse(d)
 
 {
-depth => "$(d)";
+                depth => "$(d)";
 }
 
 # Given the following files: 

@@ -2,24 +2,24 @@
 
 bundle agent example1 {
 
-files:
+  files:
 
-   "/tmp/testfile" 
-	create  => "true", 
-	perms   => set_mode_700_administrative_group_and_specified_user("aleksey");
-}
+      "/tmp/testfile" 
+              create  => "true", 
+              perms   => set_mode_700_administrative_group_and_specified_user("aleksey");
+                      }
 
 
 #################################################
 
 bundle agent example2 {
 
-files:
+  files:
 
-   "/tmp/testfile2" 
-	create  => "true", 
-	perms   => set_mode_700_administrative_group_and_specified_user("rob");
-}
+      "/tmp/testfile2" 
+              create  => "true", 
+              perms   => set_mode_700_administrative_group_and_specified_user("rob");
+                      }
 
 
 #################################################
@@ -27,12 +27,12 @@ files:
 
 body perms set_mode_700_administrative_group_and_specified_user(xyz) {
 
-    mode   => "0700";
+               mode   => "0700";
 
-    owners => { "$(xyz)" };
+               owners => { "$(xyz)" };
 
-  linux::  groups => { "wheel" };
-  darwin:: groups => { "admin" };
-  sunos::  groups => { "sys" };
+      linux::  groups => { "wheel" };
+      darwin:: groups => { "admin" };
+      sunos::  groups => { "sys" };
 
-}
+                                                                     }

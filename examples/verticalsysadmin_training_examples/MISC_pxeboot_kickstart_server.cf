@@ -23,126 +23,126 @@
 
 body common control {
 
-	inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 
-	bundlesequence =>	{ 
-					"packages",
-					"enable_services",
-					"configure_dhcpd_config_file",
-					"run_pxe_commands_to_setup_pxeboot",
-					"start_services",
-					"configure_firewall_to_allow_bootp_and_tftp",
-                                        # not really.  i just turn off the firewall.
-			 		# be warned.
-					"configure_kickstart_file",
-				};
-}
+       bundlesequence =>        { 
+                                  "packages",
+                                  "enable_services",
+                                  "configure_dhcpd_config_file",
+                                  "run_pxe_commands_to_setup_pxeboot",
+                                  "start_services",
+                                  "configure_firewall_to_allow_bootp_and_tftp",
+                                  # not really.  i just turn off the firewall.
+                                  # be warned.
+                                  "configure_kickstart_file",
+                                };
+                    }
 
 bundle agent packages {
 
 
-vars:
-	"desired_packages"
-######################################################
-#              START OF PACKAGE LIST                 #
+  vars:
+      "desired_packages"
+      ######################################################
+      #              START OF PACKAGE LIST                 #
 
-		slist =>
-			{
-				"system-config-netboot",
-				"httpd",
-				"xinetd",
-				"tftp",
-				"dhcp",
-			};
+                slist =>
+      {
+        "system-config-netboot",
+        "httpd",
+        "xinetd",
+        "tftp",
+        "dhcp",
+      };
 
-#              END OF PACKAGE LIST                   #
-######################################################
+      #              END OF PACKAGE LIST                   #
+      ######################################################
 
-packages:
+  packages:
 
-	"$(desired_packages)"
+      "$(desired_packages)"
 
-		package_method => yum,
-		package_policy => "add";
+       package_method => yum,
+       package_policy => "add";
 
 
-}
+                      }
 
 bundle agent enable_services {
 
-# make sure services are configured to start at boot
+      # make sure services are configured to start at boot
 
-commands:
-    "/sbin/chkconfig xinetd on";
-    "/sbin/chkconfig tftp on";
-    "/sbin/chkconfig httpd on";
-    "/sbin/chkconfig dhcpd on";
+  commands:
+      "/sbin/chkconfig xinetd on";
+      "/sbin/chkconfig tftp on";
+      "/sbin/chkconfig httpd on";
+      "/sbin/chkconfig dhcpd on";
 
-}
+                             }
 
 
 
 bundle agent configure_dhcpd_config_file {
 
-files:
-	"/etc/dhcpd.conf"
-		create => "true",
-		edit_line => my_dhcpd_config;
-}
+  files:
+      "/etc/dhcpd.conf"
+               create => "true",
+            edit_line => my_dhcpd_config;
+                                         }
 
 bundle edit_line my_dhcpd_config {
 
-delete_lines: ".*";
+      delete_lines: ".*";
 
-insert_lines:
+  insert_lines:
 
-"allow booting;
+      "allow booting;
 allow bootp;
 class \"pxeclients\" {match if substring(option vendor-class-identifier, 0, 9) = \"PXEClient\"; next-server 192.168.1.1; filename \"linux-install/pxelinux.0\"; }
 ddns-update-style ad-hoc;
 
 subnet 192.168.0.0 netmask 255.255.0.0 {
-  range 192.168.1.2 192.168.1.254;
-}
+range 192.168.1.2 192.168.1.254;
+                                       }
 "
-insert_type => "preserve_block";
+          insert_type => "preserve_block";
 
-}
+                                 }
 
 
 bundle agent start_services {
 
-# make sure services are configured to start at boot
+      # make sure services are configured to start at boot
 
-commands:
-    "/etc/init.d/httpd start";
-    "/etc/init.d/xinetd start";
-    "/etc/init.d/dhcpd start";
-}
+  commands:
+      "/etc/init.d/httpd start";
+      "/etc/init.d/xinetd start";
+      "/etc/init.d/dhcpd start";
+                            }
 
 bundle agent configure_firewall_to_allow_bootp_and_tftp {
-# this bundle should edit iptables to allow UDP 67 and 69
-commands:
-"/etc/init.d/iptables stop";  # quick and dirty, not safe
-}
+      # this bundle should edit iptables to allow UDP 67 and 69
+  commands:
+      "/etc/init.d/iptables stop";  # quick and dirty, not safe
+                                                        }
 
 
 bundle agent configure_kickstart_file {
 
-files:
-	"/var/www/html/centos-5.7-i386.ks"
+  files:
+      "/var/www/html/centos-5.7-i386.ks"
 
-		create => "true",
-		edit_line => my_kickstart_file;
-}
+               create => "true",
+            edit_line => my_kickstart_file;
+                                      }
 
 bundle edit_line my_kickstart_file {
 
 
-delete_lines: ".*";
+      delete_lines: ".*";
 
-insert_lines:
-"
+  insert_lines:
+      "
 cmdline
 install
 url --url http://192.168.1.1/centos-5.7-i386
@@ -198,21 +198,21 @@ echo
 echo Running CFEngine for the first time
 /usr/local/sbin/cf-agent -I
 "
-    insert_type => "preserve_block";
-}
+          insert_type => "preserve_block";
+                                   }
 
 bundle agent run_pxe_commands_to_setup_pxeboot {
 
-vars:
-    "exec_result" string => execresult("/usr/sbin/pxeos -l", "noshell");
+  vars:
+      "exec_result" string => execresult("/usr/sbin/pxeos -l", "noshell");
 
-classes:
-    "centos_is_installed"
-        expression => regcmp("centos-5.7-i386","$(exec_result)");
+  classes:
+      "centos_is_installed"
+           expression => regcmp("centos-5.7-i386","$(exec_result)");
 
-commands:
-  !centos_is_installed::
-  "/usr/sbin/pxeos -a -i centos-5.7-i386 -p HTTP -D 0 -s 192.168.1.1 -L /centos-5.7-i386 -K 'http://192.168.1.1/centos-5.7-i386.ks' centos-5.7-i386";
-  "/usr/sbin/pxeboot -a -O centos-5.7-i386  -K 'http://192.168.1.1/centos-5.7-i386.ks' -r 1000 192.168";
+  commands:
+    !centos_is_installed::
+      "/usr/sbin/pxeos -a -i centos-5.7-i386 -p HTTP -D 0 -s 192.168.1.1 -L /centos-5.7-i386 -K 'http://192.168.1.1/centos-5.7-i386.ks' centos-5.7-i386";
+      "/usr/sbin/pxeboot -a -O centos-5.7-i386  -K 'http://192.168.1.1/centos-5.7-i386.ks' -r 1000 192.168";
 
-}
+                                               }

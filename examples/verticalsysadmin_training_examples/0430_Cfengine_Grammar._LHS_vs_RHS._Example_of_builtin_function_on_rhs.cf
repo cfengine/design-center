@@ -6,31 +6,31 @@
 
 bundle agent example {
 
-classes:
+  classes:
 
- "cf_agent_is_present"
+      "cf_agent_is_present"
 
-    expression => fileexists("/var/cfengine/bin/cf-agent");
-
-
-
-commands:
-
-  cf_agent_is_present::
-    
-     "/bin/echo CF Agent is present on this system";
+           expression => fileexists("/var/cfengine/bin/cf-agent");
 
 
 
-    vars:
+  commands:
 
-        "http_reply"
+    cf_agent_is_present::
+      
+      "/bin/echo CF Agent is present on this system";
 
-            string => readtcp("localhost","80","GET / HTTP/1.0$(const.r)$(const.n)$(const.r)$(const.n)",500);
 
 
-    commands:
+  vars:
 
-        "/bin/echo $(http_reply)";
+      "http_reply"
 
-}
+               string => readtcp("localhost","80","GET / HTTP/1.0$(const.r)$(const.n)$(const.r)$(const.n)",500);
+
+
+  commands:
+
+      "/bin/echo $(http_reply)";
+
+                     }

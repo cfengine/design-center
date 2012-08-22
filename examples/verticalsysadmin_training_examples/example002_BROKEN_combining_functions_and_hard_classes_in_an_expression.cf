@@ -1,20 +1,20 @@
 body common control
 {
 
-	inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 }
 
 bundle agent example
 {
 
-classes:
+  classes:
 
-  "file_exists"
-         
-         expression  =>  fileexists("/etc/site_id").Hr16;
+      "file_exists"
+      
+          expression  =>  fileexists("/etc/site_id").Hr16;
 
 
-commands:
-     "/usr/bin/startbackup";
+  commands:
+      "/usr/bin/startbackup";
 
 }

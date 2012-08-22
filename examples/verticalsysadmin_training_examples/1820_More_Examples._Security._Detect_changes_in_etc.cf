@@ -1,8 +1,8 @@
 body common control
 
 {
-inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-bundlesequence => { "example" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+       bundlesequence => { "example" };
 }
 
 #######################################
@@ -10,10 +10,10 @@ bundlesequence => { "example" };
 bundle agent example
 
 {
-files:
+  files:
 
-  "/etc"
+      "/etc"
 
-   changes      => detect_all_change,
-   depth_search => recurse("inf");
+         changes      => detect_all_change,
+         depth_search => recurse("inf");
 }

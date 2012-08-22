@@ -1,14 +1,14 @@
 bundle agent example {
 
-    classes:
+  classes:
 
-        "our_custom_class"
+      "our_custom_class"
 
-            expression =>  "(redhat|(windows&Wednesday))";
+           expression =>  "(redhat|(windows&Wednesday))";
 
-    reports:
+  reports:
 
-      our_custom_class::
+    our_custom_class::
 
-        "'our_custom_class' is set";
-}
+      "'our_custom_class' is set";
+                     }

@@ -1,15 +1,20 @@
 bundle agent example {
 
-    vars:
+  vars:
 
-        "my_string" string  => "The answers are: ";
+      "my_string" string  => "The answers are: ";
 
-        "my_int" int     => "42";
+      "my_int" int     => "42";
 
-        "my_real" real    => "3.14159";
+      "my_real" real    => "3.14159";
 
+<<<<<<< HEAD
     commands:
 
         "/bin/echo $(my_string) $(my_int) $(my_real)";
+=======
+  commands:
+      "/bin/echo $(my_string) $(my_int) $(my_real)";
+>>>>>>> 4d4eb9f12eb20502ce4e4223ba1c92e4ab348de7
 
-}
+                     }

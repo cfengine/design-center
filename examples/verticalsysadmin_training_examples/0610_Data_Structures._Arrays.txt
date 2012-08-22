@@ -4,3 +4,8 @@ or lists as their elements.
 Array variables are written with '[' and ']' brackets:
 
 $(array_name[key_name])
+
+or
+
+$(bundle_name.array_name[key_name])
+

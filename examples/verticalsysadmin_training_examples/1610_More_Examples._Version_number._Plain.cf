@@ -1,7 +1,7 @@
 body common control
 {
-version => "1.0";
-bundlesequence => { "example" };
+              version => "1.0";
+       bundlesequence => { "example" };
 }
 
 
@@ -11,7 +11,7 @@ bundlesequence => { "example" };
 bundle agent example
 {
 
-commands:
-  linux::
-    "/bin/nosuchcommand hello world, i love wednesdays and coffee";
+  commands:
+    linux::
+      "/bin/nosuchcommand hello world, i love wednesdays and coffee";
 }

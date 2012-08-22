@@ -1,14 +1,15 @@
 bundle agent example {
 
-    vars:
+  vars:
 
-        "my_list"
+      "my_list"
 
-            rlist => { "1.5", "3.0", "4.5" };
+                rlist => { "1.5", "3.0", "4.5" };
 
 
-    reports:
-      linux::
+  reports:
 
-        "Iterating over the values in @(my_list):  $(my_list)";
-}
+    linux::
+
+      "Iterating over the values in @(my_list):  $(my_list)";
+                     }

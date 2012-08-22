@@ -1,28 +1,28 @@
 bundle agent example
 {
 
-# INPUT
-# Please create the following files before running this example: 
-# /tmp/cf2_test1
-# /tmp/cf3_test2
+      # INPUT
+      # Please create the following files before running this example: 
+      # /tmp/cf2_test1
+      # /tmp/cf3_test2
 
-files:
+  files:
 
-  "/tmp/(cf[23])_(.*)"
-       edit_line => report_match_variables("$(match.0) $(match.1) $(match.2)");
+      "/tmp/(cf[23])_(.*)"
+            edit_line => report_match_variables("$(match.0) $(match.1) $(match.2)");
 
 }
 
 bundle edit_line report_match_variables(data) {
 
-reports:
-  cfengine::
+  reports:
+    cfengine::
 
-  "$(data)";
+      "$(data)";
 
-# OUTPUT
-# You should see: 
-# R: /tmp/cf2_test1 cf2 test1
-# R: /tmp/cf3_test2 cf3 test2
+      # OUTPUT
+      # You should see: 
+      # R: /tmp/cf2_test1 cf2 test1
+      # R: /tmp/cf3_test2 cf3 test2
 
-}
+                                              }

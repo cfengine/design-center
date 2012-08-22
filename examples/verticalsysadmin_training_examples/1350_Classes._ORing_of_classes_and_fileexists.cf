@@ -1,25 +1,25 @@
 bundle agent example
 {
 
-classes:
+  classes:
 
-# List form of class expression useful for including functions
+      # List form of class expression useful for including functions
 
-	"my_new_class"
+      "my_new_class"
 
-              or	=> { "linux",
+                   or   => { "linux",
                              "solaris",
-                              fileexists("/etc/fstab")
+                             fileexists("/etc/fstab")
                            };
 
 
-reports:
+  reports:
 
-   my_new_class::
+    my_new_class::
 
-	# This will only report Boo! on linux, solaris, or any system
-	# on which the file /etc/fstab exists
+      # This will only report Boo! on linux, solaris, or any system
+      # on which the file /etc/fstab exists
 
-	"Boo!";
+      "Boo!";
 }
 
