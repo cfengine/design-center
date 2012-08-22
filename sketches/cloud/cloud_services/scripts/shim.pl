@@ -28,10 +28,24 @@ GetOptions (
            );
 
 
-foreach my $required (qw/aws_access_key aws_secret_key ssh_pub_key ami instance_type region security_group/)
+foreach my $required (qw/ssh_pub_key ami instance_type region security_group/)
 {
  die "Sorry, we can't go on until you've specified --ec2 $required"
   unless defined $options{ec2}->{$required};
+}
+# Access and secret key inherited from environment if defined
+foreach my $required (qw/aws_access_key aws_secret_key/)
+{
+ my $envvarname = uc($required);
+ $envvarname =~ s/^AWS_/EC2_/;
+ unless (defined $options{ec2}->{$required}) {
+   if (defined $ENV{$envvarname}) {
+       $options{ec2}->{$required} = $ENV{$envvarname};
+   }
+   else {
+     die "Sorry, we can't go on until you've specified --ec2 $required (or specified it in your $envvarname environment variable)";
+   }
+ }
 }
 
 if (-r $options{ec2}->{ssh_pub_key})
