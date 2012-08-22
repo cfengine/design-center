@@ -9,6 +9,7 @@ bundle agent example {
         "my_real" real    => "3.14159";
 
     commands:
+
         "/bin/echo $(my_string) $(my_int) $(my_real)";
 
 }

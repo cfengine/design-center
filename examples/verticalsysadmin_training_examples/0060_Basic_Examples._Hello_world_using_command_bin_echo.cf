@@ -1,6 +1,3 @@
-# commands
-#    A promise to execute a command.
-
 bundle agent example
 {
 

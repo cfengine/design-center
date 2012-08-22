@@ -4,11 +4,10 @@ bundle agent example {
 
         "/dev/shm"
 
-            volume  => check_sanity_and_min_free_space("99%");
-
+            volume  => check_sanity_and_min_free_space("90%");
 
         "/"
-            volume  => check_sanity_and_min_free_space("30%");
+            volume  => check_sanity_and_min_free_space("90%");
 
 }
 

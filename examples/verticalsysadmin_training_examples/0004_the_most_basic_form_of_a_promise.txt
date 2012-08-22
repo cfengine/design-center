@@ -3,6 +3,8 @@ The Most Basic Form of a Promise
 
 promise_type:
 
+    class::
+
        "promiser" 
 
             promise_body;

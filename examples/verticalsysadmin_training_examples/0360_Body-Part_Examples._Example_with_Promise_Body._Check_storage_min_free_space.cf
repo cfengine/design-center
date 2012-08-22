@@ -3,7 +3,7 @@ bundle agent example {
 storage:
 
     "/"
-         volume  => check_min_free_space("80%");
+         volume  => check_min_free_space("50%");
 
     "/empty"
          volume  => check_min_free_space("80%");
@@ -18,6 +18,5 @@ storage:
 body volume check_min_free_space(free) {
 
   freespace      => "$(free)";
-  sensible_size  => "10G";
 
 }

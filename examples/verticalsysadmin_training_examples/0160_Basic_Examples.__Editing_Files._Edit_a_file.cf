@@ -12,6 +12,8 @@ files:
 
 bundle edit_line  file_contains_proper_greetings {
 
-insert_lines: "Good morning!";
+insert_lines:
+
+    "Good morning!";
 
 }

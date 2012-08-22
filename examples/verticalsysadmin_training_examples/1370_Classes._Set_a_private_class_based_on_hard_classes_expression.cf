@@ -2,7 +2,7 @@ bundle agent example
 {
 
 classes:
-    "solinux"
+    "solaris_or_linux"
         comment => "Set a custom class based on built-in classes",
         expression => "linux|solaris";
 
@@ -14,6 +14,6 @@ classes:
 
 
 reports:
-    solinux::
+    solaris_or_linux::
         "Yay!! I am on Solaris or Linux.";
 }
