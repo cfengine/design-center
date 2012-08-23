@@ -854,33 +854,40 @@ sub activate
 
     if ($entry_point)
     {
-     foreach my $default_k (keys %{$entry_point->{default}})
-     {
-      next if exists $aparams->{$default_k};
-      $aparams->{$default_k} = $entry_point->{default}->{$default_k};
-     }
-
      my $varlist = $entry_point->{varlist};
-     foreach my $varname (sort keys %$varlist)
+     my $fails;
+     foreach my $var (@$varlist)
      {
-      if ($varname eq 'activated' && ! exists $aparams->{$varname})
+      unless (exists $aparams->{$var->{name}})
       {
-       print "Inserting artificial 'activated' boolean set to 'any' so it's always true.\n"
-        unless $quiet;
-       $aparams->{$varname} = 'any';
+       if (exists $var->{default})
+       {
+        $aparams->{$var->{name}} = $var->{default};
+       }
+       else
+       {
+        color_die "Can't activate $sketch: its interface requires variable '$var->{name}' and no default is available"
+       }
       }
 
-      color_die "Can't activate $sketch: its interface requires variable '$varname'"
-       unless exists $aparams->{$varname};
-      print "Satisfied by aparams: '$varname'\n" if $verbose;
-     }
+      # for contexts, translate booleans to any or !any
+      if (ref $aparams->{$var->{name}} eq 'JSON::XS::Boolean' &&
+          $var->{type} eq 'CONTEXT')
+      {
+       $aparams->{$var->{name}} = $aparams->{$var->{name}} ? 'any' : '!any';
+      }
 
-     $varlist = $entry_point->{optional_varlist};
-     foreach my $varname (sort keys %$varlist)
-     {
-      next unless exists $aparams->{$varname};
-      print "Optional satisfied by aparams: '$varname'\n" if $verbose;
+      if (validate($aparams->{$var->{name}}, split('\|', $var->{type})))
+      {
+       print "Satisfied by aparams: '$var->{name}'\n" if $verbose;
+      }
+      else
+      {
+       color_warn "Can't activate $sketch: '$var->{name}' value '$aparams->{$var->{name}}' fails $var->{type} validation";
+       $fails++;
+      }
      }
+     color_die "Validation errors" if $fails;
     }
     else
     {
@@ -889,12 +896,6 @@ sub activate
 
     # activation successful, now install it
     my $activations = load_json($options{'act-file'}, 1);
-
-    if ('HASH' eq ref $activations->{$sketch})
-    {
-     color_warn "Ignoring old-style activations for sketch $sketch!";
-     $activations->{$sketch} = [];
-    }
 
     foreach my $check (@{$activations->{$sketch}})
     {
@@ -1681,10 +1682,19 @@ sub verify_entry_point
          }
          elsif ('function-call' eq $rval->{type})
          {
-          $vars{$var}->{$spec} = {
-                                  function =>  $rval->{name},
-                                  args => $rval->{arguments}
-                                 };
+          foreach my $farg (@{$rval->{arguments}})
+          {
+           next if $farg->{type} eq 'string';
+           push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has a function call for a default with non-string argument $farg->{value}";
+          }
+
+          unless (scalar @rejects)
+          {
+           $vars{$var}->{$spec} = {
+                                   function =>  $rval->{name},
+                                   args => [map { $_->{value} } @{$rval->{arguments}}],
+                                  };
+          }
          }
          else
          {
@@ -2355,14 +2365,49 @@ sub print_help {
   }
 }
 
-__DATA__
- bundle common validators
+sub validate
 {
-  vars:
-      "v[PATH]"             string => "/.*";
-      "v[OCTAL]"            string => "[0-7]+";
-      "v[DIGITS]"           string => "[0-9]+";
-      "v[NON_EMPTY_STRING]" string => "(?!\\$\\(.+\\)).+"; # don't match $(...) unexpanded variables
-      "v[BOOLEAN]"          string => "(?i)true|false|on|off|1|0";
-      "v[HTTP_URL]"         string => "(git|https?)://.+"; # this is not a good URL regex
+ my $value = shift @_;
+ my @validation_types = @_;
+
+ foreach my $vtype (@validation_types)
+ {
+  if ($vtype eq 'PATH')
+  {
+   return $value =~ m,^/,;            # fails on Win32
+  }
+  elsif ($vtype eq 'CONTEXT')
+  {
+   return $value =~ m/^[\w!.|&()]+$/;
+  }
+  elsif ($vtype eq 'OCTAL')
+  {
+   return $value =~ m/^[0-7]+$/;
+  }
+  elsif ($vtype eq 'DIGITS')
+  {
+   return $value =~ m/^[0-9]+$/;
+  }
+  elsif ($vtype eq 'BOOLEAN')
+  {
+   return $value =~ m/^(true|false|on|off|1|0)$/i;
+  }
+  elsif ($vtype eq 'NON_EMPTY_STRING')
+  {
+   return length $value;
+  }
+  elsif ($vtype eq 'STRING')
+  {
+   return defined $value;
+  }
+  elsif ($vtype eq 'HTTP_URL')
+  {
+   return $value =~ m,^(git|https?)://.+,; # this is not a good URL regex
+  }
+  else
+  {
+   color_warn("Sorry, but an unknown validation type $vtype was requested.  We'll fail the validation, too.");
+   return undef;
+  }
+ }
 }

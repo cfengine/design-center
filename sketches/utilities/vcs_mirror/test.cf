@@ -1,9 +1,8 @@
 body common control {
 
-    bundlesequence => {"validators", "main"};
+    bundlesequence => { "main" };
     inputs => {
                 "../../libraries/copbl/cfengine_stdlib.cf",
-                "../../libraries/validators/validators.cf",
                 "./main.cf",
               };
 }

@@ -3,7 +3,7 @@ body file control
   namespace => "cfdc_vcs_mirror";
 }
 
-bundle agent vcs_mirror(prefix, bundle_home, vcs, path, origin, branch, runas, umask, testboolean)
+bundle agent vcs_mirror(prefix, bundle_home, vcs, path, origin, branch, runas, umask)
 {
   meta:
       # __PREFIX__ will be supplied by cf-sketch
@@ -21,7 +21,7 @@ bundle agent vcs_mirror(prefix, bundle_home, vcs, path, origin, branch, runas, u
       "vars[origin][type]"         string => "HTTP_URL|PATH";
 
       "vars[branch][type]"         string => "NON_EMPTY_STRING";
-      "vars[branch][default]"      string => "NON_EMPTY_STRING";
+      "vars[branch][default]"      string => "master";
 
       # this is not called "user"  so it won't be confused with the remote user
       "vars[runas][type]"          string => "NON_EMPTY_STRING";
@@ -30,11 +30,11 @@ bundle agent vcs_mirror(prefix, bundle_home, vcs, path, origin, branch, runas, u
       "vars[umask][type]"          string => "OCTAL";
       "vars[umask][default]"       string => "022";
 
-      # this is a boolean (e.g. 0 or 1, 'yes' or 'no') stored in a string
-      "vars[testboolean][type]"    string => "BOOLEAN";
+      # # this is a boolean (e.g. 0 or 1, 'yes' or 'no') stored in a string
+      # "vars[testboolean][type]"    string => "BOOLEAN";
 
-      # this is a context (e.g. 'any') stored in a string
-      "vars[testcontext][type]"    string => "CONTEXT";
+      # # this is a context (e.g. 'any') stored in a string
+      # "vars[testcontext][type]"    string => "CONTEXT";
 
   vars:
       "canon_prefix" string => canonify("$(prefix)");
