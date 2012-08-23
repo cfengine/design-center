@@ -4,18 +4,11 @@ bundle agent example
 
   files:
 
-<<<<<<< HEAD
    "/tmp/newfile3"
 
 	handle => "newfile3_exists",
 	create => "true",
 	action => log("Created very important file $(this.promiser)");
-=======
-      "/tmp/newfile3"
-               handle => "newfile3_exists",
-               create => "true",
-               action => log_repaired_verbose("Created very important file");
->>>>>>> 4d4eb9f12eb20502ce4e4223ba1c92e4ab348de7
 }
 
 body action log(message) 

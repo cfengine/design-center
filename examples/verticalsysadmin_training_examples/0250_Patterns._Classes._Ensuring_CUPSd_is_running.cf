@@ -2,26 +2,15 @@ bundle agent example {
 
   processes:
 
-<<<<<<< HEAD
         "cupsd"
 
             restart_class => "cups_needs_to_be_started",
             comment => "We DO want print services";
-=======
-      "^cupsd"
-
-        restart_class => "restart_cups",
-              comment => "We DO want print services";
->>>>>>> 4d4eb9f12eb20502ce4e4223ba1c92e4ab348de7
 
 
   commands:
 
-<<<<<<< HEAD
       cups_needs_to_be_started::
-=======
-    restart_cups::
->>>>>>> 4d4eb9f12eb20502ce4e4223ba1c92e4ab348de7
 
       "/etc/init.d/cups"
 

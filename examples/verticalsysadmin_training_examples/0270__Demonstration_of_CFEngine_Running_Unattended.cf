@@ -17,13 +17,9 @@ bundle agent example {
 
   files:
 
-<<<<<<< HEAD
     "/etc/nologin"
-=======
-      "/tmp/nologin"
->>>>>>> 4d4eb9f12eb20502ce4e4223ba1c92e4ab348de7
 
-               create => "true",
+              create => "true",
               comment => "Mortal users can't log in while system is in maintenance mode";
 
                      }

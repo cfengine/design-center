@@ -12,12 +12,8 @@ bundle agent example {
 
 bundle edit_line  file_contains_proper_greetings {
 
-<<<<<<< HEAD
 insert_lines:
 
     "Good morning!";
-=======
-      insert_lines: "Good morning!";
->>>>>>> 4d4eb9f12eb20502ce4e4223ba1c92e4ab348de7
 
                                                  }

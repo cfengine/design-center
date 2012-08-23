@@ -1,6 +1,5 @@
 bundle agent example {
 
-<<<<<<< HEAD
     reports: Monday::    "Hello world! I love Mondays!";
     reports: Tuesday::   "Hello world! I love Tuesdays!";
     reports: Wednesday:: "Hello world! I love Wednesdays!";
@@ -10,14 +9,3 @@ bundle agent example {
     reports: Saturday::  "Hello world! I love weekends!";
     reports: Sunday::    "Hello world! I love weekends!";
 }
-=======
-      reports: Monday::    "Hello world! I love Mondays!";
-      reports: Tuesday::   "Hello world! I love Tuesdays!";
-      reports: Wednesday:: "Hello world! I love Wednesdays!";
-      reports: Thursday::  "Hello world! I love Thursdays!";
-      reports: Friday::    "Hello world! I love Fridays!";
-      
-      reports: Saturday::  "Hello world! I love weekends!";
-      reports: Sunday::     "Hello world! I love weekends!";
-                     }
->>>>>>> 4d4eb9f12eb20502ce4e4223ba1c92e4ab348de7
