@@ -1,0 +1,6 @@
+bundle agent repo_yum_client(prefix)
+# Configure yum repository clients
+{
+
+
+}
