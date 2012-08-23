@@ -1716,14 +1716,6 @@ sub verify_entry_point
 
    foreach my $arg (@args)
    {
-    if ($arg eq 'prefix')
-    {
-      # always allow the prefix
-     push @{$meta->{varlist}}, {
-                                name => $arg,
-                                type => 'NON_EMPTY_STRING',
-                               };
-    }
     if (exists $vars{$arg})
     {
      my $definition = {
@@ -1764,6 +1756,9 @@ sub verify_entry_point
     }
    }
   }
+
+  $meta->{bundle_name} = $bname;
+  $meta->{bundle_namespace} = $bnamespace;
 
   unless ($bname)
   {
