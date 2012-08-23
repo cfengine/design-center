@@ -1716,7 +1716,6 @@ sub verify_entry_point
 
    foreach my $arg (@args)
    {
-    next if scalar @rejects;            # ensures that every var has a type
     if ($arg eq 'prefix')
     {
       # always allow the prefix
@@ -1729,7 +1728,7 @@ sub verify_entry_point
     {
      my $definition = {
                        name => $arg,
-                       type => $vars{$arg}->{type},
+                       type => (exists $vars{$arg}->{type} ? $vars{$arg}->{type} : '???'),
                       };
 
      $definition->{default} = $vars{$arg}->{default}
