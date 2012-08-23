@@ -669,7 +669,7 @@ sub generate
       my $dir = $options{fullpath} ? $contents->{$dep}->{fulldir} : File::Spec->abs2rel( $contents->{$dep}->{fulldir}, dirname($run_file) );
       my $input = File::Spec->catfile($dir, @{$contents->{$dep}->{interface}});
       push @inputs, $input;
-      print "Dependency: added input $input for runfile $run_file"
+      print "Dependency: added input $input for runfile $run_file\n"
        if $verbose;
 
       delete $dependencies{$dep};
@@ -2103,6 +2103,7 @@ sub make_runfile
  foreach my $a (keys %$activations)
  {
   $contexts .= "       # contexts for activation $a\n";
+  $vars .= "       # string and slist variables for activation $a\n";
   my $act = $activations->{$a};
   my @vars = @{$activations->{$a}->{vars}};
   my %params = %{$activations->{$a}->{pdata}};
@@ -2124,41 +2125,36 @@ sub make_runfile
    push @passed, [ $var, $value ]
     if (exists $var->{passed} && $var->{passed});
 
+   if ($var->{type} eq 'CONTEXT')
+   {
+    $contexts .= sprintf('      "_%s_%s_%s" expression => "%s";' . "\n",
+                         $a,
+                         $act->{prefix},
+                         $name,
+                         $value);
+
+    $vars .= sprintf('      "_%s_%s_contexts[%s]" string => "%s";' . "\n",
+                     $a,
+                     $act->{prefix},
+                     $name,
+                     $value);
+   }
+   else
+   {
+    $vars .= sprintf('       "_%s_%s_%s" string => "%s";' . "\n",
+                     $a,
+                     $act->{prefix},
+                     $name,
+                     $value);
+   }
+
    color_die("Sorry, but we have an undefined variable $name: it has neither a parameter value nor a supplied value")
     unless defined $value;
   }
 
-  print "We will activate bundle $act->{entry_bundle} with passed parameters " . $coder->encode(\@passed)
+  print "We will activate bundle $act->{entry_bundle} with passed parameters " . $coder->encode(\@passed) . "\n"
    if $verbose;
-  #  $contexts .= sprintf('      "_%s_%s" expression => "%s";' . "\n",
-  #                       $a,
-  #                       $context,
-  #                       $value)
-  # }
 
-  # $vars .= "       # string versions of the contexts for activation $a\n";
-  # foreach my $context (sort keys %{$activations->{$a}->{contexts}})
-  # {
-  #  my @context_hack = split '__', $context;
-  #  my $short_context = pop @context_hack;
-  #  my $context_prefix = join '__', @context_hack, '';
-
-  #  $vars .= sprintf('      "_%s_%scontexts_text[%s]" string => "%s";' . "\n",
-  #                   $a,
-  #                   $context_prefix,
-  #                   $short_context,
-  #                   $activations->{$a}->{contexts}->{$context}->{value} ? 'ON' : 'OFF')
-  # }
-  # $vars .= "       # string and slist variables for activation $a\n";
-
-  # foreach my $var (sort keys %{$activations->{$a}->{vars}})
-  # {
-  #  $vars .= sprintf('       "_%s_%s" %s => %s;' . "\n",
-  #                   $a,
-  #                   $var,
-  #                   $activations->{$a}->{vars}->{$var}->{type},
-  #                   $activations->{$a}->{vars}->{$var}->{value});
-  # }
 
   # $vars .= "       # array variables for activation $a\n";
   # foreach my $avar (sort keys %{$activations->{$a}->{array_vars}})
