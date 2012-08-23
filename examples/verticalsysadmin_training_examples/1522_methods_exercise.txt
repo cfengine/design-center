@@ -27,7 +27,7 @@ Sysadmin Problem:
 
 /etc/profile should set the ORGANIZATION environment variable when users log in.
 
-ORGANIZATION=MyOrg
+export ORGANIZATION=MyOrg
 
 Exercise:
 

@@ -248,20 +248,21 @@ Given a file /tmp/file.txt:
 apples
 oranges
 
-and given that we want the file to converge to:
+Use the COPBL to comment out "oranges" and append "bananas", resulting in:
 
 apples
 # oranges
 bananas
 
-use the COPBL to ensure the file contains the line
-bananas (bundle edit_line insert_lines) and to ensure
-the line matching "oranges" is commented out (bundle edit_line comment_lines_matching).
+Hint: use "bundle edit_line insert_lines" and "bundle edit_line comment_lines_matching".
+
 
 EXERCISE 17 - COPBL - contain a command
 
+Run the command /usr/bin/id as user "nobody".
 
-Run the command /usr/bin/id as user classroom.
+Hint: use "body contain setuid".
+
 
 
 EXERCISE 18 - COPBL - linking promises together
