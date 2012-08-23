@@ -3,12 +3,16 @@ body file control
   namespace => "cfdc_vcs_mirror";
 }
 
-bundle agent vcs_mirror(prefix, vcs, path, origin, branch, runas, umask, testboolean)
+bundle agent vcs_mirror(prefix, bundle_home, vcs, path, origin, branch, runas, umask, testboolean)
 {
   meta:
       # __PREFIX__ will be supplied by cf-sketch
       "vars[prefix][type]"         string => "NON_EMPTY_STRING";
       "vars[prefix][default]"      string => "__PREFIX__";
+
+      # __BUNDLE_HOME__ will be supplied by cf-sketch
+      "vars[bundle_home][type]"    string => "NON_EMPTY_STRING";
+      "vars[bundle_home][default]" string => "__BUNDLE_HOME__";
 
       "vars[vcs][type]"            string => "PATH";
 
