@@ -222,35 +222,6 @@ if [ -x /bin/custom ]
   then /bin/custom
 fi
 
-EXERCISE 12 - Methods
-
-Let's say we want our /etc/profile file to contain a line
-ORGANIZATION=MyOrg to set the ORGANIZATION environment
-variable when users log in.
-
-Write a bundle "etc_profile_contains" that would take an argument
-and ensures /etc/profile contains text string that specified
-in the argument.
-
-Demonstrate its use by calling it from another bundle:
-
-    bundle agent example { 
-       methods:  
-         "any"
-             usebundle => etc_profile_contains("ORGANIZATION=MyOrg");
-    }
-
-
-EXERCISE 13 - Methods (re-usable bundles)
-
-Make a bundle called file_contains that takes two arguments:
-a filename, and a text string.  The bundle should ensure that
-the file specified in the first argument contains the text string
-specified in the second argument.  Example:
-
-    methods:
-     "any" usebundle => file_contains("/etc/profile", "ORGANIZATION=MyOrg");
-     "any" usebundle => file_contains("/etc/motd", "Unauth. use forbidden");
 
 
 
