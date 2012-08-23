@@ -2,7 +2,7 @@
 
     "manifest":
     {
-        "main.cf": { "desc": "main file", "version": 1.02 },
+        "main.cf": { "desc": "main file", "version": 1.03 },
         "README.md": { "documentation": true },
         "params/example.json": { "comment": "Sample parameters to set hostname to node1.example.com" },
         "test.cf": { "comment": "Standalone Test policy" },
@@ -12,7 +12,7 @@
     "metadata":
     {
         "name": "System::set_hostname",
-        "version": 1.02,
+        "version": 1.03,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>" ],
