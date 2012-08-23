@@ -2,7 +2,7 @@
 
     "manifest":
     {
-        "yumrepo.cf": { "desc": "main file" },
+        "main.cf": { "desc": "main file", "version": "2.0" },
         "README.md": { "documentation": true },
         "params/repos.json": { },
     },
@@ -10,7 +10,7 @@
     "metadata":
     {
         "name": "Repository::Yum::Maintain",
-        "version": 1.01,
+        "version": 2.0,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
@@ -20,6 +20,6 @@
                      "os": [ "linux" ]
                    }
     },
-    "entry_point": "yumrepo.cf",
-    "interface": [ "yumrepo.cf" ]
+    "entry_point": "main.cf",
+    "interface": [ "main.cf" ]
 }
