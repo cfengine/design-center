@@ -1664,7 +1664,7 @@ sub verify_entry_point
        my ($var, $spec) = ($1, $2);
 
        print "Found promiser for var $var: $spec\n"
-        if $verbose;
+        if $veryverbose;
 
        if (exists $promise->{attributes}->[0]->{lval} &&
            exists $promise->{attributes}->[0]->{rval})
