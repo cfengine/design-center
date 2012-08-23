@@ -1717,7 +1717,14 @@ sub verify_entry_point
    foreach my $arg (@args)
    {
     next if scalar @rejects;            # ensures that every var has a type
-    next if $arg eq 'prefix';           # always allow the prefix
+    if ($arg eq 'prefix')
+    {
+      # always allow the prefix
+     push @{$meta->{varlist}}, {
+                                name => $arg,
+                                type => 'NON_EMPTY_STRING',
+                               };
+    }
     if (exists $vars{$arg})
     {
      my $definition = {
