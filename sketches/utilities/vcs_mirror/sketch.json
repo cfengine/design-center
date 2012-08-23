@@ -17,7 +17,6 @@
         "portfolio": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },
-                     "CFEngine::validators": { "version": 1.00 },
                      "cfengine": { "version": "3.3.0" },
                    },
     },

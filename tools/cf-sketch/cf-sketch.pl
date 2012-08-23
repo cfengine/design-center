@@ -1598,7 +1598,9 @@ sub verify_entry_point
   or die "Could not run [$tline]: $!";
 
  my $ptree_str = join "\n", <$parse>;
- my $ptree = $coder->decode($ptree_str);
+ my $ptree;
+
+ eval { $ptree = $coder->decode($ptree_str); };
 
  my @rejects;
  my $meta = {
@@ -2351,4 +2353,16 @@ sub print_help {
       print _sprintstr($desc, $cmdstr, 30, 1)."\n";
     }
   }
+}
+
+__DATA__
+ bundle common validators
+{
+  vars:
+      "v[PATH]"             string => "/.*";
+      "v[OCTAL]"            string => "[0-7]+";
+      "v[DIGITS]"           string => "[0-9]+";
+      "v[NON_EMPTY_STRING]" string => "(?!\\$\\(.+\\)).+"; # don't match $(...) unexpanded variables
+      "v[BOOLEAN]"          string => "(?i)true|false|on|off|1|0";
+      "v[HTTP_URL]"         string => "(git|https?)://.+"; # this is not a good URL regex
 }
