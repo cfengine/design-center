@@ -13,6 +13,7 @@ bundle agent example {
                 slist => getindices("cfengine_components");
 
   reports:
+
     linux::
 
       "$(component_names) $(cfengine_components[$(component_names)])";
