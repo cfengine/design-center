@@ -2,7 +2,7 @@
 
     "manifest":
     {
-        "main.cf": { "desc": "main file", "version": 1.0 },
+        "main.cf": { "desc": "main file", "version": 1.1 },
         "README.md": { "documentation": true },
         "params/example.json": { "comment": "Example parameters" },
         "test.cf": { "comment": "Standalone test policy" },
@@ -12,7 +12,7 @@
     "metadata":
     {
         "name": "Utilities::halt_agent_if_file_exists",
-        "version": 1.1,
+        "version": 1.2,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
         "authors": [ "Ben Heilman <bheilman@enova.com>", "Nick Anderson <nick@cmdln.org>" ],
