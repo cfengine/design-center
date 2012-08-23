@@ -3,42 +3,33 @@ body file control
   namespace => "cfdc_vcs_mirror";
 }
 
-bundle agent vcs_mirror(prefix)
+bundle agent vcs_mirror(prefix, vcs, path, origin, branch, runas, umask)
 {
+  meta:
+      "vars[vcs][type]"            string => "PATH";
+
+      "vars[path][type]"           string => "PATH";
+
+      "vars[origin][type]"         string => "HTTP_URL|PATH";
+
+      "vars[branch][type]"         string => "NON_EMPTY_STRING";
+      "vars[branch][default]"      string => "NON_EMPTY_STRING";
+
+      # this is not called "user"  so it won't be confused with the remote user
+      "vars[runas][type]"          string => "NON_EMPTY_STRING";
+      "vars[runas][default]"       string => getenv("USER", 128);
+
+      "vars[umask][type]"          string => "OCTAL";
+      "vars[umask][default]"       string => "022";
+
+      # this is a boolean (e.g. 0 or 1, 'yes' or 'no') stored in a string
+      "vars[testboolean][type]"    string => "BOOLEAN";
+
+      # this is a context (e.g. 'any') stored in a string
+      "vars[testcontext][type]"    string => "CONTEXT";
+
   vars:
-      # TODO should be in meta promises but then getindices() doesn't work, bug?
-      "vars[string][vcs]"     string => "PATH";
-      "vars[string][path]"    string => "PATH";
-      "vars[string][origin]"  string => "HTTP_URL";
-      "vars[string][branch]"  string => "NON_EMPTY_STRING";
-
-      # this is not called "user" so it won't be confused with the remote user
-      "vars[string][runas]"   string => "NON_EMPTY_STRING";
-      "vars[string][umask]"   string => "OCTAL";
-
-      # "string_vars" slist => getindices("vcs_mirror_meta.vars[string]"); # doesn't work if vars is in the meta bundle
-
-      # the following doesn't work either, so we can't COPY the problematic slist
-      # "string_vars1" slist => getindices("vars[string]");
-      # "string_vars" slist => maplist("$(this)", "string_vars1");
-
-      "string_vars" slist => getindices("vars[string]");
-
       "canon_prefix" string => canonify("$(prefix)");
-      # "passed[$(string_vars)]" string => "$($(prefix)$(string_vars))"; # this is broken, so we can't have the variables in an array
-
-      "$(string_vars)" string => "$($(prefix)$(string_vars))",
-      ifvarclass => "has_acceptable_stringvar_$(string_vars)";
-
-      "runas" string => getenv("USER", 128),
-      ifvarclass => "!has_acceptable_stringvar_runas";
-
-      "branch" string => "master",
-      ifvarclass => "!has_acceptable_stringvar_branch";
-
-      "umask" string => "022",
-      ifvarclass => "!has_acceptable_stringvar_umask";
-
       "vcs_type" string => lastnode("$(vcs)","/");
 
       "git_update_command" slist =>
@@ -98,13 +89,11 @@ bundle agent vcs_mirror(prefix)
       "svn_configfile" string => "$(path)/.svn/entries";
 
   classes:
-      "has_acceptable_stringvar_$(string_vars)" expression => regcmp("$(validators.v[$(vars[string][$(string_vars)])])", "$($(prefix)$(string_vars))");
-
       "use_git" expression => strcmp(lastnode("$(vcs)","/"), "git");
       "use_svn" expression => strcmp(lastnode("$(vcs)","/"), "svn");
       "known_vcs" or => { "use_git", "use_svn" };
 
-      "variables_ok" and => { "known_vcs", "has_acceptable_stringvar_vcs", "has_acceptable_stringvar_origin", "has_acceptable_stringvar_path" };
+      "variables_ok" and => { "known_vcs" };
 
       "path_exists" expression => fileexists("$(path)");
 
@@ -142,15 +131,6 @@ bundle agent vcs_mirror(prefix)
     !known_vcs::
       "Sorry, the requested VCS '$(vcs)' is not handled yet.";
 
-    verbose::
-      "String variable $(string_vars) with data type $(vars[string][$(string_vars)]) and value '$($(prefix)$(string_vars))' matches validator '$(validators.v[$(vars[string][$(string_vars)])])'"
-      ifvarclass => "has_acceptable_stringvar_$(string_vars)";
-
-      "String variable $(string_vars) with data type $(vars[string][$(string_vars)]) and value '$($(prefix)$(string_vars))' DOES NOT match validator '$(validators.v[$(vars[string][$(string_vars)])])'"
-      ifvarclass => "!has_acceptable_stringvar_$(string_vars)";
-
-      "The final version of string variable $(string_vars) after defaults were applied is $($(string_vars))";
-
     verbose.variables_ok::
       "Cool, we're using $(vcs_type).  We will look for the config file $($(vcs_type)_configfile)";
       "VCS is $(vcs), to be executed as user $(runas) / umask $(umask), origin $(origin), branch $(branch), target path $(path).";
@@ -169,33 +149,6 @@ bundle agent vcs_mirror(prefix)
       "Sorry, we could not clone $(origin) (branch $(branch)) in $(path) because that path already exists";
 }
 
-bundle agent meta_vcs_mirror
-{
-  vars:
-      # acceptable values: "/usr/bin/git" for example
-      "optional_argument[vcs]" string => "string";
-      "default[vcs]"           string => "/usr/bin/git";
-
-      "argument[path]"   string => "string";
-      "argument[origin]" string => "string";
-      "argument[branch]" string => "string";
-
-      # this is not called "user" so it won't be confused with the remote user
-      "optional_argument[runas]" string => "string";
-      # as far as I know 128 is more than enough on any OS
-      "default[runas]"           string => getenv("USER", 128);
-
-      # this changes the umask from the default 077
-      "optional_argument[umask]" string => "string";
-      "default[umask]"           string => "077";
-
-      # this can't be determined from within the bundle due to:
-      # https://cfengine.com/bugtracker/view.php?id=718
-      "optional_argument[bundle_home]" string => "string";
-      # this default will probably be incorrect, either use cfsketch --generate
-      # or supply it yourself
-      "default[bundle_home]"           string => dirname("$(this.promise_filename)");
-}
 
 body contain setuid_umask_in_dir(user, dir, umask)
 {

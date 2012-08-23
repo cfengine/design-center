@@ -9,6 +9,7 @@ use File::Compare;
 use File::Copy;
 use File::Find;
 use File::Spec;
+use File::Temp qw/ tempfile tempdir /;
 use Cwd;
 use File::Path qw(make_path remove_tree);
 use File::Basename;
@@ -74,6 +75,7 @@ my $color = -t STDOUT;
 my %def_options =
  (
   verbose    => 0,
+  veryverbose => 0,
   quiet      => 0,
   help       => 0,
   force      => 0,
@@ -129,6 +131,7 @@ my @options_desc =
   "---", "\nOptions:\n",
   "quiet|q",                   "Supress non-essential output.",
   "verbose|v",                 "Produce additional output.",
+  "veryverbose|vv",            "Produce too much output.",
   "dryrun|n",                  "Do not do anything, just indicate what would be done.",
   "help",                      "This help message.",
   "color!",                    "Colorize output, enabled by default if running on a terminal.",
@@ -253,9 +256,10 @@ foreach my $repo (@{$options{repolist}})
 
 $options{repolist} = \@list;
 
-my $verbose = $options{verbose};
-my $quiet   = $options{quiet};
-my $dryrun  = $options{'dry-run'};
+my $verbose     = $options{verbose};
+my $quiet       = $options{quiet};
+my $dryrun      = $options{'dry-run'};
+my $veryverbose = $options{veryverbose};
 
 print "Full configuration: ", $coder->encode(\%options), "\n" if $verbose;
 
@@ -1534,6 +1538,8 @@ sub verify_entry_point
  my $maincf_filename = is_resource_local($dir) ? File::Spec->catfile($dir, $maincf) : "$dir/$maincf";
 
  my @mcf;
+ my $mcf;
+
  if (exists $mft->{$maincf})
  {
   if (is_resource_local($dir))
@@ -1544,17 +1550,17 @@ sub verify_entry_point
     return 0;
    }
 
-   my $mcf;
    unless (open($mcf, '<', $maincf_filename) && $mcf)
    {
     color_warn "Could not open $maincf_filename: $!" unless $quiet;
     return 0;
    }
    @mcf = <$mcf>;
+   $mcf = join "\n", @mcf;   # make sure the whole string is available
   }
   else
   {
-   my $mcf = lwp_get_remote($maincf_filename);
+   $mcf = lwp_get_remote($maincf_filename);
    unless ($mcf)
    {
     color_warn "Could not retrieve $maincf_filename: $!" unless $quiet;
@@ -1565,141 +1571,217 @@ sub verify_entry_point
   }
  }
 
- if (scalar @mcf)
+ if ($mcf !~ m/body\s+common\s+control.*bundlesequence/m)
  {
-  $. = 0;
-  my $bundle;
-  my $meta = {
-              confirmed        => 0,
-              varlist          => { activated => 'context' },
-              optional_varlist => { },
-              default          => {},
-             };
+  $mcf = '
+  body common control {
 
-  while (defined(my $line = shift @mcf))
+    bundlesequence => { "cf_null" };
+}
+' . $mcf;
+ }
+ else
+ {
+ }
+
+ my $tdir = tempdir( CLEANUP => 1 );
+ my ($tfh, $tfilename) = tempfile( DIR => $tdir );
+
+ # print "PARSING:\n$mcf\n\n" if $veryverbose;
+
+ print $tfh $mcf;
+ close $tfh;
+
+ my $pb = cfengine_promises_binary();
+ my $tline = "$pb --parse-tree -f '$tfilename'";
+ open my $parse, "$tline|"
+  or die "Could not run [$tline]: $!";
+
+ my $ptree_str = join "\n", <$parse>;
+ my $ptree = $coder->decode($ptree_str);
+
+ my @rejects;
+ my $meta = {
+             file => $maincf_filename,
+             dir => dirname($maincf_filename),
+
+             varlist => [
+                         {
+                          name    => 'activated',
+                          default => 'any',
+                          type    => 'CONTEXT'
+                         },
+                        ],
+            };
+
+ if ($ptree && exists $ptree->{bundles} && ref $ptree->{bundles} eq 'ARRAY')
+ {
+  my @bundles = @{$ptree->{bundles}};
+  my $bnamespace;
+  my $bname;
+  my $bname_printable;
+  my $bnamespace_printable;
+
+  foreach my $bundle (grep { $_->{'bundle-type'} eq 'agent' } @bundles)
   {
-   $.++;
-   # TODO: need better cfengine parser; this should be extracted by cf-promises
-   # when the meta: section is available.  It's very primitive now.
+   print "Looking at agent bundle $bundle->{name}\n"
+    if $veryverbose;
 
-   if (defined $bundle && $line =~ m/^\s*bundle\s+agent\s+meta_$bundle/)
+   my @args = @{$bundle->{arguments}};
+   ($bnamespace, $bname) = split ':', $bundle->{name};
+   unless ($bname)
    {
-    $meta->{confirmed} = 1;
+    $bname = $bnamespace;
+    undef $bnamespace;
    }
 
-   # match "argument[foo]" string => "string";
-   # or    "argument[bar]" string => "slist";
-   # or    "argument[bar]" string => "context";
-   # or    "argument[bar]" string => "array";
-   # optionally with a comma instead of a semicolon at the end
-   if ($meta->{confirmed} &&
-       $line =~ m/^\s*
-                  "argument\[([^]]+)\]"
-                  \s+
-                  string
-                  \s+=>\s+
-                  "(context|string|slist|array)"\s*[;,]/x)
-   {
-    $meta->{varlist}->{$1} = $2;
-   }
+   $bnamespace_printable = $bnamespace || 'default';
+   $bname_printable = "$bname (namespace=$bnamespace_printable)";
+   print "Found bundle $bname_printable with args @args\n" if $verbose;
 
-   # match "optional_argument[foo]" string => "string";
-   # or    "optional_argument[bar]" string => "slist";
-   # or    "optional_argument[bar]" string => "context";
-   # or    "optional_argument[bar]" string => "array";
-   # optionally with a comma instead of a semicolon at the end
-   if ($meta->{confirmed} &&
-       $line =~ m/^\s*
-                  "optional_argument\[([^]]+)\]"
-                  \s+
-                  string
-                  \s+=>\s+
-                  "(context|string|slist|array)"\s*[;,]/x)
-   {
-    $meta->{optional_varlist}->{$1} = $2;
-   }
+   # extract the variables
+   my %vars;
 
-   # match "default[foo]" string => "string";
-   # match "default[foo]" slist => { "a", "b", "c" };
-   # optionally with a comma instead of a semicolon at the end
-   if ($meta->{confirmed} &&
-       $line =~ m/^\s*
-                  "default\[([^]]+)\]"
-                  \s+
-                  (string|slist)
-                  \s+=>\s+
-                  (.*)\s*[;,]/x &&
-      (exists $meta->{optional_varlist}->{$1} ||
-       exists $meta->{varlist}->{$1}))
+   foreach my $ptype (@{$bundle->{'promise-types'}})
    {
-    my $k = $1;
-    my $type = $2;
-    my $v = $3;
+    print "Looking at promise type $ptype->{name}\n"
+     if $veryverbose;
 
-    # primitive extractor of slist values
-    if ($type eq 'slist')
+    next unless $ptype->{name} eq 'meta';
+    foreach my $class (@{$ptype->{'classes'}})
     {
-     $v = [ ($v =~ m/"([^"]+)"/g) ];
+     print "Looking at class $class->{name}\n"
+      if $veryverbose;
+
+     if ($class->{name} eq 'any')
+     {
+      foreach my $promise (@{$class->{promises}})
+      {
+       print "Looking at 'any' meta promiser $promise->{promiser}\n"
+        if $veryverbose;
+       next unless $promise->{promiser} =~ m/^vars\[([^]]+)\]\[(type|default)\]$/;
+
+       my ($var, $spec) = ($1, $2);
+
+       print "Found promiser for var $var: $spec\n"
+        if $verbose;
+
+       if (exists $promise->{attributes}->[0]->{lval} &&
+           exists $promise->{attributes}->[0]->{rval})
+       {
+        my $lval = $promise->{attributes}->[0]->{lval};
+        my $rval = $promise->{attributes}->[0]->{rval};
+        if ('string' eq $lval)
+        {
+         if ('string' eq $rval->{type})
+         {
+          $vars{$var}->{$spec} = $rval->{value};
+         }
+         elsif ('function-call' eq $rval->{type})
+         {
+          $vars{$var}->{$spec} = {
+                                  function =>  $rval->{name},
+                                  args => $rval->{arguments}
+                                 };
+         }
+         else
+         {
+          push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has invalid value type $rval->{type}";
+         }
+        }
+        else
+        {
+         push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has invalid type $lval";
+        }
+       }
+       else
+       {
+        push @rejects, "Sorry, promiser $promise->{promiser} in bundle $bname_printable is invalid";
+       }
+      }
+     }
+     else
+     {
+      color_warn "Sorry, we can't parse conditional ($class->{name}) meta promises in $bname_printable"
+       if $verbose;
+     }
     }
-    # remove quotes from string values
-    if ($type eq 'string')
+   }
+
+   foreach my $var (sort keys %vars)
+   {
+    next if exists $vars{$var}->{type};
+    push @rejects, "In $bname_printable, the meta definition for variable $var does not have a type (e.g. \"vars[umask][type]\" string => \"OCTAL\")";
+   }
+
+   foreach my $arg (@args)
+   {
+    next if scalar @rejects;            # ensures that every var has a type
+    next if $arg eq 'prefix';           # always allow the prefix
+    if (exists $vars{$arg})
     {
-     $v =~ s/^["'](.*)["']$/$1/;
+     my $definition = {
+                       name => $arg,
+                       type => $vars{$arg}->{type},
+                      };
+
+     $definition->{default} = $vars{$arg}->{default}
+      if exists $vars{$arg}->{default};
+
+     push @{$meta->{varlist}}, $definition;
+     delete $vars{$arg};
     }
-
-
-    $meta->{default}->{$k} = $v;
+    else
+    {
+     push @rejects, "$bname_printable has argument $arg which is not defined as a meta promise (e.g. \"vars[umask][type]\" string => \"OCTAL\")";
+    }
    }
 
-   # match "default[foo][bar]" string => "moo";
-   if ($meta->{confirmed} &&
-       $line =~ m/^\s*
-                  "default\[([^]]+)\]\[([^]]+)\]"
-                  \s+
-                  (string)
-                  \s+=>\s+
-                  \"(.*)\"\s*;/x &&
-      (exists $meta->{optional_varlist}->{$1} ||
-       exists $meta->{varlist}->{$1} &&
-       $meta->{varlist}->{$1} eq 'array'))
+   foreach my $var (sort keys %vars)
    {
-    my $k = $1;
-    my $array_k = $2;
-    my $array_v = $4;
+    if ($vars{$var}->{type} eq 'CONTEXT')
+    {
+     my $definition = {
+                       name => $var,
+                       type => $vars{$var}->{type},
+                      };
 
-    $meta->{default}->{$k}->{$array_k} = $array_v;
-   }
+     $definition->{default} = $vars{$var}->{default}
+      if exists $vars{$var}->{default};
 
-   if ($meta->{confirmed} && $line =~ m/^\s*\}\s*/)
-   {
-    return $meta;
-   }
-
-   if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/ && $1 !~ m/^meta/)
-   {
-    $meta->{bundle} = $bundle = $1;
-    print "Found definition of bundle $bundle at $maincf_filename:$.\n"
-     if $verbose;
+     push @{$meta->{varlist}}, $definition;
+     delete $vars{$var};
+    }
+    else
+    {
+     push @rejects, "$bname_printable has a meta vars promise that does not correspond to a bundle argument";
+    }
    }
   }
 
-  if ($meta->{confirmed})
+  unless ($bname)
   {
-   color_warn "Couldn't find the closing } for [$bundle] in $maincf_filename"
-    unless $quiet;
+   push @rejects, "Couldn't find a usable bundle in $maincf_filename";
   }
-  elsif (defined $bundle)
+ }
+ else                                   # $ptree is not valid
+ {
+  push @rejects, "Could not parse $maincf_filename with [$tline]";
+ }
+
+ print "$maincf_filename bundle parse gave us " . Dumper($meta) if $veryverbose;
+
+ if (scalar @rejects)
+ {
+  foreach (@rejects)
   {
-   color_warn "Couldn't find the meta definition of [$bundle] in $maincf_filename"
-    unless $quiet;
-  }
-  else
-  {
-   color_warn "Couldn't find a usable bundle in $maincf_filename" unless $quiet;
+   color_warn $_ unless $quiet;
   }
 
   return undef;
  }
+
+ return $meta;
 }
 
 sub is_resource_local
