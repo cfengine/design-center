@@ -522,6 +522,7 @@ sub generate
    my $activation_counter = 1;
    my $template_activations = {};
    my $standalone = $options{'standalone'};
+   my $run_file = $options{runfile};
 
    my @inputs;
    my %dependencies;
@@ -568,7 +569,7 @@ sub generate
 
        # for null entry_point and interface definitions, don't write
        # anything in the runme template
-       unless (exists $entry_point->{bundle})
+       unless (exists $entry_point->{bundle_name})
        {
         push @inputs, File::Spec->catfile($data->{dir}, @{$data->{interface}});
         next;
@@ -576,7 +577,9 @@ sub generate
 
        my $activation = {
                          file => File::Spec->catfile($data->{dir}, $data->{entry_point}),
-                         entry_bundle => $entry_point->{bundle},
+                         dir => $data->{dir},
+                         fulldir => $data->{fulldir},
+                         entry_bundle => $entry_point->{bundle_name},
                          activation_id => $activation_id,
                          pdata  => $pdata,
                          sketch => $sketch,
@@ -585,111 +588,65 @@ sub generate
 
        my $varlist = $entry_point->{varlist};
 
-       # force-feed the bundle location here to work around a possible this.promise_filename bug
-       $varlist->{bundle_home} = 'string';
-       $pdata->{bundle_home} = $data->{dir};
-
        # provide the metadata that could be useful
        my @files = sort keys %{$data->{manifest}};
-       $varlist->{sketch_manifest} = 'slist';
-       $pdata->{sketch_manifest} = [ @files ];
+       $dependencies{$_} = 1 foreach collect_dependencies($data->{metadata}->{depends});
 
-       $varlist->{sketch_manifest_docs} = 'slist';
-       $pdata->{sketch_manifest_docs} = [ sort grep { $data->{manifest}->{$_}->{documentation} } @files ];
-
-       $varlist->{sketch_manifest_cf} = 'slist';
-       $pdata->{sketch_manifest_cf} = [ sort grep { $_ =~ m/\.cf$/ } @files ];
+       push @$varlist,
+       {
+        name => 'sketch_depends',
+        type => 'slist',
+        value => [ sort keys %dependencies ],
+       },
+       {
+        name => 'sketch_authors',
+        type => 'slist',
+        value => [ sort @{$data->{metadata}->{authors}} ],
+       },
+       {
+        name => 'sketch_portfolio',
+        type => 'slist',
+        value => [ sort @{$data->{metadata}->{portfolio}} ],
+       },
+       {
+        name => 'sketch_manifest',
+        type => 'slist',
+        value => \@files,
+       },
+       {
+        name => 'sketch_manifest_cf',
+        type => 'slist',
+        value => [ sort grep { $_ =~ m/\.cf$/ } @files ],
+       },
+       {
+        name => 'sketch_manifest_docs',
+        type => 'slist',
+        value => [ sort grep { $data->{manifest}->{$_}->{documentation} } @files ],
+       };
 
        my %leftovers = %{$data->{manifest}};
        delete $leftovers{$_} foreach (@{$pdata->{sketch_manifest_cf}}, @{$pdata->{sketch_manifest_docs}});
        if (scalar keys %leftovers)
        {
-        $varlist->{sketch_manifest_extra} = 'slist';
-        $pdata->{sketch_manifest_extra} = [ sort keys %leftovers ];
+        push @$varlist,
+        {
+         name => 'sketch_manifest_extra',
+         type => 'slist',
+         value => [ sort keys %leftovers ],
+        };
        }
-
-       $varlist->{sketch_authors} = 'slist';
-       $pdata->{sketch_authors} = [ sort @{$data->{metadata}->{authors}} ];
-
-       $varlist->{sketch_portfolio} = 'slist';
-       $pdata->{sketch_portfolio} = [ sort @{$data->{metadata}->{portfolio}} ];
-
-       $dependencies{$_} = 1 foreach collect_dependencies($data->{metadata}->{depends});
-
-       $varlist->{sketch_depends} = 'slist';
-       $pdata->{sketch_depends} = [ sort keys %dependencies ];
 
        foreach my $key (qw/version name license/)
        {
-        $varlist->{"sketch_$key"} = 'string';
-        $pdata->{"sketch_$key"} = '' . $data->{metadata}->{$key};
+        push @$varlist,
+        {
+         name => "sketch_$key",
+         type => 'string',
+         value => '' . $data->{metadata}->{$key},
+        };
        }
 
-       my $optional_varlist = $entry_point->{optional_varlist};
-       foreach my $k (sort keys %$varlist, sort keys %$optional_varlist)
-       {
-        my $cfengine_k = "${prefix}::$k";
-        $cfengine_k =~ s/::/__/g;
-
-        if (exists $entry_point->{default}->{$k} &&
-            !exists $pdata->{$k})
-        {
-         $pdata->{$k} = $entry_point->{default}->{$k};
-        }
-
-        # skip optional variables without a value
-        next if (exists $optional_varlist->{$k} && ! exists $pdata->{$k});
-
-        my $v = $pdata->{$k};
-        my $augment_v = $pdata->{"+$k"};
-
-        color_die "Supplied augment variable for key $k is not an array"
-         if ($augment_v && ref $augment_v ne 'HASH');
-
-        my $definition = exists $optional_varlist->{$k} ?
-         $entry_point->{optional_varlist}->{$k} :
-          $entry_point->{varlist}->{$k};
-
-        if ($definition eq 'context')
-        {
-         $activation->{contexts}->{$cfengine_k}->{value} = $v;
-        }
-        elsif ($definition eq 'slist')
-        {
-         $activation->{vars}->{$cfengine_k}->{value} = '{ ' . join(',', map { "\"$_\"" } @$v) . ' }';
-         $activation->{vars}->{$cfengine_k}->{type} = 'slist';
-        }
-        elsif ($definition eq 'array')
-        {
-         color_die "Unable to activate: provided value " .
-          $coder->encode($v) . " for key $k is not an array"
-           unless ref $v eq 'HASH';
-
-         $activation->{array_vars}->{$cfengine_k} = $v;
-         if ($augment_v)
-         {
-          $activation->{array_vars}->{$cfengine_k}->{$_} = $augment_v->{$_}
-           foreach keys %$augment_v;
-         }
-
-         color_die "Sorry, but you can't activate with an empty list in $k"
-          unless scalar keys %{$activation->{array_vars}->{$cfengine_k}};
-        }
-        else
-        {
-         # primitive extractor of function calls
-         if ($v =~ m/^\w+\(.+\)/)
-         {
-          $activation->{vars}->{$cfengine_k}->{value} = $v;
-         }
-         else
-         {
-          $activation->{vars}->{$cfengine_k}->{value} = "\"$v\"";
-         }
-
-         $activation->{vars}->{$cfengine_k}->{type} = 'string';
-        }
-       }
+       $activation->{vars} = $varlist;
 
        my $ak = sprintf('%03d', $activation_counter++);
        $template_activations->{$ak} = $activation; # the activation counter is 1..N globally!
@@ -709,8 +666,12 @@ sub generate
     {
      if (exists $contents->{$dep})
      {
-      push @inputs, File::Spec->catfile($contents->{$dep}->{dir},
-                                        @{$contents->{$dep}->{interface}});
+      my $dir = $options{fullpath} ? $contents->{$dep}->{fulldir} : File::Spec->abs2rel( $contents->{$dep}->{fulldir}, dirname($run_file) );
+      my $input = File::Spec->catfile($dir, @{$contents->{$dep}->{interface}});
+      push @inputs, $input;
+      print "Dependency: added input $input for runfile $run_file"
+       if $verbose;
+
       delete $dependencies{$dep};
      }
     }
@@ -729,9 +690,7 @@ sub generate
    my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
 
    # maybe make the run template configurable?
-   my $output = make_runfile($template_activations, $includes, $standalone);
-
-   my $run_file = $options{runfile};
+   my $output = make_runfile($template_activations, $includes, $standalone, $run_file);
 
    maybe_write_file($run_file, 'run', $output);
    print GREEN "Generated ".($standalone?"standalone":"non-standalone")." run file $run_file\n"
@@ -1594,9 +1553,9 @@ sub verify_entry_point
  close $tfh;
 
  my $pb = cfengine_promises_binary();
- my $tline = "$pb --parse-tree -f '$tfilename'";
- open my $parse, "$tline|"
-  or die "Could not run [$tline]: $!";
+ my $tline = "$pb --parse-tree";
+ open my $parse, "$tline -f '$tfilename'|"
+  or die "Could not run [$tline -f '$tfilename']: $!";
 
  my $ptree_str = join "\n", <$parse>;
  my $ptree;
@@ -1609,11 +1568,6 @@ sub verify_entry_point
              dir => dirname($maincf_filename),
 
              varlist => [
-                         {
-                          name    => 'activated',
-                          default => 'any',
-                          type    => 'CONTEXT'
-                         },
                         ],
             };
 
@@ -1642,8 +1596,10 @@ sub verify_entry_point
    $bname_printable = "$bname (namespace=$bnamespace_printable)";
    print "Found bundle $bname_printable with args @args\n" if $verbose;
 
-   # extract the variables
-   my %vars;
+   # extract the variables.  start with a context called 'activated' by default
+   my %vars = (
+               activated => { type => 'CONTEXT', default => 'any' },
+              );
 
    foreach my $ptype (@{$bundle->{'promise-types'}})
    {
@@ -1733,6 +1689,7 @@ sub verify_entry_point
      my $definition = {
                        name => $arg,
                        type => (exists $vars{$arg}->{type} ? $vars{$arg}->{type} : '???'),
+                       passed => 1,
                       };
 
      $definition->{default} = $vars{$arg}->{default}
@@ -1754,6 +1711,7 @@ sub verify_entry_point
      my $definition = {
                        name => $var,
                        type => $vars{$var}->{type},
+                       passed => 0,
                       };
 
      $definition->{default} = $vars{$var}->{default}
@@ -2124,6 +2082,7 @@ sub make_runfile
  my $activations = shift @_;
  my $inputs      = shift @_;
  my $standalone  = shift @_;
+ my $target_file = shift @_;
 
  my $template = get_run_template();
 
@@ -2144,77 +2103,90 @@ sub make_runfile
  foreach my $a (keys %$activations)
  {
   $contexts .= "       # contexts for activation $a\n";
-  foreach my $context (sort keys %{$activations->{$a}->{contexts}})
-  {
-   my $value = $activations->{$a}->{contexts}->{$context}->{value};
-   my $print;
+  my $act = $activations->{$a};
+  my @vars = @{$activations->{$a}->{vars}};
+  my %params = %{$activations->{$a}->{pdata}};
+  my @passed;
 
-   if (ref $value eq '' && $value ne '0' && $value ne '1') # a string, not a boolean!
+  my $rel_path = $options{fullpath} ? $act->{fulldir} : File::Spec->abs2rel( $act->{fulldir}, dirname($target_file) );
+
+  foreach my $var (@vars)
+  {
+   my $name = $var->{name};
+   my $value = exists $params{$name} ? $params{$name} :  $var->{value};
+
+   if (ref $value eq '')
    {
-    $print = $value;
-   }
-   else                                 # this will take a JSON boolean, or 0/1
-   {
-    $print = $value ? 'any' : '!any';
+    $value =~ s/__BUNDLE_HOME__/$rel_path/g;
+    $value =~ s/__PREFIX__/$act->{prefix}/g;
    }
 
-   $contexts .= sprintf('      "_%s_%s" expression => "%s";' . "\n",
-                        $a,
-                        $context,
-                        $print)
+   push @passed, [ $var, $value ]
+    if (exists $var->{passed} && $var->{passed});
+
+   color_die("Sorry, but we have an undefined variable $name: it has neither a parameter value nor a supplied value")
+    unless defined $value;
   }
 
-  $vars .= "       # string versions of the contexts for activation $a\n";
-  foreach my $context (sort keys %{$activations->{$a}->{contexts}})
-  {
-   my @context_hack = split '__', $context;
-   my $short_context = pop @context_hack;
-   my $context_prefix = join '__', @context_hack, '';
+  print "We will activate bundle $act->{entry_bundle} with passed parameters " . $coder->encode(\@passed)
+   if $verbose;
+  #  $contexts .= sprintf('      "_%s_%s" expression => "%s";' . "\n",
+  #                       $a,
+  #                       $context,
+  #                       $value)
+  # }
 
-   $vars .= sprintf('      "_%s_%scontexts_text[%s]" string => "%s";' . "\n",
-                    $a,
-                    $context_prefix,
-                    $short_context,
-                    $activations->{$a}->{contexts}->{$context}->{value} ? 'ON' : 'OFF')
-  }
-  $vars .= "       # string and slist variables for activation $a\n";
+  # $vars .= "       # string versions of the contexts for activation $a\n";
+  # foreach my $context (sort keys %{$activations->{$a}->{contexts}})
+  # {
+  #  my @context_hack = split '__', $context;
+  #  my $short_context = pop @context_hack;
+  #  my $context_prefix = join '__', @context_hack, '';
 
-  foreach my $var (sort keys %{$activations->{$a}->{vars}})
-  {
-   $vars .= sprintf('       "_%s_%s" %s => %s;' . "\n",
-                    $a,
-                    $var,
-                    $activations->{$a}->{vars}->{$var}->{type},
-                    $activations->{$a}->{vars}->{$var}->{value});
-  }
+  #  $vars .= sprintf('      "_%s_%scontexts_text[%s]" string => "%s";' . "\n",
+  #                   $a,
+  #                   $context_prefix,
+  #                   $short_context,
+  #                   $activations->{$a}->{contexts}->{$context}->{value} ? 'ON' : 'OFF')
+  # }
+  # $vars .= "       # string and slist variables for activation $a\n";
 
-  $vars .= "       # array variables for activation $a\n";
-  foreach my $avar (sort keys %{$activations->{$a}->{array_vars}})
-  {
-   foreach my $ak (sort keys %{$activations->{$a}->{array_vars}->{$avar}})
-   {
-    my $av = $activations->{$a}->{array_vars}->{$avar}->{$ak};
-    my @toprint = recurse_print($av, '');
-    $vars .= sprintf('       "_%s_%s[%s]%s" %s => %s;' . "\n",
-                      $a,
-                      $avar,
-                      $ak,
-                      $_->{path},
-                      $_->{type},
-                      $_->{value}) foreach @toprint;
-   }
-  }
+  # foreach my $var (sort keys %{$activations->{$a}->{vars}})
+  # {
+  #  $vars .= sprintf('       "_%s_%s" %s => %s;' . "\n",
+  #                   $a,
+  #                   $var,
+  #                   $activations->{$a}->{vars}->{$var}->{type},
+  #                   $activations->{$a}->{vars}->{$var}->{value});
+  # }
 
-  $methods .= sprintf('    _%s_%s__activated::' . "\n",
-                      $a,
-                      $activations->{$a}->{prefix});
-  $methods .= sprintf('      "%s %s %s" usebundle => %s("cfsketch_g._%s_%s__");' . "\n",
-                      $a,
-                      $activations->{$a}->{sketch},
-                      $activations->{$a}->{activation_id},
-                      $activations->{$a}->{entry_bundle},
-                      $a,
-                      $activations->{$a}->{prefix});
+  # $vars .= "       # array variables for activation $a\n";
+  # foreach my $avar (sort keys %{$activations->{$a}->{array_vars}})
+  # {
+  #  foreach my $ak (sort keys %{$activations->{$a}->{array_vars}->{$avar}})
+  #  {
+  #   my $av = $activations->{$a}->{array_vars}->{$avar}->{$ak};
+  #   my @toprint = recurse_print($av, '');
+  #   $vars .= sprintf('       "_%s_%s[%s]%s" %s => %s;' . "\n",
+  #                     $a,
+  #                     $avar,
+  #                     $ak,
+  #                     $_->{path},
+  #                     $_->{type},
+  #                     $_->{value}) foreach @toprint;
+  #  }
+  # }
+
+  # $methods .= sprintf('    _%s_%s__activated::' . "\n",
+  #                     $a,
+  #                     $activations->{$a}->{prefix});
+  # $methods .= sprintf('      "%s %s %s" usebundle => %s("cfsketch_g._%s_%s__");' . "\n",
+  #                     $a,
+  #                     $activations->{$a}->{sketch},
+  #                     $activations->{$a}->{activation_id},
+  #                     $activations->{$a}->{entry_bundle},
+  #                     $a,
+  #                     $activations->{$a}->{prefix});
  }
 
  $template =~ s/__INPUTS__/$inputs/g;
