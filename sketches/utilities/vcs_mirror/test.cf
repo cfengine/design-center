@@ -1,5 +1,5 @@
-body common control {
-
+body common control
+{
     bundlesequence => { "main" };
     inputs => {
                 "../../libraries/copbl/cfengine_stdlib.cf",
@@ -7,31 +7,26 @@ body common control {
               };
 }
 
-bundle agent main {
-  vars:
-      "mirror_copbl_branch"  string => "master";
-      "mirror_copbl_origin"  string => "git://github.com/nickanderson/copbl.git";
-      "mirror_copbl_path"    string => "/tmp/test2/test3/git_mirror";
-      "mirror_copbl_runas"   string => getenv("USER", 128);
-      "mirror_copbl_umask"   string => "022";
-      "mirror_copbl_vcs"     string => "/usr/bin/git";
+bundle agent main
+{
+  methods:
+      "mirror copbl"
+      usebundle => cfdc_vcs_mirror.vcs_mirror("mirror_copbl",
+                                              $(this.promise_filename),
+                                              "/usr/bin/git",
+                                              "/tmp/test2/test3/git_mirror",
+                                              "git://github.com/cfengine/copbl.git",
+                                              "master",
+                                              getenv("USER", 128),
+                                              "022");
 
-      "mirror_thrift_origin" string => "http://svn.apache.org/repos/asf/thrift/trunk/lib/perl";
-      "mirror_thrift_path"   string => "/tmp/test2/test3/svn_mirror";
-      "mirror_thrift_vcs"    string => "/usr/bin/svn";
-      "mirror_thrift_umask"  string => "";
-      "mirror_thrift_runas"  string => "";
-      "mirror_thrift_branch" string => "";
-
-      "mirror_thrift_defaults_origin" string => "http://svn.apache.org/repos/asf/thrift/trunk/lib/perl";
-      "mirror_thrift_defaults_path"   string => "/tmp/test2/test3/svn_mirror";
-      "mirror_thrift_defaults_vcs"    string => "/usr/bin/svn";
-
-      "mirror_invalid_vcs"   string => "invalid vcs";
-
-    methods:
-        "any" usebundle => cfdc_vcs_mirror.vcs_mirror("main.mirror_copbl_");
-        "any" usebundle => cfdc_vcs_mirror.vcs_mirror("main.mirror_thrift_");
-        "any" usebundle => cfdc_vcs_mirror.vcs_mirror("main.mirror_thrift_defaults_");
-        "any" usebundle => cfdc_vcs_mirror.vcs_mirror("main.mirror_invalid_");
+      "mirror thrift"
+      usebundle => cfdc_vcs_mirror.vcs_mirror("mirror_thrift",
+                                              $(this.promise_filename),
+                                              "/usr/bin/svn",
+                                              "/tmp/test2/test3/svn_mirror",
+                                              "http://svn.apache.org/repos/asf/thrift/trunk/lib/perl",
+                                              "(ignored)",
+                                              getenv("USER", 128),
+                                              "022");
 }
