@@ -1,0 +1,21 @@
+{
+    "VCS::vcs_mirror":
+    {
+        "activated": true,
+        "path": "/tmp/cfengine-core2",
+        "origin":"https://github.com/cfengine/core.git",
+        "branch": "master",
+        "vcs": "/usr/bin/git",
+        "bycontext":
+        {
+            "darwin":
+            {
+                "runas": "tzz"
+            },
+            "!darwin":
+            {
+                "runas": "root"
+            }
+        }
+    }
+}
