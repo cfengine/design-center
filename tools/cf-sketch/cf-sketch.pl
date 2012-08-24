@@ -26,12 +26,14 @@ my $canonical_coder;
 # added automatically by Perl is also colorized.
 sub color_warn {
   local $Term::ANSIColor::AUTORESET = 0;
-  warn YELLOW @_;
+  my ($package, $filename, $line, $sub) = caller(1);
+  warn GREEN "$filename:$sub():\n" . YELLOW "WARN\t", @_, "\n";
   print RESET;
 }
 sub color_die {
   local $Term::ANSIColor::AUTORESET = 0;
-  die RED @_;
+  my ($package, $filename, $line, $sub) = caller(1);
+  die GREEN "$filename:$sub():\n" . RED "FATAL\t", @_, "\n";
 }
 
 BEGIN
@@ -256,10 +258,10 @@ foreach my $repo (@{$options{repolist}})
 
 $options{repolist} = \@list;
 
-my $verbose     = $options{verbose};
 my $quiet       = $options{quiet};
 my $dryrun      = $options{'dry-run'};
 my $veryverbose = $options{veryverbose};
+my $verbose     = $options{verbose} || $veryverbose;
 
 print "Full configuration: ", $coder->encode(\%options), "\n" if $verbose;
 
@@ -558,11 +560,7 @@ sub generate
        my %booleans;
        my %vars;
 
-       my $entry_point = verify_entry_point($sketch,
-                                            $data->{fulldir},
-                                            $data->{manifest},
-                                            $data->{entry_point},
-                                            $data->{interface});
+       my $entry_point = verify_entry_point($sketch, $data);
 
        color_die "Could not load the entry point definition of $sketch"
         unless $entry_point;
@@ -571,14 +569,14 @@ sub generate
        # anything in the runme template
        unless (exists $entry_point->{bundle_name})
        {
-        my $dir = $options{fullpath} ? $data->{fulldir} : File::Spec->abs2rel( $data->{fulldir}, dirname($run_file) );
-        my $input = File::Spec->catfile($dir, @{$data->{interface}});
+        my $input = make_include($data->{fulldir}, dirname($run_file) , @{$data->{interface}});
         push @inputs, $input;
         print "Entry point: added input $input for runfile $run_file\n"
          if $verbose;
         next;
        }
 
+       $dependencies{$_} = 1 foreach collect_dependencies($data->{metadata}->{depends});
        my $activation = {
                          file => File::Spec->catfile($data->{dir}, $data->{entry_point}),
                          dir => $data->{dir},
@@ -586,6 +584,7 @@ sub generate
                          entry_bundle => $entry_point->{bundle_name},
                          entry_bundle_namespace => $entry_point->{bundle_namespace},
                          activation_id => $activation_id,
+                         dependencies => [ sort keys %dependencies ],
                          pdata  => $pdata,
                          sketch => $sketch,
                          prefix => $prefix,
@@ -595,7 +594,6 @@ sub generate
 
        # provide the metadata that could be useful
        my @files = sort keys %{$data->{manifest}};
-       $dependencies{$_} = 1 foreach collect_dependencies($data->{metadata}->{depends});
 
        push @$varlist,
        {
@@ -676,23 +674,15 @@ sub generate
     color_die "Could not find sketch $sketch in repo list @{$options{repolist}}";
    }
 
-   foreach my $repo (@{$options{repolist}})
+   # this removes found keys in %dependencies!
+   my @dep_inputs = collect_dependencies_inputs(dirname($run_file), \%dependencies);
+   if ($verbose)
    {
-    my $contents = repo_get_contents($repo);
-    foreach my $dep (keys %dependencies)
-    {
-     if (exists $contents->{$dep})
-     {
-      my $dir = $options{fullpath} ? $contents->{$dep}->{fulldir} : File::Spec->abs2rel( $contents->{$dep}->{fulldir}, dirname($run_file) );
-      my $input = File::Spec->catfile($dir, @{$contents->{$dep}->{interface}});
-      push @inputs, $input;
-      print "Dependency: added input $input for runfile $run_file\n"
-       if $verbose;
-
-      delete $dependencies{$dep};
-     }
-    }
+    print "Dependency: added input $_ for runfile $run_file\n"
+     foreach @dep_inputs;
    }
+
+   push @inputs, @dep_inputs;
 
    my @deps = keys %dependencies;
    if (scalar @deps)
@@ -704,8 +694,7 @@ sub generate
    foreach my $a (sort keys %$template_activations)
    {
     my $act = $template_activations->{$a};
-    my $dir = $options{fullpath} ? $act->{fulldir} : File::Spec->abs2rel( $act->{fulldir}, dirname($run_file) );
-    my $input = File::Spec->catfile($dir, basename($act->{file}));
+    my $input = make_include($act->{fulldir}, dirname($run_file) , basename($act->{file}));
     push @inputs, $input;
     print "Input template: added input $input for runfile $run_file\n"
      if $verbose;
@@ -735,11 +724,7 @@ sub api
    my $data = $contents->{$sketch};
    my $if = $data->{interface};
 
-   my $entry_point = verify_entry_point($sketch,
-                                        $data->{fulldir},
-                                        $data->{manifest},
-                                        $data->{entry_point},
-                                        $data->{interface});
+   my $entry_point = verify_entry_point($sketch, $data);
 
    if ($entry_point)
    {
@@ -829,11 +814,7 @@ sub activate
     my $data = $contents->{$sketch};
     my $if = $data->{interface};
 
-    my $entry_point = verify_entry_point($sketch,
-                                         $data->{fulldir},
-                                         $data->{manifest},
-                                         $data->{entry_point},
-                                         $data->{interface});
+    my $entry_point = verify_entry_point($sketch, $data);
 
     if ($entry_point)
     {
@@ -1286,50 +1267,13 @@ sub missing_dependencies
  return @missing;
 }
 
-sub collect_dependencies
-{
- my $deps = shift @_;
-
- my @collected;
-
- foreach my $repo (@{$options{repolist}})
- {
-  my $contents = repo_get_contents($repo);
-  foreach my $dep (sort keys %$deps)
-  {
-   if ($dep eq 'os' || $dep eq 'cfengine')
-   {
-   }
-   elsif (exists $contents->{$dep})
-   {
-    my $dd = $contents->{$dep};
-    # either the version is not specified or it has to match
-    if (!exists $deps->{$dep}->{version} ||
-        $dd->{metadata}->{version} >= $deps->{$dep}->{version})
-    {
-     print "Found dependency $dep in $repo\n" if $verbose;
-     # TODO: test recursive dependencies, right now this will loop
-     # TODO: maybe use a CPAN graph module
-     push @collected, $dep, collect_dependencies($dd->{metadata}->{depends});
-    }
-    else
-    {
-     print YELLOW "Found dependency $dep in $repo but the version doesn't match\n"
-      if $verbose;
-    }
-   }
-  }
- }
-
- return @collected;
-}
-
 sub find_remote_sketches
 {
- my @urls = @_;
+ my $urls = shift @_;
+ my $noparse = shift @_ || 0;
  my %contents;
 
- foreach my $repo (@urls)
+ foreach my $repo (@$urls)
  {
   my $sketches_url = "$repo/cfsketches";
   my $sketches = lwp_get_remote($sketches_url)
@@ -1337,7 +1281,7 @@ sub find_remote_sketches
 
   foreach my $sketch_dir ($sketches =~ /(.+)/mg)
   {
-   my $info = load_sketch("$repo/$sketch_dir");
+   my $info = load_sketch("$repo/$sketch_dir", undef, $noparse);
    next unless $info;
    $contents{$info->{metadata}->{name}} = $info;
   }
@@ -1348,10 +1292,12 @@ sub find_remote_sketches
 
 sub find_sketches
 {
- my @dirs = @_;
+ my $dirs = shift @_;
+ my $noparse = shift @_ || 0;
+
  my %contents;
 
- @dirs = grep { -r $_ && -x $_ } @dirs;
+ my @dirs = grep { -r $_ && -x $_ } @$dirs;
 
  if (scalar @dirs)
  {
@@ -1362,7 +1308,7 @@ sub find_sketches
          my $f = $_;
          if ($f eq SKETCH_DEF_FILE)
          {
-          my $info = load_sketch($File::Find::dir, $topdir);
+          my $info = load_sketch($File::Find::dir, $topdir, $noparse);
           return unless $info;
           $contents{$info->{metadata}->{name}} = $info;
          }
@@ -1377,6 +1323,7 @@ sub load_sketch
 {
  my $dir    = shift @_;
  my $topdir = shift @_;
+ my $noparse = shift @_ || 0;
 
  my $name = is_resource_local($dir) ? File::Spec->catfile($dir, SKETCH_DEF_FILE) : "$dir/" . SKETCH_DEF_FILE;
  my $json = load_json($name);
@@ -1455,12 +1402,10 @@ sub load_sketch
   $json->{dir} = $options{fullpath} ? $dir : File::Spec->abs2rel( $dir, $topdir );
   $json->{fulldir} = $dir;
   $json->{file} = $name;
-
-  if (verify_entry_point($name,
-                         $json->{fulldir},
-                         $json->{manifest},
-                         $json->{entry_point},
-                         $json->{interface})) {
+  if ($noparse ||
+      !defined $json->{entry_point} ||
+      verify_entry_point($name, $json))
+  {
    # note this name will be stringified even if it's not a string
    return $json;
   }
@@ -1502,24 +1447,30 @@ sub load_sketch
 
 sub verify_entry_point
 {
- my $name      = shift @_;
- my $dir       = shift @_;
- my $mft       = shift @_;
- my $entry     = shift @_;
- my $interface = shift @_;
+ my $name = shift @_;
+ my $data = shift @_;
+
+ my $dir       = $data->{fulldir};
+ my $mft       = $data->{manifest};
+ my $entry     = $data->{entry_point};
+ my $interface = $data->{interface};
 
  unless (defined $entry && defined $interface)
  {
-  return {
-          confirmed => 1,
-          varlist => { activated => 'context' },
-          optional_varlist => { },
-         };
+  return undef;
  }
 
  my $maincf = $entry;
 
  my $maincf_filename = is_resource_local($dir) ? File::Spec->catfile($dir, $maincf) : "$dir/$maincf";
+
+  my $meta = {
+              file => basename($maincf_filename),
+              dir => dirname($maincf_filename),
+              fulldir => $dir,
+              varlist => [
+                         ],
+             };
 
  my @mcf;
  my $mcf;
@@ -1555,24 +1506,29 @@ sub verify_entry_point
   }
  }
 
+ my $tdir = tempdir( CLEANUP => 1 );
+ my ($tfh, $tfilename) = tempfile( DIR => $tdir );
+
  if ($mcf !~ m/body\s+common\s+control.*bundlesequence/m)
  {
-  $mcf = '
+  print "Faking bundlesequence: collecting dependencies for $data->{metadata}->{name} from @{[sort keys %{$data->{metadata}->{depends}}]}\n"
+   if $verbose;
+  my %dependencies = map { $_ => 1 } collect_dependencies($data->{metadata}->{depends});
+  my @inputs = collect_dependencies_inputs(dirname($tfilename), \%dependencies);
+  print "Faking bundlesequence: collected inputs [@inputs]\n"
+   if $verbose;
+  my @p = recurse_print([ uniq(@inputs) ]);
+  $mcf = sprintf('
   body common control {
 
     bundlesequence => { "cf_null" };
-    inputs => {
-                "../../libraries/copbl/cfengine_stdlib.cf",
-              };
+    inputs => %s;
 }
-' . $mcf;
+', $p[0]->{value}) . $mcf;
  }
  else
  {
  }
-
- my $tdir = tempdir( CLEANUP => 1 );
- my ($tfh, $tfilename) = tempfile( DIR => $tdir );
 
  # print "PARSING:\n$mcf\n\n" if $veryverbose;
 
@@ -1590,14 +1546,6 @@ sub verify_entry_point
  eval { $ptree = $coder->decode($ptree_str); };
 
  my @rejects;
- my $meta = {
-             file => basename($maincf_filename),
-             dir => dirname($maincf_filename),
-             fulldir => $dir,
-
-             varlist => [
-                        ],
-            };
 
  if ($ptree && exists $ptree->{bundles} && ref $ptree->{bundles} eq 'ARRAY')
  {
@@ -1753,6 +1701,7 @@ sub verify_entry_point
      push @rejects, "$bname_printable has a meta vars promise that does not correspond to a bundle argument";
     }
    }
+   last;                                # only try the first bundle!
   }
 
   $meta->{bundle_name} = $bname;
@@ -1765,7 +1714,12 @@ sub verify_entry_point
  }
  else                                   # $ptree is not valid
  {
-  push @rejects, "Could not parse $maincf_filename with [$tline]";
+  if (length $ptree_str > 500)
+  {
+   $ptree_str = substr($ptree_str, 0, 500);
+  }
+
+  push @rejects, "Could not parse $maincf_filename with [$tline]: $ptree_str";
  }
 
  print "$maincf_filename bundle parse gave us " . Dumper($meta) if $veryverbose;
@@ -1835,27 +1789,23 @@ sub get_local_repo
  sub repo_get_contents
  {
   my $repo = shift @_;
+  my $noparse = shift @_ || 0;
 
-  return $content_cache{$repo} if exists $content_cache{$repo};
+  return $content_cache{$repo,$noparse}
+   if exists $content_cache{$repo,$noparse};
 
   my $contents;
   if (is_resource_local($repo))
   {
-   $contents = find_sketches($repo);
-   $content_cache{$repo} = $contents;
+   $contents = find_sketches([$repo], $noparse);
   }
   else
   {
-   $contents = find_remote_sketches($repo);
-   $content_cache{$repo} = $contents;
+   $contents = find_remote_sketches([$repo], $noparse);
   }
 
+  $content_cache{$repo,$noparse} = $contents;
   return $contents;
- }
-
- sub repo_clear_cache
- {
-  %content_cache = ();
  }
 }
 
@@ -2131,6 +2081,86 @@ sub recurse_print
  return @print;
 }
 
+sub collect_dependencies
+{
+ my $deps = shift @_;
+
+ my @collected;
+
+ foreach my $repo (@{$options{repolist}})
+ {
+  my $contents = repo_get_contents($repo, 1);
+  foreach my $dep (sort keys %$deps)
+  {
+   if ($dep eq 'os' || $dep eq 'cfengine')
+   {
+   }
+   elsif (exists $contents->{$dep})
+   {
+    my $dd = $contents->{$dep};
+    print "Checking dependency match $dep in $repo: " . $coder->encode($dd) . "\n" if $veryverbose;
+    # either the version is not specified or it has to match
+    if (!exists $deps->{$dep}->{version} ||
+        $dd->{metadata}->{version} >= $deps->{$dep}->{version})
+    {
+     print "Found dependency $dep in $repo\n" if $verbose;
+     # TODO: test recursive dependencies, right now this will loop
+     # TODO: maybe use a CPAN graph module
+     push @collected, $dep, collect_dependencies($dd->{metadata}->{depends});
+    }
+    else
+    {
+     print YELLOW "Found dependency $dep in $repo but the version doesn't match\n"
+      if $verbose;
+    }
+   }
+  }
+ }
+
+ return @collected;
+}
+
+sub collect_dependencies_inputs
+{
+ my $install_dir = shift @_;
+ my $dep_map     = shift @_;
+
+ my @inputs;
+ foreach my $repo (@{$options{repolist}})
+ {
+  my $contents = repo_get_contents($repo, 1);
+  foreach my $dep (keys %$dep_map)
+  {
+   if (exists $contents->{$dep})
+   {
+    my $input = make_include($contents->{$dep}->{fulldir}, $install_dir , @{$contents->{$dep}->{interface}});
+    push @inputs, $input;
+    delete $dep_map->{$dep};
+   }
+  }
+ }
+
+ return @inputs;
+}
+
+sub make_include_path
+{
+ my $lib_dir = shift @_;
+ my $run_dir = shift @_;
+
+ return $options{fullpath} ? $lib_dir : File::Spec->abs2rel($lib_dir, $run_dir );
+}
+
+sub make_include
+{
+ my $lib_dir = shift @_;
+ my $run_dir = shift @_;
+ my $file = shift @_;
+
+ my $dir = make_include_path($lib_dir, $run_dir);
+ my $input = File::Spec->catfile($dir, $file);
+}
+
 sub make_runfile
 {
  my $activations = shift @_;
@@ -2165,7 +2195,7 @@ EOHIPPUS
   my %params = %{$activations->{$a}->{pdata}};
   my @passed;
 
-  my $rel_path = $options{fullpath} ? $act->{fulldir} : File::Spec->abs2rel( $act->{fulldir}, dirname($target_file) );
+  my $rel_path = make_include_path($act->{fulldir}, dirname($target_file));
 
   foreach my $var (@vars)
   {
