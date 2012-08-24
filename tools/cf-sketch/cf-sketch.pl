@@ -223,7 +223,7 @@ else
  }
 }
 
-my $required_version = '3.3.0';
+my $required_version = '3.4.0';
 my $version = cfengine_version();
 
 if (!$options{force} && $required_version gt $version)
@@ -1561,6 +1561,9 @@ sub verify_entry_point
   body common control {
 
     bundlesequence => { "cf_null" };
+    inputs => {
+                "../../libraries/copbl/cfengine_stdlib.cf",
+              };
 }
 ' . $mcf;
  }
