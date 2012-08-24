@@ -5,7 +5,7 @@ bundle agent repo_yum_maintain(prefix) {
 # prefix_creatrepo /usr/bin/createrepo
 # prefix_refresh_interval 60
 # prefix_repo[name][path] string => "/var/www/html/yum_repos/custom";
-# prefix_repo[name][perms][m] string => "755"
+# prefix_repo[name][perms][m] string => "644"
 # prefix_repo[name][perms][o] string => "root"
 # prefix_repo[name][perms][g] string => "root"
 # prefix_verbose yes|true|on
@@ -20,7 +20,7 @@ vars:
   #  Handle Default Parameters  #
   ###############################
   "$(repos)_mode"
-    string => "755",
+    string => "644",
     policy => "free",
     ifvarclass => not(canonify("$(repos)_mode_from_parameter")),
     comment => "Default mode if not set by parameter";
@@ -84,6 +84,7 @@ files:
   "$($(prefix)repo[$(repos)][path])/."
     create => "true",
     perms  => mog("$($(repos)_mode)", "$($(repos)_owner)", "$($(repos)_group)"),
+    depth_search => recurse("inf"),
     action => if_elapsed("$(refresh_interval)"),
     comment => "Ensure repository root directory exists with proper permissions";
 
@@ -171,7 +172,7 @@ vars:
   
   "argument[repo]" string => "array";
   # prefix_repo[name][path] string => "/var/www/html/yum_repos/custom";
-  # prefix_repo[name][perms][m] string => "755"
+  # prefix_repo[name][perms][m] string => "644"
   # prefix_repo[name][perms][o] string => "root"
   # prefix_repo[name][perms][g] string => "root"
 
