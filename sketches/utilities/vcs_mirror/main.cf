@@ -109,31 +109,31 @@ bundle agent vcs_mirror(prefix, bundle_home, vcs, path, origin, branch, runas, u
       "vcsconfig_exists" expression => fileexists("$($(vcs_type)_configfile)"),
       ifvarclass => "known_vcs";
 
-  # files:
-  #   variables_ok.use_git::
-  #     "$(git_configfile)"
-  #     handle => "$(vcs_type)_configfile_contents",
-  #     comment => "Expand Git config file from variable",
-  #     create => "false",
-  #     edit_defaults => empty,
-  #     edit_line => insert_lines("$(git_config_template)");
+  files:
+    variables_ok.use_git::
+      "$(git_configfile)"
+      handle => "$(vcs_type)_configfile_contents",
+      comment => "Expand Git config file from variable",
+      create => "false",
+      edit_defaults => default.empty,
+      edit_line => default.insert_lines("$(git_config_template)");
 
-  # commands:
+  commands:
 
-  #   variables_ok.vcsconfig_exists::
-  #     "$($(vcs_type)_update_command)"
-  #     handle     => "$(vcs_type)_update_with_user_command",
-  #     contain    => setuid_umask_in_dir("$(runas)", "$(path)", "$(umask)"),
-  #     ifvarclass => "!$(canon_prefix)vcs_mirrored",
-  #     comment    => "Update an existing VCS repository in $(path), user override to $(runas)";
+    variables_ok.vcsconfig_exists::
+      "$($(vcs_type)_update_command)"
+      handle     => "$(vcs_type)_update_with_user_command",
+      contain    => setuid_umask_in_dir("$(runas)", "$(path)", "$(umask)"),
+      ifvarclass => "!$(canon_prefix)vcs_mirrored",
+      comment    => "Update an existing VCS repository in $(path), user override to $(runas)";
 
-  #   variables_ok.!vcsconfig_exists::
-  #     "$($(vcs_type)_mirror_command)"
-  #     handle     => "$(vcs_type)_mirror_with_user_command",
-  #     contain    => setuid_umask_in_dir("$(runas)", "/", "$(umask)"),
-  #     ifvarclass => "!$(canon_prefix)vcs_mirrored",
-  #     classes    => if_ok("$(canon_prefix)vcs_mirrored"),
-  #     comment    => "Clone a VCS repository in $(path), user override to $(runas)";
+    variables_ok.!vcsconfig_exists::
+      "$($(vcs_type)_mirror_command)"
+      handle     => "$(vcs_type)_mirror_with_user_command",
+      contain    => setuid_umask_in_dir("$(runas)", "/", "$(umask)"),
+      ifvarclass => "!$(canon_prefix)vcs_mirrored",
+      classes    => default.if_ok("$(canon_prefix)vcs_mirrored"),
+      comment    => "Clone a VCS repository in $(path), user override to $(runas)";
 
   reports:
     !known_vcs::
