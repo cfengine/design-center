@@ -797,7 +797,7 @@ sub activate
   color_die "Could not load activation params from $pfile"
    unless ref $aparams_all eq 'HASH';
 
-  color_die "Could not find activation params for $sketch in $pfile" . Dumper($aparams_all)
+  color_die "Could not find activation params for $sketch in $pfile"
    unless exists $aparams_all->{$sketch};
 
   my $aparams = $aparams_all->{$sketch};
