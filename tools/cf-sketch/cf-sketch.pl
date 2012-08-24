@@ -827,7 +827,10 @@ sub activate
      my $fails;
      foreach my $var (@$varlist)
      {
-      unless (exists $aparams->{$var->{name}})
+      if (exists $aparams->{$var->{name}})
+      {
+      }
+      else
       {
        if (exists $var->{default})
        {
@@ -2202,6 +2205,7 @@ EOHIPPUS
 
   my $rel_path = make_include_path($act->{fulldir}, dirname($target_file));
 
+  my $current_context = '';
   foreach my $var (@vars)
   {
    my $name = $var->{name};
@@ -2224,6 +2228,9 @@ EOHIPPUS
                          $name,
                          $value);
 
+    my $print_context = 'any';
+    $vars .= "     ${print_context}:: # setting context for text representations\n" if $current_context ne $print_context;
+    $current_context = $print_context;
     $vars .= sprintf('       "_%s_%s_contexts[%s]" string => "%s"; # text representation of the context "%s"' . "\n",
                      $a,
                      $act->{prefix},
@@ -2241,12 +2248,31 @@ EOHIPPUS
    }
    else
    {
-    my @p = recurse_print($value, "_${a}_$act->{prefix}_${name}");
-    $vars .= sprintf('       "%s" %s => %s;' . "\n",
-                     $_->{path},
-                     $_->{type},
-                     $_->{value})
-     foreach @p;
+    my %bycontext;
+    if (ref $value eq 'HASH' &&
+        exists $value->{bycontext} &&
+        ref $value->{bycontext} eq 'HASH')
+    {
+     %bycontext = %{$value->{bycontext}};
+    }
+    else
+    {
+     $bycontext{any} = $value;
+    }
+
+    foreach my $context (sort keys %bycontext)
+    {
+     $vars .= "     ${context}::\n" if $current_context ne $context;
+     $current_context = $context;
+
+     my @p = recurse_print($bycontext{$context},
+                           "_${a}_$act->{prefix}_${name}");
+     $vars .= sprintf('       "%s" %s => %s;' . "\n",
+                      $_->{path},
+                      $_->{type},
+                      $_->{value})
+      foreach @p;
+    }
    }
 
    color_die("Sorry, but we have an undefined variable $name: it has neither a parameter value nor a supplied value")
@@ -2418,6 +2444,27 @@ sub validate
 {
  my $value = shift @_;
  my @validation_types = @_;
+
+ if (ref $value eq 'HASH' &&
+     exists $value->{bycontext} &&
+     ref $value->{bycontext} eq 'HASH')
+ {
+  my $ret = 1;
+  foreach my $context (sort keys %{$value->{bycontext}})
+  {
+   my $ret2k = validate($context, "CONTEXT");
+   color_warn("Validation failed in bycontext, context key $context")
+    unless $ret2k;
+   my $val2 = $value->{bycontext}->{$context};
+   my $ret2v = validate($val2, @validation_types);
+   color_warn("Validation failed in bycontext VALUE '$val2', key $context")
+    unless $ret2v;
+
+   $ret &&= $ret2k && $ret2v;
+  }
+
+  return $ret;
+ }
 
  foreach my $vtype (@validation_types)
  {

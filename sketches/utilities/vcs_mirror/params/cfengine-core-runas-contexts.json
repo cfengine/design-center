@@ -6,16 +6,6 @@
         "origin":"https://github.com/cfengine/core.git",
         "branch": "master",
         "vcs": "/usr/bin/git",
-        "bycontext":
-        {
-            "darwin":
-            {
-                "runas": "tzz"
-            },
-            "!darwin":
-            {
-                "runas": "root"
-            }
-        }
+        "runas": { "bycontext": { "darwin": "tzz", "!darwin": "root" } }
     }
 }
