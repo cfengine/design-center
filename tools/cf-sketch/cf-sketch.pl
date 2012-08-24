@@ -571,7 +571,11 @@ sub generate
        # anything in the runme template
        unless (exists $entry_point->{bundle_name})
        {
-        push @inputs, File::Spec->catfile($data->{dir}, @{$data->{interface}});
+        my $dir = $options{fullpath} ? $data->{fulldir} : File::Spec->abs2rel( $data->{fulldir}, dirname($run_file) );
+        my $input = File::Spec->catfile($dir, @{$data->{interface}});
+        push @inputs, $input;
+        print "Entry point: added input $input for runfile $run_file\n"
+         if $verbose;
         next;
        }
 
@@ -580,6 +584,7 @@ sub generate
                          dir => $data->{dir},
                          fulldir => $data->{fulldir},
                          entry_bundle => $entry_point->{bundle_name},
+                         entry_bundle_namespace => $entry_point->{bundle_namespace},
                          activation_id => $activation_id,
                          pdata  => $pdata,
                          sketch => $sketch,
@@ -612,20 +617,32 @@ sub generate
         name => 'sketch_manifest',
         type => 'slist',
         value => \@files,
-       },
-       {
-        name => 'sketch_manifest_cf',
-        type => 'slist',
-        value => [ sort grep { $_ =~ m/\.cf$/ } @files ],
-       },
-       {
-        name => 'sketch_manifest_docs',
-        type => 'slist',
-        value => [ sort grep { $data->{manifest}->{$_}->{documentation} } @files ],
        };
 
-       my %leftovers = %{$data->{manifest}};
-       delete $leftovers{$_} foreach (@{$pdata->{sketch_manifest_cf}}, @{$pdata->{sketch_manifest_docs}});
+       my @manifests = (
+                        {
+                         name => 'sketch_manifest_cf',
+                         type => 'slist',
+                         value => [ sort grep { $_ =~ m/\.cf$/ } @files ],
+                        },
+                        {
+                         name => 'sketch_manifest_docs',
+                         type => 'slist',
+                         value => [ sort grep { $data->{manifest}->{$_}->{documentation} } @files ],
+                        }
+                       );
+
+       push @$varlist, @manifests;
+
+       my %leftovers = map { $_ => 1 } @files;
+       foreach my $m (@manifests)
+       {
+        foreach (@{$m->{value}})
+        {
+         delete $leftovers{$_};
+        }
+       }
+
        if (scalar keys %leftovers)
        {
         push @$varlist,
@@ -684,10 +701,17 @@ sub generate
    }
 
    # process input template, substituting variables
-   push @inputs, $template_activations->{$_}->{file}
-    foreach sort keys %$template_activations;
+   foreach my $a (sort keys %$template_activations)
+   {
+    my $act = $template_activations->{$a};
+    my $dir = $options{fullpath} ? $act->{fulldir} : File::Spec->abs2rel( $act->{fulldir}, dirname($run_file) );
+    my $input = File::Spec->catfile($dir, basename($act->{file}));
+    push @inputs, $input;
+    print "Input template: added input $input for runfile $run_file\n"
+     if $verbose;
+   }
 
-   my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
+   my $includes = join ', ', map { my @p = recurse_print($_); $p[0]->{value} } uniq(@inputs);
 
    # maybe make the run template configurable?
    my $output = make_runfile($template_activations, $includes, $standalone, $run_file);
@@ -830,7 +854,7 @@ sub activate
       }
 
       # for contexts, translate booleans to any or !any
-      if (ref $aparams->{$var->{name}} eq 'JSON::XS::Boolean' &&
+      if (is_json_boolean($aparams->{$var->{name}}) &&
           $var->{type} eq 'CONTEXT')
       {
        $aparams->{$var->{name}} = $aparams->{$var->{name}} ? 'any' : '!any';
@@ -1564,8 +1588,9 @@ sub verify_entry_point
 
  my @rejects;
  my $meta = {
-             file => $maincf_filename,
+             file => basename($maincf_filename),
              dir => dirname($maincf_filename),
+             fulldir => $dir,
 
              varlist => [
                         ],
@@ -2052,15 +2077,41 @@ sub recurse_print
  # recurse for hashes
  if (ref $ref eq 'HASH')
  {
-  push @print, recurse_print($ref->{$_}, $prefix . "[$_]", $unquote_scalars)
-   foreach sort keys %$ref;
+  if (exists $ref->{function} && exists $ref->{args})
+  {
+   push @print, {
+                 path => $prefix,
+                 type => 'string',
+                 value => sprintf('%s(%s)',
+                                  $ref->{function},
+                                  join(', ', map { my @p = recurse_print($_); $p[0]->{value} } @{$ref->{args}}))
+                };
+  }
+  else
+  {
+   push @print, recurse_print($ref->{$_}, $prefix . "[$_]", $unquote_scalars)
+    foreach sort keys %$ref;
+  }
  }
  elsif (ref $ref eq 'ARRAY')
  {
+  my $joined;
+
+  if (scalar @$ref)
+  {
+   $joined = sprintf('{ %s }',
+                     join(", ",
+                          map { s,\\,\\\\,g; s,",\\",g; "\"$_\"" } @$ref));
+  }
+  else
+  {
+   $joined = '{ "cf_null" }';
+  }
+
   push @print, {
                 path => $prefix,
                 type => 'slist',
-                value => '{' . join(", ", map { "\"$_\"" } @$ref) . '}'
+                value => $joined
                };
  }
  else
@@ -2093,11 +2144,13 @@ sub make_runfile
 
  if ($standalone)
  {
-  $commoncontrol=q(body common control
+  $commoncontrol=<<'EOHIPPUS';
+body common control
 {
       bundlesequence => { "cfsketch_run" };
       inputs => { @(cfsketch_g.inputs) };
-});
+}
+EOHIPPUS
  }
 
  foreach my $a (keys %$activations)
@@ -2119,7 +2172,7 @@ sub make_runfile
    if (ref $value eq '')
    {
     $value =~ s/__BUNDLE_HOME__/$rel_path/g;
-    $value =~ s/__PREFIX__/$act->{prefix}/g;
+    $value =~ s/__PREFIX__/cfsketch_g.$act->{prefix}/g;
    }
 
    push @passed, [ $var, $value ]
@@ -2133,19 +2186,29 @@ sub make_runfile
                          $name,
                          $value);
 
-    $vars .= sprintf('      "_%s_%s_contexts[%s]" string => "%s";' . "\n",
+    $vars .= sprintf('       "_%s_%s_contexts[%s]" string => "%s"; # text representation of the context "%s"' . "\n",
                      $a,
                      $act->{prefix},
                      $name,
-                     $value);
+                     $value,
+                     $name);
+
+    if ($name eq 'activated')
+    {
+     $methods .= sprintf('    _%s_%s_%s::' . "\n",
+                         $a,
+                         $act->{prefix},
+                         $name);
+    }
    }
    else
    {
-    $vars .= sprintf('       "_%s_%s_%s" string => "%s";' . "\n",
-                     $a,
-                     $act->{prefix},
-                     $name,
-                     $value);
+    my @p = recurse_print($value, "_${a}_$act->{prefix}_${name}");
+    $vars .= sprintf('       "%s" %s => %s;' . "\n",
+                     $_->{path},
+                     $_->{type},
+                     $_->{value})
+     foreach @p;
    }
 
    color_die("Sorry, but we have an undefined variable $name: it has neither a parameter value nor a supplied value")
@@ -2155,34 +2218,14 @@ sub make_runfile
   print "We will activate bundle $act->{entry_bundle} with passed parameters " . $coder->encode(\@passed) . "\n"
    if $verbose;
 
-
-  # $vars .= "       # array variables for activation $a\n";
-  # foreach my $avar (sort keys %{$activations->{$a}->{array_vars}})
-  # {
-  #  foreach my $ak (sort keys %{$activations->{$a}->{array_vars}->{$avar}})
-  #  {
-  #   my $av = $activations->{$a}->{array_vars}->{$avar}->{$ak};
-  #   my @toprint = recurse_print($av, '');
-  #   $vars .= sprintf('       "_%s_%s[%s]%s" %s => %s;' . "\n",
-  #                     $a,
-  #                     $avar,
-  #                     $ak,
-  #                     $_->{path},
-  #                     $_->{type},
-  #                     $_->{value}) foreach @toprint;
-  #  }
-  # }
-
-  # $methods .= sprintf('    _%s_%s__activated::' . "\n",
-  #                     $a,
-  #                     $activations->{$a}->{prefix});
-  # $methods .= sprintf('      "%s %s %s" usebundle => %s("cfsketch_g._%s_%s__");' . "\n",
-  #                     $a,
-  #                     $activations->{$a}->{sketch},
-  #                     $activations->{$a}->{activation_id},
-  #                     $activations->{$a}->{entry_bundle},
-  #                     $a,
-  #                     $activations->{$a}->{prefix});
+  my $args = join(", ", map { my @p = recurse_print($_->[1]); $p[0]->{value} } @passed);
+  $methods .= sprintf('      "%s %s %s" usebundle => %s%s(%s);' . "\n",
+                      $a,
+                      $act->{sketch},
+                      $act->{activation_id},
+                      $act->{entry_bundle_namespace} ? "$act->{entry_bundle_namespace}." : '',
+                      $act->{entry_bundle},
+                      $args);
  }
 
  $template =~ s/__INPUTS__/$inputs/g;
