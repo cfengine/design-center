@@ -12,8 +12,8 @@ bundle edit_line transform_dogs_to_cats {
   replace_patterns:
 
       "[Dd]og"
-
-         replace_with => value("cat");
+              
+          replace_with => value("cat");
 
                                         }
 

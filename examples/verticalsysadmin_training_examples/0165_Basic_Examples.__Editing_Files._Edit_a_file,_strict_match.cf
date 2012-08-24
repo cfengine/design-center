@@ -18,8 +18,7 @@ bundle edit_line  proper_greetings {
 
   insert_lines: 
 
-      "Good morning, how are you today?";
-
+    "Good morning!";
 
                                    }
 

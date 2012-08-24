@@ -3,7 +3,11 @@ The Most Basic Form of a Promise
 
 promise_type:
 
+    class::
+
        "promiser" 
 
-            promise_body;
+            attribute1 => value1,
+            attribute2 => value2;
+
 
