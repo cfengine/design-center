@@ -30,13 +30,21 @@ bundle agent vcs_mirror(prefix, bundle_home, vcs, path, origin, branch, runas, u
       "vars[umask][type]"          string => "OCTAL";
       "vars[umask][default]"       string => "022";
 
-      # # this is a boolean (e.g. 0 or 1, 'yes' or 'no') stored in a string
+      # # This is a boolean (e.g. 0 or 1, 'yes' or 'no') stored in a string.
       # "vars[testboolean][type]"    string => "BOOLEAN";
 
-      # # this is a context (e.g. 'any') stored in a string
+      # # This is a context (e.g. 'any') stored in a string.
+      # # You could use it with ifvarclass.
       # "vars[testcontext][type]"    string => "CONTEXT";
 
+      # where was the mirror deployed?
+      "returns[deploy_path]" string => "PATH";
+
   vars:
+      # return value
+      "deploy_path" string => "$(path)",
+      ifvarclass => "$(canon_prefix)vcs_mirrored|$(canon_prefix)vcs_updated";
+
       "canon_prefix" string => canonify("$(prefix)");
       "vcs_type" string => lastnode("$(vcs)","/");
 
@@ -125,6 +133,7 @@ bundle agent vcs_mirror(prefix, bundle_home, vcs, path, origin, branch, runas, u
       handle     => "$(vcs_type)_update_with_user_command",
       contain    => setuid_umask_in_dir("$(runas)", "$(path)", "$(umask)"),
       ifvarclass => "!$(canon_prefix)vcs_mirrored",
+      classes    => default.if_ok("$(canon_prefix)vcs_updated"),
       comment    => "Update an existing VCS repository in $(path), user override to $(runas)";
 
     variables_ok.!vcsconfig_exists::

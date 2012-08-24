@@ -1585,6 +1585,8 @@ sub verify_entry_point
                activated => { type => 'CONTEXT', default => 'any' },
               );
 
+   my %returns;
+
    foreach my $ptype (@{$bundle->{'promise-types'}})
    {
     print "Looking at promise type $ptype->{name}\n"
@@ -1602,55 +1604,90 @@ sub verify_entry_point
       {
        print "Looking at 'any' meta promiser $promise->{promiser}\n"
         if $veryverbose;
-       next unless $promise->{promiser} =~ m/^vars\[([^]]+)\]\[(type|default)\]$/;
 
-       my ($var, $spec) = ($1, $2);
-
-       print "Found promiser for var $var: $spec\n"
-        if $veryverbose;
-
-       if (exists $promise->{attributes}->[0]->{lval} &&
-           exists $promise->{attributes}->[0]->{rval})
+       if ($promise->{promiser} =~ m/^vars\[([^]]+)\]\[(type|default)\]$/)
        {
-        my $lval = $promise->{attributes}->[0]->{lval};
-        my $rval = $promise->{attributes}->[0]->{rval};
-        if ('string' eq $lval)
-        {
-         if ('string' eq $rval->{type})
-         {
-          $vars{$var}->{$spec} = $rval->{value};
-         }
-         elsif ('function-call' eq $rval->{type})
-         {
-          foreach my $farg (@{$rval->{arguments}})
-          {
-           next if $farg->{type} eq 'string';
-           push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has a function call for a default with non-string argument $farg->{value}";
-          }
+        my ($var, $spec) = ($1, $2);
 
-          unless (scalar @rejects)
+        print "Found promiser for var $var: $spec\n"
+         if $veryverbose;
+
+        if (exists $promise->{attributes}->[0]->{lval} &&
+            exists $promise->{attributes}->[0]->{rval})
+        {
+         my $lval = $promise->{attributes}->[0]->{lval};
+         my $rval = $promise->{attributes}->[0]->{rval};
+         if ('string' eq $lval)
+         {
+          if ('string' eq $rval->{type})
           {
-           $vars{$var}->{$spec} = {
-                                   function =>  $rval->{name},
-                                   args => [map { $_->{value} } @{$rval->{arguments}}],
-                                  };
+           $vars{$var}->{$spec} = $rval->{value};
+          }
+          elsif ('function-call' eq $rval->{type})
+          {
+           foreach my $farg (@{$rval->{arguments}})
+           {
+            next if $farg->{type} eq 'string';
+            push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has a function call for a default with non-string argument $farg->{value}";
+           }
+
+           unless (scalar @rejects)
+           {
+            $vars{$var}->{$spec} = {
+                                    function =>  $rval->{name},
+                                    args => [map { $_->{value} } @{$rval->{arguments}}],
+                                   };
+           }
+          }
+          else
+          {
+           push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has invalid value type $rval->{type}";
           }
          }
          else
          {
-          push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has invalid value type $rval->{type}";
+          push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has invalid type $lval";
          }
         }
         else
         {
-         push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has invalid type $lval";
+         push @rejects, "Sorry, promiser $promise->{promiser} in bundle $bname_printable is invalid";
         }
        }
-       else
+       elsif ($promise->{promiser} =~ m/^returns\[([^]]+)\]$/)
        {
-        push @rejects, "Sorry, promiser $promise->{promiser} in bundle $bname_printable is invalid";
+        my ($var) = ($1);
+
+        print "Found promiser for returns $var\n"
+         if $veryverbose;
+
+        if (exists $promise->{attributes}->[0]->{lval} &&
+            exists $promise->{attributes}->[0]->{rval})
+        {
+         my $lval = $promise->{attributes}->[0]->{lval};
+         my $rval = $promise->{attributes}->[0]->{rval};
+         if ('string' eq $lval)
+         {
+          if ('string' eq $rval->{type})
+          {
+           $returns{$var} = $rval->{value};
+          }
+          else
+          {
+           push @rejects, "Sorry, meta returns promise $promise->{promiser} in bundle $bname_printable has invalid value type $rval->{type}";
+          }
+         }
+         else
+         {
+          push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has invalid type $lval";
+         }
+        }
+        else
+        {
+         push @rejects, "Sorry, promiser $promise->{promiser} in bundle $bname_printable is invalid";
+        }
        }
-      }
+      }                                 # foreach promise
      }
      else
      {
@@ -1709,11 +1746,12 @@ sub verify_entry_point
      push @rejects, "$bname_printable has a meta vars promise that does not correspond to a bundle argument";
     }
    }
+
+   $meta->{returns} = \%returns;
+   $meta->{bundle_name} = $bname;
+   $meta->{bundle_namespace} = $bnamespace;
    last;                                # only try the first bundle!
   }
-
-  $meta->{bundle_name} = $bname;
-  $meta->{bundle_namespace} = $bnamespace;
 
   unless ($bname)
   {
