@@ -137,7 +137,7 @@ bundle agent vcs_mirror(prefix)
     !known_vcs::
       "Sorry, the requested VCS $($(prefix)vcs) is not handled yet.";
 
-    known_vcs::
+    _debug_vcs_mirror.known_vcs::
       "$($(prefix)vcs) is known.  We will look for the config file $(vcs_configfile)";
 
       "VCS config file $(vcs_configfile) exists"
