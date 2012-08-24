@@ -74,14 +74,19 @@ files:
       create => "true",
       edit_defaults => no_backup,
       handle => "$(bundle)_files_$(first_index)_ensure_present",
-      edit_line => set_variable_values_ini("$(arrayname)", "$(first_index)"),
+      edit_line => yumclient_set_variable_values_ini("$(arrayname)", "$(first_index)"),
       ifvarclass => not("empty_section_from_parameter");
      
     "$(my_reposdir)/$(first_index).repo"
       create => "true",
       handle => "$(bundle)_files_$(first_index)_ensure_present_empty_section",
-      edit_line => manage_variable_values_ini("$(arrayname)", "$(first_index)"),
+      edit_line => yumclient_manage_variable_values_ini("$(arrayname)", "$(first_index)"),
       ifvarclass => "empty_section_from_parameter";
+
+  mgmt_policy_ensure_absent::
+    "$(my_reposdir)/$(first_index).repo"
+      delete => tidy,
+      comment => "When the mgmt_policy is set to ensure_absent we just nuke the repofile";
  
 reports:
   _debug_repo_yum_client::
@@ -103,3 +108,150 @@ reports:
 
     "DEBUG $(bundle)  reposdir: $(my_reposdir)";
 }
+
+bundle edit_line yumclient_manage_variable_values_ini(tab, sectionName) 
+# Sets the RHS of configuration items in the file of the form
+# LHS=RHS
+# If the line is commented out with #, it gets uncommented first.
+# Adds a new line if none exists.
+# Removes any variable value pairs not defined for the ini section
+# The argument is an associative array containing tab[SectionName][LHS]="RHS"
+# don't change value when the RHS is dontchange
+
+# Based on set_variable_values_ini 
+# Added delete lines section to empty out undefined variable values for INI section
+
+# CAUTION : for it to work nicely, you should use Cfengine with the commit n°3229
+# otherwise you may risk a segfault
+
+#
+# If you are running 3.2.1 or earlier or more specifically git commit # or
+# earlier you can use this to work around the segfault bug.
+# vars:
+#     "$(file)"
+#         edit_line => append_if_no_line("[#EOF#]"),
+#         create => "true",
+#         comment => "Work around bug<bug#here> where eof did not mean end
+#                     of section and thus cannot select a region. This promise
+#                     should be placed before your call to this bundle";
+#      "$(file)"
+#         edit_line   => yumclient_manage_variable_values_ini("context.array", "SectionName"),
+#         create => "true",
+#         comment     => "Set the variale values only in the specified ini region";
+# 
+{
+vars:
+  "index" slist => getindices("$(tab)[$(sectionName)]");
+
+  # Be careful if the index string contains funny chars
+  "cindex[$(index)]" string => canonify("$(index)");
+
+classes:
+  "edit_$(cindex[$(index)])"     not => strcmp("$($(tab)[$(sectionName)][$(index)])","dontchange"),
+                               comment => "Create conditions to make changes"; 
+
+  "yumclient_manage_variable_values_ini_$(sectionName)_exists"
+    expression => regline(".*[$(sectionName)].*", "$(edit.filename)");
+
+field_edits:
+
+  # If the line is there, but commented out, first uncomment it
+  "#+$(index)\s*=.*"
+    select_region => INI_section("$(sectionName)"),
+    edit_field => col("=","1","$(index)","set"),
+    ifvarclass => "yumclient_manage_variable_values_ini_$(sectionName)_exists.edit_$(cindex[$(index)])";
+
+  # match a line starting like the key something
+  "$(index)\s*=.*"
+    edit_field => col("=","2","$($(tab)[$(sectionName)][$(index)])","set"),
+    select_region => INI_section("$(sectionName)"),
+    classes => if_ok("yumclient_manage_variable_values_ini_not_$(cindex[$(index)])"),
+    ifvarclass => "yumclient_manage_variable_values_ini_$(sectionName)_exists.edit_$(cindex[$(index)])";
+
+delete_lines:
+  ".*"
+    select_region => INI_section("$(sectionName)"),
+    ifvarclass => "yumclient_manage_variable_values_ini_$(sectionName)_exists",
+    comment       => "Remove all entries in the region so there are no extra entries";
+
+insert_lines:
+  "[$(sectionName)]"
+    location => start,
+    #classes => if_ok("yumclient_manage_variable_values_ini_$(sectionName)_exists"),
+    comment => "Insert lines";
+
+  "$(index)=$($(tab)[$(sectionName)][$(index)])",
+    select_region => INI_section("$(sectionName)"),
+    ifvarclass => "!yumclient_manage_variable_values_ini_not_$(cindex[$(index)]).edit_$(cindex[$(index)]).yumclient_manage_variable_values_ini_$(sectionName)_exists";
+}
+
+bundle edit_line yumclient_set_variable_values_ini(tab, sectionName) 
+# Sets the RHS of configuration items in the file of the form
+# LHS=RHS
+# If the line is commented out with #, it gets uncommented first.
+# Adds a new line if none exists.
+# Removes any variable value pairs not defined for the ini section
+# The argument is an associative array containing tab[SectionName][LHS]="RHS"
+# don't change value when the RHS is dontchange
+
+# Based on yumclient_set_variable_values_ini 
+
+# CAUTION : for it to work nicely, you should use Cfengine with the commit n°3229
+# otherwise you may risk a segfault
+
+#
+# If you are running 3.2.1 or earlier or more specifically git commit # or
+# earlier you can use this to work around the segfault bug.
+# vars:
+#     "$(file)"
+#         edit_line => append_if_no_line("[#EOF#]"),
+#         create => "true",
+#         comment => "Work around bug<bug#here> where eof did not mean end
+#                     of section and thus cannot select a region. This promise
+#                     should be placed before your call to this bundle";
+#      "$(file)"
+#         edit_line   => yumclient_set_variable_values_ini("context.array", "SectionName"),
+#         create => "true",
+#         comment     => "Set the variale values only in the specified ini region";
+# 
+{
+vars:
+  "index" slist => getindices("$(tab)[$(sectionName)]");
+
+  # Be careful if the index string contains funny chars
+  "cindex[$(index)]" string => canonify("$(index)");
+
+classes:
+  "edit_$(cindex[$(index)])"     not => strcmp("$($(tab)[$(sectionName)][$(index)])","dontchange"),
+                               comment => "Create conditions to make changes"; 
+
+  "yumclient_set_variable_values_ini_$(sectionName)_exists"
+    expression => regline(".*[$(sectionName)].*", "$(edit.filename)");
+
+field_edits:
+
+  # If the line is there, but commented out, first uncomment it
+  "#+$(index)\s*=.*"
+    select_region => INI_section("$(sectionName)"),
+    edit_field => col("=","1","$(index)","set"),
+    ifvarclass => "yumclient_set_variable_values_ini_$(sectionName)_exists.edit_$(cindex[$(index)])";
+
+  # match a line starting like the key something
+  "$(index)\s*=.*"
+    edit_field => col("=","2","$($(tab)[$(sectionName)][$(index)])","set"),
+    select_region => INI_section("$(sectionName)"),
+    classes => if_ok("yumclient_set_variable_values_ini_not_$(cindex[$(index)])"),
+    ifvarclass => "yumclient_set_variable_values_ini_$(sectionName)_exists.edit_$(cindex[$(index)])";
+
+insert_lines:
+  "[$(sectionName)]"
+    location => start,
+    #classes => if_ok("yumclient_set_variable_values_ini_$(sectionName)_exists"),
+    comment => "Insert lines";
+
+  "$(index)=$($(tab)[$(sectionName)][$(index)])",
+    select_region => INI_section("$(sectionName)"),
+    ifvarclass => "!yumclient_set_variable_values_ini_not_$(cindex[$(index)]).edit_$(cindex[$(index)]).yumclient_set_variable_values_ini_$(sectionName)_exists";
+}
+
+
