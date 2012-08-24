@@ -20,6 +20,20 @@ methods:
     comment => "Configure yum client for each repository";
 
 }
+bundle agent meta_repo_yum_client
+{
+vars:
+  "argument[repo]" string => "array";
+  
+  "optional_argument[mgmt_policy]" string => "string";
+  "default[mgmt_policy]" string => "ensure_present";
+  
+  "optional_argument[debug]" string => "string";
+  "default[debug]" string => "false";
+
+  "optional_argument[empty_section]" string => "string";
+  "default[empty_section]" string => "false";
+}
 
 bundle agent repo_yum_client_config(arrayname, first_index, debug, mgmt_policy, empty_section, reposdir)
 # This allows us to have dynamic second index on the repo array
