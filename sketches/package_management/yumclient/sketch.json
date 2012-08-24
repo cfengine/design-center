@@ -1,0 +1,26 @@
+{
+
+    "manifest":
+    {
+        "main.cf":     { "desc": "main file", "version": "1.0" },
+        "README.md":   { "documentation": true },
+        "test.cf":     { "comment": "Example policy" },
+        "sketch.json": { "comment": "metadata" }
+    },
+
+    "metadata":
+    {
+        "name": "Repository::Yum::Client",
+        "version": 1.00,
+        "license": "MIT",
+        "portfolio": [ "cfdc" ],
+        "authors": [ "Nick Anderson <nick@cmdln.org>"],
+        "tested": [ "redhat_5", "centos_5" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 },
+                     "cfengine": { "version": "3.2.1" },
+                     "os": [ "linux" ]
+                   }
+    },
+    "entry_point": "main.cf",
+    "interface": [ "main.cf" ]
+}
