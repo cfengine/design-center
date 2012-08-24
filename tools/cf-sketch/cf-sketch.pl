@@ -729,56 +729,58 @@ sub api
    if ($entry_point)
    {
      $found = 1;
-     my @mandatory_args = sort keys %{$entry_point->{varlist}};
-     my @optional_args = sort keys %{$entry_point->{optional_varlist}};
+
      local $Data::Dumper::Terse = 1;
      local $Data::Dumper::Indent = 0;
-     my %defaults = map { $_ => Dumper($entry_point->{default}->{$_})} @optional_args;
-     my %empty_values = ( 'context' => '',
-                          'string'  => '',
-                          'slist'   => [],
-                          'array'   => {},
-                        );
-     if ($options{json}) {
-       my %params = ();
-       $params{$_} = $empty_values{$entry_point->{varlist}->{$_}} foreach (@mandatory_args);
-       $params{$_} = $entry_point->{default}->{$_} foreach (@optional_args);
-       print $coder->pretty(1)->encode(\%params)."\n";
+     if ($options{json})
+     {
+       my %api = (
+                  vars => $entry_point->{varlist},
+                  returns => $entry_point->{returns},
+                 );
+       print $coder->pretty(1)->encode(\%api)."\n";
      }
-     else {
+     else
+     {
        print GREEN "Sketch $sketch\n";
-       if ($data->{entry_point}) {
-         print BOLD BLUE."  Entry bundle name:".RESET." $entry_point->{bundle}\n";
-         if (scalar @mandatory_args) {
-           print BOLD BLUE "  Mandatory arguments:\n";
-           foreach my $arg (@mandatory_args) {
-             print "    ".BLUE."$arg:".RESET." $entry_point->{varlist}->{$arg}\n";
-           }
-         }
-         else {
-           print YELLOW "  No mandatory arguments.\n";
-         }
-         if (scalar @optional_args) {
-           print BOLD BLUE "  Optional arguments:\n";
-           foreach my $arg (@optional_args) {
-             print "    ".BLUE."$arg:".RESET." $entry_point->{optional_varlist}->{$arg} (default value: $defaults{$arg})\n";
-           }
-         }
-         else {
-           print YELLOW "  No optional arguments.\n";
-         }
+       if ($data->{entry_point})
+       {
+        print BOLD BLUE."  Entry bundle name:".RESET." $entry_point->{bundle_name}\n";
+
+        foreach my $var (@{$entry_point->{varlist}})
+        {
+         my @p = recurse_print($var->{default}) if exists $var->{default};
+
+         my $desc = join ",\t", (
+                                 $var->{passed} ? 'passed    ' : 'not passed',
+                                 sprintf('%20s', $var->{type}),
+                                 exists $var->{default} ? ("optional (default $p[0]->{value})") : "mandatory",
+                              );
+         printf("var ".BLUE."%15.15s:".RESET."\t$desc\n",
+                $var->{name});
+        }
+
+        foreach my $return (sort keys %{$entry_point->{returns}})
+        {
+         printf("ret ".BLUE."%15.15s:".RESET."\t$entry_point->{returns}->{$return}\n",
+                $return);
+        }
        }
-       else {
-         print BOLD BLUE "  This is a library sketch - no entry point defined.\n";
+       else
+       {
+        print BOLD BLUE "  This is a library sketch - no entry point defined.\n";
        }
      }
    }
-   else {
-     color_die "I cannot find API information about $sketch.\n";
+   else
+   {
+    color_die "I cannot find API information about $sketch.\n";
    }
+  }
  }
-}
- unless ($found) {
+
+ unless ($found)
+ {
    color_die "I could not find sketch $sketch. It doesn't seem to be installed.\n";
  }
 }
