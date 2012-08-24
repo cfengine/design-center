@@ -1,5 +1,6 @@
 ## AUTHOR
 Nick Anderson <nick@cmdln.org>
+Ted Zlatanov <tzz@lifelogs.com>
 
 ## PLATFORM
 
