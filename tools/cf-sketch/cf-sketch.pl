@@ -2050,7 +2050,9 @@ sub recurse_print
   }
   else
   {
-   push @print, recurse_print($ref->{$_}, $prefix . "[$_]", $unquote_scalars)
+   push @print, recurse_print($ref->{$_},
+                              ($prefix||'') . "[$_]",
+                              $unquote_scalars)
     foreach sort keys %$ref;
   }
  }
