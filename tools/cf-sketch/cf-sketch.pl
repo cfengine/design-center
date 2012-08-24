@@ -792,10 +792,15 @@ sub activate
   my $pfile = $aspec->{$sketch};
 
   print "Loading activation params from $pfile\n" unless $quiet;
-  my $aparams = load_json($pfile);
+  my $aparams_all = load_json($pfile);
 
   color_die "Could not load activation params from $pfile"
-   unless ref $aparams eq 'HASH';
+   unless ref $aparams_all eq 'HASH';
+
+  color_die "Could not find activation params for $sketch in $pfile" . Dumper($aparams_all)
+   unless exists $aparams_all->{$sketch};
+
+  my $aparams = $aparams_all->{$sketch};
 
   foreach my $extra (sort keys %{$options{params}})
   {
@@ -1225,7 +1230,7 @@ sub missing_dependencies
     {
      print "Satisfied cfengine version dependency: $version present, needed ",
       $tocheck{$dep}->{version}, "\n"
-       if $verbose;
+       if $veryverbose;
 
      delete $tocheck{$dep};
     }
@@ -1243,7 +1248,7 @@ sub missing_dependencies
     if (!exists $tocheck{$dep}->{version} ||
         $dd->{metadata}->{version} >= $tocheck{$dep}->{version})
     {
-     print "Found dependency $dep in $repo\n" if $verbose;
+     print "Found dependency $dep in $repo\n" if $veryverbose;
      # TODO: test recursive dependencies, right now this will loop
      # TODO: maybe use a CPAN graph module
      push @missing, missing_dependencies($dd->{metadata}->{depends});
@@ -1512,11 +1517,11 @@ sub verify_entry_point
  if ($mcf !~ m/body\s+common\s+control.*bundlesequence/m)
  {
   print "Faking bundlesequence: collecting dependencies for $data->{metadata}->{name} from @{[sort keys %{$data->{metadata}->{depends}}]}\n"
-   if $verbose;
+   if $veryverbose;
   my %dependencies = map { $_ => 1 } collect_dependencies($data->{metadata}->{depends});
   my @inputs = collect_dependencies_inputs(dirname($tfilename), \%dependencies);
   print "Faking bundlesequence: collected inputs [@inputs]\n"
-   if $verbose;
+   if $veryverbose;
   my @p = recurse_print([ uniq(@inputs) ]);
   $mcf = sprintf('
   body common control {
@@ -1971,7 +1976,7 @@ sub maybe_write_file
    unless $promises_binary;
 
   print "Excellent, we found $promises_binary to interface with CFEngine\n"
-   if $verbose;
+   if $veryverbose;
 
   return $promises_binary;
  }
@@ -2103,7 +2108,7 @@ sub collect_dependencies
     if (!exists $deps->{$dep}->{version} ||
         $dd->{metadata}->{version} >= $deps->{$dep}->{version})
     {
-     print "Found dependency $dep in $repo\n" if $verbose;
+     print "Found dependency $dep in $repo\n" if $veryverbose;
      # TODO: test recursive dependencies, right now this will loop
      # TODO: maybe use a CPAN graph module
      push @collected, $dep, collect_dependencies($dd->{metadata}->{depends});
