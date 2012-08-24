@@ -79,6 +79,7 @@ files:
   mgmt_policy_ensure_present::
     "$(my_reposdir)/$(first_index).repo"
       create => "true",
+      perms => mog("644", "root", "root"),
       edit_line => append_if_no_line("[#EOF#]"),
       comment => "This is to work around an old bug that caused
                   region selection to fail because EOF was not 
@@ -86,6 +87,7 @@ files:
   
     "$(my_reposdir)/$(first_index).repo"
       create => "true",
+      perms => mog("644", "root", "root"),
       edit_defaults => no_backup,
       handle => "$(bundle)_files_$(first_index)_ensure_present",
       edit_line => yumclient_set_variable_values_ini("$(arrayname)", "$(first_index)"),
@@ -93,6 +95,7 @@ files:
      
     "$(my_reposdir)/$(first_index).repo"
       create => "true",
+      perms => mog("644", "root", "root"),
       handle => "$(bundle)_files_$(first_index)_ensure_present_empty_section",
       edit_line => yumclient_manage_variable_values_ini("$(arrayname)", "$(first_index)"),
       ifvarclass => "empty_section_from_parameter";
