@@ -2324,7 +2324,9 @@ EOHIPPUS
   print "We will activate bundle $act->{entry_bundle} with passed parameters " . $coder->encode(\@passed) . "\n"
    if $verbose;
 
-  my $args = join(", ", map { my @p = recurse_print($_->[1]); $p[0]->{value} } @passed);
+  my $args = join(", ",
+                  map { my @p = recurse_print("\$(cfsketch_g._${a}_$act->{prefix}_$_->[0]->{name})");
+                        $p[0]->{value} } @passed);
   $methods .= sprintf('      "%s %s %s" usebundle => %s%s(%s);' . "\n",
                       $a,
                       $act->{sketch},
