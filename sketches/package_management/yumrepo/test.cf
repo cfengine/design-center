@@ -1,7 +1,7 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "./yumrepo.cf" };
+      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "./main.cf" };
 }
 
 bundle common cfsketch_g
@@ -13,14 +13,8 @@ vars:
        "yum_refresh_interval" string => "1";
        "yum_debug" string => "off";
        "yum_verbose" string => "true";
-       "yum_repo[custom][path]" string => "/var/www/html/repo_mirror/custom";
-       "yum_repo[custom][perms][g]" string => "root";
-       "yum_repo[custom][perms][m]" string => "755";
-       "yum_repo[custom][perms][o]" string => "root";
-       "yum_repo[updates][path]" string => "/var/www/html/repo_mirror/updates";
-       "yum_repo[updates][perms][g]" string => "root";
-       "yum_repo[updates][perms][m]" string => "755";
-       "yum_repo[updates][perms][o]" string => "root";
+       "yum_repo[custom][path]" string => "/tmp/yum_repos/custom";
+       "yum_repo[updates][path]" string => "/tmp/yum_repos/updates";
 
 }
 
@@ -28,5 +22,5 @@ bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "test" usebundle => yumrepo_maintain("cfsketch_g.yum_");
+      "test" usebundle => repo_yum_maintain("cfsketch_g.yum_");
 }

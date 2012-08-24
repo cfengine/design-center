@@ -2,15 +2,17 @@
 
     "manifest":
     {
-        "main.cf": { "desc": "main file", "version": "2.0" },
+        "main.cf": { "desc": "main file", "version": "2.1" },
         "README.md": { "documentation": true },
-        "params/repos.json": { },
+        "changelog": { "comment": "changelog" },
+        "test.cf": { "comment": "Example/Test policy" },
+        "params/repos.json": { }
     },
 
     "metadata":
     {
         "name": "Repository::Yum::Maintain",
-        "version": 2.0,
+        "version": 2.1,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
