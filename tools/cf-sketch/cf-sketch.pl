@@ -2325,8 +2325,7 @@ EOHIPPUS
    if $verbose;
 
   my $args = join(", ",
-                  map { my @p = recurse_print("\$(cfsketch_g._${a}_$act->{prefix}_$_->[0]->{name})");
-                        $p[0]->{value} } @passed);
+                  map { "\$(cfsketch_g._${a}_$act->{prefix}_$_->[0]->{name})" } @passed);
   $methods .= sprintf('      "%s %s %s" usebundle => %s%s(%s);' . "\n",
                       $a,
                       $act->{sketch},
