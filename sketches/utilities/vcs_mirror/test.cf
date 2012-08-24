@@ -12,7 +12,7 @@ bundle agent main
   methods:
       "mirror copbl"
       usebundle => cfdc_vcs_mirror.vcs_mirror("mirror_copbl",
-                                              $(this.promise_filename),
+                                              dirname($(this.promise_filename)),
                                               "/usr/bin/git",
                                               "/tmp/test2/test3/git_mirror",
                                               "git://github.com/cfengine/copbl.git",
@@ -22,7 +22,7 @@ bundle agent main
 
       "mirror thrift"
       usebundle => cfdc_vcs_mirror.vcs_mirror("mirror_thrift",
-                                              $(this.promise_filename),
+                                              dirname($(this.promise_filename)),
                                               "/usr/bin/svn",
                                               "/tmp/test2/test3/svn_mirror",
                                               "http://svn.apache.org/repos/asf/thrift/trunk/lib/perl",
