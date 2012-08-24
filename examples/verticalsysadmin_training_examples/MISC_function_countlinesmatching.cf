@@ -1,0 +1,9 @@
+bundle agent example {
+
+vars:
+  "no" int => countlinesmatching("^cfengine:.*","/etc/group");
+
+commands:
+  "/bin/echo"
+     args => "Found $(no) lines matching";
+}

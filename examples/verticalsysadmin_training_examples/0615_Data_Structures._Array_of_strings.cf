@@ -7,12 +7,15 @@ bundle agent example {
 
       "cfengine_components[cf-execd]" string => "The executor";
 
+      "cfengine_components[a_number]" int => "5";
+
       "component_names"
-                slist => getvalues("cfengine_components");
+                slist => getindices("cfengine_components");
 
   reports:
+
     linux::
 
-      "$(cfengine_components[cf-execd])";
+      "$(component_names) $(cfengine_components[$(component_names)])";
 
                      }

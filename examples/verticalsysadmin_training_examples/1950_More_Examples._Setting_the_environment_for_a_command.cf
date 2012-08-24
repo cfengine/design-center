@@ -1,11 +1,3 @@
-body common control
-{
-       bundlesequence => { "one" };
-}
-
-############################################
-
-
 body agent control
 {
           environment => { "A=123", "B=456", "PGK_PATH=/tmp"};
@@ -13,7 +5,7 @@ body agent control
 
 ############################################
 
-bundle agent one
+bundle agent example
 {
   commands:
 

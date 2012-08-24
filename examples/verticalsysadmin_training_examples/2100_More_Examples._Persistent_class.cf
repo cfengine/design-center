@@ -1,3 +1,5 @@
+# FIXME - this example needs work
+
 bundle agent example
 
 {
@@ -16,12 +18,12 @@ bundle agent example
       "/bin/echo SHIELDS UP, RED ALERT (condition \"cannot_repair_promise_DANGER_DANGER\"";
 
 
-      # commands:
-      # 
-      #  "/bin/true"  # or try /bin/false for alternate outcome
-      # 
-      #     classes => set_persistent_class_based_on_promise_repair_outcome("ok_but_check_later","cannot_repair_promise_DANGER_DANGER"); 
-      # 
+commands:
+       
+        "/bin/true"  
+       
+           classes => set_persistent_class_based_on_promise_repair_outcome("ok_but_check_later","cannot_repair_promise_DANGER_DANGER"); 
+       
 
 }
 
