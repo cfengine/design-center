@@ -1,0 +1,2 @@
+Need COPBL f30905fc712691ac3e87d03e37c9552ae95f82c1 or later for manage_variable_values_ini
+

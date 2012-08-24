@@ -1,0 +1,25 @@
+body common control
+{
+      bundlesequence => { "main" };
+      inputs => { "./cfengine_stdlib.cf", "./main.cf" };
+}
+
+bundle common g
+{
+vars:
+       "yumclient_debug" string => "true";
+       "yumclient_mgmt_policy" string => "ensure_present";
+       "yumclient_empty_section" string => "true";
+       "yumclient_reposdir" string => "/tmp/yum.repos.d";
+
+       "yumclient_repo[baseline][name]" string => "myrepo";
+       "yumclient_repo[baseline][baseurl]" string => "file:///var/www/html/yum_repos/myrepo";
+       "yumclient_repo[baseline][enabled]" string => "1";
+       "yumclient_repo[baseline][gpgcheck]" string => "no";
+}
+
+bundle agent main
+{
+  methods:
+      "Yum Client" usebundle => repo_yum_client("g.yumclient_");
+}

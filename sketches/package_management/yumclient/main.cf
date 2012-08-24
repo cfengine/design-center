@@ -1,6 +1,105 @@
 bundle agent repo_yum_client(prefix)
 # Configure yum repository clients
+# repo[identifier][variable]
+# repo[identifier][name] string => optional
+# repo[identifier][baseurl] string =>  required
+# repo[identifier][enabled] string => optional 
+# repo[identifier][gpgcheck] string => optional
+# mgmt_policy string => "ensure_present|ensure_absent"
+# empty_section string => "yes|true"
 {
+vars:
+  "repo_ids" slist => getindices("$(prefix)repo");
 
+classes:
+  "_debug_repo_yum_client" expression => regcmp("(?i)yes|true|on", "$($(prefix)debug)");
 
+methods:
+  "Yum Repository Client Configuration"
+    usebundle => repo_yum_client_config("$(prefix)repo", "$(repo_ids)", "$($(prefix)debug)", "$($(prefix)mgmt_policy)", "$($(prefix)empty_section)", "$(prefix)reposdir"),
+    comment => "Configure yum client for each repository";
+
+}
+
+bundle agent repo_yum_client_config(arrayname, first_index, debug, mgmt_policy, empty_section, reposdir)
+# This allows us to have dynamic second index on the repo array
+# It does mean that this bundle must be activated for each repository
+# but it seems better than the alternative of knowing all possible options
+# to in the config when there are so many yum plugins possible.
+{
+vars:
+  "bundle" string => "repo_yum_client_config";
+  "variables" slist => getindices("$(arrayname)[$(first_index)]");
+  #"$(first_index)[$(first_index)][$(variables)]" string => "$($(arrayname)[$(first_index)][$(variables)])";
+
+  "valid_mgmt_policies" slist => { "ensure_present", "ensure_absent" };
+
+  !reposdir_from_parameter::
+    "my_reposdir"
+      string => "/etc/yum.repos.d",
+      policy => "free";
+  
+  reposdir_from_parameter::
+    "my_reposdir"
+      string => "$($(reposdir))",
+      policy => "free";
+  
+classes:
+  "_debug_repo_yum_client" expression => regcmp("(?i)yes|true|on", "$(debug)");
+  "mgmt_policy_from_parameter" expression => regcmp("(?i)$(valid_mgmt_policies)", "$(mgmt_policy)");
+  "empty_section_from_parameter" expression => regcmp("(?i)true|yes", "$(empty_section)");
+  "reposdir_from_parameter" expression => isvariable("$(reposdir)");
+
+  "baseurl_defined" expression => isvariable("$(arrayname)[$(first_index)][baseurl]");
+
+  "mgmt_policy_$(valid_mgmt_policies)" 
+    expression => regcmp("(?i)$(valid_mgmt_policies)", "$(mgmt_policy)"),
+    ifvarclass => "mgmt_policy_from_parameter";
+
+  # Default managment policy to ensure present
+  "mgmt_policy_ensure_present"
+    or => {"any"},
+    ifvarclass => not("mgmt_policy_ensure_absent");
+
+files:
+  mgmt_policy_ensure_present::
+    "$(my_reposdir)/$(first_index).repo"
+      create => "true",
+      edit_line => append_if_no_line("[#EOF#]"),
+      comment => "This is to work around an old bug that caused
+                  region selection to fail because EOF was not 
+                  detected as end of region";
+  
+    "$(my_reposdir)/$(first_index).repo"
+      create => "true",
+      edit_defaults => no_backup,
+      handle => "$(bundle)_files_$(first_index)_ensure_present",
+      edit_line => set_variable_values_ini("$(arrayname)", "$(first_index)"),
+      ifvarclass => not("empty_section_from_parameter");
+     
+    "$(my_reposdir)/$(first_index).repo"
+      create => "true",
+      handle => "$(bundle)_files_$(first_index)_ensure_present_empty_section",
+      edit_line => manage_variable_values_ini("$(arrayname)", "$(first_index)"),
+      ifvarclass => "empty_section_from_parameter";
+ 
+reports:
+  _debug_repo_yum_client::
+    "DEBUG $(bundle)  $(first_index) $(variables)=$($(arrayname)[$(first_index)][$(variables)])";
+    "DEBUG $(bundle)  mgmt_policy: $(valid_mgmt_policies)",
+      ifvarclass => canonify("mgmt_policy_$(valid_mgmt_policies)");
+
+    "DEBUG $(bundle)  empty_section: default false",
+      ifvarclass => not("empty_section_from_parameter");
+
+    "DEBUG $(bundle)  empty_section: $(empty_section)",
+      ifvarclass => "empty_section_from_parameter";
+
+    "DEBUG $(bundle)  required baseurl defined",
+      ifvarclass => "baseurl_defined";
+
+    "DEBUG $(bundle)  No action should be taken, baseurl not defined",
+      ifvarclass => not("baseurl_defined");
+
+    "DEBUG $(bundle)  reposdir: $(my_reposdir)";
 }
