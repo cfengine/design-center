@@ -32,7 +32,7 @@ vars:
     comment => "Set mode from parameter";
 
   "$(repos)_owner"
-    string => "755",
+    string => "root",
     policy => "free",
     ifvarclass => not(canonify("$(repos)_owner_from_parameter")),
     comment => "Default owner if not set by parameter";
