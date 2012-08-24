@@ -32,10 +32,10 @@ bundle agent meta_cloud_services
 {
   vars:
       # look in params/demo.json to see how we fill in the needed services
-      "argument[install_cfengine]" string => "context";
-      "argument[ec2]"              string => "array";
-      "argument[vcli]"             string => "array";
-      "argument[bycontext]"        string => "array";
+      "argument[install_cfengine]"  string => "context";
+      "optional_argument[ec2]"      string => "array";
+      "optional_argument[vcli]"     string => "array";
+      "argument[bycontext]"         string => "array";
 }
 
 bundle agent cloud_context(prefix, context)
