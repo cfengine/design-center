@@ -836,6 +836,20 @@ sub activate
       {
        if (exists $var->{default})
        {
+        if ($var->{type} =~ m/^ARRAY\(/ &&
+            ref $var->{default} eq '')
+        {
+         my $decoded;
+         eval { $decoded = $coder->decode($var->{default}); };
+         color_die "Given default '$var->{default}' for ARRAY variable was invalid JSON"
+          unless ref $decoded eq 'HASH';
+
+         print "Decoding default JSON data '$var->{default}' for $var->{name}\n"
+          if $veryverbose;
+
+         $var->{default} = $decoded;
+        }
+
         $aparams->{$var->{name}} = $var->{default};
        }
        else
@@ -2504,6 +2518,9 @@ sub validate
  my $value = shift @_;
  my @validation_types = @_;
 
+ # null values are never valid
+ return undef unless defined $value;
+
  if (ref $value eq 'HASH' &&
      exists $value->{bycontext} &&
      ref $value->{bycontext} eq 'HASH')
@@ -2567,8 +2584,24 @@ sub validate
    foreach my $key (sort keys %contents)
    {
     # print Dumper [$key, $value->{$key}, $contents{$key}, validate($value->{$key}, $contents{$key})];
-    my $good2 = validate($value->{$key}, $contents{$key});
-    $good &&= $good2;
+    my $subtype = $contents{$key};
+    my $required = 0;
+    if ($subtype =~ m/(.+):\s*required/)
+    {
+     $subtype = $1;
+     $required = 1;
+    }
+    elsif ($subtype =~ m/(.+):\s*default=(.*)/)
+    {
+     $subtype = $1;
+     $value->{$key} = $2 unless defined $value->{$key};
+    }
+
+    if ($required || defined $value->{$key})
+    {
+     my $good2 = validate($value->{$key}, $subtype);
+     $good &&= $good2;
+    }
    }
   }
   elsif ($vtype eq 'PATH')
