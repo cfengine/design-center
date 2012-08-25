@@ -2578,7 +2578,7 @@ sub validate
     return undef;
    }
 
-   my %contents = ($1 =~ m/^(\S+)\s*:\s*(.+?),?$/mg);
+   my %contents = ($1 =~ m/^(\S+)\s*:\s*(.+?)$/mg);
 
    $good = 1;
    foreach my $key (sort keys %contents)
