@@ -12,6 +12,17 @@
      "ssh_pub_key": "/var/tmp/mysshrsakey.pub"
  },
 
+ "vcli":
+ {
+     "master_image": "ubuntu-12.04-i386-master",
+     "child_prefix": "ubuntu-12.04-i386-clone-",
+     "esxi_server": "10.0.0.1",
+     "user": "root",
+     "password": "cfengine",
+     "datastore": "datastore1",
+     "fullpath": "/vmfs/volumes/4fda02bc-744a4c6e-40f2-08002781db6f"
+ },
+
  "bycontext":
  {
   "start1_ec2":
@@ -28,6 +39,33 @@
       "count": "0",
       "class": "cfworker",
       "state": "stop"
+  },
+
+  "start1_vcli":
+  {
+      "stype": "vcli",
+      "count": "1",
+      "class": "cfworker",
+      "state": "start",
+      "disable_ssl_verify": "1"
+  },
+
+  "stop1_vcli":
+  {
+      "stype": "vcli",
+      "count": "0",
+      "class": "cfworker",
+      "state": "stop",
+      "disable_ssl_verify": "1"
+  },
+
+  "disable1_vcli":
+  {
+      "stype": "vcli",
+      "count": "0",
+      "class": "cfworker",
+      "state": "disable",
+      "disable_ssl_verify": "1"
   }
  }
 }
