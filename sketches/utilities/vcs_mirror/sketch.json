@@ -12,12 +12,12 @@
     "metadata":
     {
         "name": "VCS::vcs_mirror",
-        "version": 1.03,
+        "version": 1.10,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },
-                     "cfengine": { "version": "3.3.0" },
+                     "cfengine": { "version": "3.4.0" },
                    },
     },
     "entry_point": "main.cf",
