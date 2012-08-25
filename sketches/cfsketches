@@ -4,6 +4,7 @@ libraries/copbl CFEngine::stdlib
 libraries/yale Yale::stdlib
 networking/ssh Security::SSH
 package_management/aptrepo Repository::apt::Maintain
+package_management/yumclient Repository::Yum::Client
 package_management/yumrepo Repository::Yum::Maintain
 programming_languages/cpanm Packages::CPAN::cpanm
 security/limits Security::security_limits
