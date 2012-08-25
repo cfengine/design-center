@@ -5,7 +5,7 @@ bundle agent repo_yum_maintain(prefix) {
 # prefix_creatrepo /usr/bin/createrepo
 # prefix_refresh_interval 60
 # prefix_repo[name][path] string => "/var/www/html/yum_repos/custom";
-# prefix_repo[name][perms][m] string => "755"
+# prefix_repo[name][perms][m] string => "644"
 # prefix_repo[name][perms][o] string => "root"
 # prefix_repo[name][perms][g] string => "root"
 # prefix_verbose yes|true|on
@@ -20,7 +20,7 @@ vars:
   #  Handle Default Parameters  #
   ###############################
   "$(repos)_mode"
-    string => "755",
+    string => "644",
     policy => "free",
     ifvarclass => not(canonify("$(repos)_mode_from_parameter")),
     comment => "Default mode if not set by parameter";
@@ -32,7 +32,7 @@ vars:
     comment => "Set mode from parameter";
 
   "$(repos)_owner"
-    string => "755",
+    string => "root",
     policy => "free",
     ifvarclass => not(canonify("$(repos)_owner_from_parameter")),
     comment => "Default owner if not set by parameter";
@@ -84,6 +84,7 @@ files:
   "$($(prefix)repo[$(repos)][path])/."
     create => "true",
     perms  => mog("$($(repos)_mode)", "$($(repos)_owner)", "$($(repos)_group)"),
+    depth_search => recurse("inf"),
     action => if_elapsed("$(refresh_interval)"),
     comment => "Ensure repository root directory exists with proper permissions";
 
@@ -124,6 +125,7 @@ commands:
   "$(createrepo)"
     args       => "$($(prefix)repo[$(repos)][path])",
     action     => if_elapsed("$(refresh_interval)"),
+    contain    => repo_yum_maintain_umask("022"),
     classes    => if_repaired("repo_yum_maintain_$(repos)_initalized"),
     ifvarclass => not(canonify("repo_yum_maintain_$(repos)_exists")),
     comment    => "Create repository if one does not exist";
@@ -134,6 +136,7 @@ commands:
   "$(createrepo)"
     args => "--update $($(prefix)repo[$(repos)][path])",
     action     => if_elapsed("$(refresh_interval)"),
+    contain    => repo_yum_maintain_umask("022"),
     classes    => if_repaired("repo_yum_maintain_$(repos)_metadata_updated"),
     ifvarclass => "repo_yum_maintain_$(repos)_needs_metadata_update",
     comment    => "We need to update the metadata since a change was detected";
@@ -171,8 +174,24 @@ vars:
   
   "argument[repo]" string => "array";
   # prefix_repo[name][path] string => "/var/www/html/yum_repos/custom";
-  # prefix_repo[name][perms][m] string => "755"
+  # prefix_repo[name][perms][m] string => "644"
   # prefix_repo[name][perms][o] string => "root"
   # prefix_repo[name][perms][g] string => "root"
-
 } 
+
+# Bodies not in stdlib
+body contain repo_yum_maintain_umask(umask)
+###################################################
+#       | Files               | Directories       #
+###################################################
+# Umask | Octal   Symbolic    | Octal   Symbolic  #
+########+#####################+###################+
+# 000   | 666     (rw-rw-rw-) | 777     (rwxrwxrwx)
+# 002   | 664     (rw-rw-r--) | 775     (rwxrwxr-x)
+# 022   | 644     (rw-r--r--) | 755     (rwxr-xr-x)
+# 027   | 640     (rw-r-----) | 750     (rwxr-x---)
+# 077   | 600     (rw-------) | 700     (rwx------)
+# 277   | 400     (r--------) | 500     (r-x------)
+{
+  umask => "$(umask)";
+}
