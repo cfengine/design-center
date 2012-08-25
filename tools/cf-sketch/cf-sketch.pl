@@ -857,7 +857,8 @@ sub activate
       }
       else
       {
-       color_warn "Can't activate $sketch: '$var->{name}' value '$aparams->{$var->{name}}' fails $var->{type} validation";
+       my $ad = $coder->encode($aparams->{$var->{name}});
+       color_warn "Can't activate $sketch: '$var->{name}' value $ad fails $var->{type} validation";
        $fails++;
       }
      }
@@ -2328,8 +2329,15 @@ EOHIPPUS
   foreach my $pass (@passed)
   {
    my $var = $pass->[0];
-   my $sigil = ($var->{type} =~ m/^SLIST\(/) ? '@' : '$';
-   push @print_passed, "$sigil(cfsketch_g._${a}_$act->{prefix}_$var->{name})";
+   if ($var->{type} =~ m/^ARRAY\(/)
+   {
+    push @print_passed, "\"cfsketch_g._${a}_$act->{prefix}_$var->{name}\"";
+   }
+   else
+   {
+    my $sigil = ($var->{type} =~ m/^SLIST\(/) ? '@' : '$';
+    push @print_passed, "$sigil(cfsketch_g._${a}_$act->{prefix}_$var->{name})";
+   }
   }
 
   my $args = join(", ", @print_passed);
@@ -2508,7 +2516,8 @@ sub validate
     unless $ret2k;
    my $val2 = $value->{bycontext}->{$context};
    my $ret2v = validate($val2, @validation_types);
-   color_warn("Validation failed in bycontext VALUE '$val2', key $context")
+
+   color_warn("Validation failed in bycontext VALUE '$val2', key $context, validation types [@validation_types]" . Dumper([$ret2v, $val2, \@validation_types]))
     unless $ret2v;
 
    $ret &&= $ret2k && $ret2v;
@@ -2537,48 +2546,83 @@ sub validate
   return $ret;
  }
 
+ my $good = 0;
  foreach my $vtype (@validation_types)
  {
-  if ($vtype eq 'PATH')
+  if ($vtype =~ m/^=(.+)/)
   {
-   return $value =~ m,^/,;            # fails on Win32
+   $good ||= $value eq $1;
+  }
+  elsif ($vtype =~ m/ARRAY\(\n+(.+)\n+\)/s)
+  {
+   if (ref $value ne 'HASH')
+   {
+    color_warn("Sorry, but ARRAY validation was requested on a non-array value '$value'.  We'll fail the validation.");
+    return undef;
+   }
+
+   my %contents = ($1 =~ m/^(\S+)\s*:\s*(.+?),?$/mg);
+
+   $good = 1;
+   foreach my $key (sort keys %contents)
+   {
+    # print Dumper [$key, $value->{$key}, $contents{$key}, validate($value->{$key}, $contents{$key})];
+    my $good2 = validate($value->{$key}, $contents{$key});
+    $good &&= $good2;
+   }
+  }
+  elsif ($vtype eq 'PATH')
+  {
+   $good ||= $value =~ m,^/,;            # fails on Win32
   }
   elsif ($vtype eq 'CONTEXT')
   {
-   return $value =~ m/^[\w!.|&()]+$/;
+   $good ||= $value =~ m/^[\w!.|&()]+$/;
   }
   elsif ($vtype eq 'OCTAL')
   {
-   return $value =~ m/^[0-7]+$/;
+   $good ||= $value =~ m/^[0-7]+$/;
   }
   elsif ($vtype eq 'DIGITS')
   {
-   return $value =~ m/^[0-9]+$/;
+   $good ||= $value =~ m/^[0-9]+$/;
   }
-  elsif ($vtype eq 'BOOLEAN')
+  elsif ($vtype eq 'IPv4_ADDRESS')
   {
-   return $value =~ m/^(true|false|on|off|1|0)$/i;
+   $good ||= ($value =~ m/^(\d+)\.(\d+)\.(\d+)\.(\d+)+$/ &&
+              $1 >= 0 && $1 <= 255 &&
+              $2 >= 0 && $2 <= 255 &&
+              $3 >= 0 && $3 <= 255 &&
+              $4 >= 0 && $4 <= 255);
+  }
+ elsif ($vtype eq 'BOOLEAN')
+  {
+   $good ||= $value =~ m/^(true|false|on|off|1|0)$/i;
   }
   elsif ($vtype eq 'NON_EMPTY_STRING')
   {
-   return length $value;
+   $good ||= length $value;
   }
   elsif ($vtype eq 'CONTEXT_NAME')
   {
-   return $value !~ m/\W/;
+   $good ||= $value !~ m/\W/;
   }
   elsif ($vtype eq 'STRING')
   {
-   return defined $value;
+   $good ||= defined $value;
   }
   elsif ($vtype eq 'HTTP_URL')
   {
-   return $value =~ m,^(git|https?)://.+,; # this is not a good URL regex
+   $good ||= $value =~ m,^(git|https?)://.+,; # this is not a good URL regex
   }
   else
   {
    color_warn("Sorry, but an unknown validation type $vtype was requested.  We'll fail the validation, too.");
    return undef;
   }
+
+  return 1 if $good;
  }
+
+ return 0;
 }
