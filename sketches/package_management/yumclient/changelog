@@ -1,0 +1,4 @@
+Repository::Yum::Client 1.0
+  * Initial version
+  * Supports presense or absense of repo definition
+  * Variables not limited to pre-known set allows use of any plugins
