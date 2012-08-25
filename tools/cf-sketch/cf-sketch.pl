@@ -2563,6 +2563,10 @@ sub validate
   {
    return length $value;
   }
+  elsif ($vtype eq 'CONTEXT_NAME')
+  {
+   return $value !~ m/\W/;
+  }
   elsif ($vtype eq 'STRING')
   {
    return defined $value;
