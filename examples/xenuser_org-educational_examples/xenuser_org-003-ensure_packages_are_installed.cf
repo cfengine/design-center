@@ -1,0 +1,19 @@
+# Cfengine code snippet by Valentin Hoebel (valentin@xenuser.org)
+# Created on May 9th 2012; Installs packages if necessary
+# You are free to use and share this code snippet in any way you want.
+
+body common control {
+	version => "1.0";
+	inputs => { "cfengine_stdlib.cf" };
+	bundlesequence => { "manage_packages" };
+}
+
+bundle agent manage_packages {
+	vars:
+		"package_list" slist => { "slapd", "ldap-utils" };
+	
+	packages:
+		"$(package_list)"
+			package_policy => "add",
+			package_method => generic;
+}

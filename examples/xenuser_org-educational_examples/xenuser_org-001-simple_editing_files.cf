@@ -1,0 +1,35 @@
+# Cfengine code snippet by Valentin Hoebel (valentin@xenuser.org)
+# Created on May 5th 2012; Adds a line into an empty file
+# You are free to use and share this code snippet in any way you want.
+
+body common control
+
+{
+any::
+
+  bundlesequence  => {
+                     editexample
+                     };   
+}
+
+
+bundle agent editexample
+
+{
+files:
+
+  "/etc/example2"
+
+     edit_line => addline,
+     create => "true";
+}
+
+bundle edit_line addline
+
+{
+insert_lines:
+
+ "Test.";
+
+}
+
