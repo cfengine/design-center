@@ -1,0 +1,22 @@
+# Cfengine code snippet by Valentin Hoebel (valentin@xenuser.org)
+# Created on August 20th 2012; Example for setting ACLs on multiple directories
+# You are free to use and share this code snippet in any way you want.
+
+body common control {
+        version         => "1.0";
+        inputs          => { "cfengine_stdlib.cf" };
+        bundlesequence  => { "set_acls" };
+}
+
+bundle agent set_acls {
+  vars:
+	"shared_directories" slist	=> { "/home/shared", "/home/archive" };
+
+  files:
+	"$(shared_directories)/."
+	  create	=> "true";
+
+  commands:
+	"/usr/bin/setfacl -m u:backup:rwx,g:games:rwx ${shared_directories}"
+	  comment	=> "Setting ACLs on the shared directories.";
+}

@@ -1,0 +1,44 @@
+# Cfengine code snippet by Valentin Hoebel (valentin@xenuser.org)
+# Created on August 25th 2012; Example for simple monitoring and restarting the Apache web server
+# You are free to use and share this code snippet in any way you want.
+
+body common control {
+        version         => "1.0";
+        inputs          => { "cfengine_stdlib.cf" };
+        bundlesequence  => { "check_process", "check_tcp_response" };
+}
+
+bundle agent check_process {
+  vars:
+	"web_srv_process" string	=> "apache2";
+	"init_scripts_path" string	=> "/etc/init.d";
+
+  processes:
+	"$(web_srv_process)"
+	  comment	=> "Checking if our web server $(web_srv_process) is running.",
+	  restart_class	=> "restart_$(web_srv_process)";
+
+  commands:
+	"${init_scripts_path}/${web_srv_process} start"
+	  comment	=> "Restarting the web server $(web_srv_process).",
+	  ifvarclass	=> "restart_${web_srv_process}",
+	  classes	=> if_repaired("reportWebSrvRestart");
+
+  reports:
+	reportWebSrvRestart::
+	  "The web server $(web_srv_process) was not running and had to be restarted!";
+}
+
+bundle agent check_tcp_response {
+  vars:
+	"read_web_srv_response" string	=> readtcp("php.net", "80", "GET /manual/en/index.php HTTP/1.1$(const.r)$(const.n)Host: php.net$(const.r)$(const.n)$(const.r)$(const.n)", 60);
+
+  classes:
+	"expectedResponse" expression	=> regcmp(".*200 OK.*\n.*", "$(read_web_srv_response)");
+
+  reports:
+	!expectedResponse::
+	  "Something is wrong with php.net - see for yourself: $(read_web_srv_response)";
+}
+
+
