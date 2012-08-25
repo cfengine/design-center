@@ -14,11 +14,11 @@
     "metadata":
     {
         "name": "Cloud::Services",
-        "version": 1.00,
+        "version": 1.10,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
         "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.3.0" }, "os": [ "linux", "darwin" ] },
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin" ] },
     },
 
     "entry_point": "main.cf",
