@@ -17,13 +17,13 @@ bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count,
       "vars[install_cfengine][type]"     string => "BOOLEAN";
       "vars[install_cfengine][default]"  string => "1";
 
-      "vars[stype][type]"                string => "CHOICE('ec2','vcli')";
+      "vars[stype][type]"                string => "=ec2|=vcli";
 
       "vars[count][type]"                string => "DIGITS";
 
       "vars[class][type]"                string => "CONTEXT_NAME";
 
-      "vars[state][type]"                string => "CHOICE('start','stop')";
+      "vars[state][type]"                string => "=start|=stop";
       "vars[state][default]"             string => "start";
 
       "vars[install_cfengine][type]"     string => "BOOLEAN";
@@ -43,7 +43,7 @@ ssh_pub_key    :PATH
       "vars[vcli][type]"                 string => "ARRAY(
 master_image       :NON_EMPTY_STRING,
 child_prefix       :NON_EMPTY_STRING,
-esxi_server        :NON_EMPTY_STRING,
+esxi_server        :IPv4_ADDRESS,
 user               :NON_EMPTY_STRING,
 password           :NON_EMPTY_STRING,
 datastore          :NON_EMPTY_STRING,
