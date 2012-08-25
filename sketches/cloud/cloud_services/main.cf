@@ -29,7 +29,8 @@ bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count,
       "vars[install_cfengine][type]"     string => "BOOLEAN";
       "vars[install_cfengine][default]"  string => "1";
 
-      # you'd say 'ami:NON_EMPTY_STRING:required' if that key was required
+      # you'd say 'ami:NON_EMPTY_STRING:required' if that key was
+      # required but didn't have a default
 
       "vars[ec2][type]"                  string => "ARRAY(
 ami            :NON_EMPTY_STRING
