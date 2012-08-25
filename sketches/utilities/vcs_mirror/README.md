@@ -26,19 +26,19 @@ The bundle definition is:
 If you choose to call it directly instead of through JSON parameters
 (see `params/*.json`), you need to set the following:
 
-`prefix` is a unique prefix per bundle execution, used to create unique classes.
+* `prefix` is a unique prefix per bundle execution, used to create unique classes.
 
-`bundle_home` is the directory where the bundle lives.  You could use `dirname($(this.promise_filename))` for instance.
+* `bundle_home` is the directory where the bundle lives.  You could use `dirname($(this.promise_filename))` for instance.
 
-`vcs` is either a path ending in `svn` or in `git`.  Anything else is unsupported.
+* `vcs` is either a path ending in `svn` or in `git`.  Anything else is unsupported.
 
-`path` is the directory where the mirror will be deployed.
+* `path` is the directory where the mirror will be deployed.
 
-`origin` is the URL or path for the mirror source.
+* `origin` is the URL or path for the mirror source.
 
-`branch` is either a Git branch or ignored for Subversion.
+* `branch` is either a Git branch or ignored for Subversion.
 
-`runas` and `umask` are the user and umask for the mirror command execution.
+* `runas` and `umask` are the user and umask for the mirror command execution.
 
 ## REQUIREMENTS
 
