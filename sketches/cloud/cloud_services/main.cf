@@ -1,21 +1,43 @@
-bundle agent cloud_services(prefix)
+body file control
 {
+  namespace => "cfdc_cloud_services";
+}
+
+bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2_params, vcli_params)
+{
+  meta:
+      # __PREFIX__ will be supplied by cf-sketch
+      "vars[prefix][type]"               string => "NON_EMPTY_STRING";
+      "vars[prefix][default]"            string => "__PREFIX__";
+
+      # __BUNDLE_HOME__ will be          supplied by cf-sketch
+      "vars[bundle_home][type]"          string => "NON_EMPTY_STRING";
+      "vars[bundle_home][default]"       string => "__BUNDLE_HOME__";
+
+      "vars[install_cfengine][type]"     string => "BOOLEAN";
+      "vars[install_cfengine][default]"  string => "1";
+
+      "vars[stype][type]"                string => "CHOICE('ec2','vcli')";
+
+      "vars[count][type]"                string => "DIGITS";
+
+      "vars[class][type]"                string => "CONTEXT_NAME";
+
+      "vars[state][type]"                string => "CHOICE('start','stop')";
+      "vars[state][default]"             string => "start";
+
+      "vars[install_cfengine][type]"     string => "BOOLEAN";
+      "vars[install_cfengine][default]"  string => "1";
+
   classes:
 
   vars:
       "canon_prefix" string => canonify("$(prefix)");
-      "contexts"     slist  => getindices("$(prefix)bycontext");
       "home"         string => "$($(prefix)bundle_home)";
 
-  methods:
-      # this is freakin' awesome
-      "params" usebundle => cloud_context("$(prefix)", "$(contexts)"),
-      classes => always("$(canon_prefix)prepared"),
-      ifvarclass => "$(contexts)";
-
   services:
-      "$(cloud_context.count) $(cloud_context.class)"
-      service_policy => "$(cloud_context.state)",
+      "$(count) $(class)"
+      service_policy => "$(state)",
       service_method => cloud_services_handler,
       ifvarclass => "$(canon_prefix)prepared";
 
@@ -26,47 +48,6 @@ bundle agent cloud_services(prefix)
 
       "Not invoking cloud_services, no match for context $(contexts)"
       ifvarclass => "!$(canon_prefix)prepared";
-}
-
-bundle agent meta_cloud_services
-{
-  vars:
-      # look in params/demo.json to see how we fill in the needed services
-      "argument[install_cfengine]"  string => "context";
-      "optional_argument[ec2]"      string => "array";
-      "optional_argument[vcli]"     string => "array";
-      "argument[bycontext]"         string => "array";
-}
-
-bundle agent cloud_context(prefix, context)
-{
-  vars:
-      "active_context" string => "$(context)";
-      "active_prefix" string => "$(prefix)";
-
-      "stype" string => "$($(prefix)bycontext[$(context)][stype])",
-      comment => "Service type in context $(context)",
-      handle => "cloud_context_$(prefix)_stype";
-
-      "count" string => "$($(prefix)bycontext[$(context)][count])",
-      comment => "Desired service instance count in context $(context)",
-      handle => "cloud_context_$(prefix)_count";
-
-      "class" string => "$($(prefix)bycontext[$(context)][class])",
-      comment => "Service instance class in context $(context)",
-      handle => "cloud_context_$(prefix)_class";
-
-      "state" string => "$($(prefix)bycontext[$(context)][state])",
-      comment => "Whether service is to be 'start'ed or 'stop'ped in context $(context)",
-      handle => "cloud_context_$(prefix)_state";
-
-      "disable_ssl_verify" string => "$($(prefix)bycontext[$(context)][disable_ssl_verify])",
-      comment => "Whether the SSL verification should be disabled in context $(context)",
-      handle => "cloud_context_$(prefix)_disable_ssl_verify";
-
-  reports:
-    cfengine::
-      "Loading parameters for context $(context): type = '$(stype)', count = '$(count)', class = '$(class)', state = '$(state)'";
 }
 
 body service_method cloud_services_handler
