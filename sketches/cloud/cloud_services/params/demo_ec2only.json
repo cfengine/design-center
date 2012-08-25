@@ -5,9 +5,9 @@
         "install_cfengine" : true,
         "ec2":
         {
+            //note that region defaults to "us-east-1" as per main.cf:cloud_services()
             "ami": "ami-b89842d1",
             "instance_type": "m1.small",
-            "region": "us-east-1",
             "security_group": "mygroup",
             "aws_access_key": "akey1",
             "aws_secret_key": "skey1",

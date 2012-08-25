@@ -16,6 +16,7 @@
 
         "vcli":
         {
+            //note that disable_ssl_verify defaults to false (0) as per main.cf:cloud_services()
             "master_image": "ubuntu-12.04-i386-master",
             "child_prefix": "ubuntu-12.04-i386-clone-",
             "esxi_server": "10.0.0.1",

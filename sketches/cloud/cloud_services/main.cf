@@ -29,10 +29,12 @@ bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count,
       "vars[install_cfengine][type]"     string => "BOOLEAN";
       "vars[install_cfengine][default]"  string => "1";
 
+      # you'd say 'ami:NON_EMPTY_STRING:required' if that key was required
+
       "vars[ec2][type]"                  string => "ARRAY(
 ami            :NON_EMPTY_STRING,
 instance_type  :NON_EMPTY_STRING,
-region         :NON_EMPTY_STRING,
+region         :NON_EMPTY_STRING:default=us-east-1,
 security_group :NON_EMPTY_STRING,
 aws_access_key :NON_EMPTY_STRING,
 aws_secret_key :NON_EMPTY_STRING,
@@ -48,7 +50,7 @@ user               :NON_EMPTY_STRING,
 password           :NON_EMPTY_STRING,
 datastore          :NON_EMPTY_STRING,
 fullpath           :PATH,
-disable_ssl_verify :BOOLEAN
+disable_ssl_verify :BOOLEAN:default=0
 )";
       "vars[vcli][default]"              string => "{}";
 
