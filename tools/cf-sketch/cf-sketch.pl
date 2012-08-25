@@ -2324,8 +2324,16 @@ EOHIPPUS
   print "We will activate bundle $act->{entry_bundle} with passed parameters " . $coder->encode(\@passed) . "\n"
    if $verbose;
 
-  my $args = join(", ",
-                  map { "\$(cfsketch_g._${a}_$act->{prefix}_$_->[0]->{name})" } @passed);
+  my @print_passed;
+  foreach my $pass (@passed)
+  {
+   my $var = $pass->[0];
+   my $sigil = ($var->{type} =~ m/^SLIST\(/) ? '@' : '$';
+   push @print_passed, "$sigil(cfsketch_g._${a}_$act->{prefix}_$var->{name})";
+  }
+
+  my $args = join(", ", @print_passed);
+
   $methods .= sprintf('      "%s %s %s" usebundle => %s%s(%s);' . "\n",
                       $a,
                       $act->{sketch},
@@ -2504,6 +2512,26 @@ sub validate
     unless $ret2v;
 
    $ret &&= $ret2k && $ret2v;
+  }
+
+  return $ret;
+ }
+
+ if (ref $value eq 'ARRAY')
+ {
+  my $vt = $validation_types[0];
+  return undef unless $vt;
+  return undef unless $vt =~ m/^LIST\(([^)]+)\)$/;
+
+  my $subtype = $1;
+  my $ret = 1;
+  foreach my $subval (@$value)
+  {
+   my $ret2 = validate($subval, $subtype);
+   color_warn("Array validation failed in bycontext, VALUE '$subval'")
+    unless $ret2;
+
+   $ret &&= $ret2;
   }
 
   return $ret;
