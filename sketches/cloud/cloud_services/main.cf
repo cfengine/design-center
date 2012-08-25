@@ -3,7 +3,7 @@ body file control
   namespace => "cfdc_cloud_services";
 }
 
-bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2_params, vcli_params)
+bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2, vcli)
 {
   meta:
       # __PREFIX__ will be supplied by cf-sketch
@@ -28,6 +28,29 @@ bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count,
 
       "vars[install_cfengine][type]"     string => "BOOLEAN";
       "vars[install_cfengine][default]"  string => "1";
+
+      "vars[ec2][type]"                  string => "ARRAY(
+ami            :NON_EMPTY_STRING,
+instance_type  :NON_EMPTY_STRING,
+region         :NON_EMPTY_STRING,
+security_group :NON_EMPTY_STRING,
+aws_access_key :NON_EMPTY_STRING,
+aws_secret_key :NON_EMPTY_STRING,
+ssh_pub_key    :PATH
+)";
+      "vars[ec2][default]"               string => "{}";
+
+      "vars[vcli][type]"                 string => "ARRAY(
+master_image       :NON_EMPTY_STRING,
+child_prefix       :NON_EMPTY_STRING,
+esxi_server        :NON_EMPTY_STRING,
+user               :NON_EMPTY_STRING,
+password           :NON_EMPTY_STRING,
+datastore          :NON_EMPTY_STRING,
+fullpath           :PATH,
+disable_ssl_verify :BOOLEAN
+)";
+      "vars[vcli][default]"              string => "{}";
 
   classes:
 
@@ -247,12 +270,12 @@ bundle agent vmware_clone(vm_source, vm_clone)
   files:
     clean_up::
       "/tmp/$(vm_clone).vmx.*"
-      delete => tidy;
+      delete => default.tidy;
 
     have_clone_vmx.!clone_registered::
       "/tmp/$(vm_clone).vmx"
       edit_line => reconfigurevmx("$(vm_source)","$(vm_clone)"),
-      classes => if_repaired("then_upload");
+      classes => default.if_repaired("then_upload");
 
       #
 
@@ -267,11 +290,11 @@ bundle agent vmware_clone(vm_source, vm_clone)
 
     then_upload::
       "$(vcli.VIFS_PUT) /tmp/$(vm_clone).vmx \"[$(vcli.ds)] $(vm_clone)/$(vm_clone).vmx\""
-      classes => if_repaired("register_vm");
+      classes => default.if_repaired("register_vm");
 
     register_vm.!clone_registered::
       "$(vcli.VMCMD_REG) $(vcli.path)/$(vm_clone)/$(vm_clone).vmx"
-      classes => if_repaired("clean_up");
+      classes => default.if_repaired("clean_up");
 
   reports:
     verbose::
@@ -401,14 +424,14 @@ bundle agent vmware_delete(vm_name)
   commands:
     vm_registered::
       "$(vcli.VMCMD_STOP)"
-      classes => if_ok("$(canon_prefix)_stopped");
+      classes => default.if_ok("$(canon_prefix)_stopped");
 
       "$(vcli.VMCMD_UNREG)"
-      classes => if_ok("$(canon_prefix)_unregistered"),
+      classes => default.if_ok("$(canon_prefix)_unregistered"),
       ifvarclass => "$(canon_prefix)_stopped";
 
       "$(vcli.VIFS_DELETE) \"[$(vcli.ds)] $(vm_name)\" -f"
-      classes => if_ok("$(canon_prefix)_deleted"),
+      classes => default.if_ok("$(canon_prefix)_deleted"),
       ifvarclass => "$(canon_prefix)_unregistered";
 
   reports:
