@@ -2298,53 +2298,58 @@ EOHIPPUS
    if (ref $value eq '')
    {
     $value =~ s/__BUNDLE_HOME__/$rel_path/g;
-    $value =~ s/__PREFIX__/cfsketch_g._${a}_$act->{prefix}/g;
+    $value =~ s/__PREFIX__/cfsketch_g._${a}_$act->{prefix}_/g;
+    $value =~ s/__CLASS_PREFIX__/_${a}_$act->{prefix}_/g;
    }
 
    push @passed, [ $var, $value ]
     if (exists $var->{passed} && $var->{passed});
 
-   if ($var->{type} eq 'CONTEXT')
+   my %bycontext;
+   if (ref $value eq 'HASH' &&
+       exists $value->{bycontext} &&
+       ref $value->{bycontext} eq 'HASH')
    {
-    $contexts .= sprintf('      "_%s_%s_%s" expression => "%s";' . "\n",
-                         $a,
-                         $act->{prefix},
-                         $name,
-                         $value);
-
-    my $print_context = 'any';
-    $vars .= "     ${print_context}:: # setting context for text representations\n" if $current_context ne $print_context;
-    $current_context = $print_context;
-    $vars .= sprintf('       "_%s_%s_contexts[%s]" string => "%s"; # text representation of the context "%s"' . "\n",
-                     $a,
-                     $act->{prefix},
-                     $name,
-                     $value,
-                     $name);
-
-    if ($name eq 'activated')
-    {
-     $methods .= sprintf('    _%s_%s_%s::' . "\n",
-                         $a,
-                         $act->{prefix},
-                         $name);
-    }
+    %bycontext = %{$value->{bycontext}};
    }
    else
    {
-    my %bycontext;
-    if (ref $value eq 'HASH' &&
-        exists $value->{bycontext} &&
-        ref $value->{bycontext} eq 'HASH')
-    {
-     %bycontext = %{$value->{bycontext}};
-    }
-    else
-    {
-     $bycontext{any} = $value;
-    }
+    $bycontext{any} = $value;
+   }
 
-    foreach my $context (sort keys %bycontext)
+   foreach my $context (sort keys %bycontext)
+   {
+    if ($var->{type} eq 'CONTEXT')
+    {
+     my $as_cfengine_context = $bycontext{$context} ? 'any' : "!any";
+
+     $contexts .= "     ${context}::\n" if $current_context ne $context;
+     $current_context = $context;
+     $contexts .= sprintf('      "_%s_%s_%s" expression => "%s";' . "\n",
+                          $a,
+                          $act->{prefix},
+                          $name,
+                          $as_cfengine_context);
+
+     my $print_context = $as_cfengine_context;
+     $vars .= "     ${print_context}:: # setting context for text representations\n" if $current_context ne $print_context;
+     $current_context = $print_context;
+     $vars .= sprintf('       "_%s_%s_contexts[%s]" string => "%s"; # text representation of the context "%s"' . "\n",
+                      $a,
+                      $act->{prefix},
+                      $name,
+                      $bycontext{$context},
+                      $name);
+
+     if ($name eq 'activated')
+     {
+      $methods .= sprintf('    _%s_%s_%s::' . "\n",
+                          $a,
+                          $act->{prefix},
+                          $name);
+     }
+    }
+    else                                # regular, non-CONTEXT variable
     {
      $vars .= "     ${context}::\n" if $current_context ne $context;
      $current_context = $context;
@@ -2376,7 +2381,7 @@ EOHIPPUS
    }
    else
    {
-    my $sigil = ($var->{type} =~ m/^SLIST\(/) ? '@' : '$';
+    my $sigil = ($var->{type} =~ m/^LIST\(/) ? '@' : '$';
     push @print_passed, "$sigil(cfsketch_g._${a}_$act->{prefix}_$var->{name})";
    }
   }
