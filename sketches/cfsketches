@@ -1,7 +1,6 @@
 cloud/cloud_services Cloud::Services
 databases/db_install Database::Install
 libraries/copbl CFEngine::stdlib
-libraries/validators CFEngine::validators
 libraries/yale Yale::stdlib
 networking/ssh Security::SSH
 package_management/aptrepo Repository::apt::Maintain
