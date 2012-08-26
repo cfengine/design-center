@@ -2275,7 +2275,7 @@ EOHIPPUS
    if (ref $value eq '')
    {
     $value =~ s/__BUNDLE_HOME__/$rel_path/g;
-    $value =~ s/__PREFIX__/cfsketch_g.$act->{prefix}/g;
+    $value =~ s/__PREFIX__/cfsketch_g._${a}_$act->{prefix}/g;
    }
 
    push @passed, [ $var, $value ]
