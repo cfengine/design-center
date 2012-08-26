@@ -11,77 +11,66 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => { @(cfsketch_g.inputs) };
+      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 }
 
 
 bundle common cfsketch_g
 {
-  classes:
-      # contexts
-       # contexts for activation 001
-      "_001_Cloud__Services_activated" expression => "any";
-
   vars:
-       # Files that need to be loaded for this to work.
-       "inputs" slist => { "/home/tzz/.cfagent/inputs/sketches/CFEngine/stdlib/cfengine_stdlib.cf", "/home/tzz/.cfagent/inputs/sketches/Cloud/Services/main.cf" };
+    ec2::
+      "cloudtest_stype" string => "ec2";
+    vcli::
+      "cloudtest_stype" string => "vcli";
 
-       # string and slist variables for activation 001
-     any::
-       "_001_Cloud__Services_prefix" string => "cfsketch_g.Cloud__Services";
-       "_001_Cloud__Services_bundle_home" string => "/home/tzz/.cfagent/inputs/sketches/Cloud/Services";
-       "_001_Cloud__Services_install_cfengine" string => "1";
-     ec2::
-       "_001_Cloud__Services_stype" string => "ec2";
-     vcli::
-       "_001_Cloud__Services_stype" string => "vcli";
-     start1::
-       "_001_Cloud__Services_count" string => "1";
-     start10::
-       "_001_Cloud__Services_count" string => "10";
-     stop::
-       "_001_Cloud__Services_count" string => "0";
-     any::
-       "_001_Cloud__Services_class" string => "cfworker";
-     start1||start10::
-       "_001_Cloud__Services_state" string => "start";
-     stop::
-       "_001_Cloud__Services_state" string => "stop";
-     any::
-       "_001_Cloud__Services_ec2[ami]" string => "ami-b89842d1";
-       "_001_Cloud__Services_ec2[aws_access_key]" string => "akey1";
-       "_001_Cloud__Services_ec2[aws_secret_key]" string => "skey1";
-       "_001_Cloud__Services_ec2[instance_type]" string => "m1.small";
-       "_001_Cloud__Services_ec2[region]" string => "us-east-1";
-       "_001_Cloud__Services_ec2[security_group]" string => "mygroup";
-       "_001_Cloud__Services_ec2[ssh_pub_key]" string => "/var/tmp/mysshrsakey.pub";
-       "_001_Cloud__Services_vcli[child_prefix]" string => "ubuntu-12.04-i386-clone-";
-       "_001_Cloud__Services_vcli[datastore]" string => "datastore1";
-       "_001_Cloud__Services_vcli[disable_ssl_verify]" string => "1";
-       "_001_Cloud__Services_vcli[esxi_server]" string => "10.0.0.1";
-       "_001_Cloud__Services_vcli[fullpath]" string => "/vmfs/volumes/4fda02bc-744a4c6e-40f2-08002781db6f";
-       "_001_Cloud__Services_vcli[master_image]" string => "ubuntu-12.04-i386-master";
-       "_001_Cloud__Services_vcli[password]" string => "cfengine";
-       "_001_Cloud__Services_vcli[user]" string => "root";
-       "_001_Cloud__Services_contexts[activated]" string => "any"; # text representation of the context "activated"
-       "_001_Cloud__Services_sketch_depends" slist => { "CFEngine::stdlib" };
-       "_001_Cloud__Services_sketch_authors" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
-       "_001_Cloud__Services_sketch_portfolio" slist => { "cfdc" };
-       "_001_Cloud__Services_sketch_manifest" slist => { "README.md", "main.cf", "modules/vcli_decision", "params/demo.json", "params/demo_ec2only.json", "scripts/shim.pl" };
-       "_001_Cloud__Services_sketch_manifest_cf" slist => { "main.cf" };
-       "_001_Cloud__Services_sketch_manifest_docs" slist => { "README.md" };
-       "_001_Cloud__Services_sketch_manifest_extra" slist => { "modules/vcli_decision", "params/demo.json", "params/demo_ec2only.json", "scripts/shim.pl" };
-       "_001_Cloud__Services_sketch_version" string => "1.1";
-       "_001_Cloud__Services_sketch_name" string => "Cloud::Services";
-       "_001_Cloud__Services_sketch_license" string => "MIT";
+    start1::
+      "cloudtest_count" string => "1";
+    start10::
+      "cloudtest_count" string => "10";
+    stop::
+      "cloudtest_count" string => "0";
 
+    start1||start10::
+      "cloudtest_state" string => "start";
+    stop::
+      "cloudtest_state" string => "stop";
+
+    any::
+      "cloudtest_prefix"            string => "cfsketch_g.cloudtest";
+      "cloudtest_bundle_home"       string => dirname("$(this.promise_filename)");
+      "cloudtest_install_cfengine"  string => "1";
+      "cloudtest_class"             string => "cfworker";
+
+      "cloudtest_ec2[ami]"             string => "ami-b89842d1";
+      "cloudtest_ec2[aws_access_key]"  string => "akey1";
+      "cloudtest_ec2[aws_secret_key]"  string => "skey1";
+      "cloudtest_ec2[instance_type]"   string => "m1.small";
+      "cloudtest_ec2[region]"          string => "us-east-1";
+      "cloudtest_ec2[security_group]"  string => "mygroup";
+      "cloudtest_ec2[ssh_pub_key]"     string => "/var/tmp/mysshrsakey.pub";
+
+      "cloudtest_vcli[child_prefix]"        string => "ubuntu-12.04-i386-clone-";
+      "cloudtest_vcli[datastore]"           string => "datastore1";
+      "cloudtest_vcli[disable_ssl_verify]"  string => "1";
+      "cloudtest_vcli[esxi_server]"         string => "10.0.0.1";
+      "cloudtest_vcli[fullpath]"            string => "/vmfs/volumes/4fda02bc-744a4c6e-40f2-08002781db6f";
+      "cloudtest_vcli[master_image]"        string => "ubuntu-12.04-i386-master";
+      "cloudtest_vcli[password]"            string => "cfengine";
+      "cloudtest_vcli[user]"                string => "root";
 }
 
 bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-    _001_Cloud__Services_activated::
-      "001 Cloud::Services 1" usebundle => cfdc_cloud_services.cloud_services($(cfsketch_g._001_Cloud__Services_prefix), $(cfsketch_g._001_Cloud__Services_bundle_home), $(cfsketch_g._001_Cloud__Services_install_cfengine), $(cfsketch_g._001_Cloud__Services_stype), $(cfsketch_g._001_Cloud__Services_count), $(cfsketch_g._001_Cloud__Services_class), $(cfsketch_g._001_Cloud__Services_state), "cfsketch_g._001_Cloud__Services_ec2", "cfsketch_g._001_Cloud__Services_vcli");
+      "Cloud::Services test" usebundle => cfdc_cloud_services.cloud_services($(cfsketch_g.cloudtest_prefix),
+                                                                             $(cfsketch_g.cloudtest_bundle_home),
+                                                                             $(cfsketch_g.cloudtest_install_cfengine),
+                                                                             $(cfsketch_g.cloudtest_stype),
+                                                                             $(cfsketch_g.cloudtest_count),
+                                                                             $(cfsketch_g.cloudtest_class),
+                                                                             $(cfsketch_g.cloudtest_state),
+                                                                             "cfsketch_g.cloudtest_ec2",
+                                                                             "cfsketch_g.cloudtest_vcli");
 
 }
