@@ -421,6 +421,9 @@ sub search_internal
 
  if ($local_dir)
  {
+  color_die "cf-sketch inventory source $source must be a file"
+   unless -f $source;
+
   open(my $invf, '<', $source)
    or color_die "Could not open cf-sketch inventory file $source: $!";
 
@@ -1040,6 +1043,7 @@ sub install
  print "Loading cf-sketch inventory from $source\n" if $verbose;
 
  my $search = search_internal($source, $sketches);
+
  my %known = %{$search->{known}};
  my %todo = %{$search->{todo}};
 
