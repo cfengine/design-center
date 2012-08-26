@@ -91,6 +91,7 @@ my %def_options =
   'make-package' => [],
   params => {},
   cfpath => join (':', uniq(split(':', $ENV{PATH}||''), '/var/cfengine/bin', '/usr/sbin', '/usr/local/bin', '/usr/local/sbin')),
+  modulepath => '../../',
   runfile => File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf'),
   standalone => 1,
   repolist => [ File::Spec->catfile($happy_root, 'sketches') ],
@@ -126,6 +127,7 @@ my @options_desc =
   "api=s",                     "Show the API (required/optional parameters) of the given sketch.|sketch",
   "generate|g",                "Generate CFEngine runfile to execute activated sketches.",
   "fullpath|fp",               "Use full paths in the CFEngine runfile (off by default)",
+  "modulepath|mp=s",           "Path to modules relative to the repository root, normally $def_options{modulepath}",
   "save-config|config-save",   "Save configuration parameters so that they are automatically loaded in the future.",
   "metarun=s",                 "Load and execute a metarun file of the form { options => \%options }, which indicates the entire behavior for this run.|file",
   "save-metarun=s",            "Save the parameters and actions of the current execution to the named file, for future use with --metarun.|file",
@@ -1049,7 +1051,7 @@ sub install
 
  foreach my $sketch (sort keys %todo)
  {
- print BLUE "Installing $sketch\n" unless $quiet;
+  print BLUE "Installing $sketch\n" unless $quiet;
   my $dir = $local_dir ? File::Spec->catdir($base_dir, $todo{$sketch}) : "$base_dir/$todo{$sketch}";
 
   # make sure we only work with absolute directories
@@ -1103,6 +1105,8 @@ sub install
   my $install_dir = File::Spec->catdir($dest_repo,
                                        split('::', $sketch));
 
+  my $module_install_dir = File::Spec->catfile($dest_repo, $options{modulepath});
+
   if (maybe_ensure_dir($install_dir))
   {
    print "Created destination directory $install_dir\n" if $verbose;
@@ -1113,7 +1117,26 @@ sub install
     my $file_spec = $data->{manifest}->{$file};
     # build a locally valid install path, while the manifest can use / separator
     my $source = is_resource_local($data->{dir}) ? File::Spec->catfile($data->{dir}, split('/', $file)) : "$data->{dir}/$file";
-    my $dest = File::Spec->catfile($install_dir, split('/', $file));
+
+    my $dest;
+
+    if ($file_spec->{module})
+    {
+     if (maybe_ensure_dir($module_install_dir))
+     {
+      print "Created module destination directory $module_install_dir\n" if $verbose;
+      $dest = File::Spec->catfile($module_install_dir, split('/', $file));
+     }
+     else
+     {
+      color_warn "Could not make install directory $module_install_dir, skipping $sketch";
+      next;
+     }
+    }
+    else
+    {
+     $dest = File::Spec->catfile($install_dir, split('/', $file));
+    }
 
     my $dest_dir = dirname($dest);
     color_die "Could not make destination directory $dest_dir"

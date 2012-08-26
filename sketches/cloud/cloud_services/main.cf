@@ -144,8 +144,8 @@ bundle agent vcli(prefix, bundle_home, install_cfengine, count, class, state, pa
       "ssl_noverify" expression => strcmp("$($(params)[disable_ssl_verify])", "1");
 
     !decided::
-      "decided" expression => usemodule("$(perl)",
-                                        "$(vcli_decision_module) $(vcli_decision_args)");
+      "decided" expression => usemodule("$(vcli_decision_module)",
+                                        "$(vcli_decision_args)");
 
     decided::
       "vcli_decision_valid" expression => regcmp("[^$]+","$(perl.current_count)");
@@ -168,9 +168,6 @@ bundle agent vcli(prefix, bundle_home, install_cfengine, count, class, state, pa
       # NB: these are in /bin or /usr/bin or... but it varies on many
       # systems, so we'll just accept whatever is in the PATH
       "grep"  string => "grep";
-
-      # adjust for your Perl install, but any Perl should be able to handle this
-      "perl"  string => "../../../../usr/bin/perl";
 
       "vifs"  string => "$(cmd_prefix)/usr/bin/vifs";
       "vmcmd" string => "$(cmd_prefix)/usr/bin/vmware-cmd";
@@ -198,32 +195,32 @@ bundle agent vcli(prefix, bundle_home, install_cfengine, count, class, state, pa
       "VMCMD_REG"       string => "$(VMCMD_BASE) -s register";
       "VMKFSTOOLS"      string => "$(vmkfs) --server $(srv) --username $(u) --password $(p) -i";
 
-      "vcli_decision_module" string => "$(bundle_home)/modules/vcli_decision";
+      "vcli_decision_module" string => "vcli_decision";
       "vcli_decision_args" string => "'$(VMCMD_LIST_OURS)' '$(state)' '$(count)' '$(child_prefix)'";
 
     vcli_decision_valid::
-      "VMCMD_STOP"  string => "$(VMCMD_PREFIX)/$(perl.decom_instance)/$(perl.decom_instance).vmx stop soft";
-      "VMCMD_UNREG" string => "$(VMCMD_BASE) -s unregister $(path)/$(perl.decom_instance)/$(perl.decom_instance).vmx";
+      "VMCMD_STOP"  string => "$(VMCMD_PREFIX)/$(vcli_decision.decom_instance)/$(vcli_decision.decom_instance).vmx stop soft";
+      "VMCMD_UNREG" string => "$(VMCMD_BASE) -s unregister $(path)/$(vcli_decision.decom_instance)/$(vcli_decision.decom_instance).vmx";
 
   methods:
     vcli_decision_valid.bootstrap_needed::
       # clone the needed bootstraps
-      "CLONE"  usebundle => cfdc_cloud_services.vmware_clone($(master_image), "$(perl.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_REG), $(VIFS_DIR), $(VIFS_MKDIR), $(VIFS_COPY), $(VIFS_GET), $(VIFS_PUT), $(VIFS_DELETE), $(VMKFSTOOLS), $(ds), $(path));
-      "START"  usebundle => cfdc_cloud_services.vmware_start("$(perl.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_PREFIX));
+      "CLONE"  usebundle => cfdc_cloud_services.vmware_clone($(master_image), "$(vcli_decision.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_REG), $(VIFS_DIR), $(VIFS_MKDIR), $(VIFS_COPY), $(VIFS_GET), $(VIFS_PUT), $(VIFS_DELETE), $(VMKFSTOOLS), $(ds), $(path));
+      "START"  usebundle => cfdc_cloud_services.vmware_start("$(vcli_decision.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_PREFIX));
       # start all our client count if a bootstrap is needed
-      "START"  usebundle => cfdc_cloud_services.vmware_start("$(perl.our_count)", $(VMCMD_LIST), $(VMCMD_PREFIX));
+      "START"  usebundle => cfdc_cloud_services.vmware_start("$(vcli_decision.our_count)", $(VMCMD_LIST), $(VMCMD_PREFIX));
 
     vcli_decision_valid.decom_needed::
-      # "STOP"   usebundle => cfdc_cloud_services.vmware_stop("$(perl.decom_instance)", $(VMCMD_LIST_OURS), $(VMCMD_STOP), $(VMCMD_PREFIX));
-      "DELETE" usebundle => cfdc_cloud_services.vmware_delete("$(perl.decom_instance)", $(VIFS_DELETE), $(VMCMD_LIST), $(VMCMD_STOP), $(VMCMD_UNREG), $(VMCMD_PREFIX), $(ds));
+      # "STOP"   usebundle => cfdc_cloud_services.vmware_stop("$(vcli_decision.decom_instance)", $(VMCMD_LIST_OURS), $(VMCMD_STOP), $(VMCMD_PREFIX));
+      "DELETE" usebundle => cfdc_cloud_services.vmware_delete("$(vcli_decision.decom_instance)", $(VIFS_DELETE), $(VMCMD_LIST), $(VMCMD_STOP), $(VMCMD_UNREG), $(VMCMD_PREFIX), $(ds));
 
   reports:
     vcli_decision_valid.bootstrap_needed::
-      "Service requires bootstrap: requested instance $(perl.bootstrap_instance) of class $(class) (current $(perl.current_count))";
+      "Service requires bootstrap: requested instance $(vcli_decision.bootstrap_instance) of class $(class) (current $(vcli_decision.current_count))";
     vcli_decision_valid.decom_needed::
-      "Service requires decom: requested instance $(perl.decom_instance) of class $(class) (current $(perl.current_count))";
+      "Service requires decom: requested instance $(vcli_decision.decom_instance) of class $(class) (current $(vcli_decision.current_count))";
     vcli_decision_valid.nothing_needed::
-      "Service requires no action: it already has $(perl.current_count) instances of class $(class)";
+      "Service requires no action: it already has $(vcli_decision.current_count) instances of class $(class)";
     !vcli_decision_valid::
       "The vcli_decision module \"$(vcli_decision_module) $(vcli_decision_args)\"could not be executed";
     verbose::
