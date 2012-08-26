@@ -2534,7 +2534,7 @@ sub validate
    my $val2 = $value->{bycontext}->{$context};
    my $ret2v = validate($val2, @validation_types);
 
-   color_warn("Validation failed in bycontext VALUE '$val2', key $context, validation types [@validation_types]" . Dumper([$ret2v, $val2, \@validation_types]))
+   color_warn("Validation failed in bycontext VALUE '$val2', key $context, validation types [@validation_types]")
     unless $ret2v;
 
    $ret &&= $ret2k && $ret2v;
