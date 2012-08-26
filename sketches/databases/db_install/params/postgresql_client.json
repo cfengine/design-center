@@ -1,4 +1,0 @@
-{
-    "include": [ "postgresql.json" ],
-    "server": false
-}
