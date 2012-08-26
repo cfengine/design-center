@@ -161,6 +161,7 @@ bundle agent vcli(prefix, bundle_home, install_cfengine, count, class, state, pa
       "cmd_prefix" string => "",
       policy => "free";
 
+    any::
       "master_image" string => "$($(params)[master_image])";
       "child_prefix" string => "$($(params)[child_prefix])";
 
@@ -169,7 +170,7 @@ bundle agent vcli(prefix, bundle_home, install_cfengine, count, class, state, pa
       "grep"  string => "grep";
 
       # adjust for your Perl install, but any Perl should be able to handle this
-      "perl"  string => "../../../usr/bin/perl";
+      "perl"  string => "../../../../usr/bin/perl";
 
       "vifs"  string => "$(cmd_prefix)/usr/bin/vifs";
       "vmcmd" string => "$(cmd_prefix)/usr/bin/vmware-cmd";
@@ -207,22 +208,22 @@ bundle agent vcli(prefix, bundle_home, install_cfengine, count, class, state, pa
   methods:
     vcli_decision_valid.bootstrap_needed::
       # clone the needed bootstraps
-      "CLONE"  usebundle => vmware_clone("$(master_image)", "$(perl.bootstrap_instance)");
-      "START"  usebundle => vmware_start("$(perl.bootstrap_instance)");
+      "CLONE"  usebundle => cfdc_cloud_services.vmware_clone($(master_image), "$(perl.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_REG), $(VIFS_DIR), $(VIFS_MKDIR), $(VIFS_COPY), $(VIFS_GET), $(VIFS_PUT), $(VIFS_DELETE), $(VMKFSTOOLS), $(ds), $(path));
+      "START"  usebundle => cfdc_cloud_services.vmware_start("$(perl.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_PREFIX));
       # start all our client count if a bootstrap is needed
-      "START"  usebundle => vmware_start("$(perl.our_count)");
+      "START"  usebundle => cfdc_cloud_services.vmware_start("$(perl.our_count)", $(VMCMD_LIST), $(VMCMD_PREFIX));
 
     vcli_decision_valid.decom_needed::
-      # "STOP"   usebundle => vmware_stop("$(perl.decom_instance)");
-      "DELETE" usebundle => vmware_delete("$(perl.decom_instance)");
+      # "STOP"   usebundle => cfdc_cloud_services.vmware_stop("$(perl.decom_instance)", $(VMCMD_LIST_OURS), $(VMCMD_STOP), $(VMCMD_PREFIX));
+      "DELETE" usebundle => cfdc_cloud_services.vmware_delete("$(perl.decom_instance)", $(VIFS_DELETE), $(VMCMD_LIST), $(VMCMD_STOP), $(VMCMD_UNREG), $(VMCMD_PREFIX), $(ds));
 
   reports:
     vcli_decision_valid.bootstrap_needed::
-      "Service '$(service)' requires bootstrap: requested instance $(perl.bootstrap_instance) of class $(class) (current $(perl.current_count))";
+      "Service requires bootstrap: requested instance $(perl.bootstrap_instance) of class $(class) (current $(perl.current_count))";
     vcli_decision_valid.decom_needed::
-      "Service '$(service)' requires decom: requested instance $(perl.decom_instance) of class $(class) (current $(perl.current_count))";
+      "Service requires decom: requested instance $(perl.decom_instance) of class $(class) (current $(perl.current_count))";
     vcli_decision_valid.nothing_needed::
-      "Service '$(service)' requires no action: it already has $(perl.current_count) instances of class $(class)";
+      "Service requires no action: it already has $(perl.current_count) instances of class $(class)";
     !vcli_decision_valid::
       "The vcli_decision module \"$(vcli_decision_module) $(vcli_decision_args)\"could not be executed";
     verbose::
@@ -232,19 +233,19 @@ bundle agent vcli(prefix, bundle_home, install_cfengine, count, class, state, pa
 
 # -----------------------------------------------------------------------------
 
-bundle agent vmware_clone(vm_source, vm_clone)
+bundle agent vmware_clone(vm_source, vm_clone, VMCMD_LIST, VMCMD_REG, VIFS_DIR, VIFS_MKDIR, VIFS_COPY, VIFS_GET, VIFS_PUT, VIFS_DELETE, VMKFSTOOLS, ds, path)
 {
   vars:
     any::
-      "reg_status" string => execresult("$(vcli.VMCMD_LIST)","useshell"),
+      "reg_status" string => execresult("$(VMCMD_LIST)","useshell"),
       policy => "free";
 
       #
 
   classes:
     any::
-      "have_source_dir"  expression => returnszero("$(vcli.VIFS_DIR) \"[$(vcli.ds)] $(vm_source)/\" > /dev/null","useshell");
-      "have_clone_dir"   expression => returnszero("$(vcli.VIFS_DIR) \"[$(vcli.ds)] $(vm_clone)/\"  > /dev/null","useshell");
+      "have_source_dir"  expression => returnszero("$(VIFS_DIR) \"[$(ds)] $(vm_source)/\" > /dev/null","useshell");
+      "have_clone_dir"   expression => returnszero("$(VIFS_DIR) \"[$(ds)] $(vm_clone)/\"  > /dev/null","useshell");
       "have_clone_vmx"   expression => fileexists("/tmp/$(vm_clone).vmx");
       "clone_registered" expression => regcmp(".*$(vm_clone).*","$(reg_status)");
       #
@@ -263,28 +264,28 @@ bundle agent vmware_clone(vm_source, vm_clone)
 
   commands:
     have_source_dir.!have_clone_dir::
-      "$(vcli.VIFS_MKDIR) \"[$(vcli.ds)] $(vm_clone)/\"";
-      "$(vcli.VMKFSTOOLS) \"[$(vcli.ds)] $(vm_source)/$(vm_source).vmdk\" \"[$(vcli.ds)] $(vm_clone)/$(vm_clone).vmdk\"";
-      "$(vcli.VIFS_COPY) \"[$(vcli.ds)] $(vm_source)/$(vm_source).nvram\" \"[$(vcli.ds)] $(vm_clone)/$(vm_clone).nvram\"";
+      "$(VIFS_MKDIR) \"[$(ds)] $(vm_clone)/\"";
+      "$(VMKFSTOOLS) \"[$(ds)] $(vm_source)/$(vm_source).vmdk\" \"[$(ds)] $(vm_clone)/$(vm_clone).vmdk\"";
+      "$(VIFS_COPY) \"[$(ds)] $(vm_source)/$(vm_source).nvram\" \"[$(ds)] $(vm_clone)/$(vm_clone).nvram\"";
 
     !have_clone_vmx.!have_clone_dir::
-      "$(vcli.VIFS_GET) \"[$(vcli.ds)] $(vm_source)/$(vm_source).vmx\" /tmp/$(vm_clone).vmx";
+      "$(VIFS_GET) \"[$(ds)] $(vm_source)/$(vm_source).vmx\" /tmp/$(vm_clone).vmx";
 
     then_upload::
-      "$(vcli.VIFS_PUT) /tmp/$(vm_clone).vmx \"[$(vcli.ds)] $(vm_clone)/$(vm_clone).vmx\""
+      "$(VIFS_PUT) /tmp/$(vm_clone).vmx \"[$(ds)] $(vm_clone)/$(vm_clone).vmx\""
       classes => default.if_repaired("register_vm");
 
     register_vm.!clone_registered::
-      "$(vcli.VMCMD_REG) $(vcli.path)/$(vm_clone)/$(vm_clone).vmx"
+      "$(VMCMD_REG) $(path)/$(vm_clone)/$(vm_clone).vmx"
       classes => default.if_repaired("clean_up");
 
   reports:
     verbose::
       "###### cloning VM $(vm_source) into VM $(vm_clone) ######";
     verbose.have_source_dir::
-      "The source directory \"[$(vcli.ds)] $(vm_source)/\" exists";
+      "The source directory \"[$(ds)] $(vm_source)/\" exists";
     verbose.have_clone_dir::
-      "The clone target directory \"[$(vcli.ds)] $(vm_clone)/\" exists.  Remove it with \"$(vcli.VIFS_DELETE) \"[$(vcli.ds)] $(vm_clone)\" -f\"";
+      "The clone target directory \"[$(ds)] $(vm_clone)/\" exists.  Remove it with \"$(VIFS_DELETE) \"[$(ds)] $(vm_clone)\" -f\"";
 }
 
 #####
@@ -305,13 +306,13 @@ bundle edit_line reconfigurevmx(s,c)
 
 # -----------------------------------------------------------------------------
 
-bundle agent vmware_start(vm_name)
+bundle agent vmware_start(vm_name, VMCMD_LIST, VMCMD_PREFIX)
 {
   vars:
     vm_valid::
-      "reg_status" string => execresult("$(vcli.VMCMD_LIST)","useshell"),
+      "reg_status" string => execresult("$(VMCMD_LIST)","useshell"),
       policy => "free";
-      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
+      "vm_status"  string => execresult("$(VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
       policy => "free";
 
       #
@@ -328,7 +329,7 @@ bundle agent vmware_start(vm_name)
       #
   commands:
     vm_valid.vm_registered.(vm_is_off|vm_is_suspended)::
-      "$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx start";
+      "$(VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx start";
 
   reports:
     verbose::
@@ -348,15 +349,15 @@ bundle agent vmware_start(vm_name)
 
 # -----------------------------------------------------------------------------
 
-bundle agent vmware_stop(vm_name)
+bundle agent vmware_stop(vm_name, VMCMD_LIST_OURS, VMCMD_STOP, VMCMD_PREFIX)
 {
   vars:
     any::
       "parameters" slist => getindices("$(inputs)");
 
-      "reg_status" string => execresult("$(vcli.VMCMD_LIST_OURS)","useshell"),
+      "reg_status" string => execresult("$(VMCMD_LIST_OURS)","useshell"),
       policy => "free";
-      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
+      "vm_status"  string => execresult("$(VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
       policy => "free";
 
       #
@@ -370,7 +371,7 @@ bundle agent vmware_stop(vm_name)
 
   commands:
     vm_registered.vm_is_on::
-      "$(vcli.VMCMD_STOP)";
+      "$(VMCMD_STOP)";
 
   reports:
     verbose::
@@ -383,15 +384,15 @@ bundle agent vmware_stop(vm_name)
 
 # -----------------------------------------------------------------------------
 
-bundle agent vmware_delete(vm_name)
+bundle agent vmware_delete(vm_name, VIFS_DELETE, VMCMD_LIST, VMCMD_STOP, VMCMD_UNREG, VMCMD_PREFIX, ds)
 {
   vars:
     any::
       "canon_prefix" string => canonify("$(vm_name)");
 
-      "reg_status" string => execresult("$(vcli.VMCMD_LIST)","useshell"),
+      "reg_status" string => execresult("$(VMCMD_LIST)","useshell"),
       policy => "free";
-      "vm_status"  string => execresult("$(vcli.VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
+      "vm_status"  string => execresult("$(VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
       policy => "free";
 
       #
@@ -405,14 +406,14 @@ bundle agent vmware_delete(vm_name)
 
   commands:
     vm_registered::
-      "$(vcli.VMCMD_STOP)"
+      "$(VMCMD_STOP)"
       classes => default.if_ok("$(canon_prefix)_stopped");
 
-      "$(vcli.VMCMD_UNREG)"
+      "$(VMCMD_UNREG)"
       classes => default.if_ok("$(canon_prefix)_unregistered"),
       ifvarclass => "$(canon_prefix)_stopped";
 
-      "$(vcli.VIFS_DELETE) \"[$(vcli.ds)] $(vm_name)\" -f"
+      "$(VIFS_DELETE) \"[$(ds)] $(vm_name)\" -f"
       classes => default.if_ok("$(canon_prefix)_deleted"),
       ifvarclass => "$(canon_prefix)_unregistered";
 
