@@ -6,6 +6,7 @@
         "origin":"https://github.com/cfengine/core.git",
         "branch": "master",
         "vcs": "/usr/bin/git",
+        "nowipe": true,
         "runas": { "bycontext": { "darwin": "tzz", "!darwin": "root" } }
     }
 }

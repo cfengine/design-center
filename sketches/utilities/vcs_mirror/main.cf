@@ -3,32 +3,34 @@ body file control
   namespace => "cfdc_vcs_mirror";
 }
 
-bundle agent vcs_mirror(prefix, bundle_home, vcs, path, origin, branch, runas, umask)
+bundle agent vcs_mirror(prefix, class_prefix, vcs, path, origin, branch, runas, umask)
 {
   meta:
       # __PREFIX__ will be supplied by cf-sketch
-      "vars[prefix][type]"         string => "NON_EMPTY_STRING";
-      "vars[prefix][default]"      string => "__PREFIX__";
+      "vars[prefix][type]"           string => "NON_EMPTY_STRING";
+      "vars[prefix][default]"        string => "__PREFIX__";
 
-      # __BUNDLE_HOME__ will be supplied by cf-sketch
-      "vars[bundle_home][type]"    string => "NON_EMPTY_STRING";
-      "vars[bundle_home][default]" string => "__BUNDLE_HOME__";
+      "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
+      "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
 
-      "vars[vcs][type]"            string => "PATH";
+      "vars[nowipe][type]"           string => "CONTEXT";
+      "vars[nowipe][default]"        string => "!any";
 
-      "vars[path][type]"           string => "PATH";
+      "vars[vcs][type]"              string => "PATH";
 
-      "vars[origin][type]"         string => "HTTP_URL|PATH";
+      "vars[path][type]"             string => "PATH";
 
-      "vars[branch][type]"         string => "NON_EMPTY_STRING";
-      "vars[branch][default]"      string => "master";
+      "vars[origin][type]"           string => "HTTP_URL|PATH";
+
+      "vars[branch][type]"           string => "NON_EMPTY_STRING";
+      "vars[branch][default]"        string => "master";
 
       # this is not called "user"  so it won't be confused with the remote user
-      "vars[runas][type]"          string => "NON_EMPTY_STRING";
-      "vars[runas][default]"       string => getenv("USER", 128);
+      "vars[runas][type]"            string => "NON_EMPTY_STRING";
+      "vars[runas][default]"         string => getenv("USER", 128);
 
-      "vars[umask][type]"          string => "OCTAL";
-      "vars[umask][default]"       string => "022";
+      "vars[umask][type]"            string => "OCTAL";
+      "vars[umask][default]"         string => "022";
 
       # # This is a boolean (e.g. 0 or 1, 'yes' or 'no') stored in a string.
       # "vars[testboolean][type]"    string => "BOOLEAN";
@@ -60,7 +62,14 @@ bundle agent vcs_mirror(prefix, bundle_home, vcs, path, origin, branch, runas, u
         "$(vcs) pull -q -s recursive -Xtheirs origin $(branch)",
         # Reset the working tree to the latest updates
         "$(vcs) reset -q --hard HEAD",
-      };
+      },
+      ifvarclass => "!$(prefix)nowipe";
+
+      "git_update_command" slist =>
+      {
+        "$(vcs) pull origin $(branch)",
+      },
+      ifvarclass => "$(prefix)nowipe";
 
       "git_mirror_command" slist =>
       {
@@ -93,8 +102,16 @@ bundle agent vcs_mirror(prefix, bundle_home, vcs, path, origin, branch, runas, u
       {
         "$(vcs) cleanup",
         "$(vcs) up",
+      },
+      ifvarclass => "$(prefix)nowipe";
+
+      "svn_update_command" slist =>
+      {
+        "$(vcs) cleanup",
+        "$(vcs) up",
         "$(vcs) revert",
-      };
+      },
+      ifvarclass => "!$(prefix)nowipe";
 
       "svn_mirror_command" slist =>
       {
