@@ -12,6 +12,7 @@ vars:
                   frequently";
 
     "dmidecode[system-manufacturer]" 
+      handle => "cfdc_hardware_info_vars_dmidecode_system_manufacturer",
       string => execresult("$(dmidecode_bin) -s system-manufacturer","noshell"),
       action => if_elapsed("$(hardware_info_refresh_interval)");
 
@@ -40,14 +41,14 @@ vars:
 classes:
   linux::
     "$(manufacturers)_hardware"
-      expression => regcmp("manufacturer[$(manufacturers)]", "$(dmidecode[system-manufacturer])"),
+      expression => regcmp("$(manufacturer[$(manufacturers)])", "$(dmidecode[system-manufacturer])"),
       action => if_elapsed("$(hardware_info_refresh_interval)"),
       comment => "Raise class for each hardware manufacturer detected";
       # example: dell_hardware
       # example: hp_hardware
 
     "$(manufacturers)_hardware_$(products)"
-      expression => regcmp("product[$(manufacturers)][$(products)]", "$(dmidecode[system-product-name])"),
+      expression => regcmp("$(product[$(manufacturers)][$(products)])", "$(dmidecode[system-product-name])"),
       action => if_elapsed("$(hardware_info_refresh_interval)"),
       comment => "Raise class for each hardware manufacturers product class detected";
       # example: dell_hardware_server
