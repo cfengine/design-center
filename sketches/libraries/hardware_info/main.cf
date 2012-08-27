@@ -1,0 +1,55 @@
+bundle common cfdc_hardware_info
+{
+vars:
+  linux::
+    "dmidecode_bin" string => "/usr/sbin/dmidecode";
+
+    "hardware_info_refresh_interval"
+      string => "1440",
+      comment => "Probably the underlying hardware information does not change
+                  frequently, and there is no need constantly check. Turn this
+                  knob if you have a reason to refresh hardware information more
+                  frequently";
+
+    "dmidecode[system-manufacturer]" 
+      string => execresult("$(dmidecode_bin) -s system-manufacturer","noshell"),
+      action => if_elapsed("$(hardware_info_refresh_interval)");
+
+    "dmidecode[system-product-name]"
+      string => execresult("$(dmidecode_bin) -s system-product-name","noshell"),
+      action => if_elapsed("$(hardware_info_refresh_interval)");
+
+    ######################################
+    #  Manufacturer Regular Expressions  #
+    ######################################
+    "manufacturer[dell]" string => "^Dell.*";
+    "manufacturer[hp]"   string => "^HP.*";
+
+    "manufacturers" slist => getindices("manufacturer");
+
+    #######################################
+    #  Product Class Regular Expressions  #
+    #######################################
+    "product[dell][server]" string => "^PowerEdge.*";
+    "product[hp][server]"   string => "^ProLiant.*";
+
+    # It would be cool to be able to automatically figure out the different
+    # product classes, but getting nth index of array isn't supported.
+    "products" slist => { "server" };
+
+classes:
+  linux::
+    "$(manufacturers)_hardware"
+      expression => regcmp("manufacturer[$(manufacturers)]", "$(dmidecode[system-manufacturer])"),
+      action => if_elapsed("$(hardware_info_refresh_interval)");
+      comment => "Raise class for each hardware manufacturer detected";
+      # example: dell_hardware
+      # example: hp_hardware
+
+    "$(manufacturers)_hardware_$(products)"
+      expression => regcmp("product[$(manufacturers)][$(products)]", "$(dmidecode[system-product-name])"),
+      action => if_elapsed("$(hardware_info_refresh_interval)");
+      comment => "Raise class for each hardware manufacturers product class detected";
+      # example: dell_hardware_server
+      # example: hp_hardware_server
+}

@@ -1,0 +1,22 @@
+{ 
+
+    "manifest":
+    {
+        "main.cf": { "desc": "Main library", "version": "1.0" },
+        "README.md": { "documentation": true },
+        "sketch.json": {"comment": "metadata"}
+    },
+
+    "metadata":
+    {
+        "name": "Hardware::Info",
+        "version": 1.0,
+        "license": "LGPL",
+        "portfolio": [ "cfdc" ],
+        "authors": [ "Nick Anderson <nick@cmdln.org>", "Trondham via cfengineers.org" ],
+        "depends": { "cfengine": { "version": "3.2.1" } }
+    },
+
+    "entry_point": null,
+    "interface": [ "main.cf" ]
+}
