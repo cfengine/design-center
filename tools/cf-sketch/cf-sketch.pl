@@ -2321,7 +2321,15 @@ EOHIPPUS
    {
     if ($var->{type} eq 'CONTEXT')
     {
-     my $as_cfengine_context = $bycontext{$context} ? 'any' : "!any";
+     my $as_cfengine_context = $bycontext{$context};
+     if (is_json_boolean($bycontext{$context}))
+     {
+      $as_cfengine_context = $bycontext{$context} ? 'any' : "!any";
+     }
+     elsif (ref $as_cfengine_context ne '')
+     {
+      color_die "Unexpected value for CONTEXT $name: " . $coder->encode($as_cfengine_context);
+     }
 
      $contexts .= "     ${context}::\n" if $current_context ne $context;
      $current_context = $context;
