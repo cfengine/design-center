@@ -1,0 +1,26 @@
+body common control {
+
+    bundlesequence => { "main" };
+
+    inputs => { 
+                "../../libraries/copbl/cfengine_stdlib.cf",
+                "../../applications/hp_snmp_agents/main.cf",
+                "./main.cf",
+              };
+}
+
+bundle agent main {
+# NOTE: This polciy is an example, it wont well unless you have both hp_snmp_agents sketch and actual HP hardware
+vars:
+  "hp_snmp_agents_pkg_install" string => "true";
+
+methods:
+
+  hp_hardware_server::
+    "HP SNMP Agents"
+      usebundle => hp_snmp_agents("main.hp_snmp_agents_"),
+      comment => "This is used to monitor the hardware health via snmp,
+                  it's only useful on HP hardware";
+
+}
+

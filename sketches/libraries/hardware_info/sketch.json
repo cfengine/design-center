@@ -4,6 +4,7 @@
     {
         "main.cf": { "desc": "Main library", "version": "1.0" },
         "README.md": { "documentation": true },
+        "example.cf": {"comment": "Example Policy"},
         "sketch.json": {"comment": "metadata"}
     },
 
