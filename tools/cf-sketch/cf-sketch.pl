@@ -1478,7 +1478,7 @@ sub load_sketch
  if (!scalar @messages) # there are no errors, so go on...
  {
   my $name = $json->{metadata}->{name};
-  $json->{dir} = $options{fullpath} ? $dir : File::Spec->abs2rel( $dir, $topdir );
+  $json->{dir} = $options{fullpath} || !is_resource_local($dir) ? $dir : File::Spec->abs2rel( $dir, $topdir );
   $json->{fulldir} = $dir;
   $json->{file} = $name;
 
