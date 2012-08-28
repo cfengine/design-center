@@ -10,7 +10,7 @@
 
     "metadata":
     {
-        "name": "Hardware::Info",
+        "name": "Library::Hardware::Info",
         "version": 1.0,
         "license": "LGPL",
         "portfolio": [ "cfdc" ],
