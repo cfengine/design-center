@@ -26,7 +26,9 @@ vars:
 #  "hpsnmpconfig_opt[sli]"                  string => "";
 #  "hpsnmpconfig_debug"                     string => "true|on|yes";
 #  "hpsnmpconfig_autoconfig"                string => "";
-#  "hpsnmpconfig_snmpdconf"                  string => "/etc/snmp/snmpd.conf";
+#  "hpsnmpconfig_snmpdconf"                 string => "/etc/snmp/snmpd.conf";
+#  "hpsnmpconfig_pkg_refresh_interval"      string => "1440";
+#  "hpsnmpconfig_pkg_install"               string => "yes|true|on";
 
 methods:
   "HP SNMP Agents"

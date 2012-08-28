@@ -4,14 +4,15 @@
 Nick Anderson <nick@cmdln.org>
 
 ## Description
-HP provides snmp agent extensions for monitoring underlying hardware.
-The RPMs provided have a "cute" little interactive postinstall process which
-will configure snmpd for use with the custom hp snmp agents. This sketch ignors
-the post install script (it will just sit there until CFEngine kills off the old
-process, which isn't ideal but I am unsure how to bypass that at this time. The
-sketch provides the same configuration options for snmpd. You can choose to use
-this configuration or do the configuration elsewhere and just let the sketch
-install the agents and monitor their status once you have configured snmpd.
+HP provides snmp agent extensions for monitoring underlying hardware.  The RPMs
+provided have a "cute" little interactive postinstall process which will
+configure snmpd for use with the custom hp snmp agents. This sketch will kill
+off any occurances of hpsnmpconfig during a later activation. I have not seen
+any problems with this work-around, and I don't know of a better way at the
+moment.  The sketch provides the same configuration options for snmpd. You can
+choose to use this configuration or do the configuration elsewhere and just let
+the sketch install the agents and monitor their status once you have configured
+snmpd.
 
 ## Requirements
 The user is expected to make the following hp-snmp-agent packages available for
@@ -45,11 +46,13 @@ Repository::Yum::Maintain for managing a custom repository.
     #  "hpsnmpconfig_opt[sli]"                  string => "";
     #  "hpsnmpconfig_debug"                     string => "true|on|yes";
     #  "hpsnmpconfig_autoconfig"                string => "";
-    #  "hpsnmpconfig_snmpdconf"                  string => "/etc/snmp/snmpd.conf";
+    #  "hpsnmpconfig_snmpdconf"                 string => "/etc/snmp/snmpd.conf";
+    #  "hpsnmpconfig_pkg_refresh_interval"      string => "1440";
+    #  "hpsnmpconfig_pkg_install"               string => "yes|true|on";
 
     methods:
       "HP SNMP Agents"
         usebundle => hp_snmp_agents("main.hpsnmpagents_"),
         comment => "Install and configure hp snmp agents";
-}
+    }
 
