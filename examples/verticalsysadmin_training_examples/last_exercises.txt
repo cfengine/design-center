@@ -1,0 +1,9 @@
+1. Set a variable, and then display its value in a report.
+
+2. Report the current time using:
+
+     a) output from /bin/date
+
+     b) built-in special variable $(sys.date)
+
+

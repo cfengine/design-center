@@ -70,6 +70,7 @@ bundle agent vcs_mirror(prefix)
       handle => "update_vars_git_config_template";
 
   classes:
+      "_debug_vcs_mirror" expression => regcmp("(?i)yes|true|on", "$($(prefix)debug)");
       # test if the last component of the "vcs" path arg matches a known VCS
       # TODO: use_git and known_vcs are global, so you can't mix VCSs in one run!!!
       "use_git" expression => strcmp(lastnode("$($(prefix)vcs)","/"), "git");
@@ -122,7 +123,7 @@ bundle agent vcs_mirror(prefix)
       comment    => "Clone a VCS repository in $($(prefix)path), user override to $($(prefix)runas)";
 
   reports:
-    cfengine::
+    _debug_vcs_mirror::
       "VCS is $($(prefix)vcs), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path)."
       ifvarclass => "$(canon_prefix)runas_current_user";
 
@@ -136,7 +137,7 @@ bundle agent vcs_mirror(prefix)
     !known_vcs::
       "Sorry, the requested VCS $($(prefix)vcs) is not handled yet.";
 
-    known_vcs::
+    _debug_vcs_mirror.known_vcs::
       "$($(prefix)vcs) is known.  We will look for the config file $(vcs_configfile)";
 
       "VCS config file $(vcs_configfile) exists"
@@ -185,6 +186,10 @@ bundle agent meta_vcs_mirror
       # this changes the umask from the default 077
       "optional_argument[umask]" string => "string";
       "default[umask]"           string => "077";
+
+      # This turns on debug support
+      "optional_argument[debug]" string => "string";
+      "default[debug]" string => "false";
 
       # this can't be determined from within the bundle due to:
       # https://cfengine.com/bugtracker/view.php?id=718

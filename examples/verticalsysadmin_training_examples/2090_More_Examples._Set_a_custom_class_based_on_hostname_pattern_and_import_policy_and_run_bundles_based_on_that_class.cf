@@ -1,3 +1,5 @@
+# change hostname to "mil-mail01" before running this example
+
 body common control
 {
 

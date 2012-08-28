@@ -1,0 +1,26 @@
+# Cfengine code snippet by Valentin Hoebel (valentin@xenuser.org)
+# Created on May 7th 2012; Restart pre-defined services if necessary
+# You are free to use and share this code snippet in any way you want.
+
+
+body common control {
+	version => "1.0";
+	bundlesequence => { "check_services" };
+}
+
+bundle agent check_services {
+	vars:
+		"services" slist => { "apache2", "mysql" };
+		"init_scripts_path" string => "/etc/init.d"; 
+
+	processes:
+		"$(services)"
+			comment => "Check if the processes for '$(services)'",
+			restart_class => "restart_$(services)";
+
+	commands:
+		"${init_scripts_path}/${services} start"
+			comment => "Restarting the service",
+			ifvarclass => "restart_${services}";
+
+}

@@ -39,7 +39,7 @@ bundle common global_vars {
 
 body common control {
 
-    inputs         => { "@{global_vars.bseq}" };
-    bundlesequence => { "@{global_vars.bseq}" };
+    inputs         => { @{global_vars.bseq} };
+    bundlesequence => { @{global_vars.bseq} };
 
 }

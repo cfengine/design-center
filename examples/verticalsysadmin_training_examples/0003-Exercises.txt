@@ -1,9 +1,10 @@
                        EXERCISES
 
+
 (If you finish early, please study the Reference
 Manual, chapters 1 - 4.)
 
-1. Write a policy to signal TERM and then KILL to anyklasdjf
+1. Write a policy to signal TERM and then KILL to any
 process matching "trn".
 
   Testing it:
@@ -18,12 +19,14 @@ into an slist variable.  Write a promise to signal
 'term' and then 'kill' to any process in that
 list.
  
-==================================================
+
 
 EXERCISE 2
 
 Write a policy to create /tmp/myname.txt and put
 your name in it.
+
+
 
 
 EXERCISE 3
@@ -76,6 +79,10 @@ above class.
 
 Run it when the file exists, and when it does not, and
 observe how CFEngine dynamically configures your server.
+
+
+
+
 
 
 
@@ -201,28 +208,6 @@ a policy that logs to /var/log/repairs.txt if a promise
 is repaired by CFEngine.
 
 ===============================================================
-EXERCISE 9. Methods
-
-Practice using "methods" type promises:
-
-Write a policy that has two bundles.
-
-The first bundle does something visible (such as a
-reports type promise that says "bundle1") AND calls
-the second bundle.
-
-The second bundle reports "bundle2".
-
-
-EXERCISE 10. Methods (continued).
-
-Now parameterize the 2nd bundle -- have the
-first bundle feed it an argument, and have the
-2nd bundle display that argument.
-
-
-
-============================================================
 
 EXERCISE 11 - Precision File Editing
 
@@ -236,36 +221,6 @@ in order, as a single block, using
 if [ -x /bin/custom ]
   then /bin/custom
 fi
-
-EXERCISE 12 - Methods
-
-Let's say we want our /etc/profile file to contain a line
-ORGANIZATION=MyOrg to set the ORGANIZATION environment
-variable when users log in.
-
-Write a bundle "etc_profile_contains" that would take an argument
-and ensures /etc/profile contains text string that specified
-in the argument.
-
-Demonstrate its use by calling it from another bundle:
-
-    bundle agent example { 
-       methods:  
-         "any"
-             usebundle => etc_profile_contains("ORGANIZATION=MyOrg");
-    }
-
-
-EXERCISE 13 - Methods (re-usable bundles)
-
-Make a bundle called file_contains that takes two arguments:
-a filename, and a text string.  The bundle should ensure that
-the file specified in the first argument contains the text string
-specified in the second argument.  Example:
-
-    methods:
-     "any" usebundle => file_contains("/etc/profile", "ORGANIZATION=MyOrg");
-     "any" usebundle => file_contains("/etc/motd", "Unauth. use forbidden");
 
 
 
@@ -293,20 +248,21 @@ Given a file /tmp/file.txt:
 apples
 oranges
 
-and given that we want the file to converge to:
+Use the COPBL to comment out "oranges" and append "bananas", resulting in:
 
 apples
 # oranges
 bananas
 
-use the COPBL to ensure the file contains the line
-bananas (bundle edit_line insert_lines) and to ensure
-the line matching "oranges" is commented out (bundle edit_line comment_lines_matching).
+Hint: use "bundle edit_line insert_lines" and "bundle edit_line comment_lines_matching".
+
 
 EXERCISE 17 - COPBL - contain a command
 
+Run the command /usr/bin/id as user "nobody".
 
-Run the command /usr/bin/id as user classroom.
+Hint: use "body contain setuid".
+
 
 
 EXERCISE 18 - COPBL - linking promises together

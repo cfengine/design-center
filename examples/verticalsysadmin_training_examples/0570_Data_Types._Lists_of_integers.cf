@@ -9,6 +9,7 @@ bundle agent example {
 
 
   reports:
+
     linux::
 
       "Iterating over the values in @(my_list):  $(my_list)";

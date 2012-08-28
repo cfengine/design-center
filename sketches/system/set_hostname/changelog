@@ -1,3 +1,5 @@
+set_hostname 1.03
+  * fix error preventing install via cf-sketch
 set_hostname 1.01
   * cf-sketchify - prefix with cfdc, add metadata, add test etc ...
   * switch to cfsketch prefix style API

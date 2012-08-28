@@ -11,5 +11,6 @@ bundle agent example {
 
            depends_on => { "another_promise" } ,
 
-              create  => "true";
+        create  => "true",
+        comment => "Demonstrate CFEngine knowledge management features.";
                      }

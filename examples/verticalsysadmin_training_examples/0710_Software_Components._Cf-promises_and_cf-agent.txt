@@ -9,7 +9,7 @@ The most important to learn first are:
 
   You can use it to syntax check your policies:
 
-    cf-promises -f your_policy.cf
+    cf-promises -f ./your_policy.cf
 
 
 * cf-agent
@@ -20,4 +20,4 @@ system.  It's the part of cfengine that actually
 makes changes to the system. 
 
 
-   cf-agent -f your_policy.cf
+   cf-agent -f ./your_policy.cf

@@ -1,11 +1,10 @@
 {
-    "activated": true,
-    "install_tools": true,
-    "ifelapsed": "60",
+    "debug" : "off",
+    "refresh_interval" : "60",
+    "createrepo" : "/usr/bin/createrepo"
     "repos": 
     {
-        "/var/www/html/repo_mirror/updates": { "name": "updates", "perms": { "m": "755", "o": "root", "g": "root" }, },
-        "/var/www/html/repo_mirror/custom": { "name": "custom", "perms": { "m": "755", "o": "root", "g": "root" },  },
-        "/var/www/html/repo_mirror/updates1": { "name": "updates1", "perms": { "m": "755", "o": "root", "g": "root" },  }
+        "updates": { "path": "/var/www/html/yumrepos/updates", "perms": { "m": "755", "o": "root", "g": "root" }, },
+        "custom": { "path": "/var/www/html/yumrepos/custom", "perms": { "m": "755", "o": "root", "g": "root" },  },
     }
 }

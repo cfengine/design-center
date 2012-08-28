@@ -1,7 +1,7 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "./yumrepo.cf" };
+      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "./main.cf" };
 }
 
 bundle common cfsketch_g
@@ -10,16 +10,17 @@ bundle common cfsketch_g
       "yumrepo_maintain_test_install_tools" expression => "any";
 
 vars:
-       "yumrepo_maintain_test_ifelapsed" string => "60";
-       "yumrepo_maintain_test_repos[/var/www/html/repo_mirror/custom][name]" string => "custom";
-       "yumrepo_maintain_test_repos[/var/www/html/repo_mirror/custom][perms][g]" string => "root";
-       "yumrepo_maintain_test_repos[/var/www/html/repo_mirror/custom][perms][m]" string => "755";
-       "yumrepo_maintain_test_repos[/var/www/html/repo_mirror/custom][perms][o]" string => "root";
+       "yum_refresh_interval" string => "1";
+       "yum_debug" string => "off";
+       "yum_verbose" string => "true";
+       "yum_repo[custom][path]" string => "/tmp/yum_repos/custom";
+       "yum_repo[updates][path]" string => "/tmp/yum_repos/updates";
+
 }
 
 bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "test" usebundle => yumrepo_maintain("cfsketch_g.yumrepo_maintain_test_");
+      "test" usebundle => repo_yum_maintain("cfsketch_g.yum_");
 }

@@ -1,0 +1,3 @@
+Repository::Yum::Maintain 2.1
+  * Improve default permission settings
+  * Fix test/example policy

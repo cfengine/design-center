@@ -1,0 +1,49 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+use Data::Dumper;
+
+my $lister       = shift @ARGV;
+my $state        = shift @ARGV;
+my $count        = shift @ARGV;
+my $child_prefix = shift @ARGV;
+
+my @i;
+open F, "$lister|" or die "Could not open instance lister $lister: $!";
+while (<F>)
+{
+ push @i, $1 if m/($child_prefix\d+)/;
+}
+
+$count = 0 if 'start' ne $state;
+
+my $current = scalar @i;
+
+print "=goal_count=$count\n";
+print "=current_count=$current\n";
+if ($current)
+{
+ print '@our_instances= { ', join(",", map { "\"$_\"" } @i), " }\n"
+}
+else
+{
+ print '@our_instances= { "cf_null" }', "\n";
+}
+
+if ($current == $count)
+{
+ print "+nothing_needed";
+}
+elsif ($current > $count)
+{
+ print "+decom_needed\n";
+ print "=decom_instance=$i[-1]\n";
+}
+else
+{
+ print "+bootstrap_needed\n";
+ print "=bootstrap_instance=$child_prefix", $current+1, "\n";
+}
+
+exit;

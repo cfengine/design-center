@@ -11,6 +11,6 @@ bundle agent example {
 
                delete => tidy;
 
-      # shell equivalent:  rm -r /tmp/testfile
+      # shell equivalent:  rm -r /tmp/testfile*
 
                      }

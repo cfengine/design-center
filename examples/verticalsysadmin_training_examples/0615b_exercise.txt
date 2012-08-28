@@ -1,0 +1,14 @@
+EXERCISE
+
+Make an array, student_grades.
+
+   Keys  Values
+
+   Joe   A
+   Mary  A
+   Bob   B
+   Linda B
+
+Report the contents
+of the array.
+
