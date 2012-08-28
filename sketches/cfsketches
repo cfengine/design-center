@@ -1,3 +1,4 @@
+applications/hp_snmp_agents Applications::Snmp::hp_snmp_agents
 cloud/cloud_services Cloud::Services
 databases/db_install Database::Install
 libraries/copbl CFEngine::stdlib
