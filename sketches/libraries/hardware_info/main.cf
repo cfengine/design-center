@@ -23,16 +23,18 @@ vars:
     ######################################
     #  Manufacturer Regular Expressions  #
     ######################################
-    "manufacturer[dell]" string => "^Dell.*";
-    "manufacturer[hp]"   string => "^HP.*";
+    "manufacturer[dell]"   string => "^Dell.*";
+    "manufacturer[hp]"     string => "^HP.*";
+    "manufacturer[lenovo]" string => "^LENOVO.*";
 
     "manufacturers" slist => getindices("manufacturer");
 
     #######################################
     #  Product Class Regular Expressions  #
     #######################################
-    "product[dell][server]" string => "^PowerEdge.*";
-    "product[hp][server]"   string => "^ProLiant.*";
+    "product[dell][server]"   string => "^PowerEdge.*";
+    "product[hp][server]"     string=> "^ProLiant.*";
+    "product[lenovo][laptop]" string => "^4270CTO.*";
 
     # It would be cool to be able to automatically figure out the different
     # product classes, but getting nth index of array isn't supported.
