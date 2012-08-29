@@ -41,7 +41,7 @@ bundle agent aptrepos(class_prefix, repos, apt_file, apt_dir)
       ifvarclass => "!$(class_prefix)wipe";
 
   methods:
-      "write" usebundle => write
+      "write" usebundle => aptrepos_write
       (
         $(class_prefix),
         "$(apt_dir)/$($(repos)[$(sources)][file])",
@@ -62,7 +62,7 @@ bundle agent aptrepos(class_prefix, repos, apt_file, apt_dir)
 
 }
 
-bundle edit_line prepend_if_no_line(string)
+bundle edit_line aptrepos_prepend_if_no_line(string)
 {
   insert_lines:
       "$(string)"
@@ -70,14 +70,14 @@ bundle edit_line prepend_if_no_line(string)
       comment => "Prepend a line to the file if it doesn't already exist";
 }
 
-body edit_defaults empty_if_ask(bool)
+body edit_defaults aptrepos_empty_if_ask(bool)
 {
       edit_backup => "false";
       max_file_size => "300000";
       empty_file_before_editing => "$(bool)";
 }
 
-bundle agent write(class_prefix, maybe_file, joined_type, url, distrib, version, section, wipe_bool, notice)
+bundle agent aptrepos_write(class_prefix, maybe_file, joined_type, url, distrib, version, section, wipe_bool, notice)
 {
   vars:
       "types" slist => splitstring("$(joined_type)", " ", "1000");
@@ -95,8 +95,8 @@ bundle agent write(class_prefix, maybe_file, joined_type, url, distrib, version,
       "$(file)"
       create        => "true",
       handle        => "prepfile_$(file)",
-      edit_defaults => empty_if_ask($(wipe_bool)),
-      edit_line     => prepend_if_no_line($(notice)),
+      edit_defaults => aptrepos_empty_if_ask($(wipe_bool)),
+      edit_line     => aptrepos_prepend_if_no_line($(notice)),
       comment       => "Create $(file) and note that the file is managed by CFEngine";
 
       # note that we need to edit the file AFTER it's been possibly
