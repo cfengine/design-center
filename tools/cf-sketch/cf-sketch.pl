@@ -2610,7 +2610,7 @@ sub validate
   {
    $good ||= $value eq $1;
   }
-  elsif ($vtype =~ m/ARRAY\(\n+(.*)\n+\s*\)/s)
+  elsif ($vtype =~ m/ARRAY\(\n*(.*)\n*\s*\)/s)
   {
    if (ref $value ne 'HASH')
    {
