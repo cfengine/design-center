@@ -2,11 +2,11 @@
 
 bundle agent example
 {
-reports:
-  cfengine::
+  reports:
+    cfengine::
 
-     "$(this.promise_linenumber)";
-     "$(this.promise_linenumber)";
+      "$(this.promise_linenumber)";
+      "$(this.promise_linenumber)";
 }
 
 # Here is what you'd see running cf-agent: 

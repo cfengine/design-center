@@ -1,6 +1,6 @@
 body common control
 {
-inputs         => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+       inputs         => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 }
 
 
@@ -10,10 +10,10 @@ inputs         => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 bundle agent example {
 
 
-files:
+  files:
 
-   "/etc/motd"
+      "/etc/motd"
 
-	copy_from    => local_cp("/tmpl/motd.tmpl");
+         copy_from    => local_cp("/tmpl/motd.tmpl");
 
-}
+                     }

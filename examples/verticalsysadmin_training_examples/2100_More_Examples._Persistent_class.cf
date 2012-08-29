@@ -1,27 +1,29 @@
+# FIXME - this example needs work
+
 bundle agent example
 
 {
 
+  commands:
+
+    ok_but_check_later::
+
+      "/bin/echo YELLOW ALERT (condition \"ok_but_check_later\")";
+
+
+  commands:
+
+    cannot_repair_promise_DANGER_DANGER::
+
+      "/bin/echo SHIELDS UP, RED ALERT (condition \"cannot_repair_promise_DANGER_DANGER\"";
+
+
 commands:
-
- ok_but_check_later::
-
-  "/bin/echo YELLOW ALERT (condition \"ok_but_check_later\")";
-
-
-commands:
-
-  cannot_repair_promise_DANGER_DANGER::
-
-  "/bin/echo SHIELDS UP, RED ALERT (condition \"cannot_repair_promise_DANGER_DANGER\"";
-
-
-# commands:
-# 
-#  "/bin/true"  # or try /bin/false for alternate outcome
-# 
-#     classes => set_persistent_class_based_on_promise_repair_outcome("ok_but_check_later","cannot_repair_promise_DANGER_DANGER"); 
-# 
+       
+        "/bin/true"  
+       
+           classes => set_persistent_class_based_on_promise_repair_outcome("ok_but_check_later","cannot_repair_promise_DANGER_DANGER"); 
+       
 
 }
 
@@ -36,9 +38,9 @@ body classes set_persistent_class_based_on_promise_repair_outcome(if,else)
 # "cannot_repair_promise_DANGER_DANGER".
 
 {
-promise_repaired => { "$(if)" };
-repair_failed => { "$(else)" };
-persist_time => "10"; # in minutes
+     promise_repaired => { "$(if)" };
+        repair_failed => { "$(else)" };
+         persist_time => "10"; # in minutes
 }
 ##########################################################################
 

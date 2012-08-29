@@ -1,5 +1,5 @@
 bundle agent global_policy {
-reports:
-  linux::
-   "This is global policy.  This promise came out of global_policy.cf";
-}
+  reports:
+    linux::
+      "This is global policy.  This promise came out of global_policy.cf";
+                           }

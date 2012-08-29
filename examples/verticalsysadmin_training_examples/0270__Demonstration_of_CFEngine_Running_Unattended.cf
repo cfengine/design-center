@@ -5,21 +5,21 @@
 # 1. Copy this file to /var/cfengine/inputs/promises.cf, and
 # 2. Copy this file to /var/cfengine/inputs/failsafe.cf.
 # 3. Restart CFEngine service to reload the policy.
-# 4. Make sure you don't have a /tmp/nologin file:  rm /tmp/nologin
-# 5. Watch CFEngine create /tmp/nologin within 5 minutes.
+# 4. Make sure you don't have a /etc/nologin file:  rm /etc/nologin
+# 5. Watch CFEngine create /etc/nologin within 5 minutes.
 
 
 body common control {
-    bundlesequence =>  {"example",};
-}
+       bundlesequence =>  {"example",};
+                    }
 
 bundle agent example {
 
   files:
 
-    "/tmp/nologin"
+    "/etc/nologin"
 
-        create => "true",
-        comment => "Mortal users can't log in while system is in maintenance mode";
+              create => "true",
+              comment => "Mortal users can't log in while system is in maintenance mode";
 
-}
+                     }

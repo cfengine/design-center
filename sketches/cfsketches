@@ -4,13 +4,16 @@ libraries/copbl CFEngine::stdlib
 libraries/yale Yale::stdlib
 networking/ssh Security::SSH
 package_management/aptrepo Repository::apt::Maintain
+package_management/yumclient Repository::Yum::Client
 package_management/yumrepo Repository::Yum::Maintain
 programming_languages/cpanm Packages::CPAN::cpanm
 security/limits Security::security_limits
+security/tcpwrappers Security::tcpwrappers
 system/config_resolver System::config_resolver
 system/cron System::cron
 system/etc_hosts System::etc_hosts
 system/set_hostname System::set_hostname
+system/sysctl System::sysctl
 system/tzconfig System::tzconfig
 utilities/halt_agent_if_file_exists Utilities::halt_agent_if_file_exists
 utilities/nagios_plugin_agent Monitoring::nagios_plugin_agent

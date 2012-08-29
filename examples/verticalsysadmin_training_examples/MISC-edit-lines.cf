@@ -1,15 +1,15 @@
 body common control
 {
-	inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 }
 
 
 bundle agent example {
 
-files:   
+  files:   
 
-    "/etc/motd"
+      "/etc/motd"
 
-           create => "true",
-           edit_line => insert_lines("unauthorized use verbotten");
-}
+               create => "true",
+            edit_line => insert_lines("unauthorized use verbotten");
+                     }

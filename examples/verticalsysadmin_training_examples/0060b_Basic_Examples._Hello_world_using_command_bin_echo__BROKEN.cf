@@ -4,8 +4,8 @@
 bundle agent example
 {
 
-commands:
+  commands:
 
-   "echo Hello world!";
+      "echo Hello world!";
 
 }

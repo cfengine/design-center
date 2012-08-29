@@ -1,22 +1,6 @@
 # -*- mode: cfengine3; indent-tabs-mode: nil; cfengine-parameters-indent: (promise pname 2); -*-
 # vi:tabstop=2:expandtab
 
-
-bundle agent meta_cfdc_halt_agent_if_file_exists{
-  vars:
-    "argument[trigger_file]"   string => "string";
-    "argument[abort_class]"    string => "string";
-
-    # Control behavior when trigger file exists, set these to true or yes
-    "optional_argument[alert]" 
-        string => "string",
-        comment => "Must be true or yes to activate";
-
-    "optional_argument[abort]" 
-        string => "string",
-        comment => "Must be true or yes to activate";
-}
-
 bundle agent cfdc_halt_agent_if_file_exists(prefix){
   vars:
     "canon_prefix"  string => canonify("$(prefix)");
@@ -47,6 +31,21 @@ bundle agent cfdc_halt_agent_if_file_exists(prefix){
       "abort_class: $(abort_class)";
       "alert: $(alert)";
       "abort: $(abort)";
+}
+
+bundle agent meta_cfdc_halt_agent_if_file_exists{
+  vars:
+    "argument[trigger_file]"   string => "string";
+    "argument[abort_class]"    string => "string";
+
+    # Control behavior when trigger file exists, set these to true or yes
+    "optional_argument[alert]" 
+        string => "string",
+        comment => "Must be true or yes to activate";
+
+    "optional_argument[abort]" 
+        string => "string",
+        comment => "Must be true or yes to activate";
 }
 
 #

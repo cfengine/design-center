@@ -7,17 +7,17 @@
 bundle agent example
 {
 
-vars:
+  vars:
 
-   "variable_0"
-        string  => "String contents...";  # a scalar value
+      "variable_0"
+              string  => "String contents...";  # a scalar value
 
-   "variable_1"
-        string  => "$(variable_0)";       # a scalar variable
+      "variable_1"
+              string  => "$(variable_0)";       # a scalar variable
 
 
-commands:
+  commands:
 
-   "/bin/echo variable_0 contains: $(variable_0).  variable_1 contains: $(variable_1)";
+      "/bin/echo variable_0 contains: $(variable_0).  variable_1 contains: $(variable_1)";
 
 }

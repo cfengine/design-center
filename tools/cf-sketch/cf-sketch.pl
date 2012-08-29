@@ -358,9 +358,7 @@ foreach my $word (@callable)
 exit if grep { $options{$_} } @nonterminal;
 
 push @callable, 'list', 'save-config';
-print RED "Sorry, $0 doesn't know what you want to do.  You have to specify one of " .
- join(" or ", map { "--$_" } @callable) . ".\n";
-exit 1;
+color_die "Sorry, I don't know what you want to do.  You have to specify a valid verb. Run $0 --help to see the complete list.\n";
 
 sub configure_self
 {
@@ -483,7 +481,7 @@ sub list
     $contents->{$sketch}->{manifest}->{$_}->{documentation}
    } sort keys %{$contents->{$sketch}->{manifest}};
 
-   print GREEN, "$sketch", RESET, " $contents->{$sketch}->{dir}\n";
+   print GREEN, "$sketch", RESET, " $contents->{$sketch}->{fulldir}\n";
   }
  }
 }
@@ -516,6 +514,17 @@ sub list_internal
  }
 
  return @ret;
+}
+
+# Produce the appropriate input directory depending on --fullpath
+sub inputfile {
+  my @paths=@_;
+  if ($options{fullpath}) {
+      return File::Spec->catfile(@paths);
+  }
+  else {
+      return File::Spec->catfile('sketches', @paths);
+  }
 }
 
 # generate the actual cfengine config that will run all the cf-sketch bundles
@@ -1009,20 +1018,23 @@ sub remove
    my @matches = grep
    {
     # accept sketch name or directory
-    ($_ eq $sketch) || ($contents->{$_}->{dir} eq $sketch)
+    ($_ eq $sketch) || ($contents->{$_}->{dir} eq $sketch) || ($contents->{$_}->{fulldir} eq $sketch)
    } keys %$contents;
 
-   next unless scalar @matches;
+   unless (scalar @matches) {
+     color_warn "I did not find an installed sketch that matches '$sketch' - not removing it.\n";
+     next;
+   }
    $sketch = shift @matches;
    my $data = $contents->{$sketch};
-   if (maybe_remove_dir($data->{dir}))
+   if (maybe_remove_dir($data->{fulldir}))
    {
     deactivate($sketch);       # deactivate all the activations of the sketch
-    print GREEN "Successfully removed $sketch from $data->{dir}\n" unless $quiet;
+    print GREEN "Successfully removed $sketch from $data->{fulldir}\n" unless $quiet;
    }
    else
    {
-    print RED "Could not remove $sketch from $data->{dir}\n" unless $quiet;
+    print RED "Could not remove $sketch from $data->{fulldir}\n" unless $quiet;
    }
   }
  }
@@ -1451,7 +1463,7 @@ sub load_sketch
  if (!scalar @messages) # there are no errors, so go on...
  {
   my $name = $json->{metadata}->{name};
-  $json->{dir} = $options{fullpath} ? $dir : File::Spec->abs2rel( $dir, $topdir );
+  $json->{dir} = $options{fullpath} || !is_resource_local($dir) ? $dir : File::Spec->abs2rel( $dir, $topdir );
   $json->{fulldir} = $dir;
   $json->{file} = $name;
   if ($noparse ||

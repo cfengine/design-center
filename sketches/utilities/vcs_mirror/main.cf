@@ -165,14 +165,14 @@ bundle agent vcs_mirror(prefix, class_prefix, vcs, path, origin, branch, runas, 
     !known_vcs::
       "Sorry, the requested VCS '$(vcs)' is not handled yet.";
 
-    verbose.variables_ok::
+    debug.variables_ok::
       "Cool, we're using $(vcs_type).  We will look for the config file $($(vcs_type)_configfile)";
       "VCS is $(vcs), to be executed as user $(runas) / umask $(umask), origin $(origin), branch $(branch), target path $(path).";
 
-    verbose.variables_ok.vcsconfig_exists::
+    debug.variables_ok.vcsconfig_exists::
       "VCS config file $($(vcs_type)_configfile) exists";
 
-    verbose.variables_ok.!vcsconfig_exists::
+    debug.variables_ok.!vcsconfig_exists::
       "VCS config file $($(vcs_type)_configfile) does not exist";
 
     verbose::

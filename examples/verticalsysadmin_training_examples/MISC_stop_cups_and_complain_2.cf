@@ -1,24 +1,24 @@
 body common control {
 
-    inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 
-}
+                    }
 
 
 bundle agent example {
 
-    processes:
+  processes:
 
-        "cupsd" 
+      "cupsd" 
 
-            process_stop => "/etc/init.d/cups stop",
-            comment => "We don't want print services on our Web servers.",
-            classes => if_else("complain_loudly_about_cups","complain");
+         process_stop => "/etc/init.d/cups stop",
+              comment => "We don't want print services on our Web servers.",
+              classes => if_else("complain_loudly_about_cups","complain");
 
-    commands:
-       complain_loudly_about_cups::
-              "/bin/echo send up a flare about CUPS";
-    commands:
-       complain::
-              "/bin/echo Waaah!";
-}
+  commands:
+    complain_loudly_about_cups::
+      "/bin/echo send up a flare about CUPS";
+  commands:
+    complain::
+      "/bin/echo Waaah!";
+                     }

@@ -1,0 +1,17 @@
+bundle agent example {
+
+  files:
+
+      "/etc/nologin" 
+
+              create  => "true",
+              comment => "Prevent non-root users from logging in, for maintenance";
+
+                     }
+
+# Example output
+#  >> Using command line specified bundlesequence
+#  -> Created file /etc/nologin, mode = 600
+
+
+# CFEngine uses the -> prefix to indicate changes it has made to the system

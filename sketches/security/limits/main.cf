@@ -1,7 +1,8 @@
 bundle agent security_limits(prefix)
 {
 # limits_[domain][type][item] string => "value";
-# limits_mgmt_policy
+# limits_mgmt_policy ensure_present, ensure_absent
+# limits_empty_first
 # limits_debug
 vars:
   "items" slist => { "core",
@@ -26,55 +27,67 @@ vars:
                    };
 
   "types" slist => { "soft", "hard" };
+  "mgmt_policies" slist => { "ensure_present", "ensure_absent" };
 
   "domains" slist => getindices("$(prefix)domains");
 
-    debug_security_limits::
-      "filename" string => "$($(prefix)debug_filename)";
+    test_security_limits::
+      "filename"
+        string => "$($(prefix)test_filename)",
+        policy => "free";
 
-    !debug_security_limits::
-      "filename" string => "/etc/security/limits.conf";
+    !test_security_limits::
+      "filename"
+        string => "/etc/security/limits.conf",
+        policy => "free";
 
 classes:
-  "completely_managed" expression => regcmp("(?i)only|complete|full|whole", "$($(prefix)mgmt_policy)");
-  "partially_managed" expression => regcmp("(?i)present|exists|partial|defined|selective|exist", "$($(prefix)mgmt_policy)");
-  "removal_managed" expression => regcmp("(?i)absent|delete|remove|removal|clear", "$($(prefix)mgmt_policy)");
+  "test_security_limits" expression => isvariable("$(prefix)test_filename");
+  "empty_first" expression => regcmp("(?i)yes|true", "$($(prefix)empty_first)");
+  "mgmt_policy_$(mgmt_policies)" expression => regcmp("(?i)$(mgmt_policies)", "$($(prefix)mgmt_policy)");
 
       # note that cf-sketch will set $($(prefix)contexts_text[CTXT] ON or OFF
       "debug_security_limits" expression => regcmp("(?i)yes|true|on", "$($(prefix)contexts_text[debug])");
 
-  # This effectively defaults to partially managed
-  "partially_managed" and => { "!completely_managed", "!removal_managed" };
+  # This effectively defaults to ensureing specific lines exist, no promise about other stray config
+  "mgmt_policy_ensure_present" and => { "!mgmt_policy_ensure_absent" };
 
 files:
     "$(filename)"
       create => "true",
-      handle => "security_limits_files_limits_conf_partially_managed",
+      handle => "security_limits_files_limits_conf_ensure_present",
       edit_line => security_limits_set_limits_selective("$(prefix)domains", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       perms => mog("644", "root", "root"),
       classes => if_repaired("security_limits_repaired"),
-      ifvarclass => "partially_managed";
+      ifvarclass => "!empty_first.mgmt_policy_ensure_present",
+      comment    => "Ensure the specified lines are present, we dont care about other lines";
 
     "$(filename)"
       create => "true",
-      handle => "security_limits_files_limits_conf_completely_managed",
+      handle => "security_limits_files_limits_conf_empty_first_ensure_present",
       edit_line => security_limits_set_limits_complete("$(prefix)domains", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       edit_defaults => empty,
       perms => mog("644", "root", "root"),
       classes => if_repaired("security_limits_repaired"),
-      ifvarclass => "completely_managed";
+      ifvarclass => "empty_first.mgmt_policy_ensure_present",
+      comment    => "Ensure only the specified lines exist.";
 
     "$(filename)"
       create => "true",
-      handle => "security_limits_files_limits_conf_removal_managed",
+      handle => "security_limits_files_limits_conf_ensure_absent",
       edit_line => security_limits_set_limits_removal("$(prefix)domains", @(security_limits.items), @(security_limits.types), @(security_limits.domains)),
       perms => mog("644", "root", "root"),
       classes => if_repaired("security_limits_repaired"),
-      ifvarclass => "removal_managed";
+      ifvarclass => "mgmt_policy_ensure_absent",
+      comment    => "Ensure the specified lines do not exist.";
 
 reports:
   debug_security_limits::
     "Security limits policy in debug mode";
+    "Empty First: Enabled",
+      ifvarclass => "empty_first";
+    "Mgmt Policy: $(mgmt_policies)",
+      ifvarclass => "mgmt_policy_$(mgmt_policies)";
 
   security_limits_repaired::
     "I repaired the $(filename) file";
@@ -86,11 +99,13 @@ bundle agent meta_security_limits
       #"argument[domains][domain][type][item]" string => "array";
       "argument[domains]" string => "array";
       "argument[debug]" string => "context";
-      "argument[debug_filename]" string => "string";
+      "argument[test_filename]" string => "string";
       "optional_argument[mgmt_policy]" string => "string";
+      "optional_argument[empty_first]" string => "string";
 
       # The default behavior is to only manage defined entries
-      "default[mgmt_policy]" string => "present";
+      "default[mgmt_policy]" string => "ensure_present";
+      "default[empty_first]" string => "false";
 }
 
 bundle edit_line security_limits_set_limits_removal(prefix, items, types, domains){

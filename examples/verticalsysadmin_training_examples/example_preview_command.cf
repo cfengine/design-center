@@ -3,16 +3,16 @@
 
 bundle agent example {
 
-commands:
+  commands:
 
-   "/bin/touch /tmp/test2"
+      "/bin/touch /tmp/test2"
 
-       contain => preview;
+              contain => preview;
 
-}
+                     }
 
 body contain preview {
 
-preview => "true";
+              preview => "true";
 
-}
+                     }

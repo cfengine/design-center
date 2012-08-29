@@ -1,0 +1,9 @@
+Example: Promise Type
+---------------------
+
+files:    # promise type
+
+    "/etc/nologin" 
+
+        create  => "true",
+        comment => "Prevent non-root users from logging in";

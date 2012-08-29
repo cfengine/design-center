@@ -1,16 +1,16 @@
 body common control {
 
-    inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
 
-}
+                    }
 
 
 bundle agent example {
 
-    files:
+  files:
 
-        "/etc/httpd/conf.d/welcome.conf"
+      "/etc/httpd/conf.d/welcome.conf"
 
-            comment => "Let's keep a low profile and not advertise what software we are running - remove the Welcome page that says we are running Apache on CentOS",
-            delete => tidy;
-}
+              comment => "Let's keep a low profile and not advertise what software we are running - remove the Welcome page that says we are running Apache on CentOS",
+               delete => tidy;
+                     }

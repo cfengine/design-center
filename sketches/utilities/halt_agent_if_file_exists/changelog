@@ -1,3 +1,5 @@
+halt_agent_if_file_exists 1.2
+  * Move meta_ bundle below main entry, cf-sketch complained during install
 halt_agent_if_file_exists 1.0
   * Add bundle to act as single interface between alert and abort bundles
   * Change public api to cf-sketch style prefix

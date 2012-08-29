@@ -1,25 +1,24 @@
 bundle agent example {
 
-files:
+  files:
 
-   "/tmp/testfile"
+      "/tmp/testfile"
 
-        create  => "true",
-        edit_line => proper_greetings;
-}
+              create  => "true",
+            edit_line => proper_greetings;
+                     }
 
 
 bundle edit_line  proper_greetings {
 
 
-delete_lines: 
+  delete_lines: 
 
-    ".*";
+      ".*";
 
-insert_lines: 
+  insert_lines: 
 
-    "Good morning, how are you today?";
+    "Good morning!";
 
-
-}
+                                   }
 

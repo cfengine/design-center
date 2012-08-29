@@ -6,13 +6,13 @@
 # Example of mapping it into the local context
 
 body common control {
-        bundlesequence => { runme(@(g.myusers)) };  # note lack of 
-                                                    # " symbols
-}
+       bundlesequence => { runme(@(g.myusers)) };  # note lack of 
+      # " symbols
+                    }
 
 bundle common g
 {
-vars: "myusers"  slist => { "joe", "mary", "ann" };
+      vars: "myusers"  slist => { "joe", "mary", "ann" };
 
 }
 
@@ -21,7 +21,7 @@ bundle agent runme(x)
 
 {
 
-reports:
-  linux::
-  "$(x)"; 
+  reports:
+    linux::
+      "$(x)"; 
 }

@@ -1,9 +1,3 @@
-bundle agent meta_cfdc_set_hostname{
-vars:
-    "argument[hostname]" string => "string";
-    "argument[domain]"   string => "string";
-}
-
 bundle agent cfdc_set_hostname(prefix) {
 # Expects desired shorthostname and domain name both as strings;
 # Usage:
@@ -47,4 +41,10 @@ bundle agent cfdc_set_hostname(prefix) {
                 comment => "Update the domainname on the running system so
                             we dont have to reboot for it";
 
+}
+
+bundle agent meta_cfdc_set_hostname{
+vars:
+    "argument[hostname]" string => "string";
+    "argument[domain]"   string => "string";
 }

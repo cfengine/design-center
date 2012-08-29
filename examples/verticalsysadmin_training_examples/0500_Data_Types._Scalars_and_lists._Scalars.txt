@@ -1,4 +1,4 @@
-Cfengine variables have two meta-types: scalars and lists.
+CFEngine variables have two meta-types: scalars and lists.
 
 Scalars
 

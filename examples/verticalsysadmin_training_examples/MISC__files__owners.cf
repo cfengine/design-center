@@ -1,19 +1,19 @@
 bundle agent example {
 
-files:
+  files:
 
-   "/tmp/testfile" 
+      "/tmp/testfile" 
 
-	comment => "/tmp/testfile must be mode 612 for application X to work; it must be owned by user aleksey and group cfengine", 
-	create  => "true",  
-	perms   => proper_owner("aleksey"); 
+              comment => "/tmp/testfile must be mode 612 for application X to work; it must be owned by user aleksey and group cfengine", 
+              create  => "true",  
+              perms   => proper_owner("aleksey"); 
 
-}
+                     }
 
 ############################################################
 
 body perms proper_owner(user)
 {
-owners => { "$(user)", "rob", "user2" };
+               owners => { "$(user)", "rob", "user2" };
 }
 

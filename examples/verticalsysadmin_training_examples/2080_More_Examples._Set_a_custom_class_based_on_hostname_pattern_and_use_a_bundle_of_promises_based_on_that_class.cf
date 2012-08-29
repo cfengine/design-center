@@ -4,26 +4,26 @@
 
 bundle common define_global_classes {
 
-  classes: "italy"   expression => classmatch("mil.*");
+      classes: "italy"   expression => classmatch("mil.*");
 
-  classes: "germany" expression => classmatch("berl.*");
+      classes: "germany" expression => classmatch("berl.*");
 
-}
+                                    }
 
 
 
 
 bundle agent example {
 
-vars:
-   "country"
-        slist => { "italy", "germany" };
+  vars:
+      "country"
+                slist => { "italy", "germany" };
 
-methods:
-     "any"
-        usebundle => "$(country)",
-        ifvarclass => "$(country)";
-}
+  methods:
+      "any"
+            usebundle => "$(country)",
+           ifvarclass => "$(country)";
+                     }
 
 
 bundle agent italy   { commands: "/bin/echo I love Milan";  }

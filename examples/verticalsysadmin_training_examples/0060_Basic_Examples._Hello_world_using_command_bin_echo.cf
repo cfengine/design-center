@@ -1,12 +1,9 @@
-# commands
-#    A promise to execute a command.
-
 bundle agent example
 {
 
-commands:
+  commands:
 
-   "/bin/echo"
-      args => "Hello world!";
+      "/bin/echo"
+                 args => "Hello world!";
 
 }

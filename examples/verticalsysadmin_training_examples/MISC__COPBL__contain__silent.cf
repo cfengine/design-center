@@ -1,13 +1,13 @@
 body common control {
-	inputs => {"cfengine_stdlib.cf"};
-}
+               inputs => {"cfengine_stdlib.cf"};
+                    }
 
 bundle agent example {
 
-commands:
+  commands:
 
-   "/bin/echo hello world"
+      "/bin/echo hello world"
 
-	contain => silent;
+              contain => silent;
 
-}
+                     }

@@ -180,12 +180,12 @@ bundle agent local_user_management_add_users_fileedit (users) {
                            a named group with a duplicate uid";
 
         "_noseed_defined_$(userlist)"
-            expression => isvariable("$(users)[$(userlist)[_noseed]"),
+            expression => isvariable("$(users)[$(userlist)][_noseed]"),
             comment    => "Set class if the noseed option is set so that we
                            know not to seed the users home directory";
 
         "_nocreate_home_$(userlist)"
-            expression => isvariable("$(users)[$(userlist)[_nocreate_home]"),
+            expression => isvariable("$(users)[$(userlist)][_nocreate_home]"),
             comment    => "Set class if we do not want the users home directory
                            created";
 
@@ -198,12 +198,12 @@ bundle agent local_user_management_add_users_fileedit (users) {
             expression => isvariable("shadowentry[$(userlist)]");
 
         "_enforce_$(userlist)"
-            expression => isvariable("$(users)[$(userlist)[_enforce]"),
+            expression => isvariable("$(users)[$(userlist)][_enforce]"),
             comment    => "Set class if we want to enforce the user settings";
 
 
         "_userdel_$(userlist)"
-            expression => isvariable("$(users)[$(userlist)[_userdel]"),
+            expression => isvariable("$(users)[$(userlist)][_userdel]"),
             comment    => "Set class if we want to remove the users passwd and shadow entries";
 
         "required_elements_defined_$(userlist)"

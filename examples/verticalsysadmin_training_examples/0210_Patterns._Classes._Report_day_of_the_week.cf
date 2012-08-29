@@ -7,5 +7,5 @@ bundle agent example {
     reports: Friday::    "Hello world! I love Fridays!";
     
     reports: Saturday::  "Hello world! I love weekends!";
-    reports: Sunday::     "Hello world! I love weekends!";
+    reports: Sunday::    "Hello world! I love weekends!";
 }

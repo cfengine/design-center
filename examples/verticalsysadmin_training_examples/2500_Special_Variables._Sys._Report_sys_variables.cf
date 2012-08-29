@@ -1,10 +1,10 @@
 bundle agent example {
 
-reports:
+  reports:
 
-  cfengine_3::
+    cfengine_3::
 
-"sys.arch: $(sys.arch)
+      "sys.arch: $(sys.arch)
 sys.cdate: $(sys.cdate)
 sys.cf_agent: $(sys.cf_agent)
 sys.cf_execd: $(sys.cf_execd)
@@ -53,7 +53,7 @@ sys.winsysdir: $(sys.winsysdir)
 sys.workdir: $(sys.workdir)
 ";
 
-}
+                     }
 
 
 # OUTPUT on my system, myhost.example.com
