@@ -1,29 +1,60 @@
+# generated with minor edits from params/repos.json
+
 body common control
 {
       bundlesequence => { "main" };
       inputs => {
-                "../../libraries/copbl/cfengine_stdlib.cf",
-                "./main.cf",
-              };
+                  "../../libraries/copbl/cfengine_stdlib.cf",
+                  "./main.cf",
+                };
+}
+
+bundle common cfsketch_g
+{
+  classes:
+    any::
+      "repotest_use_apt_file" expression => "!any";
+      "repotest_wipe" expression => "!any";
+
+  vars:
+      # string and slist variables
+    any::
+      "repotest_class_prefix" string => "repotest_";
+      "repotest_repos[contrib-debian-wheezy][distrib]" string => "debian";
+      "repotest_repos[contrib-debian-wheezy][file]" string => "contrib.list";
+      "repotest_repos[contrib-debian-wheezy][repo_url]" string => "ftp.fr.debian.org";
+      "repotest_repos[contrib-debian-wheezy][section]" string => "contrib";
+      "repotest_repos[contrib-debian-wheezy][type]" string => "deb";
+      "repotest_repos[contrib-debian-wheezy][version_distrib]" string => "wheezy";
+      "repotest_repos[main-debian-wheezy][distrib]" string => "debian";
+      "repotest_repos[main-debian-wheezy][file]" string => "main.list";
+      "repotest_repos[main-debian-wheezy][repo_url]" string => "http.us.debian.org";
+      "repotest_repos[main-debian-wheezy][section]" string => "main";
+      "repotest_repos[main-debian-wheezy][type]" string => "deb deb-src";
+      "repotest_repos[main-debian-wheezy][version_distrib]" string => "wheezy";
+      "repotest_repos[universe-ubuntu-precise][distrib]" string => "ubuntu";
+      "repotest_repos[universe-ubuntu-precise][file]" string => "universe.list";
+      "repotest_repos[universe-ubuntu-precise][repo_url]" string => "us.archive.ubuntu.com";
+      "repotest_repos[universe-ubuntu-precise][section]" string => "universe";
+      "repotest_repos[universe-ubuntu-precise][type]" string => "deb deb-src";
+      "repotest_repos[universe-ubuntu-precise][version_distrib]" string => "precise";
+    !test::
+      "repotest_apt_file" string => "/etc/apt/sources.list";
+    test::
+      "repotest_apt_file" string => "/tmp/sources.list";
+    !test::
+      "repotest_apt_dir" string => "/etc/apt/sources.list.d";
+    test::
+      "repotest_apt_dir" string => "/tmp";
+
 }
 
 bundle agent main
 {
-vars:
-       "Repo__apt_repos[contrib-debian-wheezy][distrib]"             string => "debian";
-       "Repo__apt_repos[contrib-debian-wheezy][file]"                string => "/tmp/contrib.list";
-       "Repo__apt_repos[contrib-debian-wheezy][repo_type][deb]"      string => "true";
-       "Repo__apt_repos[contrib-debian-wheezy][repo_type][deb-src]"  string => "false";
-       "Repo__apt_repos[contrib-debian-wheezy][repo_url]"            string => "ftp.fr.debian.org";
-       "Repo__apt_repos[contrib-debian-wheezy][section]"             string => "contrib";
-       "Repo__apt_repos[contrib-debian-wheezy][version_distrib]"     string => "wheezy";
-       "Repo__apt_defined_only"                                      string => "no";
-       "Repo__apt_multiple_sources_list_files"                       string => "yes";
-
-
-
-methods:
-      "Repository::apt::Maintain" usebundle => cfdc_configure_apt_sources_list("main.Repo__apt_");
-
+  methods:
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "runme" usebundle => aptrepos($(cfsketch_g.repotest_class_prefix),
+                                    "cfsketch_g.repotest_repos",
+                                    $(cfsketch_g.repotest_apt_file),
+                                    $(cfsketch_g.repotest_apt_dir));
 }
-

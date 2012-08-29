@@ -1,36 +1,40 @@
 {
-    "defined_only": "no",
-    "ifelapsed": "60",
-    "multiple_sources_list_files": "yes",
-    "repos": 
+    "Repository::apt::Maintain":
     {
-        "main-debian-wheezy":
-        { 
-            "section": "main",  
-            "file": "/etc/apt/sources.list.d/main.list",
-            "repo_url": "http.us.debian.org", 
-            "distrib": "debian", 
-            "version_distrib": "wheezy",  
-            "repo_type": { "deb-src": "true", "deb": "true", }
-        },
-        "contrib-debian-wheezy":
-        { 
-            "section": "contrib",  
-            "file": "/etc/apt/sources.list.d/contrib.list",
-            "repo_url": "ftp.fr.debian.org", 
-            "distrib": "debian", 
-            "version_distrib": "wheezy",  
-            "repo_type": { "deb-src": "false", "deb": "true", }
-        },
-        "universe-ubuntu-precise":
-        { 
-            "section": "universe",  
-            "file": "/etc/apt/sources.list.d/universe.list",
-            "repo_url": "us.archive.ubuntu.com", 
-            "distrib": "ubuntu", 
-            "version_distrib": "precise",  
-            "repo_type": { "deb-src": "true", "deb": "true", }
-        },
-    },
-    "include": [ "repos-base.json" ],
+        "defined_only": false,
+        "use_apt_dir": true,
+        "apt_dir": { "bycontext": { "test": "/tmp", "!test": "/etc/apt/sources.list.d" } },
+        "apt_file": { "bycontext": { "test": "/tmp/sources.list", "!test": "/etc/apt/sources.list" } },
+        "wipe": false,
+        "repos":
+        {
+            "main-debian-wheezy":
+            {
+                "section": "main",
+                "file": "main.list",
+                "repo_url": "http.us.debian.org",
+                "distrib": "debian",
+                "version_distrib": "wheezy",
+                "type": "deb deb-src"
+            },
+            "contrib-debian-wheezy":
+            {
+                "section": "contrib",
+                "file": "contrib.list",
+                "repo_url": "ftp.fr.debian.org",
+                "distrib": "debian",
+                "version_distrib": "wheezy",
+                "type": "deb"
+            },
+            "universe-ubuntu-precise":
+            {
+                "section": "universe",
+                "file": "universe.list",
+                "repo_url": "us.archive.ubuntu.com",
+                "distrib": "ubuntu",
+                "version_distrib": "precise",
+                "type": "deb deb-src"
+            }
+        }
+    }
 }
