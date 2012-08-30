@@ -2395,7 +2395,7 @@ EOHIPPUS
   foreach my $pass (@passed)
   {
    my $var = $pass->[0];
-   if ($var->{type} =~ m/^ARRAY\(/)
+   if ($var->{type} =~ m/^(KV)?ARRAY\(/)
    {
     push @print_passed, "\"cfsketch_g._${a}_$act->{prefix}_$var->{name}\"";
    }
