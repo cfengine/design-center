@@ -71,6 +71,13 @@ bundle agent repo_yum_client_config(class_prefix, repos_dir, repos, repo)
       "owner" string => "root",
       ifvarclass => "!test";
 
+    debug::
+      "repos[baseline][baseurl]" string => "file:///var/www/html/yum_repos/myrepo";
+      "repos[baseline][enabled]" string => "1";
+      "repos[baseline][gpgcheck]" string => "no";
+      "repos[baseline][name]" string => "myrepo";
+      "index" slist => getindices("repos[baseline]");
+
   classes:
       "_debug_repo_yum_client" or => { "debug" };
 
@@ -78,19 +85,15 @@ bundle agent repo_yum_client_config(class_prefix, repos_dir, repos, repo)
                                              "$($(repos)[$(repo)][baseurl])");
 
   files:
-      "$(repos_dir)/$(repo).repo"
+    debug::
+      "$(repos_dir)/debug-baseline.repo"
       create => "true",
-      handle => "create_file_$(repo)",
       perms => default.mog("644", $(owner), $(owner)),
-      edit_line => default.append_if_no_line("[#EOF#]"),
-      comment => "This is to work around an old bug that caused
-region selection to fail because EOF was not
-detected as end of region",
-      ifvarclass => and(
-                         "baseurl_defined",
-                         not("$(class_prefix)ensure_absent")
-                       );
+      edit_defaults => default.no_backup,
+      handle => "$(bundle)_files_$(repo)_ensure_present",
+      edit_line => cfdc_yumclient.yumclient_manage_variable_values_ini("repo_yum_client_config.repos", "baseline");
 
+    any::
       "$(repos_dir)/$(repo).repo"
       create => "true",
       perms => default.mog("644", $(owner), $(owner)),
