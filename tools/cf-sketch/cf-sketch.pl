@@ -879,7 +879,7 @@ sub activate
        $aparams->{$var->{name}} = $aparams->{$var->{name}} ? 'any' : '!any';
       }
 
-      if (validate($aparams->{$var->{name}}, split('\|', $var->{type})))
+      if (validate($aparams->{$var->{name}}, $var->{type}))
       {
        print "Satisfied by aparams: '$var->{name}'\n" if $verbose;
       }
@@ -2599,14 +2599,14 @@ sub validate
  {
   my $vt = $validation_types[0];
   return undef unless $vt;
-  return undef unless $vt =~ m/^LIST\(([^)]+)\)$/;
+  return undef unless $vt =~ m/^LIST\((.+)\)$/s;
 
   my $subtype = $1;
   my $ret = 1;
   foreach my $subval (@$value)
   {
    my $ret2 = validate($subval, $subtype);
-   color_warn("Array validation failed in bycontext, VALUE '$subval'")
+   color_warn("LIST validation failed in bycontext, VALUE '$subval'")
     unless $ret2;
 
    $ret &&= $ret2;
@@ -2618,11 +2618,7 @@ sub validate
  my $good = 0;
  foreach my $vtype (@validation_types)
  {
-  if ($vtype =~ m/^=(.+)/)
-  {
-   $good ||= $value eq $1;
-  }
-  elsif ($vtype =~ m/ARRAY\(\n*(.*)\n*\s*\)/s)
+  if ($vtype =~ m/^(KV)?ARRAY\(\n*(.*)\n*\s*\)/s)
   {
    if (ref $value ne 'HASH')
    {
@@ -2630,29 +2626,68 @@ sub validate
     return undef;
    }
 
-   my %contents = ($1 =~ m/^(\S+)\s*:\s*(.+?)$/mg);
+   my $kv = $1;
+   my %contents = ($2 =~ m/^([^:\s]+)\s*:\s*(.+?)$/mg);
 
    $good = 1;
-   foreach my $key (sort keys %contents)
+
+   my $kv_key;
+
+   if ($kv)
    {
-    # print Dumper [$key, $value->{$key}, $contents{$key}, validate($value->{$key}, $contents{$key})];
-    my $subtype = $contents{$key};
-    my $required = 0;
-    if ($subtype =~ m/(.+):\s*required/)
+    $kv_key = '_key';
+    foreach my $k (sort keys %$value)
     {
-     $subtype = $1;
-     $required = 1;
+     my $goodk = validate($k, $contents{$kv_key});
+     color_warn("Sorry, but KVARRAY validation failed for K '$k' with type '$contents{$kv_key}'.  We'll fail the validation.")
+      unless $goodk;
+     $good &&= $goodk;
     }
-    elsif ($subtype =~ m/(.+):\s*default=(.*)/)
+   }
+
+   foreach my $process_key ($kv ? (sort keys %$value) : (1))
+   {
+    my $process_value = $kv ? $value->{$process_key} : $value;
+
+    if (ref $process_value ne 'HASH')   # this check is necessary only when $kv
     {
-     $subtype = $1;
-     $value->{$key} = $2 unless defined $value->{$key};
+     color_warn("Sorry, but KVARRAY validation was requested on a non-array entry value '$process_value'.  We'll fail the validation.");
+     return undef;
     }
 
-    if ($required || defined $value->{$key})
+    foreach my $key (sort keys %contents)
     {
-     my $good2 = validate($value->{$key}, $subtype);
-     $good &&= $good2;
+     next if (defined $kv_key && $key eq $kv_key);
+
+     my $check_value = $process_value->{$key};
+
+     my $subtype = $contents{$key};
+     my $required = 0;
+
+     if ($subtype =~ m/(.+):\s*required/)
+     {
+      $subtype = $1;
+      $required = 1;
+     }
+     elsif ($subtype =~ m/(.+):\s*default=(.*)/)
+     {
+      $subtype = $1;
+      $process_value->{$key} = $2
+        unless exists $process_value->{$key};
+     }
+
+     if ($required || defined $check_value)
+     {
+      my $good2 = validate($check_value, $subtype);
+
+      unless ($good2)
+      {
+       color_warn("ARRAY validation: value '$check_value', subtype '$subtype', subkey '$process_key'.  We'll fail the validation.")
+        if $verbose;
+      }
+
+      $good &&= $good2;
+     }
     }
    }
   }
@@ -2680,7 +2715,7 @@ sub validate
               $3 >= 0 && $3 <= 255 &&
               $4 >= 0 && $4 <= 255);
   }
- elsif ($vtype eq 'BOOLEAN')
+  elsif ($vtype eq 'BOOLEAN')
   {
    $good ||= $value =~ m/^(true|false|on|off|1|0)$/i;
   }
@@ -2699,6 +2734,19 @@ sub validate
   elsif ($vtype eq 'HTTP_URL')
   {
    $good ||= $value =~ m,^(git|https?)://.+,; # this is not a good URL regex
+  }
+  elsif ($vtype =~  m/\|/)
+  {
+   $good = 0;
+   foreach my $subtype (split('\|',$vtype))
+   {
+    my $good2 = validate($value, $subtype);
+    $good ||= $good2;
+   }
+  }
+  elsif ($vtype =~ m/^=(.+)/)
+  {
+   $good ||= $value eq $1;
   }
   else
   {
