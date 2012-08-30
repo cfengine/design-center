@@ -14,7 +14,7 @@ bundle agent aptrepos(class_prefix, repos, apt_file, apt_dir)
 _key:NON_EMPTY_STRING
 section:NON_EMPTY_STRING:required
 file:NON_EMPTY_STRING:required
-repo_url:HTTP_URL|FTP_URL:required
+repo_url:HTTP_URL|FTP_URL|FILE_URL:required
 distrib:NON_EMPTY_STRING:required
 version_distrib:NON_EMPTY_STRING:required
 type:STRING:required
