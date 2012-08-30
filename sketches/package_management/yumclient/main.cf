@@ -96,7 +96,11 @@ detected as end of region",
       perms => default.mog("644", $(owner), $(owner)),
       edit_defaults => default.no_backup,
       handle => "$(bundle)_files_$(repo)_ensure_present",
-      edit_line => $(editor)($(repos), $(repo));
+      edit_line => $(editor)($(repos), $(repo)),
+      ifvarclass => and(
+                         "baseurl_defined",
+                         not("$(class_prefix)ensure_absent")
+                       );
 
       "$(repos_dir)/$(repo).repo"
       delete => default.tidy,
