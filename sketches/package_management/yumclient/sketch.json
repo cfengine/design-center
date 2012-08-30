@@ -1,24 +1,23 @@
 {
-
     "manifest":
     {
         "main.cf":     { "desc": "main file", "version": "1.0" },
         "README.md":   { "documentation": true },
         "example.cf":     { "comment": "Example policy" },
         "changelog":     { "comment": "changelog" },
-        "sketch.json": { "comment": "metadata" }
+        "params/demo.json": { "comment": "demo JSON parameters" }
     },
 
     "metadata":
     {
         "name": "Repository::Yum::Client",
-        "version": 1.00,
+        "version": 1.10,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>"],
         "tested": [ "redhat_5", "centos_5" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },
-                     "cfengine": { "version": "3.2.1" },
+                     "cfengine": { "version": "3.4.0" },
                      "os": [ "linux" ]
                    }
     },

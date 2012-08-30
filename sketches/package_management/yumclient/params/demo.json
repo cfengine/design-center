@@ -1,0 +1,23 @@
+{
+    "Repository::Yum::Client":
+    {
+        "ensure_absent": false,
+        "empty_section": true,
+        "repos_dir": { "bycontext": { "test": "/tmp", "!test": "/etc/yum.repos.d" } },
+        "repos":
+        {
+            "baseline":
+            {
+                "name": "myrepo",
+                "baseurl": "file:///var/www/html/yum_repos/myrepo",
+                "enabled": "1",
+                "gpgcheck": "no"
+            },
+            "repo1":
+            {
+                "name": "repo1",
+                "baseurl": "file:///var/www/html/yum_repos/myrepo",
+            }
+        }
+    }
+}
