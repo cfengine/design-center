@@ -2737,7 +2737,7 @@ sub validate
   }
   elsif ($vtype eq 'FILE_URL')
   {
-   $good ||= $value =~ m,^(file)://.+,; # this is not a good URL regex
+   $good ||= $value =~ m,^(file):///.+,; # this is not a good URL regex
   }
   elsif ($vtype eq 'FTP_URL')
   {
