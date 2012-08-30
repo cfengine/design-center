@@ -10,7 +10,15 @@ bundle agent aptrepos(class_prefix, repos, apt_file, apt_dir)
       "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
       "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
 
-      "vars[repos][type]"            string => "ARRAY()";
+      "vars[repos][type]"            string => "KVARRAY(
+_key:NON_EMPTY_STRING
+section:NON_EMPTY_STRING:required
+file:NON_EMPTY_STRING:required
+repo_url:HTTP_URL|FTP_URL:required
+distrib:NON_EMPTY_STRING:required
+version_distrib:NON_EMPTY_STRING:required
+type:STRING:required
+)";
 
       "vars[wipe][type]"             string => "CONTEXT",
       comment => "If true, existing lines will be removed";
@@ -81,7 +89,7 @@ bundle agent aptrepos_write(class_prefix, maybe_file, joined_type, url, distrib,
 {
   vars:
       "types" slist => splitstring("$(joined_type)", " ", "1000");
-      "e" slist => maplist("$(this) http://$(url)/$(distrib)/ $(version) $(section)", "types");
+      "e" slist => maplist("$(this) $(url)/$(distrib)/ $(version) $(section)", "types");
 
       "file"
       string  => $(apt_file),

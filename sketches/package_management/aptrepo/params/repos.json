@@ -12,7 +12,7 @@
             {
                 "section": "main",
                 "file": "main.list",
-                "repo_url": "http.us.debian.org",
+                "repo_url": "http://http.us.debian.org",
                 "distrib": "debian",
                 "version_distrib": "wheezy",
                 "type": "deb deb-src"
@@ -21,7 +21,7 @@
             {
                 "section": "contrib",
                 "file": "contrib.list",
-                "repo_url": "ftp.fr.debian.org",
+                "repo_url": "http://ftp.fr.debian.org",
                 "distrib": "debian",
                 "version_distrib": "wheezy",
                 "type": "deb"
@@ -30,7 +30,7 @@
             {
                 "section": "universe",
                 "file": "universe.list",
-                "repo_url": "us.archive.ubuntu.com",
+                "repo_url": "http://us.archive.ubuntu.com",
                 "distrib": "ubuntu",
                 "version_distrib": "precise",
                 "type": "deb deb-src"
