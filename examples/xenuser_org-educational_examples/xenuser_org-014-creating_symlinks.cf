@@ -1,0 +1,16 @@
+# Cfengine code snippet by Valentin Hoebel (valentin@xenuser.org)
+# Created on September 1st 2012; Example for creating a new symlink
+# You are free to use and share this code snippet in any way you want.
+
+body common control {
+        version         => "1.0";
+        inputs          => { "cfengine_stdlib.cf" };
+        bundlesequence  => { "create_symlink" };
+}
+
+bundle agent create_symlink {
+  files:
+	"/etc/im_a_symlink"
+	  comment	=> "Creating the symlink /etc/im_a_symlink",
+	  link_from	=> ln_s("/etc/aliases");
+}
