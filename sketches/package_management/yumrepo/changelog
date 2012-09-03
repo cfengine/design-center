@@ -1,3 +1,6 @@
+Repository::Yum::Maintain 2.2
+  * Convert to new cf-sketch format
+
 Repository::Yum::Maintain 2.1
   * Improve default permission settings
   * Fix test/example policy

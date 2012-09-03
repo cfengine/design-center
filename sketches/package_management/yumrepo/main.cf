@@ -1,183 +1,145 @@
-bundle agent repo_yum_maintain(prefix) {
-# Creates repomd (xml-rpm-metadata) repository 
-# Updates metadata if any packages are added changed or removed
-# prefix_debug yes|true|on
-# prefix_creatrepo /usr/bin/createrepo
-# prefix_refresh_interval 60
-# prefix_repo[name][path] string => "/var/www/html/yum_repos/custom";
-# prefix_repo[name][perms][m] string => "644"
-# prefix_repo[name][perms][o] string => "root"
-# prefix_repo[name][perms][g] string => "root"
-# prefix_verbose yes|true|on
-
-vars:
-  "bundle" string => "repo_yum_maintain";
-  
-
-  "repos" slist => getindices("$(prefix)repo");
-
-  ###############################
-  #  Handle Default Parameters  #
-  ###############################
-  "$(repos)_mode"
-    string => "644",
-    policy => "free",
-    ifvarclass => not(canonify("$(repos)_mode_from_parameter")),
-    comment => "Default mode if not set by parameter";
-
-  "$(repos)_mode"
-    string => "$($(prefix)repo[$(repos)][perms][m])",
-    policy => "free",
-    ifvarclass => canonify("$(repos)_mode_from_parameter"),
-    comment => "Set mode from parameter";
-
-  "$(repos)_owner"
-    string => "root",
-    policy => "free",
-    ifvarclass => not(canonify("$(repos)_owner_from_parameter")),
-    comment => "Default owner if not set by parameter";
-
-  "$(repos)_owner"
-    string => "$($(prefix)repo[$(repos)][perms][o])",
-    policy => "free",
-    ifvarclass => canonify("$(repos)_owner_from_parameter"),
-    comment => "Set owner from parameter";
-
-  "$(repos)_group"
-    string => "root",
-    policy => "free",
-    ifvarclass => not(canonify("$(repos)_group_from_parameter")),
-    comment => "Default group if not set by parameter";
-
-  "$(repos)_group"
-    string => "$($(prefix)repo[$(repos)][perms][g])",
-    policy => "free",
-    ifvarclass => canonify("$(repos)_group_from_parameter"),
-    comment => "Set group ownership from parameter";
-
-
-  !refresh_interval_from_parameter::
-    "refresh_interval"
-     string => "60",
-     policy => "free";
-
-  refresh_interval_from_parameter::
-    "refresh_interval"
-      string => "$($(prefix)refresh_interval)",
-      policy => "free";
-
-   
-  !createrepo_from_parameter::
-    "createrepo"
-      string => "/usr/bin/createrepo",
-      policy => "free";
-
-  createrepo_from_parameter::
-    "createrepo"
-      string => "$($(prefix)createrepo)",
-      policy => "free";
-
-  redhat|centos::
-    "deps" slist => { "createrepo" };
-
-files:
-  "$($(prefix)repo[$(repos)][path])/."
-    create => "true",
-    perms  => mog("$($(repos)_mode)", "$($(repos)_owner)", "$($(repos)_group)"),
-    depth_search => recurse("inf"),
-    action => if_elapsed("$(refresh_interval)"),
-    comment => "Ensure repository root directory exists with proper permissions";
-
-  # Only check 1 level deep otherwise you will be detecting the change in the metadata itself as well.
-  # That in turn will lead to an execution of creatrepo --update each time.
-  "$($(prefix)repo[$(repos)][path])"
-    changes      => detect_content,
-    depth_search => recurse("1"),
-    classes      => if_repaired("repo_yum_maintain_$(repos)_needs_metadata_update"),
-    action       => if_elapsed("$(refresh_interval)"),
-    comment      => "If any changes are detected we need to signal to update the metadata";
-
-classes:
-  # Determine if we should override defaults because proper parameters exist
-  "createrepo_from_parameter" expression => isvariable("$(prefix)createrepo");
-  "refresh_interval_from_parameter" expression => isvariable("$(prefix)refresh_interval");
-
-  "$(repos)_mode_from_parameter" expression => isvariable("$(prefix)repo[$(repos)][perms][m]");
-  "$(repos)_owner_from_parameter" expression => isvariable("$(prefix)repo[$(repos)][perms][o]");
-  "$(repos)_group_from_parameter" expression => isvariable("$(prefix)repo[$(repos)][perms][g]");
-
-  "_verbose_$(bundle)" expression => regcmp("(?i)yes|true|on", "$($(prefix)verbose)");
-  "_debug_$(bundle)" expression => regcmp("(?i)yes|true|on", "$($(prefix)debug)");
-
-  "repo_yum_maintain_$(repos)_exists"    
-    expression => fileexists("$($(prefix)repo[$(repos)][path])/repodata/repomd.xml"),
-    comment    => "Check if a repo exists yet";
-
-packages:
-  redhat|centos::
-    "$(deps)"
-      package_policy => "add",
-      package_method => yum_rpm,
-      action         => if_elapsed("$(refresh_interval)"),
-      comment        => "createrepo is needed to create and update
-                         the metadata for a yum repository";
-commands:
-  "$(createrepo)"
-    args       => "$($(prefix)repo[$(repos)][path])",
-    action     => if_elapsed("$(refresh_interval)"),
-    contain    => repo_yum_maintain_umask("022"),
-    classes    => if_repaired("repo_yum_maintain_$(repos)_initalized"),
-    ifvarclass => not(canonify("repo_yum_maintain_$(repos)_exists")),
-    comment    => "Create repository if one does not exist";
-
-  # We only want to update the repo once per run. The metadata has not 
-  # yet been updated. Update it and signal that it has been updated if 
-  # the command returns zero.
-  "$(createrepo)"
-    args => "--update $($(prefix)repo[$(repos)][path])",
-    action     => if_elapsed("$(refresh_interval)"),
-    contain    => repo_yum_maintain_umask("022"),
-    classes    => if_repaired("repo_yum_maintain_$(repos)_metadata_updated"),
-    ifvarclass => "repo_yum_maintain_$(repos)_needs_metadata_update",
-    comment    => "We need to update the metadata since a change was detected";
-
-reports:
-  _verbose_repo_yum_maintain::
-    "I updated the yum repository $(repos) at $($(prefix)repo[$(repos)][path])",
-      ifvarclass => "repo_yum_maintain_$(repos)_metadata_updated";
-  
-    "I initalized the yum repository $(repos) at $($(prefix)repo[$(repos)][path])",
-      ifvarclass => "repo_yum_maintain_$(repos)_initalized";
-
-  _debug_repo_yum_maintain::
-    "DEBUG $(bundle)  Maintain Yum Repository: $(repos) at $($(prefix)repo[$(repos)][path])";
-    "DEBUG $(bundle)  creatrepo path: $(createrepo)";
-    "DEBUG $(bundle)  Owner of $(repos) should be $($(repos)_owner)";
-    "DEBUG $(bundle)  Group of $(repos) should be $($(repos)_group)";
-    "DEBUG $(bundle)  Mode of $(repos) should be $($(repos)_mode)";
+body file control
+{
+      namespace => "cfdc_yumrepo";
 }
 
-bundle agent meta_repo_yum_maintain
+bundle agent repo_yum_maintain(class_prefix, createrepo, refresh_interval, repo)
 {
-vars:
-  "optional_argument[debug]" string => "string";
-  "default[debug]" string => "off";
+      # Creates repomd (xml-rpm-metadata) repository
+      # Updates metadata if any packages are added changed or removed
 
-  "optional_argument[verbose]" string => "string";
-  "default[verbose]" string => "off";
+      # In addition to the parameters, takes these lasses:
+      # $(class_prefix)debug, $(class_prefix)verbose, $(class_prefix)test
 
-  "optional_argument[createrepo]" string => "string";
-  "default[createrepo]" string => "/usr/bin/createrepo";
+  meta:
+      "vars[class_prefix][type]"         string => "NON_EMPTY_STRING";
+      "vars[class_prefix][default]"      string => "__CLASS_PREFIX__";
 
-  "optional_argument[refresh_interval]" string => "string";
-  "default[refresh_interval]" string => "60";
-  
-  "argument[repo]" string => "array";
-  # prefix_repo[name][path] string => "/var/www/html/yum_repos/custom";
-  # prefix_repo[name][perms][m] string => "644"
-  # prefix_repo[name][perms][o] string => "root"
-  # prefix_repo[name][perms][g] string => "root"
-} 
+      "vars[debug][type]"                string => "CONTEXT";
+      "vars[debug][default]"             string => "!any";
+
+      "vars[test][type]"                 string => "CONTEXT";
+      "vars[test][default]"              string => "!any";
+
+      "vars[verbose][type]"              string => "CONTEXT";
+      "vars[verbose][default]"           string => "!any";
+
+      "vars[refresh_interval][type]"     string => "DIGITS";
+      "vars[refresh_interval][default]"  string => "60";
+
+      "vars[createrepo][type]"           string => "PATH";
+      "vars[createrepo][default]"        string => "/usr/bin/createrepo";
+
+      "vars[repo][type]"                 string => "KVARRAY(
+_key:NON_EMPTY_STRING
+path:PATH:required
+perms_m:OCTAL:default=755
+perms_o:NON_EMPTY_STRING:default=root
+perms_g:NON_EMPTY_STRING:default=root
+)";
+
+  classes:
+      "_verbose"  or => { "$(class_prefix)verbose", "verbose" };
+      "_test"     or => { "$(class_prefix)test",    "test" };
+      "_debug"    or => { "$(class_prefix)debug",   "debug" };
+
+  vars:
+      "bundle" string => "repo_yum_maintain";
+      "keys" slist => getindices("$(repo)");
+
+    redhat|centos::
+      "deps" slist => { "createrepo" };
+
+  methods:
+      "Yum Repository Client Configuration"
+      usebundle => cfdc_yumrepo.do($(class_prefix),
+                                   $(createrepo),
+                                   $(refresh_interval),
+                                   $(keys),
+                                   "$($(repo)[$(keys)][path])",
+                                   "$($(repo)[$(keys)][perm_m])",
+                                   "$($(repo)[$(keys)][perm_o])",
+                                   "$($(repo)[$(keys)][perm_g])"
+                                   ),
+      comment => "Configure each yum repository";
+
+  reports:
+    _debug::
+      "DEBUG $(bundle)  Maintain Yum Repository: array $(repo) KVKEYS $(keys)";
+}
+
+bundle agent do(class_prefix, createrepo, refresh_interval, reponame, path, mode, owner, group)
+{
+  files:
+      "$(path)/."
+      create => "true",
+      perms  => default.mog("$(mode)", "$(owner)", "$(group)"),
+      depth_search => default.recurse("inf"),
+      action => default.if_elapsed("$(refresh_interval)"),
+      comment => "Ensure repository root directory exists with proper permissions";
+
+      # Only check 1 level deep otherwise you will be detecting the change in the metadata itself as well.
+      # That in turn will lead to an execution of creatrepo --update each time.
+      "$(path)"
+      changes      => default.detect_content,
+      depth_search => default.recurse("1"),
+      classes      => default.if_repaired("$(class_prefix)$(reponame)_needs_metadata_update"),
+      action       => default.if_elapsed("$(refresh_interval)"),
+      comment      => "If any changes are detected we need to signal to update the metadata";
+
+  classes:
+      "_verbose"  or => { "$(class_prefix)verbose", "verbose" };
+      "_test"     or => { "$(class_prefix)test",    "test" };
+      "_debug"    or => { "$(class_prefix)debug",   "debug" };
+
+      "$(class_prefix)$(reponame)_exists"
+      expression => fileexists("$(path)/repodata/repomd.xml"),
+      comment    => "Check if a repo exists yet";
+
+  packages:
+    redhat|centos::
+      "$(deps)"
+      package_policy => "add",
+      package_method => default.yum_rpm,
+      action         => default.if_elapsed("$(refresh_interval)"),
+      comment        => "createrepo is needed to create and update
+the metadata for a yum repository";
+
+  commands:
+      "$(createrepo)"
+      args       => "$(path)",
+      action     => default.if_elapsed("$(refresh_interval)"),
+      contain    => repo_yum_maintain_umask("022"),
+      classes    => default.if_repaired("$(class_prefix)$(reponame)_initalized"),
+      ifvarclass => not(canonify("$(class_prefix)$(reponame)_exists")),
+      comment    => "Create repository if one does not exist";
+
+      # We only want to update the repo once per run. The metadata has not
+      # yet been updated. Update it and signal that it has been updated if
+      # the command returns zero.
+      "$(createrepo)"
+      args => "--update $(path)",
+      action     => default.if_elapsed("$(refresh_interval)"),
+      contain    => repo_yum_maintain_umask("022"),
+      classes    => default.if_repaired("$(class_prefix)$(reponame)_metadata_updated"),
+      ifvarclass => "$(class_prefix)$(reponame)_needs_metadata_update",
+      comment    => "We need to update the metadata since a change was detected";
+
+  reports:
+    _verbose::
+      "I updated the yum repository $(reponame) at $(path)",
+      ifvarclass => "$(class_prefix)$(reponame)_metadata_updated";
+
+      "I initalized the yum repository $(reponame) at $(path)",
+      ifvarclass => "$(class_prefix)$(reponame)_initalized";
+
+    _debug::
+      "DEBUG $(bundle)  Maintain Yum Repository: $(reponame) at $(path)";
+      "DEBUG $(bundle)  createrepo path: $(createrepo)";
+      "DEBUG $(bundle)  Owner of $(reponame) should be $(owner)";
+      "DEBUG $(bundle)  Group of $(reponame) should be $(group)";
+      "DEBUG $(bundle)  Mode of $(reponame) should be $(mode)";
+}
 
 # Bodies not in stdlib
 body contain repo_yum_maintain_umask(umask)
@@ -193,5 +155,5 @@ body contain repo_yum_maintain_umask(umask)
 # 077   | 600     (rw-------) | 700     (rwx------)
 # 277   | 400     (r--------) | 500     (r-x------)
 {
-  umask => "$(umask)";
+      umask => "$(umask)";
 }
