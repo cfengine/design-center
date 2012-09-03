@@ -850,7 +850,32 @@ sub activate
       {
        if (exists $var->{default})
        {
-        if ($var->{type} =~ m/^ARRAY\(/ &&
+        if ($var->{type} =~ m/^LIST\(.+\)$/s &&
+            ref $var->{default} eq '' &&
+            $var->{default} =~ m/^KVKEYS\((\w+)\)$/)
+        {
+         my $default;
+         foreach my $var2 (@$varlist)
+         {
+          my $name2 = $var2->{name};
+          if ($name2 eq $1)
+          {
+           if (exists $aparams->{$name2} &&
+               ref $aparams->{$name2} eq 'HASH')
+           {
+            $default = $var->{default} = [ keys %{$aparams->{$name2}} ];
+           }
+           else
+           {
+            color_die "$var->{name} default KVKEYS($1) failed because $name2 did not have a valid value";
+           }
+          }
+         }
+
+         color_die "$var->{name} KVKEYS default $var->{default} failed because a matching variable could not be found"
+          unless $default;
+        }
+        elsif ($var->{type} =~ m/^ARRAY\(/ &&
             ref $var->{default} eq '')
         {
          my $decoded;
@@ -2302,6 +2327,7 @@ EOHIPPUS
   my $rel_path = make_include_path($act->{fulldir}, dirname($target_file));
 
   my $current_context = '';
+  # die Dumper \@vars;
   foreach my $var (@vars)
   {
    my $name = $var->{name};
