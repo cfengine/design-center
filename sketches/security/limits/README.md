@@ -1,6 +1,7 @@
 # security_limits - Manage /etc/security/limits.conf
 ## AUTHOR
 Nick Anderson <nick@cmdln.org>
+Ted Zlatanov <tzz@lifelogs.com>
 
 ## PLATFORM
 linux
