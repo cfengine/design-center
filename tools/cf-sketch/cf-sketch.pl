@@ -94,6 +94,7 @@ my %def_options =
   modulepath => '../../',
   runfile => File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf'),
   standalone => 1,
+  'simplify-arrays' => 0,
   repolist => [ File::Spec->catfile($happy_root, 'sketches') ],
   color => $color,
  );
@@ -148,6 +149,7 @@ my @options_desc =
   "install-target|it=s",       "Where sketches will be installed. Default: $def_options{'install-target'}.|dir",
   "json",                      "With --api, produce output in JSON format instead of human-readable format.",
   "standalone|st!",            "With --generate, produce a standalone file (including body common control). Enabled by default, negate with --no-standalone.",
+  "simplify-arrays|sa!",       "With --simplify-arrays, simplify 2D arrays in runfile from x[a][b] to x_a[b].",
   "install-source|is=s",       "Location (file path or URL) of a cfsketches catalog file that contains the list of sketches available for installation. Default: $def_options{'install-source'}.|loc",
   "repolist|rl=s@",            "Comma-separated list of local directories to search for installed sketches for activation, deactivation, removal, or runfile generation. Default: ".join(', ', @{$def_options{repolist}}).".|dirs",
   # "make-package=s@",
@@ -2407,8 +2409,8 @@ EOHIPPUS
 
      my @p = recurse_print($bycontext{$context},
                            "_${a}_$act->{prefix}_${name}",
-                           undef,
-                           ($var->{type} =~ m/^KVARRAY\(/) );
+                           0,
+                           $options{simplify_arrays} );
      $vars .= sprintf('       "%s" %s => %s;' . "\n",
                       $_->{path},
                       $_->{type},
