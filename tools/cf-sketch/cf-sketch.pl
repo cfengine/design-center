@@ -2148,11 +2148,9 @@ sub recurse_print
  my $ref             = shift @_;
  my $prefix          = shift @_;
  my $unquote_scalars = shift @_;
+ my $simplify_arrays = shift @_;
 
  my @print;
-                      # $_->{path},
-                      # $_->{type},
-                      # $_->{value}) foreach @toprint;
 
  # recurse for hashes
  if (ref $ref eq 'HASH')
@@ -2169,9 +2167,16 @@ sub recurse_print
   }
   else
   {
+   # warn Dumper [ $ref            ,
+   #              $prefix         ,
+   #              $unquote_scalars,
+   #              $simplify_arrays];
    push @print, recurse_print($ref->{$_},
-                              ($prefix||'') . "[$_]",
-                              $unquote_scalars)
+                              sprintf("%s%s",
+                                      ($prefix||''),
+                                      $simplify_arrays ? "_${_}" : "[$_]"),
+                              $unquote_scalars,
+                              0)
     foreach sort keys %$ref;
   }
  }
@@ -2401,7 +2406,9 @@ EOHIPPUS
      $current_context = $context;
 
      my @p = recurse_print($bycontext{$context},
-                           "_${a}_$act->{prefix}_${name}");
+                           "_${a}_$act->{prefix}_${name}",
+                           undef,
+                           ($var->{type} =~ m/^KVARRAY\(/) );
      $vars .= sprintf('       "%s" %s => %s;' . "\n",
                       $_->{path},
                       $_->{type},
