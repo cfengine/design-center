@@ -1,15 +1,17 @@
 {
-    "defined_only": "no",
-    "_empty": "yes",
-    "ifelapsed": "60",
-    "bycontext" : {
-      "_debug": { "file": "/tmp/resolv.conf", },
-      "!_debug": { "file": "/etc/resolv.conf", },
-    },
-    "resolver":
+    "System::config_resolver":
     {
-        "nameserver": [ "8.8.8.8", "8.8.4.4", ],
-        "search": [ "example.net", "example.org", ],
-        "domain": [ "example.com", ],
-    },
+        "debug" : false,
+        "empty_first" : true,
+        "defined_only": false,
+        "ifelapsed": "60",
+
+        "file": { "bycontext": { "test": "/tmp/resolv.conf", "!test": "/etc/resolv.conf" } },
+
+        "nameserver": [ "8.8.8.8", "8.8.4.4" ],
+        "search": [ "example.net", "example.org" ],
+        "options": [ ],
+        "sortlist": [ ],
+        "domain": [ "example.com" ]
+    }
 }

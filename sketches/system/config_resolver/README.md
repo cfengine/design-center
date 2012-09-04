@@ -2,6 +2,7 @@
 ## AUTHOR
 Nick Anderson <nick@cmdln.org>
 Jean Remond <cfengine@remond.re>
+Ted Zlatanov <tzz@lifelogs.com>
 
 ## PLATFORM
 linux
