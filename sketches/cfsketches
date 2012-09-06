@@ -1,7 +1,7 @@
 cloud/cloud_services Cloud::Services
 databases/db_install Database::Install
 libraries/copbl CFEngine::stdlib
-libraries/hardware_info Hardware::Info
+libraries/hardware_info Library::Hardware::Info
 libraries/yale Yale::stdlib
 networking/ssh Security::SSH
 package_management/aptrepo Repository::apt::Maintain
