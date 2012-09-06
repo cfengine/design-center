@@ -26,6 +26,7 @@ vars:
     "manufacturer[dell]"   string => "^Dell.*";
     "manufacturer[hp]"     string => "^HP.*";
     "manufacturer[lenovo]" string => "^LENOVO.*";
+    "manufacturer[vmware]" string => "^VMware, Inc\..*";
 
     "manufacturers" slist => getindices("manufacturer");
 
@@ -35,10 +36,11 @@ vars:
     "product[dell][server]"   string => "^PowerEdge.*";
     "product[hp][server]"     string=> "^ProLiant.*";
     "product[lenovo][laptop]" string => "^4270CTO.*";
+    "product[vmware][virtual_machine]" string => "^VMware Virtual Platform.*";
 
     # It would be cool to be able to automatically figure out the different
     # product classes, but getting nth index of array isn't supported.
-    "products" slist => { "server" };
+    "products" slist => { "server", "laptop", "virtual_machine" };
 
 classes:
   linux::

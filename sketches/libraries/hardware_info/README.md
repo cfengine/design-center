@@ -8,6 +8,12 @@ Nick Anderson <nick@cmdln.org>
 At times you may want to make policy decisions based on underlying hardware
 platform. For example install hp-snmp-agents only on hp server hardware.
 
+Currently detected manufacturers and product classes.
+* Dell Servers
+* HP Servers
+* VMware Virtual Machines
+* Lenovo Laptops
+
 ## Sample Usage
 
     bundle agent main {
