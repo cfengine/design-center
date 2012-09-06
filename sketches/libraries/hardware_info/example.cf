@@ -16,7 +16,7 @@ vars:
 
 methods:
 
-  hp_hardware_server::
+  cfdc_hardware_info_hp_server::
     "HP SNMP Agents"
       usebundle => hp_snmp_agents("main.hp_snmp_agents_"),
       comment => "This is used to monitor the hardware health via snmp,

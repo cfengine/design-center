@@ -1,6 +1,9 @@
 bundle common cfdc_hardware_info
 {
 vars:
+  any::
+    "class_prefix" string => "cfdc_hardware_info_";
+
   linux::
     "dmidecode_bin" string => "/usr/sbin/dmidecode";
 
@@ -44,14 +47,14 @@ vars:
 
 classes:
   linux::
-    "$(manufacturers)_hardware"
+    "$(class_prefix)$(manufacturers)"
       expression => regcmp("$(manufacturer[$(manufacturers)])", "$(dmidecode[system-manufacturer])"),
       action => if_elapsed("$(hardware_info_refresh_interval)"),
       comment => "Raise class for each hardware manufacturer detected";
       # example: dell_hardware
       # example: hp_hardware
 
-    "$(manufacturers)_hardware_$(products)"
+    "$(class_prefix)$(manufacturers)_$(products)"
       expression => regcmp("$(product[$(manufacturers)][$(products)])", "$(dmidecode[system-product-name])"),
       action => if_elapsed("$(hardware_info_refresh_interval)"),
       comment => "Raise class for each hardware manufacturers product class detected";
