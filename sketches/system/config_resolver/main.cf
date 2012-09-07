@@ -1,7 +1,4 @@
-body file control
-{
-      namespace => "cfdc_config_resolver";
-}
+# N.B. namespacing this sketch breaks the slist iteration
 
 bundle agent resolver(class_prefix, file, nameserver, search, domain, options, sortlist)
 {
@@ -39,8 +36,6 @@ bundle agent resolver(class_prefix, file, nameserver, search, domain, options, s
       "empty_first" expression => "$(class_prefix)empty_first";
 
   vars:
-      "iter" slist => { "nameserver", "search", "domain", "options", "sortlist" };
-
     !empty_first::
       "empty_file_before_editing" string => "false", policy => "free";
     empty_first::
@@ -50,36 +45,66 @@ bundle agent resolver(class_prefix, file, nameserver, search, domain, options, s
       "$(file)"
       handle        => "cfdc_config_resolver_files_$(file)",
       create        => "true",
-      edit_defaults => cfdc_config_resolver.empty_if_ask($(empty_file_before_editing)),
+      edit_defaults => resolver_empty_if_ask($(empty_file_before_editing)),
       comment       => "Empty resolver file : $(file)";
 
   methods:
-      "iterate" usebundle => cfdc_config_resolver.resolver_iterate($(class_prefix),
-                                                                   $(file),
-                                                                   $(iter));
+      "iterate" usebundle => resolver_iterate($(class_prefix),
+                                              $(file),
+                                              "nameserver",
+                                              @(resolver.nameserver));
+
+      "iterate" usebundle => resolver_iterate($(class_prefix),
+                                              $(file),
+                                              "search",
+                                              @(resolver.search));
+
+      "iterate" usebundle => resolver_iterate($(class_prefix),
+                                              $(file),
+                                              "domain",
+                                              @(resolver.domain));
+
+      "iterate" usebundle => resolver_iterate($(class_prefix),
+                                              $(file),
+                                              "options",
+                                              @(resolver.options));
+
+      "iterate" usebundle => resolver_iterate($(class_prefix),
+                                              $(file),
+                                              "sortlist",
+                                              @(resolver.sortlist));
 
   reports:
     debug_resolver::
-      "main  @@ editing file $(file) for setting $(iter)";
+      "main  @@ editing file $(file)";
 }
 
-bundle agent resolver_iterate(class_prefix, file, var)
+bundle agent resolver_iterate(class_prefix, file, var, list)
 {
+  classes:
+      "debug_resolver" or => { "$(class_prefix)debug", "debug" };
+
   files:
       "$(file)"
       handle    => "cfdc_config_resolver_files_$(file)_$(var)",
-      edit_line => cfdc_config_resolver.append_if_no_lines($(class_prefix), $(var), "$($(var))"),
+      edit_line => resolver_append_if_no_lines($(class_prefix),
+                                               $(var),
+                                               @(resolver_iterate.list)),
       comment   => "configure $(var) resolver settings in $(file)";
+
+  reports:
+    debug_resolver::
+      "iterate  @@ $(var) = $(list)";
 }
 
-body edit_defaults empty_if_ask(empty_file_before_editing)
+body edit_defaults resolver_empty_if_ask(empty_file_before_editing)
 {
       edit_backup => "false";
       max_file_size => "300000";
       empty_file_before_editing => "$(empty_file_before_editing)";
 }
 
-bundle edit_line append_if_no_lines(class_prefix, key, list)
+bundle edit_line resolver_append_if_no_lines(class_prefix, key, list)
 {
   classes:
       "only_allow_defined_entries" expression => "$(class_prefix)defined_only";

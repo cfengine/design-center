@@ -1,35 +1,45 @@
 body common control
 {
-  bundlesequence => { "main", };
-  inputs => { "cfengine_stdlib.cf","main.cf" };
+      bundlesequence => { "cfsketch_run" };
+      inputs => {
+                  "../../libraries/copbl/cfengine_stdlib.cf",
+                  "./main.cf",
+                };
 }
-###########################################################################
-    bundle agent main {
-
-        vars:
-            "test__bycontext[_debug][file]" 
-                string => "/tmp/resolv.conf";
-            "test__bycontext[!_debug][file]" 
-                string => "/tmp/resolv.conf_etc";
-
-            "test__defined_only" 
-                string => "true",
-                comment => "Only keep defined entries";
-
-            "test__resolver[nameserver]" slist  => { "4.4.8.8", "8.8.8.8" };
-            "test__resolver[search]"     slist  => { "example.com", "example.net" };
-            "test__resolver[domain]"     slist  => { "example.com" };
-            "test__resolver[sortlist]"   slist  => { "130.155.160.0/255.255.240.0", "130.155.0.0" };
-            "test__resolver[options]"    
-                slist  => { "ndots:1", "timeout:5", "attempts:2", 
-                            "rotate", "no-check-names", "inet6", 
-                            "ip6-bytestring", "edns0", "ip6-dotint",
-                            "no-ip6-dotint"
-                          },
-                comment => "These are other options as found in man resolv.conf";
 
 
-        methods:
-            "any" usebundle => cfdc_config_resolver("main.test__");
-    }
+bundle common cfsketch_g
+{
+  classes:
+      "testresolver_defined_only" expression => "!any";
+      "testresolver_empty_first" expression => "any";
+      "testresolver_debug" expression => "!any";
+      "testresolver_test" expression => "!any";
+      "testresolver_verbose" expression => "!any";
+  vars:
+     !test::
+       "testresolver_file" string => "/etc/resolv.conf";
+     test::
+       "testresolver_file" string => "/tmp/resolv.conf";
 
+     any::
+       "testresolver_nameserver" slist => { "8.8.8.8", "8.8.4.4" };
+       "testresolver_search" slist => { "example.net", "example.org" };
+       "testresolver_domain" slist => { "example.com" };
+       "testresolver_options" slist => { "ndots:1", "timeout:5", "attempts:2", "rotate", "no-check-names", "inet6", "ip6-bytestring", "edns0", "ip6-dotint", "no-ip6-dotint" };
+       "testresolver_sortlist" slist => { "130.155.160.0/255.255.240.0", "130.155.0.0" };
+}
+
+bundle agent cfsketch_run
+{
+  methods:
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "test resolver" usebundle => resolver("testresolver_",
+                                            $(cfsketch_g.testresolver_file),
+                                            @(cfsketch_g.testresolver_nameserver),
+                                            @(cfsketch_g.testresolver_search),
+                                            @(cfsketch_g.testresolver_domain),
+                                            @(cfsketch_g.testresolver_options),
+                                            @(cfsketch_g.testresolver_sortlist));
+
+}
