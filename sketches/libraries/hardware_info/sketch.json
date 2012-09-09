@@ -1,0 +1,23 @@
+{ 
+
+    "manifest":
+    {
+        "main.cf": { "desc": "Main library", "version": "1.2" },
+        "README.md": { "documentation": true },
+        "example.cf": {"comment": "Example Policy"},
+        "sketch.json": {"comment": "metadata"}
+    },
+
+    "metadata":
+    {
+        "name": "Library::Hardware::Info",
+        "version": 1.2,
+        "license": "MIT",
+        "portfolio": [ "cfdc" ],
+        "authors": [ "Nick Anderson <nick@cmdln.org>", "Trondham via cfengineers.org" ],
+        "depends": { "cfengine": { "version": "3.2.1" } }
+    },
+
+    "entry_point": null,
+    "interface": [ "main.cf" ]
+}
