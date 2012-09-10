@@ -14,7 +14,7 @@
         "version": 1.10,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>"],
+        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "tested": [ "redhat_5", "centos_5" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },
                      "cfengine": { "version": "3.4.0" },
