@@ -1,0 +1,7 @@
+Monitoring::Snmp::hp_snmp_agents 1.1
+  * Move to monitoring from Applications
+  * update bundle names to be more specific and follow the sketch name
+
+Applications::Snmp::hp_snmp_agents 1.0
+  * Intitial Release
+  * install hp_snmp_agents and optionally configure snmpd.conf for their use.
