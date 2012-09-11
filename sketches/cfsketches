@@ -3,6 +3,7 @@ databases/db_install Database::Install
 libraries/copbl CFEngine::stdlib
 libraries/hardware_info Library::Hardware::Info
 libraries/yale Yale::stdlib
+monitoring/snmp/hp_snmp_agents Monitoring::Snmp::hp_snmp_agents
 networking/ssh Security::SSH
 package_management/aptrepo Repository::apt::Maintain
 package_management/yumclient Repository::Yum::Client
