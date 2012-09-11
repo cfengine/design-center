@@ -2,7 +2,7 @@
 
     "manifest":
     {
-        "main.cf": { "desc": "main file", "version": 1.0 },
+        "main.cf": { "desc": "main file", "version": 1.1 },
         "README.md": { "documentation": true },
         "example.cf": { "comment": "Example Policy" },
         "changelog": { "comment": "changelog" }
@@ -10,8 +10,8 @@
 
     "metadata":
     {
-        "name": "Applications::Snmp::hp_snmp_agents",
-        "version": 1.0,
+        "name": "Monitoring::Snmp::hp_snmp_agents",
+        "version": 1.1,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>" ],

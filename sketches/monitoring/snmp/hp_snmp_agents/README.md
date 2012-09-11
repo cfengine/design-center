@@ -52,7 +52,7 @@ Repository::Yum::Maintain for managing a custom repository.
 
     methods:
       "HP SNMP Agents"
-        usebundle => hp_snmp_agents("main.hpsnmpagents_"),
+        usebundle => monitoring_snmp_hp_snmp_agents("main.hpsnmpagents_"),
         comment => "Install and configure hp snmp agents";
     }
 

@@ -1,4 +1,4 @@
-bundle agent hp_snmp_agents(prefix)
+bundle agent monitoring_snmp_hp_snmp_agents(prefix)
 #  path[hpsnmpconfig]"        string => "/sbin/hpsnmpconfig";
 #  opt[rws]"                  string => ""; default private
 #  opt[ros]"                  string => ""; default public
@@ -15,7 +15,8 @@ bundle agent hp_snmp_agents(prefix)
 #  pkg_install" string => "yes|true";
 {
 vars:
-  "bundle" string => "hp_snmp_agents";
+  "bundle" string => "monitoring_snmp_hp_snmp_agents";
+  "class_prefix" string => canonify("$(prefix)_$(bundle)");
   "packages" slist => { "hpacucli", "hp-health", "hp-snmp-agents" };
 
   # This is just placeholder information if we ever decide to integrate
@@ -98,7 +99,7 @@ vars:
                                      };
 
 classes:
-  "_debug_hp_snmp_agents" expression => regcmp("(?i)yes|true|on", "$($(prefix)debug)");
+  "_debug_monitoring_snmp_hp_snmp_agents" expression => regcmp("(?i)yes|true|on", "$($(prefix)debug)");
 
   "hpsnmpconfig_opt_$(valid_hpsnmpconfig_options)_from_param" expression => isvariable("$(prefix)opt[$(valid_hpsnmpconfig_options)]");
 
@@ -107,7 +108,7 @@ classes:
   "pkg_refresh_interval" expression => isvariable("$(prefix)pkg_refresh_interval");
   "pkg_install" expression => regcmp("(?i)yes|true|on", "$($(prefix)pkg_install)");
 
-  "hp_snmp_agents_configured"
+  "monitoring_snmp_hp_snmp_agents_configured"
     expression => regline(".*cmaX.*", "$(snmpconf)"),
     comment => "The hp-snmp-agents init script performs
                 a 'grep \"cmaX\" /etc/snmp/snmpd.conf'
@@ -126,7 +127,7 @@ files:
     "$(snmpdconf)"
       create => "true",
       perms => mog("644", "root", "root"),
-      edit_line => hp_snmp_agents_edit_snmpdconf("$(bundle).opt"),
+      edit_line => monitoring_snmp_hp_snmp_agents_edit_snmpdconf("$(bundle).opt"),
       ifvarclass => "hpsnmpconfig_autoconfig",
       comment => "Configure snmpd.conf for HP SNMP Agents";
     
@@ -152,9 +153,9 @@ processes:
                 that is fired off by installing hp-snmp-agents.";
 
   # Only monitor processes if the hp snmp agents have been configured
-  hp_snmp_agents_configured::
+  monitoring_snmp_hp_snmp_agents_configured::
     "$(hp_snmp_agent_processes)"
-      restart_class => "$(bundle)_restart_hp_snmp_agents_for_$(hp_snmp_agent_processes)",
+      restart_class => "$(bundle)_restart_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)",
       comment       => "$(hp_snmp_agent_processes) is a componenet of
                        hp-snmp-agents, it needs to be running for hp
                        utilities to work";
@@ -170,8 +171,8 @@ processes:
 commands:
   "/sbin/service"
     args => "hp-snmp-agents restart",
-    ifvarclass => canonify("$(bundle)_restart_hp_snmp_agents_for_$(hp_snmp_agent_processes)"),
-    classes => if_repaired("$(bundle)_restarted_hp_snmp_agents_for_$(hp_snmp_agent_processes)"),
+    ifvarclass => canonify("$(bundle)_restart_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)"),
+    classes => if_repaired("$(bundle)_restarted_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)"),
     comment => "Restart hp-snmp-agents if needed";
  
   "/sbin/service"
@@ -187,7 +188,7 @@ commands:
     comment => "Restart hp-health if needed";
 
 reports:
-  _debug_hp_snmp_agents::
+  _debug_monitoring_snmp_hp_snmp_agents::
     "DEBUG: $(bundle)  AUTO Config: NO",
       ifvarclass => not("hpsnmpconfig_autoconfig");
 
@@ -207,7 +208,7 @@ reports:
       ifvarclass => "$(bundle)_killed_hpsnmpconfig";
 
     "$(hp_snmp_agent_processes) is not running",
-      ifvarclass => canonify("$(bundle)_restart_hp_snmp_agents_for_$(hp_snmp_agent_processes)");
+      ifvarclass => canonify("$(bundle)_restart_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)");
 
     "/opt/hp/hp-health/bin/hp-asrd is not running",
       ifvarclass => canonify("$(bundle)_restart_hp_asrd");
@@ -216,7 +217,7 @@ reports:
       ifvarclass => canonify("$(bundle)_restart_hp_health");
 
     "I restarted hp-snmp-agents",
-      ifvarclass => canonify("$(bundle)_restarted_hp_snmp_agents_for_$(hp_snmp_agent_processes)");
+      ifvarclass => canonify("$(bundle)_restarted_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)");
 
     "I restarted hp-asrd"
       ifvarclass => canonify("$(bundld)_restarted_hp_asrd");
@@ -225,14 +226,14 @@ reports:
       ifvarclass => canonify("$(bundle)_restarted_hp_health");
 
     "HP SNMP Agents has not been configured",
-      ifvarclass => not("hp_snmp_agents_configured");
+      ifvarclass => not("monitoring_snmp_hp_snmp_agents_configured");
 
 }
 
-bundle edit_line hp_snmp_agents_edit_snmpdconf(array)
+bundle edit_line monitoring_snmp_hp_snmp_agents_edit_snmpdconf(array)
 {
 vars:
-  "bundle" string => "hp_snmp_agents_edit_snmpdconf";
+  "bundle" string => "monitoring_snmp_hp_snmp_agents_edit_snmpdconf";
   "options" slist => getindices("$(array)");
 
 classes:
@@ -268,11 +269,11 @@ insert_lines:
 
 reports:
   # Too bad you cant inherit classes yet :)
-  _debug_hp_snmp_agents::
+  _debug_monitoring_snmp_hp_snmp_agents::
     "DEBUG: $(bundle)  Parameter: $(array)[$(options)]: $($(array)[$(options)])";
 }
 
-bundle agent meta_hp_snmp_agents
+bundle agent meta_monitoring_snmp_hp_snmp_agents
 {
 vars:
   "optional_argument[path]" string => "array";

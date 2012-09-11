@@ -1,8 +1,8 @@
-applications/hp_snmp_agents Applications::Snmp::hp_snmp_agents
 cloud/cloud_services Cloud::Services
 databases/db_install Database::Install
 libraries/copbl CFEngine::stdlib
 libraries/yale Yale::stdlib
+monitoring/snmp/hp_snmp_agents Monitoring::Snmp::hp_snmp_agents
 networking/ssh Security::SSH
 package_management/aptrepo Repository::apt::Maintain
 package_management/yumclient Repository::Yum::Client
