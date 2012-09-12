@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_cpan_install";
+  namespace => "cfdc_cpan";
 }
 
 bundle agent cpan_install(prefix, cpanm_program, extra_params, packages)
@@ -23,5 +23,5 @@ bundle agent cpan_install(prefix, cpanm_program, extra_params, packages)
       "$(cpanm_program) $(extra_params) $(packages)"
       comment => "Install CPAN packages with App::cpanminus",
       handle => "cpan_install_packages_add",
-      action => default.log_repaired("stdout","App::cpanminus installed $(packages)");
+      action => default:log_repaired("stdout","App::cpanminus installed $(packages)");
 }
