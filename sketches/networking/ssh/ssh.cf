@@ -59,9 +59,8 @@
 bundle agent sshd(params)
 {
   meta:
-      "vars[params][type]" string => "ARRAY(
-)";
-      "vars[params][default]"               string => "{}";
+      "vars[params][type]"    string => "ARRAY()";
+      "vars[params][default]" string => "{}";
   methods:
       "sshd_vars" usebundle => sshd_vars("$(prefix)params");
       "sshd_cfg"  usebundle => sshd_set_cfg("sshd_vars.conf");
