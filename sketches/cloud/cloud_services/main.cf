@@ -54,11 +54,18 @@ fullpath           :PATH
 disable_ssl_verify :BOOLEAN:default=0
 )";
       "vars[vcli][default]"              string => "{}";
+  classes:
+      "use_ec2"  expression => strcmp($(stype), "ec2");
+      "use_vcli" expression => strcmp($(stype), "vcli");
 
   vars:
       "canon_prefix" string => canonify("$(prefix)");
       "home"         string => "$(bundle_home)";
-      "service_bundle" string => "cfdc_cloud_services.$(stype)";
+      "service"      string => "$(stype)";
+    use_ec2::
+      "service_bundle" string => "cfdc_cloud_services:ec2";
+    use_vcli::
+      "service_bundle" string => "cfdc_cloud_services:vcli";
 
   services:
       "$(count) $(class)"
@@ -205,14 +212,14 @@ bundle agent vcli(prefix, bundle_home, install_cfengine, count, class, state, pa
   methods:
     vcli_decision_valid.bootstrap_needed::
       # clone the needed bootstraps
-      "CLONE"  usebundle => cfdc_cloud_services.vmware_clone($(master_image), "$(vcli_decision.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_REG), $(VIFS_DIR), $(VIFS_MKDIR), $(VIFS_COPY), $(VIFS_GET), $(VIFS_PUT), $(VIFS_DELETE), $(VMKFSTOOLS), $(ds), $(path));
-      "START"  usebundle => cfdc_cloud_services.vmware_start("$(vcli_decision.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_PREFIX));
+      "CLONE"  usebundle => cfdc_cloud_services:vmware_clone($(master_image), "$(vcli_decision.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_REG), $(VIFS_DIR), $(VIFS_MKDIR), $(VIFS_COPY), $(VIFS_GET), $(VIFS_PUT), $(VIFS_DELETE), $(VMKFSTOOLS), $(ds), $(path));
+      "START"  usebundle => cfdc_cloud_services:vmware_start("$(vcli_decision.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_PREFIX));
       # start all our client count if a bootstrap is needed
-      "START"  usebundle => cfdc_cloud_services.vmware_start("$(vcli_decision.our_count)", $(VMCMD_LIST), $(VMCMD_PREFIX));
+      "START"  usebundle => cfdc_cloud_services:vmware_start("$(vcli_decision.our_count)", $(VMCMD_LIST), $(VMCMD_PREFIX));
 
     vcli_decision_valid.decom_needed::
-      # "STOP"   usebundle => cfdc_cloud_services.vmware_stop("$(vcli_decision.decom_instance)", $(VMCMD_LIST_OURS), $(VMCMD_STOP), $(VMCMD_PREFIX));
-      "DELETE" usebundle => cfdc_cloud_services.vmware_delete("$(vcli_decision.decom_instance)", $(VIFS_DELETE), $(VMCMD_LIST), $(VMCMD_STOP), $(VMCMD_UNREG), $(VMCMD_PREFIX), $(ds));
+      # "STOP"   usebundle => cfdc_cloud_services:vmware_stop("$(vcli_decision.decom_instance)", $(VMCMD_LIST_OURS), $(VMCMD_STOP), $(VMCMD_PREFIX));
+      "DELETE" usebundle => cfdc_cloud_services:vmware_delete("$(vcli_decision.decom_instance)", $(VIFS_DELETE), $(VMCMD_LIST), $(VMCMD_STOP), $(VMCMD_UNREG), $(VMCMD_PREFIX), $(ds));
 
   reports:
     vcli_decision_valid.bootstrap_needed::
@@ -250,12 +257,12 @@ bundle agent vmware_clone(vm_source, vm_clone, VMCMD_LIST, VMCMD_REG, VIFS_DIR, 
   files:
     clean_up::
       "/tmp/$(vm_clone).vmx.*"
-      delete => default.tidy;
+      delete => default:tidy;
 
     have_clone_vmx.!clone_registered::
       "/tmp/$(vm_clone).vmx"
       edit_line => reconfigurevmx("$(vm_source)","$(vm_clone)"),
-      classes => default.if_repaired("then_upload");
+      classes => default:if_repaired("then_upload");
 
       #
 
@@ -270,11 +277,11 @@ bundle agent vmware_clone(vm_source, vm_clone, VMCMD_LIST, VMCMD_REG, VIFS_DIR, 
 
     then_upload::
       "$(VIFS_PUT) /tmp/$(vm_clone).vmx \"[$(ds)] $(vm_clone)/$(vm_clone).vmx\""
-      classes => default.if_repaired("register_vm");
+      classes => default:if_repaired("register_vm");
 
     register_vm.!clone_registered::
       "$(VMCMD_REG) $(path)/$(vm_clone)/$(vm_clone).vmx"
-      classes => default.if_repaired("clean_up");
+      classes => default:if_repaired("clean_up");
 
   reports:
     verbose::
@@ -404,14 +411,14 @@ bundle agent vmware_delete(vm_name, VIFS_DELETE, VMCMD_LIST, VMCMD_STOP, VMCMD_U
   commands:
     vm_registered::
       "$(VMCMD_STOP)"
-      classes => default.if_ok("$(canon_prefix)_stopped");
+      classes => default:if_ok("$(canon_prefix)_stopped");
 
       "$(VMCMD_UNREG)"
-      classes => default.if_ok("$(canon_prefix)_unregistered"),
+      classes => default:if_ok("$(canon_prefix)_unregistered"),
       ifvarclass => "$(canon_prefix)_stopped";
 
       "$(VIFS_DELETE) \"[$(ds)] $(vm_name)\" -f"
-      classes => default.if_ok("$(canon_prefix)_deleted"),
+      classes => default:if_ok("$(canon_prefix)_deleted"),
       ifvarclass => "$(canon_prefix)_unregistered";
 
   reports:
