@@ -1,3 +1,8 @@
+body file control
+{
+  namespace => "cfdc_db";
+}
+
 bundle agent db_install(class_prefix, db, process_match, start_command, packages, server_packages)
 {
   meta:
@@ -52,63 +57,63 @@ bundle agent db_install(class_prefix, db, process_match, start_command, packages
       "all_packages" slist => { @(packages) },
       ifvarclass => "!$(class_prefix)server";
 
-  # packages:
+  packages:
 
-  #     "$(all_packages)"
-  #     comment => "Install $(db) packages",
-  #     handle => "db_install_packages_add",
-  #     package_policy => "add",
-  #     package_method => generic,
-  #     classes => if_ok("$(class_prefix)ensure_database_running"),
-  #     action => log_repaired("stdout","$(db) $(type) was installed"),
-  #     ifvarclass => "!$(class_prefix)purge";
+      "$(all_packages)"
+      comment => "Install $(db) packages",
+      handle => "db_install_packages_add",
+      package_policy => "add",
+      package_method => default:generic,
+      classes => default:if_ok("$(class_prefix)ensure_database_running"),
+      action => default:log_repaired("stdout","$(db) $(type) was installed"),
+      ifvarclass => "!$(class_prefix)purge";
 
-  #     "$(all_packages)"
-  #     comment => "Remove $(db) packages.  SQLite packages should not be purged for Redhat-related distributions because rmp/yum rely on libsqlite.so.0",
-  #     handle => "db_install_packages_remove",
-  #     package_policy => "delete",
-  #     package_method => generic,
-  #     action => log_repaired("stdout","$(db) $(type) was removed"),
-  #     ifvarclass => "$(class_prefix)purge.!(installing_sqlite.redhat)";
+      "$(all_packages)"
+      comment => "Remove $(db) packages.  SQLite packages should not be purged for Redhat-related distributions because rmp/yum rely on libsqlite.so.0",
+      handle => "db_install_packages_remove",
+      package_policy => "delete",
+      package_method => default:generic,
+      action => default:log_repaired("stdout","$(db) $(type) was removed"),
+      ifvarclass => "$(class_prefix)purge.!(installing_sqlite.redhat)";
 
-  # files:
+  files:
 
-  #   redhat|centos|fedora::
+    redhat|centos|fedora::
 
-  #     "/tmp/mysql.sock"
-  #     comment => "Create a temp link to mysql.sock",
-  #     handle => "db_mysql_files_mysql_sock_redhat_centos_fedora",
-  #     ifvarclass => "installing_mysql.$(class_prefix)server",
-  #     link_from => ln_s("/var/lib/mysql/mysql.sock");
+      "/tmp/mysql.sock"
+      comment => "Create a temp link to mysql.sock",
+      handle => "db_mysql_files_mysql_sock_redhat_centos_fedora",
+      ifvarclass => "installing_mysql.$(class_prefix)server",
+      link_from => ln_s("/var/lib/mysql/mysql.sock");
 
-  #   debian|ubuntu::
+    debian|ubuntu::
 
-  #     "/tmp/mysql.sock"
-  #     comment => "Create a temp link to mysql.sock",
-  #     handle => "db_mysql_files_mysql_sock_debian_ubuntu",
-  #     ifvarclass => "installing_mysql.$(class_prefix)server",
-  #     link_from => ln_s("/var/run/mysqld/mysqld.sock");
+      "/tmp/mysql.sock"
+      comment => "Create a temp link to mysql.sock",
+      handle => "db_mysql_files_mysql_sock_debian_ubuntu",
+      ifvarclass => "installing_mysql.$(class_prefix)server",
+      link_from => ln_s("/var/run/mysqld/mysqld.sock");
 
-  # processes:
+  processes:
 
-  #     "$(process_match)"
-  #     comment => "Check for $(db) process",
-  #     handle => "db_$(db)_processes_run",
-  #     ifvarclass => "$(class_prefix)ensure_database_running.$(class_prefix)server",
-  #     restart_class => "$(class_prefix)start_db";
+      "$(process_match)"
+      comment => "Check for $(db) process",
+      handle => "db_$(db)_processes_run",
+      ifvarclass => "$(class_prefix)ensure_database_running.$(class_prefix)server",
+      restart_class => "$(class_prefix)start_db";
 
-  #     "$(process_match)"
-  #     comment => "Teminate $(db) process",
-  #     handle => "db_$(db)_processes_terminate",
-  #     ifvarclass => "$(class_prefix)purge.$(class_prefix)server",
-  #     signals => { "term","kill" };
+      "$(process_match)"
+      comment => "Teminate $(db) process",
+      handle => "db_$(db)_processes_terminate",
+      ifvarclass => "$(class_prefix)purge.$(class_prefix)server",
+      signals => { "term","kill" };
 
-  # commands:
+  commands:
 
-  #     "$(start_command)"
-  #     comment => "Start/Restart command of $(db)",
-  #     handle => "db_$(db)_commands_run",
-  #     ifvarclass => "$(class_prefix)start_db";
+      "$(start_command)"
+      comment => "Start/Restart command of $(db)",
+      handle => "db_$(db)_commands_run",
+      ifvarclass => "$(class_prefix)start_db";
 
   reports:
     verbose::
