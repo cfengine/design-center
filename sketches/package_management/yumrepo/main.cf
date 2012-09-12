@@ -52,7 +52,7 @@ perms_g:NON_EMPTY_STRING:default=root
 
   methods:
       "Yum Repository Client Configuration"
-      usebundle => cfdc_yumrepo.do($(class_prefix),
+      usebundle => cfdc_yumrepo:do($(class_prefix),
                                    $(createrepo),
                                    $(refresh_interval),
                                    $(keys),
@@ -73,18 +73,18 @@ bundle agent do(class_prefix, createrepo, refresh_interval, reponame, path, mode
   files:
       "$(path)/."
       create => "true",
-      perms  => default.mog("$(mode)", "$(owner)", "$(group)"),
-      depth_search => default.recurse("inf"),
-      action => default.if_elapsed("$(refresh_interval)"),
+      perms  => default:mog("$(mode)", "$(owner)", "$(group)"),
+      depth_search => default:recurse("inf"),
+      action => default:if_elapsed("$(refresh_interval)"),
       comment => "Ensure repository root directory exists with proper permissions";
 
       # Only check 1 level deep otherwise you will be detecting the change in the metadata itself as well.
       # That in turn will lead to an execution of creatrepo --update each time.
       "$(path)"
-      changes      => default.detect_content,
-      depth_search => default.recurse("1"),
-      classes      => default.if_repaired("$(class_prefix)$(reponame)_needs_metadata_update"),
-      action       => default.if_elapsed("$(refresh_interval)"),
+      changes      => default:detect_content,
+      depth_search => default:recurse("1"),
+      classes      => default:if_repaired("$(class_prefix)$(reponame)_needs_metadata_update"),
+      action       => default:if_elapsed("$(refresh_interval)"),
       comment      => "If any changes are detected we need to signal to update the metadata";
 
   classes:
@@ -100,17 +100,17 @@ bundle agent do(class_prefix, createrepo, refresh_interval, reponame, path, mode
     redhat|centos::
       "$(deps)"
       package_policy => "add",
-      package_method => default.yum_rpm,
-      action         => default.if_elapsed("$(refresh_interval)"),
+      package_method => default:yum_rpm,
+      action         => default:if_elapsed("$(refresh_interval)"),
       comment        => "createrepo is needed to create and update
 the metadata for a yum repository";
 
   commands:
       "$(createrepo)"
       args       => "$(path)",
-      action     => default.if_elapsed("$(refresh_interval)"),
+      action     => default:if_elapsed("$(refresh_interval)"),
       contain    => repo_yum_maintain_umask("022"),
-      classes    => default.if_repaired("$(class_prefix)$(reponame)_initalized"),
+      classes    => default:if_repaired("$(class_prefix)$(reponame)_initalized"),
       ifvarclass => not(canonify("$(class_prefix)$(reponame)_exists")),
       comment    => "Create repository if one does not exist";
 
@@ -119,9 +119,9 @@ the metadata for a yum repository";
       # the command returns zero.
       "$(createrepo)"
       args => "--update $(path)",
-      action     => default.if_elapsed("$(refresh_interval)"),
+      action     => default:if_elapsed("$(refresh_interval)"),
       contain    => repo_yum_maintain_umask("022"),
-      classes    => default.if_repaired("$(class_prefix)$(reponame)_metadata_updated"),
+      classes    => default:if_repaired("$(class_prefix)$(reponame)_metadata_updated"),
       ifvarclass => "$(class_prefix)$(reponame)_needs_metadata_update",
       comment    => "We need to update the metadata since a change was detected";
 
