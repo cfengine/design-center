@@ -115,20 +115,20 @@ bundle agent tcpwrappers(class_prefix, allow_filename, deny_filename, allow, den
       "$(allow_filename)"
       handle => "$(bundle)_files_allow_complete",
       create => "true",
-      perms => default.mog("644", "root", "root"),
-      classes => default.if_repaired("$(class_prefix)repaired_allow"),
-      edit_defaults => default.empty,
-      edit_line => default.append_if_no_lines("@(tcpwrappers.allow_rule_list)"),
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_allow"),
+      edit_defaults => default:empty,
+      edit_line => default:append_if_no_lines("@(tcpwrappers.allow_rule_list)"),
       comment => "Completely managed hosts.allow leaves less room for
 unexpected behavior from stray admins.";
 
       "$(deny_filename)"
       handle => "$(bundle)_files_deny_complete",
       create => "true",
-      perms => default.mog("644", "root", "root"),
-      classes => default.if_repaired("$(class_prefix)repaired_deny"),
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_deny"),
       ifvarclass => "empty_first",
-      edit_line => default.append_if_no_lines("@(tcpwrappers.deny_rule_list)");
+      edit_line => default:append_if_no_lines("@(tcpwrappers.deny_rule_list)");
 
       # If we are only partially mangaging the file we can only promise
       # about the defined rules
@@ -136,32 +136,32 @@ unexpected behavior from stray admins.";
       "$(allow_filename)"
       handle => "$(bundle)_files_allow_partial",
       create => "true",
-      perms => default.mog("644", "root", "root"),
-      classes => default.if_repaired("$(class_prefix)repaired_allow"),
-      edit_line => default.append_if_no_lines("@(tcpwrappers.allow_rule_list)");
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_allow"),
+      edit_line => default:append_if_no_lines("@(tcpwrappers.allow_rule_list)");
 
       "$(deny_filename)"
       handle => "$(bundle)_files_deny_partial",
       create => "true",
-      perms => default.mog("644", "root", "root"),
-      classes => default.if_repaired("$(class_prefix)repaired_deny"),
-      edit_line => default.append_if_no_lines("@(tcpwrappers.deny_rule_list)");
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_deny"),
+      edit_line => default:append_if_no_lines("@(tcpwrappers.deny_rule_list)");
 
       # If we are managing removal we only ensure specific rules do not exist
     second_class_pass.ensure_absent::
       "$(allow_filename)"
       handle => "$(bundle)_files_allow_remove",
       create => "true",
-      perms => default.mog("644", "root", "root"),
-      classes => default.if_repaired("$(class_prefix)repaired_allow"),
-      edit_line => default.delete_lines_matching("^$(tcpwrappers.allow_rule_list)$");
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_allow"),
+      edit_line => default:delete_lines_matching("^$(tcpwrappers.allow_rule_list)$");
 
       "$(deny_filename)"
       handle => "$(bundle)_files_deny_remove",
       create => "true",
-      perms => default.mog("644", "root", "root"),
-      classes => default.if_repaired("$(class_prefix)repaired_deny"),
-      edit_line => default.delete_lines_matching("^$(tcpwrappers.deny_rule_list)$");
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_deny"),
+      edit_line => default:delete_lines_matching("^$(tcpwrappers.deny_rule_list)$");
 
   reports:
     second_class_pass::
