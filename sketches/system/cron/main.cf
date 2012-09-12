@@ -1,6 +1,9 @@
-# N.B. namespacing this sketch breaks the list variables ($(lines) doesn't have anything)
+body file control
+{
+  namespace => "cfdc_cron";
+}
 
-bundle agent cfdc_cron(class_prefix, cron_path, tasks)
+bundle agent cron(class_prefix, cron_path, tasks)
 {
   meta:
       "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
@@ -28,10 +31,10 @@ commands:LIST(NON_EMPTY_STRING)
 
   methods:
     has_crond::
-      "crond"   usebundle => cfdc_cron_d($(class_prefix), $(cron_path), $(tasks), $(task_names));
+      "crond"   usebundle => cfdc_cron:d($(class_prefix), $(cron_path), $(tasks), $(task_names));
 
     has_crontab::
-      "crontab" usebundle => cfdc_cron_tab($(class_prefix), $(cron_path), $(tasks), $(task_names));
+      "crontab" usebundle => cfdc_cron:tab($(class_prefix), $(cron_path), $(tasks), $(task_names));
 
   reports:
     cfengine.debug::
@@ -45,7 +48,7 @@ commands:LIST(NON_EMPTY_STRING)
 
 }
 
-bundle agent cfdc_cron_d(class_prefix, cron_path, tasks, task)
+bundle agent d(class_prefix, cron_path, tasks, task)
 {
   vars:
       "tprefix"   string => "$(tasks)[$(task)]";
@@ -57,8 +60,8 @@ bundle agent cfdc_cron_d(class_prefix, cron_path, tasks, task)
 
   files:
       "$(cron_path)/cron-sketch-$(task)"
-      edit_line => append_if_no_lines("@(cfdc_cron_d.lines)"),
-      edit_defaults => empty,
+      edit_line => default:append_if_no_lines("@(d.lines)"),
+      edit_defaults => default:empty,
       create => "true";
 
   reports:
@@ -67,7 +70,7 @@ bundle agent cfdc_cron_d(class_prefix, cron_path, tasks, task)
       "lines to be inserted in '$(cron_path)/cron-sketch-$(task)' = $(lines)";
 }
 
-bundle agent cfdc_cron_tab(class_prefix, cron_path, tasks, task)
+bundle agent tab(class_prefix, cron_path, tasks, task)
 {
   classes:
       "only_allow_defined_entries" or => { "!$(class_prefix)nowipe" };
@@ -85,33 +88,33 @@ bundle agent cfdc_cron_tab(class_prefix, cron_path, tasks, task)
   files:
     only_allow_defined_entries::
       "/tmp/$(class_prefix)$(task).cron"
-      edit_line      => append_if_no_lines("$(cfdc_cron_tab.lines[$(task)])"),
-      edit_defaults  => empty,
+      edit_line      => default:append_if_no_lines("$(tab.lines[$(task)])"),
+      edit_defaults  => default:empty,
       create         => "true",
       classes        => if_ok_define_and_cancel("$(class_prefix)$(task)_if_lines_added", only_allow_defined_entries),
       ifvarclass     => "$(class_prefix)$(task)_prepared";
 
     !only_allow_defined_entries::
       "/tmp/$(class_prefix)$(task).cron"
-      edit_line      => append_if_no_lines("$(cfdc_cron_tab.lines[$(task)])"),
-      edit_defaults  => std_defs,
+      edit_line      => default:append_if_no_lines("$(tab.lines[$(task)])"),
+      edit_defaults  => default:std_defs,
       create         => "true",
-      classes        => if_ok("$(class_prefix)$(task)_if_lines_added"),
+      classes        => default:if_ok("$(class_prefix)$(task)_if_lines_added"),
       ifvarclass     => "$(class_prefix)$(task)_prepared";
 
     any::
       "/tmp/$(class_prefix)$(task).cron"
-      delete         => tidy,
+      delete         => default:tidy,
       ifvarclass     => "$(class_prefix)$(task)_if_crontab_changed|($(class_prefix)$(task)_prepared.!$(class_prefix)$(task)_if_lines_added)";
 
   commands:
       "$(cron_path) -u $(runas) -l > /tmp/$(class_prefix)$(task).cron",
-      contain        => in_shell,
-      classes        => if_ok("$(class_prefix)$(task)_prepared");
+      contain        => default:in_shell,
+      classes        => default:if_ok("$(class_prefix)$(task)_prepared");
 
       "$(cron_path) -u $(runas) /tmp/$(class_prefix)$(task).cron",
-      contain        => in_shell,
-      classes        => if_ok("$(class_prefix)$(task)_if_crontab_changed"),
+      contain        => default:in_shell,
+      classes        => default:if_ok("$(class_prefix)$(task)_if_crontab_changed"),
       ifvarclass     => "$(class_prefix)$(task)_if_lines_added";
 
   reports:
