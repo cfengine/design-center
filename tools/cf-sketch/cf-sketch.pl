@@ -2447,7 +2447,7 @@ EOHIPPUS
                       $a,
                       $act->{sketch},
                       $act->{activation_id},
-                      $act->{entry_bundle_namespace} ? "$act->{entry_bundle_namespace}." : '',
+                      $act->{entry_bundle_namespace} ? "$act->{entry_bundle_namespace}:" : '',
                       $act->{entry_bundle},
                       $args);
  }
