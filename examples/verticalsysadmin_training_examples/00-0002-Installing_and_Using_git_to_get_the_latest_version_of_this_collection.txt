@@ -1,10 +1,9 @@
-Installing and Using Git
-========================
+Installing and using git to download the latest version of these examples
+=========================================================================
 
 The examples used in this class are kept on GitHub.
 
-Install the git client to download the latest version
-of the examples.
+Install the git client to download the latest version of the examples.
 
 Installing Git (for RHEL 5 systems)
 -----------------------------------

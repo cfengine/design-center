@@ -9,6 +9,5 @@ bundle agent example {
       # attribute in another promise
       # to document dependency
 
-
               create  => "true";
                      }
