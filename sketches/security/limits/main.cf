@@ -68,37 +68,37 @@ bundle agent security_limits(class_prefix, filename, domains)
       "$(filename)"
       create => "true",
       handle => "security_limits_files_limits_conf_ensure_present",
-      edit_line => cfdc_security_limits.set_limits_selective($(domains),
-                                                             @(cfdc_security_limits:security_limits.items),
-                                                             @(cfdc_security_limits:security_limits.types),
-                                                             @(cfdc_security_limits:security_limits.domain_keys)),
-      perms => default.mog("644", "$(owner)", "$(owner)"),
-      classes => default.if_repaired("$(class_prefix)repaired"),
+      edit_line => set_limits_selective($(domains),
+                                        @(security_limits.items),
+                                        @(security_limits.types),
+                                        @(security_limits.domain_keys)),
+      perms => default:mog("644", "$(owner)", "$(owner)"),
+      classes => default:if_repaired("$(class_prefix)repaired"),
       ifvarclass => "!$(class_prefix)empty_first.!$(class_prefix)ensure_absent",
       comment    => "Ensure the specified lines are present, we dont care about other lines";
 
       "$(filename)"
       create => "true",
       handle => "security_limits_files_limits_conf_empty_first_ensure_present",
-      edit_line => cfdc_security_limits.set_limits_complete($(domains),
-                                                            @(cfdc_security_limits:security_limits.items),
-                                                            @(cfdc_security_limits:security_limits.types),
-                                                            @(cfdc_security_limits:security_limits.domain_keys)),
-      edit_defaults => default.empty,
-      perms => default.mog("644", "$(owner)", "$(owner)"),
-      classes => default.if_repaired("$(class_prefix)repaired"),
+      edit_line => set_limits_complete($(domains),
+                                       @(security_limits.items),
+                                       @(security_limits.types),
+                                       @(security_limits.domain_keys)),
+      edit_defaults => default:empty,
+      perms => default:mog("644", "$(owner)", "$(owner)"),
+      classes => default:if_repaired("$(class_prefix)repaired"),
       ifvarclass => "$(class_prefix)empty_first.!$(class_prefix)ensure_absent",
       comment    => "Ensure only the specified lines exist.";
 
       "$(filename)"
       create => "true",
       handle => "security_limits_files_limits_conf_ensure_absent",
-      edit_line => cfdc_security_limits.set_limits_removal($(domains),
-                                                           @(cfdc_security_limits:security_limits.items),
-                                                           @(cfdc_security_limits:security_limits.types),
-                                                           @(cfdc_security_limits:security_limits.domain_keys)),
-      perms => default.mog("644", "$(owner)", "$(owner)"),
-      classes => default.if_repaired("$(class_prefix)repaired"),
+      edit_line => set_limits_removal($(domains),
+                                      @(security_limits.items),
+                                      @(security_limits.types),
+                                      @(security_limits.domain_keys)),
+      perms => default:mog("644", "$(owner)", "$(owner)"),
+      classes => default:if_repaired("$(class_prefix)repaired"),
       ifvarclass => "$(class_prefix)ensure_absent",
       comment    => "Ensure the specified lines do not exist.";
 
@@ -162,8 +162,8 @@ bundle edit_line set_limits_selective(dref, items, types, domains)
 
   replace_patterns:
       "^\s*($(mydomains)\s+$(mytypes)\s+$(myitems)\s+(?!$($(dref)[$(mydomains)][$(mytypes)][$(myitems)])$)).*$"
-      replace_with => default.value("$(mydomains) $(mytypes) $(myitems) $($(dref)[$(mydomains)][$(mytypes)][$(myitems)])"),
-      classes => default.always("replace_done_$(edit.filename)_$(mydomains)_$(mytypes)_$(myitems)"),
+      replace_with => default:value("$(mydomains) $(mytypes) $(myitems) $($(dref)[$(mydomains)][$(mytypes)][$(myitems)])"),
+      classes => default:always("replace_done_$(edit.filename)_$(mydomains)_$(mytypes)_$(myitems)"),
       ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
 
     debug::
