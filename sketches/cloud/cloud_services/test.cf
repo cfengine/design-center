@@ -63,7 +63,7 @@ bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "Cloud::Services test" usebundle => cfdc_cloud_services.cloud_services($(cfsketch_g.cloudtest_prefix),
+      "Cloud::Services test" usebundle => cfdc_cloud_services:cloud_services($(cfsketch_g.cloudtest_prefix),
                                                                              $(cfsketch_g.cloudtest_bundle_home),
                                                                              $(cfsketch_g.cloudtest_install_cfengine),
                                                                              $(cfsketch_g.cloudtest_stype),

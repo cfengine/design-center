@@ -35,7 +35,7 @@ bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "tcpwrappers test" usebundle => cfdc_tcpwrappers.tcpwrappers("tcpwrappers_test_",
+      "tcpwrappers test" usebundle => cfdc_tcpwrappers:tcpwrappers("tcpwrappers_test_",
                                                                    $(cfsketch_g.tcpwrappers_test_allow_filename),
                                                                    $(cfsketch_g.tcpwrappers_test_deny_filename),
                                                                    "cfsketch_g.tcpwrappers_test_allow",

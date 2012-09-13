@@ -33,7 +33,7 @@ bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "test" usebundle => cfdc_yumrepo.repo_yum_maintain($(cfsketch_g.yumrepo_test_class_prefix),
+      "test" usebundle => cfdc_yumrepo:repo_yum_maintain($(cfsketch_g.yumrepo_test_class_prefix),
                                                          $(cfsketch_g.yumrepo_test_createrepo),
                                                          $(cfsketch_g.yumrepo_test_refresh_interval),
                                                          "cfsketch_g.yumrepo_test_repo");

@@ -11,7 +11,7 @@ bundle agent main
 {
   methods:
       "mirror copbl"
-      usebundle => cfdc_vcs_mirror.vcs_mirror("mirror_copbl",
+      usebundle => cfdc_vcs_mirror:vcs_mirror("mirror_copbl",
                                               "mirror_copbl",
                                               "/usr/bin/git",
                                               "/tmp/test2/test3/git_mirror",
@@ -21,7 +21,7 @@ bundle agent main
                                               "022");
 
       "mirror thrift"
-      usebundle => cfdc_vcs_mirror.vcs_mirror("mirror_thrift",
+      usebundle => cfdc_vcs_mirror:vcs_mirror("mirror_thrift",
                                               "mirror_thrift",
                                               "/usr/bin/svn",
                                               "/tmp/test2/test3/svn_mirror",

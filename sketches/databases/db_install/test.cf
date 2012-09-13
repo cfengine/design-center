@@ -80,5 +80,5 @@ bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "db install" usebundle => cfdc_database_install.db_install($(cfsketch_g.dbinstall_class_prefix), $(cfsketch_g.dbinstall_db), $(cfsketch_g.dbinstall_process_match), $(cfsketch_g.dbinstall_start_command), @(cfsketch_g.dbinstall_packages), @(cfsketch_g.dbinstall_server_packages));
+      "db install" usebundle => cfdc_database_install:db_install($(cfsketch_g.dbinstall_class_prefix), $(cfsketch_g.dbinstall_db), $(cfsketch_g.dbinstall_process_match), $(cfsketch_g.dbinstall_start_command), @(cfsketch_g.dbinstall_packages), @(cfsketch_g.dbinstall_server_packages));
 }
