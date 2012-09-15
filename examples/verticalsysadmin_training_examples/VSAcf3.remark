@@ -1,0 +1,18 @@
+# Rules to highlight the output of "ls -1" in the verticalsysadmin_training_examples directory
+# Reference: http://www.cyberciti.biz/open-source/command-line-hacks/remark-command-regex-markup-examples/	
+
+
+include "common"
+
+# Special: Color all lines that don't match any of the rules below red
+/.*/ red
+
+
+
+/^([0-9]+)-([0-9]+)_(.*)$/ {
+  default
+  1 red
+  2 blue
+  3 green
+  break
+}
