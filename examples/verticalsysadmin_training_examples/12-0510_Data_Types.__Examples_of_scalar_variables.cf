@@ -1,0 +1,19 @@
+bundle agent example
+{
+
+  vars:
+
+      "my_string"       string  => "String contents...";
+      "my_int"  int     => "42";
+      "my_real" real    => "3.14159";
+
+
+  reports:
+    cfengine_3::
+      "
+Scalar variable my_string: $(my_string)
+
+Scalar variable my_int:    $(my_int)
+
+Scalar variable my_real:   $(my_real)";
+}

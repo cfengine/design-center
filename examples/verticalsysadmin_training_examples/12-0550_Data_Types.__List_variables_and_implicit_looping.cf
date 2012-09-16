@@ -1,0 +1,20 @@
+bundle agent example {
+
+  vars:
+
+      "shopping_list"   slist   => {
+                                     "apples",
+                                     "oranges",
+                                     "bananas",
+                                     "grapes",
+                                     "plantains",
+                                     "coconuts",
+                                   };
+
+      ############################################################
+
+  commands:
+
+      "/bin/echo $(shopping_list)";
+                     }
+
