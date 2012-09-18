@@ -1,5 +1,7 @@
-# N.B. namespacing this sketch breaks the $(sources) iteration
-# N.B. making the type a slist breaks the types iteration
+body file control
+{
+  namespace => "cfdc_aptrepo";
+}
 
 # Used for enforcing the contents of /etc/apt/sources.list or
 # /etc/apt/sources.list.d/*.list
@@ -12,12 +14,14 @@ bundle agent aptrepos(class_prefix, repos, apt_file, apt_dir)
 
       "vars[repos][type]"            string => "KVARRAY(
 _key:NON_EMPTY_STRING
+name:NON_EMPTY_STRING:required
 section:NON_EMPTY_STRING:required
 file:NON_EMPTY_STRING:required
 repo_url:HTTP_URL|FTP_URL|FILE_URL:required
 distrib:NON_EMPTY_STRING:required
 version_distrib:NON_EMPTY_STRING:required
-type:STRING:required
+deb:BOOLEAN:required
+deb-src:BOOLEAN:required
 )";
 
       "vars[wipe][type]"             string => "CONTEXT",
@@ -34,88 +38,104 @@ type:STRING:required
       "vars[apt_dir][type]"          string => "PATH";
       "vars[apt_dir][default]"       string => "/etc/apt/sources.list.d";
 
+  classes:
+      "wipe" expression => "$(class_prefix)wipe";
+
   vars:
-      "sources" slist => getindices("$(repos)"),
+      "sources" slist => { getindices("$(repos)") },
       comment => "The repo list for APT";
 
       "CFEnotice"
       string  => "# This file is managed by CFEngine, manual edits will be reverted",
       comment => "It's nice to let people know why the file keep magically reverting on them";
 
-      "wipe_bool" string => "true",
-      ifvarclass => "$(class_prefix)wipe";
+    wipe::
+      "wipe_bool" string => "true";
 
-      "wipe_bool" string => "false",
-      ifvarclass => "!$(class_prefix)wipe";
+    !wipe::
+      "wipe_bool" string => "false";
 
   methods:
-      "write" usebundle => aptrepos_write
+      "write" usebundle => cfdc_aptrepo:write
       (
         $(class_prefix),
         "$(apt_dir)/$($(repos)[$(sources)][file])",
-        "$($(repos)[$(sources)][type])", # a space-separated list!
         "$($(repos)[$(sources)][repo_url])",
         "$($(repos)[$(sources)][distrib])",
         "$($(repos)[$(sources)][version_distrib])",
         "$($(repos)[$(sources)][section])",
         $(wipe_bool),
+        "$($(repos)[$(sources)][deb])", # a boolean
+        "$($(repos)[$(sources)][deb-src])", # a boolean
         $(CFEnotice)
       );
 
   reports:
     verbose::
-      "Source $(sources) (type $($(repos)[$(sources)][type])) is active";
+      "Source $($(repos)[$(sources)][name]) is active";
+      "Proposing file $(apt_dir)/$($(repos)[$(sources)][file]) for $($(repos)[$(sources)][name])";
     debug::
       "We looked in the indices of $(repos) to get $(sources)";
 
 }
 
-bundle edit_line aptrepos_prepend_if_no_line(string)
+bundle edit_line prepend_if_no_line(string)
 {
   insert_lines:
       "$(string)"
-      location => start,
+      location => default:start,
       comment => "Prepend a line to the file if it doesn't already exist";
 }
 
-body edit_defaults aptrepos_empty_if_ask(bool)
+body edit_defaults empty_if_ask(bool)
 {
       edit_backup => "false";
       max_file_size => "300000";
       empty_file_before_editing => "$(bool)";
 }
 
-bundle agent aptrepos_write(class_prefix, maybe_file, joined_type, url, distrib, version, section, wipe_bool, notice)
+bundle agent write(class_prefix, maybe_file, url, distrib, version, section, wipe_bool, deb, deb_src, notice)
 {
+  classes:
+      "use_apt_file" expression => "$(class_prefix)use_apt_file";
+      "use_deb" expression => strcmp("1", $(deb));
+      "use_deb_src" expression => strcmp("1", $(deb_src));
+
   vars:
-      "types" slist => splitstring("$(joined_type)", " ", "1000");
-      "e" slist => maplist("$(this) $(url)/$(distrib)/ $(version) $(section)", "types");
+    use_deb.!use_deb_src::
+      "types" slist => { "deb" };
+    !use_deb.use_deb_src::
+      "types" slist => { "deb_src" };
+    use_deb.use_deb_src::
+      "types" slist => { "deb", "deb_src" };
 
-      "file"
-      string  => $(apt_file),
-      ifvarclass => "$(class_prefix)use_apt_file";
+    any::
+      "e" string => "$(url)/$(distrib)/ $(version) $(section)";
 
-      "file"
-      string  => $(maybe_file),
-      ifvarclass => "!$(class_prefix)use_apt_file";
+    use_apt_file::
+      "file" string  => $(apt_file);
+
+    !use_apt_file::
+      "file" string  => $(maybe_file);
 
   files:
       "$(file)"
       create        => "true",
       handle        => "prepfile_$(file)",
-      edit_defaults => aptrepos_empty_if_ask($(wipe_bool)),
-      edit_line     => aptrepos_prepend_if_no_line($(notice)),
+      edit_defaults => cfdc_aptrepo:empty_if_ask($(wipe_bool)),
+      edit_line     => cfdc_aptrepo:prepend_if_no_line($(notice)),
       comment       => "Create $(file) and note that the file is managed by CFEngine";
 
       # note that we need to edit the file AFTER it's been possibly
       # created with a notice
       "$(file)"
-      edit_defaults =>  std_defs,
-      edit_line     =>  append_if_no_line($(e)),
-      depends_on    => { "prepfile_$(file)" },
+      edit_defaults =>  default:std_defs,
+      edit_line     =>  default:append_if_no_line("$(types) $(e)"),
       comment       =>  "Complete or fix $(file).";
 
   reports:
     debug::
-      "Writing $(file): $(e)";
+      "Got parameters class_prefix=$(class_prefix), maybe_file=$(maybe_file), deb=$(deb), deb_src=$(deb_src), url=$(url), distrib=$(distrib), version=$(version), section=$(section), wipe_bool=$(wipe_bool)";
+      "Got types $(types)";
+      "Writing $(file): $(types) $(e)";
 }
