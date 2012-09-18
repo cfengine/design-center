@@ -9,12 +9,21 @@ bundle agent cfdc_set_hostname(prefix) {
 #       "hostname" usebundle => cfdc_set_hostname("main.fqdn_");
 #
     vars:
-        # Stuff these into an array on redhat style systems
-        # It's a convienant with the way redhat configs work
-        redhat::
-            "config[HOSTNAME]"  string => "$($(prefix)hostname)";
-            "config[NISDOMAIN]" string => "$($(prefix)domain)";
+        "config[HOSTNAME]"  string => "$($(prefix)hostname)";
+        "config[NISDOMAIN]" string => "$($(prefix)domain)";
+
     files:
+
+        debian::
+            "/etc/hostname"
+                comment       => "Set domain-name, not FQDN in this file - in accordance with man 1 hostname",
+                create        => "true",
+                edit_defaults => empty,
+                edit_line     => insert_lines("$(config[HOSTNAME])"),
+                perms         => mog("644", "root", "root"),
+                classes       => if_repaired("$(canon_prefix)_set_hostname_update_running_hostname");
+
+
         redhat::
             "/etc/sysconfig/network"
                 create    => "true",
@@ -30,7 +39,8 @@ bundle agent cfdc_set_hostname(prefix) {
                               recently bit me.";
 
     commands:
-        redhat::
+
+        debian|redhat::
             "/bin/hostname $($(prefix)hostname)"
                 ifvarclass => "$(canon_prefix)_set_hostname_update_running_hostname",
                 comment => "Update the hostname on the running system so we

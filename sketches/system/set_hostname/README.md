@@ -12,6 +12,8 @@ linux
   official redhat documentation HOSTNAME in /etc/sysconfig/network should not
   be set to the fqdn, it causes the hostname utility to return the fqdn
   in stead of the shorthostname when run without arguments.
+  For Debian or Ubuntu, the domain name is not stored across reboots,
+  as it does not seem to be supported by these distributions.
 
 ## REQUIREMENTS
 * CFEngine Community 3.2.1 or greater
