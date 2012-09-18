@@ -2432,7 +2432,7 @@ EOHIPPUS
    my $var = $pass->[0];
    if ($var->{type} =~ m/^(KV)?ARRAY\(/)
    {
-    push @print_passed, "\"cfsketch_g._${a}_$act->{prefix}_$var->{name}\"";
+    push @print_passed, "\"default:cfsketch_g._${a}_$act->{prefix}_$var->{name}\"";
    }
    else
    {
