@@ -71,10 +71,10 @@ deb-src:BOOLEAN:required
       );
 
   reports:
-    verbose::
+    default:verbose::
       "Source $($(repos)[$(sources)][name]) is active";
       "Proposing file $(apt_dir)/$($(repos)[$(sources)][file]) for $($(repos)[$(sources)][name])";
-    debug::
+    default:debug::
       "We looked in the indices of $(repos) to get $(sources)";
 
 }
@@ -134,7 +134,7 @@ bundle agent write(class_prefix, maybe_file, url, distrib, version, section, wip
       comment       =>  "Complete or fix $(file).";
 
   reports:
-    debug::
+    default:debug::
       "Got parameters class_prefix=$(class_prefix), maybe_file=$(maybe_file), deb=$(deb), deb_src=$(deb_src), url=$(url), distrib=$(distrib), version=$(version), section=$(section), wipe_bool=$(wipe_bool)";
       "Got types $(types)";
       "Writing $(file): $(types) $(e)";
