@@ -39,9 +39,17 @@ perms_g:NON_EMPTY_STRING:default=root
 )";
 
   classes:
-      "_verbose"  or => { "$(class_prefix)verbose", "verbose" };
-      "_test"     or => { "$(class_prefix)test",    "test" };
-      "_debug"    or => { "$(class_prefix)debug",   "debug" };
+    any::
+      "_verbose"  or => { "$(class_prefix)verbose" };
+      "_debug"    or => { "$(class_prefix)debug"};
+      "_test"     or => { "$(class_prefix)test" };
+
+    default:verbose::
+      "_verbose"  or => { "any" };
+    default:test::
+      "_test"  or => { "any" };
+    default:debug::
+      "_debug"  or => { "any" };
 
   vars:
       "bundle" string => "repo_yum_maintain";
