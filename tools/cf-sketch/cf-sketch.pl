@@ -2342,7 +2342,9 @@ EOHIPPUS
 
    if (ref $value eq '')
    {
+    # for when a bundle wants access to scripts or modules
     $value =~ s/__BUNDLE_HOME__/$rel_path/g;
+    $value =~ s/__ABS_BUNDLE_HOME__/$act->{fulldir}/g;
     # for when a bundle wants access to the general variables directly
     $value =~ s/__PREFIX__/cfsketch_g._${a}_$act->{prefix}_/g;
     # for when a bundle wants to access its activation's classes
