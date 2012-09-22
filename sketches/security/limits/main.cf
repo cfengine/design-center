@@ -3,11 +3,14 @@ body file control
       namespace => "cfdc_security_limits";
 }
 
-bundle agent security_limits(class_prefix, filename, domains)
+bundle agent security_limits(class_prefix, canon_prefix, filename, domains)
 {
   meta:
       "vars[class_prefix][type]"      string => "NON_EMPTY_STRING";
       "vars[class_prefix][default]"   string => "__CLASS_PREFIX__";
+
+      "vars[canon_prefix][type]"      string => "NON_EMPTY_STRING";
+      "vars[canon_prefix][default]"   string => "__CANON_PREFIX__";
 
       "vars[ensure_absent][type]"     string => "CONTEXT";
       "vars[ensure_absent][default]"  string => "!any";
@@ -56,15 +59,21 @@ bundle agent security_limits(class_prefix, filename, domains)
 
       "domain_keys" slist => getindices("$(domains)");
 
-    test::
+    default:test::
       "owner" string => getenv("LOGNAME", 100);
-    !test::
+    !default:test::
       "owner" string => "root";
 
   classes:
-      "debug_security_limits" or => { "$(class_prefix)debug", "debug" };
+      "empty_first" expression => "$(class_prefix)empty_first";
+      "ensure_absent" expression => "$(class_prefix)ensure_absent";
+
+      "debug_security_limits" or => { "$(class_prefix)debug" };
+    default:debug::
+      "debug_security_limits" or => { "any" };
 
   files:
+    !empty_first.!ensure_absent::
       "$(filename)"
       create => "true",
       handle => "security_limits_files_limits_conf_ensure_present",
@@ -73,10 +82,10 @@ bundle agent security_limits(class_prefix, filename, domains)
                                         @(security_limits.types),
                                         @(security_limits.domain_keys)),
       perms => default:mog("644", "$(owner)", "$(owner)"),
-      classes => default:if_repaired("$(class_prefix)repaired"),
-      ifvarclass => "!$(class_prefix)empty_first.!$(class_prefix)ensure_absent",
+      classes => default:if_repaired("$(canon_prefix)repaired"),
       comment    => "Ensure the specified lines are present, we dont care about other lines";
 
+    empty_first.!ensure_absent::
       "$(filename)"
       create => "true",
       handle => "security_limits_files_limits_conf_empty_first_ensure_present",
@@ -87,9 +96,9 @@ bundle agent security_limits(class_prefix, filename, domains)
       edit_defaults => default:empty,
       perms => default:mog("644", "$(owner)", "$(owner)"),
       classes => default:if_repaired("$(class_prefix)repaired"),
-      ifvarclass => "$(class_prefix)empty_first.!$(class_prefix)ensure_absent",
       comment    => "Ensure only the specified lines exist.";
 
+    ensure_absent::
       "$(filename)"
       create => "true",
       handle => "security_limits_files_limits_conf_ensure_absent",
@@ -99,7 +108,6 @@ bundle agent security_limits(class_prefix, filename, domains)
                                       @(security_limits.domain_keys)),
       perms => default:mog("644", "$(owner)", "$(owner)"),
       classes => default:if_repaired("$(class_prefix)repaired"),
-      ifvarclass => "$(class_prefix)ensure_absent",
       comment    => "Ensure the specified lines do not exist.";
 
   reports:
@@ -108,17 +116,17 @@ bundle agent security_limits(class_prefix, filename, domains)
 
       "Given: $(domain_keys) $(types) $(items) = $($(domains)[$(domain_keys)][$(types)][$(items)])";
 
-      "Empty First: Enabled",
-      ifvarclass => "$(class_prefix)empty_first";
+    empty_first::
+      "Empty First: Enabled";
 
-      "Mgmt Policy: ensure absent",
-      ifvarclass => "$(class_prefix)ensure_absent";
+    ensure_absent::
+      "Mgmt Policy: ensure absent";
 
-      "Mgmt Policy: ensure present",
-      ifvarclass => "!$(class_prefix)ensure_absent";
+    !ensure_absent::
+      "Mgmt Policy: ensure present";
 
       "I repaired the $(filename) file",
-      ifvarclass => "$(class_prefix)repaired";
+      ifvarclass => "$(canon_prefix)repaired";
 
 }
 
@@ -131,6 +139,8 @@ bundle edit_line set_limits_removal(dref, items, types, domains)
 
   classes:
       "$(mydomains)_$(mytypes)_$(myitems)_defined" expression => isvariable("$(dref)[$(mydomains)][$(mytypes)][$(myitems)]");
+    default:debug::
+      "debug_security_limits" or => { "any" };
 
   insert_lines:
       "# This file is managed by CFEngine, manual edits may be reverted";
@@ -140,7 +150,7 @@ bundle edit_line set_limits_removal(dref, items, types, domains)
       ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
 
   reports:
-    debug::
+    debug_security_limits::
       "Removing line ^\s*$(mydomains)\s+$(mytypes)\s+$(myitems)\s+.*"
       ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
 }
@@ -154,6 +164,8 @@ bundle edit_line set_limits_selective(dref, items, types, domains)
 
   classes:
       "$(mydomains)_$(mytypes)_$(myitems)_defined" expression => isvariable("$(dref)[$(mydomains)][$(mytypes)][$(myitems)]");
+    default:debug::
+      "debug_security_limits" or => { "any" };
 
   insert_lines:
       "# This file is managed by CFEngine, manual edits may be reverted";
@@ -166,7 +178,7 @@ bundle edit_line set_limits_selective(dref, items, types, domains)
       classes => default:always("replace_done_$(edit.filename)_$(mydomains)_$(mytypes)_$(myitems)"),
       ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
 
-    debug::
+    debug_security_limits::
       "Selectively managing line ^\s*$(mydomains)\s+$(mytypes)\s+$(myitems)\s+.*"
       ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
 }
@@ -180,13 +192,15 @@ bundle edit_line set_limits_complete(dref, items, types, domains)
 
   classes:
       "$(mydomains)_$(mytypes)_$(myitems)_defined" expression => isvariable("$(dref)[$(mydomains)][$(mytypes)][$(myitems)]");
+    default:debug::
+      "debug_security_limits" or => { "any" };
 
   insert_lines:
       "# This file is managed by CFEngine, manual edits may be reverted";
       "$(mydomains) $(mytypes) $(myitems) $($(dref)[$(mydomains)][$(mytypes)][$(myitems)])"
       ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
 
-    debug::
+    debug_security_limits::
       "Completely managing line ^\s*$(mydomains)\s+$(mytypes)\s+$(myitems)\s+.*"
       ifvarclass => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
 }

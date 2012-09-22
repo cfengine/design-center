@@ -27,8 +27,9 @@ bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "test" usebundle => cfdc_security_limits:security_limits("testlimits",
+      "test" usebundle => cfdc_security_limits:security_limits("default:testlimits",
+                                                               "testlimits",
                                                                $(cfsketch_g.testlimits_filename),
-                                                               "cfsketch_g.testlimits_domains");
+                                                               "default:cfsketch_g.testlimits_domains");
 
 }
