@@ -46,24 +46,37 @@ bundle agent db_install(canon_prefix, class_prefix, db, process_match, start_com
       "purge" expression => "$(class_prefix)purge";
 
   vars:
-    server::
+    server.default:test::
+      "all_packages" slist => { "test-packages", "test-server-packages" };
+      "type" string => "test-server";
+
+    server.!default:test::
       "all_packages" slist => { @(packages), @(server_packages) };
       "type" string => "server";
 
-    !server::
+    !server.default:test::
+      "all_packages" slist => { "test-packages" };
+      "type" string => "test-client";
+
+    !server.!default:test::
       "all_packages" slist => { @(packages) };
       "type" string => "client";
 
-
-    purge::
+    purge.!default:test::
       "mode" string => "purging";
 
-    !purge::
+    !purge.!default:test::
       "mode" string => "installing";
+
+    purge.default:test::
+      "mode" string => "test-purging";
+
+    !purge.default:test::
+      "mode" string => "test-installing";
 
   packages:
 
-    !default:test.!purge::
+    !purge::
       "$(all_packages)"
       comment => "Install $(db) packages",
       handle => "db_install_packages_add",
@@ -72,7 +85,7 @@ bundle agent db_install(canon_prefix, class_prefix, db, process_match, start_com
       classes => default:if_ok("$(canon_prefix)ensure_database_running"),
       action => default:log_repaired("stdout","$(db) $(type) was installed");
 
-    !default:test.purge.!(installing_sqlite.redhat)::
+    purge.!(installing_sqlite.redhat)::
       "$(all_packages)"
       comment => "Remove $(db) packages.  SQLite packages should not be purged for Redhat-related distributions because rmp/yum rely on libsqlite.so.0",
       handle => "db_install_packages_remove",
