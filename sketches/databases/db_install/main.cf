@@ -3,10 +3,14 @@ body file control
   namespace => "cfdc_db";
 }
 
-bundle agent db_install(class_prefix, db, process_match, start_command, packages, server_packages)
+bundle agent db_install(canon_prefix, class_prefix, db, process_match, start_command, packages, server_packages)
 {
   meta:
-      # __PREFIX__ will be supplied by cf-sketch
+      # __CANON_PREFIX__ will be supplied by cf-sketch
+      "vars[canon_prefix][type]"     string => "NON_EMPTY_STRING";
+      "vars[canon_prefix][default]"  string => "__CANON_PREFIX__";
+
+      # __CLASS_PREFIX__ will be supplied by cf-sketch
       "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
       "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
 
@@ -38,74 +42,73 @@ bundle agent db_install(class_prefix, db, process_match, start_command, packages
       "installing_postgresql" expression => strcmp("$(db)", "postgresql");
       "installing_sqlite"     expression => strcmp("$(db)", "sqlite");
 
+      "server" expression => "$(class_prefix)server";
+      "purge" expression => "$(class_prefix)purge";
+
   vars:
-      "type" string => "server",
-      ifvarclass => "$(class_prefix)server";
+    server::
+      "all_packages" slist => { @(packages), @(server_packages) };
+      "type" string => "server";
 
-      "type" string => "client",
-      ifvarclass => "!$(class_prefix)server";
+    !server::
+      "all_packages" slist => { @(packages) };
+      "type" string => "client";
 
-      "mode" string => "purging",
-      ifvarclass => "$(class_prefix)purge";
 
-      "mode" string => "installing",
-      ifvarclass => "!$(class_prefix)purge";
+    purge::
+      "mode" string => "purging";
 
-      "all_packages" slist => { @(packages), @(server_packages) },
-      ifvarclass => "$(class_prefix)server";
-
-      "all_packages" slist => { @(packages) },
-      ifvarclass => "!$(class_prefix)server";
+    !purge::
+      "mode" string => "installing";
 
   packages:
 
+    !default:test.!purge::
       "$(all_packages)"
       comment => "Install $(db) packages",
       handle => "db_install_packages_add",
       package_policy => "add",
       package_method => default:generic,
-      classes => default:if_ok("$(class_prefix)ensure_database_running"),
-      action => default:log_repaired("stdout","$(db) $(type) was installed"),
-      ifvarclass => "!$(class_prefix)purge";
+      classes => default:if_ok("$(canon_prefix)ensure_database_running"),
+      action => default:log_repaired("stdout","$(db) $(type) was installed");
 
+    !default:test.purge.!(installing_sqlite.redhat)::
       "$(all_packages)"
       comment => "Remove $(db) packages.  SQLite packages should not be purged for Redhat-related distributions because rmp/yum rely on libsqlite.so.0",
       handle => "db_install_packages_remove",
       package_policy => "delete",
       package_method => default:generic,
-      action => default:log_repaired("stdout","$(db) $(type) was removed"),
-      ifvarclass => "$(class_prefix)purge.!(installing_sqlite.redhat)";
+      action => default:log_repaired("stdout","$(db) $(type) was removed");
 
   files:
 
-    redhat|centos|fedora::
+    installing_mysql.server.(redhat|centos|fedora)::
 
       "/tmp/mysql.sock"
       comment => "Create a temp link to mysql.sock",
       handle => "db_mysql_files_mysql_sock_redhat_centos_fedora",
-      ifvarclass => "installing_mysql.$(class_prefix)server",
-      link_from => ln_s("/var/lib/mysql/mysql.sock");
+      link_from => default:ln_s("/var/lib/mysql/mysql.sock");
 
-    debian|ubuntu::
+    installing_mysql.server.(debian|ubuntu)::
 
       "/tmp/mysql.sock"
       comment => "Create a temp link to mysql.sock",
       handle => "db_mysql_files_mysql_sock_debian_ubuntu",
-      ifvarclass => "installing_mysql.$(class_prefix)server",
-      link_from => ln_s("/var/run/mysqld/mysqld.sock");
+      link_from => default:ln_s("/var/run/mysqld/mysqld.sock");
 
   processes:
 
+    server::
       "$(process_match)"
       comment => "Check for $(db) process",
       handle => "db_$(db)_processes_run",
-      ifvarclass => "$(class_prefix)ensure_database_running.$(class_prefix)server",
-      restart_class => "$(class_prefix)start_db";
+      ifvarclass => "$(canon_prefix)ensure_database_running",
+      restart_class => "$(canon_prefix)start_db";
 
+    purge.server::
       "$(process_match)"
       comment => "Teminate $(db) process",
       handle => "db_$(db)_processes_terminate",
-      ifvarclass => "$(class_prefix)purge.$(class_prefix)server",
       signals => { "term","kill" };
 
   commands:
@@ -113,9 +116,21 @@ bundle agent db_install(class_prefix, db, process_match, start_command, packages
       "$(start_command)"
       comment => "Start/Restart command of $(db)",
       handle => "db_$(db)_commands_run",
-      ifvarclass => "$(class_prefix)start_db";
+      ifvarclass => "$(canon_prefix)start_db";
 
   reports:
-    verbose::
+    default:test::
+      "SIMULATE $(mode) of $(all_packages)";
+
+    default:verbose::
       "DB $(db) $(mode) in $(type) mode; packages $(all_packages)";
+      "Class prefix $(class_prefix); my canon prefix $(canon_prefix)";
+    default:verbose.purge::
+      "Purge mode";
+    default:verbose.!purge::
+      "Install mode";
+    default:verbose.server::
+      "Server install mode";
+    default:verbose.!server::
+      "Client install mode";
 }
