@@ -2343,8 +2343,12 @@ EOHIPPUS
    if (ref $value eq '')
    {
     $value =~ s/__BUNDLE_HOME__/$rel_path/g;
+    # for when a bundle wants access to the general variables directly
     $value =~ s/__PREFIX__/cfsketch_g._${a}_$act->{prefix}_/g;
-    $value =~ s/__CLASS_PREFIX__/_${a}_$act->{prefix}_/g;
+    # for when a bundle wants to access its activation's classes
+    $value =~ s/__CLASS_PREFIX__/default:_${a}_$act->{prefix}_/g;
+    # for when a bundle wants to set unique classes per activation
+    $value =~ s/__CANON_PREFIX__/_${a}_$act->{prefix}_/g;
    }
 
    push @passed, [ $var, $value ]
@@ -2436,8 +2440,11 @@ EOHIPPUS
    }
    else
    {
-    my $sigil = ($var->{type} =~ m/^LIST\(/) ? '@' : '$';
-    push @print_passed, "$sigil(cfsketch_g._${a}_$act->{prefix}_$var->{name})";
+    my $islist = $var->{type} =~ m/^LIST\(/;
+    my $sigil = $islist ? '@' : '$';
+    # my $maybe_quotes = $islist ? '"' : '';
+    my $maybe_quotes = '';
+    push @print_passed, "$maybe_quotes$sigil(cfsketch_g._${a}_$act->{prefix}_$var->{name})$maybe_quotes";
    }
   }
 
