@@ -56,107 +56,121 @@
 # The file to edit is determined automatically, but you can manually override it
 # by specifying the parameter _sshd_config_file in the params array.
 
+body file control
+{
+  namespace => "cfdc_sshd";
+}
+
 bundle agent sshd(params)
 {
   meta:
       "vars[params][type]"    string => "ARRAY()";
       "vars[params][default]" string => "{}";
   methods:
-      "sshd_vars" usebundle => sshd_vars("$(prefix)params");
-      "sshd_cfg"  usebundle => sshd_set_cfg("sshd_vars.conf");
+      "vars" usebundle => cfdc_sshd:vars("$(prefix)params");
+      "sshd_cfg"  usebundle => cfdc_sshd:set_cfg("cfdc_sshd:vars.conf");
 }
 
 bundle agent sshd_config(params)
 {
   methods:
-      "sshd_vars" usebundle => sshd_vars("$(params)");
-      "sshd_cfg"  usebundle => sshd_set_cfg("sshd_vars.conf");
+      "vars" usebundle => cfdc_sshd:vars("$(params)");
+      "sshd_cfg"  usebundle => cfdc_sshd:set_cfg("cfdc_sshd:vars.conf");
 }
 
 ######################################################################
 
-bundle agent sshd_vars(params)
+bundle agent vars(params)
 {
+  classes:
+    default:test::
+      "SSH_TEST_MODE" expression => "any";
+
   vars:
       # Default value, for most OSs
       "conf[_sshd_config_file]" string => "/etc/ssh/sshd_config",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_start_cmd]"   string => "/etc/init.d/sshd start",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_stop_cmd]"    string => "/etc/init.d/sshd restart",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_restart_cmd]" string => "/etc/init.d/sshd reload",
-                                policy => "free";
+      policy => "free";
+      "conf[_create]" string => "false",
+      policy => "free";
 
     debian::
       # OS-specific values that differ from the default
       "conf[_sshd_config_file]" string => "/etc/ssh/sshd_config",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_start_cmd]"   string => "/usr/sbin/service ssh start",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_stop_cmd]"    string => "/usr/sbin/service ssh restart",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_restart_cmd]" string => "/usr/sbin/service ssh reload",
-                                policy => "free";
+      policy => "free";
 
       # OS-specific values that differ from the default
-    darwin:: # Macs
+      darwin:: # Macs
       "conf[_sshd_config_file]" string => "/etc/sshd_config",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_start_cmd]"   string => "/usr/sbin/systemsetup -setremotelogin on",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_stop_cmd]"    string => "/usr/sbin/systemsetup -f -setremotelogin off",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_restart_cmd]" string => "",
-                                policy => "free";
+      policy => "free";
     hpux::
       "conf[_sshd_config_file]" string => "/opt/ssh/etc/sshd_config",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_start_cmd]"   string => "/sbin/init.d/secsh start",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_stop_cmd]"    string => "/sbin/init.d/secsh stop",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_restart_cmd]" string => "",
-                                policy => "free";
-    # These should be last, to override any OS-specific settings
+      policy => "free";
+      # These should be last, to override any OS-specific settings
     SSH_TEST_MODE::
       "conf[_sshd_config_file]" string => "/tmp/sshd_config",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_start_cmd]"   string => "/bin/echo --- I would now start sshd",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_stop_cmd]"    string => "/bin/echo --- I would now stop sshd",
-                                policy => "free";
+      policy => "free";
       "conf[_sshd_restart_cmd]" string => "/bin/echo --- I would now restart sshd",
-                                policy => "free";
+      policy => "free";
+      "conf[_create]" string => "true",
+      policy => "free";
     SSH_TEST_MODE_NORESTART::
       # Testing the case when no restart command is given
       "conf[_sshd_restart_cmd]" string => "",
-                                policy => "free";
+      policy => "free";
     any::
       # Copy configuration parameters passed, into a local array
       "param_keys"          slist  => getindices("$(params)");
       "conf[$(param_keys)]" string => "$($(params)[$(param_keys)])",
-                            policy => "free";
+      policy => "free";
 }
 
-bundle agent sshd_set_cfg(params)
+bundle agent set_cfg(params)
 {
   files:
       "$($(params)[_sshd_config_file])"
-        handle => "sshd_edit_configfile",
-        comment => "Set desired sshd_config parameters",
-        edit_line => set_config_values_matching("$(params)", "[^_].*"),
-        classes => if_repaired("restart_sshd");
+      handle => "sshd_edit_configfile",
+      comment => "Set desired sshd_config parameters",
+      edit_line => default:set_config_values_matching("$(params)", "[^_].*"),
+      create => "$($(params)[_create])",
+      classes => default:if_repaired("restart_sshd");
 
   commands:
     restart_sshd.!no_restarts.!use_restart_cmd::
       "$($(params)[_sshd_stop_cmd]) && $($(params)[_sshd_start_cmd])"
-        handle => "sshd_stop_and_start",
-        comment => "Stop and restart sshd if the configuration file was modified",
-        contain => in_shell;
+      handle => "sshd_stop_and_start",
+      comment => "Stop and restart sshd if the configuration file was modified",
+      contain => default:in_shell;
     restart_sshd.!no_restarts.use_restart_cmd::
       "$($(params)[_sshd_restart_cmd])"
-        handle => "sshd_restart",
-        comment => "Restart sshd if the configuration file was modified",
-        contain => in_shell;
+      handle => "sshd_restart",
+      comment => "Restart sshd if the configuration file was modified",
+      contain => default:in_shell;
 }
