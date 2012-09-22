@@ -34,12 +34,12 @@ bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "test resolver" usebundle => resolver("testresolver_",
-                                            $(cfsketch_g.testresolver_file),
-                                            @(cfsketch_g.testresolver_nameserver),
-                                            @(cfsketch_g.testresolver_search),
-                                            @(cfsketch_g.testresolver_domain),
-                                            @(cfsketch_g.testresolver_options),
-                                            @(cfsketch_g.testresolver_sortlist));
+      "test resolver" usebundle => cfdc_resolver:resolver("testresolver_",
+                                                          $(cfsketch_g.testresolver_file),
+                                                          @(cfsketch_g.testresolver_nameserver),
+                                                          @(cfsketch_g.testresolver_search),
+                                                          @(cfsketch_g.testresolver_domain),
+                                                          @(cfsketch_g.testresolver_options),
+                                                          @(cfsketch_g.testresolver_sortlist));
 
 }
