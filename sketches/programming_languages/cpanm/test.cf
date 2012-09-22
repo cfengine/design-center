@@ -13,5 +13,5 @@ bundle common cfsketch_g
 bundle agent cfsketch_run
 {
   methods:
-      "boo" usebundle => cfdc_cpan_install:cpan_install("myprefix", "/usr/local/bin/cpanm", "", @(cfsketch_g.packages));
+      "boo" usebundle => cfdc_cpan:install("/usr/local/bin/cpanm", "", @(cfsketch_g.packages));
 }

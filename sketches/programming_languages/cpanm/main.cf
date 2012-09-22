@@ -3,13 +3,9 @@ body file control
   namespace => "cfdc_cpan";
 }
 
-bundle agent cpan_install(prefix, cpanm_program, extra_params, packages)
+bundle agent install(cpanm_program, extra_params, packages)
 {
   meta:
-      # __PREFIX__ will be supplied by cf-sketch
-      "vars[prefix][type]"         string => "NON_EMPTY_STRING";
-      "vars[prefix][default]"      string => "__PREFIX__";
-
       "vars[cpanm_program][type]"  string => "PATH";
 
       "vars[extra_params][type]"   string => "STRING";
@@ -18,10 +14,18 @@ bundle agent cpan_install(prefix, cpanm_program, extra_params, packages)
 
   vars:
       "canon_prefix" string => canonify("$(prefix)");
+    default:test::
+      "program" string => "/bin/echo testing cpanm";
+    !default:test::
+      "program" string => $(cpanm_program);
 
   commands:
-      "$(cpanm_program) $(extra_params) $(packages)"
+      "$(program) $(extra_params) $(packages)"
       comment => "Install CPAN packages with App::cpanminus",
       handle => "cpan_install_packages_add",
       action => default:log_repaired("stdout","App::cpanminus installed $(packages)");
+
+  reports:
+    default:verbose::
+      "Installing CPAN package $(packages)";
 }
