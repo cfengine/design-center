@@ -33,6 +33,6 @@ bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "test" usebundle => repo_yum_client("yumclienttest", $(cfsketch_g.yumclienttest_repos_dir), "cfsketch_g.yumclienttest_repos");
+      "test" usebundle => cfdc_yumclient:client("yumclienttest", $(cfsketch_g.yumclienttest_repos_dir), "default:cfsketch_g.yumclienttest_repos");
 
 }

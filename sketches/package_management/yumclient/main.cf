@@ -35,7 +35,8 @@ gpgcheck:=yes|=no:default=no
       policy => "free";
 
   classes:
-      "_debug_repo_yum_client" or => { "debug" };
+    default:debug::
+      "_debug_repo_yum_client" or => { "any" };
 
   methods:
       "Yum Repository Client Configuration"
@@ -46,7 +47,7 @@ gpgcheck:=yes|=no:default=no
       comment => "Configure yum client for each repository";
 
   reports:
-    verbose::
+    default:verbose::
       "Found repo $(repo_ids) in array $(repos).  Will configure it in $(repos_dir)";
 }
 
@@ -68,8 +69,10 @@ bundle agent config(class_prefix, repos_dir, repos, repo)
       ifvarclass => "!test";
 
   classes:
-      "_debug_repo_yum_client" or => { "debug" };
+    default:debug::
+      "_debug_repo_yum_client" or => { "any" };
 
+    any::
       "baseurl_defined" expression => regcmp("(file|https?)+://.+",
                                              "$($(repos)[$(repo)][baseurl])");
 
@@ -162,6 +165,10 @@ bundle edit_line manage_variable_values_ini(tab, sectionName)
 
 # CAUTION : REQUIRES CFEngine 3.4.0
 {
+  classes:
+    default:debug::
+      "_debug_repo_yum_client" or => { "any" };
+
   vars:
       "index" slist => { getindices("$(tab)[$(sectionName)]") },
       policy => "free";
@@ -209,7 +216,7 @@ bundle edit_line manage_variable_values_ini(tab, sectionName)
       ifvarclass => "!ini_not_$(cindex[$(index)]).!noedit_$(cindex[$(index)])";
 
   reports:
-    debug::
+    _debug_repo_yum_client::
       "DEBUG Managing INI $(tab) $(sectionName); $(index) = $($(tab)[$(sectionName)][$(index)])";
 }
 
@@ -240,6 +247,9 @@ bundle edit_line set_variable_values_ini(tab, sectionName)
       "yumclient_set_variable_values_ini_$(sectionName)_exists"
       expression => regline(".*[$(sectionName)].*", "$(edit.filename)");
 
+    default:debug::
+      "_debug_repo_yum_client" or => { "any" };
+
   field_edits:
 
       # If the line is there, but commented out, first uncomment it
@@ -266,6 +276,6 @@ bundle edit_line set_variable_values_ini(tab, sectionName)
       ifvarclass => "!yumclient_set_variable_values_ini_not_$(cindex[$(index)]).edit_$(cindex[$(index)]).yumclient_set_variable_values_ini_$(sectionName)_exists";
 
   reports:
-    debug::
+    _debug_repo_yum_client::
       "DEBUG Setting INI $(tab) $(sectionName); indices = $(index)";
 }
