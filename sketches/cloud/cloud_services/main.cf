@@ -10,9 +10,9 @@ bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count,
       "vars[prefix][type]"               string => "NON_EMPTY_STRING";
       "vars[prefix][default]"            string => "__PREFIX__";
 
-      # __BUNDLE_HOME__ will be          supplied by cf-sketch
+      # __ABS_BUNDLE_HOME__ will be supplied by cf-sketch
       "vars[bundle_home][type]"          string => "NON_EMPTY_STRING";
-      "vars[bundle_home][default]"       string => "__BUNDLE_HOME__";
+      "vars[bundle_home][default]"       string => "__ABS_BUNDLE_HOME__";
 
       "vars[install_cfengine][type]"     string => "BOOLEAN";
       "vars[install_cfengine][default]"  string => "1";
