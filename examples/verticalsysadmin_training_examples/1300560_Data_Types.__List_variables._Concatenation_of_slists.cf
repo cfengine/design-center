@@ -1,0 +1,17 @@
+bundle agent example {
+
+  vars:
+      "preface"
+               string => "Now hear this: ";
+
+      "my_slist"
+                slist => { "String contents...", "...are great!" };
+
+      "the_sum_of_all_parts"
+                slist => { $(preface), @(my_slist) };
+
+  reports:
+    linux::
+      " Iterating over @(the_sum_of_all_parts): $(the_sum_of_all_parts)";
+
+                     }
