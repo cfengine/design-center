@@ -1,3 +1,7 @@
+# do not use -K switch when running this example!!
+#
+# Run it in verbose mode and grep the output for "elapsed"
+
 bundle agent example {
 
   commands:

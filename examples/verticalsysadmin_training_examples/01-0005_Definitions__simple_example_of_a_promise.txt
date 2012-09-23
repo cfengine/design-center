@@ -1,9 +1,0 @@
-Simple Example
---------------
-
-files:
-
-    "/etc/nologin" 
-
-        create  => "true",
-        comment => "Prevent non-root users from logging in";

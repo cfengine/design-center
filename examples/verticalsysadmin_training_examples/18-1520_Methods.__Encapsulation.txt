@@ -1,8 +1,0 @@
-Methods offer powerful ways to encapsulate multiple
-issues pertaining to a set of parameters. 
-
-for example:
-
-Removing a user
-     1. userdel
-     2. sudoers

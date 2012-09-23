@@ -1,9 +1,0 @@
-Example: Promiser
------------------
-
-files:
-
-    "/etc/nologin"  # promiser (affected object)
-
-        create  => "true",
-        comment => "Prevent non-root users from logging in";
