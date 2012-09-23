@@ -1,0 +1,36 @@
+# Example of
+#
+#      cfengine_word => { list }    #  (directly and via variable)
+
+body common control {
+
+       bundlesequence => { "example1", "example2" };
+
+                    }
+
+
+
+bundle agent example2 {
+
+      commands:  "/bin/echo Second things second";
+                      }
+
+
+bundle agent example1 {
+
+  vars:
+
+      "my_slist_0"
+
+               slist  => {
+                           "String contents...",
+                           "... are beauutifuuul this time of year"
+                         };
+
+
+      "my_slist_1"
+
+               slist  => { @(my_slist_0) };
+
+      commands:  "/bin/echo First things first";
+                      }

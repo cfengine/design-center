@@ -1,0 +1,24 @@
+bundle agent example {
+
+  files:
+
+      "/tmp/testfile"
+
+              create  => "true",
+            edit_line => proper_greetings;
+                     }
+
+
+bundle edit_line  proper_greetings {
+
+
+  delete_lines: 
+
+      ".*";
+
+  insert_lines: 
+
+    "Good morning!";
+
+                                   }
+

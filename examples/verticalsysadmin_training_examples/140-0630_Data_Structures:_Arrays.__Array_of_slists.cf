@@ -1,0 +1,17 @@
+bundle agent example {
+
+  vars:
+      "config[users]" slist => { "jim", "jane", "george" };
+
+      "config[packages]" slist => { "httpd", "php" };
+
+      "keys" slist => getindices("config");
+
+
+  reports:
+
+    linux::
+
+      "The value for key $(keys) is: $(config[$(keys)])";
+
+                     }

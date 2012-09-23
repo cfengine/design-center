@@ -1,0 +1,38 @@
+# does not work under 3.2.1.  haven't tested it under 3.3.0
+
+# INPUT
+# Put a few text files in /tmp (ending in .txt), and put
+# the line "hello world" in one of them.
+#
+# CFEngine will report which file contains the line "hello world".
+#
+
+########################################################
+
+bundle agent example
+
+{
+  files:
+
+      "/tmp/.*.txt"
+            edit_line => grep_dash_l("hello world");
+}
+
+########################################################
+
+
+
+bundle edit_line grep_dash_l(regex)
+{
+  classes:
+
+      "ok" expression => regline("$(regex)","$(edit.filename)");
+
+
+  reports:
+
+    ok::
+
+      "File $(edit.filename) has a line with \"$(regex)\" in it";
+
+}

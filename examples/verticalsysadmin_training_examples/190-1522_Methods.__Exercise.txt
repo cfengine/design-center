@@ -1,0 +1,59 @@
+EXERCISE
+
+Practice using "methods" type promises
+
+Write a policy that has two bundles.
+
+The first bundle does something visible (such as a
+reports type promise that says "bundle1") AND calls
+the second bundle.
+
+The second bundle reports "bundle2".
+
+Run your policy?  What output do you see and in what
+order?  Why?
+
+
+EXERCISE
+
+Now parameterize the 2nd bundle -- have the
+first bundle feed it an argument, and have the
+2nd bundle display that argument.
+
+
+EXERCISE 
+
+Sysadmin Problem:
+
+/etc/profile should set the ORGANIZATION environment variable when users log in.
+
+export ORGANIZATION=MyOrg
+
+Exercise:
+
+Write a bundle "etc_profile_contains" that would take an argument
+and ensures /etc/profile contains text string that specified
+in the argument.
+
+Demonstrate its use by calling it from another bundle:
+
+    bundle agent example { 
+       methods:  
+         "any"
+             usebundle => etc_profile_contains("export ORGANIZATION=MyOrg");
+    }
+
+
+EXERCISE  Methods (re-usable bundles)
+
+Make a bundle called file_contains that takes two arguments:
+a filename, and a text string.  The bundle should ensure that
+the file specified in the first argument contains the text string
+specified in the second argument.  Example:
+
+    methods:
+     "any" usebundle => file_contains("/etc/profile", "export ORGANIZATION=MyOrg");
+     "any" usebundle => file_contains("/etc/motd", "Unauth. use forbidden");
+
+
+

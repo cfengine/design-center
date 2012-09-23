@@ -1,0 +1,65 @@
+# Aleksey Tsalolikhin, 1-Feb-2011
+
+body common control
+
+{
+      bundlesequence  => { "check_listening_ports"  };
+              inputs  => { "/var/cfengine/inputs/cfengine_stdlib.cf"  };
+}
+
+####################################################
+
+bundle agent example
+{
+
+      # this is our expected configuration
+
+  vars:
+      "listening_ports_and_processes_ideal_scene"
+               string => "22 sshd 80 httpd 443 httpd 5308 cf-server";
+
+      # end of our expected configuration
+
+
+
+  vars:
+      "listening_ports_and_processes" string =>
+      execresult("/usr/sbin/lsof -i -n -P | \
+/bin/grep LISTEN | \
+/bin/sed -e 's#*:##' | \
+/bin/grep -v 127.0.0.1 | \
+/bin/grep -v ::1 | \
+/bin/awk '{print $8,$1}' | \
+/bin/sort | \
+/usr/bin/uniq | \
+/bin/sort -n | \
+/usr/bin/xargs echo", "useshell");  # this is our
+      # actual configuration.
+      # we tell CFEngine to use a shell with "useshell"
+      # to do a pipeline.
+
+
+  classes:
+      "reality_does_not_match_ideal_scene" not =>
+      regcmp (
+               "$(listening_ports_and_processes)",
+               "$(listening_ports_and_processes_ideal_scene)"
+             );  # check whether expected configuration matches actual.
+
+  reports:
+    reality_does_not_match_ideal_scene::
+      "
+DANGER!!!
+DANGER!!!  Expected open ports and processes:
+DANGER!!!  $(listening_ports_and_processes_ideal_scene)
+DANGER!!!
+DANGER!!!  Actual open ports and processes:
+DANGER!!!  $(listening_ports_and_processes)
+DANGER!!!
+";  # and yell loudly if it does not match.
+      # Note:  A "commands" promise could be used in
+      # addition to "reports" to send a text message
+      # to a sysadmin cell phone, or to feed
+      # CRITICAL status to a monitoring system.
+}
+

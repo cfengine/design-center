@@ -1,0 +1,26 @@
+body common control
+{
+       inputs         => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+}
+
+
+########################################
+
+
+bundle agent example
+{
+
+  vars:
+
+      # A standard location for the source point
+      "master_location" string => "/var/cfengine/masterfiles";
+
+  files:
+
+      "/var/cfengine/inputs"
+
+         comment      => "Update the policy files from the master",
+         copy_from    => local_cp("$(master_location)"),
+         depth_search => recurse("inf");
+
+}

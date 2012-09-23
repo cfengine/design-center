@@ -1,0 +1,33 @@
+# customize CFEngine's idea of promise kept, returned or failed
+# based on command's return code.
+#
+# For this demo, add an account "joe" and then use 
+# userdel to remove it.
+#
+# Run "chattr +i /etc/passwd" after adding the "joe" account
+# to induce a failure to remove Joe.
+#
+
+bundle agent example {
+
+  commands:
+
+      "/usr/sbin/userdel"
+                 args => "joe",
+              comment => "We don't want joe on our systems ever again.",
+              classes => customized_for_userdel;
+
+  reports:
+
+      joe_removed::   "Joe was removed";
+      no_joe::        "Don't worry, there is no account for Joe.";
+      (!joe_removed)&(!no_joe)::  "!!!!  Joe is still here.  !!!!";
+                     }
+
+body classes customized_for_userdel {
+      
+     kept_returncodes => { "6" };   # user was not present in the file
+ repaired_returncodes => { "0" }; # user was successfully removed
+     promise_repaired => { "joe_removed" };
+         promise_kept => { "no_joe" };
+                                    }

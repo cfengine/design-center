@@ -1,0 +1,13 @@
+body agent control
+{
+          environment => { "A=123", "B=456", "PGK_PATH=/tmp"};
+}
+
+############################################
+
+bundle agent example
+{
+  commands:
+
+      "/usr/bin/env";
+}

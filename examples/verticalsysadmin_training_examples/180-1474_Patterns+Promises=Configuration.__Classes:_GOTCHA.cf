@@ -1,0 +1,11 @@
+bundle agent example {
+
+  commands:
+
+    linux&Hr08::
+
+      "/bin/echo Linux system AND we are in the 8th hour.";
+
+
+      "/bin/echo hello world";   # this promise is NOT in the class "any" !!!
+                     }

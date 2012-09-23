@@ -1,0 +1,57 @@
+bundle common global_classes {
+
+      # Classes defined in common bundles are global.
+      #
+      # They appear in the Defined Classes section at the start of
+      # verbose output.
+      #
+      # Classes defined in all other bundles are local
+
+
+  classes:
+
+      "webserver"
+
+          expression  =>  classmatch("web[0-9]+");
+
+                             }
+
+
+
+bundle agent example {
+   methods:
+      "any" usebundle => example1;
+      "any" usebundle => example2;
+}
+
+bundle agent example1
+{
+
+  classes:
+      "local_class"
+          expression  =>  classmatch("web[0-9]+");
+
+  reports:
+    webserver::
+      "bundle 'example1': I am a Web server, and I tested for this using a global class.";
+
+  reports:
+    local_class::
+      "bundle 'example1': I am a Web server, and I tested for this using a local class.";
+
+}
+
+
+bundle agent example2
+{
+
+  reports:
+    webserver::
+      "bundle 'example2': I am a Web server, and I tested for this using a global class.";
+
+  reports:
+    local_class::
+      "bundle 'example2': I am a Web server, and I tested for this using a local class.";
+
+}
+

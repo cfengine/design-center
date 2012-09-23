@@ -1,0 +1,45 @@
+#######################################################
+#
+# Searching for permissions
+#
+#######################################################
+
+
+############################################
+
+bundle agent example
+
+{
+  files:
+
+      "/tmp/test_from" 
+
+          file_select => compound_filter,
+          transformer => "/bin/gzip $(this.promiser)",
+         depth_search => recurse("inf");
+
+}
+
+############################################
+
+body file_select compound_filter
+
+{
+
+            leaf_name => { ".*\.pdf" , ".*\.fdf" };  # leaf_name = regex to match
+                mtime => irange(ago(1,0,0,0,0,0),now);   # modified within 1 year
+      # the above automatically define classes
+      # only if the right hand side matches
+      # file being examined
+
+          file_result => "leaf_name.(!mtime)";   # this is a class expression
+}
+
+############################################
+
+body depth_search recurse(d)
+
+{
+                depth => "$(d)";
+}
+

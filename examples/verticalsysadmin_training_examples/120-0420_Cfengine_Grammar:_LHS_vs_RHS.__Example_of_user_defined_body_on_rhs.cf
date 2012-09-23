@@ -1,0 +1,19 @@
+# example of:     cfengine_word => user_defined_body
+
+bundle agent example
+{
+  storage:
+
+      "/"
+
+              volume  => my_check_volume;
+
+}
+
+
+body volume my_check_volume
+{
+       freespace      => "30%"; # minimum disk space that should be available
+       sensible_size  => "100K";        # Minimum size in bytes that should be used
+       sensible_count => "10";          # Minimum number of files/directories at top level
+}

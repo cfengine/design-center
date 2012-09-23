@@ -1,0 +1,34 @@
+#body common control {
+#
+#  inputs => {
+#               "/var/cfengine/inputs/cfengine_stdlib.cf",
+#            };
+#
+#}
+
+#########################################################
+
+
+bundle agent example
+{
+  vars:
+
+      "sshd[Protocol]"                                string => "2";
+      "sshd[X11Forwarding]"                           string => "yes";
+      "sshd[UseDNS]"                                  string => "no";
+
+  methods:
+      "any"    usebundle => edit_sshd("example.sshd");
+}
+
+
+
+bundle agent edit_sshd(params)
+{
+  vars:
+      "index" slist => getindices("$(params)");
+
+  reports:
+    cfengine::
+      "$(index) :  $($(params)[$(index)])";
+}

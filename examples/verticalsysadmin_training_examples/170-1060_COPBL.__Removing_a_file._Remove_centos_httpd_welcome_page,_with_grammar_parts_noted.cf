@@ -1,0 +1,28 @@
+body common control {
+
+       bundlesequence => { "remove_centos_httpd_welcome_page" };
+
+                    }
+
+
+bundle agent remove_centos_httpd_welcome_page
+{
+
+  files:             # <-- promise type
+
+    any::            # <-- class
+
+      "/etc/httpd/conf.d/welcome.conf"   # <-- promiser
+
+              comment => "Let's keep a low profile and not advertise what software we are running - remove the Welcome page that says we are running Apache on CentOS",
+               delete => tidy;           # <-- promise body
+
+}
+
+
+body delete tidy                         # <-- promise body part / body part template
+
+{
+             dirlinks => "delete";
+             rmdirs   => "true";
+}

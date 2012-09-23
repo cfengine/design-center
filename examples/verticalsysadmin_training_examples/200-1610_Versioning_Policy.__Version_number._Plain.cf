@@ -1,0 +1,17 @@
+body common control
+{
+              version => "1.0";
+       bundlesequence => { "example" };
+}
+
+
+########################################
+
+
+bundle agent example
+{
+
+  commands:
+    linux::
+      "/bin/nosuchcommand hello world, i love wednesdays and coffee";
+}

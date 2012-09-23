@@ -1,0 +1,17 @@
+bundle agent example {
+
+files:
+
+  "/etc/motd"
+
+    edit_line => ExpandMeFrom("/tmpl/motd.tmpl");
+}
+
+bundle edit_line ExpandMeFrom(source) {
+
+insert_lines:
+
+    "$(source)"
+
+       insert_type => "file";
+}

@@ -1,0 +1,9 @@
+bundle agent example
+{
+
+  commands:
+
+      "/bin/echo"
+                 args => "Hello world!";
+
+}

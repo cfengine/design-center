@@ -1,0 +1,23 @@
+body common control {
+
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+
+                    }
+
+
+bundle agent example {
+
+
+  files:
+      "/tmp/file.txt"
+               create => "true",
+            edit_line => insert_lines("hello world 1234"),
+             classes  => state_repaired("persistent_class");
+
+  reports:
+    persistent_class::
+      "persistent class is set";
+
+                     }
+
+

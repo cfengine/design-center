@@ -1,0 +1,12 @@
+bundle agent example {
+
+  reports:
+
+    Monday|Tuesday|Wednesday|Thursday|Friday::
+      "Yay!!! I get to work today!";
+
+    Saturday|Sunday::
+      
+      "Yay!!! I get to rest today.";
+
+                     }

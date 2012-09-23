@@ -1,0 +1,106 @@
+bundle agent example {
+
+  reports:
+
+    cfengine_3::
+
+      "sys.arch: $(sys.arch)
+sys.cdate: $(sys.cdate)
+sys.cf_agent: $(sys.cf_agent)
+sys.cf_execd: $(sys.cf_execd)
+sys.cf_hub: $(sys.cf_hub)
+sys.cf_key: $(sys.cf_key)
+sys.cf_know: $(sys.cf_know)
+sys.cf_monitord: $(sys.cf_monitord)
+sys.cf_promises: $(sys.cf_promises)
+sys.cf_report: $(sys.cf_report)
+sys.cf_runagent: $(sys.cf_runagent)
+sys.cf_serverd: $(sys.cf_serverd)
+sys.cf_twin: $(sys.cf_twin)
+sys.cf_version: $(sys.cf_version)
+sys.class: $(sys.class)
+sys.date: $(sys.date)
+sys.domain: $(sys.domain)
+sys.expires: $(sys.expires)
+sys.exports: $(sys.exports)
+sys.fqhost: $(sys.fqhost)
+sys.fstab: $(sys.fstab)
+sys.host: $(sys.host)
+sys.interface: $(sys.interface)
+sys.ipv4: $(sys.ipv4)
+sys.ipv4[interface_name]: $(sys.ipv4[interface_name])
+sys.ipv4_1[interface_name]: $(sys.ipv4_1[interface_name])
+sys.ipv4_2[interface_name]: $(sys.ipv4_2[interface_name])
+sys.ipv4_3[interface_name]: $(sys.ipv4_3[interface_name])
+sys.key_digest: $(sys.key_digest)
+sys.license_owner: $(sys.license_owner)
+sys.licenses_granted: $(sys.licenses_granted)
+sys.licenses_installtime: $(sys.licenses_installtime)
+sys.long_arch: $(sys.long_arch)
+sys.maildir: $(sys.maildir)
+sys.nova_version: $(sys.nova_version)
+sys.os: $(sys.os)
+sys.ostype: $(sys.ostype)
+sys.policy_hub: $(sys.policy_hub)
+sys.release: $(sys.release)
+sys.resolv: $(sys.resolv)
+sys.uqhost: $(sys.uqhost)
+sys.version: $(sys.version)
+sys.windir: $(sys.windir)
+sys.winprogdir: $(sys.winprogdir)
+sys.winprogdir86: $(sys.winprogdir86)
+sys.winsysdir: $(sys.winsysdir)
+sys.workdir: $(sys.workdir)
+";
+
+                     }
+
+
+# OUTPUT on my system, myhost.example.com
+#    R: sys.arch: x86_64
+#    sys.cdate: Sun_May_15_11_25_03_2011
+#    sys.cf_agent: "/var/cfengine/bin/cf-agent"
+#    sys.cf_execd: "/var/cfengine/bin/cf-execd"
+#    sys.cf_hub: "/var/cfengine/bin/cf-hub"
+#    sys.cf_key: "/var/cfengine/bin/cf-key"
+#    sys.cf_know: "/var/cfengine/bin/cf-know"
+#    sys.cf_monitord: "/var/cfengine/bin/cf-monitord"
+#    sys.cf_promises: "/var/cfengine/bin/cf-promises"
+#    sys.cf_report: "/var/cfengine/bin/cf-report"
+#    sys.cf_runagent: "/var/cfengine/bin/cf-runagent"
+#    sys.cf_serverd: "/var/cfengine/bin/cf-serverd"
+#    sys.cf_twin: "/var/cfengine/bin/cf-agent"
+#    sys.cf_version: 3.1.5
+#    sys.class: linux
+#    sys.date: Sun May 15 11:25:03 2011
+#    sys.domain: example.com
+#    sys.expires: 
+#    sys.exports: /etc/exports
+#    sys.fqhost: myhost.example.com
+#    sys.fstab: /etc/fstab
+#    sys.host: myhost.example.com
+#    sys.interface: venet0
+#    sys.ipv4: 127.0.0.1
+#    sys.ipv4[interface_name]: $(sys.ipv4[interface_name])
+#    sys.ipv4_1[interface_name]: $(sys.ipv4_1[interface_name])
+#    sys.ipv4_2[interface_name]: $(sys.ipv4_2[interface_name])
+#    sys.ipv4_3[interface_name]: $(sys.ipv4_3[interface_name])
+#    sys.key_digest: MD5=c4348f13c55363743ba5544a7808dff5
+#    sys.license_owner: $(sys.license_owner)
+#    sys.licenses_granted: $(sys.licenses_granted)
+#    sys.licenses_installtime: $(sys.licenses_installtime)
+#    sys.long_arch: linux_x86_64_2_6_18_028stab070_4__1_SMP_Tue_Aug_17_18_32_47_MSD_2010
+#    sys.maildir: /var/spool/mail
+#    sys.nova_version: $(sys.nova_version)
+#    sys.os: linux
+#    sys.ostype: linux_x86_64
+#    sys.policy_hub: $(sys.policy_hub)
+#    sys.release: 2.6.18-028stab070.4
+#    sys.resolv: /etc/resolv.conf
+#    sys.uqhost: myhost
+#    sys.version: #1 SMP Tue Aug 17 18:32:47 MSD 2010
+#    sys.windir: /dev/null
+#    sys.winprogdir: /dev/null
+#    sys.winprogdir86: /dev/null
+#    sys.winsysdir: /dev/null
+#    sys.workdir: /var/cfengine

@@ -1,0 +1,54 @@
+# FIXME - this example needs work
+
+bundle agent example
+
+{
+
+  commands:
+
+    ok_but_check_later::
+
+      "/bin/echo YELLOW ALERT (condition \"ok_but_check_later\")";
+
+
+  commands:
+
+    cannot_repair_promise_DANGER_DANGER::
+
+      "/bin/echo SHIELDS UP, RED ALERT (condition \"cannot_repair_promise_DANGER_DANGER\"";
+
+
+commands:
+       
+        "/bin/true"  
+       
+           classes => set_persistent_class_based_on_promise_repair_outcome("ok_but_check_later","cannot_repair_promise_DANGER_DANGER"); 
+       
+
+}
+
+
+############################################
+
+body classes set_persistent_class_based_on_promise_repair_outcome(if,else)
+
+# if promise repair succeeded, set a persistent
+# class for 10 minutes called "ok_but_check_later";
+# else if promise repair failed, set persistent class
+# "cannot_repair_promise_DANGER_DANGER".
+
+{
+     promise_repaired => { "$(if)" };
+        repair_failed => { "$(else)" };
+         persist_time => "10"; # in minutes
+}
+##########################################################################
+
+# Here is an example of how you might use a persistent class
+#
+# 1. You detect a rootkit from some filesearch and you want
+# to delete it immediately, but the danger is maybe not over.
+#
+# 2. You define persistent class for the next hour DEFCON1
+# which activates repeated scans of the filesystem looking
+# for trouble as you suspect you might be under attack.

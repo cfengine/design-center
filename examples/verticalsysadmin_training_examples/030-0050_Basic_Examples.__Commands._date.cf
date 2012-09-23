@@ -1,0 +1,6 @@
+bundle agent example {
+
+  commands:
+
+      "/bin/date";
+                     }

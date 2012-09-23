@@ -1,0 +1,13 @@
+/usr/local/share/doc/cfengine/inputs:
+
+promises.cf           the default config file. 
+                      Uses cfengine_stdlib.cf 
+
+cfengine_stdlib.cf    library
+
+
+failsafe.cf           failsafe config - called if promises.cf is bad
+                      Promises to refresh /var/cfengine/inputs
+                      from /var/cfengine/masterfiles; and
+                      /var/cfengine/bin from /usr/local/sbin/cf-*
+

@@ -1,0 +1,80 @@
+# edit CentOS repo file in /etc/yum.repos.d to exclude
+# Postgres packages from downloads/updates (because I want
+# to get them from the Postgres.org repo).
+#
+# Note: I have to strip out the CentOS repo comments otherwise
+# due to the nature of the section-aware editing, the comments
+# end up in the middle of the previous section.
+
+bundle agent example {
+
+  methods:
+      "any" 
+            usebundle => delete_repo_comments_from_CentOS_repo_and_exclude_postgresql_packages;
+
+                     }
+
+
+bundle agent delete_repo_comments_from_CentOS_repo_and_exclude_postgresql_packages
+
+{
+
+  files:
+      "/etc/yum.repos.d/CentOS-Base.repo"
+            edit_line => DeleteRepoComments,
+              comment => "Remove CentOS remarks about the repos, they mess up section editing because they are placed outside the section they comment about.";
+      
+
+  files:
+      "/etc/yum.repos.d/CentOS-Base.repo"
+            edit_line => AppendIfNoLine("exclude=postgresql*$(const.n)#We should get Postgres packages from PGDG, not CentOS.  --Aleksey.$(const.n) "),
+              comment => "Exclude postgresql packages in CentOS [base] and [update] repos; we intend to get them from Postgres Global Development Group repo.";
+
+}
+
+########################################################
+
+bundle edit_line DeleteRepoComments {
+  delete_lines:
+      "#released updates.*";
+      "#packages used/produced in the build but not released";
+      "#additional packages that may be useful";
+      "#additional packages that extend functionality of existing packages";
+      "#contrib - packages by Centos Users";
+                                    }
+
+########################################################
+
+bundle edit_line AppendIfNoLine(parameter) {
+
+  insert_lines:
+      "$(parameter)"
+        select_region => MyINISection("base");
+
+
+  insert_lines:
+      "$(parameter)"
+        select_region => MyINISection("updates");
+
+                                           }
+
+########################################################
+
+
+
+body select_region MyINISection(x)
+
+{
+         select_start => "\[$(x)\]";
+           select_end => "\[.*\]";
+
+      # This assumes a file format like:
+      #
+      # [section 1]
+      #
+      # lines....
+      #
+      # [section 2]
+      #
+      # lines... etc
+}
