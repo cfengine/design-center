@@ -1,0 +1,10 @@
+bundle agent example {
+
+  files:
+
+      "/tmp/cfengine_heartbeat" 
+
+              create  => "true", 
+              touch   => "true",
+              comment => "CFEngine updates heartbeat timestamp to confirm CFEngine is running.";
+                     }

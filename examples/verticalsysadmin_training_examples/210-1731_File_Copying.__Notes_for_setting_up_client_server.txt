@@ -1,0 +1,27 @@
+promises.cf
+1. comment out line 49, "$(sys.policy_hub)/16"
+   in the definition of the "acl" variable
+2. add your client and master IP addresses
+   to the definition of the "acl" variable
+3. change "twin" to "agent" in promises.cf
+   in exec_command in "body executor control"
+
+failsafe.cf
+1. remove lines 107 - 116  (cf_promises_validated)
+2. remove "      file_select  => u_input_files, "
+   line from files: type promise on the inputs directory
+   so that your template files (*.tmpl) get copied
+   over as well.
+3. change $(sys.policy_hub) to your server's IP address
+
+ALWAYS edit your config files in master:/var/cfengine/masterfiles
+NEVER edit directly in /var/cfengine/inputs anywhere (or it can
+get overwritten).
+
+Policy Flow 
+from  policy_server:/var/cfengine/masterfiles/
+to    end_node:/var/cfengine/inputs/
+
+Troubleshooting:
+cf-agent -f failsafe.cf -v
+cf-serverd -v

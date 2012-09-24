@@ -1,0 +1,25 @@
+body common control {
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf"};
+                    }
+
+
+bundle agent example
+{
+
+  files: 
+
+      "/bin/echo"
+
+               handle => "echo_binary_is_executable",
+                perms => m("a+x");
+
+
+  commands:
+
+      "/bin/echo" 
+      
+               handle => "say_hello",
+           depends_on => { "echo_binary_is_executable" },
+                 args => "Hello world!";
+
+}

@@ -1,0 +1,28 @@
+
+bundle common global_classes {
+
+classes:
+
+       "webfarm"
+
+           ifvarclass => canonify("$(global_vars.webservers)");
+
+}
+
+bundle common global_vars {
+
+     vars:
+        "webservers"
+           slist => { "web01", "web02", "web03" };
+ 
+}
+
+bundle agent example {
+
+reports:
+
+  webfarm::
+
+   "I am a web server";
+
+}
