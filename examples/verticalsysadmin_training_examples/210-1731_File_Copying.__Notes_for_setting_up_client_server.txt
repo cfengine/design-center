@@ -16,7 +16,11 @@ failsafe.cf
 
 ALWAYS edit your config files in master:/var/cfengine/masterfiles
 NEVER edit directly in /var/cfengine/inputs anywhere (or it can
-get overwritten)
+get overwritten).
+
+Policy Flow 
+from  policy_server:/var/cfengine/masterfiles/
+to    end_node:/var/cfengine/inputs/
 
 Troubleshooting:
 cf-agent -f failsafe.cf -v
