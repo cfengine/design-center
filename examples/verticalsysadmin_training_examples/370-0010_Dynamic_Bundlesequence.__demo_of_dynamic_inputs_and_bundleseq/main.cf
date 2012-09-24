@@ -1,9 +1,17 @@
-bundle common classes {
+
+bundle common global_classes {
 
    classes:
        "cf_dbs"
            expression => "linux";
 
+
+# vars:
+#         "webservers" slist => { "web01", "web02", "web03" };
+# 
+# classes:
+# 
+#            "cf_webfarm" or => { "@(webservers)" };
 }
 
 

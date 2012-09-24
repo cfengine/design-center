@@ -37,7 +37,8 @@ bundle common global
       "country_name" string => "undefined",
                policy => "overridable";
 
-      "global_policy" slist => { "global_policy.cf" };  # list of policy files
+      "global_policy" slist => { "370-0060_Dynamic_Bundlesequence.__global_policy.cf" }; 
+      # list of policy files
       # you want imported
       # globally
 

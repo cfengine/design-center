@@ -1,16 +1,25 @@
-bundle agent example {
+body common control {
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf"};
+                    }
 
-  files:
 
-      "/tmp/testfile"
+bundle agent example
+{
 
-               handle => "create_testfile", # a name for this promise.
-      # can be used with depends_on 
-      # attribute in another promise
-      # to document dependency
+  files: 
 
-           depends_on => { "another_promise" } ,
+      "/bin/echo"
 
-        create  => "true",
-        comment => "Demonstrate CFEngine knowledge management features.";
-                     }
+               handle => "echo_binary_is_executable",
+                perms => m("a+x");
+
+
+  commands:
+
+      "/bin/echo" 
+      
+               handle => "say_hello",
+           depends_on => { "echo_binary_is_executable" },
+                 args => "Hello world!";
+
+}

@@ -1,3 +1,0 @@
-body common control {
-	inputs => { "cfengine_stdlib.cf" };
-}
