@@ -1,7 +1,0 @@
-from  server:/var/cfengine/masterfiles/
-
-
-to    end_node:/var/cfengine/inputs/
-
-
-
