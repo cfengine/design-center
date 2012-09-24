@@ -1,2 +1,0 @@
-change "logme" and "log_me" in reference manual and special topics guide on reporting to log_repaired so that it matches the standard library
-

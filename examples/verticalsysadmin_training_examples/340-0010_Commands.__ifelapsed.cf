@@ -1,0 +1,17 @@
+# do not use -K switch when running this example!!
+#
+# Run it in verbose mode and grep the output for "elapsed"
+
+bundle agent example {
+
+  commands:
+
+      "/bin/echo /bin/cycle_shield_frequencies.sh"
+
+               action => every_2_minutes;
+                     }
+
+body action every_2_minutes
+{
+            ifelapsed => "2";  # in minutes
+}

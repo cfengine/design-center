@@ -1,0 +1,21 @@
+
+bundle agent example {
+
+  files:
+
+      "/tmp/testdir"
+
+               delete => tidy;
+
+                     }
+
+#################################################
+
+body delete tidy {
+
+             dirlinks => "delete";  # what to do with Symlinks To Directories	
+             rmdirs   => "true";    # what to do with Empty Directories 
+
+                 }
+
+

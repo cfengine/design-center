@@ -1,0 +1,80 @@
+# change hostname to "mil-mail01" before running this example
+
+body common control
+{
+
+               inputs => {
+                           @(global.global_policy),
+                           "$(global.country_name)/$(global.country_name).cf",
+                         };
+
+
+
+    ITALY::
+       bundlesequence => { "global_policy", "italy" };
+
+    GERMANY::
+       bundlesequence => { "global_policy", "germany" };
+
+}
+
+
+bundle common global
+# common bundles are included in bundlesequence automatically 
+{
+
+  classes:
+
+      "ITALY"
+           expression => classmatch("mil.*");
+
+      "GERMANY"
+           expression => classmatch("ber.*");
+
+
+
+  vars:
+      "country_name" string => "undefined",
+               policy => "overridable";
+
+      "global_policy" slist => { "global_policy.cf" }; 
+      # list of policy files
+      # you want imported
+      # globally
+
+    ITALY::
+      "country_name" string => "italy",
+               policy => "overridable";
+
+    GERMANY::
+      "country_name" string => "germany",
+               policy => "overridable";
+
+}
+
+# other files needed for this example:
+# ::::::::::::::
+# global_policy.cf
+# ::::::::::::::
+# bundle agent global_policy {
+# reports:
+#  linux::
+#   "this is global policy";
+#}
+#::::::::::::::
+#italy/italy.cf
+#::::::::::::::
+#bundle agent italy {
+#
+#reports:
+#  linux::
+#    "This promise came out of italy/italy.cf";
+#
+#}
+#
+#
+#---------------------------------------------
+# When you run this example on host that has a
+# "mil.*" hostname pattern, you will see:
+# R: this is global policy
+# R: This promise came out of italy/italy.cf
