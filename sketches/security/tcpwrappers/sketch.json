@@ -1,10 +1,10 @@
 {
     "manifest":
     {
-        "main.cf": {"desc": "main file", "version": 1.1 },
+        "main.cf": {"desc": "main file", "version": 1.2 },
         "README.md": {"documentation": true},
         "test.cf": {"comment": "Test Policy"},
-        "example.cf": {"comment": "Example Policy"},
+        "test-complex.cf": {"comment": "Complex Test Policy"},
         "sketch.json": {"comment": "Sketch metadata"},
         "changelog": {"comment": "changelog"},
         "params/params.json": {"comment": "Example json parameters for cf-sketch"},
@@ -13,11 +13,11 @@
     "metadata":
     {
         "name": "Security::tcpwrappers",
-        "version": 1.1,
+        "version": 1.2,
         "license": "MIT",
         "portfolio": ["cfdc"],
-        "authors": ["Nick Anderson <nick@cmdln.org>" ],
-        "depends": {"CFEngine::stdlib": {"version": 105}, "cfengine": {"version": "3.2.1"}, "os": ["linux"] },
+        "authors": ["Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": {"CFEngine::stdlib": {"version": 105}, "cfengine": {"version": "3.4.0"}, "os": ["linux"] },
     },
 
     "entry_point": "main.cf",

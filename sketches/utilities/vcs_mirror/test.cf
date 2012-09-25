@@ -1,21 +1,32 @@
-body common control {
-
-    bundlesequence => {"main",};
+body common control
+{
+    bundlesequence => { "main" };
     inputs => {
                 "../../libraries/copbl/cfengine_stdlib.cf",
                 "./main.cf",
               };
 }
 
-bundle agent main {
-  vars:
-      "mirror_copbl_branch" string => "master";
-      "mirror_copbl_origin" string => "git://github.com/nickanderson/copbl.git";
-      "mirror_copbl_path" string => "/tmp/test2/test3/git_mirror";
-      "mirror_copbl_runas" string => getenv("USER", 128);
-      "mirror_copbl_umask" string => "022";
-      "mirror_copbl_vcs" string => "/usr/bin/git";
+bundle agent main
+{
+  methods:
+      "mirror copbl"
+      usebundle => cfdc_vcs_mirror:vcs_mirror("mirror_copbl",
+                                              "mirror_copbl",
+                                              "/usr/bin/git",
+                                              "/tmp/test2/test3/git_mirror",
+                                              "git://github.com/cfengine/copbl.git",
+                                              "master",
+                                              getenv("USER", 128),
+                                              "022");
 
-    methods:
-        "any" usebundle => vcs_mirror("main.mirror_copbl_");
+      "mirror thrift"
+      usebundle => cfdc_vcs_mirror:vcs_mirror("mirror_thrift",
+                                              "mirror_thrift",
+                                              "/usr/bin/svn",
+                                              "/tmp/test2/test3/svn_mirror",
+                                              "http://svn.apache.org/repos/asf/thrift/trunk/lib/perl",
+                                              "(ignored)",
+                                              getenv("USER", 128),
+                                              "022");
 }

@@ -9,13 +9,12 @@ use File::Compare;
 use File::Copy;
 use File::Find;
 use File::Spec;
+use File::Temp qw/ tempfile tempdir /;
 use Cwd;
 use File::Path qw(make_path remove_tree);
 use File::Basename;
 use Data::Dumper;
 use Getopt::Long;
-use LWP::Simple;
-use LWP::Protocol::https;
 use Term::ANSIColor qw(:constants);
 
 $Term::ANSIColor::AUTORESET = 1;
@@ -27,12 +26,14 @@ my $canonical_coder;
 # added automatically by Perl is also colorized.
 sub color_warn {
   local $Term::ANSIColor::AUTORESET = 0;
-  warn YELLOW @_;
+  my ($package, $filename, $line, $sub) = caller(1);
+  warn GREEN "$filename:$sub():\n" . YELLOW "WARN\t", @_, "\n";
   print RESET;
 }
 sub color_die {
   local $Term::ANSIColor::AUTORESET = 0;
-  die RED @_;
+  my ($package, $filename, $line, $sub) = caller(1);
+  die GREEN "$filename:$sub():\n" . RED "FATAL\t", @_, "\n";
 }
 
 BEGIN
@@ -76,6 +77,7 @@ my $color = -t STDOUT;
 my %def_options =
  (
   verbose    => 0,
+  veryverbose => 0,
   quiet      => 0,
   help       => 0,
   force      => 0,
@@ -89,8 +91,10 @@ my %def_options =
   'make-package' => [],
   params => {},
   cfpath => join (':', uniq(split(':', $ENV{PATH}||''), '/var/cfengine/bin', '/usr/sbin', '/usr/local/bin', '/usr/local/sbin')),
+  modulepath => '../../',
   runfile => File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf'),
   standalone => 1,
+  'simplify-arrays' => 0,
   repolist => [ File::Spec->catfile($happy_root, 'sketches') ],
   color => $color,
  );
@@ -124,6 +128,7 @@ my @options_desc =
   "api=s",                     "Show the API (required/optional parameters) of the given sketch.|sketch",
   "generate|g",                "Generate CFEngine runfile to execute activated sketches.",
   "fullpath|fp",               "Use full paths in the CFEngine runfile (off by default)",
+  "modulepath|mp=s",           "Path to modules relative to the repository root, normally $def_options{modulepath}",
   "save-config|config-save",   "Save configuration parameters so that they are automatically loaded in the future.",
   "metarun=s",                 "Load and execute a metarun file of the form { options => \%options }, which indicates the entire behavior for this run.|file",
   "save-metarun=s",            "Save the parameters and actions of the current execution to the named file, for future use with --metarun.|file",
@@ -131,6 +136,7 @@ my @options_desc =
   "---", "\nOptions:\n",
   "quiet|q",                   "Supress non-essential output.",
   "verbose|v",                 "Produce additional output.",
+  "veryverbose|vv",            "Produce too much output.",
   "dryrun|n",                  "Do not do anything, just indicate what would be done.",
   "help",                      "This help message.",
   "color!",                    "Colorize output, enabled by default if running on a terminal.",
@@ -143,6 +149,7 @@ my @options_desc =
   "install-target|it=s",       "Where sketches will be installed. Default: $def_options{'install-target'}.|dir",
   "json",                      "With --api, produce output in JSON format instead of human-readable format.",
   "standalone|st!",            "With --generate, produce a standalone file (including body common control). Enabled by default, negate with --no-standalone.",
+  "simplify-arrays|sa!",       "With --simplify-arrays, simplify 2D arrays in runfile from x[a][b] to x_a[b].",
   "install-source|is=s",       "Location (file path or URL) of a cfsketches catalog file that contains the list of sketches available for installation. Default: $def_options{'install-source'}.|loc",
   "repolist|rl=s@",            "Comma-separated list of local directories to search for installed sketches for activation, deactivation, removal, or runfile generation. Default: ".join(', ', @{$def_options{repolist}}).".|dirs",
   # "make-package=s@",
@@ -222,7 +229,7 @@ else
  }
 }
 
-my $required_version = '3.3.0';
+my $required_version = '3.4.0';
 my $version = cfengine_version();
 
 if (!$options{force} && $required_version gt $version)
@@ -255,9 +262,10 @@ foreach my $repo (@{$options{repolist}})
 
 $options{repolist} = \@list;
 
-my $verbose = $options{verbose};
-my $quiet   = $options{quiet};
-my $dryrun  = $options{'dry-run'};
+my $quiet       = $options{quiet};
+my $dryrun      = $options{'dry-run'};
+my $veryverbose = $options{veryverbose};
+my $verbose     = $options{verbose} || $veryverbose;
 
 print "Full configuration: ", $coder->encode(\%options), "\n" if $verbose;
 
@@ -415,6 +423,9 @@ sub search_internal
 
  if ($local_dir)
  {
+  color_die "cf-sketch inventory source $source must be a file"
+   unless -f $source;
+
   open(my $invf, '<', $source)
    or color_die "Could not open cf-sketch inventory file $source: $!";
 
@@ -434,7 +445,7 @@ sub search_internal
  }
  else
  {
-  my $invd = get($source)
+  my $invd = lwp_get_remote($source)
    or color_die "Unable to retrieve $source : $!\n";
 
   my @lines = split "\n", $invd;
@@ -529,6 +540,7 @@ sub generate
    my $activation_counter = 1;
    my $template_activations = {};
    my $standalone = $options{'standalone'};
+   my $run_file = $options{runfile};
 
    my @inputs;
    my %dependencies;
@@ -564,27 +576,31 @@ sub generate
        my %booleans;
        my %vars;
 
-       my $entry_point = verify_entry_point($sketch,
-                                            $data->{fulldir},
-                                            $data->{manifest},
-                                            $data->{entry_point},
-                                            $data->{interface});
+       my $entry_point = verify_entry_point($sketch, $data);
 
        color_die "Could not load the entry point definition of $sketch"
         unless $entry_point;
 
        # for null entry_point and interface definitions, don't write
        # anything in the runme template
-       unless (exists $entry_point->{bundle})
+       unless (exists $entry_point->{bundle_name})
        {
-        push @inputs, inputfile($data->{dir}, @{$data->{interface}});
+        my $input = make_include($data->{fulldir}, dirname($run_file) , @{$data->{interface}});
+        push @inputs, $input;
+        print "Entry point: added input $input for runfile $run_file\n"
+         if $verbose;
         next;
        }
 
+       $dependencies{$_} = 1 foreach collect_dependencies($data->{metadata}->{depends});
        my $activation = {
                          file => File::Spec->catfile($data->{dir}, $data->{entry_point}),
-                         entry_bundle => $entry_point->{bundle},
+                         dir => $data->{dir},
+                         fulldir => $data->{fulldir},
+                         entry_bundle => $entry_point->{bundle_name},
+                         entry_bundle_namespace => $entry_point->{bundle_namespace},
                          activation_id => $activation_id,
+                         dependencies => [ sort keys %dependencies ],
                          pdata  => $pdata,
                          sketch => $sketch,
                          prefix => $prefix,
@@ -592,111 +608,76 @@ sub generate
 
        my $varlist = $entry_point->{varlist};
 
-       # force-feed the bundle location here to work around a possible this.promise_filename bug
-       $varlist->{bundle_home} = 'string';
-       $pdata->{bundle_home} = $options{fullpath} ? $data->{fulldir} : '$(sys.workdir)/inputs/sketches/' . $data->{dir};
-
        # provide the metadata that could be useful
        my @files = sort keys %{$data->{manifest}};
-       $varlist->{sketch_manifest} = 'slist';
-       $pdata->{sketch_manifest} = [ @files ];
 
-       $varlist->{sketch_manifest_docs} = 'slist';
-       $pdata->{sketch_manifest_docs} = [ sort grep { $data->{manifest}->{$_}->{documentation} } @files ];
-
-       $varlist->{sketch_manifest_cf} = 'slist';
-       $pdata->{sketch_manifest_cf} = [ sort grep { $_ =~ m/\.cf$/ } @files ];
-
-       my %leftovers = %{$data->{manifest}};
-       delete $leftovers{$_} foreach (@{$pdata->{sketch_manifest_cf}}, @{$pdata->{sketch_manifest_docs}});
-       if (scalar keys %leftovers)
+       push @$varlist,
        {
-        $varlist->{sketch_manifest_extra} = 'slist';
-        $pdata->{sketch_manifest_extra} = [ sort keys %leftovers ];
+        name => 'sketch_depends',
+        type => 'slist',
+        value => [ sort keys %dependencies ],
+       },
+       {
+        name => 'sketch_authors',
+        type => 'slist',
+        value => [ sort @{$data->{metadata}->{authors}} ],
+       },
+       {
+        name => 'sketch_portfolio',
+        type => 'slist',
+        value => [ sort @{$data->{metadata}->{portfolio}} ],
+       },
+       {
+        name => 'sketch_manifest',
+        type => 'slist',
+        value => \@files,
+       };
+
+       my @manifests = (
+                        {
+                         name => 'sketch_manifest_cf',
+                         type => 'slist',
+                         value => [ sort grep { $_ =~ m/\.cf$/ } @files ],
+                        },
+                        {
+                         name => 'sketch_manifest_docs',
+                         type => 'slist',
+                         value => [ sort grep { $data->{manifest}->{$_}->{documentation} } @files ],
+                        }
+                       );
+
+       push @$varlist, @manifests;
+
+       my %leftovers = map { $_ => 1 } @files;
+       foreach my $m (@manifests)
+       {
+        foreach (@{$m->{value}})
+        {
+         delete $leftovers{$_};
+        }
        }
 
-       $varlist->{sketch_authors} = 'slist';
-       $pdata->{sketch_authors} = [ sort @{$data->{metadata}->{authors}} ];
-
-       $varlist->{sketch_portfolio} = 'slist';
-       $pdata->{sketch_portfolio} = [ sort @{$data->{metadata}->{portfolio}} ];
-
-       $dependencies{$_} = 1 foreach collect_dependencies($data->{metadata}->{depends});
-
-       $varlist->{sketch_depends} = 'slist';
-       $pdata->{sketch_depends} = [ sort keys %dependencies ];
+       if (scalar keys %leftovers)
+       {
+        push @$varlist,
+        {
+         name => 'sketch_manifest_extra',
+         type => 'slist',
+         value => [ sort keys %leftovers ],
+        };
+       }
 
        foreach my $key (qw/version name license/)
        {
-        $varlist->{"sketch_$key"} = 'string';
-        $pdata->{"sketch_$key"} = '' . $data->{metadata}->{$key};
+        push @$varlist,
+        {
+         name => "sketch_$key",
+         type => 'string',
+         value => '' . $data->{metadata}->{$key},
+        };
        }
 
-       my $optional_varlist = $entry_point->{optional_varlist};
-       foreach my $k (sort keys %$varlist, sort keys %$optional_varlist)
-       {
-        my $cfengine_k = "${prefix}::$k";
-        $cfengine_k =~ s/::/__/g;
-
-        if (exists $entry_point->{default}->{$k} &&
-            !exists $pdata->{$k})
-        {
-         $pdata->{$k} = $entry_point->{default}->{$k};
-        }
-
-        # skip optional variables without a value
-        next if (exists $optional_varlist->{$k} && ! exists $pdata->{$k});
-
-        my $v = $pdata->{$k};
-        my $augment_v = $pdata->{"+$k"};
-
-        color_die "Supplied augment variable for key $k is not an array"
-         if ($augment_v && ref $augment_v ne 'HASH');
-
-        my $definition = exists $optional_varlist->{$k} ?
-         $entry_point->{optional_varlist}->{$k} :
-          $entry_point->{varlist}->{$k};
-
-        if ($definition eq 'context')
-        {
-         $activation->{contexts}->{$cfengine_k}->{value} = $v;
-        }
-        elsif ($definition eq 'slist')
-        {
-         $activation->{vars}->{$cfengine_k}->{value} = '{ ' . join(',', map { "\"$_\"" } @$v) . ' }';
-         $activation->{vars}->{$cfengine_k}->{type} = 'slist';
-        }
-        elsif ($definition eq 'array')
-        {
-         color_die "Unable to activate: provided value " .
-          $coder->encode($v) . " for key $k is not an array"
-           unless ref $v eq 'HASH';
-
-         $activation->{array_vars}->{$cfengine_k} = $v;
-         if ($augment_v)
-         {
-          $activation->{array_vars}->{$cfengine_k}->{$_} = $augment_v->{$_}
-           foreach keys %$augment_v;
-         }
-
-         color_die "Sorry, but you can't activate with an empty list in $k"
-          unless scalar keys %{$activation->{array_vars}->{$cfengine_k}};
-        }
-        else
-        {
-         # primitive extractor of function calls
-         if ($v =~ m/^\w+\(.+\)/)
-         {
-          $activation->{vars}->{$cfengine_k}->{value} = $v;
-         }
-         else
-         {
-          $activation->{vars}->{$cfengine_k}->{value} = "\"$v\"";
-         }
-
-         $activation->{vars}->{$cfengine_k}->{type} = 'string';
-        }
-       }
+       $activation->{vars} = $varlist;
 
        my $ak = sprintf('%03d', $activation_counter++);
        $template_activations->{$ak} = $activation; # the activation counter is 1..N globally!
@@ -709,19 +690,15 @@ sub generate
     color_die "Could not find sketch $sketch in repo list @{$options{repolist}}";
    }
 
-   foreach my $repo (@{$options{repolist}})
+   # this removes found keys in %dependencies!
+   my @dep_inputs = collect_dependencies_inputs(dirname($run_file), \%dependencies);
+   if ($verbose)
    {
-    my $contents = repo_get_contents($repo);
-    foreach my $dep (keys %dependencies)
-    {
-     if (exists $contents->{$dep})
-     {
-      push @inputs, inputfile($contents->{$dep}->{dir},
-                              @{$contents->{$dep}->{interface}});
-      delete $dependencies{$dep};
-     }
-    }
+    print "Dependency: added input $_ for runfile $run_file\n"
+     foreach @dep_inputs;
    }
+
+   push @inputs, @dep_inputs;
 
    my @deps = keys %dependencies;
    if (scalar @deps)
@@ -730,16 +707,19 @@ sub generate
    }
 
    # process input template, substituting variables
-   push @inputs, inputfile($template_activations->{$_}->{file})
-    foreach sort keys %$template_activations;
+   foreach my $a (sort keys %$template_activations)
+   {
+    my $act = $template_activations->{$a};
+    my $input = make_include($act->{fulldir}, dirname($run_file) , basename($act->{file}));
+    push @inputs, $input;
+    print "Input template: added input $input for runfile $run_file\n"
+     if $verbose;
+   }
 
-   # map inputs under the sketches/ directory as per the $config defaults
-   my $includes = join ', ', map { "\"sketches/$_\"" } uniq(@inputs);
+   my $includes = join ', ', map { my @p = recurse_print($_); $p[0]->{value} } uniq(@inputs);
 
    # maybe make the run template configurable?
-   my $output = make_runfile($template_activations, $includes, $standalone);
-
-   my $run_file = $options{runfile};
+   my $output = make_runfile($template_activations, $includes, $standalone, $run_file);
 
    maybe_write_file($run_file, 'run', $output);
    print GREEN "Generated ".($standalone?"standalone":"non-standalone")." run file $run_file\n"
@@ -760,65 +740,63 @@ sub api
    my $data = $contents->{$sketch};
    my $if = $data->{interface};
 
-   my $entry_point = verify_entry_point($sketch,
-                                        $data->{fulldir},
-                                        $data->{manifest},
-                                        $data->{entry_point},
-                                        $data->{interface});
+   my $entry_point = verify_entry_point($sketch, $data);
 
    if ($entry_point)
    {
      $found = 1;
-     my @mandatory_args = sort keys %{$entry_point->{varlist}};
-     my @optional_args = sort keys %{$entry_point->{optional_varlist}};
+
      local $Data::Dumper::Terse = 1;
      local $Data::Dumper::Indent = 0;
-     my %defaults = map { $_ => Dumper($entry_point->{default}->{$_})} @optional_args;
-     my %empty_values = ( 'context' => '',
-                          'string'  => '',
-                          'slist'   => [],
-                          'array'   => {},
-                        );
-     if ($options{json}) {
-       my %params = ();
-       $params{$_} = $empty_values{$entry_point->{varlist}->{$_}} foreach (@mandatory_args);
-       $params{$_} = $entry_point->{default}->{$_} foreach (@optional_args);
-       print $coder->pretty(1)->encode(\%params)."\n";
+     if ($options{json})
+     {
+       my %api = (
+                  vars => $entry_point->{varlist},
+                  returns => $entry_point->{returns},
+                 );
+       print $coder->pretty(1)->encode(\%api)."\n";
      }
-     else {
+     else
+     {
        print GREEN "Sketch $sketch\n";
-       if ($data->{entry_point}) {
-         print BOLD BLUE."  Entry bundle name:".RESET." $entry_point->{bundle}\n";
-         if (scalar @mandatory_args) {
-           print BOLD BLUE "  Mandatory arguments:\n";
-           foreach my $arg (@mandatory_args) {
-             print "    ".BLUE."$arg:".RESET." $entry_point->{varlist}->{$arg}\n";
-           }
-         }
-         else {
-           print YELLOW "  No mandatory arguments.\n";
-         }
-         if (scalar @optional_args) {
-           print BOLD BLUE "  Optional arguments:\n";
-           foreach my $arg (@optional_args) {
-             print "    ".BLUE."$arg:".RESET." $entry_point->{optional_varlist}->{$arg} (default value: $defaults{$arg})\n";
-           }
-         }
-         else {
-           print YELLOW "  No optional arguments.\n";
-         }
+       if ($data->{entry_point})
+       {
+        print BOLD BLUE."  Entry bundle name:".RESET." $entry_point->{bundle_name}\n";
+
+        foreach my $var (@{$entry_point->{varlist}})
+        {
+         my @p = recurse_print($var->{default}) if exists $var->{default};
+
+         my $desc = join ",\t", (
+                                 $var->{passed} ? 'passed    ' : 'not passed',
+                                 sprintf('%20s', $var->{type}),
+                                 exists $var->{default} ? ("optional (default $p[0]->{value})") : "mandatory",
+                              );
+         printf("var ".BLUE."%15.15s:".RESET."\t$desc\n",
+                $var->{name});
+        }
+
+        foreach my $return (sort keys %{$entry_point->{returns}})
+        {
+         printf("ret ".BLUE."%15.15s:".RESET."\t$entry_point->{returns}->{$return}\n",
+                $return);
+        }
        }
-       else {
-         print BOLD BLUE "  This is a library sketch - no entry point defined.\n";
+       else
+       {
+        print BOLD BLUE "  This is a library sketch - no entry point defined.\n";
        }
      }
    }
-   else {
-     color_die "I cannot find API information about $sketch.\n";
+   else
+   {
+    color_die "I cannot find API information about $sketch.\n";
    }
+  }
  }
-}
- unless ($found) {
+
+ unless ($found)
+ {
    color_die "I could not find sketch $sketch. It doesn't seem to be installed.\n";
  }
 }
@@ -832,10 +810,15 @@ sub activate
   my $pfile = $aspec->{$sketch};
 
   print "Loading activation params from $pfile\n" unless $quiet;
-  my $aparams = load_json($pfile);
+  my $aparams_all = load_json($pfile);
 
   color_die "Could not load activation params from $pfile"
-   unless ref $aparams eq 'HASH';
+   unless ref $aparams_all eq 'HASH';
+
+  color_die "Could not find activation params for $sketch in $pfile"
+   unless exists $aparams_all->{$sketch};
+
+  my $aparams = $aparams_all->{$sketch};
 
   foreach my $extra (sort keys %{$options{params}})
   {
@@ -854,41 +837,87 @@ sub activate
     my $data = $contents->{$sketch};
     my $if = $data->{interface};
 
-    my $entry_point = verify_entry_point($sketch,
-                                         $data->{fulldir},
-                                         $data->{manifest},
-                                         $data->{entry_point},
-                                         $data->{interface});
+    my $entry_point = verify_entry_point($sketch, $data);
 
     if ($entry_point)
     {
-     foreach my $default_k (keys %{$entry_point->{default}})
-     {
-      next if exists $aparams->{$default_k};
-      $aparams->{$default_k} = $entry_point->{default}->{$default_k};
-     }
-
      my $varlist = $entry_point->{varlist};
-     foreach my $varname (sort keys %$varlist)
+     my $fails;
+     foreach my $var (@$varlist)
      {
-      if ($varname eq 'activated' && ! exists $aparams->{$varname})
+      if (exists $aparams->{$var->{name}})
       {
-       print "Inserting artificial 'activated' boolean set to 'any' so it's always true.\n"
-        unless $quiet;
-       $aparams->{$varname} = 'any';
+      }
+      else
+      {
+       if (exists $var->{default})
+       {
+        if ($var->{type} =~ m/^LIST\(.+\)$/s &&
+            ref $var->{default} eq '' &&
+            $var->{default} =~ m/^KVKEYS\((\w+)\)$/)
+        {
+         my $default;
+         foreach my $var2 (@$varlist)
+         {
+          my $name2 = $var2->{name};
+          if ($name2 eq $1)
+          {
+           if (exists $aparams->{$name2} &&
+               ref $aparams->{$name2} eq 'HASH')
+           {
+            $default = $var->{default} = [ keys %{$aparams->{$name2}} ];
+           }
+           else
+           {
+            color_die "$var->{name} default KVKEYS($1) failed because $name2 did not have a valid value";
+           }
+          }
+         }
+
+         color_die "$var->{name} KVKEYS default $var->{default} failed because a matching variable could not be found"
+          unless $default;
+        }
+        elsif ($var->{type} =~ m/^ARRAY\(/ &&
+            ref $var->{default} eq '')
+        {
+         my $decoded;
+         eval { $decoded = $coder->decode($var->{default}); };
+         color_die "Given default '$var->{default}' for ARRAY variable was invalid JSON"
+          unless ref $decoded eq 'HASH';
+
+         print "Decoding default JSON data '$var->{default}' for $var->{name}\n"
+          if $veryverbose;
+
+         $var->{default} = $decoded;
+        }
+
+        $aparams->{$var->{name}} = $var->{default};
+       }
+       else
+       {
+        color_die "Can't activate $sketch: its interface requires variable '$var->{name}' and no default is available"
+       }
       }
 
-      color_die "Can't activate $sketch: its interface requires variable '$varname'"
-       unless exists $aparams->{$varname};
-      print "Satisfied by aparams: '$varname'\n" if $verbose;
-     }
+      # for contexts, translate booleans to any or !any
+      if (is_json_boolean($aparams->{$var->{name}}) &&
+          $var->{type} eq 'CONTEXT')
+      {
+       $aparams->{$var->{name}} = $aparams->{$var->{name}} ? 'any' : '!any';
+      }
 
-     $varlist = $entry_point->{optional_varlist};
-     foreach my $varname (sort keys %$varlist)
-     {
-      next unless exists $aparams->{$varname};
-      print "Optional satisfied by aparams: '$varname'\n" if $verbose;
+      if (validate($aparams->{$var->{name}}, $var->{type}))
+      {
+       print "Satisfied by aparams: '$var->{name}'\n" if $verbose;
+      }
+      else
+      {
+       my $ad = $coder->encode($aparams->{$var->{name}});
+       color_warn "Can't activate $sketch: '$var->{name}' value $ad fails $var->{type} validation";
+       $fails++;
+      }
      }
+     color_die "Validation errors" if $fails;
     }
     else
     {
@@ -897,12 +926,6 @@ sub activate
 
     # activation successful, now install it
     my $activations = load_json($options{'act-file'}, 1);
-
-    if ('HASH' eq ref $activations->{$sketch})
-    {
-     color_warn "Ignoring old-style activations for sketch $sketch!";
-     $activations->{$sketch} = [];
-    }
 
     foreach my $check (@{$activations->{$sketch}})
     {
@@ -1061,12 +1084,13 @@ sub install
  print "Loading cf-sketch inventory from $source\n" if $verbose;
 
  my $search = search_internal($source, $sketches);
+
  my %known = %{$search->{known}};
  my %todo = %{$search->{todo}};
 
  foreach my $sketch (sort keys %todo)
  {
- print BLUE "Installing $sketch\n" unless $quiet;
+  print BLUE "Installing $sketch\n" unless $quiet;
   my $dir = $local_dir ? File::Spec->catdir($base_dir, $todo{$sketch}) : "$base_dir/$todo{$sketch}";
 
   # make sure we only work with absolute directories
@@ -1120,6 +1144,8 @@ sub install
   my $install_dir = File::Spec->catdir($dest_repo,
                                        split('::', $sketch));
 
+  my $module_install_dir = File::Spec->catfile($dest_repo, $options{modulepath});
+
   if (maybe_ensure_dir($install_dir))
   {
    print "Created destination directory $install_dir\n" if $verbose;
@@ -1130,7 +1156,26 @@ sub install
     my $file_spec = $data->{manifest}->{$file};
     # build a locally valid install path, while the manifest can use / separator
     my $source = is_resource_local($data->{dir}) ? File::Spec->catfile($data->{dir}, split('/', $file)) : "$data->{dir}/$file";
-    my $dest = File::Spec->catfile($install_dir, split('/', $file));
+
+    my $dest;
+
+    if ($file_spec->{module})
+    {
+     if (maybe_ensure_dir($module_install_dir))
+     {
+      print "Created module destination directory $module_install_dir\n" if $verbose;
+      $dest = File::Spec->catfile($module_install_dir, split('/', $file));
+     }
+     else
+     {
+      color_warn "Could not make install directory $module_install_dir, skipping $sketch";
+      next;
+     }
+    }
+    else
+    {
+     $dest = File::Spec->catfile($install_dir, split('/', $file));
+    }
 
     my $dest_dir = dirname($dest);
     color_die "Could not make destination directory $dest_dir"
@@ -1271,7 +1316,7 @@ sub missing_dependencies
     {
      print "Satisfied cfengine version dependency: $version present, needed ",
       $tocheck{$dep}->{version}, "\n"
-       if $verbose;
+       if $veryverbose;
 
      delete $tocheck{$dep};
     }
@@ -1289,7 +1334,7 @@ sub missing_dependencies
     if (!exists $tocheck{$dep}->{version} ||
         $dd->{metadata}->{version} >= $tocheck{$dep}->{version})
     {
-     print "Found dependency $dep in $repo\n" if $verbose;
+     print "Found dependency $dep in $repo\n" if $veryverbose;
      # TODO: test recursive dependencies, right now this will loop
      # TODO: maybe use a CPAN graph module
      push @missing, missing_dependencies($dd->{metadata}->{depends});
@@ -1313,58 +1358,21 @@ sub missing_dependencies
  return @missing;
 }
 
-sub collect_dependencies
-{
- my $deps = shift @_;
-
- my @collected;
-
- foreach my $repo (@{$options{repolist}})
- {
-  my $contents = repo_get_contents($repo);
-  foreach my $dep (sort keys %$deps)
-  {
-   if ($dep eq 'os' || $dep eq 'cfengine')
-   {
-   }
-   elsif (exists $contents->{$dep})
-   {
-    my $dd = $contents->{$dep};
-    # either the version is not specified or it has to match
-    if (!exists $deps->{$dep}->{version} ||
-        $dd->{metadata}->{version} >= $deps->{$dep}->{version})
-    {
-     print "Found dependency $dep in $repo\n" if $verbose;
-     # TODO: test recursive dependencies, right now this will loop
-     # TODO: maybe use a CPAN graph module
-     push @collected, $dep, collect_dependencies($dd->{metadata}->{depends});
-    }
-    else
-    {
-     print YELLOW "Found dependency $dep in $repo but the version doesn't match\n"
-      if $verbose;
-    }
-   }
-  }
- }
-
- return @collected;
-}
-
 sub find_remote_sketches
 {
- my @urls = @_;
+ my $urls = shift @_;
+ my $noparse = shift @_ || 0;
  my %contents;
 
- foreach my $repo (@urls)
+ foreach my $repo (@$urls)
  {
   my $sketches_url = "$repo/cfsketches";
-  my $sketches = get($sketches_url)
+  my $sketches = lwp_get_remote($sketches_url)
    or color_die "Unable to retrieve $sketches_url : $!\n";
 
   foreach my $sketch_dir ($sketches =~ /(.+)/mg)
   {
-   my $info = load_sketch("$repo/$sketch_dir");
+   my $info = load_sketch("$repo/$sketch_dir", undef, $noparse);
    next unless $info;
    $contents{$info->{metadata}->{name}} = $info;
   }
@@ -1375,10 +1383,12 @@ sub find_remote_sketches
 
 sub find_sketches
 {
- my @dirs = @_;
+ my $dirs = shift @_;
+ my $noparse = shift @_ || 0;
+
  my %contents;
 
- @dirs = grep { -r $_ && -x $_ } @dirs;
+ my @dirs = grep { -r $_ && -x $_ } @$dirs;
 
  if (scalar @dirs)
  {
@@ -1389,7 +1399,7 @@ sub find_sketches
          my $f = $_;
          if ($f eq SKETCH_DEF_FILE)
          {
-          my $info = load_sketch($File::Find::dir, $topdir);
+          my $info = load_sketch($File::Find::dir, $topdir, $noparse);
           return unless $info;
           $contents{$info->{metadata}->{name}} = $info;
          }
@@ -1404,6 +1414,7 @@ sub load_sketch
 {
  my $dir    = shift @_;
  my $topdir = shift @_;
+ my $noparse = shift @_ || 0;
 
  my $name = is_resource_local($dir) ? File::Spec->catfile($dir, SKETCH_DEF_FILE) : "$dir/" . SKETCH_DEF_FILE;
  my $json = load_json($name);
@@ -1482,12 +1493,10 @@ sub load_sketch
   $json->{dir} = $options{fullpath} || !is_resource_local($dir) ? $dir : File::Spec->abs2rel( $dir, $topdir );
   $json->{fulldir} = $dir;
   $json->{file} = $name;
-
-  if (verify_entry_point($name,
-                         $json->{fulldir},
-                         $json->{manifest},
-                         $json->{entry_point},
-                         $json->{interface})) {
+  if ($noparse ||
+      !defined $json->{entry_point} ||
+      verify_entry_point($name, $json))
+  {
    # note this name will be stringified even if it's not a string
    return $json;
   }
@@ -1529,26 +1538,34 @@ sub load_sketch
 
 sub verify_entry_point
 {
- my $name      = shift @_;
- my $dir       = shift @_;
- my $mft       = shift @_;
- my $entry     = shift @_;
- my $interface = shift @_;
+ my $name = shift @_;
+ my $data = shift @_;
+
+ my $dir       = $data->{fulldir};
+ my $mft       = $data->{manifest};
+ my $entry     = $data->{entry_point};
+ my $interface = $data->{interface};
 
  unless (defined $entry && defined $interface)
  {
-  return {
-          confirmed => 1,
-          varlist => { activated => 'context' },
-          optional_varlist => { },
-         };
+  return undef;
  }
 
  my $maincf = $entry;
 
  my $maincf_filename = is_resource_local($dir) ? File::Spec->catfile($dir, $maincf) : "$dir/$maincf";
 
+  my $meta = {
+              file => basename($maincf_filename),
+              dir => dirname($maincf_filename),
+              fulldir => $dir,
+              varlist => [
+                         ],
+             };
+
  my @mcf;
+ my $mcf;
+
  if (exists $mft->{$maincf})
  {
   if (is_resource_local($dir))
@@ -1559,17 +1576,17 @@ sub verify_entry_point
     return 0;
    }
 
-   my $mcf;
    unless (open($mcf, '<', $maincf_filename) && $mcf)
    {
     color_warn "Could not open $maincf_filename: $!" unless $quiet;
     return 0;
    }
    @mcf = <$mcf>;
+   $mcf = join "\n", @mcf;   # make sure the whole string is available
   }
   else
   {
-   my $mcf = get($maincf_filename);
+   $mcf = lwp_get_remote($maincf_filename);
    unless ($mcf)
    {
     color_warn "Could not retrieve $maincf_filename: $!" unless $quiet;
@@ -1580,147 +1597,306 @@ sub verify_entry_point
   }
  }
 
- if (scalar @mcf)
+ my $tdir = tempdir( CLEANUP => 1 );
+ my ($tfh, $tfilename) = tempfile( DIR => $tdir );
+
+ if ($mcf !~ m/body\s+common\s+control.*bundlesequence/m)
  {
-  $. = 0;
-  my $bundle;
-  my $meta = {
-              confirmed        => 0,
-              varlist          => { activated => 'context' },
-              optional_varlist => { },
-              default          => {},
-             };
+  print "Faking bundlesequence: collecting dependencies for $data->{metadata}->{name} from @{[sort keys %{$data->{metadata}->{depends}}]}\n"
+   if $veryverbose;
+  my %dependencies = map { $_ => 1 } collect_dependencies($data->{metadata}->{depends});
+  my @inputs = collect_dependencies_inputs(dirname($tfilename), \%dependencies);
+  print "Faking bundlesequence: collected inputs [@inputs]\n"
+   if $veryverbose;
+  my @p = recurse_print([ uniq(@inputs) ]);
+  $mcf = sprintf('
+  body common control {
 
-  while (defined(my $line = shift @mcf))
+    bundlesequence => { "cf_null" };
+    inputs => %s;
+}
+', $p[0]->{value}) . $mcf;
+ }
+ else
+ {
+ }
+
+ # print "PARSING:\n$mcf\n\n" if $veryverbose;
+
+ print $tfh $mcf;
+ close $tfh;
+
+ my $pb = cfengine_promises_binary();
+ my $tline = "$pb --parse-tree";
+ open my $parse, "$tline -f '$tfilename'|"
+  or die "Could not run [$tline -f '$tfilename']: $!";
+
+ my $ptree_str = join "\n", <$parse>;
+ my $ptree;
+
+ eval { $ptree = $coder->decode($ptree_str); };
+
+ my @rejects;
+
+ if ($ptree && exists $ptree->{bundles} && ref $ptree->{bundles} eq 'ARRAY')
+ {
+  my @bundles = @{$ptree->{bundles}};
+  my $bnamespace;
+  my $bname;
+  my $bname_printable;
+  my $bnamespace_printable;
+
+  foreach my $bundle (grep { $_->{'bundle-type'} eq 'agent' } @bundles)
   {
-   $.++;
-   # TODO: need better cfengine parser; this should be extracted by cf-promises
-   # when the meta: section is available.  It's very primitive now.
+   print "Looking at agent bundle $bundle->{name}\n"
+    if $veryverbose;
 
-   if (defined $bundle && $line =~ m/^\s*bundle\s+agent\s+meta_$bundle/)
+   my @args = @{$bundle->{arguments}};
+   ($bnamespace, $bname) = split ':', $bundle->{name};
+   unless ($bname)
    {
-    $meta->{confirmed} = 1;
+    $bname = $bnamespace;
+    undef $bnamespace;
    }
 
-   # match "argument[foo]" string => "string";
-   # or    "argument[bar]" string => "slist";
-   # or    "argument[bar]" string => "context";
-   # or    "argument[bar]" string => "array";
-   # optionally with a comma instead of a semicolon at the end
-   if ($meta->{confirmed} &&
-       $line =~ m/^\s*
-                  "argument\[([^]]+)\]"
-                  \s+
-                  string
-                  \s+=>\s+
-                  "(context|string|slist|array)"\s*[;,]/x)
-   {
-    $meta->{varlist}->{$1} = $2;
-   }
+   $bnamespace_printable = $bnamespace || 'default';
+   $bname_printable = "$bname (namespace=$bnamespace_printable)";
+   print "Found bundle $bname_printable with args @args\n" if $verbose;
 
-   # match "optional_argument[foo]" string => "string";
-   # or    "optional_argument[bar]" string => "slist";
-   # or    "optional_argument[bar]" string => "context";
-   # or    "optional_argument[bar]" string => "array";
-   # optionally with a comma instead of a semicolon at the end
-   if ($meta->{confirmed} &&
-       $line =~ m/^\s*
-                  "optional_argument\[([^]]+)\]"
-                  \s+
-                  string
-                  \s+=>\s+
-                  "(context|string|slist|array)"\s*[;,]/x)
-   {
-    $meta->{optional_varlist}->{$1} = $2;
-   }
+   # extract the variables.  start with a context called 'activated' by default
+   my %vars = (
+               activated => { type => 'CONTEXT', default => 'any' },
+              );
 
-   # match "default[foo]" string => "string";
-   # match "default[foo]" slist => { "a", "b", "c" };
-   # optionally with a comma instead of a semicolon at the end
-   if ($meta->{confirmed} &&
-       $line =~ m/^\s*
-                  "default\[([^]]+)\]"
-                  \s+
-                  (string|slist)
-                  \s+=>\s+
-                  (.*)\s*[;,]/x &&
-      (exists $meta->{optional_varlist}->{$1} ||
-       exists $meta->{varlist}->{$1}))
-   {
-    my $k = $1;
-    my $type = $2;
-    my $v = $3;
+   my %returns;
 
-    # primitive extractor of slist values
-    if ($type eq 'slist')
+   foreach my $ptype (@{$bundle->{'promise-types'}})
+   {
+    print "Looking at promise type $ptype->{name}\n"
+     if $veryverbose;
+
+    next unless $ptype->{name} eq 'meta';
+    foreach my $class (@{$ptype->{'classes'}})
     {
-     $v = [ ($v =~ m/"([^"]+)"/g) ];
+     print "Looking at class $class->{name}\n"
+      if $veryverbose;
+
+     if ($class->{name} eq 'any')
+     {
+      foreach my $promise (@{$class->{promises}})
+      {
+       print "Looking at 'any' meta promiser $promise->{promiser}\n"
+        if $veryverbose;
+
+       if ($promise->{promiser} =~ m/^vars\[([^]]+)\]\[(type|default)\]$/)
+       {
+        my ($var, $spec) = ($1, $2);
+
+        print "Found promiser for var $var: $spec\n"
+         if $veryverbose;
+
+        if (exists $promise->{attributes}->[0]->{lval} &&
+            exists $promise->{attributes}->[0]->{rval})
+        {
+         my $lval = $promise->{attributes}->[0]->{lval};
+         my $rval = $promise->{attributes}->[0]->{rval};
+         if ('string' eq $lval)
+         {
+          if ('string' eq $rval->{type})
+          {
+           $vars{$var}->{$spec} = $rval->{value};
+          }
+          elsif ('function-call' eq $rval->{type})
+          {
+           foreach my $farg (@{$rval->{arguments}})
+           {
+            next if $farg->{type} eq 'string';
+            push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has a function call for a default with non-string argument $farg->{value}";
+           }
+
+           unless (scalar @rejects)
+           {
+            $vars{$var}->{$spec} = {
+                                    function =>  $rval->{name},
+                                    args => [map { $_->{value} } @{$rval->{arguments}}],
+                                   };
+           }
+          }
+          else
+          {
+           push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has invalid value type $rval->{type}";
+          }
+         }
+         else
+         {
+          push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has invalid type $lval";
+         }
+        }
+        else
+        {
+         push @rejects, "Sorry, promiser $promise->{promiser} in bundle $bname_printable is invalid";
+        }
+       }
+       elsif ($promise->{promiser} =~ m/^returns\[([^]]+)\]$/)
+       {
+        my ($var) = ($1);
+
+        print "Found promiser for returns $var\n"
+         if $veryverbose;
+
+        if (exists $promise->{attributes}->[0]->{lval} &&
+            exists $promise->{attributes}->[0]->{rval})
+        {
+         my $lval = $promise->{attributes}->[0]->{lval};
+         my $rval = $promise->{attributes}->[0]->{rval};
+         if ('string' eq $lval)
+         {
+          if ('string' eq $rval->{type})
+          {
+           $returns{$var} = $rval->{value};
+          }
+          else
+          {
+           push @rejects, "Sorry, meta returns promise $promise->{promiser} in bundle $bname_printable has invalid value type $rval->{type}";
+          }
+         }
+         else
+         {
+          push @rejects, "Sorry, meta var promise $promise->{promiser} in bundle $bname_printable has invalid type $lval";
+         }
+        }
+        else
+        {
+         push @rejects, "Sorry, promiser $promise->{promiser} in bundle $bname_printable is invalid";
+        }
+       }
+      }                                 # foreach promise
+     }
+     else
+     {
+      color_warn "Sorry, we can't parse conditional ($class->{name}) meta promises in $bname_printable"
+       if $verbose;
+     }
     }
-    # remove quotes from string values
-    if ($type eq 'string')
+   }
+
+   foreach my $var (sort keys %vars)
+   {
+    next if exists $vars{$var}->{type};
+    push @rejects, "In $bname_printable, the meta definition for variable $var does not have a type (e.g. \"vars[umask][type]\" string => \"OCTAL\")";
+   }
+
+   foreach my $arg (@args)
+   {
+    if (exists $vars{$arg})
     {
-     $v =~ s/^["'](.*)["']$/$1/;
+     my $definition = {
+                       name => $arg,
+                       type => (exists $vars{$arg}->{type} ? $vars{$arg}->{type} : '???'),
+                       passed => 1,
+                      };
+
+     $definition->{default} = $vars{$arg}->{default}
+      if exists $vars{$arg}->{default};
+
+     push @{$meta->{varlist}}, $definition;
+     delete $vars{$arg};
     }
-
-
-    $meta->{default}->{$k} = $v;
+    else
+    {
+     push @rejects, "$bname_printable has argument $arg which is not defined as a meta promise (e.g. \"vars[umask][type]\" string => \"OCTAL\")";
+    }
    }
 
-   # match "default[foo][bar]" string => "moo";
-   if ($meta->{confirmed} &&
-       $line =~ m/^\s*
-                  "default\[([^]]+)\]\[([^]]+)\]"
-                  \s+
-                  (string)
-                  \s+=>\s+
-                  \"(.*)\"\s*;/x &&
-      (exists $meta->{optional_varlist}->{$1} ||
-       exists $meta->{varlist}->{$1} &&
-       $meta->{varlist}->{$1} eq 'array'))
+   foreach my $var (sort keys %vars)
    {
-    my $k = $1;
-    my $array_k = $2;
-    my $array_v = $4;
+    if ($vars{$var}->{type} eq 'CONTEXT')
+    {
+     my $definition = {
+                       name => $var,
+                       type => $vars{$var}->{type},
+                       passed => 0,
+                      };
 
-    $meta->{default}->{$k}->{$array_k} = $array_v;
+     $definition->{default} = $vars{$var}->{default}
+      if exists $vars{$var}->{default};
+
+     push @{$meta->{varlist}}, $definition;
+     delete $vars{$var};
+    }
+    else
+    {
+     push @rejects, "$bname_printable has a meta vars promise that does not correspond to a bundle argument";
+    }
    }
 
-   if ($meta->{confirmed} && $line =~ m/^\s*\}\s*/)
-   {
-    return $meta;
-   }
-
-   if ($line =~ m/^\s*bundle\s+agent\s+(\w+)/ && $1 !~ m/^meta/)
-   {
-    $meta->{bundle} = $bundle = $1;
-    print "Found definition of bundle $bundle at $maincf_filename:$.\n"
-     if $verbose;
-   }
+   $meta->{returns} = \%returns;
+   $meta->{bundle_name} = $bname;
+   $meta->{bundle_namespace} = $bnamespace;
+   last;                                # only try the first bundle!
   }
 
-  if ($meta->{confirmed})
+  unless ($bname)
   {
-   color_warn "Couldn't find the closing } for [$bundle] in $maincf_filename"
-    unless $quiet;
+   push @rejects, "Couldn't find a usable bundle in $maincf_filename";
   }
-  elsif (defined $bundle)
+ }
+ else                                   # $ptree is not valid
+ {
+  if (length $ptree_str > 500)
   {
-   color_warn "Couldn't find the meta definition of [$bundle] in $maincf_filename"
-    unless $quiet;
+   $ptree_str = substr($ptree_str, 0, 500);
   }
-  else
+
+  push @rejects, "Could not parse $maincf_filename with [$tline]: $ptree_str";
+ }
+
+ print "$maincf_filename bundle parse gave us " . Dumper($meta) if $veryverbose;
+
+ if (scalar @rejects)
+ {
+  foreach (@rejects)
   {
-   color_warn "Couldn't find a usable bundle in $maincf_filename" unless $quiet;
+   color_warn $_ unless $quiet;
   }
 
   return undef;
  }
+
+ return $meta;
 }
 
 sub is_resource_local
 {
  my $resource = shift @_;
  return ($resource !~ m,^[a-z][a-z]+:,);
+}
+
+sub lwp_get_remote
+{
+ my $resource = shift @_;
+ eval
+ {
+  require LWP::Simple;
+ };
+ if ($@ )
+ {
+  color_die "Could not load LWP::Simple (you should install libwww-perl)";
+ }
+
+ if ($resource =~ m/^https/)
+ {
+  eval
+  {
+   require LWP::Protocol::https;
+  };
+  if ($@ )
+  {
+   color_die "Could not load LWP::Protocol::https (you should install it)";
+  }
+ }
+
+ return get($resource);
 }
 
 sub get_local_repo
@@ -1742,27 +1918,23 @@ sub get_local_repo
  sub repo_get_contents
  {
   my $repo = shift @_;
+  my $noparse = shift @_ || 0;
 
-  return $content_cache{$repo} if exists $content_cache{$repo};
+  return $content_cache{$repo,$noparse}
+   if exists $content_cache{$repo,$noparse};
 
   my $contents;
   if (is_resource_local($repo))
   {
-   $contents = find_sketches($repo);
-   $content_cache{$repo} = $contents;
+   $contents = find_sketches([$repo], $noparse);
   }
   else
   {
-   $contents = find_remote_sketches($repo);
-   $content_cache{$repo} = $contents;
+   $contents = find_remote_sketches([$repo], $noparse);
   }
 
+  $content_cache{$repo,$noparse} = $contents;
   return $contents;
- }
-
- sub repo_clear_cache
- {
-  %content_cache = ();
  }
 }
 
@@ -1801,7 +1973,7 @@ sub load_json
  }
  else
  {
-  my $j = get($f)
+  my $j = lwp_get_remote($f)
    or color_die "Unable to retrieve $f";
 
   @j = split "\n", $j;
@@ -1909,7 +2081,8 @@ sub maybe_write_file
 
 {
  my $promises_binary;
- sub cfengine_version
+
+ sub cfengine_promises_binary
  {
   my $promises_name = 'cf-promises';
 
@@ -1927,9 +2100,15 @@ sub maybe_write_file
    unless $promises_binary;
 
   print "Excellent, we found $promises_binary to interface with CFEngine\n"
-   if $verbose;
+   if $veryverbose;
 
-  my $cfv = `$promises_binary -V`;     # TODO: get this from cfengine?
+  return $promises_binary;
+ }
+
+ sub cfengine_version
+ {
+  my $pb = cfengine_promises_binary();
+  my $cfv = `$pb -V`;     # TODO: get this from cfengine?
   if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
   {
    return $1;
@@ -1971,24 +2150,57 @@ sub recurse_print
  my $ref             = shift @_;
  my $prefix          = shift @_;
  my $unquote_scalars = shift @_;
+ my $simplify_arrays = shift @_;
 
  my @print;
-                      # $_->{path},
-                      # $_->{type},
-                      # $_->{value}) foreach @toprint;
 
  # recurse for hashes
  if (ref $ref eq 'HASH')
  {
-  push @print, recurse_print($ref->{$_}, $prefix . "[$_]", $unquote_scalars)
-   foreach sort keys %$ref;
+  if (exists $ref->{function} && exists $ref->{args})
+  {
+   push @print, {
+                 path => $prefix,
+                 type => 'string',
+                 value => sprintf('%s(%s)',
+                                  $ref->{function},
+                                  join(', ', map { my @p = recurse_print($_); $p[0]->{value} } @{$ref->{args}}))
+                };
+  }
+  else
+  {
+   # warn Dumper [ $ref            ,
+   #              $prefix         ,
+   #              $unquote_scalars,
+   #              $simplify_arrays];
+   push @print, recurse_print($ref->{$_},
+                              sprintf("%s%s",
+                                      ($prefix||''),
+                                      $simplify_arrays ? "_${_}" : "[$_]"),
+                              $unquote_scalars,
+                              0)
+    foreach sort keys %$ref;
+  }
  }
  elsif (ref $ref eq 'ARRAY')
  {
+  my $joined;
+
+  if (scalar @$ref)
+  {
+   $joined = sprintf('{ %s }',
+                     join(", ",
+                          map { s,\\,\\\\,g; s,",\\",g; "\"$_\"" } @$ref));
+  }
+  else
+  {
+   $joined = '{ "cf_null" }';
+  }
+
   push @print, {
                 path => $prefix,
                 type => 'slist',
-                value => '{' . join(", ", map { "\"$_\"" } @$ref) . '}'
+                value => $joined
                };
  }
  else
@@ -2005,11 +2217,92 @@ sub recurse_print
  return @print;
 }
 
+sub collect_dependencies
+{
+ my $deps = shift @_;
+
+ my @collected;
+
+ foreach my $repo (@{$options{repolist}})
+ {
+  my $contents = repo_get_contents($repo, 1);
+  foreach my $dep (sort keys %$deps)
+  {
+   if ($dep eq 'os' || $dep eq 'cfengine')
+   {
+   }
+   elsif (exists $contents->{$dep})
+   {
+    my $dd = $contents->{$dep};
+    print "Checking dependency match $dep in $repo: " . $coder->encode($dd) . "\n" if $veryverbose;
+    # either the version is not specified or it has to match
+    if (!exists $deps->{$dep}->{version} ||
+        $dd->{metadata}->{version} >= $deps->{$dep}->{version})
+    {
+     print "Found dependency $dep in $repo\n" if $veryverbose;
+     # TODO: test recursive dependencies, right now this will loop
+     # TODO: maybe use a CPAN graph module
+     push @collected, $dep, collect_dependencies($dd->{metadata}->{depends});
+    }
+    else
+    {
+     print YELLOW "Found dependency $dep in $repo but the version doesn't match\n"
+      if $verbose;
+    }
+   }
+  }
+ }
+
+ return @collected;
+}
+
+sub collect_dependencies_inputs
+{
+ my $install_dir = shift @_;
+ my $dep_map     = shift @_;
+
+ my @inputs;
+ foreach my $repo (@{$options{repolist}})
+ {
+  my $contents = repo_get_contents($repo, 1);
+  foreach my $dep (keys %$dep_map)
+  {
+   if (exists $contents->{$dep})
+   {
+    my $input = make_include($contents->{$dep}->{fulldir}, $install_dir , @{$contents->{$dep}->{interface}});
+    push @inputs, $input;
+    delete $dep_map->{$dep};
+   }
+  }
+ }
+
+ return @inputs;
+}
+
+sub make_include_path
+{
+ my $lib_dir = shift @_;
+ my $run_dir = shift @_;
+
+ return $options{fullpath} ? $lib_dir : File::Spec->abs2rel($lib_dir, $run_dir );
+}
+
+sub make_include
+{
+ my $lib_dir = shift @_;
+ my $run_dir = shift @_;
+ my $file = shift @_;
+
+ my $dir = make_include_path($lib_dir, $run_dir);
+ my $input = File::Spec->catfile($dir, $file);
+}
+
 sub make_runfile
 {
  my $activations = shift @_;
  my $inputs      = shift @_;
  my $standalone  = shift @_;
+ my $target_file = shift @_;
 
  my $template = get_run_template();
 
@@ -2020,87 +2313,152 @@ sub make_runfile
 
  if ($standalone)
  {
-  $commoncontrol=q(body common control
+  $commoncontrol=<<'EOHIPPUS';
+body common control
 {
       bundlesequence => { "cfsketch_run" };
       inputs => { @(cfsketch_g.inputs) };
-});
+}
+EOHIPPUS
  }
 
  foreach my $a (keys %$activations)
  {
   $contexts .= "       # contexts for activation $a\n";
-  foreach my $context (sort keys %{$activations->{$a}->{contexts}})
-  {
-   my $value = $activations->{$a}->{contexts}->{$context}->{value};
-   my $print;
-
-   if (ref $value eq '' && $value ne '0' && $value ne '1') # a string, not a boolean!
-   {
-    $print = $value;
-   }
-   else                                 # this will take a JSON boolean, or 0/1
-   {
-    $print = $value ? 'any' : '!any';
-   }
-
-   $contexts .= sprintf('      "_%s_%s" expression => "%s";' . "\n",
-                        $a,
-                        $context,
-                        $print)
-  }
-
-  $vars .= "       # string versions of the contexts for activation $a\n";
-  foreach my $context (sort keys %{$activations->{$a}->{contexts}})
-  {
-   my @context_hack = split '__', $context;
-   my $short_context = pop @context_hack;
-   my $context_prefix = join '__', @context_hack, '';
-
-   $vars .= sprintf('      "_%s_%scontexts_text[%s]" string => "%s";' . "\n",
-                    $a,
-                    $context_prefix,
-                    $short_context,
-                    $activations->{$a}->{contexts}->{$context}->{value} ? 'ON' : 'OFF')
-  }
   $vars .= "       # string and slist variables for activation $a\n";
+  my $act = $activations->{$a};
+  my @vars = @{$activations->{$a}->{vars}};
+  my %params = %{$activations->{$a}->{pdata}};
+  my @passed;
 
-  foreach my $var (sort keys %{$activations->{$a}->{vars}})
-  {
-   $vars .= sprintf('       "_%s_%s" %s => %s;' . "\n",
-                    $a,
-                    $var,
-                    $activations->{$a}->{vars}->{$var}->{type},
-                    $activations->{$a}->{vars}->{$var}->{value});
-  }
+  my $rel_path = make_include_path($act->{fulldir}, dirname($target_file));
 
-  $vars .= "       # array variables for activation $a\n";
-  foreach my $avar (sort keys %{$activations->{$a}->{array_vars}})
+  my $current_context = '';
+  # die Dumper \@vars;
+  foreach my $var (@vars)
   {
-   foreach my $ak (sort keys %{$activations->{$a}->{array_vars}->{$avar}})
+   my $name = $var->{name};
+   my $value = exists $params{$name} ? $params{$name} :  $var->{value};
+
+   if (ref $value eq '')
    {
-    my $av = $activations->{$a}->{array_vars}->{$avar}->{$ak};
-    my @toprint = recurse_print($av, '');
-    $vars .= sprintf('       "_%s_%s[%s]%s" %s => %s;' . "\n",
+    # for when a bundle wants access to scripts or modules
+    $value =~ s/__BUNDLE_HOME__/$rel_path/g;
+    $value =~ s/__ABS_BUNDLE_HOME__/$act->{fulldir}/g;
+    # for when a bundle wants access to the general variables directly
+    $value =~ s/__PREFIX__/cfsketch_g._${a}_$act->{prefix}_/g;
+    # for when a bundle wants to access its activation's classes
+    $value =~ s/__CLASS_PREFIX__/default:_${a}_$act->{prefix}_/g;
+    # for when a bundle wants to set unique classes per activation
+    $value =~ s/__CANON_PREFIX__/_${a}_$act->{prefix}_/g;
+   }
+
+   push @passed, [ $var, $value ]
+    if (exists $var->{passed} && $var->{passed});
+
+   my %bycontext;
+   if (ref $value eq 'HASH' &&
+       exists $value->{bycontext} &&
+       ref $value->{bycontext} eq 'HASH')
+   {
+    %bycontext = %{$value->{bycontext}};
+   }
+   else
+   {
+    $bycontext{any} = $value;
+   }
+
+   foreach my $context (sort keys %bycontext)
+   {
+    if ($var->{type} eq 'CONTEXT')
+    {
+     my $as_cfengine_context = $bycontext{$context};
+     if (is_json_boolean($bycontext{$context}))
+     {
+      $as_cfengine_context = $bycontext{$context} ? 'any' : "!any";
+     }
+     elsif (ref $as_cfengine_context ne '')
+     {
+      color_die "Unexpected value for CONTEXT $name: " . $coder->encode($as_cfengine_context);
+     }
+
+     $contexts .= "     ${context}::\n" if $current_context ne $context;
+     $current_context = $context;
+     $contexts .= sprintf('      "_%s_%s_%s" expression => "%s";' . "\n",
+                          $a,
+                          $act->{prefix},
+                          $name,
+                          $as_cfengine_context);
+
+     my $print_context = $as_cfengine_context;
+     $vars .= "     ${print_context}:: # setting context for text representations\n" if $current_context ne $print_context;
+     $current_context = $print_context;
+     $vars .= sprintf('       "_%s_%s_contexts[%s]" string => "%s"; # text representation of the context "%s"' . "\n",
                       $a,
-                      $avar,
-                      $ak,
+                      $act->{prefix},
+                      $name,
+                      $bycontext{$context},
+                      $name);
+
+     if ($name eq 'activated')
+     {
+      $methods .= sprintf('    _%s_%s_%s::' . "\n",
+                          $a,
+                          $act->{prefix},
+                          $name);
+     }
+    }
+    else                                # regular, non-CONTEXT variable
+    {
+     $vars .= "     ${context}::\n" if $current_context ne $context;
+     $current_context = $context;
+
+     my @p = recurse_print($bycontext{$context},
+                           "_${a}_$act->{prefix}_${name}",
+                           0,
+                           $options{simplify_arrays} );
+     $vars .= sprintf('       "%s" %s => %s;' . "\n",
                       $_->{path},
                       $_->{type},
-                      $_->{value}) foreach @toprint;
+                      $_->{value})
+      foreach @p;
+    }
+   }
+
+   color_die("Sorry, but we have an undefined variable $name: it has neither a parameter value nor a supplied value")
+    unless defined $value;
+  }
+
+  print "We will activate bundle $act->{entry_bundle} with passed parameters " . $coder->encode(\@passed) . "\n"
+   if $verbose;
+
+  my @print_passed;
+  foreach my $pass (@passed)
+  {
+   my $var = $pass->[0];
+   if ($var->{type} =~ m/^(KV)?ARRAY\(/)
+   {
+    push @print_passed, "\"default:cfsketch_g._${a}_$act->{prefix}_$var->{name}\"";
+   }
+   else
+   {
+    my $islist = $var->{type} =~ m/^LIST\(/;
+    my $sigil = $islist ? '@' : '$';
+    # my $maybe_quotes = $islist ? '"' : '';
+    my $maybe_quotes = '';
+    push @print_passed, "$maybe_quotes$sigil(cfsketch_g._${a}_$act->{prefix}_$var->{name})$maybe_quotes";
    }
   }
 
-  $methods .= sprintf('    _%s_%s__activated::' . "\n",
+  my $args = join(", ", @print_passed);
+
+  $methods .= sprintf('      "%s %s %s" usebundle => %s%s(%s);' . "\n",
                       $a,
-                      $activations->{$a}->{prefix});
-  $methods .= sprintf('      "%s %s %s" usebundle => %s("cfsketch_g._%s_%s__");' . "\n",
-                      $a,
-                      $activations->{$a}->{sketch},
-                      $activations->{$a}->{activation_id},
-                      $activations->{$a}->{entry_bundle},
-                      $a,
-                      $activations->{$a}->{prefix});
+                      $act->{sketch},
+                      $act->{activation_id},
+                      $act->{entry_bundle_namespace} ? "$act->{entry_bundle_namespace}:" : '',
+                      $act->{entry_bundle},
+                      $args);
  }
 
  $template =~ s/__INPUTS__/$inputs/g;
@@ -2249,4 +2607,207 @@ sub print_help {
       print _sprintstr($desc, $cmdstr, 30, 1)."\n";
     }
   }
+}
+
+sub validate
+{
+ my $value = shift @_;
+ my @validation_types = @_;
+
+ # null values are never valid
+ return undef unless defined $value;
+
+ if (ref $value eq 'HASH' &&
+     exists $value->{bycontext} &&
+     ref $value->{bycontext} eq 'HASH')
+ {
+  my $ret = 1;
+  foreach my $context (sort keys %{$value->{bycontext}})
+  {
+   my $ret2k = validate($context, "CONTEXT");
+   color_warn("Validation failed in bycontext, context key $context")
+    unless $ret2k;
+   my $val2 = $value->{bycontext}->{$context};
+   my $ret2v = validate($val2, @validation_types);
+
+   color_warn("Validation failed in bycontext VALUE '$val2', key $context, validation types [@validation_types]")
+    unless $ret2v;
+
+   $ret &&= $ret2k && $ret2v;
+  }
+
+  return $ret;
+ }
+
+ if (ref $value eq 'ARRAY')
+ {
+  my $vt = $validation_types[0];
+  return undef unless $vt;
+  return undef unless $vt =~ m/^LIST\((.+)\)$/s;
+
+  my $subtype = $1;
+  my $ret = 1;
+  foreach my $subval (@$value)
+  {
+   my $ret2 = validate($subval, $subtype);
+   color_warn("LIST validation failed in bycontext, VALUE '$subval'")
+    unless $ret2;
+
+   $ret &&= $ret2;
+  }
+
+  return $ret;
+ }
+
+ my $good = 0;
+ foreach my $vtype (@validation_types)
+ {
+  if ($vtype =~ m/^(KV)?ARRAY\(\n*(.*)\n*\s*\)/s)
+  {
+   if (ref $value ne 'HASH')
+   {
+    color_warn("Sorry, but ARRAY validation was requested on a non-array value '$value'.  We'll fail the validation.");
+    return undef;
+   }
+
+   my $kv = $1;
+   my %contents = ($2 =~ m/^([^:\s]+)\s*:\s*(.+?)$/mg);
+
+   $good = 1;
+
+   my $kv_key;
+
+   if ($kv)
+   {
+    $kv_key = '_key';
+    foreach my $k (sort keys %$value)
+    {
+     my $goodk = validate($k, $contents{$kv_key});
+     color_warn("Sorry, but KVARRAY validation failed for K '$k' with type '$contents{$kv_key}'.  We'll fail the validation.")
+      unless $goodk;
+     $good &&= $goodk;
+    }
+   }
+
+   foreach my $process_key ($kv ? (sort keys %$value) : (1))
+   {
+    my $process_value = $kv ? $value->{$process_key} : $value;
+
+    if (ref $process_value ne 'HASH')   # this check is necessary only when $kv
+    {
+     color_warn("Sorry, but KVARRAY validation was requested on a non-array entry value '$process_value'.  We'll fail the validation.");
+     return undef;
+    }
+
+    foreach my $key (sort keys %contents)
+    {
+     next if (defined $kv_key && $key eq $kv_key);
+
+     my $check_value = $process_value->{$key};
+
+     my $subtype = $contents{$key};
+     my $required = 0;
+
+     if ($subtype =~ m/(.+):\s*required/)
+     {
+      $subtype = $1;
+      $required = 1;
+     }
+     elsif ($subtype =~ m/(.+):\s*default=(.*)/)
+     {
+      $subtype = $1;
+      $process_value->{$key} = $2
+        unless exists $process_value->{$key};
+     }
+
+     if ($required || defined $check_value)
+     {
+      my $good2 = validate($check_value, $subtype);
+
+      unless ($good2)
+      {
+       color_warn("ARRAY validation: value '$check_value', subtype '$subtype', subkey '$process_key'.  We'll fail the validation.")
+        if $verbose;
+      }
+
+      $good &&= $good2;
+     }
+    }
+   }
+  }
+  elsif ($vtype eq 'PATH')
+  {
+   $good ||= $value =~ m,^/,;            # fails on Win32
+  }
+  elsif ($vtype eq 'CONTEXT')
+  {
+   $good ||= $value =~ m/^[\w!.|&()]+$/;
+  }
+  elsif ($vtype eq 'OCTAL')
+  {
+   $good ||= $value =~ m/^[0-7]+$/;
+  }
+  elsif ($vtype eq 'DIGITS')
+  {
+   $good ||= $value =~ m/^[0-9]+$/;
+  }
+  elsif ($vtype eq 'IPv4_ADDRESS')
+  {
+   $good ||= ($value =~ m/^(\d+)\.(\d+)\.(\d+)\.(\d+)+$/ &&
+              $1 >= 0 && $1 <= 255 &&
+              $2 >= 0 && $2 <= 255 &&
+              $3 >= 0 && $3 <= 255 &&
+              $4 >= 0 && $4 <= 255);
+  }
+  elsif ($vtype eq 'BOOLEAN')
+  {
+   $good ||= $value =~ m/^(true|false|on|off|1|0)$/i;
+  }
+  elsif ($vtype eq 'NON_EMPTY_STRING')
+  {
+   $good ||= length $value;
+  }
+  elsif ($vtype eq 'CONTEXT_NAME')
+  {
+   $good ||= $value !~ m/\W/;
+  }
+  elsif ($vtype eq 'STRING')
+  {
+   $good ||= defined $value;
+  }
+  elsif ($vtype eq 'HTTP_URL')
+  {
+   $good ||= $value =~ m,^(git|https?)://.+,; # this is not a good URL regex
+  }
+  elsif ($vtype eq 'FILE_URL')
+  {
+   $good ||= $value =~ m,^(file):///.+,; # this is not a good URL regex
+  }
+  elsif ($vtype eq 'FTP_URL')
+  {
+   $good ||= $value =~ m,^(ftp)://.+,; # this is not a good URL regex
+  }
+  elsif ($vtype =~  m/\|/)
+  {
+   $good = 0;
+   foreach my $subtype (split('\|',$vtype))
+   {
+    my $good2 = validate($value, $subtype);
+    $good ||= $good2;
+   }
+  }
+  elsif ($vtype =~ m/^=(.+)/)
+  {
+   $good ||= $value eq $1;
+  }
+  else
+  {
+   color_warn("Sorry, but an unknown validation type $vtype was requested.  We'll fail the validation, too.");
+   return undef;
+  }
+
+  return 1 if $good;
+ }
+
+ return 0;
 }

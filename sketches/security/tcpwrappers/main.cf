@@ -1,232 +1,202 @@
-bundle agent tcpwrappers(prefix){
-# prefix_allow[label][daemons] slist => { "" };
-# prefix_allow[label][clients] slist => { "" };
-# prefix_allow[label][options] slist => { "" };
-# prefix_deny[label][daemons] slist => { "" };
-# prefix_deny[label][clients] slist => { "" };
-# prefix_deny[label][options] slist => { "" };
-# prefix_debug string => "yes|true|on"; # be verbose
-# prefix_test_filename  string => "/tmp/hosts"; # use fake file (.allow and .deny are automatically appended for testing)
-# prefix_mgmt_policy => full_file|ensure_present|ensure_absent
-vars:
-  "bundle" string => "tcpwrappers";
-
-  "mgmt_policies" 
-    slist => {"ensure_present", "ensure_absent"},
-    comment => "List of valid management policy identifiers";
-  
-  "mgmt_policy"
-    string => "$(mgmt_policies)",
-    policy => "free",
-    ifvarclass => "mgmt_policy_$(mgmt_policies)";
-
-  # Get lists of allow and deny rules based on the label
-  "allow_rules" slist => getindices("$(prefix)allow");
-  "deny_rules"  slist => getindices("$(prefix)deny");
-
-  # Join list elements together to build rule daemon part
-  "allowed_daemons_$(allow_rules)" string => join(",", "$(prefix)allow[$(allow_rules)][daemons]");
-  "denied_daemons_$(deny_rules)"   string => join(",", "$(prefix)deny[$(deny_rules)][daemons]");
-
-  # Join client list together to build rule client part
-  # allow_sshd_all
-  "allowed_clients_$(allow_rules)" string => join(",", "$(prefix)allow[$(allow_rules)][clients]");
-  "denied_clients_$(deny_rules)"   string => join(",", "$(prefix)deny[$(deny_rules)][clients]");
-
-  # Join list elements together to build rule options part
-  "allowed_options_$(allow_rules)" string => join(" : ", "$(prefix)allow[$(allow_rules)][options]");
-  "denied_options_$(deny_rules)"   string => join(" : ", "$(prefix)deny[$(deny_rules)][options]");
-
-
-###########################################################################
-# Condense this down to 2 promises, and put them in an array so a         #
-# list can be grabbed using getvalues.                                    #
-###########################################################################
-
-  # Build allow rules that have optional parts
-  "allow_rule[$(allow_rules)]" 
-    string => "$(allowed_daemons_$(allow_rules)) : $(allowed_clients_$(allow_rules)) : $(allowed_options_$(allow_rules))",
-    policy => "free",
-    ifvarclass => "allow_$(allow_rules)_has_options";
-
-  # Build allow rules without optional parts
-  "allow_rule[$(allow_rules)]" 
-    string => "$(allowed_daemons_$(allow_rules)) : $(allowed_clients_$(allow_rules))",
-    policy => "free",
-    ifvarclass => "!allow_$(allow_rules)_has_options";
-
-  # Build deny rules that have optional parts
-  "deny_rule[$(deny_rules)]" 
-    string => "$(denied_daemons_$(deny_rules)) : $(denied_clients_$(deny_rules)) : $(denied_options_$(deny_rules))",
-    policy => "free",
-    ifvarclass => "deny_$(deny_rules)_has_options";
-
-  # Build allow rules without optional parts
-  "deny_rule[$(deny_rules)]" 
-    string => "$(denied_daemons_$(deny_rules)) : $(denied_clients_$(deny_rules))",
-    policy => "free",
-    ifvarclass => "!deny_$(deny_rules)_has_options";
-
-  # Build list of allow and deny rules from arrays. 
-  # The lists are needed for full file management.
-  # This must be done on the second var pass since classes are needed
-  # to build the arrays we are getting values from.
-  first_class_pass::
-  "allow_rule_list" slist => getvalues("allow_rule");
-  "deny_rule_list"  slist => getvalues("deny_rule");
-
-  # Choose files to operate on based on test parameter
-  test_tcpwrappers::
-    "allow_filename"
-      string => "$($(prefix)test_filename).allow",
-      policy => "free";
-
-    "deny_filename"
-      string => "$($(prefix)test_filename).deny",
-      policy => "free";
-
-  !test_tcpwrappers::
-    "allow_filename"
-      string => "/etc/hosts.allow",
-      policy => "free";
-
-    "deny_filename"
-      string => "/etc/hosts.deny",
-      policy => "free";
-
-classes:
-  "debug_tcpwrappers" expression => regcmp("(?i)yes|true|on", "$($(prefix)debug)");
-  "test_tcpwrappers"  expression => isvariable("$(prefix)test_filename");
-
-  # Decide how we will edit the files
-  "mgmt_policy_$(mgmt_policies)" expression => regcmp("(?i)$(mgmt_policies)", "$($(prefix)mgmt_policy)");
-  "empty_first"  expression => regcmp("(?i)yes|true", "$($(prefix)empty_first)");
-
-  # Default to least destructive management policy
-  "mgmt_policy_ensure_present" and => { "!mgmt_policy_ensure_absent", "!empty_first" };
-
-  "allow_$(allow_rules)_has_options" expression => isvariable("$(prefix)allow[$(allow_rules)][options]");
-  "deny_$(deny_rules)_has_options"   expression => isvariable("$(prefix)deny[$(deny_rules)][options]");
-
-  # We need to know if we are on the second pass
-  "second_class_pass" and => {"first_class_pass"};
-  "first_class_pass" and => {"any"};
-
-files:
-  # This file edit must be done after the second pass of
-  # vars for the access rule to have fully converged
-
-  # If we are completely managing the file we should empty it first
-  # This is the reccomended method of management
-  second_class_pass.mgmt_policy_ensure_present.empty_first::
-    "$(allow_filename)"
-      handle => "$(bundle)_files_allow_complete",
-      create => "true",
-      perms => mog("644", "root", "root"),
-      classes => if_repaired("sketch_$(bundle)_repaired_allow"),
-      edit_defaults => empty,
-      edit_line => append_if_no_lines("@(tcpwrappers.allow_rule_list)"),
-      comment => "Completely managed hosts.allow leaves less room for
-                  unexpected behavior from stray admins.";
-
-    "$(deny_filename)"
-      handle => "$(bundle)_files_deny_complete",
-      create => "true",
-      perms => mog("644", "root", "root"),
-      classes => if_repaired("sketch_$(bundle)_repaired_deny"),
-      ifvarclass => "empty_first",
-      edit_line => append_if_no_lines("@(tcpwrappers.deny_rule_list)");
-
-  # If we are only partially mangaging the file we can only promise
-  # about the defined rules
-  second_class_pass.mgmt_policy_ensure_present.!empty_first::
-    "$(allow_filename)"
-      handle => "$(bundle)_files_allow_partial",
-      create => "true",
-      perms => mog("644", "root", "root"),
-      classes => if_repaired("sketch_$(bundle)_repaired_allow"),
-      edit_line => append_if_no_lines("@(tcpwrappers.allow_rule_list)");
-
-    "$(deny_filename)"
-      handle => "$(bundle)_files_deny_partial",
-      create => "true",
-      perms => mog("644", "root", "root"),
-      classes => if_repaired("sketch_$(bundle)_repaired_deny"),
-      edit_line => append_if_no_lines("@(tcpwrappers.deny_rule_list)");
-
-  # If we are managing removal we only ensure specific rules do not exist
-  second_class_pass.mgmt_policy_ensure_absent::
-    "$(allow_filename)"
-      handle => "$(bundle)_files_allow_remove",
-      create => "true",
-      perms => mog("644", "root", "root"),
-      classes => if_repaired("sketch_$(bundle)_repaired_allow"),
-      edit_line => delete_lines_matching("^$(tcpwrappers.allow_rule_list)$");
-
-    "$(deny_filename)"
-      handle => "$(bundle)_files_deny_remove",
-      create => "true",
-      perms => mog("644", "root", "root"),
-      classes => if_repaired("sketch_$(bundle)_repaired_deny"),
-      edit_line => delete_lines_matching("^$(tcpwrappers.deny_rule_list)$");
-
-
-reports:
-  second_class_pass::
-    # Report when files have been repaired
-    "I repaired $(allow_filename)",
-      ifvarclass => "sketch_$(bundle)_repaired_allow";
-
-    "I repaired $(deny_filename)",
-      ifvarclass => "sketch_$(bundle)_repaired_deny";
-
-  debug_tcpwrappers.second_class_pass::
-    # Allow and Deny Rules
-
-    # Report File management policy
-    "$(allow_filename) Should be emptied before editing.",
-      ifvarclass => "empty_first";
-
-    "$(allow_filename) makes promises about specific rules being present",
-      ifvarclass => "mgmt_policy_ensure_present";
-
-    "$(allow_filename) makes promises about specific rules being absent",
-      ifvarclass => "mgmt_policy_ensure_absent";
-
-    "$(deny_filename) should be emptied before editing.",
-      ifvarclass => "empty_first";
-
-    "$(deny_filename) makes promises about specific rules being present",
-      ifvarclass => "mgmt_policy_ensure_present";
-
-    "$(deny_filename) makes promises about specific rules being absent",
-      ifvarclass => "mgmt_policy_ensure_absent";
-
-
-    # Report individual rules
-    "ALLOW RULE for $(allow_rules) | $(allow_rule[$(allow_rules)])";
-
-    "DENY RULE for $(deny_rules) | $(deny_rule[$(deny_rules)])";
+body file control
+{
+  namespace => "cfdc_tcpwrappers";
 }
 
-bundle agent meta_tcpwrappers{
-vars:
-# "prefix_allow[label][daemons]" slist => { "" };
-# "prefix_allow[label][clients]" slist => { "" };
-# "prefix_allow[label][options]" slist => { "" };
-# "prefix_deny[label][daemons]" slist => { "" };
-# "prefix_deny[label][clients]" slist => { "" };
-# "prefix_deny[label][options]" slist => { "" };
+bundle agent tcpwrappers(class_prefix, allow_filename, deny_filename, allow, deny)
+{
+  meta:
+      "vars[class_prefix][type]"       string => "NON_EMPTY_STRING";
+      "vars[class_prefix][default]"    string => "__CLASS_PREFIX__";
 
-  "argument[allow]" string => "array";
-  "argument[deny]" string => "array";
+      "vars[empty_first][type]"        string => "CONTEXT";
+      "vars[empty_first][default]"     string => "!any";
 
-  "optional_argument[debug]"         string => "context";
-  "optional_argument[test_filename]" string => "string";
-  "optional_argument[mgmt_policy]"   string => "string";
-  "optional_argument[empty_first]"   string => "string";
+      "vars[ensure_absent][type]"      string => "CONTEXT";
+      "vars[ensure_absent][default]"   string => "!any";
 
-  "default[mgmt_policy]" string => "ensure_present";
-  "default[debug]"       string => "false";
-  "default[empty_first]" string => "false";
+      "vars[debug][type]"              string => "CONTEXT";
+      "vars[debug][default]"           string => "!any";
+
+      "vars[test][type]"               string => "CONTEXT";
+      "vars[test][default]"            string => "!any";
+
+      "vars[verbose][type]"            string => "CONTEXT";
+      "vars[verbose][default]"         string => "!any";
+
+      "vars[allow_filename][type]"     string => "PATH";
+      "vars[allow_filename][default]"  string => "/etc/hosts.allow";
+
+      "vars[deny_filename][type]"      string => "PATH";
+      "vars[deny_filename][default]"   string => "/etc/hosts.deny";
+
+      "vars[allow][type]"              string => "ARRAY()";
+
+      "vars[deny][type]"               string => "ARRAY()";
+
+  vars:
+      "bundle" string => "tcpwrappers";
+
+      # Get lists of allow and deny rules based on the label
+      "allow_rules" slist => getindices("$(allow)");
+      "deny_rules"  slist => getindices("$(deny)");
+
+      # Join list elements together to build rule daemon part
+      "allowed_daemons_$(allow_rules)" string => join(",", "$(allow)[$(allow_rules)][daemons]");
+      "denied_daemons_$(deny_rules)"   string => join(",", "$(deny)[$(deny_rules)][daemons]");
+
+      # Join client list together to build rule client part
+      # allow_sshd_all
+      "allowed_clients_$(allow_rules)" string => join(",", "$(allow)[$(allow_rules)][clients]");
+      "denied_clients_$(deny_rules)"   string => join(",", "$(deny)[$(deny_rules)][clients]");
+
+      # Join list elements together to build rule options part
+      "allowed_options_$(allow_rules)" string => join(" : ", "$(allow)[$(allow_rules)][options]");
+      "denied_options_$(deny_rules)"   string => join(" : ", "$(deny)[$(deny_rules)][options]");
+
+      ###########################################################################
+      # Condense this down to 2 promises, and put them in an array so a         #
+      # list can be grabbed using getvalues.                                    #
+      ###########################################################################
+
+      # Build allow rules that have optional parts
+      "allow_rule[$(allow_rules)]"
+      string => "$(allowed_daemons_$(allow_rules)) : $(allowed_clients_$(allow_rules)) : $(allowed_options_$(allow_rules))",
+      policy => "free",
+      ifvarclass => "allow_$(allow_rules)_has_options";
+
+      # Build allow rules without optional parts
+      "allow_rule[$(allow_rules)]"
+      string => "$(allowed_daemons_$(allow_rules)) : $(allowed_clients_$(allow_rules))",
+      policy => "free",
+      ifvarclass => "!allow_$(allow_rules)_has_options";
+
+      # Build deny rules that have optional parts
+      "deny_rule[$(deny_rules)]"
+      string => "$(denied_daemons_$(deny_rules)) : $(denied_clients_$(deny_rules)) : $(denied_options_$(deny_rules))",
+      policy => "free",
+      ifvarclass => "deny_$(deny_rules)_has_options";
+
+      # Build allow rules without optional parts
+      "deny_rule[$(deny_rules)]"
+      string => "$(denied_daemons_$(deny_rules)) : $(denied_clients_$(deny_rules))",
+      policy => "free",
+      ifvarclass => "!deny_$(deny_rules)_has_options";
+
+      # Build list of allow and deny rules from arrays.
+      # The lists are needed for full file management.
+      # This must be done on the second var pass since classes are needed
+      # to build the arrays we are getting values from.
+    first_class_pass::
+      "allow_rule_list" slist => getvalues("allow_rule");
+      "deny_rule_list"  slist => getvalues("deny_rule");
+
+  classes:
+      "debug_tcpwrappers" or => { "$(class_prefix)debug", "debug" };
+      "test_tcpwrappers"  or => { "$(class_prefix)test", "test" };
+
+      "ensure_absent" expression => "$(class_prefix)ensure_absent";
+      "empty_first" expression => "$(class_prefix)empty_first";
+
+      "allow_$(allow_rules)_has_options" expression => isvariable("$(allow)[$(allow_rules)][options]");
+      "deny_$(deny_rules)_has_options"   expression => isvariable("$(deny)[$(deny_rules)][options]");
+
+      # We need to know if we are on the second pass
+      "second_class_pass" and => {"first_class_pass"};
+      "first_class_pass" and => {"any"};
+
+  files:
+      # This file edit must be done after the second pass of
+      # vars for the access rule to have fully converged
+
+      # If we are completely managing the file we should empty it first
+      # This is the reccomended method of management
+    second_class_pass.!ensure_absent.empty_first::
+      "$(allow_filename)"
+      handle => "$(bundle)_files_allow_complete",
+      create => "true",
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_allow"),
+      edit_defaults => default:empty,
+      edit_line => default:append_if_no_lines("@(tcpwrappers.allow_rule_list)"),
+      comment => "Completely managed hosts.allow leaves less room for
+unexpected behavior from stray admins.";
+
+      "$(deny_filename)"
+      handle => "$(bundle)_files_deny_complete",
+      create => "true",
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_deny"),
+      ifvarclass => "empty_first",
+      edit_line => default:append_if_no_lines("@(tcpwrappers.deny_rule_list)");
+
+      # If we are only partially mangaging the file we can only promise
+      # about the defined rules
+    second_class_pass.!ensure_absent.!empty_first::
+      "$(allow_filename)"
+      handle => "$(bundle)_files_allow_partial",
+      create => "true",
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_allow"),
+      edit_line => default:append_if_no_lines("@(tcpwrappers.allow_rule_list)");
+
+      "$(deny_filename)"
+      handle => "$(bundle)_files_deny_partial",
+      create => "true",
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_deny"),
+      edit_line => default:append_if_no_lines("@(tcpwrappers.deny_rule_list)");
+
+      # If we are managing removal we only ensure specific rules do not exist
+    second_class_pass.ensure_absent::
+      "$(allow_filename)"
+      handle => "$(bundle)_files_allow_remove",
+      create => "true",
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_allow"),
+      edit_line => default:delete_lines_matching("^$(tcpwrappers.allow_rule_list)$");
+
+      "$(deny_filename)"
+      handle => "$(bundle)_files_deny_remove",
+      create => "true",
+      perms => default:mog("644", "root", "root"),
+      classes => default:if_repaired("$(class_prefix)repaired_deny"),
+      edit_line => default:delete_lines_matching("^$(tcpwrappers.deny_rule_list)$");
+
+  reports:
+    second_class_pass::
+      # Report when files have been repaired
+      "I repaired $(allow_filename)",
+      ifvarclass => "$(class_prefix)repaired_allow";
+
+      "I repaired $(deny_filename)",
+      ifvarclass => "$(class_prefix)repaired_deny";
+
+    debug_tcpwrappers.second_class_pass::
+      # Allow and Deny Rules
+
+      # Report File management policy
+      "$(allow_filename) Should be emptied before editing.",
+      ifvarclass => "empty_first";
+
+      "$(allow_filename) makes promises about specific rules being present",
+      ifvarclass => "!ensure_absent";
+
+      "$(allow_filename) makes promises about specific rules being absent",
+      ifvarclass => "ensure_absent";
+
+      "$(deny_filename) should be emptied before editing.",
+      ifvarclass => "empty_first";
+
+      "$(deny_filename) makes promises about specific rules being present",
+      ifvarclass => "!ensure_present";
+
+      "$(deny_filename) makes promises about specific rules being absent",
+      ifvarclass => "ensure_absent";
+
+
+      # Report individual rules
+      "ALLOW RULE for $(allow_rules) | $(allow_rule[$(allow_rules)])";
+
+      "DENY RULE for $(deny_rules) | $(deny_rule[$(deny_rules)])";
 }

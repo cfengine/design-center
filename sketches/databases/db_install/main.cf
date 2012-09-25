@@ -1,124 +1,149 @@
-bundle agent db_install(prefix)
+body file control
 {
+  namespace => "cfdc_db";
+}
+
+bundle agent db_install(canon_prefix, class_prefix, db, process_match, start_command, packages, server_packages)
+{
+  meta:
+      # __CANON_PREFIX__ will be supplied by cf-sketch
+      "vars[canon_prefix][type]"     string => "NON_EMPTY_STRING";
+      "vars[canon_prefix][default]"  string => "__CANON_PREFIX__";
+
+      # __CLASS_PREFIX__ will be supplied by cf-sketch
+      "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
+      "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
+
+      "vars[db][type]"               string => "=mysql|=postgresql|=sqlite";
+
+      # note that CONTEXT parameters are classes, not passed bundle parameters
+      "vars[server][type]"           string => "CONTEXT";
+      "vars[server][default]"        string => "0";
+
+      # note that CONTEXT parameters are classes, not passed bundle parameters
+      "vars[purge][type]"            string => "CONTEXT";
+      "vars[purge][default]"         string => "0";
+
+      "vars[process_match][type]"    string => "NON_EMPTY_STRING";
+
+      "vars[start_command][type]"    string => "NON_EMPTY_STRING";
+
+      "vars[packages][type]"         string => "LIST(NON_EMPTY_STRING)";
+
+      "vars[server_packages][type]"  string => "LIST(NON_EMPTY_STRING)";
+
+      # this is exposed via the API
+      "returns[db]"    string => "$(db)";
+      "returns[type]"  string => "$(type)";
+      "returns[mode]"  string => "$(mode)";
+
   classes:
-      "$(canon_prefix)installing_mysql"      expression => strcmp("$($(prefix)db)", "mysql");
-      "$(canon_prefix)installing_postgresql" expression => strcmp("$($(prefix)db)", "postgresql");
-      "$(canon_prefix)installing_sqlite"     expression => strcmp("$($(prefix)db)", "sqlite");
+      "installing_mysql"      expression => strcmp("$(db)", "mysql");
+      "installing_postgresql" expression => strcmp("$(db)", "postgresql");
+      "installing_sqlite"     expression => strcmp("$(db)", "sqlite");
+
+      "server" expression => "$(class_prefix)server";
+      "purge" expression => "$(class_prefix)purge";
 
   vars:
-      "class_prefix" string => lastnode("$(prefix)", "\."); # strip out the bundle prefix
-      "canon_prefix" string => canonify("$(prefix)");
-      "contexts"     slist  => getindices("$(prefix)bycontext");
+    server.default:test::
+      "all_packages" slist => { "test-packages", "test-server-packages" };
+      "type" string => "test-server";
 
-      "type" string => "server",
-      ifvarclass => "$(class_prefix)server";
+    server.!default:test::
+      "all_packages" slist => { @(packages), @(server_packages) };
+      "type" string => "server";
 
-      "type" string => "client",
-      ifvarclass => "!$(class_prefix)server";
+    !server.default:test::
+      "all_packages" slist => { "test-packages" };
+      "type" string => "test-client";
 
-  methods:
-      # this is freakin' awesome
-      "params" usebundle => db_context("$(prefix)", "$(contexts)"),
-      classes => always("$(canon_prefix)prepared"),
-      ifvarclass => "$(contexts)";
+    !server.!default:test::
+      "all_packages" slist => { @(packages) };
+      "type" string => "client";
+
+    purge.!default:test::
+      "mode" string => "purging";
+
+    !purge.!default:test::
+      "mode" string => "installing";
+
+    purge.default:test::
+      "mode" string => "test-purging";
+
+    !purge.default:test::
+      "mode" string => "test-installing";
 
   packages:
 
-   "$(db_context.packages)"
-      comment => "Install $($(prefix)db) packages",
+    !purge::
+      "$(all_packages)"
+      comment => "Install $(db) packages",
       handle => "db_install_packages_add",
       package_policy => "add",
-      package_method => generic,
-      classes => if_ok("$(canon_prefix)ensure_database_running"),
-      action => log_repaired("stdout","$($(prefix)db) $(type) was installed"),
-      ifvarclass => "$(canon_prefix)prepared.!$(class_prefix)purge";
+      package_method => default:generic,
+      classes => default:if_ok("$(canon_prefix)ensure_database_running"),
+      action => default:log_repaired("stdout","$(db) $(type) was installed");
 
-   "$(db_context.packages)"
-      comment => "Remove $($(prefix)db) packages.  SQLite packages should not be purged for Redhat-related distributions because rmp/yum rely on libsqlite.so.0",
+    purge.!(installing_sqlite.redhat)::
+      "$(all_packages)"
+      comment => "Remove $(db) packages.  SQLite packages should not be purged for Redhat-related distributions because rmp/yum rely on libsqlite.so.0",
       handle => "db_install_packages_remove",
       package_policy => "delete",
-      package_method => generic,
-      action => log_repaired("stdout","$($(prefix)db) $(type) was removed"),
-      ifvarclass => "$(canon_prefix)prepared.$(class_prefix)purge.!($(canon_prefix)installing_sqlite.redhat)";
+      package_method => default:generic,
+      action => default:log_repaired("stdout","$(db) $(type) was removed");
 
   files:
 
-   redhat|centos|fedora::
+    installing_mysql.server.(redhat|centos|fedora)::
 
-   "/tmp/mysql.sock"
+      "/tmp/mysql.sock"
       comment => "Create a temp link to mysql.sock",
       handle => "db_mysql_files_mysql_sock_redhat_centos_fedora",
-      ifvarclass => "$(canon_prefix)installing_mysql.$(class_prefix)server",
-      link_from => ln_s("/var/lib/mysql/mysql.sock");
+      link_from => default:ln_s("/var/lib/mysql/mysql.sock");
 
-   debian|ubuntu::
+    installing_mysql.server.(debian|ubuntu)::
 
-   "/tmp/mysql.sock"
+      "/tmp/mysql.sock"
       comment => "Create a temp link to mysql.sock",
       handle => "db_mysql_files_mysql_sock_debian_ubuntu",
-      ifvarclass => "$(canon_prefix)installing_mysql.$(class_prefix)server",
-      link_from => ln_s("/var/run/mysqld/mysqld.sock");
+      link_from => default:ln_s("/var/run/mysqld/mysqld.sock");
 
   processes:
 
-      "$(db_context.process_match)"
-      comment => "Check for $($(prefix)db) process on $(db_context.active_context)",
-      handle => "db_$($(prefix)db)_processes_run_$(db_context.active_context)",
-      ifvarclass => "$(canon_prefix)ensure_database_running.$(class_prefix)server",
+    server::
+      "$(process_match)"
+      comment => "Check for $(db) process",
+      handle => "db_$(db)_processes_run",
+      ifvarclass => "$(canon_prefix)ensure_database_running",
       restart_class => "$(canon_prefix)start_db";
 
-      "$(db_context.process_match)"
-      comment => "Teminate $($(prefix)db) process on $(db_context.active_context)",
-      handle => "db_$($(prefix)db)_processes_terminate_$(db_context.active_context)",
-      ifvarclass => "$(class_prefix)purge.$(class_prefix)server",
+    purge.server::
+      "$(process_match)"
+      comment => "Teminate $(db) process",
+      handle => "db_$(db)_processes_terminate",
       signals => { "term","kill" };
 
- commands:
+  commands:
 
-      "$(db_context.start_command)"
-      comment => "Start/Restart command of $($(prefix)db) on $(db_context.active_context)",
-      handle => "db_$($(prefix)db)_commands_run_$(db_context.active_context)",
+      "$(start_command)"
+      comment => "Start/Restart command of $(db)",
+      handle => "db_$(db)_commands_run",
       ifvarclass => "$(canon_prefix)start_db";
-}
-
-bundle agent meta_db_install
-{
-  vars:
-      # "sqlite", "mysql", or "postgresql" as per the default params
-      "argument[db]"              string => "string";
-      # "server" argument is ignored for SQLite
-      "argument[server]"          string => "context";
-      "argument[purge]"           string => "context";
-
-      # look in params/$(db).json to see how we fill in the packages
-      # and paths per system we support
-      "argument[bycontext]"       string => "array";
-
-}
-
-bundle agent db_context(prefix, context)
-{
-  vars:
-      "class_prefix" string => lastnode("$(prefix)", "\."); # strip out the bundle prefix
-
-      "base_packages" slist => { "@($(prefix)bycontext[$(context)][packages])" };
-      "server_packages" slist => { "@($(prefix)bycontext[$(context)][server_packages])" };
-
-      "process_match" string => "$($(prefix)bycontext[$(context)][process_match])";
-      "start_command" string => "$($(prefix)bycontext[$(context)][start_command])";
-      "active_context" string => "$(context)";
-
-      "packages" slist => { @(base_packages), @(server_packages) },
-      comment => "List of client and server packages on $(context) distributions",
-      handle => "db_install_$($(prefix)db)_client_and_server_packages",
-      ifvarclass => "$(class_prefix)server";
-
-     "packages" slist => { @(base_packages) },
-      comment => "List of client packages on $(context) distributions",
-      handle => "db_install_$($(prefix)db)_client_packages",
-      ifvarclass => "!$(class_prefix)server";
 
   reports:
-    cfengine::
-      "Loading parameters for context $(context), server context $($(prefix)contexts_text[server]), purge context $($(prefix)contexts_text[purge])";
+    default:test::
+      "SIMULATE $(mode) of $(all_packages)";
+
+    default:verbose::
+      "DB $(db) $(mode) in $(type) mode; packages $(all_packages)";
+      "Class prefix $(class_prefix); my canon prefix $(canon_prefix)";
+    default:verbose.purge::
+      "Purge mode";
+    default:verbose.!purge::
+      "Install mode";
+    default:verbose.server::
+      "Server install mode";
+    default:verbose.!server::
+      "Client install mode";
 }

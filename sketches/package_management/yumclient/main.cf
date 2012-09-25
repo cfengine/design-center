@@ -1,132 +1,157 @@
-bundle agent repo_yum_client(prefix)
+body file control
+{
+  namespace => "cfdc_yumclient";
+}
+
+bundle agent client(class_prefix, repos_dir, repos)
+{
 # Configure yum repository clients
-# repo[identifier][variable]
-# repo[identifier][name] string => optional
-# repo[identifier][baseurl] string =>  required
-# repo[identifier][enabled] string => optional 
-# repo[identifier][gpgcheck] string => optional
-# mgmt_policy string => "ensure_present|ensure_absent"
-# empty_section string => "yes|true"
-{
-vars:
-  "repo_ids" slist => getindices("$(prefix)repo");
+  meta:
+      "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
+      "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
 
-classes:
-  "_debug_repo_yum_client" expression => regcmp("(?i)yes|true|on", "$($(prefix)debug)");
+      "vars[ensure_absent][type]"           string => "CONTEXT";
+      "vars[ensure_absent][default]"        string => "!any";
 
-methods:
-  "Yum Repository Client Configuration"
-    usebundle => repo_yum_client_config("$(prefix)repo", "$(repo_ids)", "$($(prefix)debug)", "$($(prefix)mgmt_policy)", "$($(prefix)empty_section)", "$(prefix)reposdir"),
-    comment => "Configure yum client for each repository";
+      "vars[empty_section][type]"           string => "CONTEXT";
+      "vars[empty_section][default]"        string => "!any";
 
+      "vars[repos][type]"              string => "KVARRAY(
+_key:NON_EMPTY_STRING
+baseurl:HTTP_URL|FTP_URL|FILE_URL:required
+enabled:BOOLEAN:default=1
+gpgcheck:=yes|=no:default=no
+)";
+      # repos[identifier][name] string => optional
+      # repos[identifier][baseurl] string =>  required
+      # repos[identifier][enabled] string => optional
+      # repos[identifier][gpgcheck] string => optional
+
+      "vars[repos_dir][type]"             string => "PATH";
+      "vars[repos_dir][default]"             string => "/etc/yum.repos.d";
+
+  vars:
+      "repo_ids" slist => { getindices("$(repos)") },
+      policy => "free";
+
+  classes:
+    default:debug::
+      "_debug_repo_yum_client" or => { "any" };
+
+  methods:
+      "Yum Repository Client Configuration"
+      usebundle => cfdc_yumclient:config($(class_prefix),
+                                         $(repos_dir),
+                                         $(repos),
+                                         $(repo_ids)),
+      comment => "Configure yum client for each repository";
+
+  reports:
+    default:verbose::
+      "Found repo $(repo_ids) in array $(repos).  Will configure it in $(repos_dir)";
 }
-bundle agent meta_repo_yum_client
-{
-vars:
-  "argument[repo]" string => "array";
-  
-  "optional_argument[mgmt_policy]" string => "string";
-  "default[mgmt_policy]" string => "ensure_present";
-  
-  "optional_argument[debug]" string => "string";
-  "default[debug]" string => "false";
 
-  "optional_argument[empty_section]" string => "string";
-  "default[empty_section]" string => "false";
-}
-
-bundle agent repo_yum_client_config(arrayname, first_index, debug, mgmt_policy, empty_section, reposdir)
+bundle agent config(class_prefix, repos_dir, repos, repo)
 # This allows us to have dynamic second index on the repo array
 # It does mean that this bundle must be activated for each repository
 # but it seems better than the alternative of knowing all possible options
 # to in the config when there are so many yum plugins possible.
 {
-vars:
-  "bundle" string => "repo_yum_client_config";
-  "variables" slist => getindices("$(arrayname)[$(first_index)]");
-  #"$(first_index)[$(first_index)][$(variables)]" string => "$($(arrayname)[$(first_index)][$(variables)])";
-
-  "valid_mgmt_policies" slist => { "ensure_present", "ensure_absent" };
-
-  !reposdir_from_parameter::
-    "my_reposdir"
-      string => "/etc/yum.repos.d",
+  vars:
+      "bundle" string => "repo_yum_client_config";
+      "variables" slist => { getindices("$(repos)[$(repo)]") },
       policy => "free";
-  
-  reposdir_from_parameter::
-    "my_reposdir"
-      string => "$($(reposdir))",
-      policy => "free";
-  
-classes:
-  "_debug_repo_yum_client" expression => regcmp("(?i)yes|true|on", "$(debug)");
-  "mgmt_policy_from_parameter" expression => regcmp("(?i)$(valid_mgmt_policies)", "$(mgmt_policy)");
-  "empty_section_from_parameter" expression => regcmp("(?i)true|yes", "$(empty_section)");
-  "reposdir_from_parameter" expression => isvariable("$(reposdir)");
 
-  "baseurl_defined" expression => isvariable("$(arrayname)[$(first_index)][baseurl]");
+      "owner" string => getenv("LOGNAME", 100),
+      ifvarclass => "test";
 
-  "mgmt_policy_$(valid_mgmt_policies)" 
-    expression => regcmp("(?i)$(valid_mgmt_policies)", "$(mgmt_policy)"),
-    ifvarclass => "mgmt_policy_from_parameter";
+      "owner" string => "root",
+      ifvarclass => "!test";
 
-  # Default managment policy to ensure present
-  "mgmt_policy_ensure_present"
-    or => {"any"},
-    ifvarclass => not("mgmt_policy_ensure_absent");
+  classes:
+    default:debug::
+      "_debug_repo_yum_client" or => { "any" };
 
-files:
-  mgmt_policy_ensure_present::
-    "$(my_reposdir)/$(first_index).repo"
+    any::
+      "baseurl_defined" expression => regcmp("(file|https?)+://.+",
+                                             "$($(repos)[$(repo)][baseurl])");
+
+      "empty_section" expression => "$(class_prefix)empty_section";
+      "ensure_absent" expression => "$(class_prefix)ensure_absent";
+
+  files:
+    any::
+      "$(repos_dir)/$(repo).repo"
       create => "true",
-      perms => mog("644", "root", "root"),
+      perms => default:mog("644", $(owner), $(owner)),
+      edit_defaults => default:no_backup,
+      handle => "ensure_eof_present",
       edit_line => append_if_no_line("[#EOF#]"),
       comment => "This is to work around an old bug that caused
-                  region selection to fail because EOF was not 
-                  detected as end of region";
-  
-    "$(my_reposdir)/$(first_index).repo"
-      create => "true",
-      perms => mog("644", "root", "root"),
-      edit_defaults => no_backup,
-      handle => "$(bundle)_files_$(first_index)_ensure_present",
-      edit_line => yumclient_set_variable_values_ini("$(arrayname)", "$(first_index)"),
-      ifvarclass => not("empty_section_from_parameter");
-     
-    "$(my_reposdir)/$(first_index).repo"
-      create => "true",
-      perms => mog("644", "root", "root"),
-      handle => "$(bundle)_files_$(first_index)_ensure_present_empty_section",
-      edit_line => yumclient_manage_variable_values_ini("$(arrayname)", "$(first_index)"),
-      ifvarclass => "empty_section_from_parameter";
+region selection to fail because EOF was not
+detected as end of region",
+      ifvarclass => and(
+                         "baseurl_defined",
+                         not("ensure_absent")
+                       );
 
-  mgmt_policy_ensure_absent::
-    "$(my_reposdir)/$(first_index).repo"
-      delete => tidy,
-      comment => "When the mgmt_policy is set to ensure_absent we just nuke the repofile";
- 
-reports:
-  _debug_repo_yum_client::
-    "DEBUG $(bundle)  $(first_index) $(variables)=$($(arrayname)[$(first_index)][$(variables)])";
-    "DEBUG $(bundle)  mgmt_policy: $(valid_mgmt_policies)",
-      ifvarclass => canonify("mgmt_policy_$(valid_mgmt_policies)");
+      "$(repos_dir)/$(repo).repo"
+      edit_defaults => default:no_backup,
+      handle => "ensure_present",
+      edit_line => cfdc_yumclient:manage_variable_values_ini($(repos), $(repo)),
+      depends_on => { "ensure_eof_present" },
+      ifvarclass => and(
+                         "baseurl_defined",
+                         "empty_section",
+                         not("ensure_absent")
+                       );
 
-    "DEBUG $(bundle)  empty_section: default false",
-      ifvarclass => not("empty_section_from_parameter");
 
-    "DEBUG $(bundle)  empty_section: $(empty_section)",
-      ifvarclass => "empty_section_from_parameter";
+      "$(repos_dir)/$(repo).repo"
+      edit_defaults => default:no_backup,
+      handle => "ensure_present",
+      edit_line => cfdc_yumclient:set_variable_values_ini($(repos), $(repo)),
+      depends_on => { "ensure_eof_present" },
+      ifvarclass => and(
+                         "baseurl_defined",
+                         not("empty_section"),
+                         not("ensure_absent")
+                       );
 
-    "DEBUG $(bundle)  required baseurl defined",
+      "$(repos_dir)/$(repo).repo"
+      delete => default:tidy,
+      comment => "When the mgmt_policy is set to ensure_absent we just nuke the repofile",
+      ifvarclass => and(
+                         "baseurl_defined",
+                         "ensure_absent"
+                       );
+
+  reports:
+    _debug_repo_yum_client::
+      "DEBUG $(bundle)  $(repo) $(variables)=$($(repos)[$(repo)][$(variables)])";
+
+      "DEBUG $(bundle)  empty_section: false",
+      ifvarclass => "!empty_section";
+
+      "DEBUG $(bundle)  empty_section: true",
+      ifvarclass => "empty_section";
+
+      "DEBUG $(bundle)  required $(repo) baseurl defined = $($(repos)[$(repo)][baseurl])",
       ifvarclass => "baseurl_defined";
 
-    "DEBUG $(bundle)  No action should be taken, baseurl not defined",
+      "DEBUG $(bundle)  No action should be taken, $(repo) baseurl not defined",
       ifvarclass => not("baseurl_defined");
 
-    "DEBUG $(bundle)  reposdir: $(my_reposdir)";
+      "DEBUG $(bundle)  ensure_absent is not set; writing $(repos_dir)/$(repo).repo",
+      ifvarclass => "!ensure_absent";
+
+      "DEBUG $(bundle)  ensure_absent is set; removing $(repos_dir)/$(repo).repo",
+      ifvarclass => "ensure_absent";
+
+      "DEBUG $(bundle)  repos_dir: $(repos_dir)";
 }
 
-bundle edit_line yumclient_manage_variable_values_ini(tab, sectionName) 
+bundle edit_line manage_variable_values_ini(tab, sectionName)
 # Sets the RHS of configuration items in the file of the form
 # LHS=RHS
 # If the line is commented out with #, it gets uncommented first.
@@ -135,74 +160,67 @@ bundle edit_line yumclient_manage_variable_values_ini(tab, sectionName)
 # The argument is an associative array containing tab[SectionName][LHS]="RHS"
 # don't change value when the RHS is dontchange
 
-# Based on set_variable_values_ini 
+# Based on set_variable_values_ini
 # Added delete lines section to empty out undefined variable values for INI section
 
-# CAUTION : for it to work nicely, you should use Cfengine with the commit n°3229
-# otherwise you may risk a segfault
-
-#
-# If you are running 3.2.1 or earlier or more specifically git commit # or
-# earlier you can use this to work around the segfault bug.
-# vars:
-#     "$(file)"
-#         edit_line => append_if_no_line("[#EOF#]"),
-#         create => "true",
-#         comment => "Work around bug<bug#here> where eof did not mean end
-#                     of section and thus cannot select a region. This promise
-#                     should be placed before your call to this bundle";
-#      "$(file)"
-#         edit_line   => yumclient_manage_variable_values_ini("context.array", "SectionName"),
-#         create => "true",
-#         comment     => "Set the variale values only in the specified ini region";
-# 
+# CAUTION : REQUIRES CFEngine 3.4.0
 {
-vars:
-  "index" slist => getindices("$(tab)[$(sectionName)]");
+  classes:
+    default:debug::
+      "_debug_repo_yum_client" or => { "any" };
 
-  # Be careful if the index string contains funny chars
-  "cindex[$(index)]" string => canonify("$(index)");
+  vars:
+      "index" slist => { getindices("$(tab)[$(sectionName)]") },
+      policy => "free";
 
-classes:
-  "edit_$(cindex[$(index)])"     not => strcmp("$($(tab)[$(sectionName)][$(index)])","dontchange"),
-                               comment => "Create conditions to make changes"; 
+      # Be careful if the index string contains funny chars
+      "cindex[$(index)]" string => canonify("$(index)");
 
-  "yumclient_manage_variable_values_ini_$(sectionName)_exists"
-    expression => regline(".*[$(sectionName)].*", "$(edit.filename)");
+  classes:
+      "noedit_$(cindex[$(index)])" expression => strcmp("$($(tab)[$(sectionName)][$(index)])","dontchange"),
+      comment => "Create conditions to make changes";
 
-field_edits:
+      "section_exists"
+      expression => regline(".*[$(sectionName)].*", "$(edit.filename)");
 
-  # If the line is there, but commented out, first uncomment it
-  "#+$(index)\s*=.*"
-    select_region => INI_section("$(sectionName)"),
-    edit_field => col("=","1","$(index)","set"),
-    ifvarclass => "yumclient_manage_variable_values_ini_$(sectionName)_exists.edit_$(cindex[$(index)])";
+  field_edits:
+    section_exists::
+      # If the line is there, but commented out, first uncomment it
+      "#+$(index)\s*=.*"
+      select_region => default:INI_section("$(sectionName)"),
+      edit_field => default:col("=","1","$(index)","set"),
+      ifvarclass => "!noedit_$(cindex[$(index)])";
 
-  # match a line starting like the key something
-  "$(index)\s*=.*"
-    edit_field => col("=","2","$($(tab)[$(sectionName)][$(index)])","set"),
-    select_region => INI_section("$(sectionName)"),
-    classes => if_ok("yumclient_manage_variable_values_ini_not_$(cindex[$(index)])"),
-    ifvarclass => "yumclient_manage_variable_values_ini_$(sectionName)_exists.edit_$(cindex[$(index)])";
+      # match a line starting like the key something
+      "$(index)\s*=.*"
+      edit_field => default:col("=","2","$($(tab)[$(sectionName)][$(index)])","set"),
+      select_region => default:INI_section("$(sectionName)"),
+      classes => default:if_ok("ini_not_$(cindex[$(index)])"),
+      ifvarclass => "!noedit_$(cindex[$(index)])";
 
-delete_lines:
-  ".*"
-    select_region => INI_section("$(sectionName)"),
-    ifvarclass => "yumclient_manage_variable_values_ini_$(sectionName)_exists",
-    comment       => "Remove all entries in the region so there are no extra entries";
+  delete_lines:
+    section_exists::
+      ".*"
+      select_region => default:INI_section("$(sectionName)"),
+      comment       => "Remove all entries in the region so there are no extra entries";
 
-insert_lines:
-  "[$(sectionName)]"
-    location => start,
-    #classes => if_ok("yumclient_manage_variable_values_ini_$(sectionName)_exists"),
-    comment => "Insert lines";
+  insert_lines:
+      "[$(sectionName)]"
+      location => default:start,
+      #classes => default:if_ok("yumclient_manage_variable_values_ini_$(sectionName)_exists"),
+      comment => "Insert lines";
 
-  "$(index)=$($(tab)[$(sectionName)][$(index)])",
-    select_region => INI_section("$(sectionName)"),
-    ifvarclass => "!yumclient_manage_variable_values_ini_not_$(cindex[$(index)]).edit_$(cindex[$(index)]).yumclient_manage_variable_values_ini_$(sectionName)_exists";
+    section_exists::
+      "$(index)=$($(tab)[$(sectionName)][$(index)])",
+      select_region => default:INI_section("$(sectionName)"),
+      ifvarclass => "!ini_not_$(cindex[$(index)]).!noedit_$(cindex[$(index)])";
+
+  reports:
+    _debug_repo_yum_client::
+      "DEBUG Managing INI $(tab) $(sectionName); $(index) = $($(tab)[$(sectionName)][$(index)])";
 }
 
-bundle edit_line yumclient_set_variable_values_ini(tab, sectionName) 
+bundle edit_line set_variable_values_ini(tab, sectionName)
 # Sets the RHS of configuration items in the file of the form
 # LHS=RHS
 # If the line is commented out with #, it gets uncommented first.
@@ -211,64 +229,53 @@ bundle edit_line yumclient_set_variable_values_ini(tab, sectionName)
 # The argument is an associative array containing tab[SectionName][LHS]="RHS"
 # don't change value when the RHS is dontchange
 
-# Based on yumclient_set_variable_values_ini 
+# Based on yumclient_set_variable_values_ini
 
-# CAUTION : for it to work nicely, you should use Cfengine with the commit n°3229
-# otherwise you may risk a segfault
-
-#
-# If you are running 3.2.1 or earlier or more specifically git commit # or
-# earlier you can use this to work around the segfault bug.
-# vars:
-#     "$(file)"
-#         edit_line => append_if_no_line("[#EOF#]"),
-#         create => "true",
-#         comment => "Work around bug<bug#here> where eof did not mean end
-#                     of section and thus cannot select a region. This promise
-#                     should be placed before your call to this bundle";
-#      "$(file)"
-#         edit_line   => yumclient_set_variable_values_ini("context.array", "SectionName"),
-#         create => "true",
-#         comment     => "Set the variale values only in the specified ini region";
-# 
+# CAUTION : REQUIRES CFEngine 3.4.0
 {
-vars:
-  "index" slist => getindices("$(tab)[$(sectionName)]");
+  vars:
+      "index" slist => { getindices("$(tab)[$(sectionName)]") },
+      policy => "free";
 
-  # Be careful if the index string contains funny chars
-  "cindex[$(index)]" string => canonify("$(index)");
+      # Be careful if the index string contains funny chars
+      "cindex[$(index)]" string => canonify("$(index)");
 
-classes:
-  "edit_$(cindex[$(index)])"     not => strcmp("$($(tab)[$(sectionName)][$(index)])","dontchange"),
-                               comment => "Create conditions to make changes"; 
+  classes:
+      "edit_$(cindex[$(index)])"     not => strcmp("$($(tab)[$(sectionName)][$(index)])","dontchange"),
+      comment => "Create conditions to make changes";
 
-  "yumclient_set_variable_values_ini_$(sectionName)_exists"
-    expression => regline(".*[$(sectionName)].*", "$(edit.filename)");
+      "yumclient_set_variable_values_ini_$(sectionName)_exists"
+      expression => regline(".*[$(sectionName)].*", "$(edit.filename)");
 
-field_edits:
+    default:debug::
+      "_debug_repo_yum_client" or => { "any" };
 
-  # If the line is there, but commented out, first uncomment it
-  "#+$(index)\s*=.*"
-    select_region => INI_section("$(sectionName)"),
-    edit_field => col("=","1","$(index)","set"),
-    ifvarclass => "yumclient_set_variable_values_ini_$(sectionName)_exists.edit_$(cindex[$(index)])";
+  field_edits:
 
-  # match a line starting like the key something
-  "$(index)\s*=.*"
-    edit_field => col("=","2","$($(tab)[$(sectionName)][$(index)])","set"),
-    select_region => INI_section("$(sectionName)"),
-    classes => if_ok("yumclient_set_variable_values_ini_not_$(cindex[$(index)])"),
-    ifvarclass => "yumclient_set_variable_values_ini_$(sectionName)_exists.edit_$(cindex[$(index)])";
+      # If the line is there, but commented out, first uncomment it
+      "#+$(index)\s*=.*"
+      select_region => default:INI_section("$(sectionName)"),
+      edit_field => default:col("=","1","$(index)","set"),
+      ifvarclass => "yumclient_set_variable_values_ini_$(sectionName)_exists.edit_$(cindex[$(index)])";
 
-insert_lines:
-  "[$(sectionName)]"
-    location => start,
-    #classes => if_ok("yumclient_set_variable_values_ini_$(sectionName)_exists"),
-    comment => "Insert lines";
+      # match a line starting like the key something
+      "$(index)\s*=.*"
+      edit_field => default:col("=","2","$($(tab)[$(sectionName)][$(index)])","set"),
+      select_region => default:INI_section("$(sectionName)"),
+      classes => default:if_ok("yumclient_set_variable_values_ini_not_$(cindex[$(index)])"),
+      ifvarclass => "yumclient_set_variable_values_ini_$(sectionName)_exists.edit_$(cindex[$(index)])";
 
-  "$(index)=$($(tab)[$(sectionName)][$(index)])",
-    select_region => INI_section("$(sectionName)"),
-    ifvarclass => "!yumclient_set_variable_values_ini_not_$(cindex[$(index)]).edit_$(cindex[$(index)]).yumclient_set_variable_values_ini_$(sectionName)_exists";
+  insert_lines:
+      "[$(sectionName)]"
+      location => default:start,
+      #classes => default:if_ok("yumclient_set_variable_values_ini_$(sectionName)_exists"),
+      comment => "Insert lines";
+
+      "$(index)=$($(tab)[$(sectionName)][$(index)])",
+      select_region => default:INI_section("$(sectionName)"),
+      ifvarclass => "!yumclient_set_variable_values_ini_not_$(cindex[$(index)]).edit_$(cindex[$(index)]).yumclient_set_variable_values_ini_$(sectionName)_exists";
+
+  reports:
+    _debug_repo_yum_client::
+      "DEBUG Setting INI $(tab) $(sectionName); indices = $(index)";
 }
-
-
