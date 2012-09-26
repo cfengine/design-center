@@ -62,15 +62,14 @@ bundle agent config(class_prefix, repos_dir, repos, repo)
       "variables" slist => { getindices("$(repos)[$(repo)]") },
       policy => "free";
 
-      "owner" string => getenv("LOGNAME", 100),
-      ifvarclass => "test";
+    default:test::
+      "owner" string => getenv("LOGNAME", 100);
 
-      "owner" string => "root",
-      ifvarclass => "!test";
+    !default:test::
+      "owner" string => "root";
 
   classes:
-    default:debug::
-      "_debug_repo_yum_client" or => { "any" };
+      "_debug_repo_yum_client" or => { "default:debug" };
 
     any::
       "baseurl_defined" expression => regcmp("(file|https?)+://.+",
@@ -166,8 +165,7 @@ bundle edit_line manage_variable_values_ini(tab, sectionName)
 # CAUTION : REQUIRES CFEngine 3.4.0
 {
   classes:
-    default:debug::
-      "_debug_repo_yum_client" or => { "any" };
+      "_debug_repo_yum_client" or => { "default:debug" };
 
   vars:
       "index" slist => { getindices("$(tab)[$(sectionName)]") },
@@ -218,6 +216,19 @@ bundle edit_line manage_variable_values_ini(tab, sectionName)
   reports:
     _debug_repo_yum_client::
       "DEBUG Managing INI $(tab) $(sectionName); $(index) = $($(tab)[$(sectionName)][$(index)])";
+
+      "DEBUG We will not edit setting $(index)"
+      ifvarclass => "noedit_$(cindex[$(index)])";
+
+      "DEBUG We will edit setting $(index)"
+      ifvarclass => "!noedit_$(cindex[$(index)])";
+
+    section_exists._debug_repo_yum_client::
+      "DEBUG section $(sectionName) exists";
+
+    !section_exists._debug_repo_yum_client::
+      "DEBUG section $(sectionName) does not exist";
+
 }
 
 bundle edit_line set_variable_values_ini(tab, sectionName)
@@ -247,8 +258,7 @@ bundle edit_line set_variable_values_ini(tab, sectionName)
       "yumclient_set_variable_values_ini_$(sectionName)_exists"
       expression => regline(".*[$(sectionName)].*", "$(edit.filename)");
 
-    default:debug::
-      "_debug_repo_yum_client" or => { "any" };
+      "_debug_repo_yum_client" or => { "default:debug" };
 
   field_edits:
 
@@ -278,4 +288,7 @@ bundle edit_line set_variable_values_ini(tab, sectionName)
   reports:
     _debug_repo_yum_client::
       "DEBUG Setting INI $(tab) $(sectionName); indices = $(index)";
+
+      "DEBUG We will edit setting $(index)"
+      ifvarclass => "edit_$(cindex[$(index)])";
 }
