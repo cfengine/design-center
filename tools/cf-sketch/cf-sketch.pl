@@ -54,6 +54,11 @@ BEGIN
     }
 }
 
+END {
+    # This prevents the blood-stained prompt after we die
+    print RESET;
+}
+
 ###### Some basic constants and settings.
 
 use constant SKETCH_DEF_FILE => 'sketch.json';
