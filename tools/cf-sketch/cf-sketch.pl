@@ -22,18 +22,13 @@ $Term::ANSIColor::AUTORESET = 1;
 my $coder;
 my $canonical_coder;
 
-# These turn AUTORESET off temporarily so that the "at ... line xxx"
-# added automatically by Perl is also colorized.
 sub color_warn {
-  local $Term::ANSIColor::AUTORESET = 0;
   my ($package, $filename, $line, $sub) = caller(1);
-  warn GREEN "$filename:$sub():\n" . YELLOW "WARN\t", @_, "\n";
-  print RESET;
+  warn GREEN "$filename:$sub():\n" . YELLOW "WARN\t", @_;
 }
 sub color_die {
-  local $Term::ANSIColor::AUTORESET = 0;
   my ($package, $filename, $line, $sub) = caller(1);
-  die GREEN "$filename:$sub():\n" . RED "FATAL\t", @_, "\n";
+  die GREEN "$filename:$sub():\n" . RED "FATAL\t", @_;
 }
 
 BEGIN
