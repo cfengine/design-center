@@ -1,0 +1,15 @@
+{
+   "activated" : "",
+   "sketch" : {
+      "verbose" : "false",
+      "debug" : "false",
+      "home" : "/var/cfengine/inputs/sketches/Security/UserRisk/LoggedIn",
+      "inform" : "false",
+      "refresh_interval" : "1440"
+   },
+   "conf" : {
+      "report" : "true",
+      "kill" : "true"
+   }
+}
+

@@ -1,0 +1,238 @@
+bundle agent security_userrisk_loggedin(prefix)
+{
+vars:
+  any::
+    "bundle" string => "security_userrisk_loggedin";
+    "class_prefix" string => canonify("$(prefix)_$(bundle)_");
+
+classes:
+  # Determine if we should switch debugging on for this sketch
+  "$(class_prefix)debug" expression => regcmp("(i?)yes|true|on", "$($(prefix)sketch[debug])");
+  "localdebug" or => { "debug_mode", "debug", "$(class_prefix)debug" };
+
+  "$(class_prefix)verbose" expression => regcmp("(i?)yes|true|on", "$($(prefix)sketch[verbose])");
+  "localverbose" or => { "localdebug", "verbose", "verbose_mode", "$(class_prefix)verbose" };
+
+  "$(class_prefix)inform" expression => regcmp("(i?)yes|true|on", "$($(prefix)sketch[inform])");
+  "localinform" or => { "localverbose", "inform", "inform_mode", "$(class_prefix)inform" };
+
+
+methods:
+  any::
+    "Converge Variables"
+      usebundle => security_userrisk_loggedin_vars("$(prefix)", "$(bundle)"),
+      comment => "Set and optionally override sketch settings";
+
+    "Main Bundle"
+      usebundle => security_userrisk_loggedin_main("$(prefix)", "$(bundle)");
+reports:
+  localdebug::
+    "DEBUG $(class_prefix)  ";
+}
+
+bundle agent meta_security_userrisk_loggedin
+{
+vars:
+  "optional_argument[conf]" string => "array";
+  "default[conf][report]" string => "true";
+  "default[conf][kill]" string => "true";
+
+  "optional_argument[sketch]" string => "array";
+  "default[sketch][debug]" string => "false";
+  "default[sketch][inform]" string => "false";
+  "default[sketch][verbose]" string => "false";
+  "default[sketch][refresh_interval]" string => "1440";
+  "default[sketch][home]" string => "/var/cfengine/inputs/sketches/Security/UserRisk/LoggedIn";
+  
+}
+
+bundle agent security_userrisk_loggedin_vars(prefix, main)
+###########################################################################
+#                           Converge Variables                            #
+###########################################################################
+{
+vars:
+  any::
+    "bundle" string => canonify("security_userrisk_loggedin_vars");
+    "class_prefix" string => canonify("$(prefix)_$(bundle)_");
+
+  # Things seem to get confused if we do this multiple times
+  !first_class_pass::
+    # Report all kinds of things, useful for sketch developers
+    "sketch[debug]"
+      string => "off",
+      policy => "free",
+      comment => "Default debug off";
+
+    # Inform of any action taken
+    "sketch[inform]"
+      string => "off",
+      policy => "free",
+      comment => "Default inform off";
+
+    "sketch[verbose]"
+      string => "off",
+      policy => "free",
+      comment => "Default verbose off";
+
+    "sketch[refresh_interval]"
+      string => "1440",
+      policy => "free",
+      comment => "Ensure sketch is cached at this interval";
+
+    "sketch[home]"
+      string => "/var/cfengine/inputs/sketches/Security/UserRisk/LoggedIn",
+      policy => "free",
+      comment => "Default sketch home";
+
+    "conf[report]"
+      string => "true", #yes|true|on|no|false|off
+      policy => "free",
+      comment => "Report on logged in users by default";
+
+    "conf[kill]"
+      string => "false", #yes|true|on|no|false|off
+      policy => "free",
+      comment => "Report on logged in users by default";
+
+
+    "param_sketch_keys" slist => getindices("$(prefix)sketch");
+    "param_conf_keys" slist => getindices("$(prefix)conf");
+
+    # Override default values
+    "sketch[$(param_sketch_keys)]"
+       string => "$($(prefix)sketch[$(param_sketch_keys)])",
+       policy => "free",
+       comment => "Override default values with those from parameters";
+
+    "conf[$(param_conf_keys)]"
+       string => "$($(prefix)conf[$(param_conf_keys)])",
+       policy => "free",
+       comment => "Override default values with those from parameters";
+
+
+  first_class_pass::
+    "sketch_keys" slist => getindices("sketch");
+    "conf_keys" slist => getindices("conf");
+
+classes:
+  "$(class_prefix)debug" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[debug])");
+  "localdebug" or => { "debug_mode", "debug", "$(class_prefix)debug" };
+
+  "$(class_prefix)verbose" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[verbose])");
+  "localverbose" or => { "localdebug", "verbose", "verbose_mode", "$(class_prefix)verbose" };
+
+  "$(class_prefix)inform" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[inform])");
+  "localinform" or => { "localverbose", "inform", "inform_mode", "$(class_prefix)inform" };
+
+
+  "second_class_pass" expression => "first_class_pass";
+  "first_class_pass" expression => "any";
+
+reports:
+  localdebug.second_class_pass::
+    "DEBUG $(class_prefix)  ";
+    "DEBUG $(class_prefix)  sketch[$(sketch_keys)] = $(sketch[$(sketch_keys)])";
+    "DEBUG $(class_prefix)  conf[$(conf_keys)] = $(conf[$(conf_keys)])";
+
+}
+
+bundle agent security_userrisk_loggedin_main(prefix, main)
+###########################################################################
+#                               Main Bundle                               #
+###########################################################################
+{
+vars:
+  any::
+    "bundle" string => canonify("security_userrisk_loggedin_main");
+    "class_prefix" string => canonify("$(prefix)_$(bundle)_");
+    "vars" string => canonify("$(main)_vars"); # shortcut to access parameter settings and default vars
+
+classes:
+  "$(class_prefix)debug" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[debug])");
+  "localdebug" or => { "debug_mode", "debug", "$(class_prefix)debug" };
+
+  "$(class_prefix)verbose" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[verbose])");
+  "localverbose" or => { "localdebug", "verbose", "verbose_mode", "$(class_prefix)verbose" };
+
+  "$(class_prefix)inform" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[inform])");
+  "localinform" or => { "localverbose", "inform", "inform_mode", "$(class_prefix)inform" };
+
+
+  "report_on_logged_in_users" expression => regcmp("(i?)yes|true|on", "$($(vars).conf[report])");
+  "kill_logged_in_users" expression => regcmp("(i?)yes|true|on", "$($(vars).conf[kill])");
+
+methods:
+  report_on_logged_in_users::
+    "Report logged in users"
+      usebundle => security_userrisk_loggedin_report("$(prefix)", "$(main)");
+
+  kill_logged_in_users::
+    "Kill logged in users"
+      usebundle => security_userrisk_loggedin_kill("$(prefix)", "$(main)");
+}
+
+bundle agent security_userrisk_loggedin_report(prefix, main)
+###########################################################################
+#                        Report on logged in users                        #
+###########################################################################
+{
+vars:
+  any::
+    "bundle" string => canonify("security_userrisk_loggedin_report");
+    "class_prefix" string => canonify("$(prefix)_$(bundle)_");
+    "vars" string => canonify("$(main)_vars"); # shortcut to access parameter settings and default vars
+
+classes:
+  "$(class_prefix)debug" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[debug])");
+  "localdebug" or => { "debug_mode", "debug", "$(class_prefix)debug" };
+
+  "$(class_prefix)verbose" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[verbose])");
+  "localverbose" or => { "localdebug", "verbose", "verbose_mode", "$(class_prefix)verbose" };
+
+  "$(class_prefix)inform" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[inform])");
+  "localinform" or => { "localverbose", "inform", "inform_mode", "$(class_prefix)inform" };
+
+
+  # Returns returns 0 if no logged in users
+  # Defines: logged_in_userlist, logged_in_numusers
+  "done" expression => usemodule("security_userrisk_loggedin_report_module","$(prefix)");
+  "logged_in_users" expression => isgreaterthan("$(security_userrisk_loggedin_report_module.numusers)", "0");
+
+reports:
+  localverbose.!logged_in_users::
+    "There are currently no login sessions";
+
+  logged_in_users::
+    "WARNING: $(security_userrisk_loggedin_report_module.numusers) active login sessions";
+    "WARNING: $(security_userrisk_loggedin_report_module.logged_in_userlist) is logged in";
+    '"Every time someone logs onto a system by hand, they jeopardize everyone\'s understanding of the system."';
+
+}
+
+bundle agent security_userrisk_loggedin_kill(prefix, main)
+###########################################################################
+#             Take corrective action against logged in users              #
+###########################################################################
+# Not quite sure how to go about this
+{
+vars:
+  any::
+    "bundle" string => canonify("security_userrisk_loggedin_report");
+    "class_prefix" string => canonify("$(prefix)_$(bundle)_");
+    "vars" string => canonify("$(main)_vars"); # shortcut to access parameter settings and default vars
+
+classes:
+  "$(class_prefix)debug" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[debug])");
+  "localdebug" or => { "debug_mode", "debug", "$(class_prefix)debug" };
+
+  "$(class_prefix)verbose" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[verbose])");
+  "localverbose" or => { "localdebug", "verbose", "verbose_mode", "$(class_prefix)verbose" };
+
+  "$(class_prefix)inform" expression => regcmp("(i?)yes|true|on", "$($(vars).sketch[inform])");
+  "localinform" or => { "localverbose", "inform", "inform_mode", "$(class_prefix)inform" };
+
+reports:
+  cfengine::
+    "Automatically logging out users is not currently supported, I can haz pull requests!";
+}
