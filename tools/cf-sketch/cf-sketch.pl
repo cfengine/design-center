@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use FindBin;
-use lib "$FindBin::Bin/../lib";
+use lib "$FindBin::Bin/../lib", "$FindBin::Bin/perl-lib";
 
 use warnings;
 use strict;
@@ -16,8 +16,12 @@ use File::Basename;
 use Data::Dumper;
 use Getopt::Long;
 use Term::ANSIColor qw(:constants);
+use Parser;
 
 $Term::ANSIColor::AUTORESET = 1;
+
+my $VERSION="2.0";
+my $DATE="September 2012";
 
 my $coder;
 my $canonical_coder;
@@ -93,6 +97,11 @@ my %def_options =
   repolist => [ File::Spec->catfile($happy_root, 'sketches') ],
   color => $color,
  );
+
+# Determine where to load command modules from
+(-d ($def_options{cmddir}="$FindBin::Bin/../lib/Parser/Commands")) ||
+    (-d ($def_options{cmddir}="$FindBin::Bin/perl-lib/Parser/Commands")) ||
+    color_die "Could not find Commands directory.";
 
 # This list contains both the help information and the command-line
 # argument specifications. It is stored as a list so that order can
@@ -223,6 +232,24 @@ else
   }
  }
 }
+
+#--------------------------------------------------
+# Version and date information
+$options{version} = $VERSION;
+$options{date} = $DATE;
+
+# Load commands and do other parser initialization
+Parser::init(\%options, @ARGV);
+
+# Run the main command loop
+Parser::parse_commands();
+
+# Finishing code.
+Parser::finish();
+
+exit(0);
+
+######################################################################
 
 my $required_version = '3.4.0';
 my $version = cfengine_version();
