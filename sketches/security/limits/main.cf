@@ -57,7 +57,7 @@ bundle agent security_limits(class_prefix, canon_prefix, filename, domains)
       "types" slist => { "soft", "hard", "-" };
       "mgmt_policies" slist => { "ensure_present", "ensure_absent" };
 
-      "domain_keys" slist => getindices("$(domains)");
+      "domain_keys" slist => { getindices("$(domains)") };
 
     default:test::
       "owner" string => getenv("LOGNAME", 100);
@@ -83,7 +83,7 @@ bundle agent security_limits(class_prefix, canon_prefix, filename, domains)
                                         @(security_limits.domain_keys)),
       perms => default:mog("644", "$(owner)", "$(owner)"),
       classes => default:if_repaired("$(canon_prefix)repaired"),
-      comment    => "Ensure the specified lines are present, we dont care about other lines";
+      comment => "Ensure the specified lines are present, we dont care about other lines";
 
     empty_first.!ensure_absent::
       "$(filename)"
@@ -116,6 +116,9 @@ bundle agent security_limits(class_prefix, canon_prefix, filename, domains)
 
       "Given: $(domain_keys) $(types) $(items) = $($(domains)[$(domain_keys)][$(types)][$(items)])";
 
+      "I repaired the $(filename) file",
+      ifvarclass => "$(canon_prefix)repaired";
+
     empty_first::
       "Empty First: Enabled";
 
@@ -124,9 +127,6 @@ bundle agent security_limits(class_prefix, canon_prefix, filename, domains)
 
     !ensure_absent::
       "Mgmt Policy: ensure present";
-
-      "I repaired the $(filename) file",
-      ifvarclass => "$(canon_prefix)repaired";
 
 }
 
@@ -139,8 +139,8 @@ bundle edit_line set_limits_removal(dref, items, types, domains)
 
   classes:
       "$(mydomains)_$(mytypes)_$(myitems)_defined" expression => isvariable("$(dref)[$(mydomains)][$(mytypes)][$(myitems)]");
-    default:debug::
-      "debug_security_limits" or => { "any" };
+
+      "debug_security_limits" or => { "default:debug" };
 
   insert_lines:
       "# This file is managed by CFEngine, manual edits may be reverted";
