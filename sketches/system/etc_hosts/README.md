@@ -20,4 +20,4 @@ windows
 standard library
 
 ## SAMPLE USAGE
-See `test.cf` and `params/repos.json` for standalone and JSON-driven usage, respectively.
+See `test.cf` and `params/example.json` for standalone and JSON-driven usage, respectively.
