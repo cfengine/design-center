@@ -1,12 +1,12 @@
-body common control {
-
-      bundlesequence => { "main",};
+body common control
+{
+      bundlesequence => { "cfsketch_run" };
 
       inputs => {
                   "../../libraries/copbl/cfengine_stdlib.cf",
                   "./main.cf",
                 };
-                    }
+}
 
 bundle common cfsketch_g
 {
