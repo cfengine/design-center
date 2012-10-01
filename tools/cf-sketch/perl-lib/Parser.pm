@@ -210,7 +210,18 @@ sub init {
 
 sub complete_word {
   my ($text, $line, $start) = @_;
-  return grep /^$text/i, @ALLCOMMANDS_COMPLETE;
+  if ($start==0) {
+    return grep /^$text/i, @ALLCOMMANDS_COMPLETE;
+  }
+  else {
+    my $cmd = (split(' ', $line))[0];
+    if ($cmd) {
+      print "\n";
+      Help($cmd);
+    }
+    $inputline->on_new_line;
+    return undef;
+  }
 }
 
 sub finish {
