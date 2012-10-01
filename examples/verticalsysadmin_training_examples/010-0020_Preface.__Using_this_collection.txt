@@ -11,9 +11,3 @@ Additional resources for learning and using CFEngine 3
 are posted at www.verticalsysadmin.com/cfengine/
 
 Professional CFEngine training is available by request.
-
-Enjoy learning CFEngine 3!
-
-Best,
-Aleksey Tsalolikhin
-Authorized CFEngine 3 Trainer

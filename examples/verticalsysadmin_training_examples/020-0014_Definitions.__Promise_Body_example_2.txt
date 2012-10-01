@@ -1,5 +1,5 @@
-Example: Promise Body (Example 2)
----------------------------------
+Example: Promise Body
+---------------------
 
 files:
 

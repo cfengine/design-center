@@ -1,3 +1,7 @@
+# Run this example with, without and again with
+# the -K switch to demonstrate time lock and
+# time lock override
+
 bundle agent example{
 
   classes:

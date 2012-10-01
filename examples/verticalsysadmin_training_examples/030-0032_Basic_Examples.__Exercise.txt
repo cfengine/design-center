@@ -2,7 +2,7 @@
 
 ---
 A note on how to write cfengine policies:
-1. sysadmin problem
+1. state the sysadmin problem
 2. envision the desired end state
 3. translate the desired end state into CFEngine Policy Language
 ---
@@ -18,4 +18,3 @@ process matching "trn".
 
 If you finish before everybody else, please study the
 Reference Manual, chapters 1 - 4.
-
