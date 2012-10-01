@@ -1,0 +1,18 @@
+# Cfengine code snippet by Valentin Hoebel (valentin@xenuser.org)
+# Created on September 30th 2012; Example for checking if a user is there or not
+# You are free to use and share this code snippet in any way you want.
+
+body common control {
+        version         => "1.0";
+        inputs          => { "cfengine_stdlib.cf" };
+        bundlesequence  => { "check_user" };
+}
+
+bundle agent check_user {
+	classes:
+	  "userNagiosExists" expression	=> userexists("nagios");
+
+	reports:
+	  !userNagiosExists::
+		"User nagios does not exist! You have to create it or write a Cfengine 3 script which does that for you :-)";
+}
