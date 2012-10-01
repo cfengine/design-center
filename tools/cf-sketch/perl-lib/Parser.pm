@@ -23,6 +23,7 @@ use vars qw($User
 	    $isWizard
 	    $inputline
 	    %ALLCOMMANDS
+            @ALLCOMMANDS_COMPLETE
 	    %COMMANDS
 	    %CONFIG
 	    %Config
@@ -197,7 +198,19 @@ sub init {
   }
   # Copy the config hash to a local package variable for easy access
   %Config=%$config;
+  # Configure completions
+  if (my $attr = $inputline->Attribs) {
+    $attr->{basic_word_break_characters} = ". \t\n";
+    $attr->{completer_word_break_characters} = " \t\n";
+    $attr->{completion_function} = \&complete_word;
+    @ALLCOMMANDS_COMPLETE = grep { $ALLCOMMANDS{$_}->[0]->[0] !~ /^-/ } keys %ALLCOMMANDS;
+  } # end if attributes
   return 1;
+}
+
+sub complete_word {
+  my ($text, $line, $start) = @_;
+  return grep /^$text/i, @ALLCOMMANDS_COMPLETE;
 }
 
 sub finish {
