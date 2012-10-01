@@ -244,115 +244,12 @@ sub parse_commands {
 
 ####### Utility routines
 
-# Output something unconditionally, as is.
-sub _output {
-  foreach (@_) {
-    print $_;
-  }
-}
-
-# Output something unconditionally, nicely formatted.
-sub _foutput {
-  foreach (@_) {
-    print _sprintstr($_);
-  }
-}
-
-sub _error {
-  _output(@_);
-}
-
-# Generate an error message, nicely formatted.
-sub _ferror {
-  # Output it, but prefixed with "* "
-  foreach (@_) {
-    print _sprintstr($_,undef,undef,undef,undef,"* ");
-  }
-}
-
 # Output something only in interactive mode (when reading commands from
 # the console)
 sub _message {
   if ($interactive) {
-    _output(@_);
+    Util::output(@_);
   }
-}
-
-# Returns an indented string containing a list. Syntax is:
-# _sprintlist($listref[, $firstline[, $separator[, $indent
-#             [, $break[, $linelen[, $lineprefix]]]]])
-# All lines are indented by $indent spaces (default
-# 15). If $firstline is given, that string is inserted in the
-# indentation of the first line (it is truncated to $indent spaces
-# unless $break is true, in which case the list is pushed to the next
-# line). Normally the list elements are separated by commas and spaces
-# ", ". If $separator is given, that string is used as a separator.
-# Lines are wrapped to $linelen characters, unless it is specified as
-# some other value. A value of 0 for $linelen makes it not do line wrapping.
-# If $lineprefix is given, it is printed at the beginning of each line.
-sub _sprintlist {
-  my $listref=shift;
-  my @list=@$listref;
-  my $fline=shift;
-  my $separator=shift || ", ";
-  my $indent=shift;
-  $indent=15 unless defined($indent);
-  my $space=" " x $indent;
-  $fline||=$space;
-  my $break=shift || 0;
-  my $linelen=shift;
-  $linelen=80 unless defined($linelen);
-  my $lp=shift||"";
-  $linelen-=length($lp);
-  if (!$break || length($fline)<=$indent) {
-    $fline=substr("$fline$space", 0, length($space));
-  } else {
-    # length($fline)>$indent
-    $fline="$fline\n$space";
-  }
-  my $str="";
-  my $line="";
-  foreach (@list) {
-    $line.=$separator if $line;
-    if ($linelen && length($line)+length($_)+length($space)>=$linelen) {
-      $line=~s/\s*$//;
-      $str.="$space$line\n";
-      $line="";
-    }
-    $line.="$_";
-  }
-  $str.="$space$line";
-  $str=~s/^$space/$fline/;
-  $str=~s/^/$lp/mg if $lp;
-  return $str;
-}
-
-# Gets a string, and returns it nicely formatted and word-wrapped. It
-# uses _sprintlist as a backend. Its syntax is the same as
-# _sprintlist, except that is gets a string instead of a list ref, and
-# that $separator is not used because we automatically break on white
-# space.
-# Syntax: _sprintstr($string[, $firstline[, $indent[, $break[, $linelen
-#		[, $lineprefix]]]]]);
-# See _sprintlist for the meaning of each parameter.
-sub _sprintstr {
-  my ($str, $fl, $ind, $br, $len, $lp)=@_;
-  $ind||=0;
-  # Split string into \n-separated parts.
-  my @strs=($str=~/([^\n]+\n?|[^\n]*\n)/g);
-  # Now process each line separately
-  my $s;
-  my $result;
-  foreach $s (@strs) {
-    # Store end of lines at the end of the string
-    my $eols=($s=~/(\n*)$/)[0];
-    # Split in words.
-    my @words=(split(/\s+/, $s));
-    $result.=_sprintlist(\@words,$fl," ",$ind,$br,$len, $lp).$eols;
-    # The $firstline is only needed at the beginning of the first string.
-    $fl=undef;
-  }
-  return $result;
 }
 
 # Usage message
@@ -360,17 +257,17 @@ sub Help {
   my $cmd;
   my $form;
   if (!@_) {
-    _output("The current commands are: ([]'s denote optional, caps need values)\n");
+    Util::output("The current commands are: ([]'s denote optional, caps need values)\n");
     foreach $cmd (sort keys %ALLCOMMANDS) {
       foreach $form (@{$ALLCOMMANDS{$cmd}}) {
 	my ($sum, $desc)=@$form;
 	$sum =~ s/^\@//;
-	_output(_sprintstr($desc,$sum,30,1)."\n")
+	Util::output(Util::sprintstr($desc,$sum,30,1)."\n")
 	  unless ($sum =~ /^-/ # Don't print if summary starts with "-"
 		  || ($sum =~ s/^\*// && !$isWizard));
       }
     }
-    _output("Use 'quit' or '^D' to quit.\n");
+    Util::output("Use 'quit' or '^D' to quit.\n");
   } else {
     foreach $cmd (@_) {
       if (exists($ALLCOMMANDS{$cmd})) {
@@ -385,10 +282,10 @@ sub Help {
 	  }
 	  # Trim the "-" at the beginning.
 	  $sum=~s/^-//;
-	  _output(_sprintstr($desc,$sum,30,1)."\n");
+	  Util::output(Util::sprintstr($desc,$sum,30,1)."\n");
 	}
       } else {
-	_error("Command $cmd does not exist.\n");
+	Util::ferror("Command $cmd does not exist.\n");
       }
     }
   }
@@ -539,7 +436,7 @@ sub _do_command {
 
     # This little hack is so that we don't get a line of dashes before
     # the first command when not in interactive mode.
-    _output($ics);
+    Util::output($ics);
     $ics=$inter_command_separator;
 
     # Log each command
@@ -548,7 +445,7 @@ sub _do_command {
     my $result;
     if ($result=_execute_command($_, \@_)) {
       # If it returns something, it is an error message.
-      _error($result);
+      Util::error($result);
     }
 
   }
@@ -628,7 +525,7 @@ sub _execute_command {
 	# Call the subroutine
 	eval "command_$cmdcall".'(@cmdargs)';
 	if ($@) {
-	  die "Internal error calling command_$cmdcall: $@\n";
+	  return("Something went wrong with the '$cmdcall' command: $@");
 	}
 
 	# Now see if there are any post-hooks that need to be called.
@@ -679,7 +576,7 @@ sub command_quit {
 
 # version
 sub command_version {
-  _output("This is cf-sketch version $Config{version}, ".
+  Util::output("This is cf-sketch version $Config{version}, ".
 	  "last updated on $Config{date}.\n");
 }
 ;
