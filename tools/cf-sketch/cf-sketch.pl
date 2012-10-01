@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+package CFSketch;
+
 use FindBin;
 use lib "$FindBin::Bin/../lib", "$FindBin::Bin/perl-lib";
 
