@@ -19,6 +19,7 @@ use Data::Dumper;
 use Getopt::Long;
 use Term::ANSIColor qw(:constants);
 use Parser;
+use Util;
 
 $Term::ANSIColor::AUTORESET = 1;
 
@@ -27,15 +28,6 @@ my $DATE="September 2012";
 
 my $coder;
 my $canonical_coder;
-
-sub color_warn {
-  my ($package, $filename, $line, $sub) = caller(1);
-  warn GREEN "$filename:$sub():\n" . YELLOW "WARN\t", @_;
-}
-sub color_die {
-  my ($package, $filename, $line, $sub) = caller(1);
-  die GREEN "$filename:$sub():\n" . RED "FATAL\t", @_;
-}
 
 BEGIN
 {
@@ -48,7 +40,7 @@ BEGIN
     };
     if ($@ )
     {
-     color_warn "Falling back to plain JSON module (you should install JSON::XS)";
+     Util::color_warn "Falling back to plain JSON module (you should install JSON::XS)";
      require JSON;
      $coder = JSON->new()->relaxed()->utf8()->allow_nonref();
      # for storing JSON data so it's directly comparable
@@ -103,7 +95,7 @@ my %def_options =
 # Determine where to load command modules from
 (-d ($def_options{cmddir}="$FindBin::Bin/../lib/Parser/Commands")) ||
     (-d ($def_options{cmddir}="$FindBin::Bin/perl-lib/Parser/Commands")) ||
-    color_die "Could not find Commands directory.";
+    Util::color_die "Could not find Commands directory.";
 
 # This list contains both the help information and the command-line
 # argument specifications. It is stored as a list so that order can
@@ -196,14 +188,14 @@ if ($metarun)
   my $jsontxt = join("", <$mfh>);
   my $meta = $coder->decode($jsontxt);
 
-  color_die "Malformed metarun file: no 'options' key"
+  Util::color_die "Malformed metarun file: no 'options' key"
    unless exists $meta->{options};
 
   %options = %{$meta->{options}};
  }
  else
  {
-  color_die "Could not load metarun file $metarun: $!";
+  Util::color_die "Could not load metarun file $metarun: $!";
  }
 }
 else
@@ -258,7 +250,7 @@ my $version = cfengine_version();
 
 if (!$options{force} && $required_version gt $version)
 {
- color_die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
+ Util::color_die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
 }
 
 # Allow both comma-separated values and multiple occurrences of --repolist
@@ -333,7 +325,7 @@ if (scalar @{$options{'make-package'}})
 if ($options{'list-activations'})
 {
  my $activations = load_json($options{'act-file'}, 1);
- color_die "Can't load any activations from $options{'act-file'}"
+ Util::color_die "Can't load any activations from $options{'act-file'}"
   unless defined $activations && ref $activations eq 'HASH';
 
  my $activation_id = 1;
@@ -341,7 +333,7 @@ if ($options{'list-activations'})
  {
   if ('HASH' eq ref $activations->{$sketch})
   {
-   color_warn "Skipping unusable activations for sketch $sketch!";
+   Util::color_warn "Skipping unusable activations for sketch $sketch!";
    next;
   }
 
@@ -384,7 +376,7 @@ foreach my $word (@callable)
 exit if grep { $options{$_} } @nonterminal;
 
 push @callable, 'list', 'save-config';
-color_die "Sorry, I don't know what you want to do.  You have to specify a valid verb. Run $0 --help to see the complete list.\n";
+Util::color_die "Sorry, I don't know what you want to do.  You have to specify a valid verb. Run $0 --help to see the complete list.\n";
 
 sub configure_self
 {
@@ -427,7 +419,7 @@ sub search
   my $dir = $local_dir ? File::Spec->catdir($base_dir, $search->{known}->{$sketch}) : "$base_dir/$search->{known}->{$sketch}";
   foreach my $term (@$terms)
   {
-   if ($sketch =~ m/$term/ || $dir =~ m/$term/)
+   if ($sketch =~ m/$term/i || $dir =~ m/$term/i)
    {
     print GREEN, "$sketch", RESET, " $dir\n";
     next SKETCH;
@@ -447,11 +439,11 @@ sub search_internal
 
  if ($local_dir)
  {
-  color_die "cf-sketch inventory source $source must be a file"
+  Util::color_die "cf-sketch inventory source $source must be a file"
    unless -f $source;
 
   open(my $invf, '<', $source)
-   or color_die "Could not open cf-sketch inventory file $source: $!";
+   or Util::color_die "Could not open cf-sketch inventory file $source: $!";
 
   while (<$invf>)
   {
@@ -470,7 +462,7 @@ sub search_internal
  else
  {
   my $invd = lwp_get_remote($source)
-   or color_die "Unable to retrieve $source : $!\n";
+   or Util::color_die "Unable to retrieve $source : $!\n";
 
   my @lines = split "\n", $invd;
   foreach my $line (@lines)
@@ -558,7 +550,7 @@ sub generate
 {
    # activation successful, now install it
    my $activations = load_json($options{'act-file'}, 1);
-   color_die "Can't load any activations from $options{'act-file'}"
+   Util::color_die "Can't load any activations from $options{'act-file'}"
     unless defined $activations && ref $activations eq 'HASH';
 
    my $activation_counter = 1;
@@ -582,7 +574,7 @@ sub generate
      {
       if ('HASH' eq ref $activations->{$sketch})
       {
-       color_warn "Skipping unusable activations for sketch $sketch!\n";
+       Util::color_warn "Skipping unusable activations for sketch $sketch!\n";
        next;
       }
 
@@ -591,7 +583,7 @@ sub generate
       {
        print "Loading activation $activation_id for sketch $sketch\n"
         if $verbose;
-       color_die "Couldn't load activation params for $sketch: $!"
+       Util::color_die "Couldn't load activation params for $sketch: $!"
         unless defined $pdata;
 
        my $data = $contents->{$sketch};
@@ -602,7 +594,7 @@ sub generate
 
        my $entry_point = verify_entry_point($sketch, $data);
 
-       color_die "Could not load the entry point definition of $sketch"
+       Util::color_die "Could not load the entry point definition of $sketch"
         unless $entry_point;
 
        # for null entry_point and interface definitions, don't write
@@ -711,7 +703,7 @@ sub generate
       next ACTIVATION;
      }
     }
-    color_die "Could not find sketch $sketch in repo list @{$options{repolist}}";
+    Util::color_die "Could not find sketch $sketch in repo list @{$options{repolist}}";
    }
 
    # this removes found keys in %dependencies!
@@ -727,7 +719,7 @@ sub generate
    my @deps = keys %dependencies;
    if (scalar @deps)
    {
-    color_die "Sorry, can't generate: unsatisfied dependencies [@deps]";
+    Util::color_die "Sorry, can't generate: unsatisfied dependencies [@deps]";
    }
 
    # process input template, substituting variables
@@ -814,14 +806,14 @@ sub api
    }
    else
    {
-    color_die "I cannot find API information about $sketch.\n";
+    Util::color_die "I cannot find API information about $sketch.\n";
    }
   }
  }
 
  unless ($found)
  {
-   color_die "I could not find sketch $sketch. It doesn't seem to be installed.\n";
+   Util::color_die "I could not find sketch $sketch. It doesn't seem to be installed.\n";
  }
 }
 
@@ -836,10 +828,10 @@ sub activate
   print "Loading activation params from $pfile\n" unless $quiet;
   my $aparams_all = load_json($pfile);
 
-  color_die "Could not load activation params from $pfile"
+  Util::color_die "Could not load activation params from $pfile"
    unless ref $aparams_all eq 'HASH';
 
-  color_die "Could not find activation params for $sketch in $pfile"
+  Util::color_die "Could not find activation params for $sketch in $pfile"
    unless exists $aparams_all->{$sketch};
 
   my $aparams = $aparams_all->{$sketch};
@@ -893,12 +885,12 @@ sub activate
            }
            else
            {
-            color_die "$var->{name} default KVKEYS($1) failed because $name2 did not have a valid value";
+            Util::color_die "$var->{name} default KVKEYS($1) failed because $name2 did not have a valid value";
            }
           }
          }
 
-         color_die "$var->{name} KVKEYS default $var->{default} failed because a matching variable could not be found"
+         Util::color_die "$var->{name} KVKEYS default $var->{default} failed because a matching variable could not be found"
           unless $default;
         }
         elsif ($var->{type} =~ m/^ARRAY\(/ &&
@@ -906,7 +898,7 @@ sub activate
         {
          my $decoded;
          eval { $decoded = $coder->decode($var->{default}); };
-         color_die "Given default '$var->{default}' for ARRAY variable was invalid JSON"
+         Util::color_die "Given default '$var->{default}' for ARRAY variable was invalid JSON"
           unless ref $decoded eq 'HASH';
 
          print "Decoding default JSON data '$var->{default}' for $var->{name}\n"
@@ -919,7 +911,7 @@ sub activate
        }
        else
        {
-        color_die "Can't activate $sketch: its interface requires variable '$var->{name}' and no default is available"
+        Util::color_die "Can't activate $sketch: its interface requires variable '$var->{name}' and no default is available"
        }
       }
 
@@ -937,15 +929,15 @@ sub activate
       else
       {
        my $ad = $coder->encode($aparams->{$var->{name}});
-       color_warn "Can't activate $sketch: '$var->{name}' value $ad fails $var->{type} validation";
+       Util::color_warn "Can't activate $sketch: '$var->{name}' value $ad fails $var->{type} validation";
        $fails++;
       }
      }
-     color_die "Validation errors" if $fails;
+     Util::color_die "Validation errors" if $fails;
     }
     else
     {
-     color_die "Can't activate $sketch: missing entry point in $data->{entry_point}"
+     Util::color_die "Can't activate $sketch: missing entry point in $data->{entry_point}"
     }
 
     # activation successful, now install it
@@ -959,12 +951,12 @@ sub activate
      {
       if ($options{force})
       {
-       color_warn "Activating duplicate parameters [$q] because of --force"
+       Util::color_warn "Activating duplicate parameters [$q] because of --force"
         unless $quiet;
       }
       else
       {
-       color_die "Can't activate: $sketch has already been activated with $q";
+       Util::color_die "Can't activate: $sketch has already been activated with $q";
       }
      }
     }
@@ -981,7 +973,7 @@ sub activate
    }
   }
 
-  color_die "Could not activate sketch $sketch, it was not in the given list of repositories [@{$options{repolist}}]"
+  Util::color_die "Could not activate sketch $sketch, it was not in the given list of repositories [@{$options{repolist}}]"
    unless $installed;
  }
 }
@@ -1013,7 +1005,7 @@ sub deactivate
   {
    if ('HASH' eq ref $activations->{$sketch})
    {
-    color_warn "Ignoring old-style activations for sketch $sketch!";
+    Util::color_warn "Ignoring old-style activations for sketch $sketch!";
     $activations->{$sketch} = [];
     $modified{$sketch}++;
     print GREEN "Deactivated: all $sketch activations\n"
@@ -1044,7 +1036,7 @@ sub deactivate
  }
  else
  {
-  color_die "Sorry, I can't handle parameters " . $coder->encode($nums_or_name);
+  Util::color_die "Sorry, I can't handle parameters " . $coder->encode($nums_or_name);
  }
 
  if (scalar keys %modified)
@@ -1073,7 +1065,7 @@ sub remove
    } keys %$contents;
 
    unless (scalar @matches) {
-     color_warn "I did not find an installed sketch that matches '$sketch' - not removing it.\n";
+     Util::color_warn "I did not find an installed sketch that matches '$sketch' - not removing it.\n";
      next;
    }
    $sketch = shift @matches;
@@ -1098,7 +1090,7 @@ sub install
  my $dest_repo = $options{'install-target'};
  push @{$options{repolist}}, $dest_repo unless grep { $_ eq $dest_repo } @{$options{repolist}};
 
- color_die "Can't install: no install target supplied!"
+ Util::color_die "Can't install: no install target supplied!"
   unless defined $dest_repo;
 
  my $source = $options{'install-source'};
@@ -1120,7 +1112,7 @@ sub install
   # make sure we only work with absolute directories
   my $data = load_sketch($local_dir ? File::Spec->rel2abs($dir) : $dir);
 
-  color_die "Sorry, but sketch $sketch could not be loaded from $dir!"
+  Util::color_die "Sorry, but sketch $sketch could not be loaded from $dir!"
    unless $data;
 
   my %missing = map { $_ => 1 } missing_dependencies($data->{metadata}->{depends});
@@ -1150,12 +1142,12 @@ sub install
   {
    if ($options{force})
    {
-    color_warn "Installing $sketch despite unsatisfied dependencies @missing"
+    Util::color_warn "Installing $sketch despite unsatisfied dependencies @missing"
      unless $quiet;
    }
    else
    {
-    color_die "Can't install: $sketch has unsatisfied dependencies @missing";
+    Util::color_die "Can't install: $sketch has unsatisfied dependencies @missing";
    }
   }
 
@@ -1192,7 +1184,7 @@ sub install
      }
      else
      {
-      color_warn "Could not make install directory $module_install_dir, skipping $sketch";
+      Util::color_warn "Could not make install directory $module_install_dir, skipping $sketch";
       next;
      }
     }
@@ -1202,7 +1194,7 @@ sub install
     }
 
     my $dest_dir = dirname($dest);
-    color_die "Could not make destination directory $dest_dir"
+    Util::color_die "Could not make destination directory $dest_dir"
      unless maybe_ensure_dir($dest_dir);
 
     my $changed = 1;
@@ -1212,7 +1204,7 @@ sub install
         is_resource_local($data->{dir}) &&
         compare($source, $dest) == 0)
     {
-     color_warn "  Manifest member $file is already installed in $dest"
+     Util::color_warn "  Manifest member $file is already installed in $dest"
       if $verbose;
      $changed = 0;
     }
@@ -1227,12 +1219,12 @@ sub install
      {
       if (is_resource_local($data->{dir}))
       {
-       copy($source, $dest) or color_die "Aborting: copy $source -> $dest failed: $!";
+       copy($source, $dest) or Util::color_die "Aborting: copy $source -> $dest failed: $!";
       }
       else
       {
        my $rc = getstore($source, $dest);
-       color_die "Aborting: remote copy $source -> $dest failed: error code $rc"
+       Util::color_die "Aborting: remote copy $source -> $dest failed: error code $rc"
         unless is_success($rc)
       }
      }
@@ -1255,7 +1247,7 @@ sub install
      # TODO: ensure this works on platforms without getpwnam
      # TODO: maybe add group support too
      my ($login,$pass,$uid,$gid) = getpwnam($file_spec->{user})
-      or color_die "$file_spec->{user} not in passwd file";
+      or Util::color_die "$file_spec->{user} not in passwd file";
 
      if ($dryrun)
      {
@@ -1282,7 +1274,7 @@ sub install
   }
   else
   {
-   color_warn "Could not make install directory $install_dir, skipping $sketch";
+   Util::color_warn "Could not make install directory $install_dir, skipping $sketch";
   }
  }
 }
@@ -1392,7 +1384,7 @@ sub find_remote_sketches
  {
   my $sketches_url = "$repo/cfsketches";
   my $sketches = lwp_get_remote($sketches_url)
-   or color_die "Unable to retrieve $sketches_url : $!\n";
+   or Util::color_die "Unable to retrieve $sketches_url : $!\n";
 
   foreach my $sketch_dir ($sketches =~ /(.+)/mg)
   {
@@ -1526,12 +1518,12 @@ sub load_sketch
   }
   else
   {
-   color_warn "Could not verify bundle entry point from $name" unless $quiet;
+   Util::color_warn "Could not verify bundle entry point from $name" unless $quiet;
   }
  }
  else
  {
-  color_warn "Could not load sketch definition from $name: [@{[join '; ', @messages]}]" unless $quiet;
+  Util::color_warn "Could not load sketch definition from $name: [@{[join '; ', @messages]}]" unless $quiet;
  }
 
  return undef;
@@ -1596,13 +1588,13 @@ sub verify_entry_point
   {
    unless (-f $maincf_filename)
    {
-    color_warn "Could not find sketch $name entry point '$maincf_filename'" unless $quiet;
+    Util::color_warn "Could not find sketch $name entry point '$maincf_filename'" unless $quiet;
     return 0;
    }
 
    unless (open($mcf, '<', $maincf_filename) && $mcf)
    {
-    color_warn "Could not open $maincf_filename: $!" unless $quiet;
+    Util::color_warn "Could not open $maincf_filename: $!" unless $quiet;
     return 0;
    }
    @mcf = <$mcf>;
@@ -1613,7 +1605,7 @@ sub verify_entry_point
    $mcf = lwp_get_remote($maincf_filename);
    unless ($mcf)
    {
-    color_warn "Could not retrieve $maincf_filename: $!" unless $quiet;
+    Util::color_warn "Could not retrieve $maincf_filename: $!" unless $quiet;
     return 0;
    }
 
@@ -1798,7 +1790,7 @@ sub verify_entry_point
      }
      else
      {
-      color_warn "Sorry, we can't parse conditional ($class->{name}) meta promises in $bname_printable"
+      Util::color_warn "Sorry, we can't parse conditional ($class->{name}) meta promises in $bname_printable"
        if $verbose;
      }
     }
@@ -1881,7 +1873,7 @@ sub verify_entry_point
  {
   foreach (@rejects)
   {
-   color_warn $_ unless $quiet;
+   Util::color_warn $_ unless $quiet;
   }
 
   return undef;
@@ -1905,7 +1897,7 @@ sub lwp_get_remote
  };
  if ($@ )
  {
-  color_die "Could not load LWP::Simple (you should install libwww-perl)";
+  Util::color_die "Could not load LWP::Simple (you should install libwww-perl)";
  }
 
  if ($resource =~ m/^https/)
@@ -1916,7 +1908,7 @@ sub lwp_get_remote
   };
   if ($@ )
   {
-   color_die "Could not load LWP::Protocol::https (you should install it)";
+   Util::color_die "Could not load LWP::Protocol::https (you should install it)";
   }
  }
 
@@ -1989,7 +1981,7 @@ sub load_json
   my $j;
   unless (open($j, '<', $f) && $j)
   {
-   color_warn "Could not inspect $f: $!" unless ($quiet || $local_quiet);
+   Util::color_warn "Could not inspect $f: $!" unless ($quiet || $local_quiet);
    return;
   }
 
@@ -1998,7 +1990,7 @@ sub load_json
  else
  {
   my $j = lwp_get_remote($f)
-   or color_die "Unable to retrieve $f";
+   or Util::color_die "Unable to retrieve $f";
 
   @j = split "\n", $j;
  }
@@ -2033,7 +2025,7 @@ sub load_json
     }
     else
     {
-     color_warn "Malformed include contents from $include: not a hash" unless $quiet;
+     Util::color_warn "Malformed include contents from $include: not a hash" unless $quiet;
     }
    }
    delete $ret->{include};
@@ -2095,7 +2087,7 @@ sub maybe_write_file
  else
  {
   open(my $fh, '>', $file)
-   or color_die "Could not write $desc file $file: $!";
+   or Util::color_die "Could not write $desc file $file: $!";
 
   print $fh $data;
   close $fh;
@@ -2120,7 +2112,7 @@ sub maybe_write_file
    }
   }
 
-  color_die "Sorry, but we couldn't find $promises_name in the search path $options{cfpath}.  Please set \$PATH or use the --cfpath parameter!"
+  Util::color_die "Sorry, but we couldn't find $promises_name in the search path $options{cfpath}.  Please set \$PATH or use the --cfpath parameter!"
    unless $promises_binary;
 
   print "Excellent, we found $promises_binary to interface with CFEngine\n"
@@ -2403,7 +2395,7 @@ EOHIPPUS
      }
      elsif (ref $as_cfengine_context ne '')
      {
-      color_die "Unexpected value for CONTEXT $name: " . $coder->encode($as_cfengine_context);
+      Util::color_die "Unexpected value for CONTEXT $name: " . $coder->encode($as_cfengine_context);
      }
 
      $contexts .= "     ${context}::\n" if $current_context ne $context;
@@ -2449,7 +2441,7 @@ EOHIPPUS
     }
    }
 
-   color_die("Sorry, but we have an undefined variable $name: it has neither a parameter value nor a supplied value")
+   Util::color_die("Sorry, but we have an undefined variable $name: it has neither a parameter value nor a supplied value")
     unless defined $value;
   }
 
@@ -2649,12 +2641,12 @@ sub validate
   foreach my $context (sort keys %{$value->{bycontext}})
   {
    my $ret2k = validate($context, "CONTEXT");
-   color_warn("Validation failed in bycontext, context key $context")
+   Util::color_warn("Validation failed in bycontext, context key $context")
     unless $ret2k;
    my $val2 = $value->{bycontext}->{$context};
    my $ret2v = validate($val2, @validation_types);
 
-   color_warn("Validation failed in bycontext VALUE '$val2', key $context, validation types [@validation_types]")
+   Util::color_warn("Validation failed in bycontext VALUE '$val2', key $context, validation types [@validation_types]")
     unless $ret2v;
 
    $ret &&= $ret2k && $ret2v;
@@ -2674,7 +2666,7 @@ sub validate
   foreach my $subval (@$value)
   {
    my $ret2 = validate($subval, $subtype);
-   color_warn("LIST validation failed in bycontext, VALUE '$subval'")
+   Util::color_warn("LIST validation failed in bycontext, VALUE '$subval'")
     unless $ret2;
 
    $ret &&= $ret2;
@@ -2690,7 +2682,7 @@ sub validate
   {
    if (ref $value ne 'HASH')
    {
-    color_warn("Sorry, but ARRAY validation was requested on a non-array value '$value'.  We'll fail the validation.");
+    Util::color_warn("Sorry, but ARRAY validation was requested on a non-array value '$value'.  We'll fail the validation.");
     return undef;
    }
 
@@ -2707,7 +2699,7 @@ sub validate
     foreach my $k (sort keys %$value)
     {
      my $goodk = validate($k, $contents{$kv_key});
-     color_warn("Sorry, but KVARRAY validation failed for K '$k' with type '$contents{$kv_key}'.  We'll fail the validation.")
+     Util::color_warn("Sorry, but KVARRAY validation failed for K '$k' with type '$contents{$kv_key}'.  We'll fail the validation.")
       unless $goodk;
      $good &&= $goodk;
     }
@@ -2719,7 +2711,7 @@ sub validate
 
     if (ref $process_value ne 'HASH')   # this check is necessary only when $kv
     {
-     color_warn("Sorry, but KVARRAY validation was requested on a non-array entry value '$process_value'.  We'll fail the validation.");
+     Util::color_warn("Sorry, but KVARRAY validation was requested on a non-array entry value '$process_value'.  We'll fail the validation.");
      return undef;
     }
 
@@ -2750,7 +2742,7 @@ sub validate
 
       unless ($good2)
       {
-       color_warn("ARRAY validation: value '$check_value', subtype '$subtype', subkey '$process_key'.  We'll fail the validation.")
+       Util::color_warn("ARRAY validation: value '$check_value', subtype '$subtype', subkey '$process_key'.  We'll fail the validation.")
         if $verbose;
       }
 
@@ -2826,7 +2818,7 @@ sub validate
   }
   else
   {
-   color_warn("Sorry, but an unknown validation type $vtype was requested.  We'll fail the validation, too.");
+   Util::color_warn("Sorry, but an unknown validation type $vtype was requested.  We'll fail the validation, too.");
    return undef;
   }
 
