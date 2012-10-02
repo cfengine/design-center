@@ -2,7 +2,7 @@
 
     "manifest":
     {
-        "main.cf": { "desc": "main file", "version": 1.1 },
+        "main.cf": { "desc": "main file", "version": 1.3 },
         "README.md": { "documentation": true },
         "params/example.json": { "comment": "Example parameters" },
         "test.cf": { "comment": "Standalone test policy" },
@@ -11,12 +11,12 @@
 
     "metadata":
     {
-        "name": "Utilities::halt_agent_if_file_exists",
-        "version": 1.2,
+        "name": "Utilities::abortclasses",
+        "version": 1.3,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
-        "authors": [ "Ben Heilman <bheilman@enova.com>", "Nick Anderson <nick@cmdln.org>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.2.1" }, "os": [ "linux" ] },
+        "authors": [ "Ben Heilman <bheilman@enova.com>", "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": { "cfengine": { "version": "3.4.0" } },
     },
 
     "entry_point": "main.cf",
