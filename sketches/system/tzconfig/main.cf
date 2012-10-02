@@ -1,99 +1,90 @@
-bundle agent tzconfig(prefix) {
-# "tzconfig_timezone" string => "America/Chicago";
-# "timezone" usebundle => tzconfig("bundle.tzconfig_");
-#
-# timezone should be a string representing the timezone 
-# At least in the linux distros I checked this should be 
+body file control
+{
+      namespace => "cfdc_tzconfig";
+}
+
+# timezone should be a string representing the timezone
+# At least in the linux distros I checked this should be
 # relative to /usr/share/zoneinfo
 
-    vars:
-        "canon_prefix" string => canonify("$(prefix)");
-        "timezone"     string => "$($(prefix)timezone)";
-        
-        # Copy in defaulted parameters
-        "zoneinfo"
-            string => "$(meta_tzconfig.default[zoneinfo])",
-            policy => "free",
-            ifvarclass => "!$(canon_prefix)param_zoneinfo_defined";
-
-        # Copy over the defaults if parameters are defined
-        "zoneinfo"
-            string => "$($(prefix)zoneinfo)",
-            policy => "free",
-            ifvarclass => "$(canon_prefix)param_zoneinfo_defined";
-
-        "tz_file"
-            string => "$(zoneinfo)/$(timezone)",
-            policy => "free";
-    
-    classes:
-        "timezone_exists" expression => fileexists("$(tz_file)");
-
-        "$(canon_prefix)param_zoneinfo_defined"
-            expression => isvariable("$(prefix)zoneinfo");
-
-        "second_class_pass_done" or => {"first_class_pass_done"};
-        "first_class_pass_done" or => {"any"};
-
-    files:
-
-        (ubuntu|debian).second_class_pass_done::
-            "/etc/timezone"
-                ifvarclass    => "timezone_exists",
-                handle        => "tzconfig_files_etc_timezone",
-                edit_defaults => empty,
-                create        => "true",
-                edit_line     => insert_lines("$(timezone)"),
-                perms         => mog("644", "root", "root"),
-                comment       => "Debian based systems also use the /etc/timezone file";
-
-        (redhat|centos).second_class_pass_done::
-            "/etc/sysconfig/clock"
-                ifvarclass => "timezone_exists",
-                handle     => "tzconfig_files_etc_sysconfig_clock",
-                create     => "true",
-                edit_line  => replace_or_add("^ZONE=.*", "ZONE=\"$(timezone)\""),
-                perms      => mog("644", "root", "root"),
-                comment    => "Redhat like systems use /etc/sysconfig/clock for
-                               the Time and Date Properties Tool
-                               (system-config-date), and editing it does not
-                               change the system timezone.";
-
-        linux.second_class_pass_done::
-            "/etc/localtime"
-                ifvarclass        => "timezone_exists",
-                handle            => "tzconfig_files_etc_localtime",
-                copy_from         => tzconfig_copy_zoneinfo("$(tz_file)"),
-                classes           => if_repaired("tzconfig_timezone_updated"),
-                perms             => mog("644", "root", "root"),
-                move_obstructions => "true",
-                comment           => "Copy the proper timezone file in place. We dont use
-                                      a symlink because that might cause problems across
-                                      different filesystems, it has been a bug in the past.";
-    reports:
-        !timezone_exists.second_class_pass_done::
-            "Unable to set invalid timezone: $(timezone)";
-
-        tzconfig_timezone_updated::
-            "System timezone updated to $(timezone)";
-
-}
-
-bundle agent meta_tzconfig
+bundle agent set(canon_prefix, timezone, zoneinfo, relocate)
 {
-  vars:
-    "argument[timezone]" string => "string";
-    "optional_argument[zoneinfo]" string => "string";
+      "vars[canon_prefix][type]"     string => "NON_EMPTY_STRING";
+      "vars[canon_prefix][default]"  string => "__CANON_PREFIX__";
 
-    linux::
-        "default[zoneinfo]"  string => "/usr/share/zoneinfo";
+      "vars[timezone][type]"         string => "NON_EMPTY_STRING";
+
+      "vars[zoneinfo][type]"         string => "PATH";
+      "vars[zoneinfo][default]"      string => "/usr/share/zoneinfo";
+
+      "vars[relocate][type]"         string => "PATH";
+      "vars[relocate][default]"      string => "/";
+
+  vars:
+      "tz_file" string => "$(zoneinfo)/$(timezone)";
+
+  classes:
+      "timezone_exists" expression => fileexists("$(tz_file)");
+
+  files:
+    timezone_exists.(ubuntu|debian)::
+      "$(relocate)/etc/timezone"
+      handle        => "tzconfig_files_etc_timezone",
+      edit_defaults => default:empty,
+      create        => "true",
+      edit_line     => default:insert_lines("$(timezone)"),
+      perms         => cfdc_tzconfig:test_aware_mog("644", "root", "root"),
+      comment       => "Debian based systems also use the /etc/timezone file";
+
+    timezone_exists.(redhat|centos)::
+      "$(relocate)/etc/sysconfig/clock"
+      handle     => "tzconfig_files_etc_sysconfig_clock",
+      create     => "true",
+      edit_line  => default:replace_or_add("^ZONE=.*", "ZONE=\"$(timezone)\""),
+      perms      => cfdc_tzconfig:test_aware_mog("644", "root", "root"),
+      comment    => "Redhat like systems use /etc/sysconfig/clock for
+the Time and Date Properties Tool
+(system-config-date), and editing it does not
+change the system timezone.";
+
+    timezone_exists.linux::
+      "$(relocate)/etc/localtime"
+      handle            => "tzconfig_files_etc_localtime",
+      copy_from         => cfdc_tzconfig:copy_zoneinfo("$(tz_file)"),
+      classes           => default:if_repaired("$(canon_prefix)tz_updated"),
+      perms             => cfdc_tzconfig:test_aware_mog("644", "root", "root"),
+      move_obstructions => "true",
+      comment           => "Copy the proper timezone file in place. We dont use
+a symlink because that might cause problems across
+different filesystems, it has been a bug in the past.";
+
+  reports:
+    !timezone_exists::
+      "Unable to set invalid timezone $(timezone): file $(tz_file) does not exist.";
+
+    any::
+      "System timezone updated to $(timezone)"
+      ifvarclass => "$(canon_prefix)tz_updated";
+
 }
 
-body copy_from tzconfig_copy_zoneinfo(source){
-    # Copy the file any symlinks reference this is superiour to symlinking
-    # There have been bugs in the past that cause things to not function
-    # properly if /etc/localtime is a symlink to a different filesystem
-    source => "$(source)";
-    copylink_patterns => { ".*", };
-    compare => "hash";
+body copy_from copy_zoneinfo(source)
+{
+      # Copy the file any symlinks reference this is superiour to symlinking
+      # There have been bugs in the past that cause things to not function
+      # properly if /etc/localtime is a symlink to a different filesystem
+      source => "$(source)";
+      copylink_patterns => { ".*", };
+      compare => "hash";
+}
+
+body perms test_aware_mog(mode, user, group)
+{
+    !default:test::
+      owners => { "$(user)" };
+      groups => { "$(group)" };
+      mode   => "$(mode)";
+    default:test::
+      owners => { getenv("LOGNAME", 100) };
+      mode   => "$(mode)";
 }
