@@ -12,6 +12,9 @@ use strict;
 use Data::Dumper;
 use Text::ParseWords;
 use Term::ANSIColor qw(:constants);
+use File::Spec;
+use File::Basename;
+use Cwd;
 
 BEGIN {
   # This stuff is executed once when the module is loaded, because it
@@ -48,25 +51,30 @@ sub splitlist {
 # some other value. A value of 0 for $linelen makes it not do line wrapping.
 # If $lineprefix is given, it is printed at the beginning of each line.
 sub sprintlist {
-  my $listref=shift;
+  my ($listref, $fline, $separator, $indent, $break, $linelen, $lp) = @_;
+  # Figure out default arguments
   my @list=@$listref;
-  my $fline=shift;
-  my $separator=shift || ", ";
-  my $indent=shift;
-  $indent=15 unless defined($indent);
+  $separator ||= ", ";
+  $indent = 15 unless defined($indent);
   my $space=" " x $indent;
-  $fline||=$space;
-  my $break=shift || 0;
-  my $linelen=shift;
-  $linelen=80 unless defined($linelen);
-  my $lp=shift||"";
-  $linelen-=length($lp);
+  $fline ||= $space;
+  $break ||= 0;
+  $linelen ||= 80;
+  $lp ||= "";
+
+  $linelen -= length($lp);
+
+  # Figure out how to print the first line
   if (!$break || length($fline)<=$indent) {
     $fline=substr("$fline$space", 0, length($space));
-  } else {
+  }
+  else {
     # length($fline)>$indent
     $fline="$fline\n$space";
   }
+
+  # Now go through the list, appending until we fill
+  # each line. Lather, rinse, repeat.
   my $str="";
   my $line="";
   foreach (@list) {
@@ -78,7 +86,10 @@ sub sprintlist {
     }
     $line.="$_";
   }
+
+  # Finishing touches - insert first line and line prefixes, if any.
   $str.="$space$line";
+  $fline = GREEN . $fline . RESET;
   $str=~s/^$space/$fline/;
   $str=~s/^/$lp/mg if $lp;
   return $str;
@@ -94,18 +105,18 @@ sub sprintlist {
 # See sprintlist for the meaning of each parameter.
 sub sprintstr {
   my ($str, $fl, $ind, $br, $len, $lp)=@_;
-  $ind||=0;
-  # Split string into \n-separated parts.
-  my @strs=($str=~/([^\n]+\n?|[^\n]*\n)/g);
-  # Now process each line separately
+  # Split string into \n-separated parts, preserving all empty fields.
+  my @strs = split(/\n/, $str, -1);
+  # Now process each line separately, to preserve EOLs that were
+  # originally present in the string.
   my $s;
   my $result;
-  foreach $s (@strs) {
-    # Store end of lines at the end of the string
-    my $eols=($s=~/(\n*)$/)[0];
+  while (defined($s=shift @strs)) {
     # Split in words.
     my @words=(split(/\s+/, $s));
-    $result.=sprintlist(\@words,$fl," ",$ind,$br,$len, $lp).$eols;
+    $result.=sprintlist(\@words,$fl," ",$ind,$br,$len, $lp);
+    # Add EOL if needed (if there are still more lines to process)
+    $result.="\n" if scalar(@strs);
     # The $firstline is only needed at the beginning of the first string.
     $fl=undef;
   }
@@ -169,6 +180,36 @@ sub check_regex {
     return "Invalid regex: $err";
   }
   return;
+}
+
+sub local_cfsketches_source
+{
+ my $rootdir   = File::Spec->rootdir();
+ my $dir       = Cwd::realpath(shift @_);
+ my $inventory = File::Spec->catfile($dir, 'cfsketches');
+
+ return $inventory if -f $inventory;
+
+ # as we go up the tree, check for 'sketches/cfsketches' as well (so we don't crawl the whole file tree)
+ my $sketches_probe = File::Spec->catfile($dir, 'sketches', 'cfsketches');
+ return $sketches_probe if -f $sketches_probe;
+
+ return undef if $rootdir eq $dir;
+ my $updir = Cwd::realpath(dirname($dir));
+
+ return local_cfsketches_source($updir);
+}
+
+sub uniq
+{
+  # Uniquify, preserving order
+  my @result = ();
+  my %seen = ();
+  foreach (@_) {
+    push @result, $_ unless exists($seen{$_});
+    $seen{$_}=1;
+  }
+  return @result;
 }
 
 1;

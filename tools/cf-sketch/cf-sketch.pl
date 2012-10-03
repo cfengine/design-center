@@ -16,10 +16,10 @@ use Cwd;
 use File::Path qw(make_path remove_tree);
 use File::Basename;
 use Data::Dumper;
-use Getopt::Long;
 use Term::ANSIColor qw(:constants);
 use Parser;
 use Util;
+use DesignCenter::Config;
 
 $Term::ANSIColor::AUTORESET = 1;
 
@@ -48,192 +48,24 @@ BEGIN
     }
 }
 
+######################################################################
 ###### Some basic constants and settings.
 
 use constant SKETCH_DEF_FILE => 'sketch.json';
 
-# Inputs directory depending on root/non-root/policy hub
-my $happy_root = $> != 0 ? glob("~/.cfagent/inputs") : (-e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs');
-# Configuration directory depending on root/non-root
-my $configdir = $> == 0 ? '/etc/cf-sketch' : glob('~/.cf-sketch');
-
 $| = 1;                         # autoflush
 
+######################################################################
 
-######
+my $config = new DesignCenter::Config;
+$config->load;
 
-my %options = ();
-
-# Default values
-# Color enabled by default if STDOUT is connected to a tty (i.e. not redirected or piped somewhere).
-my $color = -t STDOUT;
-my %def_options =
- (
-  verbose    => 0,
-  veryverbose => 0,
-  quiet      => 0,
-  help       => 0,
-  force      => 0,
-  fullpath   => 0,
-  'dry-run'  => 0,
-  # switched depending on root or non-root
-  'act-file'   => "$configdir/activations.conf",
-  configfile => "$configdir/cf-sketch.conf",
-  'install-target' => File::Spec->catfile($happy_root, 'sketches'),
-  'install-source' => local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
-  'make-package' => [],
-  params => {},
-  cfpath => join (':', uniq(split(':', $ENV{PATH}||''), '/var/cfengine/bin', '/usr/sbin', '/usr/local/bin', '/usr/local/sbin')),
-  modulepath => '../../',
-  runfile => File::Spec->catfile($happy_root, 'cf-sketch-runfile.cf'),
-  standalone => 1,
-  'simplify-arrays' => 0,
-  repolist => [ File::Spec->catfile($happy_root, 'sketches') ],
-  color => $color,
- );
-
-# Determine where to load command modules from
-(-d ($def_options{cmddir}="$FindBin::Bin/../lib/Parser/Commands")) ||
-    (-d ($def_options{cmddir}="$FindBin::Bin/perl-lib/Parser/Commands")) ||
-    Util::color_die "Could not find Commands directory.";
-
-# This list contains both the help information and the command-line
-# argument specifications. It is stored as a list so that order can
-# be preserved when printing the help message.
-# Format for each pair is "argspec", "Help text|argname"
-# argspec is a Getopt::Long-style argument specification.
-# "Help text" is the text that will be printed in the help message
-# for this option. For options that take an argument, its human-
-# readable description should be given at the end as "|argname",
-# it will be automatically printed in the help message
-# (so that the help reads "--search regex" and not
-# just "--search string", for example).
-# If argspec starts with three dashes, it is ignored as an
-# argument spec, and the text will simply be printed in the
-# help output.
-my @options_desc =
- (
-  "---", "Usage: $0 verb [verb-argument] [options]",
-  "---", "\nVerbs:\n",
-  "search|s=s@",               "Search sketch repository, use 'all' to show everything.|regex",
-  "list|l:s@",                 "Search list of installed sketches, use 'all' or no argument to show everything.|[regex]",
-  "list-activations|la",       "List activated sketches, including their activation parameters.",
-  "install|i=s@",              "Install or update the given sketch.|sketch",
-  "activate|a=s%",             "Activate the given sketch with the given JSON parameters file.|sketch=paramfile",
-  "deactivate|d=s@",           "Deactivate sketches by number, as shown by --list-activations, or by name (regular expression).|n",
-  "deactivate-all|da",         "Deactivate all sketches.",
-  "remove|r=s@",               "Remove given sketch.|sketch",
-  "api=s",                     "Show the API (required/optional parameters) of the given sketch.|sketch",
-  "generate|g",                "Generate CFEngine runfile to execute activated sketches.",
-  "fullpath|fp",               "Use full paths in the CFEngine runfile (off by default)",
-  "modulepath|mp=s",           "Path to modules relative to the repository root, normally $def_options{modulepath}",
-  "save-config|config-save",   "Save configuration parameters so that they are automatically loaded in the future.",
-  "metarun=s",                 "Load and execute a metarun file of the form { options => \%options }, which indicates the entire behavior for this run.|file",
-  "save-metarun=s",            "Save the parameters and actions of the current execution to the named file, for future use with --metarun.|file",
-
-  "---", "\nOptions:\n",
-  "quiet|q",                   "Supress non-essential output.",
-  "verbose|v",                 "Produce additional output.",
-  "veryverbose|vv",            "Produce too much output.",
-  "dryrun|n",                  "Do not do anything, just indicate what would be done.",
-  "help",                      "This help message.",
-  "color!",                    "Colorize output, enabled by default if running on a terminal.",
-  "params|p=s%",               "With --activate, override certain parameter values.|param=value",
-  "force|f",                   "Ignore dependency/OS/architecture checks. Use with --install and --activate.",
-  "cfpath=s",                  "Where to look for CFEngine binaries. Default: $def_options{cfpath}.",
-  "configfile|cf=s",           "Configuration file to use. Default: $def_options{configfile}.|file",
-  "runfile|rf=s",              "Where --generate will store the runfile. Default: $def_options{runfile}.|file",
-  "act-file|af=s",             "Where the information about activated sketches will be stored. Default: $def_options{'act-file'}.|file",
-  "install-target|it=s",       "Where sketches will be installed. Default: $def_options{'install-target'}.|dir",
-  "json",                      "With --api, produce output in JSON format instead of human-readable format.",
-  "standalone|st!",            "With --generate, produce a standalone file (including body common control). Enabled by default, negate with --no-standalone.",
-  "simplify-arrays|sa!",       "With --simplify-arrays, simplify 2D arrays in runfile from x[a][b] to x_a[b].",
-  "install-source|is=s",       "Location (file path or URL) of a cfsketches catalog file that contains the list of sketches available for installation. Default: $def_options{'install-source'}.|loc",
-  "repolist|rl=s@",            "Comma-separated list of local directories to search for installed sketches for activation, deactivation, removal, or runfile generation. Default: ".join(', ', @{$def_options{repolist}}).".|dirs",
-  # "make-package=s@",
-#  "test|t=s@",
-  "---", "\nPlease see https://github.com/cfengine/design-center/wiki for the full cf-sketch documentation.",
- );
-
-# Convert to hash so we can extract keys for @options_spec
-my %options_desc = @options_desc;
-# Extract just the keys, minus the internal formatting-related elements
-my @options_spec = grep(!/^---/, keys %options_desc);
-
-# Options given on the command line
-my %cmd_options;
-GetOptions (
-            \%cmd_options,
-            @options_spec,
-           );
-
-# Disable color if needed
-unless ((exists($cmd_options{color}) && $cmd_options{color}) || (!exists($cmd_options{color}) && $def_options{color})) {
-    $ENV{ANSI_COLORS_DISABLED}=1;
-}
-
-if ($cmd_options{help})
-{
- print_help();
- exit;
-}
-
-my $metarun = $cmd_options{metarun};
-
-if ($metarun)
-{
- if (open(my $mfh, '<', $metarun))
- {
-  # slurp the entire file
-  my $jsontxt = join("", <$mfh>);
-  my $meta = $coder->decode($jsontxt);
-
-  Util::color_die "Malformed metarun file: no 'options' key"
-   unless exists $meta->{options};
-
-  %options = %{$meta->{options}};
- }
- else
- {
-  Util::color_die "Could not load metarun file $metarun: $!";
- }
-}
-else
-{
- # Options given on the config file
- my %cfgfile_options;
- my $cfgfile = $cmd_options{configfile} || $def_options{configfile};
- if (open(my $cfh, '<', $cfgfile))
- {
-  # slurp the entire file
-  my $jsontxt = join("", <$cfh>);
-  my $given = $coder->decode($jsontxt);
-
-  foreach (sort keys %$given)
-  {
-   print "(read from $cfgfile) $_ = ", $coder->encode($given->{$_}), "\n"
-    if $cfgfile_options{verbose};
-   $cfgfile_options{$_} = $given->{$_};
-  }
- }
-
- # Now we merge all three sources of options: Default options are
- # overriden by config-file options, which are overriden by
- # command-line options
- foreach my $ptr (\%def_options, \%cfgfile_options, \%cmd_options) {
-  foreach my $key (keys %$ptr) {
-   $options{$key} = $ptr->{$key};
-  }
- }
-}
-
-#--------------------------------------------------
 # Version and date information
-$options{version} = $VERSION;
-$options{date} = $DATE;
+$config->version($VERSION);
+$config->date($DATE);
 
 # Load commands and do other parser initialization
-Parser::init(\%options, @ARGV);
+Parser::init('cf-sketch', $config, @ARGV);
 
 # Run the main command loop
 Parser::parse_commands();
@@ -248,16 +80,16 @@ exit(0);
 my $required_version = '3.4.0';
 my $version = cfengine_version();
 
-if (!$options{force} && $required_version gt $version)
+if (!$config->force && $required_version gt $version)
 {
  Util::color_die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
 }
 
 # Allow both comma-separated values and multiple occurrences of --repolist
-$options{repolist} = [ split(/,/, join(',', @{$options{repolist}})) ];
+$config->repolist([ split(/,/, join(',', @{$config->repolist})) ]);
 
 my @list;
-foreach my $repo (@{$options{repolist}})
+foreach my $repo (@{$config->repolist})
 {
  if (is_resource_local($repo))
  {
@@ -265,7 +97,7 @@ foreach my $repo (@{$options{repolist}})
   if ($abs ne $repo)
   {
    print "Remapped $repo to $abs so it's not relative\n"
-    if $options{verbose};
+    if $config->verbose;
    $repo = $abs;
   }
  }
@@ -276,56 +108,57 @@ foreach my $repo (@{$options{repolist}})
  push @list, $repo;
 }
 
-$options{repolist} = \@list;
+$config->repolist(\@list);
 
-my $quiet       = $options{quiet};
-my $dryrun      = $options{'dry-run'};
-my $veryverbose = $options{veryverbose};
-my $verbose     = $options{verbose} || $veryverbose;
+my $quiet       = $config->quiet;
+my $dryrun      = $config->dryrun;
+my $veryverbose = $config->veryverbose;
+my $verbose     = $config->verbose || $veryverbose;
 
-print "Full configuration: ", $coder->encode(\%options), "\n" if $verbose;
+#print "Full configuration: ", $coder->encode(\%options), "\n" if $verbose;
 
-my $save_metarun = delete $options{'save-metarun'};
-if ($save_metarun)
+# TODO - fix this
+# my $save_metarun = $config->savemetarun;
+# if ($save_metarun)
+# {
+#  maybe_ensure_dir(dirname($save_metarun));
+#  maybe_write_file($save_metarun,
+#                   'metarun file',
+#                   $coder->pretty(1)->encode({ options => \%options }));
+#  print GREEN "Saved metarun file $save_metarun\n";
+#  exit;
+# }
+
+if ($config->saveconfig)
 {
- maybe_ensure_dir(dirname($save_metarun));
- maybe_write_file($save_metarun,
-                  'metarun file',
-                  $coder->pretty(1)->encode({ options => \%options }));
- print GREEN "Saved metarun file $save_metarun\n";
+ configure_self($config->configfile);
  exit;
 }
 
-if ($options{'save-config'})
-{
- configure_self($options{configfile});
- exit;
-}
-
-if ($options{list})
+if ($config->list)
 {
  # 'all' matches everything
- list(($options{list}->[0] eq 'all' || $options{list}->[0] eq '') ?
-      ["."] : $options{list});
+ list(($config->list->[0] eq 'all' || $config->list->[0] eq '') ?
+      ["."] : $config->list);
  exit;
 }
 
-if ($options{search})
+if ($config->search)
 {
- search($options{search}->[0] eq 'all' ? ["."] : $options{search});
+ search($config->search->[0] eq 'all' ? ["."] : $config->search);
  exit;
 }
 
-if (scalar @{$options{'make-package'}})
+if (scalar @{$config->makepackage})
 {
- make_packages($options{'make-package'});
+ make_packages($config->makepackage);
  exit;
 }
 
-if ($options{'list-activations'})
+if ($config->listactivations)
 {
- my $activations = load_json($options{'act-file'}, 1);
- Util::color_die "Can't load any activations from $options{'act-file'}"
+ my $activations = load_json($config->actfile, 1);
+ Util::color_die "Can't load any activations from $config->actfile"
   unless defined $activations && ref $activations eq 'HASH';
 
  my $activation_id = 1;
@@ -349,9 +182,9 @@ if ($options{'list-activations'})
  exit;
 }
 
-if ($options{'deactivate-all'})
+if ($config->deactivateall)
 {
- $options{deactivate} = '.*';
+ $config->deactivate('.*');
 }
 
 my @nonterminal = qw/deactivate remove install activate generate/;
@@ -360,11 +193,11 @@ my @callable = (@nonterminal, @terminal);
 
 foreach my $word (@callable)
 {
- if ($options{$word})
+ if ($config->$word)
  {
   # TODO: hack to replace a method table, eliminate
   no strict 'refs';
-  $word->($options{$word});
+  $word->($config->$word);
   use strict 'refs';
 
   # exit unless the command was non-terminal...
@@ -373,7 +206,7 @@ foreach my $word (@callable)
 }
 
 # now exit if any non-terminal commands were specified
-exit if grep { $options{$_} } @nonterminal;
+exit if grep { $config->$_ } @nonterminal;
 
 push @callable, 'list', 'save-config';
 Util::color_die "Sorry, I don't know what you want to do.  You have to specify a valid verb. Run $0 --help to see the complete list.\n";
@@ -385,9 +218,9 @@ sub configure_self
  my %keys = (
              'repolist' => 1,             # array
              'cfpath'   => 0,             # string
-             'install-source' => 0,
-             'install-target' => 0,
-             'act-file' => 0,
+             installsource => 0,
+             installtarget => 0,
+             actfile => 0,
              'runfile' => 0,
             );
 
@@ -396,7 +229,7 @@ sub configure_self
  my %config;
 
  foreach my $key (sort keys %keys) {
-   $config{$key} = $options{$key};
+   $config{$key} = $config->$key;
    print "Saving option $key=".tersedump($config{$key})."\n"
      if $verbose;
  }
@@ -405,87 +238,11 @@ sub configure_self
  maybe_write_file($cf, 'configuration input', $coder->pretty(1)->encode(\%config));
 }
 
-sub search
-{
- my $terms = shift @_;
- my $source = $options{'install-source'};
- my $base_dir = dirname($source);
- my $search = search_internal($source, []);
- my $local_dir = is_resource_local($base_dir);
-
- SKETCH:
- foreach my $sketch (sort keys %{$search->{known}})
- {
-  my $dir = $local_dir ? File::Spec->catdir($base_dir, $search->{known}->{$sketch}) : "$base_dir/$search->{known}->{$sketch}";
-  foreach my $term (@$terms)
-  {
-   if ($sketch =~ m/$term/i || $dir =~ m/$term/i)
-   {
-    print GREEN, "$sketch", RESET, " $dir\n";
-    next SKETCH;
-   }
-  }
- }
-}
-
-sub search_internal
-{
- my $source = shift @_;
- my $sketches = shift @_;
-
- my %known;
- my %todo;
- my $local_dir = is_resource_local($source);
-
- if ($local_dir)
- {
-  Util::color_die "cf-sketch inventory source $source must be a file"
-   unless -f $source;
-
-  open(my $invf, '<', $source)
-   or Util::color_die "Could not open cf-sketch inventory file $source: $!";
-
-  while (<$invf>)
-  {
-   my $line = $_;
-
-   my ($dir, $sketch, $etc) = (split ' ', $line, 3);
-   $known{$sketch} = $dir;
-
-   foreach my $s (@$sketches)
-   {
-    next unless ($sketch eq $s || $dir eq $s);
-    $todo{$sketch} = $dir;
-   }
-  }
- }
- else
- {
-  my $invd = lwp_get_remote($source)
-   or Util::color_die "Unable to retrieve $source : $!\n";
-
-  my @lines = split "\n", $invd;
-  foreach my $line (@lines)
-  {
-   my ($dir, $sketch, $etc) = (split ' ', $line, 3);
-   $known{$sketch} = $dir;
-
-   foreach my $s (@$sketches)
-   {
-    next unless ($sketch eq $s || $dir eq $s);
-    $todo{$sketch} = $dir;
-   }
-  }
- }
-
- return { known => \%known, todo => \%todo };
-}
-
 sub list
 {
  my $terms = shift @_;
 
- foreach my $repo (@{$options{repolist}})
+ foreach my $repo (@{$config->repolist})
  {
   my @sketches = list_internal($repo, $terms);
 
@@ -537,7 +294,7 @@ sub list_internal
 # Produce the appropriate input directory depending on --fullpath
 sub inputfile {
   my @paths=@_;
-  if ($options{fullpath}) {
+  if ($config->fullpath) {
       return File::Spec->catfile(@paths);
   }
   else {
@@ -549,14 +306,14 @@ sub inputfile {
 sub generate
 {
    # activation successful, now install it
-   my $activations = load_json($options{'act-file'}, 1);
-   Util::color_die "Can't load any activations from $options{'act-file'}"
+   my $activations = load_json($config->actfile, 1);
+   Util::color_die "Can't load any activations from $config->actfile"
     unless defined $activations && ref $activations eq 'HASH';
 
    my $activation_counter = 1;
    my $template_activations = {};
-   my $standalone = $options{'standalone'};
-   my $run_file = $options{runfile};
+   my $standalone = $config->standalone;
+   my $run_file = $config->runfile;
 
    my @inputs;
    my %dependencies;
@@ -567,7 +324,7 @@ sub generate
     my $prefix = $sketch;
     $prefix =~ s/::/__/g;
 
-    foreach my $repo (@{$options{repolist}})
+    foreach my $repo (@{$config->repolist})
     {
      my $contents = repo_get_contents($repo);
      if (exists $contents->{$sketch})
@@ -703,7 +460,7 @@ sub generate
       next ACTIVATION;
      }
     }
-    Util::color_die "Could not find sketch $sketch in repo list @{$options{repolist}}";
+    Util::color_die "Could not find sketch $sketch in repo list @{$config->repolist}";
    }
 
    # this removes found keys in %dependencies!
@@ -732,7 +489,7 @@ sub generate
      if $verbose;
    }
 
-   my $includes = join ', ', map { my @p = recurse_print($_); $p[0]->{value} } uniq(@inputs);
+   my $includes = join ', ', map { my @p = recurse_print($_); $p[0]->{value} } Util::uniq(@inputs);
 
    # maybe make the run template configurable?
    my $output = make_runfile($template_activations, $includes, $standalone, $run_file);
@@ -748,7 +505,7 @@ sub api
  my $sketch = shift @_;
 
  my $found = 0;
- foreach my $repo (@{$options{repolist}})
+ foreach my $repo (@{$config->repolist})
  {
   my $contents = repo_get_contents($repo);
   if (exists $contents->{$sketch})
@@ -764,7 +521,7 @@ sub api
 
      local $Data::Dumper::Terse = 1;
      local $Data::Dumper::Indent = 0;
-     if ($options{json})
+     if ($config->json)
      {
        my %api = (
                   vars => $entry_point->{varlist},
@@ -836,16 +593,16 @@ sub activate
 
   my $aparams = $aparams_all->{$sketch};
 
-  foreach my $extra (sort keys %{$options{params}})
+  foreach my $extra (sort keys %{$config->params})
   {
-   $aparams->{$extra} = $options{params}->{$extra};
+   $aparams->{$extra} = $config->params->{$extra};
    printf("Overriding aparams %s from the command line, value %s\n",
-          $extra, $options{params}->{$extra})
+          $extra, $config->params->{$extra})
     if $verbose;
   }
 
   my $installed = 0;
-  foreach my $repo (@{$options{repolist}})
+  foreach my $repo (@{$config->repolist})
   {
    my $contents = repo_get_contents($repo);
    if (exists $contents->{$sketch})
@@ -941,7 +698,7 @@ sub activate
     }
 
     # activation successful, now install it
-    my $activations = load_json($options{'act-file'}, 1);
+    my $activations = load_json($config->actfile, 1);
 
     foreach my $check (@{$activations->{$sketch}})
     {
@@ -949,7 +706,7 @@ sub activate
      my $q = $canonical_coder->encode($aparams);
      if ($p eq $q)
      {
-      if ($options{force})
+      if ($config->force)
       {
        Util::color_warn "Activating duplicate parameters [$q] because of --force"
         unless $quiet;
@@ -964,8 +721,8 @@ sub activate
     push @{$activations->{$sketch}}, $aparams;
     my $activation_id = scalar @{$activations->{$sketch}};
 
-    maybe_ensure_dir(dirname($options{'act-file'}));
-    maybe_write_file($options{'act-file'}, 'activation', $coder->encode($activations));
+    maybe_ensure_dir(dirname($config->actfile));
+    maybe_write_file($config->actfile, 'activation', $coder->encode($activations));
     print GREEN "Activated: $sketch $activation_id aparams $pfile\n" unless $quiet;
 
     $installed = 1;
@@ -973,7 +730,7 @@ sub activate
    }
   }
 
-  Util::color_die "Could not activate sketch $sketch, it was not in the given list of repositories [@{$options{repolist}}]"
+  Util::color_die "Could not activate sketch $sketch, it was not in the given list of repositories [@{$config->repolist}]"
    unless $installed;
  }
 }
@@ -982,7 +739,7 @@ sub deactivate
 {
  my $nums_or_name = shift @_;
 
- my $activations = load_json($options{'act-file'}, 1);
+ my $activations = load_json($config->actfile, 1);
  my %modified;
 
  if ('' eq ref $nums_or_name)     # a string or regex
@@ -1041,8 +798,8 @@ sub deactivate
 
  if (scalar keys %modified)
  {
-  maybe_ensure_dir(dirname($options{'act-file'}));
-  maybe_write_file($options{'act-file'}, 'activation', $coder->encode($activations));
+  maybe_ensure_dir(dirname($config->actfile));
+  maybe_write_file($config->actfile, 'activation', $coder->encode($activations));
  }
 }
 
@@ -1050,7 +807,7 @@ sub remove
 {
  my $toremove = shift @_;
 
- foreach my $repo (@{$options{repolist}})
+ foreach my $repo (@{$config->repolist})
  {
   next unless is_resource_local($repo);
 
@@ -1087,13 +844,13 @@ sub install
 {
  my $sketches = shift @_;
 
- my $dest_repo = $options{'install-target'};
- push @{$options{repolist}}, $dest_repo unless grep { $_ eq $dest_repo } @{$options{repolist}};
+ my $dest_repo = $config->installtarget;
+ push @{$config->repolist}, $dest_repo unless grep { $_ eq $dest_repo } @{$config->repolist};
 
  Util::color_die "Can't install: no install target supplied!"
   unless defined $dest_repo;
 
- my $source = $options{'install-source'};
+ my $source = $config->installsource;
  my $base_dir = dirname($source);
  my $local_dir = is_resource_local($source);
 
@@ -1140,7 +897,7 @@ sub install
   my @missing = sort keys %missing;
   if (scalar @missing)
   {
-   if ($options{force})
+   if ($config->force)
    {
     Util::color_warn "Installing $sketch despite unsatisfied dependencies @missing"
      unless $quiet;
@@ -1160,7 +917,7 @@ sub install
   my $install_dir = File::Spec->catdir($dest_repo,
                                        split('::', $sketch));
 
-  my $module_install_dir = File::Spec->catfile($dest_repo, $options{modulepath});
+  my $module_install_dir = File::Spec->catfile($dest_repo, $config->modulepath);
 
   if (maybe_ensure_dir($install_dir))
   {
@@ -1200,7 +957,7 @@ sub install
     my $changed = 1;
 
     # TODO: maybe disable this?  It can be expensive for large files.
-    if (!$options{force} &&
+    if (!$config->force &&
         is_resource_local($data->{dir}) &&
         compare($source, $dest) == 0)
     {
@@ -1288,7 +1045,7 @@ sub missing_dependencies
 
  my %tocheck = %$deps;
 
- foreach my $repo (@{$options{repolist}})
+ foreach my $repo (@{$config->repolist})
  {
   my $contents = repo_get_contents($repo);
   foreach my $dep (sort keys %tocheck)
@@ -1506,7 +1263,7 @@ sub load_sketch
  if (!scalar @messages) # there are no errors, so go on...
  {
   my $name = $json->{metadata}->{name};
-  $json->{dir} = $options{fullpath} || !is_resource_local($dir) ? $dir : File::Spec->abs2rel( $dir, $topdir );
+  $json->{dir} = $config->fullpath || !is_resource_local($dir) ? $dir : File::Spec->abs2rel( $dir, $topdir );
   $json->{fulldir} = $dir;
   $json->{file} = $name;
   if ($noparse ||
@@ -1624,7 +1381,7 @@ sub verify_entry_point
   my @inputs = collect_dependencies_inputs(dirname($tfilename), \%dependencies);
   print "Faking bundlesequence: collected inputs [@inputs]\n"
    if $veryverbose;
-  my @p = recurse_print([ uniq(@inputs) ]);
+  my @p = recurse_print([ Util::uniq(@inputs) ]);
   $mcf = sprintf('
   body common control {
 
@@ -1918,7 +1675,7 @@ sub lwp_get_remote
 sub get_local_repo
 {
  my $repo;
- foreach my $target (@{$options{repolist}})
+ foreach my $target (@{$config->repolist})
  {
   if (is_resource_local($target))
   {
@@ -1955,18 +1712,6 @@ sub get_local_repo
 }
 
 # Utility functions follow
-
-sub uniq
-{
-  # Uniquify, preserving order
-  my @result = ();
-  my %seen = ();
-  foreach (@_) {
-    push @result, $_ unless exists($seen{$_});
-    $seen{$_}=1;
-  }
-  return @result;
-}
 
 sub load_json
 {
@@ -2104,7 +1849,7 @@ sub maybe_write_file
 
   unless ($promises_binary)
   {
-   foreach my $check_path (split ':', $options{cfpath})
+   foreach my $check_path (split ':', $config->cfpath)
    {
     my $check = "$check_path/$promises_name";
     $promises_binary = $check if -x $check;
@@ -2112,7 +1857,7 @@ sub maybe_write_file
    }
   }
 
-  Util::color_die "Sorry, but we couldn't find $promises_name in the search path $options{cfpath}.  Please set \$PATH or use the --cfpath parameter!"
+  Util::color_die "Sorry, but we couldn't find $promises_name in the search path $config->cfpath.  Please set \$PATH or use the --cfpath parameter!"
    unless $promises_binary;
 
   print "Excellent, we found $promises_binary to interface with CFEngine\n"
@@ -2136,24 +1881,6 @@ sub maybe_write_file
    return 0;
   }
  }
-}
-
-sub local_cfsketches_source
-{
- my $rootdir   = File::Spec->rootdir();
- my $dir       = Cwd::realpath(shift @_);
- my $inventory = File::Spec->catfile($dir, 'cfsketches');
-
- return $inventory if -f $inventory;
-
- # as we go up the tree, check for 'sketches/cfsketches' as well (so we don't crawl the whole file tree)
- my $sketches_probe = File::Spec->catfile($dir, 'sketches', 'cfsketches');
- return $sketches_probe if -f $sketches_probe;
-
- return undef if $rootdir eq $dir;
- my $updir = Cwd::realpath(dirname($dir));
-
- return local_cfsketches_source($updir);
 }
 
 sub is_json_boolean
@@ -2239,7 +1966,7 @@ sub collect_dependencies
 
  my @collected;
 
- foreach my $repo (@{$options{repolist}})
+ foreach my $repo (@{$config->repolist})
  {
   my $contents = repo_get_contents($repo, 1);
   foreach my $dep (sort keys %$deps)
@@ -2278,7 +2005,7 @@ sub collect_dependencies_inputs
  my $dep_map     = shift @_;
 
  my @inputs;
- foreach my $repo (@{$options{repolist}})
+ foreach my $repo (@{$config->repolist})
  {
   my $contents = repo_get_contents($repo, 1);
   foreach my $dep (keys %$dep_map)
@@ -2300,7 +2027,7 @@ sub make_include_path
  my $lib_dir = shift @_;
  my $run_dir = shift @_;
 
- return $options{fullpath} ? $lib_dir : File::Spec->abs2rel($lib_dir, $run_dir );
+ return $config->fullpath ? $lib_dir : File::Spec->abs2rel($lib_dir, $run_dir );
 }
 
 sub make_include
@@ -2432,7 +2159,7 @@ EOHIPPUS
      my @p = recurse_print($bycontext{$context},
                            "_${a}_$act->{prefix}_${name}",
                            0,
-                           $options{simplify_arrays} );
+                           $config->simplify_arrays );
      $vars .= sprintf('       "%s" %s => %s;' . "\n",
                       $_->{path},
                       $_->{type},
@@ -2517,112 +2244,6 @@ sub tersedump
   local $Data::Dumper::Terse = 1;
   local $Data::Dumper::Indent = 0;
   return Dumper(shift);
-}
-
-# Returns an indented string containing a list. Syntax is:
-# _sprintlist($listref[, $firstline[, $separator[, $indent
-#             [, $break[, $linelen[, $lineprefix]]]]])
-# All lines are indented by $indent spaces (default
-# 15). If $firstline is given, that string is inserted in the
-# indentation of the first line (it is truncated to $indent spaces
-# unless $break is true, in which case the list is pushed to the next
-# line). Normally the list elements are separated by commas and spaces
-# ", ". If $separator is given, that string is used as a separator.
-# Lines are wrapped to $linelen characters, unless it is specified as
-# some other value. A value of 0 for $linelen makes it not do line wrapping.
-# If $lineprefix is given, it is printed at the beginning of each line.
-sub _sprintlist {
-  my ($listref, $fline, $separator, $indent, $break, $linelen, $lp) = @_;
-  # Figure out default arguments
-  my @list=@$listref;
-  $separator ||= ", ";
-  $indent = 15 unless defined($indent);
-  my $space=" " x $indent;
-  $fline ||= $space;
-  $break ||= 0;
-  $linelen ||= 80;
-  $lp ||= "";
-
-  $linelen -= length($lp);
-
-  # Figure out how to print the first line
-  if (!$break || length($fline)<=$indent) {
-    $fline=substr("$fline$space", 0, length($space));
-  }
-  else {
-    # length($fline)>$indent
-    $fline="$fline\n$space";
-  }
-
-  # Now go through the list, appending until we fill
-  # each line. Lather, rinse, repeat.
-  my $str="";
-  my $line="";
-  foreach (@list) {
-    $line.=$separator if $line;
-    if ($linelen && length($line)+length($_)+length($space)>=$linelen) {
-      $line=~s/\s*$//;
-      $str.="$space$line\n";
-      $line="";
-    }
-    $line.="$_";
-  }
-
-  # Finishing touches - insert first line and line prefixes, if any.
-  $str.="$space$line";
-  $fline = GREEN . $fline . RESET;
-  $str=~s/^$space/$fline/;
-  $str=~s/^/$lp/mg if $lp;
-  return $str;
-}
-
-# Gets a string, and returns it nicely formatted and word-wrapped. It
-# uses _sprintlist as a backend. Its syntax is the same as
-# _sprintlist, except that is gets a string instead of a list ref, and
-# that $separator is not used because we automatically break on white
-# space.
-# Syntax: _sprintstr($string[, $firstline[, $indent[, $break[, $linelen
-#		[, $lineprefix]]]]]);
-# See _sprintlist for the meaning of each parameter.
-sub _sprintstr {
-  my ($str, $fl, $ind, $br, $len, $lp)=@_;
-  # Split string into \n-separated parts, preserving all empty fields.
-  my @strs = split(/\n/, $str, -1);
-  # Now process each line separately, to preserve EOLs that were
-  # originally present in the string.
-  my $s;
-  my $result;
-  while (defined($s=shift @strs)) {
-    # Split in words.
-    my @words=(split(/\s+/, $s));
-    $result.=_sprintlist(\@words,$fl," ",$ind,$br,$len, $lp);
-    # Add EOL if needed (if there are still more lines to process)
-    $result.="\n" if scalar(@strs);
-    # The $firstline is only needed at the beginning of the first string.
-    $fl=undef;
-  }
-  return $result;
-}
-
-sub print_help {
-  # This code is destructive on @options_desc - it's OK because the
-  # program always exits after printing help.
-  while (my ($cmd, $spec) = (shift @options_desc, shift @options_desc)) {
-    last unless defined($cmd);
-    if ($cmd =~ /^---/) {
-      print _sprintstr($spec, "", 0)."\n";
-    }
-    else {
-      my ($desc, $argname)=split(/\|/, $spec);
-      my $arg = $argname ? " $argname" : "";
-      my $negatable = ($cmd =~ /!/) ? "[no-]" : "";
-      $cmd =~ s/[:=](.).*$//;
-      my @variations = map { length($_)>2 ? "--$negatable$_" : "-$_" } split(/[|!]/, $cmd);
-      my $maincmd = shift @variations;
-      my $cmdstr = "$maincmd$arg" . (@variations ? " (".join(" ", @variations).")" : "");
-      print _sprintstr($desc, $cmdstr, 30, 1)."\n";
-    }
-  }
 }
 
 sub validate
@@ -2826,4 +2447,80 @@ sub validate
  }
 
  return 0;
+}
+
+sub search
+{
+ my $terms = shift @_;
+ my $source = $config->installsource;
+ my $base_dir = dirname($source);
+ my $search = search_internal($source, []);
+ my $local_dir = is_resource_local($base_dir);
+
+ SKETCH:
+ foreach my $sketch (sort keys %{$search->{known}})
+ {
+  my $dir = $local_dir ? File::Spec->catdir($base_dir, $search->{known}->{$sketch}) : "$base_dir/$search->{known}->{$sketch}";
+  foreach my $term (@$terms)
+  {
+   if ($sketch =~ m/$term/i || $dir =~ m/$term/i)
+   {
+    print GREEN, "$sketch", RESET, " $dir\n";
+    next SKETCH;
+   }
+  }
+ }
+}
+
+sub search_internal
+{
+ my $source = shift @_;
+ my $sketches = shift @_;
+
+ my %known;
+ my %todo;
+ my $local_dir = is_resource_local($source);
+
+ if ($local_dir)
+ {
+  Util::color_die "cf-sketch inventory source $source must be a file"
+   unless -f $source;
+
+  open(my $invf, '<', $source)
+   or Util::color_die "Could not open cf-sketch inventory file $source: $!";
+
+  while (<$invf>)
+  {
+   my $line = $_;
+
+   my ($dir, $sketch, $etc) = (split ' ', $line, 3);
+   $known{$sketch} = $dir;
+
+   foreach my $s (@$sketches)
+   {
+    next unless ($sketch eq $s || $dir eq $s);
+    $todo{$sketch} = $dir;
+   }
+  }
+ }
+ else
+ {
+  my $invd = lwp_get_remote($source)
+   or Util::color_die "Unable to retrieve $source : $!\n";
+
+  my @lines = split "\n", $invd;
+  foreach my $line (@lines)
+  {
+   my ($dir, $sketch, $etc) = (split ' ', $line, 3);
+   $known{$sketch} = $dir;
+
+   foreach my $s (@$sketches)
+   {
+    next unless ($sketch eq $s || $dir eq $s);
+    $todo{$sketch} = $dir;
+   }
+  }
+ }
+
+ return { known => \%known, todo => \%todo };
 }
