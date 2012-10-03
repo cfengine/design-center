@@ -1,4 +1,4 @@
-# Time-stamp: <2012-10-01 00:50:24 a10022>
+# Time-stamp: <2012-10-03 10:45:57 a10022>
 #
 # search command for searching through sketch list
 # Diego Zamboni, October 1st, 2012.
@@ -8,7 +8,7 @@
   (
    'search' =>
    [[
-     'search all|regex',
+     'search REGEX | all',
      'Search sketch repository, use "all" to list everything.',
      '(.*)'
     ]]
