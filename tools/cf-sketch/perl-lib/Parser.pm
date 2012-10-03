@@ -9,6 +9,7 @@
 package Parser;
 
 use strict;
+# Best if used with Term::ReadLine::Gnu
 use Term::ReadLine;
 use Util;
 use vars qw($User
@@ -22,6 +23,7 @@ use vars qw($User
 	    @WIZARDS
 	    $isWizard
 	    $inputline
+            $parser_id
 	    %ALLCOMMANDS
             @ALLCOMMANDS_COMPLETE
 	    %COMMANDS
@@ -60,17 +62,19 @@ use vars qw($User
 
 
 # These are "builtins"
-my %ALLCOMMANDS=(
+my %BUILTINS=(
                  'help' => [['help [COMMAND ...]', 'Print this command summary, or '.
                              'help about the specific commands requested.',
                              '(.*)']],
                  '?' => [['-? [COMMAND ...]', 'Print this command summary, or '.
                           'help about the specific commands requested.',
                           '(.*)', 'help']],
-                 'quit' => [['quit or exit', 'Exit the program.', '']],
+                 'quit' => [['quit, exit or ^D', 'Exit the program. ', '']],
                  'exit' => [['-exit', 'Exit the program.', '', 'quit']],
                  'version' => [['version', 'Print version information.', '']],
                 );
+
+my %ALLCOMMANDS = %BUILTINS;
 
 ####### Configuration variables
 
@@ -80,9 +84,12 @@ my @WIZARDS;
 
 # init($config_hash, @ARGV)
 sub init {
+  # Id for this parser. The ID will be shown in the prompt.
+  $parser_id=shift;
   # Use the config reference directly so that other modules have access
   # to the modified information
-  my $config=shift;
+  my $configobj=shift;
+  my $config = $configobj->hash;
   my @args=@_;
   my $cmddir;
 
@@ -123,7 +130,7 @@ sub init {
     # See if input is coming from a tty or a pipe/file
     if (-t) {
       $interactive=1;
-      $inputline=new Term::ReadLine 'cf-sketch program';
+      $inputline=new Term::ReadLine $parser_id;
       $inter_command_separator="\n";
     } else {
       $interactive=0;
@@ -219,7 +226,9 @@ sub complete_word {
       print "\n";
       Help($cmd);
     }
-    $inputline->on_new_line;
+    # Use eval because not all Term::ReadLine implementations
+    # support on_new_line
+    eval '$inputline->on_new_line';
     return undef;
   }
 }
@@ -237,7 +246,7 @@ sub parse_commands {
   if (@commands) {
     _do_command(@commands);
   } else {
-    _message("Enter any command to cf-sketch, use 'help' for help, or 'quit' or '^D' to quit.\n");
+    _message("Enter any command to $parser_id, use 'help' for help, or 'quit' or '^D' to quit.\n");
     my $wizmode=$isWizard?"<Wizard> ":"";
     while (1) {
       if ($quit) {
@@ -247,7 +256,7 @@ sub parse_commands {
       if ($interactive) {
 	# Use readline to get the command
 	_message("\n");
-	$cmd=$inputline->readline("${wizmode}cf-sketch> ");
+	$cmd=$inputline->readline("${wizmode}$parser_id> ");
       } else {
 	$cmd=scalar(<CMDIN>);
       }
@@ -276,22 +285,30 @@ sub _message {
   }
 }
 
+sub _printHelp {
+  my $print_builtins = shift;
+  my %CMDS = @_;
+  foreach my $cmd (sort keys %CMDS) {
+    next if exists($BUILTINS{$cmd}) && !$print_builtins;
+    foreach my $form (@{$CMDS{$cmd}}) {
+      my ($sum, $desc)=@$form;
+      $sum =~ s/^\@//;
+      Util::output(Util::sprintstr($desc,$sum,30,1)."\n")
+	  unless ($sum =~ /^-/ # Don't print if summary starts with "-"
+		  || ($sum =~ s/^\*// && !$isWizard));
+    }
+  }
+}
 # Usage message
 sub Help {
   my $cmd;
   my $form;
   if (!@_) {
     Util::output("The current commands are: ([]'s denote optional, caps need values)\n");
-    foreach $cmd (sort keys %ALLCOMMANDS) {
-      foreach $form (@{$ALLCOMMANDS{$cmd}}) {
-	my ($sum, $desc)=@$form;
-	$sum =~ s/^\@//;
-	Util::output(Util::sprintstr($desc,$sum,30,1)."\n")
-	  unless ($sum =~ /^-/ # Don't print if summary starts with "-"
-		  || ($sum =~ s/^\*// && !$isWizard));
-      }
-    }
-    Util::output("Use 'quit' or '^D' to quit.\n");
+    _printHelp(undef, %ALLCOMMANDS);
+    Util::output("\n");
+    _printHelp(1, %BUILTINS);
+#    Util::output("Use 'quit' or '^D' to quit.\n");
   } else {
     foreach $cmd (@_) {
       if (exists($ALLCOMMANDS{$cmd})) {
@@ -600,7 +617,7 @@ sub command_quit {
 
 # version
 sub command_version {
-  Util::output("This is cf-sketch version $Config{version}, ".
+  Util::output("This is $parser_id version $Config{version}, ".
 	  "last updated on $Config{date}.\n");
 }
 ;
