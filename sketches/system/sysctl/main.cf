@@ -5,6 +5,7 @@ body file control
 
 bundle agent set(class_prefix, canon_prefix, sysctl_file, ensured_kv, removed_kv, removed_vars)
 {
+  meta:
       "vars[class_prefix][type]"      string => "NON_EMPTY_STRING";
       "vars[class_prefix][default]"   string => "__CLASS_PREFIX__";
 
