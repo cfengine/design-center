@@ -28,10 +28,10 @@ bundle common cfsketch_g
 bundle agent cfsketch_run
 {
   methods:
-      "001 System::sysctl 1" usebundle => cfdc_sysctl:set($(cfsketch_g.test_sysctl_class_prefix),
-                                                          $(cfsketch_g.test_sysctl_canon_prefix),
-                                                          $(cfsketch_g.test_sysctl_sysctl_file),
-                                                          "default:cfsketch_g.test_sysctl_ensured_kv",
-                                                          "default:cfsketch_g.test_sysctl_removed_kv",
-                                                          @(cfsketch_g.test_sysctl_removed_vars));
+      "go" usebundle => cfdc_sysctl:set($(cfsketch_g.test_sysctl_class_prefix),
+                                        $(cfsketch_g.test_sysctl_canon_prefix),
+                                        $(cfsketch_g.test_sysctl_sysctl_file),
+                                        "default:cfsketch_g.test_sysctl_ensured_kv",
+                                        "default:cfsketch_g.test_sysctl_removed_kv",
+                                        @(cfsketch_g.test_sysctl_removed_vars));
 }
