@@ -9,6 +9,7 @@ body file control
 
 bundle agent set(canon_prefix, timezone, zoneinfo, relocate)
 {
+  meta:
       "vars[canon_prefix][type]"     string => "NON_EMPTY_STRING";
       "vars[canon_prefix][default]"  string => "__CANON_PREFIX__";
 
