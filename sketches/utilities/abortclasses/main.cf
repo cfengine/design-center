@@ -18,7 +18,7 @@ bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only)
   classes:
       "alert_only" expression => strcmp("$(alert_only)", "1");
       "alert" or => { "alert_only", "default:test" };
-      "fileexists" expressions => fileexists($(trigger_file));
+      "fileexists" expression => fileexists($(trigger_file));
 
   methods:
     fileexists.alert::
@@ -37,7 +37,7 @@ bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only)
     debug.alert::
       "abortclasses: alert-only mode!!!";
     debug.alert_only::
-      "abortclasses: in alert-only mode because of $(alert_only)";
+      "abortclasses: in alert-only mode because alert_only=$(alert_only)";
     debug.test::
       "abortclasses: in alert-only mode because the 'test' class is defined";
 

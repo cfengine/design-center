@@ -1,22 +1,28 @@
-body common control {
-
-    bundlesequence => { "main",};
-
-    inputs => {
-                "../../libraries/copbl/cfengine_stdlib.cf",
-                "./main.cf",
-              };
+body common control
+{
+      bundlesequence => { "cfsketch_run" };
+      inputs => { "./main.cf" };
 }
 
-bundle agent main {
-vars:
-    "cowboy_abort_class"   string => "cowboy";
-    "cowboy_trigger_file"  string => "/COWBOY";
-    "cowboy_alert"         string => "true"; # True and yes are valid settings
-    "cowboy_abort"         string => "yes";  # True and Yes are valid settings
 
-methods:
-    "any" 
-        usebundle => cfdc_halt_agent_if_file_exists("main.cowboy_"),
-        comment   => "Allow for manual intervention with cowboy mode";
+bundle common cfsketch_g
+{
+  vars:
+    !test::
+      "abort_trigger_file" string => "/COWBOY";
+    test::
+      "abort_trigger_file" string => "/tmp/COWBOY";
+
+    any::
+      "abort_abortclass" string => "cowboy";
+      "abort_alert_only" string => "1";
+}
+
+bundle agent cfsketch_run
+{
+  methods:
+      "go" usebundle => abortclasses_filebased($(cfsketch_g.abort_abortclass),
+                                               $(cfsketch_g.abort_trigger_file),
+                                               $(cfsketch_g.abort_alert_only));
+
 }
