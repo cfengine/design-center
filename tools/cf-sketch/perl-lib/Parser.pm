@@ -82,14 +82,13 @@ my @WIZARDS;
 
 ####### Initialization
 
-# init($config_hash, @ARGV)
+# init($parser_id, $config_hash, @ARGV)
 sub init {
   # Id for this parser. The ID will be shown in the prompt.
   $parser_id=shift;
   # Use the config reference directly so that other modules have access
   # to the modified information
-  my $configobj=shift;
-  my $config = $configobj->hash;
+  my $config=shift;
   my @args=@_;
   my $cmddir;
 
@@ -203,7 +202,7 @@ sub init {
   } else {
     die "Fatal: Could not find commands dir '$cmddir'\n";
   }
-  # Copy the config hash to a local package variable for easy access
+  # Recopy the $config hash since there may have been changes during the load
   %Config=%$config;
   # Configure completions
   if (my $attr = $inputline->Attribs) {
