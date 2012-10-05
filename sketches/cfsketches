@@ -18,6 +18,6 @@ system/tzconfig System::tzconfig
 utilities/abortclasses Utilities::abortclasses
 utilities/nagios_plugin_agent Monitoring::nagios_plugin_agent
 utilities/ping_report Utilities::ping_report
-utilities/usebundle_if_ip_has_mac Utilities::usebundle_if_ip_has_mac
+utilities/ipverify Utilities::ipverify
 utilities/vcs_mirror VCS::vcs_mirror
 web_apps/wordpress WebApps::wordpress_install
