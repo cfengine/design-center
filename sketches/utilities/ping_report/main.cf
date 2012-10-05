@@ -20,7 +20,7 @@ bundle agent ping(canon_prefix, hosts, count, report_success, report_failure)
       "vars[report_failure][type]"     string => "BOOLEAN";
       "vars[report_failure][default]"  string => "0";
 
-      "returns[$(hosts)]" string => "reached[$(hosts)]";
+      "returns[$(hosts)]" string => "BOOLEAN";
 
   vars:
       "bundle" string => "ping_report";
@@ -31,22 +31,30 @@ bundle agent ping(canon_prefix, hosts, count, report_success, report_failure)
       string => "1",
       ifvarclass => canonify("$(canon_prefix)$(hosts)_reached");
 
+      "reached[$(hosts)]"
+      string => "0",
+      ifvarclass => not(canonify("$(canon_prefix)$(hosts)_reached"));
+
   classes:
-      "ping_report_success"  expression => strcmp("1", "$(report_success)");
-      "ping_report_failure"  expression => strcmp("1", "$(report_failure)");
+      "ping_report_success"  expression => strcmp("true", "$(report_success)");
+      "ping_report_failure"  expression => strcmp("true", "$(report_failure)");
 
   commands:
       "$(pinger)"
       args => "$(ping_count_option) $(count) $(hosts)",
-      contain => silent,
-      classes => if_repaired("$(canon_prefix)$(hosts)_reached");
+      contain => default:silent,
+      classes => default:if_repaired("$(canon_prefix)$(hosts)_reached");
 
   reports:
+    cfengine::
+      # return values don't work in namespaces
+      # "reached[$(hosts)]" bundle_return_value_index => "$(hosts)";
+
     ping_report_success::
       "I am able to ping $(hosts)",
-      ifvarclass => canonify("$(canon_prefix)$(hosts)_reached"); 
+      ifvarclass => canonify("$(canon_prefix)$(hosts)_reached");
 
     ping_report_failure::
       "I am unable to ping $(hosts)",
-      ifvarclass => not(canonify("$(canon_prefix)$(hosts)_reached")); 
+      ifvarclass => not(canonify("$(canon_prefix)$(hosts)_reached"));
 }

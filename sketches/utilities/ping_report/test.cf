@@ -1,18 +1,25 @@
-body common control {
-
-    bundlesequence => { "main" };
-
-    inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf"};
+body common control
+{
+      bundlesequence => { "cfsketch_run" };
+      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf"};
 }
 
-bundle agent main {
-vars:
-  "test1_count" string => "2";
-  "test1_hosts" slist => {"localhost", "127.0.0.1", "boogie.woogie"};
-  "test1_report_success" string => "true";
-  "test1_report_failure" string => "on";
+bundle common cfsketch_g
+{
+  vars:
+      "ping_canon_prefix" string => "ping_";
+      "ping_hosts" slist => { "localhost", "127.0.0.1", "boogie.woogie" };
+      "ping_count" string => "2";
+      "ping_report_success" string => "true";
+      "ping_report_failure" string => "true";
+}
 
-methods:
-  "test1" usebundle => ping_report("main.test1_");
-
+bundle agent cfsketch_run
+{
+  methods:
+      "go" usebundle => cfdc_ping:ping($(cfsketch_g.ping_canon_prefix),
+                                       @(cfsketch_g.ping_hosts),
+                                       $(cfsketch_g.ping_count),
+                                       $(cfsketch_g.ping_report_success),
+                                       $(cfsketch_g.ping_report_failure));
 }
