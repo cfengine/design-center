@@ -67,8 +67,7 @@ sub sprintlist {
   # Figure out how to print the first line
   if (!$break || length($fline)<=$indent) {
     $fline=substr("$fline$space", 0, length($space));
-  }
-  else {
+  } else {
     # length($fline)>$indent
     $fline="$fline\n$space";
   }
@@ -183,66 +182,63 @@ sub check_regex {
 }
 
 sub local_cfsketches_source
-{
- my $rootdir   = File::Spec->rootdir();
- my $dir       = Cwd::realpath(shift @_);
- my $inventory = File::Spec->catfile($dir, 'cfsketches');
+  {
+    my $rootdir   = File::Spec->rootdir();
+    my $dir       = Cwd::realpath(shift @_);
+    my $inventory = File::Spec->catfile($dir, 'cfsketches');
 
- return $inventory if -f $inventory;
+    return $inventory if -f $inventory;
 
- # as we go up the tree, check for 'sketches/cfsketches' as well (so we don't crawl the whole file tree)
- my $sketches_probe = File::Spec->catfile($dir, 'sketches', 'cfsketches');
- return $sketches_probe if -f $sketches_probe;
+    # as we go up the tree, check for 'sketches/cfsketches' as well (so we don't crawl the whole file tree)
+    my $sketches_probe = File::Spec->catfile($dir, 'sketches', 'cfsketches');
+    return $sketches_probe if -f $sketches_probe;
 
- return undef if $rootdir eq $dir;
- my $updir = Cwd::realpath(dirname($dir));
+    return undef if $rootdir eq $dir;
+    my $updir = Cwd::realpath(dirname($dir));
 
- return local_cfsketches_source($updir);
-}
+    return local_cfsketches_source($updir);
+  }
 
 sub uniq
-{
-  # Uniquify, preserving order
-  my @result = ();
-  my %seen = ();
-  foreach (@_) {
-    push @result, $_ unless exists($seen{$_});
-    $seen{$_}=1;
+  {
+    # Uniquify, preserving order
+    my @result = ();
+    my %seen = ();
+    foreach (@_) {
+      push @result, $_ unless exists($seen{$_});
+      $seen{$_}=1;
+    }
+    return @result;
   }
-  return @result;
-}
 
 sub is_resource_local
-{
- my $resource = shift @_;
- return ($resource !~ m,^[a-z][a-z]+:,);
-}
+  {
+    my $resource = shift @_;
+    return ($resource !~ m,^[a-z][a-z]+:,);
+  }
 
 sub get_remote
-{
- my $resource = shift @_;
- eval
- {
-  require LWP::Simple;
- };
- if ($@ )
- {
-  Util::color_die "Could not load LWP::Simple (you should install libwww-perl)";
- }
+  {
+    my $resource = shift @_;
+    eval
+      {
+        require LWP::Simple;
+      };
+    if ($@ ) {
+      Util::color_die "Could not load LWP::Simple (you should install libwww-perl)";
+    }
 
- if ($resource =~ m/^https/)
- {
-  eval
-  {
-   require LWP::Protocol::https;
-  };
-  if ($@ )
-  {
-   Util::color_die "Could not load LWP::Protocol::https (you should install it)";
+    if ($resource =~ m/^https/) {
+      eval
+        {
+          require LWP::Protocol::https;
+        };
+      if ($@ ) {
+        Util::color_die "Could not load LWP::Protocol::https (you should install it)";
+      }
+    }
+
+    return LWP::Simple::get($resource);
   }
- }
-
- return LWP::Simple::get($resource);
-}
 
 1;

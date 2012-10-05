@@ -232,8 +232,7 @@ sub print_help {
     last unless defined($cmd);
     if ($cmd =~ /^---/) {
       print Util::sprintstr($spec, "", 0)."\n";
-    }
-    else {
+    } else {
       my ($desc, $argname)=split(/\|/, $spec);
       my $arg = $argname ? " $argname" : "";
       my $negatable = ($cmd =~ /!/) ? "[no-]" : "";
@@ -246,8 +245,8 @@ sub print_help {
   }
 }
 
-sub hash {
-  my $self=shift;
-  my %hash = %$self;
-  return \%hash;
-}
+  sub hash {
+    my $self=shift;
+    my %hash = %$self;
+    return \%hash;
+  }

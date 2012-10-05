@@ -1,4 +1,4 @@
-# Time-stamp: <2012-10-05 01:02:51 a10022>
+# Time-stamp: <2012-10-05 01:16:35 a10022>
 #
 # search command for searching through sketch list
 # Diego Zamboni, October 1st, 2012.
@@ -23,11 +23,10 @@ sub command_search {
   my $err = Util::check_regex($regex);
   if ($err) {
     Util::error($err);
-  }
-  else {
+  } else {
     @res = $Config{_repository}->list($regex eq 'all' ? "." : $regex);
     foreach my $found (@res) {
-          print GREEN, $found->name, RESET, " ".$found->location."\n";
+      print GREEN, $found->name, RESET, " ".$found->location."\n";
     }
 
   }
