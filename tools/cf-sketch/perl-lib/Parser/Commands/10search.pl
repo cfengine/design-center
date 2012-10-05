@@ -1,8 +1,10 @@
-# Time-stamp: <2012-10-03 10:45:57 a10022>
+# Time-stamp: <2012-10-05 01:02:51 a10022>
 #
 # search command for searching through sketch list
 # Diego Zamboni, October 1st, 2012.
 # diego.zamboni@cfengine.com
+
+use Term::ANSIColor qw(:constants);
 
 %COMMANDS =
   (
@@ -23,7 +25,11 @@ sub command_search {
     Util::error($err);
   }
   else {
-    CFSketch::search($regex eq 'all' ? ["."] : [$regex]);
+    @res = $Config{_repository}->list($regex eq 'all' ? "." : $regex);
+    foreach my $found (@res) {
+          print GREEN, $found->name, RESET, " ".$found->location."\n";
+    }
+
   }
 }
 
