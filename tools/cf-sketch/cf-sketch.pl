@@ -20,6 +20,7 @@ use Term::ANSIColor qw(:constants);
 use Parser;
 use Util;
 use DesignCenter::Config;
+use DesignCenter::Repository;
 
 $Term::ANSIColor::AUTORESET = 1;
 
@@ -64,6 +65,9 @@ $config->load;
 $config->version($VERSION);
 $config->date($DATE);
 
+# Set up repository
+$config->_repository(DesignCenter::Repository->new($config));
+
 # Load commands and do other parser initialization
 Parser::init('cf-sketch', $config, @ARGV);
 
@@ -91,7 +95,7 @@ $config->repolist([ split(/,/, join(',', @{$config->repolist})) ]);
 my @list;
 foreach my $repo (@{$config->repolist})
 {
- if (is_resource_local($repo))
+ if (Util::is_resource_local($repo))
  {
   my $abs = File::Spec->rel2abs($repo);
   if ($abs ne $repo)
@@ -809,7 +813,7 @@ sub remove
 
  foreach my $repo (@{$config->repolist})
  {
-  next unless is_resource_local($repo);
+  next unless Util::is_resource_local($repo);
 
   my $contents = repo_get_contents($repo);
 
@@ -852,7 +856,7 @@ sub install
 
  my $source = $config->installsource;
  my $base_dir = dirname($source);
- my $local_dir = is_resource_local($source);
+ my $local_dir = Util::is_resource_local($source);
 
  print "Loading cf-sketch inventory from $source\n" if $verbose;
 
@@ -928,7 +932,7 @@ sub install
    {
     my $file_spec = $data->{manifest}->{$file};
     # build a locally valid install path, while the manifest can use / separator
-    my $source = is_resource_local($data->{dir}) ? File::Spec->catfile($data->{dir}, split('/', $file)) : "$data->{dir}/$file";
+    my $source = Util::is_resource_local($data->{dir}) ? File::Spec->catfile($data->{dir}, split('/', $file)) : "$data->{dir}/$file";
 
     my $dest;
 
@@ -958,7 +962,7 @@ sub install
 
     # TODO: maybe disable this?  It can be expensive for large files.
     if (!$config->force &&
-        is_resource_local($data->{dir}) &&
+        Util::is_resource_local($data->{dir}) &&
         compare($source, $dest) == 0)
     {
      Util::color_warn "  Manifest member $file is already installed in $dest"
@@ -974,7 +978,7 @@ sub install
      }
      else
      {
-      if (is_resource_local($data->{dir}))
+      if (Util::is_resource_local($data->{dir}))
       {
        copy($source, $dest) or Util::color_die "Aborting: copy $source -> $dest failed: $!";
       }
@@ -1140,7 +1144,7 @@ sub find_remote_sketches
  foreach my $repo (@$urls)
  {
   my $sketches_url = "$repo/cfsketches";
-  my $sketches = lwp_get_remote($sketches_url)
+  my $sketches = Util::get_remote($sketches_url)
    or Util::color_die "Unable to retrieve $sketches_url : $!\n";
 
   foreach my $sketch_dir ($sketches =~ /(.+)/mg)
@@ -1189,7 +1193,7 @@ sub load_sketch
  my $topdir = shift @_;
  my $noparse = shift @_ || 0;
 
- my $name = is_resource_local($dir) ? File::Spec->catfile($dir, SKETCH_DEF_FILE) : "$dir/" . SKETCH_DEF_FILE;
+ my $name = Util::is_resource_local($dir) ? File::Spec->catfile($dir, SKETCH_DEF_FILE) : "$dir/" . SKETCH_DEF_FILE;
  my $json = load_json($name);
 
  my $info = {};
@@ -1263,7 +1267,7 @@ sub load_sketch
  if (!scalar @messages) # there are no errors, so go on...
  {
   my $name = $json->{metadata}->{name};
-  $json->{dir} = $config->fullpath || !is_resource_local($dir) ? $dir : File::Spec->abs2rel( $dir, $topdir );
+  $json->{dir} = $config->fullpath || !Util::is_resource_local($dir) ? $dir : File::Spec->abs2rel( $dir, $topdir );
   $json->{fulldir} = $dir;
   $json->{file} = $name;
   if ($noparse ||
@@ -1326,7 +1330,7 @@ sub verify_entry_point
 
  my $maincf = $entry;
 
- my $maincf_filename = is_resource_local($dir) ? File::Spec->catfile($dir, $maincf) : "$dir/$maincf";
+ my $maincf_filename = Util::is_resource_local($dir) ? File::Spec->catfile($dir, $maincf) : "$dir/$maincf";
 
   my $meta = {
               file => basename($maincf_filename),
@@ -1341,7 +1345,7 @@ sub verify_entry_point
 
  if (exists $mft->{$maincf})
  {
-  if (is_resource_local($dir))
+  if (Util::is_resource_local($dir))
   {
    unless (-f $maincf_filename)
    {
@@ -1359,7 +1363,7 @@ sub verify_entry_point
   }
   else
   {
-   $mcf = lwp_get_remote($maincf_filename);
+   $mcf = Util::get_remote($maincf_filename);
    unless ($mcf)
    {
     Util::color_warn "Could not retrieve $maincf_filename: $!" unless $quiet;
@@ -1639,45 +1643,12 @@ sub verify_entry_point
  return $meta;
 }
 
-sub is_resource_local
-{
- my $resource = shift @_;
- return ($resource !~ m,^[a-z][a-z]+:,);
-}
-
-sub lwp_get_remote
-{
- my $resource = shift @_;
- eval
- {
-  require LWP::Simple;
- };
- if ($@ )
- {
-  Util::color_die "Could not load LWP::Simple (you should install libwww-perl)";
- }
-
- if ($resource =~ m/^https/)
- {
-  eval
-  {
-   require LWP::Protocol::https;
-  };
-  if ($@ )
-  {
-   Util::color_die "Could not load LWP::Protocol::https (you should install it)";
-  }
- }
-
- return get($resource);
-}
-
 sub get_local_repo
 {
  my $repo;
  foreach my $target (@{$config->repolist})
  {
-  if (is_resource_local($target))
+  if (Util::is_resource_local($target))
   {
    $repo = $target;
    last;
@@ -1697,7 +1668,7 @@ sub get_local_repo
    if exists $content_cache{$repo,$noparse};
 
   my $contents;
-  if (is_resource_local($repo))
+  if (Util::is_resource_local($repo))
   {
    $contents = find_sketches([$repo], $noparse);
   }
@@ -1721,7 +1692,7 @@ sub load_json
 
  my @j;
 
- if (is_resource_local($f))
+ if (Util::is_resource_local($f))
  {
   my $j;
   unless (open($j, '<', $f) && $j)
@@ -1734,7 +1705,7 @@ sub load_json
  }
  else
  {
-  my $j = lwp_get_remote($f)
+  my $j = Util::get_remote($f)
    or Util::color_die "Unable to retrieve $f";
 
   @j = split "\n", $j;
@@ -1754,7 +1725,7 @@ sub load_json
    {
     if (dirname($include) eq '.' && ! -f $include)
     {
-      if (is_resource_local($f)) {
+      if (Util::is_resource_local($f)) {
         $include = File::Spec->catfile(dirname($f), $include);
       }
       else {
@@ -2449,29 +2420,6 @@ sub validate
  return 0;
 }
 
-sub search
-{
- my $terms = shift @_;
- my $source = $config->installsource;
- my $base_dir = dirname($source);
- my $search = search_internal($source, []);
- my $local_dir = is_resource_local($base_dir);
-
- SKETCH:
- foreach my $sketch (sort keys %{$search->{known}})
- {
-  my $dir = $local_dir ? File::Spec->catdir($base_dir, $search->{known}->{$sketch}) : "$base_dir/$search->{known}->{$sketch}";
-  foreach my $term (@$terms)
-  {
-   if ($sketch =~ m/$term/i || $dir =~ m/$term/i)
-   {
-    print GREEN, "$sketch", RESET, " $dir\n";
-    next SKETCH;
-   }
-  }
- }
-}
-
 sub search_internal
 {
  my $source = shift @_;
@@ -2479,7 +2427,7 @@ sub search_internal
 
  my %known;
  my %todo;
- my $local_dir = is_resource_local($source);
+ my $local_dir = Util::is_resource_local($source);
 
  if ($local_dir)
  {
@@ -2505,7 +2453,7 @@ sub search_internal
  }
  else
  {
-  my $invd = lwp_get_remote($source)
+  my $invd = Util::get_remote($source)
    or Util::color_die "Unable to retrieve $source : $!\n";
 
   my @lines = split "\n", $invd;

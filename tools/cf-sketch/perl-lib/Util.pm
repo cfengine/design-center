@@ -212,4 +212,37 @@ sub uniq
   return @result;
 }
 
+sub is_resource_local
+{
+ my $resource = shift @_;
+ return ($resource !~ m,^[a-z][a-z]+:,);
+}
+
+sub get_remote
+{
+ my $resource = shift @_;
+ eval
+ {
+  require LWP::Simple;
+ };
+ if ($@ )
+ {
+  Util::color_die "Could not load LWP::Simple (you should install libwww-perl)";
+ }
+
+ if ($resource =~ m/^https/)
+ {
+  eval
+  {
+   require LWP::Protocol::https;
+  };
+  if ($@ )
+  {
+   Util::color_die "Could not load LWP::Protocol::https (you should install it)";
+  }
+ }
+
+ return LWP::Simple::get($resource);
+}
+
 1;
