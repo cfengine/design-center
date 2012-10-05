@@ -38,7 +38,7 @@ my %fields =
    actfile   => "$configdir/activations.conf",
    configfile => "$configdir/cf-sketch.conf",
    installtarget => File::Spec->catfile($inputs_root, 'sketches'),
-   installsource => Util::local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches',
+   installsource => Util::local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/zzamboni/design-center/features/ease_of_use/sketches/cfsketches',
    params => {},
    cfpath => join (':', Util::uniq(split(':', $ENV{PATH}||''), '/var/cfengine/bin', '/usr/sbin', '/usr/local/bin', '/usr/local/sbin')),
    modulepath => '../../',
@@ -47,6 +47,9 @@ my %fields =
    simplifyarrays => 0,
    repolist => [ File::Spec->catfile($inputs_root, 'sketches') ],
    color => $color,
+   # Internal fields
+   _object => undef,
+   _repository => undef,
   );
 
 # Determine where to load command modules from
@@ -145,6 +148,7 @@ sub new {
               };
   # Get the URI from the argument if provided (else see default value above)
   $self->{configfile} = $configfile if $configfile;
+  $self->{_object} = $self;
 
   # Convert myself into an object
   bless($self, $class);
@@ -211,7 +215,9 @@ sub load {
     # Now we merge all three sources of options: Default options are
     # overriden by config-file options, which are overriden by
     # command-line options
-    foreach my $ptr (\%fields, \%cfgfile_options, \%cmd_options) {
+    # The default options are already there, so we just loop over
+    # the other two sources (cfgfile and cmdline)
+    foreach my $ptr (\%cfgfile_options, \%cmd_options) {
       foreach my $key (keys %$ptr) {
         $self->$key($ptr->{$key});
       }
