@@ -1,4 +1,15 @@
 {
-    "entry": { "192.168.1.254": "gateway", "192.168.1.2": "printer" },
-    "defined_only": "true",
+    "System::etc_hosts":
+    {
+        "hostfile": { "bycontext": 
+                      { 
+                          "windows": "$(sys.winsysdir)\\drivers\\etc\\hosts",
+                          "test": "/tmp/hosts",
+                          "!windows.!test": "/etc/hosts"
+                      }
+                    },
+
+        "hosts": { "192.168.1.254": "gateway", "192.168.1.2": "printer" },
+        "defined_only": "any",
+    }
 }

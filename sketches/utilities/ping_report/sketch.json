@@ -1,7 +1,7 @@
 {
     "manifest":
     {
-        "main.cf": {"desc": "main file", "version": 1.0 },
+        "main.cf": {"desc": "main file", "version": 1.1 },
         "README.md": {"documentation": true},
         "test.cf": {"comment": "Test Policy"},
         "changelog": {"comment": "changelog"},
@@ -10,12 +10,12 @@
 
     "metadata":
     {
-        "name": "Utilites::ping_report",
-        "version": 1.0,
+        "name": "Utilities::ping_report",
+        "version": 1.1,
         "license": "MIT",
         "portfolio": ["cfdc"],
-        "authors": ["Nick Anderson <nick@cmdln.org>" ],
-        "depends": {"CFEngine::stdlib": {"version": 105}, "cfengine": {"version": "3.2.1"}, "os": ["linux"] },
+        "authors": ["Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": {"CFEngine::stdlib": {"version": 105}, "cfengine": {"version": "3.4.0"}, "os": ["linux"] },
     },
 
     "entry_point": "main.cf",

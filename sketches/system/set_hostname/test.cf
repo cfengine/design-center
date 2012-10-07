@@ -1,15 +1,24 @@
-body common control {
-
-    bundlesequence => {"main" };
-
-    inputs => {"../../libraries/copbl/cfengine_stdlib.cf", "main.cf"};
+body common control
+{
+      bundlesequence => { "cfsketch_run" };
+      inputs => {"../../libraries/copbl/cfengine_stdlib.cf", "main.cf"};
 }
-bundle agent main {
-vars:
-    "fqdn_hostname" string => "www";
-    "fqdn_domain"   string => "example.com";
 
-methods:
-    "hostname" usebundle => cfdc_set_hostname("main.fqdn_");
+
+bundle common cfsketch_g
+{
+  vars:
+       "fqdn_canon_prefix" string => "fqdn_";
+       "fqdn_hostname" string => "node1";
+       "fqdn_domainname" string => "example.com";
+}
+
+bundle agent cfsketch_run
+{
+  methods:
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "run" usebundle => cfdc_hostname:set($(cfsketch_g.fqdn_canon_prefix),
+                                           $(cfsketch_g.fqdn_hostname),
+                                           $(cfsketch_g.fqdn_domainname));
 
 }
