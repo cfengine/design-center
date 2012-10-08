@@ -4,7 +4,7 @@
 # Representation of a repository containing sketches
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-08 16:08:55 a10022>
+# Time-stamp: <2012-10-08 16:54:37 a10022>
 
 package DesignCenter::Repository;
 
@@ -125,11 +125,6 @@ sub search_internal {
 
             my ($dir, $sketch, $etc) = (split ' ', $line, 3);
             $known{$sketch} = $dir;
-
-            foreach my $s (@$sketches) {
-                next unless ($sketch eq $s || $dir eq $s);
-                $todo{$sketch} = $dir;
-            }
         }
     } else {
         my @lines = @{$self->_lines};
@@ -143,12 +138,16 @@ sub search_internal {
         foreach my $line (@lines) {
             my ($dir, $sketch, $etc) = (split ' ', $line, 3);
             $known{$sketch} = $dir;
-
-            foreach my $s (@$sketches) {
-                next unless ($sketch eq $s || $dir eq $s);
-                $todo{$sketch} = $dir;
-            }
         }
+    }
+
+    foreach my $s (@$sketches) {
+      if (exists($known{$s}) || grep { $_ eq $s } values(%known)) {
+        $todo{$s} = $known{$s};
+      }
+      else {
+        Util::error "I could not find sketch '$s' in the source repository.\n";
+      }
     }
 
     return { known => \%known, todo => \%todo };
@@ -175,6 +174,10 @@ sub install
 
     my %known = %{$search->{known}};
     my %todo = %{$search->{todo}};
+
+    unless (scalar keys %todo) {
+      Util::error "Nothing to install.";
+    }
 
     foreach my $sketch (sort keys %todo)
     {
