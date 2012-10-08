@@ -82,7 +82,7 @@ my @WIZARDS;
 
 ####### Initialization
 
-# init($parser_id, $config_hash, @ARGV)
+# init($parser_id, $config, @ARGV)
 sub init {
   # Id for this parser. The ID will be shown in the prompt.
   $parser_id=shift;
@@ -205,12 +205,16 @@ sub init {
   # Recopy the $config hash since there may have been changes during the load
   %Config=%$config;
   # Configure completions
-  if (my $attr = $inputline->Attribs) {
-    $attr->{basic_word_break_characters} = ". \t\n";
-    $attr->{completer_word_break_characters} = " \t\n";
-    $attr->{completion_function} = \&complete_word;
-    @ALLCOMMANDS_COMPLETE = grep { $ALLCOMMANDS{$_}->[0]->[0] !~ /^-/ } keys %ALLCOMMANDS;
-  } # end if attributes
+  if ($interactive) {
+    # We use eval because not all ReadLine implementations support these attributes
+    eval q(
+    if (my $attr = $inputline->Attribs) {
+      $attr->{basic_word_break_characters} = ". \t\n";
+      $attr->{completer_word_break_characters} = " \t\n";
+      $attr->{completion_function} = \&complete_word;
+      @ALLCOMMANDS_COMPLETE = grep { $ALLCOMMANDS{$_}->[0]->[0] !~ /^-/ } keys %ALLCOMMANDS;
+    });
+  }
   return 1;
 }
 
@@ -604,7 +608,7 @@ sub _execute_command {
 # it only lists help for the commands given.
 sub command_help {
   my $cmds=shift;
-  Help(Util::splitlist($cmds));
+  Help(split(' ', $cmds));
 }
 ;
 
