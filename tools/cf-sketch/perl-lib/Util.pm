@@ -10,10 +10,10 @@ package Util;
 
 use strict;
 use Data::Dumper;
-use Text::ParseWords;
 use Term::ANSIColor qw(:constants);
 use File::Spec;
 use File::Basename;
+use File::Path qw(make_path remove_tree);
 use Cwd;
 
 BEGIN {
@@ -24,18 +24,6 @@ BEGIN {
   $Data::Dumper::Terse=1;
   $Data::Dumper::Indent=0;
 
-}
-
-# Takes a string separated by spaces and commas and returns it as a list.
-# The second argument, if present, defines the regex to use as a separator.
-# If the third argument is true, it keeps quotes and special characters
-# in the elements themselves.
-sub splitlist {
-  my $str=shift || "";
-  my $regex=shift;
-  $regex='[,\s]+' unless defined($regex);
-  my $keep=shift||0;
-  return grep { $_} quotewords($regex, $keep, $str);
 }
 
 # Returns an indented string containing a list. Syntax is:
@@ -138,6 +126,7 @@ sub color_warn {
   my ($package, $filename, $line, $sub) = caller(1);
   warn GREEN "$filename:$sub():\n" . YELLOW "WARN\t", @_;
 }
+
 sub color_die {
   my ($package, $filename, $line, $sub) = caller(1);
   die GREEN "$filename:$sub():\n" . RED "FATAL\t", @_;
@@ -240,5 +229,6 @@ sub get_remote
 
     return LWP::Simple::get($resource);
   }
+
 
 1;
