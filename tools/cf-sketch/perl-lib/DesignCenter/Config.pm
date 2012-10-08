@@ -4,10 +4,17 @@
 
 package DesignCenter::Config;
 
-use Util;
 use FindBin;
 use Carp;
 use Getopt::Long;
+use Util;
+
+# We store config in a class-global variable so that it can be
+# used without having to pass a $config object all over the place
+our $object = {};
+
+# Allow running init() multiple times without reinitializing things
+our $init_ran = undef;
 
 my %options = ();
 
@@ -50,6 +57,7 @@ my %fields =
    # Internal fields
    _object => undef,
    _repository => undef,
+   _hash => undef,
   );
 
 # Determine where to load command modules from
@@ -121,33 +129,45 @@ my @options_desc =
 # Automatically generate setters/getters, i.e. MAGIC
 sub AUTOLOAD {
   my $self = shift;
-  my $type = ref($self)
-    or croak "$self is not an object";
+  my $type = ref($self) || $self;
+
+  # If an object was given, use it, otherwise access the class-global
+  # options storage
+  my $what = ref($self) ? $self : $object;
 
   my $name = $AUTOLOAD;
   $name =~ s/.*://;             # strip fully-qualified portion
 
-  unless (exists $self->{_permitted}->{$name} ) {
+  unless (exists $what->{_permitted}->{$name} ) {
     croak "Can't access `$name' field in class $type";
   }
 
   if (@_) {
-    return $self->{$name} = shift;
+    return $what->{$name} = shift;
   } else {
-    return $self->{$name};
+    return $what->{$name};
   }
+}
+
+sub init {
+  my $configfile = shift;
+  unless ($init_ran) {
+    # Data initialization
+    $object  = {
+                _permitted => \%fields,
+                %fields,
+               };
+    $object->{configfile} = $configfile if $configfile;
+    $object->{_hash} = $object;
+    $init_ran = 1;
+  }
+  return $object;
 }
 
 sub new {
   my $class = shift;
-  my $configfile = shift;
-  # Data initialization
-  my $self  = {
-               _permitted => \%fields,
-               %fields,
-              };
-  # Get the URI from the argument if provided (else see default value above)
-  $self->{configfile} = $configfile if $configfile;
+  # Store in a class-global object
+  $self = init(@_);
   $self->{_object} = $self;
 
   # Convert myself into an object
@@ -244,9 +264,3 @@ sub print_help {
     }
   }
 }
-
-  sub hash {
-    my $self=shift;
-    my %hash = %$self;
-    return \%hash;
-  }
