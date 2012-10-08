@@ -4,14 +4,21 @@
 # Representation of a repository containing sketches
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-05 02:04:10 a10022>
+# Time-stamp: <2012-10-08 16:08:55 a10022>
 
 package DesignCenter::Repository;
 
 use Carp;
 use Util;
 use File::Basename;
+use File::Spec;
+use File::Compare;
+use File::Copy;
+use Term::ANSIColor qw(:constants);
+
+use DesignCenter::Config;
 use DesignCenter::Sketch;
+
 our $AUTOLOAD;                  # it's a package global
 
 # Allowed data fields, for setters/getters
@@ -19,7 +26,6 @@ my %fields = (
     # Internal fields
     _basedir => undef,
     _local => undef,
-    _config => undef,
     _lines => undef,
     # Default repository - base location where the cfsketches file can be found
     uri => undef,
@@ -49,7 +55,6 @@ sub AUTOLOAD {
 
 sub new {
     my $class = shift;
-    my $config = shift;
     my $uri = shift;
     # Data initialization
     my $self  = {
@@ -57,9 +62,8 @@ sub new {
         %fields,
     };
     # Get the URI from the argument if provided (else see default value above)
-    $self->{uri} = $uri || $config->installsource || $self->{uri};
+    $self->{uri} = $uri || DesignCenter::Config->installsource || $self->{uri};
     die "Need the repository URI for creation" unless $self->{uri};
-    $self->{_config} = $config;
 
     # Convert myself into an object
     bless($self, $class);
@@ -79,7 +83,7 @@ sub _setup {
 sub list {
     my $self = shift;
     my @terms = @_;
-    my $source = $self->{_config}->installsource;
+    my $source = DesignCenter::Config->installsource;
     my $base_dir = $self->_basedir;
     my $search = $self->search_internal([]);
     my $local_dir = $self->_local;
@@ -150,3 +154,294 @@ sub search_internal {
     return { known => \%known, todo => \%todo };
 }
 
+sub install
+{
+    my $self = shift;
+    my $sketches = shift;
+
+    my $dest_repo = DesignCenter::Config->installtarget;
+    push @{DesignCenter::Config->repolist}, $dest_repo unless grep { $_ eq $dest_repo } @{DesignCenter::Config->repolist};
+
+    Util::color_die "Can't install: no install target supplied!"
+        unless defined $dest_repo;
+
+    my $source = $self->uri;
+    my $base_dir = $self->_basedir;
+    my $local_dir = $self->_local;
+
+    print "Loading cf-sketch inventory from $source\n" if DesignCenter::Config->verbose;
+
+    my $search = $self->search_internal($sketches);
+
+    my %known = %{$search->{known}};
+    my %todo = %{$search->{todo}};
+
+    foreach my $sketch (sort keys %todo)
+    {
+        print BLUE "Installing $sketch\n" unless $quiet;
+        my $dir = $local_dir ? File::Spec->catdir($base_dir, $todo{$sketch}) : "$base_dir/$todo{$sketch}";
+        my $skobj = DesignCenter::Sketch->new(name => $sketch,
+                                              location => $local_dir ? File::Spec->rel2abs($dir) : $dir);
+        $skobj->load;
+        my $data = $skobj->json_data;
+
+        Util::color_die "Sorry, but sketch $sketch could not be loaded from $dir!"
+            unless $data;
+
+        my %missing = map { $_ => 1 } $self->missing_dependencies($data->{metadata}->{depends});
+
+        # note that this will NOT catch circular dependencies!
+        foreach my $missing (keys %missing)
+        {
+            print "Trying to find $missing dependency\n" unless $quiet;
+
+            if (exists $todo{$missing})
+            {
+                print "$missing dependency is to be installed or was installed already\n"
+                    unless $quiet;
+                delete $missing{$missing};
+            }
+            elsif (exists $known{$missing})
+            {
+                print "Found $missing dependency, trying to install it\n" unless $quiet;
+                $self->install([$missing]);
+                delete $missing{$missing};
+                $todo{$missing} = $known{$missing};
+            }
+        }
+
+        my @missing = sort keys %missing;
+        if (scalar @missing)
+        {
+            if (DesignCenter::Config->force)
+            {
+                Util::color_warn "Installing $sketch despite unsatisfied dependencies @missing"
+                    unless $quiet;
+            }
+            else
+            {
+                Util::color_die "Can't install: $sketch has unsatisfied dependencies @missing";
+            }
+        }
+
+        printf("Installing %s (%s) into %s\n",
+               $sketch,
+               $data->{file},
+               $dest_repo)
+            if DesignCenter::Config->verbose;
+
+        my $install_dir = File::Spec->catdir($dest_repo,
+                                             split('::', $sketch));
+
+        my $module_install_dir = File::Spec->catfile($dest_repo, DesignCenter::Config->modulepath);
+
+        if (CFSketch::maybe_ensure_dir($install_dir))
+        {
+            print "Created destination directory $install_dir\n" if DesignCenter::Config->verbose;
+            print "Checking and installing sketch files.\n" unless $quiet;
+            my $anything_changed = 0;
+            foreach my $file ($CFSketch::SKETCH_DEF_FILE, sort keys %{$data->{manifest}})
+            {
+                my $file_spec = $data->{manifest}->{$file};
+                # build a locally valid install path, while the manifest can use / separator
+                my $source = Util::is_resource_local($data->{dir}) ? File::Spec->catfile($data->{dir}, split('/', $file)) : "$data->{dir}/$file";
+
+                my $dest;
+
+                if ($file_spec->{module})
+                {
+                    if (CFSketch::maybe_ensure_dir($module_install_dir))
+                    {
+                        print "Created module destination directory $module_install_dir\n" if DesignCenter::Config->verbose;
+                        $dest = File::Spec->catfile($module_install_dir, split('/', $file));
+                    }
+                    else
+                    {
+                        Util::color_warn "Could not make install directory $module_install_dir, skipping $sketch";
+                        next;
+                    }
+                }
+                else
+                {
+                    $dest = File::Spec->catfile($install_dir, split('/', $file));
+                }
+
+                my $dest_dir = dirname($dest);
+                Util::color_die "Could not make destination directory $dest_dir"
+                    unless CFSketch::maybe_ensure_dir($dest_dir);
+
+                my $changed = 1;
+
+                # TODO: maybe disable this?  It can be expensive for large files.
+                if (!DesignCenter::Config->force &&
+                    Util::is_resource_local($data->{dir}) &&
+                    compare($source, $dest) == 0)
+                {
+                    Util::color_warn "  Manifest member $file is already installed in $dest"
+                        if DesignCenter::Config->verbose;
+                    $changed = 0;
+                }
+
+                if ($changed)
+                {
+                    if ($dryrun)
+                    {
+                        print YELLOW "  DRYRUN: skipping installation of $source to $dest\n";
+                    }
+                    else
+                    {
+                        if (Util::is_resource_local($data->{dir}))
+                        {
+                            copy($source, $dest) or Util::color_die "Aborting: copy $source -> $dest failed: $!";
+                        }
+                        else
+                        {
+                            my $rc = getstore($source, $dest);
+                            Util::color_die "Aborting: remote copy $source -> $dest failed: error code $rc"
+                                unless is_success($rc)
+                        }
+                    }
+                }
+
+                if (exists $file_spec->{perm})
+                {
+                    if ($dryrun)
+                    {
+                        print YELLOW "  DRYRUN: skipping chmod $file_spec->{perm} $dest\n";
+                    }
+                    else
+                    {
+                        chmod oct($file_spec->{perm}), $dest;
+                    }
+                }
+
+                if (exists $file_spec->{user})
+                {
+                    # TODO: ensure this works on platforms without getpwnam
+                    # TODO: maybe add group support too
+                    my ($login,$pass,$uid,$gid) = getpwnam($file_spec->{user})
+                        or Util::color_die "$file_spec->{user} not in passwd file";
+
+                    if ($dryrun)
+                    {
+                        print YELLOW "  DRYRUN: skipping chown $uid:$gid $dest\n";
+                    }
+                    else
+                    {
+                        chown $uid, $gid, $dest;
+                    }
+                }
+
+                print "  $source -> $dest\n" if $changed && DesignCenter::Config->verbose;
+                $anything_changed += $changed;
+            }
+
+            unless ($quiet) {
+                if ($anything_changed) {
+                    print GREEN "Done installing $sketch\n";
+                }
+                else {
+                    print GREEN "Everything was up to date - nothing changed.\n";
+                }
+            }
+        }
+        else
+        {
+            Util::color_warn "Could not make install directory $install_dir, skipping $sketch";
+        }
+    }
+}
+
+sub missing_dependencies
+{
+    my $self = shift;
+    my $deps = shift;
+    my @missing;
+
+    my %tocheck = %$deps;
+
+    foreach my $repo (@{DesignCenter::Config->repolist})
+    {
+        my $contents = CFSketch::repo_get_contents($repo);
+        foreach my $dep (sort keys %tocheck)
+        {
+            if ($dep eq 'os' &&
+                ref $tocheck{$dep} eq 'ARRAY')
+            {
+                # TODO: get uname from cfengine?
+                # pick either /bin/uname or /usr/bin/uname
+                my $uname_path = -x '/bin/uname' ? '/bin/uname -o' : '/usr/bin/uname -s';
+                my $uname = 'unknown';
+                if (-x (split ' ', $uname_path)[0])
+                {
+                    $uname = `$uname_path`;
+                    chomp $uname;
+                }
+
+                foreach my $os (sort @{$tocheck{$dep}})
+                {
+                    if ($uname =~ m/$os/i)
+                    {
+                        print "Satisfied OS dependency: $uname matched $os\n"
+                            if DesignCenter::Config->verbose;
+
+                        delete $tocheck{$dep};
+                    }
+                }
+
+                if (exists $tocheck{$dep})
+                {
+                    print YELLOW "Unsatisfied OS dependencies: $uname did not match [@{$deps->{$dep}}]\n"
+                        if DesignCenter::Config->verbose;
+                }
+            }
+            elsif ($dep eq 'cfengine' &&
+                   ref $tocheck{$dep} eq 'HASH' &&
+                   exists $tocheck{$dep}->{version})
+            {
+                my $version = CFSketch::cfengine_version();
+                if ($version ge $tocheck{$dep}->{version})
+                {
+                    print "Satisfied cfengine version dependency: $version present, needed ",
+                    $tocheck{$dep}->{version}, "\n"
+                        if DesignCenter::Config->veryverbose;
+
+                    delete $tocheck{$dep};
+                }
+                else
+                {
+                    print YELLOW "Unsatisfied cfengine version dependency: $version present, need ",
+                    $tocheck{$dep}->{version}, "\n"
+                        if DesignCenter::Config->verbose;
+                }
+            }
+            elsif (exists $contents->{$dep})
+            {
+                my $dd = $contents->{$dep};
+                # either the version is not specified or it has to match
+                if (!exists $tocheck{$dep}->{version} ||
+                    $dd->{metadata}->{version} >= $tocheck{$dep}->{version})
+                {
+                    print "Found dependency $dep in $repo\n" if DesignCenter::Config->veryverbose;
+                    # TODO: test recursive dependencies, right now this will loop
+                    # TODO: maybe use a CPAN graph module
+                    push @missing, $self->missing_dependencies($dd->{metadata}->{depends});
+                    delete $tocheck{$dep};
+                }
+                else
+                {
+                    print YELLOW "Found dependency $dep in $repo but the version doesn't match\n"
+                        if DesignCenter::Config->verbose;
+                }
+            }
+        }
+    }
+
+    push @missing, sort keys %tocheck;
+    if (scalar @missing)
+    {
+        print YELLOW "Unsatisfied dependencies: @missing\n" unless $quiet;
+    }
+
+    return @missing;
+}
