@@ -57,6 +57,7 @@ my %fields =
    # Internal fields
    _object => undef,
    _repository => undef,
+   _system => undef,
    _hash => undef,
   );
 

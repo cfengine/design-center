@@ -22,6 +22,7 @@ use Util;
 use DesignCenter::JSON;
 use DesignCenter::Config;
 use DesignCenter::Repository;
+use DesignCenter::System;
 use DesignCenter::Sketch;
 
 $Term::ANSIColor::AUTORESET = 1;
@@ -50,6 +51,8 @@ $config->date($DATE);
 
 # Set up repository
 $config->_repository(DesignCenter::Repository->new);
+# Local system
+$config->_system(DesignCenter::System->new);
 
 # Load commands and do other parser initialization
 Parser::init('cf-sketch', $config, @ARGV);
@@ -207,55 +210,6 @@ sub configure_self
 
     maybe_ensure_dir(dirname($cf));
     maybe_write_file($cf, 'configuration input', DesignCenter::JSON->coder->pretty(1)->encode(\%config));
-  }
-
-sub list
-  {
-    my $terms = shift @_;
-
-    foreach my $repo (@{$config->repolist}) {
-      my @sketches = list_internal($repo, $terms);
-
-      my $contents = repo_get_contents($repo);
-
-      foreach my $sketch (@sketches) {
-        # this format is easy to parse, even if the directory has spaces,
-        # because the first two fields won't have spaces
-        my @docs = grep {
-          $contents->{$sketch}->{manifest}->{$_}->{documentation}
-        } sort keys %{$contents->{$sketch}->{manifest}};
-
-        print GREEN, "$sketch", RESET, " $contents->{$sketch}->{fulldir}\n";
-      }
-    }
-  }
-
-sub list_internal
-  {
-    my $repo  = shift @_;
-    my $terms = shift @_;
-
-    my @ret;
-
-    print "Looking for terms [@$terms] in cf-sketch repository [$repo]\n"
-      if $verbose;
-
-    my $contents = repo_get_contents($repo);
-    print "Inspecting repo contents: ", DesignCenter::JSON->coder->encode($contents), "\n"
-      if $verbose;
-
-    foreach my $sketch (sort keys %$contents) {
-      # TODO: improve this search
-      my $as_str = $sketch . ' ' . DesignCenter::JSON->coder->encode($contents->{$sketch});
-
-      foreach my $term (@$terms) {
-        next unless $as_str =~ m/$term/;
-        push @ret, $sketch;
-        last;
-      }
-    }
-
-    return @ret;
   }
 
 # Produce the appropriate input directory depending on --fullpath
