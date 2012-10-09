@@ -4,7 +4,7 @@
 # Representation of a sketch
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-09 13:20:37 a10022>
+# Time-stamp: <2012-10-09 16:51:22 a10022>
 
 package DesignCenter::Sketch;
 
@@ -147,7 +147,13 @@ sub load {
           !defined $json->{entry_point} ||
           verify_entry_point($name, $json)) {
         # note this name will be stringified even if it's not a string
-        $self->json_data($json) if $am_object;
+        if ($am_object) {
+          $self->json_data($json);
+          # Also merge fields into the main object
+          foreach my $k (keys \%$json) {
+            $self->$k($json->{$k});
+          }
+        }
         return $json;
       } else {
         Util::warning "Could not verify bundle entry point from $name\n" unless DesignCenter::Config->quiet;
