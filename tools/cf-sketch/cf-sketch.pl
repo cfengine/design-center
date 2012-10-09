@@ -90,10 +90,10 @@ my $dryrun      = $config->dryrun;
 my $veryverbose = $config->veryverbose;
 my $verbose     = $config->verbose || $veryverbose;
 
-unless ($config->expert) {
-  # Load commands and do other parser initialization
-  Parser::init('cf-sketch', $config, @ARGV);
+# Load commands and do other parser initialization
+Parser::init('cf-sketch', $config, @ARGV);
 
+unless ($config->expert) {
   # Run the main command loop
   Parser::parse_commands();
 
@@ -140,28 +140,7 @@ if ($config->search) {
 # }
 
 if ($config->listactivations) {
-  my $activations = DesignCenter::JSON::load($config->actfile, 1);
-  unless (defined $activations && ref $activations eq 'HASH') {
-    Util::error "Can't load any activations from ".$config->actfile."\n"
-        if $verbose;
-    Util::error "There are no configured sketches.\n";
-  }
-
-  my $activation_id = 1;
-  foreach my $sketch (sort keys %$activations) {
-    if ('HASH' eq ref $activations->{$sketch}) {
-      Util::color_warn "Skipping unusable activations for sketch $sketch!";
-      next;
-    }
-
-    foreach my $activation (@{$activations->{$sketch}}) {
-      print BOLD GREEN."$activation_id\t".YELLOW."$sketch".RESET,
-        DesignCenter::JSON->coder->encode($activation),
-            "\n";
-
-      $activation_id++;
-    }
-  }
+  Parser::command_listactivations();
   exit;
 }
 

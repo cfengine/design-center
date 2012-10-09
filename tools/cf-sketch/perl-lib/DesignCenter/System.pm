@@ -112,5 +112,14 @@ sub list_internal
     return @ret;
   }
 
+sub activations {
+  my $activations = DesignCenter::JSON::load(DesignCenter::Config->actfile, 1);
+  unless (defined $activations && ref $activations eq 'HASH') {
+    Util::error "Can't load any activations from ".DesignCenter::Config->actfile."\n"
+        if DesignCenter::Config->verbose;
+    Util::error "There are no configured sketches.\n";
+  }
+  return $activations;
+}
 
 1;
