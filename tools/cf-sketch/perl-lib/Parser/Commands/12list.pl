@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2012-10-09 01:07:59 a10022>
+# Time-stamp: <2012-10-09 01:19:49 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -46,7 +46,8 @@ sub command_list {
       my @activations = @{$res->{$found}->{_activations}};
       if (@activations) {
         print GREEN." (configured";
-        if (my $count=scalar(@activations) > 1) {
+        my $count=scalar(@activations);
+        if ($count > 1) {
           print ", $count instances";
         }
         print ")\n";
