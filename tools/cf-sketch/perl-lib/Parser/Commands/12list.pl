@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2012-10-09 02:04:07 a10022>
+# Time-stamp: <2012-10-09 10:02:54 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -35,36 +35,44 @@ use DesignCenter::Config;
 sub command_list {
   my $full=shift;
   my $regex=shift;
+  $regex = "." if ($regex eq 'all' or !$regex);
   my $err = Util::check_regex($regex);
   if ($err) {
     Util::error($err);
   } else {
-    $res=DesignCenter::Config->_system->list([$regex eq 'all' ? "." : $regex]);
-    my $id = 1;
-    foreach my $found (sort keys %$res) {
-      print BOLD GREEN."$id. ".YELLOW."$found".RESET;
-      my @activations = @{$res->{$found}->_activations};
-      my $count = $res->{$found}->num_instances;
-      if ($count) {
-        print GREEN." (configured";
-        if ($count > 1) {
-          print ", $count instances";
-        }
-        print ")\n";
-        if ($full) {
-          my $activation_id=1;
-          foreach my $activation (@activations) {
-            print BOLD GREEN."\tInstance #$activation_id: ".RESET,
-              DesignCenter::JSON->coder->encode($activation), "\n";
-            $activation_id++;
+    my $res=DesignCenter::Config->_system->list([$regex]);
+    my @res = sort keys %$res;
+    if (@res) {
+      my $id = 1;
+      Util::output("The following sketches ".(($regex eq '.')?"are installed:":"match your query:")."\n\n");
+      foreach my $found (@res) {
+        print BOLD GREEN."$id. ".YELLOW."$found".RESET;
+        my @activations = @{$res->{$found}->_activations};
+        my $count = $res->{$found}->num_instances;
+        if ($count) {
+          print GREEN." (configured";
+          if ($count > 1) {
+            print ", $count instances";
           }
+          print ")\n";
+          if ($full) {
+            my $activation_id=1;
+            foreach my $activation (@activations) {
+              print BOLD GREEN."\tInstance #$activation_id: ".RESET,
+                DesignCenter::JSON->coder->encode($activation), "\n";
+              $activation_id++;
+            }
+          }
+        } else {
+          print RED." (unconfigured)\n";
         }
+        print RESET;
+        $id++;
       }
-      else {
-        print RED." (unconfigured)\n";
-      }
-      print RESET;
-      $id++;
+      Util::output("\nUse list -v to show the activation parameters.\n") unless $full;
+    }
+    else {
+      Util::error("No installed sketches match your query. Maybe use 'search' instead?\n");
     }
   }
 }

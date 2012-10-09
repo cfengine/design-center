@@ -92,6 +92,7 @@ my $verbose     = $config->verbose || $veryverbose;
 
 # Load commands and do other parser initialization
 Parser::init('cf-sketch', $config, @ARGV);
+Parser::set_welcome_message("[default]\nCFEngine AS, 2012.");
 
 unless ($config->expert) {
   # Run the main command loop

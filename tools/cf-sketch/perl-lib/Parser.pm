@@ -11,6 +11,7 @@ package Parser;
 use strict;
 # Best if used with Term::ReadLine::Gnu
 use Term::ReadLine;
+use Term::ANSIColor qw(:constants);
 use Util;
 use vars qw($User
 	    @commands
@@ -24,6 +25,7 @@ use vars qw($User
 	    $isWizard
 	    $inputline
             $parser_id
+            $welcome_message
 	    %ALLCOMMANDS
             @ALLCOMMANDS_COMPLETE
 	    %COMMANDS
@@ -249,6 +251,7 @@ sub parse_commands {
   if (@commands) {
     _do_command(@commands);
   } else {
+    _message(BOLD GREEN.$welcome_message."\n\n") if $welcome_message;
     _message("Enter any command to $parser_id, use 'help' for help, or 'quit' or '^D' to quit.\n");
     my $wizmode=$isWizard?"<Wizard> ":"";
     while (1) {
@@ -598,6 +601,11 @@ sub _execute_command {
   } else {
     return("Unknown command:\n\t$line\n");
   }
+}
+
+sub set_welcome_message {
+  $welcome_message = shift;
+  $welcome_message =~ s/\[default\]/Welcome to $parser_id version $Config{version}./;
 }
 
 ######################################################################
