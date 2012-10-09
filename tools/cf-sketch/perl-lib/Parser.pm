@@ -212,7 +212,7 @@ sub init {
       $attr->{basic_word_break_characters} = ". \t\n";
       $attr->{completer_word_break_characters} = " \t\n";
       $attr->{completion_function} = \&complete_word;
-      @ALLCOMMANDS_COMPLETE = grep { $ALLCOMMANDS{$_}->[0]->[0] !~ /^-/ } keys %ALLCOMMANDS;
+      @ALLCOMMANDS_COMPLETE = grep { grep { $_->[0] =~ /^[^-]/ } @{$ALLCOMMANDS{$_} } } keys %ALLCOMMANDS;
     });
   }
   return 1;
