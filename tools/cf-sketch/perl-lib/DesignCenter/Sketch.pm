@@ -4,7 +4,7 @@
 # Representation of a sketch
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-08 15:59:39 a10022>
+# Time-stamp: <2012-10-09 01:56:33 a10022>
 
 package DesignCenter::Sketch;
 
@@ -17,7 +17,7 @@ use DesignCenter::Config;
 
 our $AUTOLOAD;                  # it's a package global
 
-# Allowed data fields, for setters/getters
+# Default data fields
 my %fields = (
               name => undef,
               location => undef,
@@ -35,9 +35,10 @@ sub AUTOLOAD {
   my $name = $AUTOLOAD;
   $name =~ s/.*://;             # strip fully-qualified portion
 
-  unless (exists $self->{_permitted}->{$name} ) {
-    croak "Can't access `$name' field in class $type";
-  }
+# Allow all fields
+#  unless (exists $self->{_permitted}->{$name} ) {
+#    croak "Can't access `$name' field in class $type";
+#  }
 
   if (@_) {
     return $self->{$name} = shift;

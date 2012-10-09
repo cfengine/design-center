@@ -83,8 +83,10 @@ sub list
 
         # print GREEN, "$sketch", RESET, " $contents->{$sketch}->{fulldir}\n";
 
-        $res->{$sketch} = $contents->{$sketch};
-
+        # Create new Sketch object
+        $res->{$sketch} = DesignCenter::Sketch->new(%{$contents->{$sketch}});
+        # Set installed to its full install location
+        $res->{$sketch}->installed($res->{$sketch}->fulldir);
       }
     }
 
@@ -92,11 +94,13 @@ sub list
     unless ($noactivations) {
       my $activations = $self->activations;
       foreach my $sketch (sort keys %$activations) {
+        next unless exists($res->{$sketch});
         if ('HASH' eq ref $activations->{$sketch}) {
           Util::color_warn "Skipping unusable activations for sketch $sketch!";
           next;
         }
-        $res->{$sketch}->{_activations} = $activations->{$sketch};
+        $res->{$sketch}->_activations($activations->{$sketch});
+        $res->{$sketch}->num_instances(scalar(@{$activations->{$sketch}}));
       }
     }
 

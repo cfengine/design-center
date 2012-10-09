@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2012-10-09 01:19:49 a10022>
+# Time-stamp: <2012-10-09 02:04:07 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -43,10 +43,10 @@ sub command_list {
     my $id = 1;
     foreach my $found (sort keys %$res) {
       print BOLD GREEN."$id. ".YELLOW."$found".RESET;
-      my @activations = @{$res->{$found}->{_activations}};
-      if (@activations) {
+      my @activations = @{$res->{$found}->_activations};
+      my $count = $res->{$found}->num_instances;
+      if ($count) {
         print GREEN." (configured";
-        my $count=scalar(@activations);
         if ($count > 1) {
           print ", $count instances";
         }
@@ -64,13 +64,8 @@ sub command_list {
         print RED." (unconfigured)\n";
       }
       print RESET;
-#      print GREEN, "$found", RESET, " $res->{$found}->{fulldir}\n";
       $id++;
     }
-    # @res = $Config{_repository}->list($regex eq 'all' ? "." : $regex);
-    # foreach my $found (@res) {
-    #   print GREEN, $found->name, RESET, " ".$found->location."\n";
-    # }
   }
 }
 
