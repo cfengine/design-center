@@ -4,7 +4,7 @@
 # Representation of a repository containing sketches
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-08 21:28:58 a10022>
+# Time-stamp: <2012-10-09 01:15:09 a10022>
 
 package DesignCenter::Repository;
 
@@ -342,6 +342,7 @@ sub install
             unless ($quiet) {
                 if ($anything_changed) {
                     print GREEN "Done installing $sketch\n";
+                    CFSketch::repo_clear_cache($dest_repo);
                 }
                 else {
                     print GREEN "Everything was up to date - nothing changed.\n";
