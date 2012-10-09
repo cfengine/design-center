@@ -66,21 +66,27 @@ sub list
     my $self = shift;
     my $terms = shift;
 
+    my $res = {};
+
     foreach my $repo (@{DesignCenter::Config->repolist}) {
       my @sketches = $self->list_internal($repo, $terms);
 
       my $contents = CFSketch::repo_get_contents($repo);
 
       foreach my $sketch (@sketches) {
-        # this format is easy to parse, even if the directory has spaces,
-        # because the first two fields won't have spaces
-        my @docs = grep {
-          $contents->{$sketch}->{manifest}->{$_}->{documentation}
-        } sort keys %{$contents->{$sketch}->{manifest}};
+        # # this format is easy to parse, even if the directory has spaces,
+        # # because the first two fields won't have spaces
+        # my @docs = grep {
+        #   $contents->{$sketch}->{manifest}->{$_}->{documentation}
+        # } sort keys %{$contents->{$sketch}->{manifest}};
 
-        print GREEN, "$sketch", RESET, " $contents->{$sketch}->{fulldir}\n";
+        # print GREEN, "$sketch", RESET, " $contents->{$sketch}->{fulldir}\n";
+
+        $res->{$sketch} = $contents->{$sketch};
+
       }
     }
+    return $res;
   }
 
 sub list_internal

@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2012-10-09 00:05:04 a10022>
+# Time-stamp: <2012-10-09 00:38:27 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -24,7 +24,8 @@ use DesignCenter::Config;
     [
      'list [REGEX|all]',
      'List installed sketches. Specify REGEX to filter, no argument or "all" to list everything.',
-     '(.*)'
+     '(.*)',
+     'list',
     ],
    ]
   );
@@ -37,7 +38,10 @@ sub command_list {
   if ($err) {
     Util::error($err);
   } else {
-    DesignCenter::Config->_system->list([$regex eq 'all' ? "." : $regex]);
+    $res=DesignCenter::Config->_system->list([$regex eq 'all' ? "." : $regex]);
+    foreach my $found (sort keys %$res) {
+        print GREEN, "$found", RESET, " $res->{$found}->{fulldir}\n";
+    }
     # @res = $Config{_repository}->list($regex eq 'all' ? "." : $regex);
     # foreach my $found (@res) {
     #   print GREEN, $found->name, RESET, " ".$found->location."\n";
