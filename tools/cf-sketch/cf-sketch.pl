@@ -249,7 +249,7 @@ sub generate
             my %booleans;
             my %vars;
 
-            my $entry_point = verify_entry_point($sketch, $data);
+            my $entry_point = DesignCenter::Sketch::verify_entry_point($sketch, $data);
 
             Util::color_die "Could not load the entry point definition of $sketch"
                 unless $entry_point;
@@ -381,7 +381,7 @@ sub generate
         if $verbose;
     }
 
-    my $includes = join ', ', map { my @p = recurse_print($_); $p[0]->{value} } Util::uniq(@inputs);
+    my $includes = join ', ', map { my @p = DesignCenter::JSON::recurse_print($_); $p[0]->{value} } Util::uniq(@inputs);
 
     # maybe make the run template configurable?
     my $output = make_runfile($template_activations, $includes, $standalone, $run_file);
@@ -403,7 +403,7 @@ sub api
         my $data = $contents->{$sketch};
         my $if = $data->{interface};
 
-        my $entry_point = verify_entry_point($sketch, $data);
+        my $entry_point = DesignCenter::Sketch::verify_entry_point($sketch, $data);
 
         if ($entry_point) {
           $found = 1;
@@ -422,7 +422,7 @@ sub api
               print BOLD BLUE."  Entry bundle name:".RESET." $entry_point->{bundle_name}\n";
 
               foreach my $var (@{$entry_point->{varlist}}) {
-                my @p = recurse_print($var->{default}) if exists $var->{default};
+                my @p = DesignCenter::JSON::recurse_print($var->{default}) if exists $var->{default};
 
                 my $desc = join ",\t", (
                                         $var->{passed} ? 'passed    ' : 'not passed',
@@ -926,7 +926,7 @@ EOHIPPUS
               $vars .= "     ${context}::\n" if $current_context ne $context;
               $current_context = $context;
 
-              my @p = recurse_print($bycontext{$context},
+              my @p = DesignCenter::JSON::recurse_print($bycontext{$context},
                                     "_${a}_$act->{prefix}_${name}",
                                     0,
                                     $config->simplify_arrays );
