@@ -84,7 +84,7 @@ sub list
         # print GREEN, "$sketch", RESET, " $contents->{$sketch}->{fulldir}\n";
 
         # Create new Sketch object
-        $res->{$sketch} = DesignCenter::Sketch->new(%{$contents->{$sketch}});
+        $res->{$sketch} = DesignCenter::Sketch->new(name => $sketch, %{$contents->{$sketch}});
         # Set installed to its full install location
         $res->{$sketch}->installed($res->{$sketch}->fulldir);
       }

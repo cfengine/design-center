@@ -4,7 +4,7 @@
 # Representation of a sketch
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-09 01:56:33 a10022>
+# Time-stamp: <2012-10-09 02:21:31 a10022>
 
 package DesignCenter::Sketch;
 
@@ -437,5 +437,291 @@ sub verify_entry_point {
 
   return $meta;
 }
+
+sub activate_with_file
+  {
+    my $self = shift;
+    my $pfile = shift;
+    my $sketch = $self->name;
+
+    print "Loading activation params from $pfile\n" unless DesignCenter::Config->quiet;
+    my $aparams_all = DesignCenter::JSON::load($pfile);
+
+    Util::color_die "Could not load activation params from $pfile"
+        unless ref $aparams_all eq 'HASH';
+
+    Util::color_die "Could not find activation params for $sketch in $pfile"
+        unless exists $aparams_all->{$sketch};
+
+    my $aparams = $aparams_all->{$sketch};
+
+    foreach my $extra (sort keys %{DesignCenter::Config->params}) {
+      $aparams->{$extra} = DesignCenter::Config->params->{$extra};
+      printf("Overriding aparams %s from the command line, value %s\n",
+             $extra, DesignCenter::Config->params->{$extra})
+        if DesignCenter::Config->verbose;
+    }
+
+    my $installed = 0;
+    foreach my $repo (@{DesignCenter::Config->repolist}) {
+      my $contents = CFSketch::repo_get_contents($repo);
+      if (exists $contents->{$sketch}) {
+        my $data = $contents->{$sketch};
+        my $if = $data->{interface};
+
+        my $entry_point = $self->verify_entry_point($sketch, $data);
+
+        if ($entry_point) {
+          my $varlist = $entry_point->{varlist};
+          my $fails;
+          foreach my $var (@$varlist) {
+            if (exists $aparams->{$var->{name}}) {
+            } else {
+              if (exists $var->{default}) {
+                if ($var->{type} =~ m/^LIST\(.+\)$/s &&
+                    ref $var->{default} eq '' &&
+                    $var->{default} =~ m/^KVKEYS\((\w+)\)$/) {
+                  my $default;
+                  foreach my $var2 (@$varlist) {
+                    my $name2 = $var2->{name};
+                    if ($name2 eq $1) {
+                      if (exists $aparams->{$name2} &&
+                          ref $aparams->{$name2} eq 'HASH') {
+                        $default = $var->{default} = [ keys %{$aparams->{$name2}} ];
+                      } else {
+                        Util::color_die "$var->{name} default KVKEYS($1) failed because $name2 did not have a valid value";
+                      }
+                    }
+                  }
+
+                  Util::color_die "$var->{name} KVKEYS default $var->{default} failed because a matching variable could not be found"
+                      unless $default;
+                } elsif ($var->{type} =~ m/^ARRAY\(/ &&
+                         ref $var->{default} eq '') {
+                  my $decoded;
+                  eval { $decoded = DesignCenter::JSON->coder->decode($var->{default}); };
+                  Util::color_die "Given default '$var->{default}' for ARRAY variable was invalid JSON"
+                      unless ref $decoded eq 'HASH';
+
+                  print "Decoding default JSON data '$var->{default}' for $var->{name}\n"
+                    if DesignCenter::Config->veryverbose;
+
+                  $var->{default} = $decoded;
+                }
+
+                $aparams->{$var->{name}} = $var->{default};
+              } else {
+                Util::color_die "Can't activate $sketch: its interface requires variable '$var->{name}' and no default is available"
+                }
+            }
+
+            # for contexts, translate booleans to any or !any
+            if (DesignCenter::JSON::is_json_boolean($aparams->{$var->{name}}) &&
+                $var->{type} eq 'CONTEXT') {
+              $aparams->{$var->{name}} = $aparams->{$var->{name}} ? 'any' : '!any';
+            }
+
+            if ($self->validate($aparams->{$var->{name}}, $var->{type})) {
+              print "Satisfied by aparams: '$var->{name}'\n" if DesignCenter::Config->verbose;
+            } else {
+              my $ad = DesignCenter::JSON->coder->encode($aparams->{$var->{name}});
+              Util::color_warn "Can't activate $sketch: '$var->{name}' value $ad fails $var->{type} validation";
+              $fails++;
+            }
+          }
+          Util::color_die "Validation errors" if $fails;
+        } else {
+          Util::color_die "Can't activate $sketch: missing entry point in $data->{entry_point}"
+          }
+
+        # activation successful, now install it
+        my $activations = DesignCenter::JSON::load(DesignCenter::Config->actfile, 1);
+
+        foreach my $check (@{$activations->{$sketch}}) {
+          my $p = DesignCenter::JSON->canonical_coder->encode($check);
+          my $q = DesignCenter::JSON->canonical_coder->encode($aparams);
+          if ($p eq $q) {
+            if (DesignCenter::Config->force) {
+              Util::color_warn "Activating duplicate parameters [$q] because of --force"
+                  unless DesignCenter::Config->quiet;
+            } else {
+              Util::color_die "Can't activate: $sketch has already been activated with $q";
+            }
+          }
+        }
+
+        push @{$activations->{$sketch}}, $aparams;
+        my $activation_id = scalar @{$activations->{$sketch}};
+
+        CFSketch::maybe_ensure_dir(dirname(DesignCenter::Config->actfile));
+        CFSketch::maybe_write_file(DesignCenter::Config->actfile, 'activation', DesignCenter::JSON->coder->encode($activations));
+        print GREEN "Activated: $sketch $activation_id aparams $pfile\n" unless DesignCenter::Config->quiet;
+
+        $installed = 1;
+        last;
+      }
+    }
+
+    Util::color_die "Could not activate sketch $sketch, it was not in the given list of repositories [@{DesignCenter::Config->repolist}]"
+        unless $installed;
+  }
+
+sub validate
+  {
+    my $self = shift;
+    my $value = shift;
+    my @validation_types = @_;
+
+    # null values are never valid
+    return undef unless defined $value;
+
+    if (ref $value eq 'HASH' &&
+        exists $value->{bycontext} &&
+        ref $value->{bycontext} eq 'HASH') {
+      my $ret = 1;
+      foreach my $context (sort keys %{$value->{bycontext}}) {
+        my $ret2k = $self->validate($context, "CONTEXT");
+        Util::color_warn("Validation failed in bycontext, context key $context")
+            unless $ret2k;
+        my $val2 = $value->{bycontext}->{$context};
+        my $ret2v = $self->validate($val2, @validation_types);
+
+        Util::color_warn("Validation failed in bycontext VALUE '$val2', key $context, validation types [@validation_types]")
+            unless $ret2v;
+
+        $ret &&= $ret2k && $ret2v;
+      }
+
+      return $ret;
+    }
+
+    if (ref $value eq 'ARRAY') {
+      my $vt = $validation_types[0];
+      return undef unless $vt;
+      return undef unless $vt =~ m/^LIST\((.+)\)$/s;
+
+      my $subtype = $1;
+      my $ret = 1;
+      foreach my $subval (@$value) {
+        my $ret2 = $self->validate($subval, $subtype);
+        Util::color_warn("LIST validation failed in bycontext, VALUE '$subval'")
+            unless $ret2;
+
+        $ret &&= $ret2;
+      }
+
+      return $ret;
+    }
+
+    my $good = 0;
+    foreach my $vtype (@validation_types) {
+      if ($vtype =~ m/^(KV)?ARRAY\(\n*(.*)\n*\s*\)/s) {
+        if (ref $value ne 'HASH') {
+          Util::color_warn("Sorry, but ARRAY validation was requested on a non-array value '$value'.  We'll fail the validation.");
+          return undef;
+        }
+
+        my $kv = $1;
+        my %contents = ($2 =~ m/^([^:\s]+)\s*:\s*(.+?)$/mg);
+
+        $good = 1;
+
+        my $kv_key;
+
+        if ($kv) {
+          $kv_key = '_key';
+          foreach my $k (sort keys %$value) {
+            my $goodk = $self->validate($k, $contents{$kv_key});
+            Util::color_warn("Sorry, but KVARRAY validation failed for K '$k' with type '$contents{$kv_key}'.  We'll fail the validation.")
+                unless $goodk;
+            $good &&= $goodk;
+          }
+        }
+
+        foreach my $process_key ($kv ? (sort keys %$value) : (1)) {
+          my $process_value = $kv ? $value->{$process_key} : $value;
+
+          if (ref $process_value ne 'HASH') # this check is necessary only when $kv
+            {
+              Util::color_warn("Sorry, but KVARRAY validation was requested on a non-array entry value '$process_value'.  We'll fail the validation.");
+              return undef;
+            }
+
+          foreach my $key (sort keys %contents) {
+            next if (defined $kv_key && $key eq $kv_key);
+
+            my $check_value = $process_value->{$key};
+
+            my $subtype = $contents{$key};
+            my $required = 0;
+
+            if ($subtype =~ m/(.+):\s*required/) {
+              $subtype = $1;
+              $required = 1;
+            } elsif ($subtype =~ m/(.+):\s*default=(.*)/) {
+              $subtype = $1;
+              $process_value->{$key} = $2
+                unless exists $process_value->{$key};
+            }
+
+            if ($required || defined $check_value) {
+              my $good2 = $self->validate($check_value, $subtype);
+
+              unless ($good2)
+                {
+                  Util::color_warn("ARRAY validation: value '$check_value', subtype '$subtype', subkey '$process_key'.  We'll fail the validation.")
+                      if $verbose;
+                }
+
+              $good &&= $good2;
+            }
+          }
+        }
+      } elsif ($vtype eq 'PATH') {
+        $good ||= $value =~ m,^/,; # fails on Win32
+      } elsif ($vtype eq 'CONTEXT') {
+        $good ||= $value =~ m/^[\w!.|&()]+$/;
+      } elsif ($vtype eq 'OCTAL') {
+        $good ||= $value =~ m/^[0-7]+$/;
+      } elsif ($vtype eq 'DIGITS') {
+        $good ||= $value =~ m/^[0-9]+$/;
+      } elsif ($vtype eq 'IPv4_ADDRESS') {
+        $good ||= ($value =~ m/^(\d+)\.(\d+)\.(\d+)\.(\d+)+$/ &&
+                   $1 >= 0 && $1 <= 255 &&
+                   $2 >= 0 && $2 <= 255 &&
+                   $3 >= 0 && $3 <= 255 &&
+                   $4 >= 0 && $4 <= 255);
+      } elsif ($vtype eq 'BOOLEAN') {
+        $good ||= $value =~ m/^(true|false|on|off|1|0)$/i;
+      } elsif ($vtype eq 'NON_EMPTY_STRING') {
+        $good ||= length $value;
+      } elsif ($vtype eq 'CONTEXT_NAME') {
+        $good ||= $value !~ m/\W/;
+      } elsif ($vtype eq 'STRING') {
+        $good ||= defined $value;
+      } elsif ($vtype eq 'HTTP_URL') {
+        $good ||= $value =~ m,^(git|https?)://.+,; # this is not a good URL regex
+      } elsif ($vtype eq 'FILE_URL') {
+        $good ||= $value =~ m,^(file):///.+,; # this is not a good URL regex
+      } elsif ($vtype eq 'FTP_URL') {
+        $good ||= $value =~ m,^(ftp)://.+,; # this is not a good URL regex
+      } elsif ($vtype =~  m/\|/) {
+        $good = 0;
+        foreach my $subtype (split('\|',$vtype)) {
+          my $good2 = $self->validate($value, $subtype);
+          $good ||= $good2;
+        }
+      } elsif ($vtype =~ m/^=(.+)/) {
+        $good ||= $value eq $1;
+      } else {
+        Util::color_warn("Sorry, but an unknown validation type $vtype was requested.  We'll fail the validation, too.");
+        return undef;
+      }
+
+      return 1 if $good;
+    }
+
+    return 0;
+  }
 
 1;
