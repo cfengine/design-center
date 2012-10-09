@@ -4,7 +4,7 @@
 # Representation of a sketch
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-09 12:28:55 a10022>
+# Time-stamp: <2012-10-09 13:20:37 a10022>
 
 package DesignCenter::Sketch;
 
@@ -12,6 +12,7 @@ use Carp;
 use Util;
 use File::Basename;
 use File::Temp qw/ tempfile tempdir /;
+
 use DesignCenter::JSON;
 use DesignCenter::Config;
 
@@ -144,7 +145,7 @@ sub load {
       $json->{file} = $name;
       if ($noparse ||
           !defined $json->{entry_point} ||
-          $self->verify_entry_point($name, $json)) {
+          verify_entry_point($name, $json)) {
         # note this name will be stringified even if it's not a string
         $self->json_data($json) if $am_object;
         return $json;
@@ -160,7 +161,6 @@ sub load {
 }
 
 sub verify_entry_point {
-  my $self = shift;
   my $name = shift;
   my $data = shift;
 
@@ -469,7 +469,7 @@ sub configure_with_file
         my $data = $contents->{$sketch};
         my $if = $data->{interface};
 
-        my $entry_point = $self->verify_entry_point($sketch, $data);
+        my $entry_point = verify_entry_point($sketch, $data);
 
         if ($entry_point) {
           my $varlist = $entry_point->{varlist};
@@ -536,29 +536,8 @@ sub configure_with_file
           return;
           }
 
-        # activation successful, now install it
-        my $activations = DesignCenter::JSON::load(DesignCenter::Config->actfile, 1);
-
-        foreach my $check (@{$activations->{$sketch}}) {
-          my $p = DesignCenter::JSON->canonical_coder->encode($check);
-          my $q = DesignCenter::JSON->canonical_coder->encode($aparams);
-          if ($p eq $q) {
-            if (DesignCenter::Config->force) {
-              Util::warning "Activating duplicate parameters [$q] because of --force.\n"
-                  unless DesignCenter::Config->quiet;
-            } else {
-              Util::error "Can't configure: $sketch has already been configured with this set of parameters.\n";
-              return;
-            }
-          }
-        }
-
-        push @{$activations->{$sketch}}, $aparams;
-        my $activation_id = scalar @{$activations->{$sketch}};
-
-        CFSketch::maybe_ensure_dir(dirname(DesignCenter::Config->actfile));
-        CFSketch::maybe_write_file(DesignCenter::Config->actfile, 'activation', DesignCenter::JSON->coder->encode($activations));
-        print GREEN "Configured: $sketch $activation_id aparams $pfile\n" unless DesignCenter::Config->quiet;
+        # Install configuration info
+        return unless install_config($sketch, $aparams);
 
         $installed = 1;
         last;
@@ -568,6 +547,36 @@ sub configure_with_file
     do { Util::error "Could not configure sketch $sketch, it was not in the given list of repositories [@{DesignCenter::Config->repolist}]\n"; return; }
         unless $installed;
   }
+
+sub install_config {
+  my $sketch = shift;
+  my $aparams = shift;
+  # activation successful, now install it
+  my $activations = DesignCenter::JSON::load(DesignCenter::Config->actfile, 1);
+
+  foreach my $check (@{$activations->{$sketch}}) {
+    my $p = DesignCenter::JSON->canonical_coder->encode($check);
+    my $q = DesignCenter::JSON->canonical_coder->encode($aparams);
+    if ($p eq $q) {
+      if (DesignCenter::Config->force) {
+        Util::warning "Activating duplicate parameters [$q] because of --force.\n"
+            unless DesignCenter::Config->quiet;
+      } else {
+        Util::error "Can't configure: $sketch has already been configured with this set of parameters.\n";
+        return undef;
+      }
+    }
+  }
+
+  push @{$activations->{$sketch}}, $aparams;
+  my $activation_id = scalar @{$activations->{$sketch}};
+
+  CFSketch::maybe_ensure_dir(dirname(DesignCenter::Config->actfile));
+  CFSketch::maybe_write_file(DesignCenter::Config->actfile, 'activation', DesignCenter::JSON->coder->encode($activations));
+  print GREEN "Configured: $sketch #$activation_id\n" unless DesignCenter::Config->quiet;
+
+  return 1;
+}
 
 sub validate
   {
