@@ -4,7 +4,7 @@
 # Representation of a sketch
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-09 11:52:36 a10022>
+# Time-stamp: <2012-10-09 12:28:55 a10022>
 
 package DesignCenter::Sketch;
 
@@ -530,8 +530,7 @@ sub configure_with_file
               $fails++;
             }
           }
-          Util::error "Validation errors" if $fails;
-          return;
+          do { Util::error "Validation errors"; return; } if $fails;
         } else {
           Util::error "Can't configure $sketch: missing entry point in $data->{entry_point}";
           return;
