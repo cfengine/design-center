@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2012-10-09 10:02:54 a10022>
+# Time-stamp: <2012-10-09 12:35:39 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -47,24 +47,29 @@ sub command_list {
       Util::output("The following sketches ".(($regex eq '.')?"are installed:":"match your query:")."\n\n");
       foreach my $found (@res) {
         print BOLD GREEN."$id. ".YELLOW."$found".RESET;
-        my @activations = @{$res->{$found}->_activations};
-        my $count = $res->{$found}->num_instances;
-        if ($count) {
-          print GREEN." (configured";
-          if ($count > 1) {
-            print ", $count instances";
-          }
-          print ")\n";
-          if ($full) {
-            my $activation_id=1;
-            foreach my $activation (@activations) {
-              print BOLD GREEN."\tInstance #$activation_id: ".RESET,
-                DesignCenter::JSON->coder->encode($activation), "\n";
-              $activation_id++;
+        if ($res->{$found}->entry_point) {
+          my @activations = @{$res->{$found}->_activations};
+          my $count = $res->{$found}->num_instances;
+          if ($count) {
+            print GREEN." (configured";
+            if ($count > 1) {
+              print ", $count instances";
             }
+            print ")\n";
+            if ($full) {
+              my $activation_id=1;
+              foreach my $activation (@activations) {
+                print BOLD GREEN."\tInstance #$activation_id: ".RESET,
+                  DesignCenter::JSON->coder->encode($activation), "\n";
+                $activation_id++;
+              }
+            }
+          } else {
+            print RED." (unconfigured)\n";
           }
-        } else {
-          print RED." (unconfigured)\n";
+        }
+        else {
+          print CYAN." (library)\n";
         }
         print RESET;
         $id++;
