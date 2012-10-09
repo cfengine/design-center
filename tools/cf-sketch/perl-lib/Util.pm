@@ -124,7 +124,7 @@ sub isuser {
 # Colorized warn() & die()
 sub color_warn {
   my ($package, $filename, $line, $sub) = caller(1);
-  warn GREEN "$filename:$sub():\n" . YELLOW "WARN\t", @_;
+  warn YELLOW "WARN\t", @_;
 }
 
 sub color_die {
@@ -146,8 +146,12 @@ sub foutput {
   }
 }
 
-sub error {
+sub warning {
   print STDERR YELLOW @_;
+}
+
+sub error {
+  print STDERR RED @_;
 }
 
 # Generate an error message, nicely formatted.

@@ -4,7 +4,7 @@
 # Representation of a repository containing sketches
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-09 01:15:09 a10022>
+# Time-stamp: <2012-10-09 11:27:21 a10022>
 
 package DesignCenter::Repository;
 
@@ -176,7 +176,7 @@ sub install
     my %todo = %{$search->{todo}};
 
     unless (scalar keys %todo) {
-      Util::error "Nothing to install.";
+      Util::error "Nothing to install.\n";
     }
 
     foreach my $sketch (sort keys %todo)
