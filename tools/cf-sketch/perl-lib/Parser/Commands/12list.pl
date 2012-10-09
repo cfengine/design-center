@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2012-10-09 00:38:27 a10022>
+# Time-stamp: <2012-10-09 01:07:59 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -22,9 +22,9 @@ use DesignCenter::Config;
      'listactivations',
     ],
     [
-     'list [REGEX|all]',
-     'List installed sketches. Specify REGEX to filter, no argument or "all" to list everything.',
-     '(.*)',
+     'list [-v] [REGEX|all]',
+     'List installed sketches and their configuration status. Specify REGEX to filter, no argument or "all" to list everything, use -v to show full configuration details.',
+     '(?:(-v)\b\s*)?(.*)',
      'list',
     ],
    ]
@@ -33,14 +33,38 @@ use DesignCenter::Config;
 ######################################################################
 
 sub command_list {
+  my $full=shift;
   my $regex=shift;
   my $err = Util::check_regex($regex);
   if ($err) {
     Util::error($err);
   } else {
     $res=DesignCenter::Config->_system->list([$regex eq 'all' ? "." : $regex]);
+    my $id = 1;
     foreach my $found (sort keys %$res) {
-        print GREEN, "$found", RESET, " $res->{$found}->{fulldir}\n";
+      print BOLD GREEN."$id. ".YELLOW."$found".RESET;
+      my @activations = @{$res->{$found}->{_activations}};
+      if (@activations) {
+        print GREEN." (configured";
+        if (my $count=scalar(@activations) > 1) {
+          print ", $count instances";
+        }
+        print ")\n";
+        if ($full) {
+          my $activation_id=1;
+          foreach my $activation (@activations) {
+            print BOLD GREEN."\tInstance #$activation_id: ".RESET,
+              DesignCenter::JSON->coder->encode($activation), "\n";
+            $activation_id++;
+          }
+        }
+      }
+      else {
+        print RED." (unconfigured)\n";
+      }
+      print RESET;
+#      print GREEN, "$found", RESET, " $res->{$found}->{fulldir}\n";
+      $id++;
     }
     # @res = $Config{_repository}->list($regex eq 'all' ? "." : $regex);
     # foreach my $found (@res) {
