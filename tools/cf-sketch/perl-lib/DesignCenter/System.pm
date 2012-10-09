@@ -65,6 +65,7 @@ sub list
   {
     my $self = shift;
     my $terms = shift;
+    my $noactivations = shift || 0;
 
     my $res = {};
 
@@ -86,6 +87,19 @@ sub list
 
       }
     }
+
+    # Merge activation info
+    unless ($noactivations) {
+      my $activations = $self->activations;
+      foreach my $sketch (sort keys %$activations) {
+        if ('HASH' eq ref $activations->{$sketch}) {
+          Util::color_warn "Skipping unusable activations for sketch $sketch!";
+          next;
+        }
+        $res->{$sketch}->{_activations} = $activations->{$sketch};
+      }
+    }
+
     return $res;
   }
 
