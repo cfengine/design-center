@@ -4,7 +4,7 @@
 # Representation of a repository containing sketches
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-09 11:27:21 a10022>
+# Time-stamp: <2012-10-09 17:36:30 a10022>
 
 package DesignCenter::Repository;
 
@@ -87,21 +87,23 @@ sub search {
     my $base_dir = $self->_basedir;
     my $search = $self->search_internal([]);
     my $local_dir = $self->_local;
-    my @result = ();
+    my $result = {};
 
   SKETCH:
     foreach my $sketch (sort keys %{$search->{known}}) {
         my $dir = $local_dir ? File::Spec->catdir($base_dir, $search->{known}->{$sketch}) : "$base_dir/$search->{known}->{$sketch}";
         foreach my $term (@terms) {
             if ($sketch =~ m/$term/i || $dir =~ m/$term/i) {
-                push @result, DesignCenter::Sketch->new(name => $sketch,
-                                                        location => $dir,
-                    );
-                next SKETCH;
+              my $new =  DesignCenter::Sketch->new(name => $sketch,
+                                                   location => $dir,
+                                                  );
+              $new->load;
+              $result->{$sketch}=$new;
+              next SKETCH;
             }
         }
     }
-    return @result;
+    return $result;
 }
 
 sub search_internal {
