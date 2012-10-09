@@ -4,7 +4,7 @@
 # Representation of a repository containing sketches
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-08 16:54:37 a10022>
+# Time-stamp: <2012-10-08 21:28:58 a10022>
 
 package DesignCenter::Repository;
 
@@ -80,7 +80,7 @@ sub _setup {
     $self->_local(Util::is_resource_local($self->_basedir));
 }
 
-sub list {
+sub search {
     my $self = shift;
     my @terms = @_;
     my $source = DesignCenter::Config->installsource;
