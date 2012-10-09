@@ -86,7 +86,7 @@ my @options_desc =
   (
    "---", "Usage: $0 verb [verb-argument] [options]",
    "---", "\nVerbs:\n",
-   "search|s=s@",               "Search sketch repository, use 'all' to show everything.|regex",
+   "search|s:s@",               "Search sketch repository, use 'all' to show everything.|regex",
    "list|l:s@",                 "Search list of installed sketches, use 'all' or no argument to show everything.|[regex]",
    "listactivations|list-activations|la",       "List activated sketches, including their activation parameters.",
    "install|i=s@",              "Install or update the given sketch.|sketch",

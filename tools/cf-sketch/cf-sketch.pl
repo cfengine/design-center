@@ -124,13 +124,12 @@ if ($config->saveconfig) {
 
 if ($config->list) {
   # 'all' matches everything
-  list(($config->list->[0] eq 'all' || $config->list->[0] eq '') ?
-       ["."] : $config->list);
+  Parser::command_list(join('|', @{$config->list}));
   exit;
 }
 
 if ($config->search) {
-  search($config->search->[0] eq 'all' ? ["."] : $config->search);
+  Parser::command_search(join('|', @{$config->search}));
   exit;
 }
 
@@ -149,7 +148,7 @@ if ($config->deactivateall) {
 }
 
 my @nonterminal = qw/deactivate remove install activate generate/;
-my @terminal = qw/test api search/;
+my @terminal = qw/api search/;
 my @callable = (@nonterminal, @terminal);
 
 foreach my $word (@callable) {

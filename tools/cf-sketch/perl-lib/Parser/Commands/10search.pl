@@ -1,10 +1,12 @@
-# Time-stamp: <2012-10-08 22:00:11 a10022>
+# Time-stamp: <2012-10-09 00:14:02 a10022>
 #
 # search command for searching through sketch list
 # Diego Zamboni, October 1st, 2012.
 # diego.zamboni@cfengine.com
 
 use Term::ANSIColor qw(:constants);
+
+use DesignCenter::Config;
 
 %COMMANDS =
   (
@@ -24,7 +26,7 @@ sub command_search {
   if ($err) {
     Util::error($err);
   } else {
-    @res = $Config{_repository}->search($regex eq 'all' ? "." : $regex);
+    @res = DesignCenter::Config->_repository->search($regex eq 'all' ? "." : $regex);
     foreach my $found (@res) {
       print GREEN, $found->name, RESET, " ".$found->location."\n";
     }
