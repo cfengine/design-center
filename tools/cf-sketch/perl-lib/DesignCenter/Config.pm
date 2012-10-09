@@ -54,6 +54,7 @@ my %fields =
    simplifyarrays => 0,
    repolist => [ File::Spec->catfile($inputs_root, 'sketches') ],
    color => $color,
+   expert => 0,
    # Internal fields
    _object => undef,
    _repository => undef,
@@ -87,19 +88,19 @@ my @options_desc =
    "---", "\nVerbs:\n",
    "search|s=s@",               "Search sketch repository, use 'all' to show everything.|regex",
    "list|l:s@",                 "Search list of installed sketches, use 'all' or no argument to show everything.|[regex]",
-   "list-activations|la",       "List activated sketches, including their activation parameters.",
+   "listactivations|list-activations|la",       "List activated sketches, including their activation parameters.",
    "install|i=s@",              "Install or update the given sketch.|sketch",
    "activate|a=s%",             "Activate the given sketch with the given JSON parameters file.|sketch=paramfile",
    "deactivate|d=s@",           "Deactivate sketches by number, as shown by --list-activations, or by name (regular expression).|n",
-   "deactivate-all|da",         "Deactivate all sketches.",
+   "deactivateall|deactivate-all|da",         "Deactivate all sketches.",
    "remove|r=s@",               "Remove given sketch.|sketch",
    "api=s",                     "Show the API (required/optional parameters) of the given sketch.|sketch",
    "generate|g",                "Generate CFEngine runfile to execute activated sketches.",
    "fullpath|fp",               "Use full paths in the CFEngine runfile (off by default)",
    "modulepath|mp=s",           "Path to modules relative to the repository root, normally $fields{modulepath}",
-   "save-config|config-save",   "Save configuration parameters so that they are automatically loaded in the future.",
+   "saveconfig|save-config|config-save",   "Save configuration parameters so that they are automatically loaded in the future.",
    "metarun=s",                 "Load and execute a metarun file of the form { options => \%options }, which indicates the entire behavior for this run.|file",
-   "save-metarun=s",            "Save the parameters and actions of the current execution to the named file, for future use with --metarun.|file",
+   "savemetarun|save-metarun=s",            "Save the parameters and actions of the current execution to the named file, for future use with --metarun.|file",
 
    "---", "\nOptions:\n",
    "quiet|q",                   "Supress non-essential output.",
@@ -120,6 +121,7 @@ my @options_desc =
    "simplifyarrays|sa!",       "With --simplifyarrays, simplify 2D arrays in runfile from x[a][b] to x_a[b].",
    "installsource|is=s",       "Location (file path or URL) of a cfsketches catalog file that contains the list of sketches available for installation. Default: $fields{'installsource'}.|loc",
    "repolist|rl=s@",            "Comma-separated list of local directories to search for installed sketches for activation, deactivation, removal, or runfile generation. Default: ".join(', ', @{$fields{repolist}}).".|dirs",
+   "expert!",                   "Enable expert mode. Default: ".($fields{expert}?"Enabled":"Disabled"),
    # "make-package=s@",
    #  "test|t=s@",
    "---", "\nPlease see https://github.com/cfengine/design-center/wiki for the full cf-sketch documentation.",
@@ -153,6 +155,13 @@ sub AUTOLOAD {
 sub init {
   my $configfile = shift;
   unless ($init_ran) {
+    # Extend %fields with the options from @options_desc
+    my %opt_desc = @options_desc;
+    foreach my $k (keys %opt_desc) {
+      next if $k =~ /^--/;
+      $k =~ s/[:=\|](.).*$//;
+      $fields{$k} = undef unless exists($fields{$k});
+    }
     # Data initialization
     $object  = {
                 _permitted => \%fields,

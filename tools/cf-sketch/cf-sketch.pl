@@ -54,16 +54,6 @@ $config->_repository(DesignCenter::Repository->new);
 # Local system
 $config->_system(DesignCenter::System->new);
 
-# Load commands and do other parser initialization
-Parser::init('cf-sketch', $config, @ARGV);
-
-# Run the main command loop
-Parser::parse_commands();
-
-# Finishing code.
-Parser::finish();
-
-exit(0);
 
 ######################################################################
 
@@ -100,6 +90,19 @@ my $dryrun      = $config->dryrun;
 my $veryverbose = $config->veryverbose;
 my $verbose     = $config->verbose || $veryverbose;
 
+unless ($config->expert) {
+  # Load commands and do other parser initialization
+  Parser::init('cf-sketch', $config, @ARGV);
+
+  # Run the main command loop
+  Parser::parse_commands();
+
+  # Finishing code.
+  Parser::finish();
+
+  exit(0);
+}
+
 #print "Full configuration: ", DesignCenter::JSON->coder->encode(\%options), "\n" if $verbose;
 
 # TODO - fix this
@@ -131,15 +134,18 @@ if ($config->search) {
   exit;
 }
 
-if (scalar @{$config->makepackage}) {
-  make_packages($config->makepackage);
-  exit;
-}
+# if (scalar @{$config->makepackage}) {
+#   make_packages($config->makepackage);
+#   exit;
+# }
 
 if ($config->listactivations) {
-  my $activations = load_json($config->actfile, 1);
-  Util::color_die "Can't load any activations from $config->actfile"
-      unless defined $activations && ref $activations eq 'HASH';
+  my $activations = DesignCenter::JSON::load($config->actfile, 1);
+  unless (defined $activations && ref $activations eq 'HASH') {
+    Util::error "Can't load any activations from ".$config->actfile."\n"
+        if $verbose;
+    Util::error "There are no configured sketches.\n";
+  }
 
   my $activation_id = 1;
   foreach my $sketch (sort keys %$activations) {
@@ -226,7 +232,7 @@ sub inputfile {
 sub generate
   {
     # activation successful, now install it
-    my $activations = load_json($config->actfile, 1);
+    my $activations = DesignCenter::JSON::load($config->actfile, 1);
     Util::color_die "Can't load any activations from $config->actfile"
         unless defined $activations && ref $activations eq 'HASH';
 
@@ -476,7 +482,7 @@ sub activate
       my $pfile = $aspec->{$sketch};
 
       print "Loading activation params from $pfile\n" unless $quiet;
-      my $aparams_all = load_json($pfile);
+      my $aparams_all = DesignCenter::JSON::load($pfile);
 
       Util::color_die "Could not load activation params from $pfile"
           unless ref $aparams_all eq 'HASH';
@@ -566,7 +572,7 @@ sub activate
             }
 
           # activation successful, now install it
-          my $activations = load_json($config->actfile, 1);
+          my $activations = DesignCenter::JSON::load($config->actfile, 1);
 
           foreach my $check (@{$activations->{$sketch}}) {
             my $p = DesignCenter::JSON->canonical_coder->encode($check);
@@ -602,7 +608,7 @@ sub deactivate
   {
     my $nums_or_name = shift @_;
 
-    my $activations = load_json($config->actfile, 1);
+    my $activations = DesignCenter::JSON::load($config->actfile, 1);
     my %modified;
 
     if ('' eq ref $nums_or_name) # a string or regex
