@@ -1,4 +1,4 @@
-# Time-stamp: <2012-10-09 10:02:16 a10022>
+# Time-stamp: <2012-10-09 18:44:50 a10022>
 #
 # search command for searching through sketch list
 # Diego Zamboni, October 1st, 2012.
@@ -27,11 +27,11 @@ sub command_search {
   if ($err) {
     Util::error($err);
   } else {
-    @res = DesignCenter::Config->_repository->search($regex);
-    if (@res) {
+    $res = DesignCenter::Config->_repository->search($regex);
+    if (keys %$res) {
       Util::output("The following sketches ".(($regex eq '.')?"are available:":"match your query:")."\n\n");
-      foreach my $found (@res) {
-        print GREEN, $found->name, RESET, " ".$found->location."\n";
+      foreach my $found (sort keys %$res) {
+        print GREEN, $res->{$found}->name, RESET, " ".(($res->{$found}->metadata||{})->{description} or $res->{$found}->location)."\n";
       }
     }
     else {
