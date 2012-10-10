@@ -4,7 +4,7 @@
 # Representation of a sketch
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-10 00:47:53 a10022>
+# Time-stamp: <2012-10-10 01:48:49 a10022>
 
 package DesignCenter::Sketch;
 
@@ -150,7 +150,7 @@ sub load {
         if ($am_object) {
           $self->json_data($json);
           # Also merge fields into the main object
-          foreach my $k (keys \%$json) {
+          foreach my $k (keys %$json) {
             $self->$k($json->{$k});
           }
         }
