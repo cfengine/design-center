@@ -3,7 +3,7 @@
 #
 # CFEngine AS, October 2012
 #
-# Time-stamp: <2012-10-09 18:52:09 a10022>
+# Time-stamp: <2012-10-10 02:20:40 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -65,7 +65,7 @@ sub query_and_validate {
   # List values
   if ($type =~ m/^LIST\((.+)\)$/) {
     my $subtype = $1;
-    Util::output(GREEN."\nParameter $name must be a list of $subtype.\n".RESET);
+    Util::output(GREEN."\nParameter '$name' must be a list of $subtype.\n".RESET);
     Util::output("Please enter each value in turn, empty to finish.\n");
     my $val = [];
     while (1) {
@@ -94,7 +94,7 @@ sub query_and_validate {
     }
   }
   elsif ($type =~ m/^(KV)?ARRAY\(/) {
-    Util::output(GREEN."\nParameter $name must be an array.\n".RESET);
+    Util::output(GREEN."\nParameter '$name' must be an array.\n".RESET);
     Util::output("Please enter each key and value in turn, empty key to finish.\n");
     my $val = {};
     while (1) {
@@ -126,7 +126,7 @@ sub query_and_validate {
   }
   else {
     # Scalar values are the easiest
-    Util::output(GREEN."\nParameter $name must be a $type.\n".RESET);
+    Util::output(GREEN."\nParameter '$name' must be a $type.\n".RESET);
     do {
       $valid=0;
       my $stop=0;
@@ -162,7 +162,9 @@ sub command_configure_interactive {
         my $input = Term::ReadLine->new("cf-sketch-interactive");
         foreach my $var (@$varlist) {
           # These are internal parameters, we skip them
-          next if $var->{name} eq 'prefix' || $var->{name} eq 'class_prefix';
+          if ($var->{name} =~ /^(prefix|class_prefix|canon_prefix)$/) {
+            $params->{$var->{name}} = $var->{default};
+          }
           my ($value, $stop) = query_and_validate($var, $input);
           if ($stop) {
             Util::warning "Interrupting sketch configuration.\n";
