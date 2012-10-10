@@ -61,13 +61,16 @@ body file control
   namespace => "cfdc_sshd";
 }
 
-bundle agent sshd(params)
+bundle agent sshd(prefix, params)
 {
   meta:
+      "vars[prefix][type]"           string => "NON_EMPTY_STRING";
+      "vars[prefix][default]"        string => "__PREFIX__";
+
       "vars[params][type]"    string => "ARRAY()";
       "vars[params][default]" string => "{}";
   methods:
-      "vars" usebundle => cfdc_sshd:vars("$(prefix)params");
+      "vars" usebundle => cfdc_sshd:vars("$(params)");
       "sshd_cfg"  usebundle => cfdc_sshd:set_cfg("cfdc_sshd:vars.conf");
 }
 
