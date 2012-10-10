@@ -3,7 +3,7 @@
 #
 # CFEngine AS, October 2012
 #
-# Time-stamp: <2012-10-10 02:20:40 a10022>
+# Time-stamp: <2012-10-10 02:27:59 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -164,6 +164,7 @@ sub command_configure_interactive {
           # These are internal parameters, we skip them
           if ($var->{name} =~ /^(prefix|class_prefix|canon_prefix)$/) {
             $params->{$var->{name}} = $var->{default};
+            next;
           }
           my ($value, $stop) = query_and_validate($var, $input);
           if ($stop) {
