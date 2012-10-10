@@ -16,16 +16,41 @@
 #   DB_PASSWORD
 #   _htmlroot
 #   _wp_dir (final wordpress install directory)
-bundle agent wp_install(prefix)
+bundle agent wp_install(prefix, wp_dir, wp_params, tarfile, downloadurl, htmlroot, packages, mysql_process, httpd_process, service_cmd, apache_srv, mysql_srv)
 {
+  meta:
+      # __PREFIX__ will be supplied by cf-sketch
+      "vars[prefix][type]"           string => "NON_EMPTY_STRING";
+      "vars[prefix][default]"        string => "__PREFIX__";
+
+      "vars[wp_dir][type]"                string => "PATH",
+        comment => "Directory where wordpress will be installed";
+      # Wordpress configuration parameters
+      "vars[wp_params][type]"             string => "ARRAY()",
+        comment => "Parameters to insert into Wordpress config file.";
+      # General configuration parameters
+      "vars[tarfile][type]"      string => "PATH",
+        comment => "Where to store the downloaded wordpress tar file";
+      "vars[tarfile][default]"                string => "/root/wordpress-latest.tar.gz";
+      "vars[downloadurl][type]"  string => "HTTP_URL|FILE_URL",
+        comment => "Download URL for the wordpress.tar.gz file";
+      "vars[downloadurl][default]"            string => "http://wordpress.org/latest.tar.gz";
+
+      # look in wordpress-base.json to see how we fill in system-specific
+      # variables and paths per system we support
+      "vars[htmlroot][type]"  string => "PATH";
+      "vars[packages][type]"  string => "LIST()";
+      "vars[mysql_process][type]"  string => "NON_EMPTY_STRING";
+      "vars[httpd_process][type]"  string => "NON_EMPTY_STRING";
+      "vars[service_cmd][type]"  string => "PATH";
+      "vars[apache_srv][type]"  string => "NON_EMPTY_STRING";
+      "vars[mysql_srv][type]"  string => "NON_EMPTY_STRING";
+
   vars:
       "canon_prefix" string => canonify("$(prefix)");
-      "contexts"     slist  => getindices("$(prefix)bycontext");
   methods:
-      "wp_vars"
-        usebundle => wp_vars("$(prefix)", "$(contexts)"),
-        classes => always("$(canon_prefix)prepared"),
-        ifvarclass => "$(contexts)";
+      "wp_vars"  usebundle => wp_vars(prefix, wp_dir, wp_params, tarfile, downloadurl, htmlroot, packages, mysql_process, httpd_process, service_cmd, apache_srv, mysql_srv),
+        classes => always("$(canon_prefix)prepared");
       "wp_pkgs"  usebundle => wp_packages_installed("wp_vars.conf");
       "wp_svcs"  usebundle => wp_services_up("wp_vars.conf");
       "wp_tar"   usebundle => wp_tarball_is_present("wp_vars.conf");
@@ -38,45 +63,28 @@ bundle agent wp_install(prefix)
 bundle agent meta_wp_install
 {
   vars:
-      "argument[wp_dir]"                string => "string",
-        comment => "Directory where wordpress will be installed";
-      # Wordpress configuration parameters
-      "argument[wp_params]"             string => "array",
-        comment => "Parameters to insert into Wordpress config file.";
-      # General configuration parameters
-      "optional_argument[tarfile]"      string => "string",
-        comment => "Where to store the downloaded wordpress tar file";
-      "default[tarfile]"                string => "/root/wordpress-latest.tar.gz";
-      "optional_argument[downloadurl]"  string => "string",
-        comment => "Download URL for the wordpress.tar.gz file";
-      "default[downloadurl]"            string => "http://wordpress.org/latest.tar.gz";
-
-      # look in the params to see how we fill in system-specific
-      # variables and paths per system we support
-      "argument[bycontext]"       string => "array";
 }
 
 #############################################
 
-bundle agent wp_vars(prefix, context)
+bundle agent wp_vars(prefix, wp_dir, wp_params, tarfile, downloadurl, htmlroot, packages, mysql_process, httpd_process, service_cmd, apache_srv, mysql_srv)
 {
   vars:
       "class_prefix" string => lastnode("$(prefix)", "\."); # strip out the bundle prefix
 
-      "wp_dir"             string => "$($(prefix)wp_dir)";
       # Default configuration values. Internal parameters start with _
-      "conf[_htmlroot]"     string => "$($(prefix)bycontext[$(context)][htmlroot])";
-      "conf[_wp_dir]"       string => "$($(prefix)wp_dir)";
-      "conf[_tarfile]"      string => "$($(prefix)tarfile)";
-      "conf[_downloadurl]"  string => "$($(prefix)downloadurl)";
+      "conf[_htmlroot]"     string => "$(htmlroot)";
+      "conf[_wp_dir]"       string => "$(wp_dir)";
+      "conf[_tarfile]"      string => "$(tarfile)";
+      "conf[_downloadurl]"  string => "$(downloadurl)";
       "conf[_wp_config]"    string => "$(wp_dir)/wp-config.php";
       "conf[_wp_cfgsample]" string => "$(wp_dir)/wp-config-sample.php";
-      "conf[_sys_servicecmd]" string => "$($(prefix)bycontext[$(context)][service_cmd])";
-      "conf[_sys_apachesrv]"  string => "$($(prefix)bycontext[$(context)][apache_srv])";
-      "conf[_httpd_process]"  string => "$($(prefix)bycontext[$(context)][httpd_process])";
-      "conf[_sys_mysqlsrv]"   string => "$($(prefix)bycontext[$(context)][mysql_srv])";
-      "conf[_mysql_process]"  string => "$($(prefix)bycontext[$(context)][mysql_process])";
-      "wp_packages"  slist => { "@($(prefix)bycontext[$(context)][packages])" };
+      "conf[_sys_servicecmd]" string => "$(service_cmd)";
+      "conf[_sys_apachesrv]"  string => "$(apache_srv)";
+      "conf[_httpd_process]"  string => "$(httpd_process)";
+      "conf[_sys_mysqlsrv]"   string => "$(mysql_srv)";
+      "conf[_mysql_process]"  string => "$(mysql_process)";
+      "wp_packages"  slist => { "@(packages)" };
 }
 
 bundle agent wp_report_params(params)
