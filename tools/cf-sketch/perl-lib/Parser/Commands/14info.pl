@@ -15,9 +15,9 @@ use DesignCenter::Config;
    'info' =>
    [
     [
-     'info SKETCH | REGEX | all',
-     'Show detailed information about the given sketch, or those that match the regular expression, use "all" to show all the sketches.',
-     '(\S+)',
+     'info [-v] REGEX | all',
+     'Show detailed information about sketches that match the regular expression, use "all" to show all the sketches. Use -v to show even more details (parameter information).',
+     '(?:(-v)\b\s*)?(\S*)',
     ],
    ]
   );
@@ -26,7 +26,12 @@ use DesignCenter::Config;
 
 
 sub command_info {
+  my $full=shift;
   my $regex=shift;
+  if ($regex eq '') {
+    Util::warning "No query specified. If you want to view all sketches, please specify 'all'\n";
+    return;
+  }
   $regex = "." if ($regex eq 'all' or !$regex);
   my $err = Util::check_regex($regex);
   if ($err) {
@@ -37,9 +42,11 @@ sub command_info {
     my @res = sort keys %$res;
     if (@res) {
       my $id = 1;
+      print "The following sketches match your query:\n";
       foreach my $found (@res) {
         $res->{$found}->load;
         $rec=$res->{$found}->metadata;
+        print "\n";
         print BLUE."Sketch ".CYAN."$found\n".RESET;
         print BLUE."Description: ".RESET.$rec->{description}."\n"
           if $rec->{description};
@@ -62,19 +69,35 @@ sub command_info {
             my $count = $installed->{$found}->num_instances;
             print BLUE."Activated: ".RESET;
             if ($count) {
-              print GREEN." Yes";
+              print GREEN."Yes".RESET;
               if ($count > 1) {
                 print ", $count instances";
               }
               print "\n";
             } else {
-              print RED." No\n";
+              print RED."No\n".RESET;
             }
           }
         }
-        print "\n".RESET;
+        if ($full) {
+          if ($res->{$found}->entry_point) {
+            my $ep = DesignCenter::Sketch::verify_entry_point($found, $res->{$found}->json_data);
+            if ($ep && $ep->{varlist}) {
+              print BLUE."Parameters:\n".RESET;
+              for my $p (@{$ep->{varlist}}) {
+                next if $p->{name} =~ /^(prefix|class_prefix|canon_prefix)$/;
+                my $simple_type = $p->{type};
+                $simple_type =~ s/\n+/ /gs;
+                $simple_type =~ s/\s*:\s*/:/gs;
+                print BOLD BLUE."    $p->{name}".RESET.": $simple_type\n";
+              }
+            }
+          }
+        }
+        print RESET;
         $id++;
       }
+      Util::output("\nUse info -v to show the parameter information.\n") unless $full;
     }
     else {
       Util::error("No installed sketches match your query. Maybe use 'search' instead?\n");
