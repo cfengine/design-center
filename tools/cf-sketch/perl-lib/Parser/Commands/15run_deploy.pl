@@ -15,8 +15,8 @@ use DesignCenter::Config;
    'run' =>
    [
     [
-     'run [CF-AGENT OPTIONS]',
-     'Execute the currently-activated sketches immediately using cf-agent. If any options are given, they are passed as-is to cf-agent.',
+     'run [ARGUMENTS]',
+     'Execute the currently-activated sketches immediately using cf-agent. If any arguments are given, they are passed as-is to cf-agent.',
      '(.+)?',
     ],
    ],
@@ -35,7 +35,11 @@ use DesignCenter::Config;
 
 
 sub command_run {
-  my $opts=shift;
+  my $opts=shift || "";
+  my $file = DesignCenter::Config->_system->generate_runfile;
+  my $command = CFSketch::cfengine_binary('cf-agent') . " $opts -f $file";
+  Util::output(GREEN."\nNow executing the runfile with: $command\n\n".RESET);
+  system($command);
 }
 
 sub command_generate {
