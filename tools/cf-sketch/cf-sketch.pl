@@ -94,6 +94,9 @@ my $verbose     = $config->verbose || $veryverbose;
 Parser::init('cf-sketch', $config, @ARGV);
 Parser::set_welcome_message("[default]\nCFEngine AS, 2012.");
 
+# Make sure at least the stdlib is installed
+Parser::command_install('CFEngine::stdlib');
+
 unless ($config->expert) {
   # Run the main command loop
   Parser::parse_commands();
