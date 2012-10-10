@@ -207,190 +207,9 @@ sub inputfile {
   }
 }
 
-# generate the actual cfengine config that will run all the cf-sketch bundles
-sub generate
-  {
-    # activation successful, now install it
-    my $activations = DesignCenter::JSON::load($config->actfile, 1);
-    Util::color_die "Can't load any activations from $config->actfile"
-        unless defined $activations && ref $activations eq 'HASH';
-
-    my $activation_counter = 1;
-    my $template_activations = {};
-    my $standalone = $config->standalone;
-    my $run_file = $config->runfile;
-
-    my @inputs;
-    my %dependencies;
-
-  ACTIVATION:
-    foreach my $sketch (sort keys %$activations) {
-      my $prefix = $sketch;
-      $prefix =~ s/::/__/g;
-
-      foreach my $repo (@{$config->repolist}) {
-        my $contents = repo_get_contents($repo);
-        if (exists $contents->{$sketch}) {
-          if ('HASH' eq ref $activations->{$sketch}) {
-            Util::color_warn "Skipping unusable activations for sketch $sketch!\n";
-            next;
-          }
-
-          my $activation_id = 1;
-          foreach my $pdata (@{$activations->{$sketch}}) {
-            print "Loading activation $activation_id for sketch $sketch\n"
-              if $verbose;
-            Util::color_die "Couldn't load activation params for $sketch: $!"
-                unless defined $pdata;
-
-            my $data = $contents->{$sketch};
-
-            my %types;
-            my %booleans;
-            my %vars;
-
-            my $entry_point = DesignCenter::Sketch::verify_entry_point($sketch, $data);
-
-            Util::color_die "Could not load the entry point definition of $sketch"
-                unless $entry_point;
-
-            # for null entry_point and interface definitions, don't write
-            # anything in the runme template
-            unless (exists $entry_point->{bundle_name}) {
-              my $input = make_include($data->{fulldir}, dirname($run_file) , @{$data->{interface}});
-              push @inputs, $input;
-              print "Entry point: added input $input for runfile $run_file\n"
-                if $verbose;
-              next;
-            }
-
-            $dependencies{$_} = 1 foreach collect_dependencies($data->{metadata}->{depends});
-            my $activation = {
-                              file => File::Spec->catfile($data->{dir}, $data->{entry_point}),
-                              dir => $data->{dir},
-                              fulldir => $data->{fulldir},
-                              entry_bundle => $entry_point->{bundle_name},
-                              entry_bundle_namespace => $entry_point->{bundle_namespace},
-                              activation_id => $activation_id,
-                              dependencies => [ sort keys %dependencies ],
-                              pdata  => $pdata,
-                              sketch => $sketch,
-                              prefix => $prefix,
-                             };
-
-            my $varlist = $entry_point->{varlist};
-
-            # provide the metadata that could be useful
-            my @files = sort keys %{$data->{manifest}};
-
-            push @$varlist,
-              {
-               name => 'sketch_depends',
-               type => 'slist',
-               value => [ sort keys %dependencies ],
-              },
-                {
-                 name => 'sketch_authors',
-                 type => 'slist',
-                 value => [ sort @{$data->{metadata}->{authors}} ],
-                },
-                  {
-                   name => 'sketch_portfolio',
-                   type => 'slist',
-                   value => [ sort @{$data->{metadata}->{portfolio}} ],
-                  },
-                    {
-                     name => 'sketch_manifest',
-                     type => 'slist',
-                     value => \@files,
-                    };
-
-            my @manifests = (
-                             {
-                              name => 'sketch_manifest_cf',
-                              type => 'slist',
-                              value => [ sort grep { $_ =~ m/\.cf$/ } @files ],
-                             },
-                             {
-                              name => 'sketch_manifest_docs',
-                              type => 'slist',
-                              value => [ sort grep { $data->{manifest}->{$_}->{documentation} } @files ],
-                             }
-                            );
-
-            push @$varlist, @manifests;
-
-            my %leftovers = map { $_ => 1 } @files;
-            foreach my $m (@manifests) {
-              foreach (@{$m->{value}}) {
-                delete $leftovers{$_};
-              }
-            }
-
-            if (scalar keys %leftovers) {
-              push @$varlist,
-                {
-                 name => 'sketch_manifest_extra',
-                 type => 'slist',
-                 value => [ sort keys %leftovers ],
-                };
-            }
-
-            foreach my $key (qw/version name license/) {
-              push @$varlist,
-                {
-                 name => "sketch_$key",
-                 type => 'string',
-                 value => '' . $data->{metadata}->{$key},
-                };
-            }
-
-            $activation->{vars} = $varlist;
-
-            my $ak = sprintf('%03d', $activation_counter++);
-            $template_activations->{$ak} = $activation; # the activation counter is 1..N globally!
-            $activation_id++;   # the activation ID is 1..N per sketch
-          }
-
-          next ACTIVATION;
-        }
-      }
-      Util::color_die "Could not find sketch $sketch in repo list @{$config->repolist}";
-    }
-
-    # this removes found keys in %dependencies!
-    my @dep_inputs = collect_dependencies_inputs(dirname($run_file), \%dependencies);
-    if ($verbose) {
-      print "Dependency: added input $_ for runfile $run_file\n"
-        foreach @dep_inputs;
-    }
-
-    push @inputs, @dep_inputs;
-
-    my @deps = keys %dependencies;
-    if (scalar @deps) {
-      Util::color_die "Sorry, can't generate: unsatisfied dependencies [@deps]";
-    }
-
-    # process input template, substituting variables
-    foreach my $a (sort keys %$template_activations) {
-      my $act = $template_activations->{$a};
-      my $input = make_include($act->{fulldir}, dirname($run_file) , basename($act->{file}));
-      push @inputs, $input;
-      print "Input template: added input $input for runfile $run_file\n"
-        if $verbose;
-    }
-
-    my $includes = join ', ', map { my @p = DesignCenter::JSON::recurse_print($_); $p[0]->{value} } Util::uniq(@inputs);
-
-    # maybe make the run template configurable?
-    my $output = make_runfile($template_activations, $includes, $standalone, $run_file);
-
-    maybe_write_file($run_file, 'run', $output);
-    print GREEN "Generated ".($standalone?"standalone":"non-standalone")." run file $run_file\n"
-      unless $quiet;
-
-  }
+sub generate {
+  DesignCenter::Config->_system->generate_runfile;
+}
 
 sub api
   {
@@ -762,7 +581,7 @@ sub collect_dependencies
     my @collected;
 
     foreach my $repo (@{$config->repolist}) {
-      my $contents = repo_get_contents($repo, 1);
+      my $contents = CFSketch::repo_get_contents($repo, 1);
       foreach my $dep (sort keys %$deps) {
         if ($dep eq 'os' || $dep eq 'cfengine') {
         } elsif (exists $contents->{$dep}) {
@@ -777,7 +596,7 @@ sub collect_dependencies
             push @collected, $dep, collect_dependencies($dd->{metadata}->{depends});
           } else {
             print YELLOW "Found dependency $dep in $repo but the version doesn't match\n"
-              if $verbose;
+              if DesignCenter::Config->verbose;
           }
         }
       }
@@ -793,7 +612,7 @@ sub collect_dependencies_inputs
 
     my @inputs;
     foreach my $repo (@{$config->repolist}) {
-      my $contents = repo_get_contents($repo, 1);
+      my $contents = CFSketch::repo_get_contents($repo, 1);
       foreach my $dep (keys %$dep_map) {
         if (exists $contents->{$dep}) {
           my $input = make_include($contents->{$dep}->{fulldir}, $install_dir , @{$contents->{$dep}->{interface}});
@@ -822,187 +641,6 @@ sub make_include
 
     my $dir = make_include_path($lib_dir, $run_dir);
     my $input = File::Spec->catfile($dir, $file);
-  }
-
-sub make_runfile
-  {
-    my $activations = shift @_;
-    my $inputs      = shift @_;
-    my $standalone  = shift @_;
-    my $target_file = shift @_;
-
-    my $template = get_run_template();
-
-    my $contexts = '';
-    my $vars     = '';
-    my $methods  = '';
-    my $commoncontrol = '';
-
-    if ($standalone) {
-      $commoncontrol=<<'EOHIPPUS';
-        body common control
-{
-    bundlesequence => { "cfsketch_run" };
-    inputs => { @(cfsketch_g.inputs) };
-}
-EOHIPPUS
-    }
-
-    foreach my $a (keys %$activations) {
-      $contexts .= "       # contexts for activation $a\n";
-      $vars .= "       # string and slist variables for activation $a\n";
-      my $act = $activations->{$a};
-      my @vars = @{$activations->{$a}->{vars}};
-      my %params = %{$activations->{$a}->{pdata}};
-      my @passed;
-
-      my $rel_path = make_include_path($act->{fulldir}, dirname($target_file));
-
-      my $current_context = '';
-      # die Dumper \@vars;
-      foreach my $var (@vars) {
-        my $name = $var->{name};
-        my $value = exists $params{$name} ? $params{$name} :  $var->{value};
-
-        if (ref $value eq '') {
-          # for when a bundle wants access to scripts or modules
-          $value =~ s/__BUNDLE_HOME__/$rel_path/g;
-          $value =~ s/__ABS_BUNDLE_HOME__/$act->{fulldir}/g;
-          # for when a bundle wants access to the general variables directly
-          $value =~ s/__PREFIX__/cfsketch_g._${a}_$act->{prefix}_/g;
-          # for when a bundle wants to access its activation's classes
-          $value =~ s/__CLASS_PREFIX__/default:_${a}_$act->{prefix}_/g;
-          # for when a bundle wants to set unique classes per activation
-          $value =~ s/__CANON_PREFIX__/_${a}_$act->{prefix}_/g;
-        }
-
-        push @passed, [ $var, $value ]
-          if (exists $var->{passed} && $var->{passed});
-
-        my %bycontext;
-        if (ref $value eq 'HASH' &&
-            exists $value->{bycontext} &&
-            ref $value->{bycontext} eq 'HASH') {
-          %bycontext = %{$value->{bycontext}};
-        } else {
-          $bycontext{any} = $value;
-        }
-
-        foreach my $context (sort keys %bycontext) {
-          if ($var->{type} eq 'CONTEXT') {
-            my $as_cfengine_context = $bycontext{$context};
-            if (is_json_boolean($bycontext{$context})) {
-              $as_cfengine_context = $bycontext{$context} ? 'any' : "!any";
-            } elsif (ref $as_cfengine_context ne '') {
-              Util::color_die "Unexpected value for CONTEXT $name: " . DesignCenter::JSON->coder->encode($as_cfengine_context);
-            }
-
-            $contexts .= "     ${context}::\n" if $current_context ne $context;
-            $current_context = $context;
-            $contexts .= sprintf('      "_%s_%s_%s" expression => "%s";' . "\n",
-                                 $a,
-                                 $act->{prefix},
-                                 $name,
-                                 $as_cfengine_context);
-
-            my $print_context = $as_cfengine_context;
-            $vars .= "     ${print_context}:: # setting context for text representations\n" if $current_context ne $print_context;
-            $current_context = $print_context;
-            $vars .= sprintf('       "_%s_%s_contexts[%s]" string => "%s"; # text representation of the context "%s"' . "\n",
-                             $a,
-                             $act->{prefix},
-                             $name,
-                             $bycontext{$context},
-                             $name);
-
-            if ($name eq 'activated') {
-              $methods .= sprintf('    _%s_%s_%s::' . "\n",
-                                  $a,
-                                  $act->{prefix},
-                                  $name);
-            }
-          } else                # regular, non-CONTEXT variable
-            {
-              $vars .= "     ${context}::\n" if $current_context ne $context;
-              $current_context = $context;
-
-              my @p = DesignCenter::JSON::recurse_print($bycontext{$context},
-                                    "_${a}_$act->{prefix}_${name}",
-                                    0,
-                                    $config->simplify_arrays );
-              $vars .= sprintf('       "%s" %s => %s;' . "\n",
-                               $_->{path},
-                               $_->{type},
-                               $_->{value})
-                foreach @p;
-            }
-        }
-
-        Util::color_die("Sorry, but we have an undefined variable $name: it has neither a parameter value nor a supplied value")
-            unless defined $value;
-      }
-
-      print "We will activate bundle $act->{entry_bundle} with passed parameters " . DesignCenter::JSON->coder->encode(\@passed) . "\n"
-        if $verbose;
-
-      my @print_passed;
-      foreach my $pass (@passed) {
-        my $var = $pass->[0];
-        if ($var->{type} =~ m/^(KV)?ARRAY\(/) {
-          push @print_passed, "\"default:cfsketch_g._${a}_$act->{prefix}_$var->{name}\"";
-        } else {
-          my $islist = $var->{type} =~ m/^LIST\(/;
-          my $sigil = $islist ? '@' : '$';
-          # my $maybe_quotes = $islist ? '"' : '';
-          my $maybe_quotes = '';
-          push @print_passed, "$maybe_quotes$sigil(cfsketch_g._${a}_$act->{prefix}_$var->{name})$maybe_quotes";
-        }
-      }
-
-      my $args = join(", ", @print_passed);
-
-      $methods .= sprintf('      "%s %s %s" usebundle => %s%s(%s);' . "\n",
-                          $a,
-                          $act->{sketch},
-                          $act->{activation_id},
-                          $act->{entry_bundle_namespace} ? "$act->{entry_bundle_namespace}:" : '',
-                          $act->{entry_bundle},
-                          $args);
-    }
-
-    $template =~ s/__INPUTS__/$inputs/g;
-    $template =~ s/__CONTEXTS__/$contexts/g;
-    $template =~ s/__VARS__/$vars/g;
-    $template =~ s/__METHODS__/$methods/g;
-    $template =~ s/__COMMONCONTROL__/$commoncontrol/g;
-
-    return $template;
-  }
-
-sub get_run_template
-  {
-    return <<'EOT';
-    __COMMONCONTROL__
-
-        bundle common cfsketch_g
-{
-  classes:
-    # contexts
-    __CONTEXTS__
-      vars:
-        # Files that need to be loaded for this to work.
-        "inputs" slist => { __INPUTS__ };
-
-    __VARS__
-}
-
-bundle agent cfsketch_run
-{
-  methods:
-    "cfsketch_g" usebundle => "cfsketch_g";
-    __METHODS__
-}
-EOT
   }
 
 sub tersedump
