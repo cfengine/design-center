@@ -151,7 +151,14 @@ sub generate_runfile
     my $self=shift;
     my $standalone = shift;
     $standalone = DesignCenter::Config->standalone unless defined($standalone);
-    my $run_file = shift || DesignCenter::Config->runfile;
+    # If a filename is given, use it as is always. If we are using the default,
+    # modify it depending on $standalone
+    my $run_file = shift;
+    unless ($run_file) {
+      $run_file = DesignCenter::Config->runfile;
+      $run_file = File::Spec->catfile(dirname($run_file), "standalone-".basename($run_file))
+        if $standalone;
+    }
     # activation successful, now install it
     my $activations = $self->activations;
     return undef unless $activations;
