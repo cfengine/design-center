@@ -1,4 +1,4 @@
-bundle agent nagios_plugin_agent(prefix)
+bundle agent nagios_plugin_agent(prefix, bundle_home, plugin_path, plugin_name, args, usebundle_if_ok, usebundle_if_warning, usebundle_if_critical, usebundle_if_unknown, usebundle_if_protocol_error, usebundle_not_ok, execution_context, if_elapsed)
 {
   # TODO: get module from policyhub, determine best way to do this
   # 
@@ -14,15 +14,60 @@ bundle agent nagios_plugin_agent(prefix)
   #     "check_dummy_OK_execution_context" string => "any";
   # methods:
   #     "any" usebundle => nagios_plugin_agent("main.check_dummy_OK_");
+  meta:
+      # __PREFIX__ will be supplied by cf-sketch
+      "vars[prefix][type]"           string => "NON_EMPTY_STRING";
+      "vars[prefix][default]"        string => "__PREFIX__";
 
+      "vars[plugin_name][type]" string => "NON_EMPTY_STRING";
+      "vars[args][type]"        string => "STRING";
+
+      # Optionally call bundles on specific status
+      "vars[usebundle_if_ok][type]"             string => "STRING";
+      "vars[usebundle_if_warning][type]"        string => "STRING";
+      "vars[usebundle_if_critical][type]"       string => "STRING";
+      "vars[usebundle_if_unknown][type]"        string => "STRING";
+      "vars[usebundle_if_protocol_error][type]" string => "STRING";
+      # Default to empty
+      "vars[usebundle_if_ok][default]"             string => "";
+      "vars[usebundle_if_warning][default]"        string => "";
+      "vars[usebundle_if_critical][default]"       string => "";
+      "vars[usebundle_if_unknown][default]"        string => "";
+      "vars[usebundle_if_protocol_error][default]" string => "";
+      # not_ok encompases warning, critical, unknown, and protocol_error status
+      # This is probably the most common use case
+      "vars[usebundle_not_ok][type]"            string => "STRING";
+      "vars[usebundle_not_ok][default]"            string => "";
+
+      # this can't be determined from within the bundle due to:
+      # https://cfengine.com/bugtracker/view.php?id=718
+      "vars[bundle_home][type]" string => "STRING";
+      # this default will probably be incorrect, either use cf-sketch.pl --generate
+      # or supply it yourself
+      "vars[bundle_home][default]"           string => dirname("$(this.promise_filename)");
+
+      # you almost definitely want to override this for x64 vs x86
+      "vars[plugin_path][type]" string => "STRING";
+     
+      ubuntu::
+        "vars[plugin_path][default]"           string => "/usr/lib/nagios/plugins";
+      !ubuntu.x86_64::
+        "vars[plugin_path][default]"           string => "/usr/lib64/nagios/plugins";
+
+      any::
+        "vars[execution_context][type]" string => "STRING";
+        "vars[execution_context][default]" string => "any";
+
+        "vars[if_elapsed][type]" string => "STRING";
+        "vars[if_elapsed][default]" string => "60";
 
   vars:
       "canon_prefix" string => canonify("$(prefix)");
-      "nagios_plugin_wrapper" string => "$($(prefix)bundle_home)/modules/nagios_plugin_wrapper";
+      "nagios_plugin_wrapper" string => "$(bundle_home)/modules/nagios_plugin_wrapper";
 
       # Copy in non optional or defaulted parameters
-      "conf_plugin_name" string => "$($(prefix)plugin_name)";
-      "conf_args" string => "$($(prefix)args)";
+      "conf_plugin_name" string => "$(plugin_name)";
+      "conf_args" string => "$(args)";
 
       # Copy in defaulted parameters
       "conf_bundle_home" string => "$(meta_nagios_plugin_agent.default[bundle_home])",
@@ -43,19 +88,19 @@ bundle agent nagios_plugin_agent(prefix)
 
 
       # Copy over the defaults if parameters are defined
-      "conf_bundle_home" string => "$($(prefix)bundle_home)",
+      "conf_bundle_home" string => "$(bundle_home)",
         policy => "free",
         ifvarclass => "$(canon_prefix)param_bundle_home_defined";
 
-      "conf_execution_context" string => "$($(prefix)execution_context)",
+      "conf_execution_context" string => "$(execution_context)",
         policy => "free",
         ifvarclass => "$(canon_prefix)param_execution_context_defined";
 
-      "conf_if_elapsed" string => "$($(prefix)if_elapsed)",
+      "conf_if_elapsed" string => "$(if_elapsed)",
         policy => "free",
         ifvarclass => "$(canon_prefix)param_if_elapsed_defined";
 
-      "conf_plugin_path" string => "$($(prefix)plugin_path)",
+      "conf_plugin_path" string => "$(plugin_path)",
         policy => "free",
         ifvarclass => "$(canon_prefix)param_plugin_path_defined";
 
@@ -89,30 +134,30 @@ bundle agent nagios_plugin_agent(prefix)
     # Check which defaulted parameters will be overridden
 
     "$(canon_prefix)param_bundle_home_defined"
-        expression => isvariable("$(prefix)bundle_home");
+        not => strcmp("$(bundle_home)", "");
 
     "$(canon_prefix)param_execution_context_defined"
-        expression => isvariable("$(prefix)execution_context");
+        not => strcmp("$(execution_context)", "");
 
     "$(canon_prefix)param_if_elapsed_defined"
-        expression => isvariable("$(prefix)if_elapsed");
+        not => strcmp("$(if_elapsed)", "");
 
     "$(canon_prefix)param_plugin_path_defined"
-        expression => isvariable("$(prefix)plugin_path");
+        not => strcmp("$(plugin_path)", "");
 
 
     "$(canon_prefix)usebundle_if_ok_defined"
-        expression => isvariable("$(prefix)usebundle_if_ok");
+        not => strcmp("$(usebundle_if_ok)", "");
     "$(canon_prefix)usebundle_if_warning_defined"
-        expression => isvariable("$(prefix)usebundle_if_warning");
+        not => strcmp("$(usebundle_if_warning)", "");
     "$(canon_prefix)usebundle_if_critical_defined"
-        expression => isvariable("$(prefix)usebundle_if_critical");
+        not => strcmp("$(usebundle_if_critical)", "");
     "$(canon_prefix)usebundle_if_unknown_defined"
-        expression => isvariable("$(prefix)usebundle_if_unknown");
+        not => strcmp("$(usebundle_if_unknown)", "");
     "$(canon_prefix)usebundle_if_protocol_error_defined"
-        expression => isvariable("$(prefix)usebundle_if_protocol_error");
+        not => strcmp("$(usebundle_if_protocol_error)", "");
     "$(canon_prefix)usebundle_not_ok_defined"
-        expression => isvariable("$(prefix)usebundle_not_ok");
+        not => strcmp("$(usebundle_not_ok)", "");
 
     "$(canon_prefix)has_output"
         expression => isvariable("nagios_plugin_wrapper.$(canon_prefix)_output");
@@ -134,27 +179,27 @@ bundle agent nagios_plugin_agent(prefix)
   methods:
       # Here we call bundles if requested on specific check status
       "ok" 
-        usebundle => "$($(prefix)usebundle_if_ok)",
+        usebundle => "$(usebundle_if_ok)",
         ifvarclass => "$(canon_prefix)usebundle_if_ok_defined.nagios_plugin_$(canon_prefix)_ok";
 
       "warning" 
-        usebundle => "$($(prefix)usebundle_if_warning)",
+        usebundle => "$(usebundle_if_warning)",
         ifvarclass => "$(canon_prefix)usebundle_if_warning_defined.nagios_plugin_$(canon_prefix)_warning";
 
       "critical" 
-        usebundle => "$($(prefix)usebundle_if_critical)",
+        usebundle => "$(usebundle_if_critical)",
         ifvarclass => "$(canon_prefix)usebundle_if_critical_defined.nagios_plugin_$(canon_prefix)_critical";
 
       "unknown"
-        usebundle => "$($(prefix)usebundle_if_unknown)",
+        usebundle => "$(usebundle_if_unknown)",
         ifvarclass => "$(canon_prefix)usebundle_if_unknown_defined.nagios_plugin_$(canon_prefix)_unknown";
 
       "protocol_error"
-        usebundle => "$($(prefix)usebundle_if_protocol_error)",
+        usebundle => "$(usebundle_if_protocol_error)",
         ifvarclass => "$(canon_prefix)usebundle_if_protocol_error_defined.nagios_plugin_$(canon_prefix)_protocol_error";
 
       "not_ok"
-        usebundle => "$($(prefix)usebundle_not_ok)",
+        usebundle => "$(usebundle_not_ok)",
         ifvarclass => "$(canon_prefix)usebundle_not_ok_defined.nagios_alert";
 
   reports:
@@ -191,38 +236,4 @@ bundle agent nagios_plugin_agent(prefix)
 bundle agent meta_nagios_plugin_agent
 {
   vars:
-      "argument[plugin_name]" string => "string";
-      "argument[args]"        string => "string";
-
-      # Optionally call bundles on specific status
-      "optional_argument[usebundle_if_ok]"             string => "string";
-      "optional_argument[usebundle_if_warning]"        string => "string";
-      "optional_argument[usebundle_if_critical]"       string => "string";
-      "optional_argument[usebundle_if_unknown]"        string => "string";
-      "optional_argument[usebundle_if_protocol_error]" string => "string";
-      # not_ok encompases warning, critical, unknown, and protocol_error status
-      # This is probably the most common use case
-      "optional_argument[usebundle_not_ok]"            string => "string";
-
-      # this can't be determined from within the bundle due to:
-      # https://cfengine.com/bugtracker/view.php?id=718
-      "optional_argument[bundle_home]" string => "string";
-      # this default will probably be incorrect, either use cf-sketch.pl --generate
-      # or supply it yourself
-      "default[bundle_home]"           string => dirname("$(this.promise_filename)");
-
-      # you almost definitely want to override this for x64 vs x86
-      "optional_argument[plugin_path]" string => "string";
-     
-      ubuntu::
-        "default[plugin_path]"           string => "/usr/lib/nagios/plugins";
-      !ubuntu.x86_64::
-        "default[plugin_path]"           string => "/usr/lib64/nagios/plugins";
-
-      any::
-        "optional_argument[execution_context]" string => "string";
-        "default[execution_context]" string => "any";
-
-        "optional_argument[if_elapsed]" string => "string";
-        "default[if_elapsed]" string => "60";
 }
