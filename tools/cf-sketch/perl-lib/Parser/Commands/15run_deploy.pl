@@ -16,8 +16,16 @@ use DesignCenter::Config;
    [
     [
      'run [ARGUMENTS]',
-     'Execute the currently-activated sketches immediately using cf-agent. If any arguments are given, they are passed as-is to cf-agent.',
+     'Execute the currently-activated sketches immediately using cf-agent. If any arguments are given, they are passed as-is to cf-agent. Remember to use -K if you want all promises to be evaluated (i.e. when testing in quick sequence).)',
      '(.+)?',
+    ],
+   ],
+   'deploy' =>
+   [
+    [
+     'deploy',
+     'Install the currently-activated sketches for automatic execution from promises.cf',
+     '',
     ],
    ],
    'generate' =>
@@ -51,6 +59,11 @@ sub command_generate {
   else {
     Util::error("An error ocurred generating the runfile.\n");
   }
+}
+
+sub command_deploy {
+  my $file = DesignCenter::Config->_system->generate_runfile(0);
+  Util::output(GREEN."This runfile will be automatically executed from promises.cf\n".RESET);
 }
 
 1;
