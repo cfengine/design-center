@@ -2,6 +2,6 @@
     "Security::SSH":
     {
         "activated": true,
-        "params": { "Protocol" : "2", "X11Forwarding" : "yes", "UseDNS" : "no", "host1": { "X11Forwarding": "no" } }
+        "params": { "Protocol" : "2", "X11Forwarding" : "yes", "UseDNS" : "no" }
     }
 }
