@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2012-10-09 23:36:55 a10022>
+# Time-stamp: <2012-10-10 00:59:55 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -79,7 +79,7 @@ sub command_list {
       Util::output("\nUse list -v to show the activation parameters.\n") unless $full;
     }
     else {
-      Util::error("No installed sketches match your query. Maybe use 'search' instead?\n");
+      Util::error("No sketches ".(($regex eq '.')?"are installed":"match your query").". Maybe use 'search' instead?\n");
     }
   }
 }
