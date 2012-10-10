@@ -3,7 +3,7 @@
 #
 # CFEngine AS, October 2012
 #
-# Time-stamp: <2012-10-09 14:38:10 a10022>
+# Time-stamp: <2012-10-09 18:52:09 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -161,6 +161,8 @@ sub command_configure_interactive {
         Parser::_message("Entering interactive configuration for sketch $sketch.\nPlease enter the requested parameters (enter STOP to abort):\n");
         my $input = Term::ReadLine->new("cf-sketch-interactive");
         foreach my $var (@$varlist) {
+          # These are internal parameters, we skip them
+          next if $var->{name} eq 'prefix' || $var->{name} eq 'class_prefix';
           my ($value, $stop) = query_and_validate($var, $input);
           if ($stop) {
             Util::warning "Interrupting sketch configuration.\n";
