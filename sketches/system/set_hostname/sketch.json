@@ -12,6 +12,7 @@
     "metadata":
     {
         "name": "System::set_hostname",
+	"description": "Configure system hostname",
         "version": 1.04,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

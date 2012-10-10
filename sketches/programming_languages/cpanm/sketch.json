@@ -11,6 +11,7 @@
     "metadata":
     {
         "name": "Packages::CPAN::cpanm",
+	"description": "Install CPAN packages through App::cpanminus",
         "version": 1.10,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

@@ -10,6 +10,7 @@
     "metadata":
     {
         "name": "Security::SSH",
+	"description": "Configure and enable sshd",
         "version": 1.10,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

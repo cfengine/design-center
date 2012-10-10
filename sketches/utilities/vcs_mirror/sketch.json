@@ -12,6 +12,7 @@
     "metadata":
     {
         "name": "VCS::vcs_mirror",
+        "description": "Check out and update a VCS repository.",
         "version": 1.11,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

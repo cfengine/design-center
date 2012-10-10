@@ -12,6 +12,7 @@
     "metadata":
     {
         "name": "Repository::Yum::Maintain",
+	"description": "Create and keep Yum repository metadata up to date",
         "version": 2.2,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

@@ -13,6 +13,7 @@
     "metadata":
     {
         "name": "Security::tcpwrappers",
+	"description": "Manage /etc/hosts.{allow,deny}",
         "version": 1.2,
         "license": "MIT",
         "portfolio": ["cfdc"],

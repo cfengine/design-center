@@ -9,6 +9,7 @@
     "metadata":
     {
         "name": "Yale::stdlib",
+	"description": "Yale standard library",
         "version": "1.0.0",
         "license": "MIT",
         "portfolio": [ "cfdc", "yale" ],

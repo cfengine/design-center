@@ -10,6 +10,7 @@
     "metadata":
     {
         "name": "System::etc_hosts",
+	"description": "Manage /etc/hosts",
         "version": 2.1,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

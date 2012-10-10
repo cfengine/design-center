@@ -10,6 +10,7 @@
     "metadata":
     {
         "name": "Repository::apt::Maintain",
+	"description": "Manage deb repositories in /etc/apt/sources.list.d/ files or /etc/apt/sources.list",
         "version": 0.2,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
