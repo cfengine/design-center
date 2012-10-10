@@ -4,11 +4,12 @@
 # DC-specific JSON stuff
 #
 # CFEngine AS, October 2012.
-# Time-stamp: <2012-10-08 11:12:48 a10022>
+# Time-stamp: <2012-10-09 23:30:56 a10022>
 
 package DesignCenter::JSON;
 
 use File::Basename;
+use Term::ANSIColor qw(:constants);
 
 our $coder;
 our $canonical_coder;
@@ -185,6 +186,21 @@ sub recurse_print
     }
 
     return @print;
+}
+
+sub pretty_print {
+  my $json = shift;
+  my $indent = shift || "";
+  my $exclude = shift || undef;
+  my @print = recurse_print($json, undef, 1, 1);
+  my $result = "";
+  foreach my $p (@print) {
+    my $name = $p->{path};
+    $name =~ s/^_(.*)$/$1/;
+    next if $exclude && $name =~ /$exclude/;
+    $result .= $indent.BLUE.$name.": ".RESET.$p->{value}."\n";
+  }
+  return $result;
 }
 
 1;
