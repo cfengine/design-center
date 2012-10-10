@@ -29,14 +29,21 @@ bundle agent set(class_prefix, canon_prefix, sysctl_file, ensured_kv, removed_kv
 
       # build the array of things to be removed
       "removed[$(removed_vars)]"  string => ".*";
-      "removed[$(removed_kvindices)]" string => "$(removed_kv)[$(removed_kvindices)]";
+      "removed[$(removed_kvindices)]" string => "$($(removed_kv)[$(removed_kvindices)])";
 
-      "removed_indices" slist => { getindices("removed") };
+    second_class_pass::
+      "removed_indices" slist => { getindices("cfdc_sysctl:set.removed") };
+
+  classes:
+      # We need to know if we are on the second pass
+      "second_class_pass" and => {"first_class_pass"};
+      "first_class_pass" and => {"any"};
 
   files:
+    second_class_pass::
       "$(sysctl_file)"
       create => "true",
-      edit_line => default:set_variable_values("cfdc_sysctl:set.ensured_kv"),
+      edit_line => default:set_variable_values("$(ensured_kv)"),
       classes => default:if_repaired("$(canon_prefix)reload"),
       ifvarclass => "!$(class_prefix)empty_first",
       comment => "Only ensure specific defined values are present";
@@ -45,7 +52,7 @@ bundle agent set(class_prefix, canon_prefix, sysctl_file, ensured_kv, removed_kv
       create => "true",
       handle => "sysctl_files_empty_first",
       edit_defaults => default:empty,
-      edit_line => default:set_variable_values("cfdc_sysctl:set.ensured_kv"),
+      edit_line => default:set_variable_values("$(ensured_kv)"),
       classes => default:if_repaired("$(canon_prefix)reload"),
       ifvarclass => "$(class_prefix)empty_first",
       comment => "Empty file before ensuring specified values are present,
@@ -65,15 +72,15 @@ this effectively promises the full file content.";
       comment => "Reload sysctl after repairing configuration";
 
   reports:
-    default:debug::
+    second_class_pass.default:debug::
       "DEBUG is turned on for sysctl";
 
       "$(sysctl_file) will be emptied before editing",
       ifvarclass => "$(class_prefix)empty_first";
 
-
       "Set sysctl var: $(sysctl_vars)=$($(ensured_kv)[$(sysctl_vars)])";
-      "Remove sysctl var: $(removed_indices)=$(removed[$(removed_indices)])";
+      "Remove sysctl var: $(removed_indices)=$(cfdc_sysctl:set.removed[$(removed_indices)])";
+      # "Removed vars: $(removed_indices)";
 
       "I repaired $(sysctl_file), sysctl needs to be reloaded",
       ifvarclass => "$(canon_prefix)reload";
@@ -95,10 +102,10 @@ bundle edit_line del_variable_values(v)
 
   delete_lines:
 
-      "$(index)=$($(v)[$(index)])",
+      "$(index)\s*=\s*$($(v)[$(index)])",
       comment => "Delete a specific variable";
 
   reports:
     default:debug::
-      "DEBUG: we will delete lines matching: '$(index)=$($(v)[$(index)])'";
+      "DEBUG: we will delete lines matching: '$(index)\s*=\s*$($(v)[$(index)])'";
 }
