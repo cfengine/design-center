@@ -132,6 +132,10 @@ sub init {
     if (-t) {
       $interactive=1;
       $inputline=new Term::ReadLine $parser_id;
+      if ($Term::ReadLine::ISA[0] ne 'Term::ReadLine::Gnu') {
+        Util::warning("You should install the Term::ReadLine::Gnu Perl package for a better experience.\n")
+            unless DesignCenter::Config->quiet;
+      }
       $inter_command_separator="\n";
     } else {
       $interactive=0;
