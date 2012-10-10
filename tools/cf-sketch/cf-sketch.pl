@@ -61,7 +61,8 @@ my $required_version = '3.4.0';
 my $version = cfengine_version();
 
 if (!$config->force && $required_version gt $version) {
-  Util::color_die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
+    Util::error "I am very sorry, I need CFEngine version $required_version or above to work,\nbut you seem to have version $version installed.\n";
+    exit 1;
 }
 
 # Allow both comma-separated values and multiple occurrences of --repolist
