@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2012-10-10 00:59:55 a10022>
+# Time-stamp: <2012-10-10 10:20:26 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -67,7 +67,7 @@ sub command_list {
               }
             }
           } else {
-            print RED." (unconfigured)\n";
+            print RED." (not configured)\n";
           }
         }
         else {
