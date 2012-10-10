@@ -105,6 +105,7 @@ bundle agent set(class_prefix, allow_filename, deny_filename, allow, deny)
     default:test::
       "test_tcpwrappers" or => { "any" };
 
+    any::
       "ensure_absent" expression => "$(class_prefix)ensure_absent";
       "empty_first" expression => "$(class_prefix)empty_first";
 
