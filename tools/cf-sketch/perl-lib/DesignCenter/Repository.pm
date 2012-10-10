@@ -4,7 +4,7 @@
 # Representation of a repository containing sketches
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-09 17:36:30 a10022>
+# Time-stamp: <2012-10-10 02:31:46 a10022>
 
 package DesignCenter::Repository;
 
@@ -159,6 +159,7 @@ sub install
 {
     my $self = shift;
     my $sketches = shift;
+    my $quietrun = shift;
 
     my $dest_repo = DesignCenter::Config->installtarget;
     push @{DesignCenter::Config->repolist}, $dest_repo unless grep { $_ eq $dest_repo } @{DesignCenter::Config->repolist};
@@ -183,7 +184,7 @@ sub install
 
     foreach my $sketch (sort keys %todo)
     {
-        print BLUE "Installing $sketch\n" unless $quiet;
+        print BLUE "Installing $sketch\n" unless DesignCenter::Config->quiet || $quietrun;
         my $dir = $local_dir ? File::Spec->catdir($base_dir, $todo{$sketch}) : "$base_dir/$todo{$sketch}";
         my $skobj = DesignCenter::Sketch->new(name => $sketch,
                                               location => $local_dir ? File::Spec->rel2abs($dir) : $dir);
@@ -198,17 +199,17 @@ sub install
         # note that this will NOT catch circular dependencies!
         foreach my $missing (keys %missing)
         {
-            print "Trying to find $missing dependency\n" unless $quiet;
+            print "Trying to find $missing dependency\n" unless DesignCenter::Config->quiet || $quietrun;
 
             if (exists $todo{$missing})
             {
                 print "$missing dependency is to be installed or was installed already\n"
-                    unless $quiet;
+                    unless DesignCenter::Config->quiet || $quietrun;
                 delete $missing{$missing};
             }
             elsif (exists $known{$missing})
             {
-                print "Found $missing dependency, trying to install it\n" unless $quiet;
+                print "Found $missing dependency, trying to install it\n" unless DesignCenter::Config->quiet || $quietrun;
                 $self->install([$missing]);
                 delete $missing{$missing};
                 $todo{$missing} = $known{$missing};
@@ -221,7 +222,7 @@ sub install
             if (DesignCenter::Config->force)
             {
                 Util::color_warn "Installing $sketch despite unsatisfied dependencies @missing"
-                    unless $quiet;
+                    unless DesignCenter::Config->quiet;
             }
             else
             {
@@ -243,7 +244,7 @@ sub install
         if (CFSketch::maybe_ensure_dir($install_dir))
         {
             print "Created destination directory $install_dir\n" if DesignCenter::Config->verbose;
-            print "Checking and installing sketch files.\n" unless $quiet;
+            print "Checking and installing sketch files.\n" unless DesignCenter::Config->quiet || $quietrun;
             my $anything_changed = 0;
             foreach my $file ($CFSketch::SKETCH_DEF_FILE, sort keys %{$data->{manifest}})
             {
@@ -341,13 +342,13 @@ sub install
                 $anything_changed += $changed;
             }
 
-            unless ($quiet) {
+            unless (DesignCenter::Config->quiet) {
                 if ($anything_changed) {
-                    print GREEN "Done installing $sketch\n";
+                    print GREEN "Done installing $sketch\n" unless $quietrun;
                     CFSketch::repo_clear_cache($dest_repo);
                 }
                 else {
-                    print GREEN "Everything was up to date - nothing changed.\n";
+                    print GREEN "Everything was up to date - nothing changed.\n" unless $quietrun;
                 }
             }
         }
@@ -446,7 +447,7 @@ sub missing_dependencies
     push @missing, sort keys %tocheck;
     if (scalar @missing)
     {
-        print YELLOW "Unsatisfied dependencies: @missing\n" unless $quiet;
+        print YELLOW "Unsatisfied dependencies: @missing\n" unless DesignCenter::Config->quiet;
     }
 
     return @missing;

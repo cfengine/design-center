@@ -95,7 +95,7 @@ Parser::init('cf-sketch', $config, @ARGV);
 Parser::set_welcome_message("[default]\nCFEngine AS, 2012.");
 
 # Make sure at least the stdlib is installed
-Parser::command_install('CFEngine::stdlib');
+$config->_repository->install(['CFEngine::stdlib'], 1);
 
 unless ($config->expert) {
   # Run the main command loop
