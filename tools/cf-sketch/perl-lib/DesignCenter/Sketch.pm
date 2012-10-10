@@ -4,7 +4,7 @@
 # Representation of a sketch
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-09 16:51:22 a10022>
+# Time-stamp: <2012-10-10 00:47:53 a10022>
 
 package DesignCenter::Sketch;
 
@@ -248,7 +248,7 @@ sub verify_entry_point {
   print $tfh $mcf;
   close $tfh;
 
-  my $pb = CFSketch::cfengine_promises_binary();
+  my $pb = CFSketch::cfengine_binary('cf-promises');
   my $tline = "$pb --parse-tree";
   open my $parse, "$tline -f '$tfilename'|"
     or die "Could not run [$tline -f '$tfilename']: $!";

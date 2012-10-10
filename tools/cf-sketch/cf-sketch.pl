@@ -536,33 +536,33 @@ sub maybe_write_file
 
 
 {
-  my $promises_binary;
+  my %cf_binaries = ();
 
-  sub cfengine_promises_binary
+  sub cfengine_binary
     {
-      my $promises_name = 'cf-promises';
+      my $name = shift || 'cf-promises';
 
-      unless ($promises_binary)
+      unless ($cf_binaries{$name})
         {
           foreach my $check_path (split ':', $config->cfpath) {
-            my $check = "$check_path/$promises_name";
-            $promises_binary = $check if -x $check;
-            last if $promises_binary;
+            my $check = "$check_path/$name";
+            $cf_binaries{$name} = $check if -x $check;
+            last if $cf_binaries{$name};
           }
         }
 
-      Util::color_die "Sorry, but we couldn't find $promises_name in the search path $config->cfpath.  Please set \$PATH or use the --cfpath parameter!"
-          unless $promises_binary;
+      Util::color_die "Sorry, but we couldn't find $name in the search path $config->cfpath.  Please set \$PATH or use the --cfpath parameter!"
+          unless $cf_binaries{$name};
 
-      print "Excellent, we found $promises_binary to interface with CFEngine\n"
+      print "Excellent, we found $cf_binaries{$name} to interface with CFEngine\n"
         if $veryverbose;
 
-      return $promises_binary;
+      return $cf_binaries{$name};
     }
 
   sub cfengine_version
     {
-      my $pb = cfengine_promises_binary();
+      my $pb = cfengine_binary('cf-promises');
       my $cfv = `$pb -V`;       # TODO: get this from cfengine?
       if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/) {
         return $1;
