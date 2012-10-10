@@ -529,5 +529,105 @@ bundle agent cfsketch_run
 EOT
   }
 
+sub deactivate
+  {
+    my $self = shift;
+    my $nums_or_name = shift @_;
+
+    my $activations = DesignCenter::JSON::load(DesignCenter::Config->actfile, 1);
+    my %modified;
+
+    if ('' eq ref $nums_or_name) # a string or regex
+      {
+        my ($name, $num) = split(/#/, $nums_or_name);
+        foreach my $sketch (sort keys %$activations) {
+          next unless $sketch =~ m/$name/;
+          if ($num) {
+            splice(@{$activations->{$sketch}}, $num-1, 1);
+            $modified{$sketch}++;
+            print GREEN "Deactivated: $sketch activation #$num\n".RESET
+              unless DesignCenter::Config->quiet;
+          }
+          else {
+            delete $activations->{$sketch};
+            $modified{$sketch}++;
+            print GREEN "Deactivated: all $sketch activations\n".RESET
+              unless DesignCenter::Config->quiet;
+          }
+        }
+      } elsif ('ARRAY' eq ref $nums_or_name) {
+        my @deactivations;
+
+        my $offset = 1;
+        foreach my $sketch (sort keys %$activations) {
+          if ('HASH' eq ref $activations->{$sketch}) {
+            Util::color_warn "Ignoring old-style activations for sketch $sketch!";
+            $activations->{$sketch} = [];
+            $modified{$sketch}++;
+            print GREEN "Deactivated: all $sketch activations\n"
+              unless DesignCenter::Config->quiet;
+          }
+
+          my @new_activations;
+
+          foreach my $activation (@{$activations->{$sketch}}) {
+            if (grep { $_ == $offset } @$nums_or_name) {
+              $modified{$sketch}++;
+              print GREEN "Deactivated: $sketch activation $offset\n" unless DesignCenter::Config->quiet;
+            } else {
+              push @new_activations, $activation;
+            }
+            $offset++;
+          }
+
+          if (exists $modified{$sketch}) {
+            $activations->{$sketch} = \@new_activations;
+          }
+        }
+      } else {
+        Util::error "Sorry, I can't handle parameters " . DesignCenter::JSON->coder->encode($nums_or_name);
+        return;
+      }
+
+    if (scalar keys %modified) {
+      CFSketch::maybe_ensure_dir(dirname(DesignCenter::Config->actfile));
+      CFSketch::maybe_write_file(DesignCenter::Config->actfile, 'activation', DesignCenter::JSON->coder->encode($activations));
+    }
+  }
+
+sub remove
+  {
+    my $self=shift;
+    my $toremove = shift @_;
+
+    foreach my $repo (@{DesignCenter::Config->repolist}) {
+      next unless Util::is_resource_local($repo);
+
+      my $contents = CFSketch::repo_get_contents($repo);
+
+      foreach my $sketch (sort @$toremove) {
+        my @matches = grep
+          {
+            # accept sketch name or directory
+            ($_ eq $sketch) || ($contents->{$_}->{dir} eq $sketch) || ($contents->{$_}->{fulldir} eq $sketch)
+          } keys %$contents;
+
+        unless (scalar @matches) {
+          Util::warning "I did not find an installed sketch that matches '$sketch' - not removing it.\n";
+          next;
+        }
+        $sketch = shift @matches;
+        my $data = $contents->{$sketch};
+        if (CFSketch::maybe_remove_dir($data->{fulldir})) {
+          $self->deactivate($sketch); # deactivate all the activations of the sketch
+          print GREEN "Successfully removed $sketch from $data->{fulldir}\n".RESET unless DesignCenter::Config->quiet;
+          CFSketch::repo_clear_cache($repo);
+        } else {
+          print RED "Could not remove $sketch from $data->{fulldir}\n".RESET unless DesignCenter::Config->quiet;
+          CFSketch::repo_clear_cache($repo);
+        }
+      }
+    }
+  }
 
 1;
