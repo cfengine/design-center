@@ -37,11 +37,11 @@ commands:LIST(NON_EMPTY_STRING)
       "crontab" usebundle => cfdc_cron:tab($(class_prefix), $(cron_path), $(tasks), $(task_names));
 
   reports:
-    cfengine.debug::
+    cfengine.default:debug::
 
-    has_crond.debug::
+    has_crond.default:debug::
       "We have crond in '$(cron_path)'";
-    has_crontab.debug::
+    has_crontab.default:debug::
       "We have crontab in '$(cron_path)'";
     !has_crond.!has_crontab::
       "We have neither cron.d nor crontab, this can't go on!";
@@ -60,12 +60,12 @@ bundle agent d(class_prefix, cron_path, tasks, task)
 
   files:
       "$(cron_path)/cron-sketch-$(task)"
-      edit_line => default:append_if_no_lines("@(d.lines)"),
+      edit_line => default:append_if_no_lines("$(lines)"),
       edit_defaults => default:empty,
       create => "true";
 
   reports:
-    cfengine.debug::
+    cfengine.default:debug::
       "crond manage: Activating '$(cron_path)/cron-sketch-$(task)': run as $(runas) at times '$(when)', command '$(commands)'";
       "lines to be inserted in '$(cron_path)/cron-sketch-$(task)' = $(lines)";
 }
@@ -118,11 +118,11 @@ bundle agent tab(class_prefix, cron_path, tasks, task)
       ifvarclass     => "$(class_prefix)$(task)_if_lines_added";
 
   reports:
-    debug::
+    default:debug::
       "crontab manage: Activating '$(cron_path) $(class_prefix)$(task)' for task $(task) run as $(runas) at times '$(when)', command '$(commands)' @@ $(lines) @@ ";
       "task prefix = $(tprefix)";
       "lines to be inserted in '$(cron_path) $(class_prefix)$(task)' = $(lines)";
-    only_allow_defined_entries.debug::
+    only_allow_defined_entries.default:debug::
       "@@ Crontab may be emptied ! @@";
 }
 
