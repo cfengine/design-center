@@ -18,30 +18,12 @@ use LWP::Simple;
 use LWP::Protocol::https;
 use Term::ANSIColor qw(:constants);
 use Carp::Always;
+use JSON;
 
 $Term::ANSIColor::AUTORESET = 1;
 
-my $coder;
-my $canonical_coder;
-
-BEGIN
-{
-    eval
-    {
-     require JSON::XS;
-     $coder = JSON::XS->new()->relaxed()->utf8()->allow_nonref();
-     # for storing JSON data so it's directly comparable
-     $canonical_coder = JSON::XS->new()->canonical()->utf8()->allow_nonref();
-    };
-    if ($@ )
-    {
-     warn "Falling back to plain JSON module (you should install JSON::XS)";
-     require JSON;
-     $coder = JSON->new()->relaxed()->utf8()->allow_nonref();
-     # for storing JSON data so it's directly comparable
-     $canonical_coder = JSON->new()->canonical()->utf8()->allow_nonref();
-    }
-}
+my $coder = JSON::XS->new()->relaxed()->utf8()->allow_nonref();
+my $canonical_coder = JSON::XS->new()->canonical()->utf8()->allow_nonref();
 
 ###### Some basic constants and settings.
 
