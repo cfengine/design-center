@@ -564,7 +564,7 @@ sub generate
 
        # for null entry_point and interface definitions, don't write
        # anything in the runme template
-       unless (exists $entry_point->{bundle})
+       if (!exists $entry_point->{bundle})
        {
         push @inputs, inputfile($data->{dir}, @{$data->{interface}});
         next;
@@ -807,7 +807,7 @@ sub api
    }
  }
 }
- unless ($found) {
+ if (!$found) {
    die "I could not find sketch $sketch. It doesn't seem to be installed.\n";
  }
 }
@@ -1014,7 +1014,7 @@ sub remove
     ($_ eq $sketch) || ($contents->{$_}->{dir} eq $sketch) || ($contents->{$_}->{fulldir} eq $sketch)
    } keys %$contents;
 
-   unless (scalar @matches) {
+   if (!scalar @matches) {
      warn "I did not find an installed sketch that matches '$sketch' - not removing it.\n";
      next;
    }
@@ -1191,7 +1191,7 @@ sub install
     $anything_changed += $changed;
    }
 
-   unless ($quiet) {
+   if (!$quiet) {
      if ($anything_changed) {
        print GREEN "Done installing $sketch\n";
      }
@@ -1401,13 +1401,13 @@ sub load_sketch
  my @messages;
 
  # stage 1: the data must be valid and a hash
- unless (defined $json && ref $json eq 'HASH')
+ if (!defined $json || ref $json ne 'HASH')
  {
   push @messages, "Invalid JSON data";
  }
 
  # stage 2: check top-level manifest and metadata keys
- unless (scalar @messages)
+ if (!scalar @messages)
  {
   # the manifest must be a hash
   push @messages, "Invalid manifest" unless (exists $json->{manifest} && ref $json->{manifest} eq 'HASH');
@@ -1420,7 +1420,7 @@ sub load_sketch
  }
 
  # stage 3: check metadata details
- unless (scalar @messages)
+ if (!scalar @messages)
  {
   # need a 'depends' key that points to a hash
   push @messages, "Invalid dependencies structure" unless (exists $json->{metadata}->{depends}  &&
@@ -1437,14 +1437,14 @@ sub load_sketch
                                                                                   ref $json->{metadata}->{$array} eq 'ARRAY');
   }
 
-  unless (scalar @messages)
+  if (!scalar @messages)
   {
    push @messages, "Portfolio metadata can't be empty" unless scalar @{$json->{metadata}->{portfolio}};
   }
  }
 
  # stage 4: check entry_point and interface
- unless (scalar @messages)
+ if (!scalar @messages)
  {
   push @messages, "Missing entry_point" unless exists $json->{entry_point};
  }
@@ -1457,7 +1457,7 @@ sub load_sketch
  }
 
  # we should not have any interface files that do NOT exist in the manifest
- unless (scalar @messages)
+ if (!scalar @messages)
  {
   foreach (@{$json->{interface}})
   {
