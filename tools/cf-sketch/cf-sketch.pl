@@ -705,7 +705,7 @@ sub generate
     foreach sort keys %$template_activations;
 
    # map inputs under the sketches/ directory as per the $config defaults
-   my $includes = join ', ', map { "\"sketches/$_\"" } uniq(@inputs);
+   my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
 
    # maybe make the run template configurable?
    my $output = make_runfile($template_activations, $includes, $standalone);
