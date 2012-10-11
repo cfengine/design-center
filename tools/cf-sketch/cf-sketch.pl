@@ -17,39 +17,13 @@ use Getopt::Long;
 use LWP::Simple;
 use LWP::Protocol::https;
 use Term::ANSIColor qw(:constants);
+use Carp::Always;
+use JSON;
 
 $Term::ANSIColor::AUTORESET = 1;
 
-my $coder;
-my $canonical_coder;
-
-sub color_warn {
-  my ($package, $filename, $line, $sub) = caller(1);
-  warn GREEN "$filename:$sub():\n" . YELLOW "WARN\t", @_;
-}
-sub color_die {
-  my ($package, $filename, $line, $sub) = caller(1);
-  die GREEN "$filename:$sub():\n" . RED "FATAL\t", @_;
-}
-
-BEGIN
-{
-    eval
-    {
-     require JSON::XS;
-     $coder = JSON::XS->new()->relaxed()->utf8()->allow_nonref();
-     # for storing JSON data so it's directly comparable
-     $canonical_coder = JSON::XS->new()->canonical()->utf8()->allow_nonref();
-    };
-    if ($@ )
-    {
-     color_warn "Falling back to plain JSON module (you should install JSON::XS)";
-     require JSON;
-     $coder = JSON->new()->relaxed()->utf8()->allow_nonref();
-     # for storing JSON data so it's directly comparable
-     $canonical_coder = JSON->new()->canonical()->utf8()->allow_nonref();
-    }
-}
+my $coder = JSON::XS->new()->relaxed()->utf8()->allow_nonref();
+my $canonical_coder = JSON::XS->new()->canonical()->utf8()->allow_nonref();
 
 ###### Some basic constants and settings.
 
@@ -180,14 +154,14 @@ if ($metarun)
   my $jsontxt = join("", <$mfh>);
   my $meta = $coder->decode($jsontxt);
 
-  color_die "Malformed metarun file: no 'options' key"
+  die "Malformed metarun file: no 'options' key"
    unless exists $meta->{options};
 
   %options = %{$meta->{options}};
  }
  else
  {
-  color_die "Could not load metarun file $metarun: $!";
+  die "Could not load metarun file $metarun: $!";
  }
 }
 else
@@ -224,7 +198,7 @@ my $version = cfengine_version();
 
 if (!$options{force} && $required_version gt $version)
 {
- color_die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
+ die "Couldn't ensure CFEngine version [$version] is above required [$required_version], sorry!";
 }
 
 # Allow both comma-separated values and multiple occurrences of --repolist
@@ -298,7 +272,7 @@ if (scalar @{$options{'make-package'}})
 if ($options{'list-activations'})
 {
  my $activations = load_json($options{'act-file'}, 1);
- color_die "Can't load any activations from $options{'act-file'}"
+ die "Can't load any activations from $options{'act-file'}"
   unless defined $activations && ref $activations eq 'HASH';
 
  my $activation_id = 1;
@@ -306,7 +280,7 @@ if ($options{'list-activations'})
  {
   if ('HASH' eq ref $activations->{$sketch})
   {
-   color_warn "Skipping unusable activations for sketch $sketch!";
+   warn "Skipping unusable activations for sketch $sketch!";
    next;
   }
 
@@ -349,7 +323,7 @@ foreach my $word (@callable)
 exit if grep { $options{$_} } @nonterminal;
 
 push @callable, 'list', 'save-config';
-color_die "Sorry, I don't know what you want to do.  You have to specify a valid verb. Run $0 --help to see the complete list.\n";
+die "Sorry, I don't know what you want to do.  You have to specify a valid verb. Run $0 --help to see the complete list.\n";
 
 sub configure_self
 {
@@ -413,7 +387,7 @@ sub search_internal
  if ($local_dir)
  {
   open(my $invf, '<', $source)
-   or color_die "Could not open cf-sketch inventory file $source: $!";
+   or die "Could not open cf-sketch inventory file $source: $!";
 
   while (<$invf>)
   {
@@ -432,7 +406,7 @@ sub search_internal
  else
  {
   my $invd = get($source)
-   or color_die "Unable to retrieve $source : $!\n";
+   or die "Unable to retrieve $source : $!\n";
 
   my @lines = split "\n", $invd;
   foreach my $line (@lines)
@@ -520,7 +494,7 @@ sub generate
 {
    # activation successful, now install it
    my $activations = load_json($options{'act-file'}, 1);
-   color_die "Can't load any activations from $options{'act-file'}"
+   die "Can't load any activations from $options{'act-file'}"
     unless defined $activations && ref $activations eq 'HASH';
 
    my $activation_counter = 1;
@@ -543,7 +517,7 @@ sub generate
      {
       if ('HASH' eq ref $activations->{$sketch})
       {
-       color_warn "Skipping unusable activations for sketch $sketch!\n";
+       warn "Skipping unusable activations for sketch $sketch!\n";
        next;
       }
 
@@ -552,7 +526,7 @@ sub generate
       {
        print "Loading activation $activation_id for sketch $sketch\n"
         if $verbose;
-       color_die "Couldn't load activation params for $sketch: $!"
+       die "Couldn't load activation params for $sketch: $!"
         unless defined $pdata;
 
        my $data = $contents->{$sketch};
@@ -567,12 +541,12 @@ sub generate
                                             $data->{entry_point},
                                             $data->{interface});
 
-       color_die "Could not load the entry point definition of $sketch"
+       die "Could not load the entry point definition of $sketch"
         unless $entry_point;
 
        # for null entry_point and interface definitions, don't write
        # anything in the runme template
-       unless (exists $entry_point->{bundle})
+       if (!exists $entry_point->{bundle})
        {
         push @inputs, inputfile($data->{dir}, @{$data->{interface}});
         next;
@@ -647,7 +621,7 @@ sub generate
         my $v = $pdata->{$k};
         my $augment_v = $pdata->{"+$k"};
 
-        color_die "Supplied augment variable for key $k is not an array"
+        die "Supplied augment variable for key $k is not an array"
          if ($augment_v && ref $augment_v ne 'HASH');
 
         my $definition = exists $optional_varlist->{$k} ?
@@ -665,7 +639,7 @@ sub generate
         }
         elsif ($definition eq 'array')
         {
-         color_die "Unable to activate: provided value " .
+         die "Unable to activate: provided value " .
           $coder->encode($v) . " for key $k is not an array"
            unless ref $v eq 'HASH';
 
@@ -676,7 +650,7 @@ sub generate
            foreach keys %$augment_v;
          }
 
-         color_die "Sorry, but you can't activate with an empty list in $k"
+         die "Sorry, but you can't activate with an empty list in $k"
           unless scalar keys %{$activation->{array_vars}->{$cfengine_k}};
         }
         else
@@ -703,7 +677,7 @@ sub generate
       next ACTIVATION;
      }
     }
-    color_die "Could not find sketch $sketch in repo list @{$options{repolist}}";
+    die "Could not find sketch $sketch in repo list @{$options{repolist}}";
    }
 
    foreach my $repo (@{$options{repolist}})
@@ -723,7 +697,7 @@ sub generate
    my @deps = keys %dependencies;
    if (scalar @deps)
    {
-    color_die "Sorry, can't generate: unsatisfied dependencies [@deps]";
+    die "Sorry, can't generate: unsatisfied dependencies [@deps]";
    }
 
    # process input template, substituting variables
@@ -731,7 +705,7 @@ sub generate
     foreach sort keys %$template_activations;
 
    # map inputs under the sketches/ directory as per the $config defaults
-   my $includes = join ', ', map { "\"sketches/$_\"" } uniq(@inputs);
+   my $includes = join ', ', map { "\"$_\"" } uniq(@inputs);
 
    # maybe make the run template configurable?
    my $output = make_runfile($template_activations, $includes, $standalone);
@@ -811,12 +785,12 @@ sub api
      }
    }
    else {
-     color_die "I cannot find API information about $sketch.\n";
+     die "I cannot find API information about $sketch.\n";
    }
  }
 }
- unless ($found) {
-   color_die "I could not find sketch $sketch. It doesn't seem to be installed.\n";
+ if (!$found) {
+   die "I could not find sketch $sketch. It doesn't seem to be installed.\n";
  }
 }
 
@@ -831,7 +805,7 @@ sub activate
   print "Loading activation params from $pfile\n" unless $quiet;
   my $aparams = load_json($pfile);
 
-  color_die "Could not load activation params from $pfile"
+  die "Could not load activation params from $pfile"
    unless ref $aparams eq 'HASH';
 
   foreach my $extra (sort keys %{$options{params}})
@@ -875,7 +849,7 @@ sub activate
        $aparams->{$varname} = 'any';
       }
 
-      color_die "Can't activate $sketch: its interface requires variable '$varname'"
+      die "Can't activate $sketch: its interface requires variable '$varname'"
        unless exists $aparams->{$varname};
       print "Satisfied by aparams: '$varname'\n" if $verbose;
      }
@@ -889,7 +863,7 @@ sub activate
     }
     else
     {
-     color_die "Can't activate $sketch: missing entry point in $data->{entry_point}"
+     die "Can't activate $sketch: missing entry point in $data->{entry_point}"
     }
 
     # activation successful, now install it
@@ -897,7 +871,7 @@ sub activate
 
     if ('HASH' eq ref $activations->{$sketch})
     {
-     color_warn "Ignoring old-style activations for sketch $sketch!";
+     warn "Ignoring old-style activations for sketch $sketch!";
      $activations->{$sketch} = [];
     }
 
@@ -909,12 +883,12 @@ sub activate
      {
       if ($options{force})
       {
-       color_warn "Activating duplicate parameters [$q] because of --force"
+       warn "Activating duplicate parameters [$q] because of --force"
         unless $quiet;
       }
       else
       {
-       color_die "Can't activate: $sketch has already been activated with $q";
+       die "Can't activate: $sketch has already been activated with $q";
       }
      }
     }
@@ -931,7 +905,7 @@ sub activate
    }
   }
 
-  color_die "Could not activate sketch $sketch, it was not in the given list of repositories [@{$options{repolist}}]"
+  die "Could not activate sketch $sketch, it was not in the given list of repositories [@{$options{repolist}}]"
    unless $installed;
  }
 }
@@ -963,7 +937,7 @@ sub deactivate
   {
    if ('HASH' eq ref $activations->{$sketch})
    {
-    color_warn "Ignoring old-style activations for sketch $sketch!";
+    warn "Ignoring old-style activations for sketch $sketch!";
     $activations->{$sketch} = [];
     $modified{$sketch}++;
     print GREEN "Deactivated: all $sketch activations\n"
@@ -994,7 +968,7 @@ sub deactivate
  }
  else
  {
-  color_die "Sorry, I can't handle parameters " . $coder->encode($nums_or_name);
+  die "Sorry, I can't handle parameters " . $coder->encode($nums_or_name);
  }
 
  if (scalar keys %modified)
@@ -1022,8 +996,8 @@ sub remove
     ($_ eq $sketch) || ($contents->{$_}->{dir} eq $sketch) || ($contents->{$_}->{fulldir} eq $sketch)
    } keys %$contents;
 
-   unless (scalar @matches) {
-     color_warn "I did not find an installed sketch that matches '$sketch' - not removing it.\n";
+   if (!scalar @matches) {
+     warn "I did not find an installed sketch that matches '$sketch' - not removing it.\n";
      next;
    }
    $sketch = shift @matches;
@@ -1048,7 +1022,7 @@ sub install
  my $dest_repo = $options{'install-target'};
  push @{$options{repolist}}, $dest_repo unless grep { $_ eq $dest_repo } @{$options{repolist}};
 
- color_die "Can't install: no install target supplied!"
+ die "Can't install: no install target supplied!"
   unless defined $dest_repo;
 
  my $source = $options{'install-source'};
@@ -1069,7 +1043,7 @@ sub install
   # make sure we only work with absolute directories
   my $data = load_sketch($local_dir ? File::Spec->rel2abs($dir) : $dir);
 
-  color_die "Sorry, but sketch $sketch could not be loaded from $dir!"
+  die "Sorry, but sketch $sketch could not be loaded from $dir!"
    unless $data;
 
   my %missing = map { $_ => 1 } missing_dependencies($data->{metadata}->{depends});
@@ -1099,12 +1073,12 @@ sub install
   {
    if ($options{force})
    {
-    color_warn "Installing $sketch despite unsatisfied dependencies @missing"
+    warn "Installing $sketch despite unsatisfied dependencies @missing"
      unless $quiet;
    }
    else
    {
-    color_die "Can't install: $sketch has unsatisfied dependencies @missing";
+    die "Can't install: $sketch has unsatisfied dependencies @missing";
    }
   }
 
@@ -1130,7 +1104,7 @@ sub install
     my $dest = File::Spec->catfile($install_dir, split('/', $file));
 
     my $dest_dir = dirname($dest);
-    color_die "Could not make destination directory $dest_dir"
+    die "Could not make destination directory $dest_dir"
      unless maybe_ensure_dir($dest_dir);
 
     my $changed = 1;
@@ -1140,7 +1114,7 @@ sub install
         is_resource_local($data->{dir}) &&
         compare($source, $dest) == 0)
     {
-     color_warn "  Manifest member $file is already installed in $dest"
+     warn "  Manifest member $file is already installed in $dest"
       if $verbose;
      $changed = 0;
     }
@@ -1155,12 +1129,12 @@ sub install
      {
       if (is_resource_local($data->{dir}))
       {
-       copy($source, $dest) or color_die "Aborting: copy $source -> $dest failed: $!";
+       copy($source, $dest) or die "Aborting: copy $source -> $dest failed: $!";
       }
       else
       {
        my $rc = getstore($source, $dest);
-       color_die "Aborting: remote copy $source -> $dest failed: error code $rc"
+       die "Aborting: remote copy $source -> $dest failed: error code $rc"
         unless is_success($rc)
       }
      }
@@ -1183,7 +1157,7 @@ sub install
      # TODO: ensure this works on platforms without getpwnam
      # TODO: maybe add group support too
      my ($login,$pass,$uid,$gid) = getpwnam($file_spec->{user})
-      or color_die "$file_spec->{user} not in passwd file";
+      or die "$file_spec->{user} not in passwd file";
 
      if ($dryrun)
      {
@@ -1199,7 +1173,7 @@ sub install
     $anything_changed += $changed;
    }
 
-   unless ($quiet) {
+   if (!$quiet) {
      if ($anything_changed) {
        print GREEN "Done installing $sketch\n";
      }
@@ -1210,7 +1184,7 @@ sub install
   }
   else
   {
-   color_warn "Could not make install directory $install_dir, skipping $sketch";
+   warn "Could not make install directory $install_dir, skipping $sketch";
   }
  }
 }
@@ -1357,7 +1331,7 @@ sub find_remote_sketches
  {
   my $sketches_url = "$repo/cfsketches";
   my $sketches = get($sketches_url)
-   or color_die "Unable to retrieve $sketches_url : $!\n";
+   or die "Unable to retrieve $sketches_url : $!\n";
 
   foreach my $sketch_dir ($sketches =~ /(.+)/mg)
   {
@@ -1409,13 +1383,13 @@ sub load_sketch
  my @messages;
 
  # stage 1: the data must be valid and a hash
- unless (defined $json && ref $json eq 'HASH')
+ if (!defined $json || ref $json ne 'HASH')
  {
   push @messages, "Invalid JSON data";
  }
 
  # stage 2: check top-level manifest and metadata keys
- unless (scalar @messages)
+ if (!scalar @messages)
  {
   # the manifest must be a hash
   push @messages, "Invalid manifest" unless (exists $json->{manifest} && ref $json->{manifest} eq 'HASH');
@@ -1428,7 +1402,7 @@ sub load_sketch
  }
 
  # stage 3: check metadata details
- unless (scalar @messages)
+ if (!scalar @messages)
  {
   # need a 'depends' key that points to a hash
   push @messages, "Invalid dependencies structure" unless (exists $json->{metadata}->{depends}  &&
@@ -1445,14 +1419,14 @@ sub load_sketch
                                                                                   ref $json->{metadata}->{$array} eq 'ARRAY');
   }
 
-  unless (scalar @messages)
+  if (!scalar @messages)
   {
    push @messages, "Portfolio metadata can't be empty" unless scalar @{$json->{metadata}->{portfolio}};
   }
  }
 
  # stage 4: check entry_point and interface
- unless (scalar @messages)
+ if (!scalar @messages)
  {
   push @messages, "Missing entry_point" unless exists $json->{entry_point};
  }
@@ -1465,7 +1439,7 @@ sub load_sketch
  }
 
  # we should not have any interface files that do NOT exist in the manifest
- unless (scalar @messages)
+ if (!scalar @messages)
  {
   foreach (@{$json->{interface}})
   {
@@ -1490,12 +1464,12 @@ sub load_sketch
   }
   else
   {
-   color_warn "Could not verify bundle entry point from $name" unless $quiet;
+   warn "Could not verify bundle entry point from $name" unless $quiet;
   }
  }
  else
  {
-  color_warn "Could not load sketch definition from $name: [@{[join '; ', @messages]}]" unless $quiet;
+  warn "Could not load sketch definition from $name: [@{[join '; ', @messages]}]" unless $quiet;
  }
 
  return undef;
@@ -1552,14 +1526,14 @@ sub verify_entry_point
   {
    unless (-f $maincf_filename)
    {
-    color_warn "Could not find sketch $name entry point '$maincf_filename'" unless $quiet;
+    warn "Could not find sketch $name entry point '$maincf_filename'" unless $quiet;
     return 0;
    }
 
    my $mcf;
    unless (open($mcf, '<', $maincf_filename) && $mcf)
    {
-    color_warn "Could not open $maincf_filename: $!" unless $quiet;
+    warn "Could not open $maincf_filename: $!" unless $quiet;
     return 0;
    }
    @mcf = <$mcf>;
@@ -1569,7 +1543,7 @@ sub verify_entry_point
    my $mcf = get($maincf_filename);
    unless ($mcf)
    {
-    color_warn "Could not retrieve $maincf_filename: $!" unless $quiet;
+    warn "Could not retrieve $maincf_filename: $!" unless $quiet;
     return 0;
    }
 
@@ -1697,17 +1671,17 @@ sub verify_entry_point
 
   if ($meta->{confirmed})
   {
-   color_warn "Couldn't find the closing } for [$bundle] in $maincf_filename"
+   warn "Couldn't find the closing } for [$bundle] in $maincf_filename"
     unless $quiet;
   }
   elsif (defined $bundle)
   {
-   color_warn "Couldn't find the meta definition of [$bundle] in $maincf_filename"
+   warn "Couldn't find the meta definition of [$bundle] in $maincf_filename"
     unless $quiet;
   }
   else
   {
-   color_warn "Couldn't find a usable bundle in $maincf_filename" unless $quiet;
+   warn "Couldn't find a usable bundle in $maincf_filename" unless $quiet;
   }
 
   return undef;
@@ -1790,7 +1764,7 @@ sub load_json
   my $j;
   unless (open($j, '<', $f) && $j)
   {
-   color_warn "Could not inspect $f: $!" unless ($quiet || $local_quiet);
+   warn "Could not inspect $f: $!" unless ($quiet || $local_quiet);
    return;
   }
 
@@ -1799,7 +1773,7 @@ sub load_json
  else
  {
   my $j = get($f)
-   or color_die "Unable to retrieve $f";
+   or die "Unable to retrieve $f";
 
   @j = split "\n", $j;
  }
@@ -1834,7 +1808,7 @@ sub load_json
     }
     else
     {
-     color_warn "Malformed include contents from $include: not a hash" unless $quiet;
+     warn "Malformed include contents from $include: not a hash" unless $quiet;
     }
    }
    delete $ret->{include};
@@ -1896,7 +1870,7 @@ sub maybe_write_file
  else
  {
   open(my $fh, '>', $file)
-   or color_die "Could not write $desc file $file: $!";
+   or die "Could not write $desc file $file: $!";
 
   print $fh $data;
   close $fh;
@@ -1920,7 +1894,7 @@ sub maybe_write_file
    }
   }
 
-  color_die "Sorry, but we couldn't find $promises_name in the search path $options{cfpath}.  Please set \$PATH or use the --cfpath parameter!"
+  die "Sorry, but we couldn't find $promises_name in the search path $options{cfpath}.  Please set \$PATH or use the --cfpath parameter!"
    unless $promises_binary;
 
   print "Excellent, we found $promises_binary to interface with CFEngine\n"
