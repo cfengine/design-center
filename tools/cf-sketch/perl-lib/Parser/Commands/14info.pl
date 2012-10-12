@@ -89,7 +89,8 @@ sub command_info {
                 my $simple_type = $p->{type};
                 $simple_type =~ s/\n+/ /gs;
                 $simple_type =~ s/\s*:\s*/:/gs;
-                print BOLD BLUE."    $p->{name}".RESET.": $simple_type\n";
+                my $def = (DesignCenter::JSON::recurse_print($p->{default}, undef, 1))[0]->{value};
+                print BOLD BLUE."    $p->{name}".RESET.": $simple_type".($def ? " (default: $def)\n":"\n");
               }
             }
           }
