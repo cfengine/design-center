@@ -10,6 +10,7 @@
     "metadata":
     {
         "name": "System::config_resolver",
+	"description": "Configure DNS resolver",
         "version": 1.1,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

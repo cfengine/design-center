@@ -11,6 +11,7 @@
     "metadata":
     {
         "name": "Repository::Yum::Client",
+	"description": "Manage yum repo client configs in /etc/yum.repos.d",
         "version": 1.10,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

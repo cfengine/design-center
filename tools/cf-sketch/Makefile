@@ -1,5 +1,7 @@
 REPO:=/var/tmp/cfsketch
-DST:=/usr/local/bin
+PREFIX:=/usr/local
+BIN:=$(PREFIX)/bin
+LIB:=$(PREFIX)/lib/cf-sketch
 
 test-defaults:
 	./cf-sketch.pl --deactivate-all
@@ -19,7 +21,9 @@ test: prep
 	cf-agent -I -K -f ./runme.cf
 
 install:
-	/usr/bin/install ./cf-sketch.pl $(DST)/cf-sketch
+	/bin/mkdir -p $(LIB) $(BIN)
+	/usr/bin/install ./cf-sketch.pl $(BIN)/cf-sketch
+	/bin/cp -a ./perl-lib/* $(LIB)
 
 # Eliminate all signs of cf-sketch from the system. For testing purposes.
 clean_system:

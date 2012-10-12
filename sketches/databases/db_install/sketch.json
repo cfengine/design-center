@@ -11,6 +11,7 @@
     "metadata":
     {
         "name": "Database::Install",
+	"description": "Install and enable the MySQL, Postgres or SQLite database engines",
         "version": 1.10,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

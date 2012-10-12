@@ -12,6 +12,7 @@
     "metadata":
     {
         "name": "WebApps::wordpress_install",
+	"description": "Install and configure Wordpress",
         "version": 1.00,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

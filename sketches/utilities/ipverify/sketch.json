@@ -11,6 +11,7 @@
     "metadata":
     {
         "name": "Utilities::ipverify",
+	"description": "Execute a bundle if reachable ip has known MAC address",
         "version": 1.02,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

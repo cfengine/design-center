@@ -13,6 +13,7 @@
     "metadata":
     {
         "name": "Cloud::Services",
+	"description": "Manage EC2 and VMware instances",
         "version": 1.10,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
