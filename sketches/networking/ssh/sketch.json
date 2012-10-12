@@ -10,12 +10,12 @@
     "metadata":
     {
         "name": "Security::SSH",
-        "version": 1.02,
+        "version": 1.10,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
         "authors": [ "Diego Zamboni <diego.zamboni@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },
-                     "cfengine": { "version": "3.2.1" },
+                     "cfengine": { "version": "3.4.0" },
                      "os": [ "linux", "darwin" ]
                    },
     },

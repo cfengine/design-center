@@ -1,44 +1,42 @@
 # cfdc_configure_apt_sources_list - Manage your deb repositories in /etc/apt/sources.list.d/ files or /etc/apt/sources.list
 ## AUTHOR
 Jean Remond <cfengine@remond.re>
+Ted Zlatanov <tzz@lifelogs.com>
 
 ## PLATFORM
 linux
 
 ## DESCRIPTION
-* cfdc_configure_apt_sources_list
+* aptrepos
     - edit_line based
     - optionally removes any files not specified 
 
+If you choose to call it directly instead of through JSON parameters
+(see `params/*.json`), you need to set the following:
+
+## ## PARAMETERS
+
+The bundle definition is:
+
+    bundle agent aptrepos(class_prefix, repos, apt_file, apt_dir)
+
+* `class_prefix` is a unique prefix per bundle execution, used to create unique classes.
+
+* `repos` is the name of an array with entries for each repo.  See
+  `test.cf` or `params/repos.json` for all the keys it needs.
+
+* `apt_file` is the APT file to edit (if `apt_use_file`)
+
+* `apt_dir` is the APT directory where we edit files (if `apt_use_file`)
+
+* `$(class_prefix)wipe` is a context that defines whether the edited
+  files will be wiped.  Off by default.
+
+* `$(class_prefix)apt_use_file` is a context that defines whether we
+  use `apt_file` or `apt_dir`.  Off by default.
 
 ## REQUIREMENTS
 standard library
 
 ## SAMPLE USAGE
-    body common control
-    {
-          bundlesequence => { "main" };
-          inputs => {
-                "../../libraries/copbl/cfengine_stdlib.cf",
-                "./main.cf",
-              };
-    }
-
-    bundle agent main
-    {
-    vars:
-       "Repo__apt_repos[contrib-debian-wheezy][distrib]"             string => "debian";
-       "Repo__apt_repos[contrib-debian-wheezy][file]"                string => "/tmp/contrib.list";
-       "Repo__apt_repos[contrib-debian-wheezy][repo_type][deb]"      string => "true";
-       "Repo__apt_repos[contrib-debian-wheezy][repo_type][deb-src]"  string => "false";
-       "Repo__apt_repos[contrib-debian-wheezy][repo_url]"            string => "ftp.fr.debian.org";
-       "Repo__apt_repos[contrib-debian-wheezy][section]"             string => "contrib";
-       "Repo__apt_repos[contrib-debian-wheezy][version_distrib]"     string => "wheezy";
-       "Repo__apt_defined_only"                                      string => "no";
-       "Repo__apt_multiple_sources_list_files"                       string => "yes";
-
-    methods:
-      "Repository::apt::Maintain" usebundle => cfdc_configure_apt_sources_list("main.Repo__apt_");
-
-    }
-
+See `test.cf`

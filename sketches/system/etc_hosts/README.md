@@ -1,12 +1,15 @@
 # etc_hosts - Manage your /etc/hosts files
 ## AUTHOR
 Nick Anderson <nick@cmdln.org>
+Ted Zlatanov <tzz@lifelogs.com>
 
 ## PLATFORM
 linux
+darwin
+windows
 
 ## DESCRIPTION
-* configure_etc_hosts
+* cfdc_etc_hosts:configure
     - edit_line based
     - optionally removes any entries not specified except localhost and comments
     - Allows single definition of each entry allowing comments for 
@@ -17,15 +20,4 @@ linux
 standard library
 
 ## SAMPLE USAGE
-    bundle agent main {
-    vars:
-        "hosts_entry[192.168.1.254]" string => "gateway.localdomain";
-        "hosts_entry[192.168.1.2]"   string => "printer";
-        "hosts_defined_only" string => "true";
-
-    methods:
-        "etc_hosts"
-            usebundle => configure_etc_hosts("main.hosts_");
-
-    }
-
+See `test.cf` and `params/example.json` for standalone and JSON-driven usage, respectively.

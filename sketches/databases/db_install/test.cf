@@ -1,49 +1,98 @@
-# This test file uses params/mysql_server.json with some minor adjustments for readability
+# This test file uses params/demo.json with some minor adjustments for readability
+
+# run with or without -Dpurge and -Dserver
+# run with -Dmysql or -Dsqlite or -Dpostgresql
 
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "./main.cf" };
+      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 }
 
 bundle common cfsketch_g
 {
   classes:
-      "db_install_test_purge" expression => "!any";
-      "db_install_test_server" expression => "any";
+    !purge::
+      "dbtest_purge" expression => "!any";
+    purge::
+      "dbtest_purge" expression => "any";
+    !server::
+      "dbtest_server" expression => "!any";
+    server::
+      "dbtest_server" expression => "any";
 
   vars:
-       # string versions of the contexts, optional
-      "db_install_test_contexts_text[purge]" string => "OFF";
-      "db_install_test_contexts_text[server]" string => "ON";
-      "db_install_test_db" string => "mysql";
+    any::
+      "dbtest_canon_prefix" string => "dbtest_";
+      "dbtest_class_prefix" string => "default:dbtest_";
+    mysql::
+      "dbtest_db" string => "mysql";
+    postgresql::
+      "dbtest_db" string => "postgresql";
+    sqlite::
+      "dbtest_db" string => "sqlite";
 
-       "db_install_test_bycontext[!ubuntu_12.(debian|ubuntu)][packages]" slist => {"mysql-client-5.1", "mysql-client-core-5.1", "mysql-common", "libmysqlclient16", "libdbd-mysql-perl", "libdbi-perl", "libnet-daemon-perl", "libplrpc-perl"};
-       "db_install_test_bycontext[!ubuntu_12.(debian|ubuntu)][process_match]" string => "/usr/sbin/mysqld.*";
-       "db_install_test_bycontext[!ubuntu_12.(debian|ubuntu)][server_packages]" slist => {"mysql-server-5.1", "mysql-server-core-5.1", "libhtml-template-perl"};
-       "db_install_test_bycontext[!ubuntu_12.(debian|ubuntu)][start_command]" string => "/etc/init.d/mysql restart";
+    mysql.!(redhat|centos|fedora)::
+      "dbtest_process_match" string => "/usr/sbin/mysqld.*";
+    mysql.redhat|centos|fedora::
+      "dbtest_process_match" string => ".*mysqld.*";
+    postgresql.(debian|ubuntu)::
+      "dbtest_process_match" string => ".*postgres.*";
+    postgresql.(redhat|centos|fedora|suse|SuSE)::
+      "dbtest_process_match" string => "/usr/bin/postmaster.*";
 
-       "db_install_test_bycontext[redhat|centos|fedora][packages]" slist => {"mysql"};
-       "db_install_test_bycontext[redhat|centos|fedora][process_match]" string => ".*mysqld.*";
-       "db_install_test_bycontext[redhat|centos|fedora][server_packages]" slist => {"mysql-server", "perl-DBD-MySQL"};
-       "db_install_test_bycontext[redhat|centos|fedora][start_command]" string => "/etc/init.d/mysqld restart";
+    mysql::
+      "dbtest_start_command" string => "/etc/init.d/mysql restart";
+    postgresql.(debian|ubuntu)::
+      "dbtest_start_command" string => "/etc/init.d/postgresql-8.4 restart";
+    postgresql.(redhat|centos|fedora|suse|SuSE)::
+      "dbtest_start_command" string => "/etc/init.d/postgresql restart";
 
-       "db_install_test_bycontext[suse|SuSe][packages]" slist => {"mysql-community-server-client", "libmysqlclient16", "libmysqlclient_r16"};
-       "db_install_test_bycontext[suse|SuSe][process_match]" string => "/usr/sbin/mysqld.*";
-       "db_install_test_bycontext[suse|SuSe][server_packages]" slist => {"mysql-community-server"};
-       "db_install_test_bycontext[suse|SuSe][start_command]" string => "/etc/init.d/mysql restart";
+    mysql.(!ubuntu_12.(debian|ubuntu))::
+      "dbtest_packages" slist => { "mysql-client-5.1", "mysql-client-core-5.1", "mysql-common", "libmysqlclient16", "libdbd-mysql-perl", "libdbi-perl", "libnet-daemon-perl", "libplrpc-perl" };
+    mysql.(redhat|centos|fedora)::
+      "dbtest_packages" slist => { "mysql" };
+    mysql.(suse|SuSe)::
+      "dbtest_packages" slist => { "mysql-community-server-client", "libmysqlclient16", "libmysqlclient_r16" };
+    mysql.ubuntu_12::
+      "dbtest_packages" slist => { "mysql-client", "mysql-common", "libmysqlclient18", "libdbd-mysql-perl", "libdbi-perl", "libnet-daemon-perl", "libplrpc-perl" };
+    postgresql.(debian|ubuntu)::
+      "dbtest_packages" slist => { "postgresql-client-8.4", "postgresql-client-common", "postgresql-doc-8.4", "libpq5" };
+    postgresql.(redhat|centos|fedora|suse|SuSE)::
+      "dbtest_packages" slist => { "postgresql", "postgresql-libs" };
+    sqlite.(debian|ubuntu)::
+      "dbtest_packages" slist => { "sqlite3", "libsqlite3-dev", "sqlite3-doc" };
+    sqlite.(redhat|centos|fedora)::
+      "dbtest_packages" slist => { "sqlite", "sqlite-devel" };
+    sqlite.(suse|SuSE)::
+      "dbtest_packages" slist => { "sqlite3", "sqlite3-devel" };
 
-       "db_install_test_bycontext[ubuntu_12][packages]" slist => {"mysql-client", "mysql-common", "libmysqlclient18", "libdbd-mysql-perl", "libdbi-perl", "libnet-daemon-perl", "libplrpc-perl"};
-       "db_install_test_bycontext[ubuntu_12][process_match]" string => "/usr/sbin/mysqld.*";
-       "db_install_test_bycontext[ubuntu_12][server_packages]" slist => {"mysql-server-5.1", "mysql-server-core-5.1", "libhtml-template-perl"};
-       "db_install_test_bycontext[ubuntu_12][start_command]" string => "/etc/init.d/mysql restart";
-
+    mysql.(!ubuntu_12.(debian|ubuntu))::
+      "dbtest_server_packages" slist => { "mysql-server-5.1", "mysql-server-core-5.1", "libhtml-template-perl" };
+    mysql.(redhat|centos|fedora)::
+      "dbtest_server_packages" slist => { "mysql-server", "perl-DBD-MySQL" };
+    mysql.(suse|SuSe)::
+      "dbtest_server_packages" slist => { "mysql-community-server" };
+    mysql.ubuntu_12::
+      "dbtest_server_packages" slist => { "mysql-server-5.1", "mysql-server-core-5.1", "libhtml-template-perl" };
+    postgresql.(debian|ubuntu)::
+      "dbtest_server_packages" slist => { "postgresql-8.4", "postgresql-common" };
+    postgresql.(redhat|centos|fedora|suse|SuSE)::
+      "dbtest_server_packages" slist => { "postgresql-server" };
+    sqlite::
+      "dbtest_server_packages" slist => { "cf_null" };
 }
 
 bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "test from params/mysql_serverl.json" usebundle => db_install("cfsketch_g.db_install_test_");
+      "run" usebundle => cfdc_db:db_install($(cfsketch_g.dbtest_canon_prefix),
+                                            $(cfsketch_g.dbtest_class_prefix),
+                                            $(cfsketch_g.dbtest_db),
+                                            $(cfsketch_g.dbtest_process_match),
+                                            $(cfsketch_g.dbtest_start_command),
+                                            @(cfsketch_g.dbtest_packages),
+                                            @(cfsketch_g.dbtest_server_packages));
 
 }

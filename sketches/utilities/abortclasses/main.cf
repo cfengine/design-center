@@ -1,0 +1,68 @@
+# -*- mode: cfengine3; indent-tabs-mode: nil; cfengine-parameters-indent: (promise pname 2); -*-
+# vi:tabstop=2:expandtab
+
+# N.B. Namespacing this sketch would make it much harder to use.  So we didn't.
+
+bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only)
+{
+  meta:
+      "vars[abortclass][type]"      string => "CONTEXT_NAME";
+      "vars[abortclass][default]"   string => "cowboy";
+
+      "vars[trigger_file][type]"    string => "PATH";
+      "vars[trigger_file][default]" string => "/COWBOY";
+
+      "vars[alert_only][type]"      string => "BOOLEAN";
+      "vars[alert_only][default]"   string => "0";
+
+  classes:
+      "alert_only" expression => strcmp("$(alert_only)", "1");
+      "alert" or => { "alert_only", "default:test" };
+      "fileexists" expression => fileexists($(trigger_file));
+
+  methods:
+    fileexists.alert::
+      "send alert"
+      usebundle  => abortclasses_alert,
+      comment    => "Raise alert that $(trigger_file) exists";
+
+    fileexists.!alert::
+      "do abort"
+      usebundle  => abortclasses_abort($(abort_class)),
+      comment    => "Define $(abort_class) since file $(trigger_file) exists";
+
+  reports:
+    debug::
+      "abortclasses: trigger_file: $(trigger_file), abortclass: $(abortclass), alert_only: $(alert_only)";
+    debug.alert::
+      "abortclasses: alert-only mode!!!";
+    debug.alert_only::
+      "abortclasses: in alert-only mode because alert_only=$(alert_only)";
+    debug.test::
+      "abortclasses: in alert-only mode because the 'test' class is defined";
+
+}
+
+#
+# Raise alert that agent will abort
+#
+bundle agent abortclasses_alert
+{
+  reports:
+    cfengine::
+      "Warning: system is under manual control!!!"
+      comment => "Alert that system is under manual control";
+
+}
+
+#
+# Abort execution of the agent if the specified file exists
+#
+bundle agent abortclasses_abort(abort_class)
+{
+  classes:
+      "$(abort_class)"
+      expression => "any",
+      comment => "Set the abort class";
+
+}

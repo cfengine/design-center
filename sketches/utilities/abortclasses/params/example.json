@@ -1,0 +1,8 @@
+{
+    "Utilities::abortclasses":
+    {
+        "trigger_file": { "bycontext": { "!test": "/COWBOY", "test": "/tmp/COWBOY" } },
+        "abortclass": "cowboy",
+        "alert_only": true
+    }
+}

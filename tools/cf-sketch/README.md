@@ -25,6 +25,7 @@ TODO: edit manual and getting started to reflect:
 --activate is a hash now: SKETCH=PFILE
 --save-metarun MFILE.json (saves %options)
 --metarun MFILE.json
+--GrandRedesign (parameters, meta, --fullpath)
 
 MFILE.json format: { options => \%options }
 where %options is all the options except save-metarun
