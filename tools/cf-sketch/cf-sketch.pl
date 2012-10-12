@@ -3,7 +3,7 @@
 package CFSketch;
 
 use FindBin;
-use lib "$FindBin::Bin/../lib", "$FindBin::Bin/perl-lib";
+use lib "$FindBin::Bin/../lib/cf-sketch", "$FindBin::Bin/perl-lib";
 
 use warnings;
 use strict;

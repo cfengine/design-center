@@ -63,7 +63,7 @@ my %fields =
   );
 
 # Determine where to load command modules from
-(-d ($fields{cmddir}="$FindBin::Bin/../lib/Parser/Commands")) ||
+(-d ($fields{cmddir}="$FindBin::Bin/../lib/cf-sketch/Parser/Commands")) ||
   (-d ($fields{cmddir}="$FindBin::Bin/perl-lib/Parser/Commands")) ||
   ($fields{cmddir}=undef);
 
