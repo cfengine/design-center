@@ -26,6 +26,14 @@ BEGIN {
 
 }
 
+sub function_exists
+{
+ no strict 'refs';
+ my $funcname = shift;
+ return \&{$funcname} if defined &{$funcname};
+ return;
+}
+
 # Returns an indented string containing a list. Syntax is:
 # sprintlist($listref[, $firstline[, $separator[, $indent
 #             [, $break[, $linelen[, $lineprefix]]]]])

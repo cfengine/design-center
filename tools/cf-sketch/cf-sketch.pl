@@ -158,7 +158,20 @@ foreach my $word (@callable) {
   if ($config->$word) {
     # TODO: hack to replace a method table, eliminate
     no strict 'refs';
-    $word->($config->$word);
+
+    my $sub = "DesignCenter::System::$word";
+    if (Util::function_exists($word))
+    {
+     $word->($config->$word);
+    }
+    elsif (Util::function_exists($sub))
+    {
+     $sub->($config->$word);
+    }
+    else
+    {
+     Util::color_die("Internal cf-sketch error: callable $word could not be found");
+    }
     use strict 'refs';
 
     # exit unless the command was non-terminal...
