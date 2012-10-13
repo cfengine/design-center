@@ -1,6 +1,6 @@
 SOURCEDIR:=`pwd`/../../sketches
 CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --install-source=$(SOURCEDIR)/cfsketches
-CFSKETCH_DA:=$(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v
+CFSKETCH_DA:=$(CFSKETCH) --expert --install CFEngine::stdlib --deactivate-all --generate -v
 RUNFILE:=~/.cfagent/inputs/cf-sketch-runfile.cf
 RUNNER:=cf-agent -KI -f $(RUNFILE) -Dverbose -Ddebug -Dtest
 

@@ -40,8 +40,6 @@ $| = 1;                         # autoflush
 
 ######################################################################
 
-DesignCenter::JSON::init;
-
 my $config = new DesignCenter::Config;
 $config->load;
 
