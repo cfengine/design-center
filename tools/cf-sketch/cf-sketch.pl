@@ -155,27 +155,38 @@ my @terminal = qw/api search/;
 my @callable = (@nonterminal, @terminal);
 
 foreach my $word (@callable) {
-  if ($config->$word) {
-    # TODO: hack to replace a method table, eliminate
-    no strict 'refs';
+  if ($config->$word)
+  {
+   if ($word eq 'install')
+   {
+    Parser::command_install(join(' ', @{$config->$word}));
+   }
+   elsif ($word eq 'remove')
+   {
+    Parser::command_remove(join(' ', @{$config->$word}));
+   }
+   elsif ($word eq 'activate')
+   {
+    activate($config->$word);
+   }
+   elsif ($word eq 'deactivate')
+   {
+    DesignCenter::System::deactivate($config->$word);
+   }
+   elsif ($word eq 'generate')
+   {
+   }
+   elsif ($word eq 'search')
+   {
+    Parser::command_search(join(' ', @{$config->$word}));
+   }
+   else
+   {
+    Util::color_die("Internal cf-sketch error: callable $word is not handled");
+   }
 
-    my $sub = "DesignCenter::System::$word";
-    if (Util::function_exists($word))
-    {
-     $word->($config->$word);
-    }
-    elsif (Util::function_exists($sub))
-    {
-     $sub->($config->$word);
-    }
-    else
-    {
-     Util::color_die("Internal cf-sketch error: callable $word could not be found");
-    }
-    use strict 'refs';
-
-    # exit unless the command was non-terminal...
-    exit unless grep { $_ eq $word } @nonterminal;
+   # exit unless the command was non-terminal...
+   exit unless grep { $_ eq $word } @nonterminal;
   }
 }
 
