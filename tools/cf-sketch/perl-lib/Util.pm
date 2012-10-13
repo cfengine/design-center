@@ -127,11 +127,17 @@ sub color_warn {
   warn YELLOW "WARN\t", @_;
 }
 
-sub color_die {
-  my ($package, $filename, $line, $sub) = caller(1);
-  $filename = 'unknown_file' unless defined $filename;
-  $sub = 'unknown_subrouting' unless defined $sub;
-  die GREEN "$filename:$sub():\n" . RED "FATAL\t", @_;
+sub color_die
+{
+  my $prelude = '';
+
+  if (defined scalar caller(1))
+  {
+   my ($package, $filename, $line, $sub) = caller(1);
+   $prelude = "$filename:$sub():\n";
+  }
+
+  die GREEN $prelude . RED "FATAL\t", @_;
 }
 
 # Output something unconditionally, as is.
