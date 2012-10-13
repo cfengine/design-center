@@ -122,8 +122,8 @@ sub isuser {
 }
 
 # Colorized warn() & die()
-sub color_warn {
-  my ($package, $filename, $line, $sub) = caller(1);
+sub color_warn
+{
   warn YELLOW "WARN\t", @_;
 }
 
