@@ -184,7 +184,7 @@ sub install
 
     foreach my $sketch (sort keys %todo)
     {
-        print BLUE "Installing $sketch\n" unless DesignCenter::Config->quiet || $quietrun;
+        print BLUE "Installing $sketch\n" unless (DesignCenter::Config->quiet || $quietrun);
         my $dir = $local_dir ? File::Spec->catdir($base_dir, $todo{$sketch}) : "$base_dir/$todo{$sketch}";
         my $skobj = DesignCenter::Sketch->new(name => $sketch,
                                               location => $local_dir ? File::Spec->rel2abs($dir) : $dir);
@@ -199,17 +199,17 @@ sub install
         # note that this will NOT catch circular dependencies!
         foreach my $missing (keys %missing)
         {
-            print "Trying to find $missing dependency\n" unless DesignCenter::Config->quiet || $quietrun;
+            print "Trying to find $missing dependency\n" unless (DesignCenter::Config->quiet || $quietrun);
 
             if (exists $todo{$missing})
             {
                 print "$missing dependency is to be installed or was installed already\n"
-                    unless DesignCenter::Config->quiet || $quietrun;
+                    unless (DesignCenter::Config->quiet || $quietrun);
                 delete $missing{$missing};
             }
             elsif (exists $known{$missing})
             {
-                print "Found $missing dependency, trying to install it\n" unless DesignCenter::Config->quiet || $quietrun;
+                print "Found $missing dependency, trying to install it\n" unless (DesignCenter::Config->quiet || $quietrun);
                 $self->install([$missing]);
                 delete $missing{$missing};
                 $todo{$missing} = $known{$missing};
@@ -244,7 +244,7 @@ sub install
         if (CFSketch::maybe_ensure_dir($install_dir))
         {
             print "Created destination directory $install_dir\n" if DesignCenter::Config->verbose;
-            print "Checking and installing sketch files.\n" unless DesignCenter::Config->quiet || $quietrun;
+            print "Checking and installing sketch files.\n" unless (DesignCenter::Config->quiet || $quietrun);
             my $anything_changed = 0;
             foreach my $file ($CFSketch::SKETCH_DEF_FILE, sort keys %{$data->{manifest}})
             {
@@ -296,16 +296,22 @@ sub install
                     }
                     else
                     {
-                        if (Util::is_resource_local($data->{dir}))
-                        {
-                            copy($source, $dest) or Util::color_die "Aborting: copy $source -> $dest failed: $!";
-                        }
-                        else
-                        {
-                            my $rc = getstore($source, $dest);
-                            Util::color_die "Aborting: remote copy $source -> $dest failed: error code $rc"
-                                unless is_success($rc)
-                        }
+                     if (Util::is_resource_local($data->{dir}))
+                     {
+                      copy($source, $dest) or Util::color_die "Aborting: copy $source -> $dest failed: $!";
+                     }
+                     else
+                     {
+                      my $data = Util::get_remote($source);
+                      if ($data && length $data)
+                      {
+                       main::maybe_write_file($dest, "local copy of $source", $data);
+                      }
+                      else
+                      {
+                       Util::color_die "Sorry, we could not retrieve $source";
+                      }
+                     }
                     }
                 }
 

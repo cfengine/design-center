@@ -3,7 +3,7 @@
 package CFSketch;
 
 use FindBin;
-use lib "$FindBin::Bin/../lib/cf-sketch", "$FindBin::Bin/perl-lib";
+use lib "$FindBin::Bin/../lib/cf-sketch", "$FindBin::Bin/perl-lib", "$FindBin::Bin/perl-lib/File-Which-1.09/lib", "$FindBin::Bin/perl-lib/JSON-2.53/lib";
 
 use warnings;
 use strict;
@@ -27,7 +27,7 @@ use DesignCenter::Sketch;
 
 $Term::ANSIColor::AUTORESET = 1;
 
-my $VERSION="2.0";
+my $VERSION="2.0.1";
 my $DATE="September 2012";
 
 
@@ -39,8 +39,6 @@ $CFSketch::SKETCH_DEF_FILE = 'sketch.json';
 $| = 1;                         # autoflush
 
 ######################################################################
-
-DesignCenter::JSON::init;
 
 my $config = new DesignCenter::Config;
 $config->load;
@@ -157,14 +155,38 @@ my @terminal = qw/api search/;
 my @callable = (@nonterminal, @terminal);
 
 foreach my $word (@callable) {
-  if ($config->$word) {
-    # TODO: hack to replace a method table, eliminate
-    no strict 'refs';
-    $word->($config->$word);
-    use strict 'refs';
+  if ($config->$word)
+  {
+   if ($word eq 'install')
+   {
+    Parser::command_install(join(' ', @{$config->$word}));
+   }
+   elsif ($word eq 'remove')
+   {
+    Parser::command_remove(join(' ', @{$config->$word}));
+   }
+   elsif ($word eq 'activate')
+   {
+    activate($config->$word);
+   }
+   elsif ($word eq 'deactivate')
+   {
+    DesignCenter::System::deactivate($config->$word);
+   }
+   elsif ($word eq 'generate')
+   {
+   }
+   elsif ($word eq 'search')
+   {
+    Parser::command_search(join(' ', @{$config->$word}));
+   }
+   else
+   {
+    Util::color_die("Internal cf-sketch error: callable $word is not handled");
+   }
 
-    # exit unless the command was non-terminal...
-    exit unless grep { $_ eq $word } @nonterminal;
+   # exit unless the command was non-terminal...
+   exit unless grep { $_ eq $word } @nonterminal;
   }
 }
 

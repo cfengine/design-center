@@ -1,0 +1,23 @@
+Changes
+lib/File/Which.pm
+LICENSE
+Makefile.PL
+MANIFEST			This list of files
+README
+script/pwhich
+t/01_compile.t
+t/02_all.t
+t/03_simple.t
+t/04_pwhich.t
+t/97_meta.t
+t/98_pod.t
+t/99_pmv.t
+t/test-bin/all
+t/test-bin/all.bat
+t/test-bin/all.exe
+t/test-bin/README.txt
+t/test-bin/test1.exe
+t/test-bin/test2.bat
+t/test-bin/test3
+t/test-bin/test4/foo.txt
+META.yml                                 Module meta-data (added by MakeMaker)

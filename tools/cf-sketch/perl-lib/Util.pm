@@ -26,6 +26,14 @@ BEGIN {
 
 }
 
+sub function_exists
+{
+ no strict 'refs';
+ my $funcname = shift;
+ return \&{$funcname} if defined &{$funcname};
+ return;
+}
+
 # Returns an indented string containing a list. Syntax is:
 # sprintlist($listref[, $firstline[, $separator[, $indent
 #             [, $break[, $linelen[, $lineprefix]]]]])
@@ -122,14 +130,27 @@ sub isuser {
 }
 
 # Colorized warn() & die()
-sub color_warn {
-  my ($package, $filename, $line, $sub) = caller(1);
+sub color_warn
+{
   warn YELLOW "WARN\t", @_;
 }
 
-sub color_die {
-  my ($package, $filename, $line, $sub) = caller(1);
-  die GREEN "$filename:$sub():\n" . RED "FATAL\t", @_;
+sub color_die
+{
+  my $prelude = '';
+  my $postlude = '';
+
+  if (defined scalar caller(1))
+  {
+   my ($package, $filename, $line, $sub) = caller(1);
+   $prelude = "$filename:$sub():\n";
+   $postlude = "\n";
+  }
+  else
+  {
+  }
+
+  die GREEN $prelude . RED "FATAL\t", @_, $postlude;
 }
 
 # Output something unconditionally, as is.
@@ -211,28 +232,62 @@ sub is_resource_local
   }
 
 sub get_remote
-  {
+{
     my $resource = shift @_;
+    my $lwp = 1;
     eval
       {
         require LWP::Simple;
       };
-    if ($@ ) {
-      Util::color_die "Could not load LWP::Simple (you should install libwww-perl)";
+    if ($@)
+    {
+      Util::color_warn "Could not load LWP::Simple (you should install libwww-perl)";
+      $lwp = 0;
     }
 
-    if ($resource =~ m/^https/) {
+    if ($resource =~ m/^https/)
+    {
       eval
         {
           require LWP::Protocol::https;
         };
-      if ($@ ) {
-        Util::color_die "Could not load LWP::Protocol::https (you should install it)";
+      if ($@ )
+      {
+        Util::color_warn "Could not load LWP::Protocol::https (you should install it)";
+        $lwp = 0;
       }
     }
 
-    return LWP::Simple::get($resource);
-  }
+    if ($lwp)
+    {
+     return LWP::Simple::get($resource);
+    }
+    else
+    {
+     require File::Which;
+     my $curl = File::Which::which('curl');
+     if (defined $curl)
+     {
+      return read_command($curl, "--silent", $resource);
+     }
 
+     my $wget = File::Which::which('wget');
+     if (defined $wget)
+     {
+      return read_command($wget, "-q", "--output-document=-", $resource);
+     }
+
+    }
+
+    Util::color_die("Neither curl nor wget nor LWP modules are available, sorry");
+}
+
+sub read_command
+{
+ open(my $pipe, "@_|") or warn "Could not run @_: $!";
+ my $out = join('', <$pipe>);
+ # print Dumper $out;
+ return $out;
+}
 
 1;
