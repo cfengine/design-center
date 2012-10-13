@@ -1,0 +1,26 @@
+--- #YAML:1.0
+name:               File-Which
+version:            1.09
+abstract:           Portable implementation of the "which" utility
+author:
+    - Adam Kennedy <adamk@cpan.org>
+license:            perl
+distribution_type:  module
+configure_requires:
+    ExtUtils::MakeMaker:  0
+build_requires:
+    ExtUtils::MakeMaker:  0
+requires:
+    Exporter:      0
+    File::Spec:    0.60
+    Getopt::Std:   0
+    Test::More:    0.80
+    Test::Script:  1.05
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.50
+meta-spec:
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4

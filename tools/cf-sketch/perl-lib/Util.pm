@@ -234,25 +234,37 @@ sub is_resource_local
 sub get_remote
   {
     my $resource = shift @_;
+    my $lwp = 1;
     eval
       {
         require LWP::Simple;
       };
-    if ($@ ) {
-      Util::color_die "Could not load LWP::Simple (you should install libwww-perl)";
+    if ($@)
+    {
+      Util::color_warn "Could not load LWP::Simple (you should install libwww-perl)";
+      $lwp = 0;
     }
 
-    if ($resource =~ m/^https/) {
+    if ($resource =~ m/^https/)
+    {
       eval
         {
           require LWP::Protocol::https;
         };
-      if ($@ ) {
-        Util::color_die "Could not load LWP::Protocol::https (you should install it)";
+      if ($@ )
+      {
+        Util::color_warn "Could not load LWP::Protocol::https (you should install it)";
+        $lwp = 0;
       }
     }
 
-    return LWP::Simple::get($resource);
+    if ($lwp)
+    {
+     return LWP::Simple::get($resource);
+    }
+    else
+    {
+    }
   }
 
 
