@@ -27,7 +27,7 @@ use DesignCenter::Sketch;
 
 $Term::ANSIColor::AUTORESET = 1;
 
-my $VERSION="2.0";
+my $VERSION="2.0.1";
 my $DATE="September 2012";
 
 

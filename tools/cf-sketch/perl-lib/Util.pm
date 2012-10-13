@@ -232,7 +232,7 @@ sub is_resource_local
   }
 
 sub get_remote
-  {
+{
     my $resource = shift @_;
     my $lwp = 1;
     eval
@@ -264,8 +264,30 @@ sub get_remote
     }
     else
     {
-    }
-  }
+     require File::Which;
+     my $curl = File::Which::which('curl');
+     if (defined $curl)
+     {
+      return read_command($curl, "--silent", $resource);
+     }
 
+     my $wget = File::Which::which('wget');
+     if (defined $wget)
+     {
+      return read_command($wget, "-q", "--output-document=-", $resource);
+     }
+
+    }
+
+    Util::color_die("Neither curl nor wget nor LWP modules are available, sorry");
+}
+
+sub read_command
+{
+ open(my $pipe, "@_|") or warn "Could not run @_: $!";
+ my $out = join('', <$pipe>);
+ # print Dumper $out;
+ return $out;
+}
 
 1;
