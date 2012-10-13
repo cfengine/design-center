@@ -130,14 +130,19 @@ sub color_warn
 sub color_die
 {
   my $prelude = '';
+  my $postlude = '';
 
   if (defined scalar caller(1))
   {
    my ($package, $filename, $line, $sub) = caller(1);
    $prelude = "$filename:$sub():\n";
+   $postlude = "\n";
+  }
+  else
+  {
   }
 
-  die GREEN $prelude . RED "FATAL\t", @_;
+  die GREEN $prelude . RED "FATAL\t", @_, $postlude;
 }
 
 # Output something unconditionally, as is.
