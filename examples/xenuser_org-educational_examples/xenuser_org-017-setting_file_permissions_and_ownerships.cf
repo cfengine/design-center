@@ -1,0 +1,16 @@
+# Cfengine code snippet by Valentin Hoebel (valentin@xenuser.org)
+# Created on October 14th 2012; Example for setting file permissions and ownerships
+# You are free to use and share this code snippet in any way you want.
+
+body common control {
+        version         => "1.0";
+        inputs          => { "cfengine_stdlib.cf" };
+        bundlesequence  => { "set_file_permissions_and_ownerships" };
+}
+
+bundle agent set_file_permissions_and_ownerships {
+	files:
+	 "/etc/xenuser.org"
+		create	=> "true",
+		perms	=> mog("1777", "backup", "staff");
+}
