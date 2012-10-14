@@ -14,31 +14,18 @@ use Term::ANSIColor qw(:constants);
 our $coder;
 our $canonical_coder;
 
-sub init {
-  return if $coder && $canonical_coder;
-  eval
-    {
-      require JSON::XS;
-      $coder = JSON::XS->new()->relaxed()->utf8()->allow_nonref();
-      # for storing JSON data so it's directly comparable
-      $canonical_coder = JSON::XS->new()->canonical()->utf8()->allow_nonref();
-    };
-  if ($@ ) {
-    Util::color_warn "Falling back to plain JSON module (you should install JSON::XS)";
-    require JSON;
-    $coder = JSON->new()->relaxed()->utf8()->allow_nonref();
-    # for storing JSON data so it's directly comparable
-    $canonical_coder = JSON->new()->canonical()->utf8()->allow_nonref();
-  }
-}
+use JSON;
+our $coder = JSON->new()->relaxed()->utf8()->allow_nonref();
+# for storing JSON data so it's directly comparable
+our $canonical_coder = JSON->new()->canonical()->utf8()->allow_nonref();
 
-sub coder {
-  init() unless $coder;
+sub coder
+{
   return $coder;
 }
 
-sub canonical_coder {
-  init() unless $canonical_coder;
+sub canonical_coder
+{
   return $canonical_coder;
 }
 

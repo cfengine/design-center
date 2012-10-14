@@ -19,7 +19,7 @@ use DesignCenter::Sketch;
 our $AUTOLOAD;                  # it's a package global
 
 # Allowed data fields, for setters/getters
-my %fields = (
+our %fields = (
               install_dest => nil,
              );
 

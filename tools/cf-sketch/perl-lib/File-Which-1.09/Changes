@@ -1,0 +1,65 @@
+Revision history for File::Which.
+
+1.09 Sun 27 Sep 2009
+	- Set svn:executable for the exe files so cygwin tests work
+
+1.08 Tue 15 Sep 2009
+	- Fixing pwhich
+	- Adding a proper test for it
+	- Adds a dependency on Test::Script 1.08
+
+1.07 Tue 28 Jul 2009
+	- CPAN Testers looks good for 1.06_01, moving to production release
+
+1.06_01 Sat 25 Jul 2009
+	- Taking over this hugely old and very popular module to clean it
+	  up a bit.
+	- Moved from Test.pm to Test::More.
+	- Updated Changes
+	- Cleaned up some code a bit to make it more readable.
+	- Added an explicit minimum Perl version
+	- Changed platform detection code to constants for less code size
+	  and compile-time if () optimisation.
+	- Removed non-leading tabs and other whitespace nigglies.
+
+0.05 Mon 24 Jun 2002
+	- Made sure the file wasn't a directory, as directories usually
+	  have x set.
+	- made pwhich say so if it didn't find a file.
+	- improve file searching: file doesn't have to be -x on MacOS,
+	  only -e. Same thing on DOSish, but only if the file extension is
+	  in PATHEXT (so we don't look for non-executable files that
+	  happen to be in PATH).
+	- For DOSish, VMS and Mac, add current directory in front of path,
+	  as (on Win32) this one is searched first. (could someone tell me
+	  if this assumption is true on VMS and MacOS too?)
+	- large updates to test suite: we now emulate executable files
+	  inside t/test-bin/. Like this we have more control. I hope
+	  this test suite will be better, but it is probably still
+	  shaky. Any reports would do me a lot of good.
+
+0.04 Thu 20 Jun 2002
+	- Re-wrote some parts for more platform-specific code (Mac and VMS
+	  primarily). Thanks to Abigail and the PPT `which':
+	  http://www.perl.com/language/ppt/src/which/index.html
+	- Removed the '~' handling: was probably broken anyway.
+	- fixed a bug with pwhich -a where it would return the number of
+	  results instead of the results
+
+0.03 Wed 24 Apr 2002
+	- Changed the '~' handling: last version was buggy, it needs to
+	  only replace it on Unix and if $ENV{HOME} exists, replacing it
+	  then with $ENV{HOME} (removes File::HomeDir dependency).
+	- Added documentation to pwhich (you can run perldoc on it now)
+
+0.02 Fri 19 Apr 2002
+	- Some documentation changes
+	- Added where($short_exec_name) as an alias for
+	  which($short_exec_name, { all => 1 }).
+	  [Request from Jerrad Pierce <belg4mit (at) mit.edu>]
+	- Added the which option --all. Other options just bloat everything.
+	- Added `pwhich', perl-only replacement for `which'.
+
+0.01 Sun 14 Apr 2002
+	- original version; extracted from DocSet. Only plain which() with
+	  docs and tests. 
