@@ -1,5 +1,5 @@
 # Cfengine code snippet by Valentin Hoebel (valentin@xenuser.org)
-# Created on September 30th 2012; Example for checking if a user is there or not
+# Created on September 30th 2012; Example for checking if an user is there or not
 # You are free to use and share this code snippet in any way you want.
 
 body common control {
