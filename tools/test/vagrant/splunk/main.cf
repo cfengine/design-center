@@ -1,0 +1,49 @@
+body file control
+{
+  namespace => "cfdc_splunk";
+}
+
+bundle agent install(class_prefix, bundle_home, password, servername, serverport, clientname, clientport, inputs, outputs, packageinstall, installdir)
+{
+  meta:
+      "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
+      "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
+
+      "vars[bundle_home][type]"     string => "PATH";
+      "vars[bundle_home][default]"  string => "__BUNDLE_HOME__";
+
+      "vars[servermode][type]"       string => "CONTEXT";
+      "vars[servermode][default]"    string => "!any";
+
+      "vars[password][type]"         string => "NON_EMPTY_STRING";
+      "vars[password][default]"      string => "fromsketch";
+
+      "vars[servername][type]"       string => "NON_EMPTY_STRING";
+
+      "vars[serverport][type]"       string => "DIGITS";
+
+      "vars[clientname][type]"       string => "NON_EMPTY_STRING";
+      "vars[clientname][default]"    string => "$(sys.fqhost)";
+
+      "vars[clientport][type]"       string => "DIGITS";
+
+      "vars[inputs][type]"           string => "NON_EMPTY_STRING";
+
+      "vars[outputs][type]"          string => "NON_EMPTY_STRING";
+
+      "vars[packagename][type]"      string => "NON_EMPTY_STRING";
+
+      "vars[packageurl][type]"       string => "NON_EMPTY_STRING";
+
+      "vars[installdir][type]"       string => "PATH";
+
+  classes:
+      "servermode" or => { "default:servermode", "$(class_prefix)servermode" };
+
+  vars:
+      "input_keys"  slist => { getindices($(inputs))  };
+      "output_keys" slist => { getindices($(outputs)) };
+
+      "winputs[$(input_keys)]" string => join("$(sys.n)", getvalues("$($(inputs)[$(input_keys)])"));
+
+}

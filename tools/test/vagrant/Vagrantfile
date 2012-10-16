@@ -26,7 +26,7 @@ Vagrant::Config.run do |config|
     #   shell.path = "install_community.sh"
     # end
 
-    # Install the Community packages
+    # Install the Community packages from source
     hub_config.vm.provision :shell do |shell|
       shell.path = "install_core_community.sh"
     end
@@ -38,7 +38,7 @@ Vagrant::Config.run do |config|
 
     hub_config.vm.provision :shell do |shell|
       shell.path = "test_dc.sh"
-      shell.args = dchome
+      shell.args = "#{dchome} #{ENV['EXTRA']}"
     end
 
     # # Run the CFEngine provisioner
@@ -49,4 +49,45 @@ Vagrant::Config.run do |config|
     #   cf3.am_policy_hub = true
     # end
   end
+
+  config.vm.define :splunks do |hub_config|
+
+    # Host config
+    hub_config.vm.host_name = "splunks"
+    hub_config.vm.network :hostonly, "10.1.2.10"
+    hub_config.vm.forward_port 80, 8210
+    hub_config.vm.forward_port 8000, 10210
+    hub_config.vm.forward_port 8089, 11210
+
+    hub_config.vm.provision :shell do |shell|
+      shell.path = "install_core_community.sh"
+    end
+
+    hub_config.vm.provision :shell do |shell|
+      shell.inline = "cd /vagrant/splunk; sudo /var/cfengine/bin/cf-agent -KI -f ./test.cf -Dservermode"
+    end
+  end
+
+  config.vm.define :splunkc do |hub_config|
+
+    # Host config
+    hub_config.vm.host_name = "splunkc"
+    hub_config.vm.network :hostonly, "10.1.2.11"
+    hub_config.vm.forward_port 80, 8211
+    hub_config.vm.forward_port 8000, 10211
+    hub_config.vm.forward_port 8089, 11211
+
+    hub_config.vm.provision :shell do |shell|
+      shell.path = "install_core_community.sh"
+    end
+
+    hub_config.vm.provision :shell do |shell|
+      shell.inline = "echo '10.1.2.10 splunks' >> /etc/hosts"
+    end
+
+    hub_config.vm.provision :shell do |shell|
+      shell.inline = "cd /vagrant/splunk; sudo /var/cfengine/bin/cf-agent -KI -f ./test.cf"
+    end
+  end
 end
+
