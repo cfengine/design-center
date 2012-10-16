@@ -217,7 +217,7 @@ sub load {
     if (open(my $mfh, '<', $metarun)) {
       # slurp the entire file
       my $jsontxt = join("", <$mfh>);
-      my $meta = $coder->decode($jsontxt);
+      my $meta = DesignCenter::JSON->coder->decode($jsontxt);
 
       Util::color_die "Malformed metarun file: no 'options' key"
           unless exists $meta->{options};
@@ -233,10 +233,10 @@ sub load {
     if (open(my $cfh, '<', $cfgfile)) {
       # slurp the entire file
       my $jsontxt = join("", <$cfh>);
-      my $given = $coder->decode($jsontxt);
+      my $given = DesignCenter::JSON->coder->decode($jsontxt);
 
       foreach (sort keys %$given) {
-        print "(read from $cfgfile) $_ = ", $coder->encode($given->{$_}), "\n"
+        print "(read from $cfgfile) $_ = ", DesignCenter::JSON->coder->encode($given->{$_}), "\n"
           if $cfgfile_options{verbose};
         $cfgfile_options{$_} = $given->{$_};
       }

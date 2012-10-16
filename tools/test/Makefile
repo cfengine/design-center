@@ -1,5 +1,8 @@
 SOURCEDIR:=`pwd`/../../sketches
 CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --install-source=$(SOURCEDIR)/cfsketches
+
+# uncomment this for Mac OS X
+#CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --install-source=$(SOURCEDIR)/cfsketches --fullpath --cfpath=/usr/local/var/cfengine/bin
 CFSKETCH_DA:=$(CFSKETCH) --expert --install CFEngine::stdlib --deactivate-all --generate -v
 RUNFILE:=~/.cfagent/inputs/cf-sketch-runfile.cf
 RUNNER:=cf-agent -KI -f $(RUNFILE) -Dverbose -Ddebug -Dtest
