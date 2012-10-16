@@ -1,0 +1,52 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require './cfengine_provisioner.rb'
+
+dchome = "/var/cfengine/dc"
+
+Vagrant::Config.run do |config|
+
+  # Base box to use
+  config.vm.box = "precise32"
+  config.vm.box_url = "precise32.box"
+
+  #### Define VMs ####
+
+  # First create the hub
+  config.vm.define :dctester do |hub_config|
+
+    # Host config
+    hub_config.vm.host_name = "dctester"
+    hub_config.vm.network :hostonly, "10.1.1.12"
+    hub_config.vm.forward_port 80, 8080
+
+    # # Install the Community packages
+    # hub_config.vm.provision :shell do |shell|
+    #   shell.path = "install_community.sh"
+    # end
+
+    # Install the Community packages
+    hub_config.vm.provision :shell do |shell|
+      shell.path = "install_core_community.sh"
+    end
+
+    hub_config.vm.provision :shell do |shell|
+      shell.path = "install_dc.sh"
+      shell.args = dchome
+    end
+
+    hub_config.vm.provision :shell do |shell|
+      shell.path = "test_dc.sh"
+      shell.args = dchome
+    end
+
+    # # Run the CFEngine provisioner
+    # hub_config.vm.provision CFEngineProvisioner do |cf3|
+    #   cf3.mode = :bootstrap
+    #   cf3.policy_server = "10.1.1.10"
+    #   cf3.install_cfengine = true
+    #   cf3.am_policy_hub = true
+    # end
+  end
+end
