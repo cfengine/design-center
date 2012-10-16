@@ -9,7 +9,8 @@ Vagrant::Config.run do |config|
 
   # Base box to use
   config.vm.box = "precise32"
-  config.vm.box_url = "precise32.box"
+  # config.vm.box_url = "precise32.box"
+  config.vm.box_url = "http://files.vagrantup.com/precise32.box"
 
   #### Define VMs ####
 
