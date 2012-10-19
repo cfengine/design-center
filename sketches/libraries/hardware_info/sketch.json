@@ -11,6 +11,7 @@
     "metadata":
     {
         "name": "Library::Hardware::Info",
+	"description": "Discover hardware information",
         "version": 1.2,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

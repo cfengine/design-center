@@ -1,7 +1,10 @@
 {
- "activated": true,
- "path": "/tmp/cfengine-core",
- "origin":"https://github.com/cfengine/core.git",
- "branch": "master",
- "vcs": "/usr/bin/git"
+    "VCS::vcs_mirror":
+    {
+        "activated": true,
+        "path": "/tmp/cfengine-core",
+        "origin":"https://github.com/cfengine/core.git",
+        "branch": "master",
+        "vcs": "/usr/bin/git"
+    }
 }

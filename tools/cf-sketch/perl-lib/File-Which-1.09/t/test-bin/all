@@ -1,0 +1,2 @@
+#!bash
+# above shebang needed so Cygwin treats it as -x

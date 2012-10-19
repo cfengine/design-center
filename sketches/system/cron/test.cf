@@ -9,32 +9,50 @@ body common control
 
 bundle common cfsketch_g
 {
+  classes:
+      "crontest_nowipe" expression => "!any";
+
   vars:
+     !test.(debian|darwin)::
+       "crontest_cron_path" string => "/usr/bin/crontab";
+     !test.(ubuntu)::
+       "crontest_cron_path" string => "/etc/cron.d";
+     test.!cat::
+       "crontest_cron_path" string => "/tmp";
+     test.cat::
+       "crontest_cron_path" string => "/bin/cat";
 
-       "cron_test_defined_only" string => "yes";
-       "cron_test_bycontext[darwin][crond_path]" string => "nonesuch";
-       "cron_test_bycontext[darwin][crontab_path]" string => "/usr/bin/crontab";
-       "cron_test_bycontext[darwin][tasks][task3][commands]" slist => {"/home/tzz/bin/tunnels3.pl"};
-       "cron_test_bycontext[darwin][tasks][task3][runas]" string => "root";
-       "cron_test_bycontext[darwin][tasks][task3][when]" string => "0 * * * *";
-       "cron_test_bycontext[darwin][tasks][tunnels][commands]" slist => {"/home/tzz/bin/tunnels.pl"};
-       "cron_test_bycontext[darwin][tasks][tunnels][runas]" string => "tzz";
-       "cron_test_bycontext[darwin][tasks][tunnels][when]" string => "* * * * *";
-       "cron_test_bycontext[ubuntu][crond_path]" string => "/etc/cron.d";
-       "cron_test_bycontext[ubuntu][crontab_path]" string => "don't use";
-       "cron_test_bycontext[ubuntu][tasks][task2][commands]" slist => {"/home/tzz/bin/tunnels2.pl"};
-       "cron_test_bycontext[ubuntu][tasks][task2][runas]" string => "root";
-       "cron_test_bycontext[ubuntu][tasks][task2][when]" string => "0 * * * *";
-       "cron_test_bycontext[ubuntu][tasks][tunnels][commands]" slist => {"/home/tzz/bin/ubuntu-tunnels.pl"};
-       "cron_test_bycontext[ubuntu][tasks][tunnels][runas]" string => "tzz";
-       "cron_test_bycontext[ubuntu][tasks][tunnels][when]" string => "* * * * *";
+     darwin::
+       "crontest_tasks[task3][commands]" slist => { "/home/tzz/bin/tunnels3.pl" };
+       "crontest_tasks[task3][runas]" string => "root";
+       "crontest_tasks[task3][when]" string => "0 * * * *";
+       "crontest_tasks[tunnels][commands]" slist => { "/home/tzz/bin/tunnels.pl" };
+       "crontest_tasks[tunnels][runas]" string => "tzz";
+       "crontest_tasks[tunnels][when]" string => "* * * * *";
 
+     debian::
+       "crontest_tasks[test1_crontab][commands]" slist => { "/bin/echo test1 &> /dev/null" };
+       "crontest_tasks[test1_crontab][runas]" string => "jremond";
+       "crontest_tasks[test1_crontab][when]" string => "* * * * *";
+       "crontest_tasks[test2_crontab][commands]" slist => { "/bin/echo test2 &> /dev/null" };
+       "crontest_tasks[test2_crontab][runas]" string => "jremond";
+       "crontest_tasks[test2_crontab][when]" string => "* 0 * * *";
+
+     ubuntu::
+       "crontest_tasks[task2][commands]" slist => { "/home/tzz/bin/tunnels2.pl" };
+       "crontest_tasks[task2][runas]" string => "root";
+       "crontest_tasks[task2][when]" string => "0 * * * *";
+       "crontest_tasks[tunnels][commands]" slist => { "/home/tzz/bin/ubuntu-tunnels.pl" };
+       "crontest_tasks[tunnels][runas]" string => "tzz";
+       "crontest_tasks[tunnels][when]" string => "* * * * *";
 }
 
 bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "dummy" usebundle => cron("cfsketch_g.cron_test_");
+      "cron test" usebundle => cfdc_cron("crontest_",
+                                         $(cfsketch_g.crontest_cron_path),
+                                         "cfsketch_g.crontest_tasks");
 
 }

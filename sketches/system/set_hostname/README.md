@@ -1,9 +1,13 @@
 # set_hostname - Set your machines hostname, or fix it
 ## AUTHOR
 Nick Anderson <nick@cmdln.org>
+Ted Zlatanov <tzz@lifelogs.com>
 
 ## PLATFORM
-linux
+darwin
+redhat
+
+It's easy to add more, please do!
 
 ## DESCRIPTION
 * cfdc_set_hostname - Make sure the hostname and domainname of the system are set
@@ -14,18 +18,8 @@ linux
   in stead of the shorthostname when run without arguments.
 
 ## REQUIREMENTS
-* CFEngine Community 3.2.1 or greater
+* CFEngine Community 3.4.0 or greater
 * Standard Library
 
 ## SAMPLE USAGE
-### set_hostname
-    bundle agent main {
-
-        vars:
-            "fqdn_hostname" string => "node1";
-            "fqdn_domain"   string => "example.com";
-
-        methods:
-            "any" usebundle => cfdc_set_hostname("main.fqdn_");
-
-    }
+See `test.cf` and `params/example.json` for standalone and JSON-driven usage, respectively.

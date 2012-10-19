@@ -1,14 +1,29 @@
 {
-   "activated" : "",
-   "test_filename" : null,
-   "debug" : "false",
-   "allow" : { "sshd":{ "daemons": [ "sshd", "sshd1" ]},
-               "sshd":{ "clients": [ "ALL"] },
-             },
-   "deny" : { "default": {"daemons": [ "ALL" ]},
-              "default": {"clients": [ "ALL" ]}
-            },
-   "mgmt_policy" : "ensure_present",
-   "empty_first" : "false"
+   "Security::tcpwrappers":
+   {
+       "allow_filename": { "bycontext": { "test": "/tmp/hosts.allow", "!test": "/etc/hosts.allow" } },
+       "deny_filename":  { "bycontext": { "test": "/tmp/hosts.deny",  "!test": "/etc/hosts.deny"  } },
+       "debug" : false,
+       "ensure_absent": false,
+       "empty_first" : false,
+
+       "allow":
+       {
+           "sshd":
+           {
+               "daemons": [ "sshd", "sshd1" ],
+               "clients": [ "ALL"]
+           }
+       },
+
+       "deny":
+       {
+           "default":
+           {
+               "daemons": [ "ALL" ],
+               "clients": [ "ALL" ]
+           }
+       }
+   }
 }
 

@@ -1,0 +1,38 @@
+body common control
+{
+      bundlesequence => { "cfsketch_run" };
+      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "./main.cf" };
+}
+
+bundle common cfsketch_g
+{
+  classes:
+      "yumclienttest_empty_section" expression => "any";
+      "yumclienttest_ensure_absent" expression => "!any";
+
+  vars:
+    !test::
+      "yumclienttest_repos_dir" string => "/etc/yum.repos.d";
+    test::
+      "yumclienttest_repos_dir" string => "/tmp";
+
+    any::
+      "yumclienttest_repos[baseline][baseurl]" string => "file:///var/www/html/yum_repos/myrepo";
+      "yumclienttest_repos[baseline][enabled]" string => "1";
+      "yumclienttest_repos[baseline][gpgcheck]" string => "no";
+      "yumclienttest_repos[baseline][name]" string => "myrepo";
+
+      "yumclienttest_repos[repo1][baseurl]" string => "file:///var/www/html/yum_repos/myrepo";
+      "yumclienttest_repos[repo1][enabled]" string => "1";
+      "yumclienttest_repos[repo1][gpgcheck]" string => "no";
+      "yumclienttest_repos[repo1][name]" string => "repo1";
+
+}
+
+bundle agent cfsketch_run
+{
+  methods:
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "test" usebundle => cfdc_yumclient:client("yumclienttest", $(cfsketch_g.yumclienttest_repos_dir), "default:cfsketch_g.yumclienttest_repos");
+
+}

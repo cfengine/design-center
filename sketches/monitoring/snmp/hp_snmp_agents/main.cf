@@ -1,4 +1,4 @@
-bundle agent monitoring_snmp_hp_snmp_agents(prefix)
+bundle agent monitoring_snmp_hp_snmp_agents(prefix, path, opt, snmpdconf, autoconfig, debug, pkg_refresh_interval, pkg_install)
 #  path[hpsnmpconfig]"        string => "/sbin/hpsnmpconfig";
 #  opt[rws]"                  string => ""; default private
 #  opt[ros]"                  string => ""; default public
@@ -14,6 +14,32 @@ bundle agent monitoring_snmp_hp_snmp_agents(prefix)
 #  pkg_refresh_interval" string => "1440";
 #  pkg_install" string => "yes|true";
 {
+  meta:
+      # __PREFIX__ will be supplied by cf-sketch
+      "vars[prefix][type]"           string => "NON_EMPTY_STRING";
+      "vars[prefix][default]"        string => "__PREFIX__";
+      
+      "vars[path][type]" string => "ARRAY()";
+      "vars[path][default]" string => "{}";
+
+      "vars[opt][type]" string => "ARRAY()";
+      "vars[opt][default]" string => "{}";
+
+      "vars[snmpdconf][type]" string => "NON_EMPTY_STRING";
+      "vars[snmpdconf][default]" string => "/etc/snmp/snmpd.conf";
+      
+      "vars[autoconfig][type]" string => "NON_EMPTY_STRING";
+      "vars[autoconfig][default]" string => "false";
+
+      "vars[debug][type]" string => "NON_EMPTY_STRING";
+      "vars[debug][default]" string => "off";
+
+      "vars[pkg_refresh_interval][type]" string => "NON_EMPTY_STRING";
+      "vars[pkg_refresh_interval][default]" string => "1440";
+
+      "vars[pkg_install][type]" string => "NON_EMPTY_STRING";
+      "vars[pkg_install][default]" string => "true";
+
 vars:
   "bundle" string => "monitoring_snmp_hp_snmp_agents";
   "class_prefix" string => canonify("$(prefix)_$(bundle)");
@@ -28,37 +54,10 @@ vars:
   ##################################################
   #  Deal with Configuration Options and Defaults  #
   ##################################################
-  "pkg_refresh_interval"
-    string => "1440",
-    policy => "free",
-    ifvarclass => not("pkg_refresh_interval_from_param"),
-    comment => "Override default package refresh interval with value from
-                parameter. It is a lot of overhead to run the package manager
-                all the time.";
-
-  "pkg_refresh_interval"
-    string => "$($(prefix)pkg_refresh_interval)",
-    policy => "free",
-    ifvarclass => "pkg_refresh_interval_from_param",
-    comment => "Use the package refresh interval supplied, there must be a good
-                reason for this to be less than the default package refresh
-                interval.";
-
-  "snmpdconf"
-    string => "/etc/snmp/snmpd.conf",
-    policy => "free",
-    ifvarclass => not("hpsnmpconfig_snmpdconf_from_param"),
-    comment => "Default path to snmpd.conf file.";
-
-  "snmpdconf"
-    string => "$($(prefix)snmpdconf)",
-    policy => "free",
-    ifvarclass => "hpsnmpconfig_snmpdconf_from_param",
-    comment => "Path to snmpd.conf file from parameter.";
 
   # Pull in all values provided by parameters
   "opt[$(valid_hpsnmpconfig_options)]"
-    string => "$($(prefix)opt[$(valid_hpsnmpconfig_options)])",
+        string => "$(opt[$(valid_hpsnmpconfig_options)])",
     policy => "free",
     ifvarclass => "hpsnmpconfig_opt_$(valid_hpsnmpconfig_options)_from_param",
     comment => "Get options passed in from parameteres";
@@ -99,14 +98,14 @@ vars:
                                      };
 
 classes:
-  "_debug_monitoring_snmp_hp_snmp_agents" expression => regcmp("(?i)yes|true|on", "$($(prefix)debug)");
+      "_debug_monitoring_snmp_hp_snmp_agents" expression => regcmp("(?i)yes|true|on", "$(debug)");
 
-  "hpsnmpconfig_opt_$(valid_hpsnmpconfig_options)_from_param" expression => isvariable("$(prefix)opt[$(valid_hpsnmpconfig_options)]");
+      "hpsnmpconfig_opt_$(valid_hpsnmpconfig_options)_from_param" expression => isvariable("opt[$(valid_hpsnmpconfig_options)]");
 
-  "hpsnmpconfig_autoconfig" expression => regcmp("(?i)yes|true|on", "$($(prefix)autoconfig)");
-  "hpsnmpconfig_snmpdconf_from_param" expression => isvariable("$(prefix)snmpdconf");
-  "pkg_refresh_interval" expression => isvariable("$(prefix)pkg_refresh_interval");
-  "pkg_install" expression => regcmp("(?i)yes|true|on", "$($(prefix)pkg_install)");
+      "hpsnmpconfig_autoconfig" expression => regcmp("(?i)yes|true|on", "$(autoconfig)");
+      "hpsnmpconfig_snmpdconf_from_param" expression => isvariable("snmpdconf");
+      "pkg_refresh_interval" expression => isvariable("pkg_refresh_interval");
+      "pkg_install" expression => regcmp("(?i)yes|true|on", "$(pkg_install)");
 
   "monitoring_snmp_hp_snmp_agents_configured"
     expression => regline(".*cmaX.*", "$(snmpconf)"),
@@ -194,10 +193,10 @@ reports:
 
     "DEBUG: $(bundle)  snmpd.conf: $(snmpdconf)";
 
-    "DEBUG: $(bundle)  Parameter Defined: $(prefix)opt[$(valid_hpsnmpconfig_options)]: $($(prefix)opt[$(valid_hpsnmpconfig_options)])", 
+      "DEBUG: $(bundle)  Parameter Defined: opt[$(valid_hpsnmpconfig_options)]: $(opt[$(valid_hpsnmpconfig_options)])", 
       ifvarclass => "hpsnmpconfig_opt_$(valid_hpsnmpconfig_options)_from_param";
 
-    "DEBUG: $(bundle)  Parameter Not Defined: $(prefix)opt[$(valid_hpsnmpconfig_options)]", 
+      "DEBUG: $(bundle)  Parameter Not Defined: opt[$(valid_hpsnmpconfig_options)]", 
       ifvarclass => not("hpsnmpconfig_opt_$(valid_hpsnmpconfig_options)_from_param");
 
   cfengine::
@@ -272,38 +271,3 @@ reports:
   _debug_monitoring_snmp_hp_snmp_agents::
     "DEBUG: $(bundle)  Parameter: $(array)[$(options)]: $($(array)[$(options)])";
 }
-
-bundle agent meta_monitoring_snmp_hp_snmp_agents
-{
-vars:
-  "optional_argument[path]" string => "array";
-#  "hpsnmpconfig_path[hpsnmpconfig]"        string => "/sbin/hpsnmpconfig";
-
-  "optional_argument[opt]" string => "array";
-#  "hpsnmpconfig_opt[rws]"                  string => ""; default private
-#  "hpsnmpconfig_opt[ros]"                  string => ""; default public
-#  "hpsnmpconfig_opt[rwmips]"               string => "";
-#  "hpsnmpconfig_opt[romips]"               string => "";
-#  "hpsnmpconfig_opt[rcs]"                  string => "";
-#  "hpsnmpconfig_opt[tdips]"                string => "";
-#  "hpsnmpconfig_opt[sci]"                  string => "";
-#  "hpsnmpconfig_opt[sli]"                  string => "";
-
-  "optional_argument[snmpdconf]" string => "string";
-  "default[snmpdconf]" string => "/etc/snmp/snmpd.conf";
-  
-  "optional_argument[autoconfig]" string => "string";
-  "default[autoconfig]" string => "false";
-
-  "optional_argument[debug]" string => "string";
-  "default[debug]" string => "off";
-
-  "optional_argument[pkg_refresh_interval]" string => "string";
-  "default[pkg_refresh_interval]" string => "1440";
-
-  "optional_argument[pkg_install]" string => "string";
-  "default[pkg_install]" string => "true";
-
-}
-
-

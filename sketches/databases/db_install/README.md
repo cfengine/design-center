@@ -7,9 +7,9 @@ Ted Zlatanov <tzz@lifelogs.com>
 ## PLATFORM
 
 Most Debian and RedHat Linux derivatives should work with the supplied
-JSON files under `./params`.  For any others, you can define your own
-packages to be installed, with the other parameters as explained
-below.
+JSON file under `params/demo.json`.  For any others, you can define
+your own packages to be installed, with the other parameters as
+explained below.
 
 ## DESCRIPTION
 
@@ -22,51 +22,44 @@ PostgreSQL client and server, and SQLite are supplied).
 
 To configure `db_install`, use the standard `cf-sketch` tool and the
 supplied parameters, or configure it as follows (using a common
-prefix; here we'll just use `db_install_test_` like the `test.cf` test
-file uses).
+prefix; here we'll just use `dbinstall_` like the `test.cf` test file
+uses).
 
 ## ## Classes
 
-* $(prefix)purge: define this class if you want the database packages
-  to be removed
+* `purge`: define this class with `-Dpurge` as shown below if you want
+  the database packages to be removed
 
-    "db_install_test_purge" expression => "!any";
+    "dbinstall_purge" expression => "purge";
 
-* $(prefix)server: define this class if you want to install and set up
-  a database server.  Otherwise, just the client utilities and
-  libraries will be installed.
+* `server`: define this class with `-Dserver` as shown below if you
+  want to install and set up a database server.  Otherwise, just the
+  client utilities and libraries will be installed.
 
-    "db_install_test_server" expression => "any";
+    "dbinstall_server" expression => "server";
 
 ## ## Variables
 
-* $(prefix)contexts_text: just a convenience array normally provided by `cf-sketch`.  The array contains a text representation of whether the class above is defined (ON) or not (OFF).
+`params/demo.json` and `test.cf` show how these variables can be set
+by simply using `-Dmysql` or `-Dpostgresql` or `-Dsqlite`.
 
-    "db_install_test_contexts_text[purge]" string => "OFF";
-    "db_install_test_contexts_text[server]" string => "ON";
+* `db`: a string, can be either `mysql` or `postgresql` or `sqlite`.
 
-* $(prefix)db: a string, can be either "mysql" or "postgresql" or "sqlite"
+    "dbinstall_db" string => "mysql";
 
-    "db_install_test_db" string => "mysql";
+* `packages`: a slist of the packages to be always installed
 
+* `server_packages`: a slist of the packages to be installed for
+  servers, in addition to `packages`
 
-* $(prefix)bycontext: an array with keys that are a context.  This is
-  sort of a case statement for CFEngine.  The following says: for
-  Ubuntu or Debian machines that are not running Ubuntu 12, define a
-  list of base packages, server packages, the process name to match
-  when starting or restarting it, and the command to start it.
+* `process_match`: the string to match the database server process
 
-    "db_install_test_bycontext[!ubuntu_12.(debian|ubuntu)][packages]" slist => {"mysql-client-5.1", "mysql-client-core-5.1", "mysql-common", "libmysqlclient16", "libdbd-mysql-perl", "libdbi-perl", "libnet-daemon-perl", "libplrpc-perl"};
-    "db_install_test_bycontext[!ubuntu_12.(debian|ubuntu)][process_match]" string => "/usr/sbin/mysqld.*";
-    "db_install_test_bycontext[!ubuntu_12.(debian|ubuntu)][server_packages]" slist => {"mysql-server-5.1", "mysql-server-core-5.1", "libhtml-template-perl"};
-    "db_install_test_bycontext[!ubuntu_12.(debian|ubuntu)][start_command]" string => "/etc/init.d/mysql restart";
+* `start_command`: the command to restart the database server
 
-The important and neat thing about `$(prefix)bycontext` is that it is
-extensible by you, the user, without modifying the `db_install` policy
-in `main.cf`.  As long as your OS is Unix-like, you should be able to
-adjust the sketch parameters to Just Work (and if you do, submit your
-parameters to the sketch maintainers so we can supply them with the
-sketch for everyone's benefit).
+As long as your OS is Unix-like, you should be able to adjust the
+sketch parameters to Just Work (and if you do, submit your parameters
+to the sketch maintainers so we can supply them with the sketch for
+everyone's benefit).
 
 ## REQUIREMENTS
 

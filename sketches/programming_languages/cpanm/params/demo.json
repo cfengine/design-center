@@ -1,25 +1,9 @@
 {
- "activated" : true,
- "bycontext":
- {
-  "!solaris":
-  {
-   "cpanm_program": "/usr/local/bin/cpanm",
-   "extra_params": "",
-   "packages" :
-   [
-    "Every",
-   ],
-  },
-
-  "solaris":
-  {
-   "cpanm_program": "/opt/local/bin/cpanm",
-   "extra_params": "--local-lib=/opt/cpan",
-   "packages":
-   [
-    "Solaris::NoSuchPackage"
-   ],
-  }
- }
+   "Packages::CPAN::cpanm":
+   {
+       "activated" : true,
+       "cpanm_program": { "bycontext": { "!solaris": "/usr/local/bin/cpanm", "solaris": "/opt/local/bin/cpanm"       } },
+       "extra_params":  { "bycontext": { "!solaris": "",                     "solaris": "--local-lib=/opt/cpan"      } },
+       "packages":      { "bycontext": { "!solaris": [ "Every" ],            "solaris": [ "Solaris::NoSuchPackage" ] } }
+   }
 }

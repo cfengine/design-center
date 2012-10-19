@@ -1,54 +1,85 @@
-bundle agent vcs_mirror(prefix)
+body file control
 {
+  namespace => "cfdc_vcs";
+}
+
+bundle agent mirror(prefix, class_prefix, vcs, path, origin, branch, runas, umask)
+{
+  meta:
+      # __PREFIX__ will be supplied by cf-sketch
+      "vars[prefix][type]"           string => "NON_EMPTY_STRING";
+      "vars[prefix][default]"        string => "__PREFIX__";
+
+      "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
+      "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
+
+      "vars[nowipe][type]"           string => "CONTEXT";
+      "vars[nowipe][default]"        string => "!any";
+
+      "vars[vcs][type]"              string => "PATH";
+
+      "vars[path][type]"             string => "PATH";
+
+      "vars[origin][type]"           string => "HTTP_URL|PATH";
+
+      "vars[branch][type]"           string => "NON_EMPTY_STRING";
+      "vars[branch][default]"        string => "master";
+
+      # this is not called "user"  so it won't be confused with the remote user
+      "vars[runas][type]"            string => "NON_EMPTY_STRING";
+      "vars[runas][default]"         string => getenv("USER", 128);
+
+      "vars[umask][type]"            string => "OCTAL";
+      "vars[umask][default]"         string => "022";
+
+      # # This is a boolean (e.g. 0 or 1, 'yes' or 'no') stored in a string.
+      # "vars[testboolean][type]"    string => "BOOLEAN";
+
+      # # This is a context (e.g. 'any') stored in a string.
+      # # You could use it with ifvarclass.
+      # "vars[testcontext][type]"    string => "CONTEXT";
+
+      # where was the mirror deployed?
+      "returns[deploy_path]" string => "PATH";
+
   vars:
+      # return value
+      "deploy_path" string => "$(path)",
+      ifvarclass => "$(canon_prefix)vcs_mirrored|$(canon_prefix)vcs_updated";
+
       "canon_prefix" string => canonify("$(prefix)");
+      "vcs_type" string => lastnode("$(vcs)","/");
 
-      # disabled due to https://cfengine.com/bugtracker/view.php?id=718
-      # for now use $($(prefix)bundle_home), which see in
-      # the bundle meta_vcs_mirror below
-
-      # "bundle_home"  string => dirname("$(this.promise_filename)"),
-      # policy => "overridable";
-
-    use_git::
-      # TODO: extend this to support multiple VCSs
-      "vcs_update_command" slist =>
-      {
-        @(git_update_command)
-      },
-      policy => "overridable";
-
-      "vcs_mirror_command" slist =>
-      {
-        @(git_mirror_command)
-      },
-      policy => "overridable";
-
-      "vcs_configfile" string => "$(git_configfile)",
-      policy => "overridable";
-
-    any::
+    !nowipe::
       "git_update_command" slist =>
       {
         # Remove untracked files
-        "$($(prefix)vcs) clean -f -f -x -q -d .",
+        "$(vcs) clean -f -f -x -q -d .",
         # Discard changes to index and working tree since HEAD
-        "$($(prefix)vcs) reset -q --hard HEAD",
+        "$(vcs) reset -q --hard HEAD",
         # Check out the proper branch
-        "$($(prefix)vcs) checkout -q $($(prefix)branch)",
+        "$(vcs) checkout -q $(branch)",
         # Pull the latest changes from origin
-        "$($(prefix)vcs) pull -q -s recursive -Xtheirs origin $($(prefix)branch)",
+        "$(vcs) pull -q -s recursive -Xtheirs origin $(branch)",
         # Reset the working tree to the latest updates
-        "$($(prefix)vcs) reset -q --hard HEAD",
+        "$(vcs) reset -q --hard HEAD",
       };
+
+    nowipe::
+      "git_update_command" slist =>
+      {
+        "$(vcs) pull origin $(branch)",
+      };
+
+    any::
 
       "git_mirror_command" slist =>
       {
         # clone the given repository with Git
-        "$($(prefix)vcs) clone -b $($(prefix)branch) $($(prefix)origin) $($(prefix)path)"
+        "$(vcs) clone -b $(branch) $(origin) $(path)"
       };
 
-      "git_configfile" string => "$($(prefix)path)/.git/config";
+      "git_configfile" string => "$(path)/.git/config";
 
       "git_config_template" string => "
 [core]
@@ -58,143 +89,113 @@ bundle agent vcs_mirror(prefix)
         logallrefupdates = true
 [remote \"origin\"]
         fetch = +refs/heads/*:refs/remotes/origin/*
-        url = $($(vcs_mirror.prefix)origin)
+        url = $(origin)
 [branch \"master\"]
         remote = origin
         merge = refs/heads/master
-[branch \"$($(vcs_mirror.prefix)branch)\"]
+[branch \"$(branch)\"]
         remote = origin
-        merge = refs/heads/$($(vcs_mirror.prefix)branch)
+        merge = refs/heads/$(branch)
 ",
       comment => "The $(git_configfile) template.",
       handle => "update_vars_git_config_template";
 
-  classes:
-      "_debug_vcs_mirror" expression => regcmp("(?i)yes|true|on", "$($(prefix)debug)");
-      # test if the last component of the "vcs" path arg matches a known VCS
-      # TODO: use_git and known_vcs are global, so you can't mix VCSs in one run!!!
-      "use_git" expression => strcmp(lastnode("$($(prefix)vcs)","/"), "git");
-      "known_vcs" or => { "use_git" };
-      "$(canon_prefix)path_exists" expression => fileexists("$($(prefix)path)");
+    nowipe::
+      "svn_update_command" slist =>
+      {
+        "$(vcs) cleanup",
+        "$(vcs) up",
+      };
 
-      "$(canon_prefix)runas_current_user" expression => strcmp("$($(prefix)runas)", getenv("USER", 128));
+    !nowipe::
+      "svn_update_command" slist =>
+      {
+        "$(vcs) cleanup",
+        "$(vcs) up",
+        "$(vcs) revert",
+      };
+
+    any::
+      "svn_mirror_command" slist =>
+      {
+        # clone the given repository with Subversion
+        "$(vcs) co $(origin) $(path)"
+      };
+
+      "svn_configfile" string => "$(path)/.svn/entries";
+
+  classes:
+      "nowipe" expression => "$(prefix)nowipe";
+
+      "use_git" expression => strcmp(lastnode("$(vcs)","/"), "git");
+      "use_svn" expression => strcmp(lastnode("$(vcs)","/"), "svn");
+      "known_vcs" or => { "use_git", "use_svn" };
+
+      "variables_ok" and => { "known_vcs" };
+
+      "path_exists" expression => fileexists("$(path)");
+
       # I can't use vcs_configfile here because it doesn't converge soon enough
-      use_git::
-      "$(canon_prefix)vcsconfig_exists" expression => fileexists("$(git_configfile)");
+      "vcsconfig_exists" expression => fileexists("$($(vcs_type)_configfile)"),
+      ifvarclass => "known_vcs";
 
   files:
-    use_git::
+    variables_ok.use_git::
       "$(git_configfile)"
-      handle => "vcs_configfile_contents",
+      handle => "$(vcs_type)_configfile_contents",
       comment => "Expand Git config file from variable",
       create => "false",
-      edit_defaults => empty,
-      edit_line => insert_lines("$(git_config_template)");
+      edit_defaults => default:empty,
+      edit_line => default:insert_lines("$(git_config_template)");
 
   commands:
 
-    known_vcs::
-      # We only need to perform cleanup operations if we did not do a
-      # fresh new clone
-      "$(vcs_update_command)"
-      handle     => "vcs_update_command",
-      contain    => umask_in_dir("$($(prefix)path)", "$($(prefix)umask)"),
-      ifvarclass => "$(canon_prefix)runas_current_user.$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
-      comment    => "Update an existing VCS repository in $($(prefix)path), no user override";
+    variables_ok.vcsconfig_exists::
+      "$($(vcs_type)_update_command)"
+      handle     => "$(vcs_type)_update_with_user_command",
+      contain    => test_aware_contain("$(runas)", "$(path)", "$(umask)"),
+      ifvarclass => "!$(canon_prefix)vcs_mirrored",
+      classes    => default:if_ok("$(canon_prefix)vcs_updated"),
+      comment    => "Update an existing VCS repository in $(path), user override to $(runas)";
 
-      "$(vcs_update_command)"
-      handle     => "vcs_update_with_user_command",
-      contain    => setuid_umask_in_dir("$($(prefix)runas)", "$($(prefix)path)", "$($(prefix)umask)"),
-      ifvarclass => "!$(canon_prefix)runas_current_user.$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
-      comment    => "Update an existing VCS repository in $($(prefix)path), user override to $($(prefix)runas)";
-
-      "$(vcs_mirror_command)"
-      handle     => "vcs_mirror_command",
-      contain    => umask_in_dir("/", "$($(prefix)umask)"),
-      ifvarclass => "$(canon_prefix)runas_current_user.!$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
-      classes    => if_ok("$(canon_prefix)vcs_mirrored"),
-      comment    => "Clone a VCS repository in $($(prefix)path), no user override";
-
-      "$(vcs_mirror_command)"
-      handle     => "vcs_mirror_with_user_command",
-      contain    => setuid_umask_in_dir("$($(prefix)runas)", "/", "$($(prefix)umask)"),
-      ifvarclass => "!$(canon_prefix)runas_current_user.!$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored",
-      classes    => if_ok("$(canon_prefix)vcs_mirrored"),
-      comment    => "Clone a VCS repository in $($(prefix)path), user override to $($(prefix)runas)";
+    variables_ok.!vcsconfig_exists::
+      "$($(vcs_type)_mirror_command)"
+      handle     => "$(vcs_type)_mirror_with_user_command",
+      contain    => test_aware_contain("$(runas)", "/", "$(umask)"),
+      ifvarclass => "!$(canon_prefix)vcs_mirrored",
+      classes    => default:if_ok("$(canon_prefix)vcs_mirrored"),
+      comment    => "Clone a VCS repository in $(path), user override to $(runas)";
 
   reports:
-    _debug_vcs_mirror::
-      "VCS is $($(prefix)vcs), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path)."
-      ifvarclass => "$(canon_prefix)runas_current_user";
-
-      "VCS is $($(prefix)vcs), to be executed as user $($(prefix)runas), origin $($(prefix)origin), branch $($(prefix)branch), target path $($(prefix)path)."
-      ifvarclass => "!$(canon_prefix)runas_current_user";
-
-
-      "Cool, we're using Git."
-      ifvarclass => "use_git";
-
     !known_vcs::
-      "Sorry, the requested VCS $($(prefix)vcs) is not handled yet.";
+      "Sorry, the requested VCS '$(vcs)' is not handled yet.";
 
-    _debug_vcs_mirror.known_vcs::
-      "$($(prefix)vcs) is known.  We will look for the config file $(vcs_configfile)";
+    default:debug.variables_ok::
+      "Cool, we're using $(vcs_type).  We will look for the config file $($(vcs_type)_configfile)";
+      "VCS is $(vcs), to be executed as user $(runas) / umask $(umask), origin $(origin), branch $(branch), target path $(path).";
+      "$(vcs_type)_update_command = $($(vcs_type)_update_command)";
+      "$(vcs_type)_mirror_command = $($(vcs_type)_mirror_command)";
 
-      "VCS config file $(vcs_configfile) exists"
-      ifvarclass => "$(canon_prefix)vcsconfig_exists.!$(canon_prefix)vcs_mirrored";
+    default:debug.variables_ok.vcsconfig_exists::
+      "VCS config file $($(vcs_type)_configfile) exists";
 
-      "VCS config file $(vcs_configfile) does not exist"
-      ifvarclass => "!$(canon_prefix)vcsconfig_exists";
+    default:debug.variables_ok.!vcsconfig_exists::
+      "VCS config file $($(vcs_type)_configfile) does not exist";
 
-      "Sorry, we could not clone $($(prefix)origin) (branch $($(prefix)branch)) in $($(prefix)path) because that path already exists"
-      ifvarclass => "$(canon_prefix)path_exists.!$(canon_prefix)vcsconfig_exists";
-
-      "New clone of $($(prefix)origin) (branch $($(prefix)branch)) created in $($(prefix)path)"
+    default:verbose::
+      "New clone of $(origin) (branch $(branch) created in $(path)"
       ifvarclass => "$(canon_prefix)vcs_mirrored";
 
+    variables_ok.path_exists.!vcsconfig_exists::
+      "Sorry, we could not clone $(origin) (branch $(branch)) in $(path) because that path already exists";
 }
 
-body contain setuid_umask_in_dir(user, dir, umask)
+body contain test_aware_contain(user, dir, umask)
 {
       chdir => "$(dir)";
+      umask => "$(umask)";
+    !default:test::
       exec_owner => "$(user)";
-      umask => "$(umask)";
-}
-
-body contain umask_in_dir(dir, umask)
-{
-      chdir => "$(dir)";
-      umask => "$(umask)";
-}
-
-bundle agent meta_vcs_mirror
-{
-  vars:
-      # acceptable values: "/usr/bin/git" for example
-      "optional_argument[vcs]" string => "string";
-      "default[vcs]"           string => "/usr/bin/git";
-
-      "argument[path]"   string => "string";
-      "argument[origin]" string => "string";
-      "argument[branch]" string => "string";
-
-      # this is not called "user" so it won't be confused with the remote user
-      "optional_argument[runas]" string => "string";
-      # as far as I know 128 is more than enough on any OS
-      "default[runas]"           string => getenv("USER", 128);
-
-      # this changes the umask from the default 077
-      "optional_argument[umask]" string => "string";
-      "default[umask]"           string => "077";
-
-      # This turns on debug support
-      "optional_argument[debug]" string => "string";
-      "default[debug]" string => "false";
-
-      # this can't be determined from within the bundle due to:
-      # https://cfengine.com/bugtracker/view.php?id=718
-      "optional_argument[bundle_home]" string => "string";
-      # this default will probably be incorrect, either use cfsketch --generate
-      # or supply it yourself
-      "default[bundle_home]"           string => dirname("$(this.promise_filename)");
+    default:test::
+      exec_owner => getenv("LOGNAME", 100);
 }

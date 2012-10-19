@@ -1,50 +1,71 @@
-bundle agent cfdc_set_hostname(prefix) {
-# Expects desired shorthostname and domain name both as strings;
-# Usage:
-#   vars:
-#       "fqdn_hostname" string => "jim";
-#       "fqdn_domain"   string => "bob.com";
-#
-#   methods:
-#       "hostname" usebundle => cfdc_set_hostname("main.fqdn_");
-#
-    vars:
-        # Stuff these into an array on redhat style systems
-        # It's a convienant with the way redhat configs work
-        redhat::
-            "config[HOSTNAME]"  string => "$($(prefix)hostname)";
-            "config[NISDOMAIN]" string => "$($(prefix)domain)";
-    files:
-        redhat::
-            "/etc/sysconfig/network"
-                create    => "true",
-                perms     => mog("644", "root", "root"),
-                edit_line => set_variable_values("cfdc_set_hostname.config"),
-                classes   => if_repaired("$(canon_prefix)_set_hostname_update_running_hostname"),
-                comment   => "While the official redhat docs state that you
-                              should set HOSTNAME to the fqdn, it is apparently
-                              incorrect. If you do this the hostname command
-                              will return the fqdn instead of the shorthostname
-                              like its supposed to when run without arguments.
-                              I have been doing it wrong for years, and it only
-                              recently bit me.";
-
-    commands:
-        redhat::
-            "/bin/hostname $($(prefix)hostname)"
-                ifvarclass => "$(canon_prefix)_set_hostname_update_running_hostname",
-                comment => "Update the hostname on the running system so we
-                            dont have to wait for a reboot";
-
-            "/bin/domainname $($(prefix)domain)"
-                ifvarclass => "$(canon_prefix)_set_hostname_update_running_hostname",
-                comment => "Update the domainname on the running system so
-                            we dont have to reboot for it";
-
+body file control
+{
+      namespace => "cfdc_hostname";
 }
 
-bundle agent meta_cfdc_set_hostname{
-vars:
-    "argument[hostname]" string => "string";
-    "argument[domain]"   string => "string";
+bundle agent set(canon_prefix, hostname, domainname)
+{
+  meta:
+      "vars[canon_prefix][type]"         string => "NON_EMPTY_STRING";
+      "vars[canon_prefix][default]"      string => "__CANON_PREFIX__";
+
+      "vars[hostname][type]"             string => "NON_EMPTY_STRING";
+      "vars[domainname][type]"           string => "NON_EMPTY_STRING";
+
+  vars:
+    redhat::
+      # Stuff these into an array on redhat style systems.  It's
+      # convenient because of the way redhat configs work
+      "config[HOSTNAME]"  string => "$(hostname)";
+      "config[NISDOMAIN]" string => "$(domainname)";
+
+      "sethost_command" string => "/bin/hostname";
+      "setdomain_command" string => "/bin/domainname";
+
+    darwin::
+      "sethost_command" string => "/bin/hostname";
+      "setdomain_command" string => "/bin/domainname";
+
+  files:
+    redhat::
+      "/etc/sysconfig/network"
+      create    => "true",
+      perms     => default:mog("644", "root", "root"),
+      edit_line => default:set_variable_values("cfdc_hostname:set.config"),
+      classes   => default:if_repaired("$(canon_prefix)update"),
+      comment   => "While the official redhat docs state that you
+should set HOSTNAME to the fqdn, it is apparently
+incorrect. If you do this the hostname command
+will return the fqdn instead of the shorthostname
+like its supposed to when run without arguments.
+I have been doing it wrong for years, and it only
+recently bit me.";
+
+    darwin::
+      "/etc/defaultdomain"
+      create    => "true",
+      edit_defaults => default:empty,
+      perms     => default:mog("644", "root", "root"),
+      edit_line => default:insert_lines("$(domainname)"),
+      classes   => default:if_repaired("$(canon_prefix)updatedomain");
+
+  commands:
+    darwin::
+      "/usr/sbin/scutil --set HostName $(hostname)"
+      classes => default:if_repaired("$(canon_prefix)updatehostname");
+
+    redhat||darwin::
+      "$(sethost_command) $(hostname)"
+      ifvarclass => "$(canon_prefix)update||$(canon_prefix)updatehostname",
+      comment => "Update the hostname on the running system so we
+dont have to wait for a reboot";
+
+      "$(setdomain_command) $(domain)"
+      ifvarclass => "$(canon_prefix)update||$(canon_prefix)updatedomain",
+      comment => "Update the domainname on the running system so
+we dont have to reboot for it";
+
+  reports:
+    !redhat.!darwin::
+      "Not on RedHat or Darwin, nothing was done!  Please add support for your system!";
 }

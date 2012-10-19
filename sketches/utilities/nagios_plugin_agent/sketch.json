@@ -11,6 +11,7 @@
     "metadata":
     {
         "name": "Monitoring::nagios_plugin_agent",
+	"description": "Run Nagios plugins and optionally take action",
         "version": 1.04,
         "license": "MIT",
         "portfolio": [ "cfdc" ],

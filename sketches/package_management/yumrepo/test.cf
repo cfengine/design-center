@@ -7,20 +7,35 @@ body common control
 bundle common cfsketch_g
 {
   classes:
-      "yumrepo_maintain_test_install_tools" expression => "any";
+      "yumrepo_test_debug" expression => "!any";
+      "yumrepo_test_test" expression => "!any";
+      "yumrepo_test_verbose" expression => "!any";
 
-vars:
-       "yum_refresh_interval" string => "1";
-       "yum_debug" string => "off";
-       "yum_verbose" string => "true";
-       "yum_repo[custom][path]" string => "/tmp/yum_repos/custom";
-       "yum_repo[updates][path]" string => "/tmp/yum_repos/updates";
-
+  vars:
+    !test::
+      "yumrepo_test_createrepo" string => "/usr/bin/createrepo";
+    test::
+      "yumrepo_test_createrepo" string => "/bin/echo";
+    any::
+      "yumrepo_test_class_prefix" string => "yumrepo_test_";
+      "yumrepo_test_refresh_interval" string => "60";
+      "yumrepo_test_repo[custom][path]" string => "/var/www/html/yumrepos/custom";
+      "yumrepo_test_repo[custom][perm_g]" string => "root";
+      "yumrepo_test_repo[custom][perm_m]" string => "755";
+      "yumrepo_test_repo[custom][perm_o]" string => "root";
+      "yumrepo_test_repo[updates][path]" string => "/var/www/html/yumrepos/updates";
+      "yumrepo_test_repo[updates][perm_g]" string => "root";
+      "yumrepo_test_repo[updates][perm_m]" string => "755";
+      "yumrepo_test_repo[updates][perm_o]" string => "root";
 }
 
 bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "test" usebundle => repo_yum_maintain("cfsketch_g.yum_");
+      "test" usebundle => cfdc_yumrepo:repo_yum_maintain($(cfsketch_g.yumrepo_test_class_prefix),
+                                                         $(cfsketch_g.yumrepo_test_createrepo),
+                                                         $(cfsketch_g.yumrepo_test_refresh_interval),
+                                                         "cfsketch_g.yumrepo_test_repo");
+
 }

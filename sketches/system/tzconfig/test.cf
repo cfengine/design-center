@@ -1,26 +1,30 @@
-body common control {
-
-    bundlesequence => { "main" };
-
-    inputs => { 
-                "../../libraries/copbl/cfengine_stdlib.cf",
-                "./main.cf",
-              };
+body common control
+{
+      bundlesequence => { "cfsketch_run" };
+      inputs => {
+                  "../../libraries/copbl/cfengine_stdlib.cf",
+                  "./main.cf",
+                };
 }
 
-bundle agent main {
 
-    vars:
-        "tzconfig1_timezone" string => "America/Denverdd";
-        "tzconfig2_timezone" string => "America/Chicago";
-
-    methods:
-        "timezone" 
-            usebundle => tzconfig("main.tzconfig1_"),
-            comment => "This timezone is invalid";
-
-        "timezone"
-            usebundle => tzconfig("main.tzconfig2_"),
-            comment   => "This is a valid timezone";
+bundle common cfsketch_g
+{
+  vars:
+      "tztest_canon_prefix" string => "tztest_";
+      "tztest_timezone" string => "America/Chicago";
+      "tztest_zoneinfo" string => "/usr/share/zoneinfo";
+    !test::
+      "tztest_relocate" string => "/";
+    test::
+      "tztest_relocate" string => "/tmp/tzconfig";
 }
 
+bundle agent cfsketch_run
+{
+  methods:
+      "go" usebundle => cfdc_tzconfig:set($(cfsketch_g.tztest_canon_prefix),
+                                          $(cfsketch_g.tztest_timezone),
+                                          $(cfsketch_g.tztest_zoneinfo),
+                                          $(cfsketch_g.tztest_relocate));
+}

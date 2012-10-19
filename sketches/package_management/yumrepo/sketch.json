@@ -2,7 +2,7 @@
 
     "manifest":
     {
-        "main.cf": { "desc": "main file", "version": "2.1" },
+        "main.cf": { "desc": "main file", "version": "2.2" },
         "README.md": { "documentation": true },
         "changelog": { "comment": "changelog" },
         "test.cf": { "comment": "Example/Test policy" },
@@ -12,13 +12,14 @@
     "metadata":
     {
         "name": "Repository::Yum::Maintain",
-        "version": 2.1,
+	"description": "Create and keep Yum repository metadata up to date",
+        "version": 2.2,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "tested": [ "redhat_5", "centos_5" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },
-                     "cfengine": { "version": "3.2.1" },
+                     "cfengine": { "version": "3.4.0" },
                      "os": [ "linux" ]
                    }
     },

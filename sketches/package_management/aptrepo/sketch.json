@@ -5,19 +5,19 @@
         "main.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
         "params/repos.json": { },
-        "params/repos-base.json": { "desc": "default values"},
     },
 
     "metadata":
     {
         "name": "Repository::apt::Maintain",
-        "version": 0.1,
+	"description": "Manage deb repositories in /etc/apt/sources.list.d/ files or /etc/apt/sources.list",
+        "version": 0.2,
         "license": "MIT",
         "portfolio": [ "cfdc" ],
-        "authors": [ "Jean Remond <cfengine@remond.re>" ],
+        "authors": [ "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "tested": [ "debian_wheezy" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },
-                     "cfengine": { "version": "3.3.1" },
+                     "cfengine": { "version": "3.4.0" },
                      "os": [ "Linux" ]
                    }
     },

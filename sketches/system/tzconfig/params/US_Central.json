@@ -1,3 +1,8 @@
 {
-  "timezone": "America/Chicago",
+    "System::tzconfig":
+    {
+        "timezone": "America/Chicago",
+        "zoneinfo": "/usr/share/zoneinfo",
+        "relocate": { "bycontext": { "!test": "/", "test": "/tmp/tzconfig" } }
+    }
 }
