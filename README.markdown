@@ -1,5 +1,10 @@
 # The CFEngine Design Center
 
+**Please note: the code in the master branch only works with CFEngine
+  3.4.0, which has not been released, but can be obtained as a beta
+  release. The old Design Center, compatible with 3.3.x, has been
+  moved to the "3.3.x" branch.**
+  
 Welcome to the CFEngine Design Center, a place for CFEngine community
 members and developers to share code and information.
 
