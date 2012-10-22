@@ -305,7 +305,7 @@ sub install
                       my $data = Util::get_remote($source);
                       if ($data && length $data)
                       {
-                       main::maybe_write_file($dest, "local copy of $source", $data);
+                       CFSketch::maybe_write_file($dest, "local copy of $source", $data);
                       }
                       else
                       {
