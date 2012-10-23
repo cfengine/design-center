@@ -1,0 +1,26 @@
+{
+
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+
+        "params/demo.json": { "comment": "Install Splunk: common parameters" },
+        "templates/splunk-inputs.conf": { "comment": "Splunk inputs.conf" },
+        "templates/splunk-outputs.conf": { "comment": "Splunk outputs.conf" },
+    },
+
+    "metadata":
+    {
+        "name": "Splunk::Install",
+	"description": "Install and enable Splunk",
+        "version": 1.0,
+        "license": "MIT",
+        "portfolio": [ "cfdc" ],
+        "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] },
+    },
+
+    "entry_point": "main.cf",
+    "interface": [ "main.cf" ]
+}

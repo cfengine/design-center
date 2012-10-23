@@ -250,6 +250,7 @@ sub verify_entry_point {
 
   my $pb = CFSketch::cfengine_binary('cf-promises');
   my $tline = "$pb --parse-tree";
+  print "EXECUTING:\n$tline -f '$tfilename'\n\n" if DesignCenter::Config->veryverbose;
   open my $parse, "$tline -f '$tfilename'|"
     or die "Could not run [$tline -f '$tfilename']: $!";
 
