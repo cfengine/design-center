@@ -5,50 +5,66 @@ require './cfengine_provisioner.rb'
 
 dchome = "/var/cfengine/dc"
 
+installer = 'core_community'
+#installer = 'apt_community'
+#installer = '3.3.4_community'
+#installer = '2.2.3_nova'
+#installer = 'enterprise'
+
+box = "precise32"
+#box = "lucid32"
+#box = "centos"
+
+base_url = "http://files.vagrantup.com/"
+#base_url = "http://cfengine.com/"
+#base_url = ""
+
+box_url = "#{base_url}#{box}.box"
+
 Vagrant::Config.run do |config|
 
-  # Base box to use
-  config.vm.box = "precise32"
-  # config.vm.box_url = "precise32.box"
-  config.vm.box_url = "http://files.vagrantup.com/precise32.box"
+  config.vm.box = box
+  config.vm.box_url = box_url
 
   #### Define VMs ####
 
   # First create the hub
-  config.vm.define :dctester do |hub_config|
+  config.vm.define :cftester do |hub_config|
 
     # Host config
-    hub_config.vm.host_name = "dctester"
+    hub_config.vm.host_name = "cftester"
     hub_config.vm.network :hostonly, "10.1.1.12"
     hub_config.vm.forward_port 80, 8080
 
-    # # Install the Community packages
-    # hub_config.vm.provision :shell do |shell|
-    #   shell.path = "install_community.sh"
-    # end
-
     # Install the Community packages from source
     hub_config.vm.provision :shell do |shell|
-      shell.path = "install_core_community.sh"
+      shell.path = "install_#{installer}.sh"
     end
 
-    hub_config.vm.provision :shell do |shell|
-      shell.path = "install_dc.sh"
-      shell.args = dchome
+    if dcinstall
+      hub_config.vm.provision :shell do |shell|
+        shell.path = "install_dc.sh"
+        shell.args = dchome
+      end
     end
 
-    hub_config.vm.provision :shell do |shell|
-      shell.path = "test_dc.sh"
-      shell.args = "#{dchome} #{ENV['EXTRA']}"
+    if dctest
+      hub_config.vm.provision :shell do |shell|
+        shell.path = "test_dc.sh"
+        shell.args = "#{dchome} #{dctest_targets}"
+      end
     end
 
-    # # Run the CFEngine provisioner
-    # hub_config.vm.provision CFEngineProvisioner do |cf3|
-    #   cf3.mode = :bootstrap
-    #   cf3.policy_server = "10.1.1.10"
-    #   cf3.install_cfengine = true
-    #   cf3.am_policy_hub = true
-    # end
+    # Run the CFEngine provisioner
+    if provision_hub || provision_client
+      hub_config.vm.provision CFEngineProvisioner do |cf3|
+        cf3.mode = :bootstrap
+        cf3.policy_server = "10.1.1.10"
+        cf3.install_cfengine = true
+        cf3.am_policy_hub = provision_hub
+      end
+    end
+
   end
 
   config.vm.define :splunks do |hub_config|
