@@ -1,10 +1,13 @@
 SOURCEDIR:=`pwd`/../../sketches
-CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --install-source=$(SOURCEDIR)/cfsketches
+RUNFILE:=~/.cfagent/inputs/standalone-cf-sketch-runfile.cf
 
-# uncomment this for Mac OS X
-#CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --install-source=$(SOURCEDIR)/cfsketches --fullpath --cfpath=/usr/local/var/cfengine/bin
-CFSKETCH_DA:=$(CFSKETCH) --expert --install CFEngine::stdlib --deactivate-all --generate -v
-RUNFILE:=~/.cfagent/inputs/cf-sketch-runfile.cf
+CFPATH:=$(dirname $(which cf-agent))
+ifeq ($(CFPATH),)
+  CFPATH:=/var/cfengine/bin
+endif
+
+CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH)
+CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --expert --install CFEngine::stdlib --deactivate-all --generate -v
 RUNNER:=cf-agent -KI -f $(RUNFILE) -Dverbose -Ddebug -Dtest
 
 cloud_services:
