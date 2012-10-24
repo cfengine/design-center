@@ -14,7 +14,7 @@
 	"description": "Execute a bundle if reachable ip has known MAC address",
         "version": 1.02,
         "license": "MIT",
-        "portfolio": [ "cfdc" ],
+        "tags": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] },
     },

@@ -106,14 +106,14 @@ sub load {
         push @messages, "Missing or undefined metadata element $scalar" unless $json->{metadata}->{$scalar};
       }
 
-      foreach my $array (qw/authors portfolio/) {
+      foreach my $array (qw/authors tags/) {
         push @messages, "Missing, invalid, or undefined metadata array $array" unless ($json->{metadata}->{$array} &&
                                                                                        ref $json->{metadata}->{$array} eq 'ARRAY');
       }
 
       unless (scalar @messages)
         {
-          push @messages, "Portfolio metadata can't be empty" unless scalar @{$json->{metadata}->{portfolio}};
+          push @messages, "Tags metadata can't be empty" unless scalar @{$json->{metadata}->{tags}};
         }
     }
 

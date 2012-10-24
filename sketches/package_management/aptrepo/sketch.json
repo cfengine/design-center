@@ -13,7 +13,7 @@
 	"description": "Manage deb repositories in /etc/apt/sources.list.d/ files or /etc/apt/sources.list",
         "version": 0.2,
         "license": "MIT",
-        "portfolio": [ "cfdc" ],
+        "tags": [ "cfdc" ],
         "authors": [ "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "tested": [ "debian_wheezy" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },
