@@ -14,7 +14,7 @@
 	"description": "Run Nagios plugins and optionally take action",
         "version": 1.04,
         "license": "MIT",
-        "portfolio": [ "cfdc" ],
+        "tags": [ "cfdc" ],
         "authors": [ "Robert Carleton <rbc@rbcarleton.com>", "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.2.1" }, "os": [ "linux" ] },
     },

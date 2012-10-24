@@ -246,9 +246,9 @@ sub generate_runfile
                  value => [ sort @{$data->{metadata}->{authors}} ],
                 },
                   {
-                   name => 'sketch_portfolio',
+                   name => 'sketch_tags',
                    type => 'slist',
-                   value => [ sort @{$data->{metadata}->{portfolio}} ],
+                   value => [ sort @{$data->{metadata}->{tags}} ],
                   },
                     {
                      name => 'sketch_manifest',

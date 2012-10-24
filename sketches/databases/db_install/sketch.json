@@ -14,7 +14,7 @@
 	"description": "Install and enable the MySQL, Postgres or SQLite database engines",
         "version": 1.10,
         "license": "MIT",
-        "portfolio": [ "cfdc" ],
+        "tags": [ "cfdc" ],
         "authors": [ "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] },
     },

@@ -13,7 +13,7 @@
 	"description": "Manage crontab and /etc/cron.d contents",
         "version": 1.1,
         "license": "MIT",
-        "portfolio": [ "cfdc" ],
+        "tags": [ "cfdc" ],
         "authors": [ "Neil H Watson <neil@watson-wilson.ca>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "solaris", "darwin" ] },
     },

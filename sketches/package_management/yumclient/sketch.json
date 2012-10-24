@@ -14,7 +14,7 @@
 	"description": "Manage yum repo client configs in /etc/yum.repos.d",
         "version": 1.10,
         "license": "MIT",
-        "portfolio": [ "cfdc" ],
+        "tags": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "tested": [ "redhat_5", "centos_5" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },

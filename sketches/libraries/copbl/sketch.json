@@ -12,7 +12,7 @@
 	"description": "CFEngine standard library (also known as COPBL)",
         "version": 107,
         "license": "LGPL",
-        "portfolio": [ "cfdc" ],
+        "tags": [ "cfdc" ],
         "authors": [ "CFEngine AS" ],
         "depends": { "cfengine": { "version": "3.3.0" } },
     },

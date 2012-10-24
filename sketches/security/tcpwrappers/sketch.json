@@ -16,7 +16,7 @@
 	"description": "Manage /etc/hosts.{allow,deny}",
         "version": 1.2,
         "license": "MIT",
-        "portfolio": ["cfdc"],
+        "tags": ["cfdc"],
         "authors": ["Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": {"CFEngine::stdlib": {"version": 105}, "cfengine": {"version": "3.4.0"}, "os": ["linux"] },
     },
