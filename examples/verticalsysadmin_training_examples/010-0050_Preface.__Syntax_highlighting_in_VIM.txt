@@ -14,4 +14,10 @@ Installing Neil Watson's CFEngine 3 syntax highlighter
 
 3. Copy the syntax highlighter script to the above directory:
 
-    wget 'http://www.vim.org/scripts/download_script.php?src_id=13898' -O ~/.vim/ftplugin/cf3.vim
+    wget 'http://www.vim.org/scripts/download_script.php?src_id=13898' \
+      -O ~/.vim/ftplugin/cf3.vim
+
+4. Use it:   
+
+   vim 030-0018_Basic_Examples.__Files._Create_a_file.cf 
+

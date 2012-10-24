@@ -10,3 +10,6 @@ in cfengine_stdlib.cf (and 19 bundles)
 
 As of CFEngine 3.3.5, there are 114 promise bodies
 in cfengine_stdlib.cf (and 29 bundles)
+
+As of CFEngine 3.3.8, there are 113 promise bodies
+in cfengine_stdlib.cf (and 26 bundles)

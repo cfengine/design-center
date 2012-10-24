@@ -19,6 +19,3 @@ reports
 
 commands
     A promise to execute a command.
-
-methods
-    A promise to take on a whole bundle of other promises.

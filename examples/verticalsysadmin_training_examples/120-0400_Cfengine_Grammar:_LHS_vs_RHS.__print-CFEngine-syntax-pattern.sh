@@ -21,7 +21,7 @@ ${R}files|processes|packages|commands|...${C}:${N} # Type of promise.  What part
 
    ${G}(linux|Sunday)&(ITALY|webserver)${C}::${N}  # Context.  When/where the promise applies.
 
-        ${C}"${B}system_object${C}"${N}                # What is the affected object?  (Promiser)
+        ${C}"${B}object${C}"${N}                       # What is the affected object?  (Promiser)
                                        # Can be the name of or the pattern for names of
                                        # system objects: files, processes, packages, commands,
                                        # services, database objects, etc.

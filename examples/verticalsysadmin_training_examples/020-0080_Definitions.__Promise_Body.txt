@@ -3,16 +3,18 @@ Definitions: Promise Body
 
 Definition: Body
 ~~~~~~~~~~~~~~~~
-Body:
+
     The main part of a book or document, not including
     the introduction, notes, or appendices (parts added
     at the end).
     -- Macmillan Dictionary
 
-Examples: body of a letter, body of a contract - it's where
-the details are.
+Examples: body of a letter, body of a contract - the body
+is where the details are.
+
 
 Definition: Promise body
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
 A promise body is a collection of promise attributes that details
 and constrains the nature of the promise.

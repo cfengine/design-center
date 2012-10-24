@@ -2,3 +2,6 @@ EXERCISE
 
 Write a policy to create /tmp/myname.txt and put
 your name in it.
+
+If you finish before the rest of the class, please
+study chapters 1-4 in the Reference Manual.
