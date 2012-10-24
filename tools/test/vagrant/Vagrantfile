@@ -3,27 +3,101 @@
 
 require './cfengine_provisioner.rb'
 
+require 'optparse'
+require 'pp'
+
 dchome = "/var/cfengine/dc"
 
-installer = 'core_community'
-#installer = 'apt_community'
-#installer = '3.3.4_community'
-#installer = '2.2.3_nova'
-#installer = 'enterprise'
+ours = []
 
-box = "precise32"
-#box = "lucid32"
-#box = "centos"
+while ARGV.include? '--'
+  ours << ARGV.pop
+end
 
-base_url = "http://files.vagrantup.com/"
-#base_url = "http://cfengine.com/"
-#base_url = ""
+options= {
+  :installer => :core,
+  :box => :precise32,
+  :url => 'http://files.vagrantup.com/',
+  :dcinstall => false,
+  :dctest => false,
+  :provision_hub => false,
+  :provision_client => false,
+}
 
-box_url = "#{base_url}#{box}.box"
+OptionParser.new do |op|
+  op.banner = <<EOHIPPUS
+Syntax: vagrant [vagrant options] -- OPTIONS [SKETCH1,SKETCH2,...]
+
+Note that options can be abbreviated, e.g. -iapt can be -ia
+
+Example: install from APT and test the ssh and limits DC sketches
+  vagrant up cftester -- -ia ssh limits
+
+EOHIPPUS
+
+  op.on("-i[INSTALLER]", "--installer=[INSTALLER]",
+        [:core, :apt, :v334, :nova, :enterprise],
+        "Installation method for CFEngine (core, apt, v334, nova, enterprise)") do |v|
+    options[:installer] = v
+  end
+
+  op.on("-b[BOX]", "--box=[BOX]",
+        [:precise32, :lucid32, :centos],
+        "Box to use (precise32, lucid32, centos)") do |v|
+    options[:installer] = v
+  end
+
+  op.on("-u[URL]", "--base-url=[URL]",
+        "Base URL to use to get the box") do |v|
+    options[:url] = v
+  end
+
+  op.on("-d", "--[no]dc-install",
+        "Should we install Design Center?") do |v|
+    options[:dcinstall] = v
+  end
+
+  op.on("-t", "--[no]dc-test",
+        "Should we test Design Center?  Enables --dc-install if enabled.") do |v|
+    options[:dcinstall] = v
+    options[:dctest] = v
+  end
+
+  op.on("-h", "--[no]hub",
+        "Should we set up as a hub?") do |v|
+    options[:provision_hub] = v
+  end
+
+  op.on("-c", "--[no]client",
+        "Should we set up as a client?") do |v|
+    options[:provision_client] = v
+  end
+
+end.parse!(ours)
+
+installers = { 
+  :core => 'install_core_community.sh',
+  :apt => 'install_apt_community.sh',
+  :v334 => 'install_3.3.4_community.sh',
+  :nova => 'install_2.2.3_nova.sh',
+  :enterprise => 'install_enterprise.sh',
+}
+
+installer = installers[options[:installer]]
+
+box_url = "#{options[:url]}#{options[:box].to_s}.box"
+
+# eat up the remaining arguments as sketch testing targets
+options[:targets] = ours
+
+options[:dctest] = options[:dcinstall] = true unless options[:targets].empty?
+
+print "CFEngine test environment ready!\n\n"
+pp options
 
 Vagrant::Config.run do |config|
 
-  config.vm.box = box
+  config.vm.box = options[:box].to_s
   config.vm.box_url = box_url
 
   #### Define VMs ####
@@ -38,30 +112,30 @@ Vagrant::Config.run do |config|
 
     # Install the Community packages from source
     hub_config.vm.provision :shell do |shell|
-      shell.path = "install_#{installer}.sh"
+      shell.path = installer
     end
 
-    if dcinstall
+    if options[:dcinstall]
       hub_config.vm.provision :shell do |shell|
         shell.path = "install_dc.sh"
         shell.args = dchome
       end
     end
 
-    if dctest
+    if options[:dctest]
       hub_config.vm.provision :shell do |shell|
         shell.path = "test_dc.sh"
-        shell.args = "#{dchome} #{dctest_targets}"
+        shell.args = "#{dchome} #{options[:targets].join(' ')}"
       end
     end
 
     # Run the CFEngine provisioner
-    if provision_hub || provision_client
+    if options[:provision_hub] || options[:provision_client]
       hub_config.vm.provision CFEngineProvisioner do |cf3|
         cf3.mode = :bootstrap
         cf3.policy_server = "10.1.1.10"
         cf3.install_cfengine = true
-        cf3.am_policy_hub = provision_hub
+        cf3.am_policy_hub = options[:provision_hub]
       end
     end
 
