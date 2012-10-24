@@ -1,0 +1,3886 @@
+Script started on Mon 22 Oct 2012 04:44:59 PM PDT
+]0;root@mil-mail01:~/design-center/examples/verticalsysadmin_training_examples[root@mil-mail01 verticalsysadmin_training_examples]# cf-agent -f ./temp.cf -b example -IK[1PK[C -d 0
+Unexpected argument with no preceding option: 0
+Fatal CFEngine error: Aborted
+GenericDeInitialize()
+]0;root@mil-mail01:~/design-center/examples/verticalsysadmin_training_examples[root@mil-mail01 verticalsysadmin_training_examples]# cf-agent -f ./temp.cf -b example -K -d 0[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K0[K0[K-help
+
+
+cf-agent - cfengine's change agent
+
+SYNOPSIS:
+
+   program [options]
+
+DESCRIPTION:
+
+The main Cfengine agent is the instigator of change
+in the system. In that sense it is the most important
+part of the Cfengine suite.
+
+Command line options:
+
+--bootstrap   , -B       - Bootstrap/repair a cfengine configuration from failsafe file in the WORKDIR else in current directory
+--bundlesequence, -b value - Set or override bundlesequence from command line
+--debug       , -d       - Enable debugging output
+--define      , -D value - Define a list of comma separated classes to be defined at the start of execution
+--diagnostic  , -x value - Do internal diagnostic (developers only) level in optional argument
+--dry-run     , -n       - All talk and no action mode - make no changes, only inform of promises not kept
+--file        , -f value - Specify an alternative input file than the default
+--help        , -h       - Print the help message
+--inform      , -I       - Print basic information about changes made to the system, i.e. promises repaired
+--negate      , -N value - Define a list of comma separated classes to be undefined at the start of execution
+--no-lock     , -K       - Ignore locking constraints during execution (ifelapsed/expireafter) if "too soon" to run
+--policy-server, -s value - Define the server name or IP address of the a policy server (for use with bootstrap)
+--verbose     , -v       - Output verbose information about the behaviour of the agent
+--version     , -V       - Output the version of the software
+
+Bug reports: http://bug.cfengine.com, Community help: http://forum.cfengine.com
+Community info: http://www.cfengine.com/pages/community, Support services: http://www.cfengine.com
+
+This software is Copyright (C) 2008,2010-present CFEngine AS.
+]0;root@mil-mail01:~/design-center/examples/verticalsysadmin_training_examples[root@mil-mail01 verticalsysadmin_training_examples]# cf-agent --helpf ./temp.cf -b example -K -d 0[K
+Set debugging
+Agent2Type(agent)
+NewClass(any)
+NewClass(community_edition)
+NewClass(debug_mode)
+CFEngine - autonomous configuration engine - commence self-diagnostic prelude
+------------------------------------------------------------------------
+Setting CFWORKDIR=/var/cfengine
+Work directory is /var/cfengine
+Trying to create a parent directory for /var/cfengine/inputs/update.confDirectory for /var/cfengine/inputs/update.conf exists. Okay
+Trying to create a parent directory for /var/cfengine/bin/cf-agent -D from_cfexecdDirectory for /var/cfengine/bin/cf-agent -D from_cfexecd exists. Okay
+Trying to create a parent directory for /var/cfengine/outputs/spooled_reportsDirectory for /var/cfengine/outputs/spooled_reports exists. Okay
+Trying to create a parent directory for /var/cfengine/lastseen/intermittenciesDirectory for /var/cfengine/lastseen/intermittencies exists. Okay
+Trying to create a parent directory for /var/cfengine/reports/variousDirectory for /var/cfengine/reports/various exists. Okay
+Trying to create a parent directory for /var/cfengine/state/cf_procsDirectory for /var/cfengine/state/cf_procs exists. Okay
+RandomSeed() work directory is /var/cfengine
+Looking for a source of entropy in /var/cfengine/randseed
+CheckWorkingDirectories()
+Trying to create a parent directory for /var/cfengine/.Directory for /var/cfengine/. exists. Okay
+Making sure that locks are private...
+Trying to create a parent directory for /var/cfengine/state/.Directory for /var/cfengine/state/. exists. Okay
+Checking integrity of the state database
+Checking integrity of the module directory
+Checking integrity of the PKI directory
+ -> Loaded private key /var/cfengine/ppkeys/localhost.priv
+ -> Loaded public key /var/cfengine/ppkeys/localhost.pub
+HashPubKey(0)
+Setting cfengine default port to 5308 = 5308
+Reference time set to Mon Oct 22 16:45:53 2012
+NewClass(Lcycle_2)
+NewClass(Yr2012)
+NewClass(October)
+NewClass(Monday)
+NewClass(Day22)
+NewClass(Afternoon)
+NewClass(Hr16)
+NewClass(GMT_Hr23)
+NewClass(Q4)
+NewClass(Hr16_Q4)
+NewClass(Min45)
+NewClass(Min45_50)
+Job start time set to Mon Oct 22 16:45:53 2012
+NewClass(agent)
+Adding scope data sys
+Adding scope data const
+Adding scope data match
+Adding scope data mon
+GetNameInfo()
+Deleting scope match
+Object match exists
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,i686)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=i686 (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = i686
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)i686
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,2.6.18-164.15.1.el5)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=2.6.18-164.15.1.el5 (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = 2.6.18-164.15.1.el5
+NewClass(linux)
+NewScalar(sys,class,linux)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,class) type=(to be determined)
+IsExpandable(class) - syntax verify
+Found 0 variables in (class)
+Looking for sys.class
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,class): using scope 'sys' for variable 'class'
+No such variable found sys.class
+
+AddVariableHash(sys.class=linux (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable class in scope sys with value (omitted)
+NewClass(mil_mail01)
+NewClass(mil_mail01)
+NewClass()
+NewScalar(sys,host,mil-mail01)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,host) type=(to be determined)
+IsExpandable(host) - syntax verify
+Found 0 variables in (host)
+Looking for sys.host
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,host): using scope 'sys' for variable 'host'
+No such variable found sys.host
+
+AddVariableHash(sys.host=mil-mail01 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable host in scope sys with value (omitted)
+NewScalar(sys,uqhost,mil-mail01)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,uqhost) type=(to be determined)
+IsExpandable(uqhost) - syntax verify
+Found 0 variables in (uqhost)
+Looking for sys.uqhost
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,uqhost): using scope 'sys' for variable 'uqhost'
+No such variable found sys.uqhost
+
+AddVariableHash(sys.uqhost=mil-mail01 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable uqhost in scope sys with value (omitted)
+NewScalar(sys,fqhost,mil-mail01)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,fqhost) type=(to be determined)
+IsExpandable(fqhost) - syntax verify
+Found 0 variables in (fqhost)
+Looking for sys.fqhost
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,fqhost): using scope 'sys' for variable 'fqhost'
+No such variable found sys.fqhost
+
+AddVariableHash(sys.fqhost=mil-mail01 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable fqhost in scope sys with value (omitted)
+NewScalar(sys,domain,)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,domain) type=(to be determined)
+IsExpandable(domain) - syntax verify
+Found 0 variables in (domain)
+Looking for sys.domain
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,domain): using scope 'sys' for variable 'domain'
+No such variable found sys.domain
+
+AddVariableHash(sys.domain= (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable domain in scope sys with value (omitted)
+CFEngine Core 3.3.8
+------------------------------------------------------------------------
+Host name is: mil-mail01
+Operating System Type is linux
+Operating System Release is 2.6.18-164.15.1.el5
+Architecture = i686
+Using internal soft-class linux for host mil-mail01
+The time is now Mon Oct 22 16:45:53 2012
+------------------------------------------------------------------------
+NewScalar(sys,date,Mon Oct 22 16:45:53 2012)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,date) type=(to be determined)
+IsExpandable(date) - syntax verify
+Found 0 variables in (date)
+Looking for sys.date
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,date): using scope 'sys' for variable 'date'
+No such variable found sys.date
+
+AddVariableHash(sys.date=Mon Oct 22 16:45:53 2012 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable date in scope sys with value (omitted)
+NewScalar(sys,cdate,Mon_Oct_22_16_45_53_2012)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cdate) type=(to be determined)
+IsExpandable(cdate) - syntax verify
+Found 0 variables in (cdate)
+Looking for sys.cdate
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cdate): using scope 'sys' for variable 'cdate'
+No such variable found sys.cdate
+
+AddVariableHash(sys.cdate=Mon_Oct_22_16_45_53_2012 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cdate in scope sys with value (omitted)
+NewScalar(sys,os,linux)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,os) type=(to be determined)
+IsExpandable(os) - syntax verify
+Found 0 variables in (os)
+Looking for sys.os
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,os): using scope 'sys' for variable 'os'
+No such variable found sys.os
+
+AddVariableHash(sys.os=linux (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable os in scope sys with value (omitted)
+NewScalar(sys,release,2.6.18-164.15.1.el5)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,release) type=(to be determined)
+IsExpandable(release) - syntax verify
+Found 0 variables in (release)
+Looking for sys.release
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,release): using scope 'sys' for variable 'release'
+No such variable found sys.release
+
+AddVariableHash(sys.release=2.6.18-164.15.1.el5 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable release in scope sys with value (omitted)
+NewScalar(sys,version,#1 SMP Wed Mar 17 11:37:14 EDT 2010)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,version) type=(to be determined)
+IsExpandable(version) - syntax verify
+Found 0 variables in (version)
+Looking for sys.version
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,version): using scope 'sys' for variable 'version'
+No such variable found sys.version
+
+AddVariableHash(sys.version=#1 SMP Wed Mar 17 11:37:14 EDT 2010 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable version in scope sys with value (omitted)
+NewScalar(sys,arch,i686)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,arch) type=(to be determined)
+IsExpandable(arch) - syntax verify
+Found 0 variables in (arch)
+Looking for sys.arch
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,arch): using scope 'sys' for variable 'arch'
+No such variable found sys.arch
+
+AddVariableHash(sys.arch=i686 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable arch in scope sys with value (omitted)
+NewScalar(sys,workdir,/var/cfengine)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,workdir) type=(to be determined)
+IsExpandable(workdir) - syntax verify
+Found 0 variables in (workdir)
+Looking for sys.workdir
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,workdir): using scope 'sys' for variable 'workdir'
+No such variable found sys.workdir
+
+AddVariableHash(sys.workdir=/var/cfengine (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable workdir in scope sys with value (omitted)
+NewScalar(sys,fstab,/etc/fstab)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,fstab) type=(to be determined)
+IsExpandable(fstab) - syntax verify
+Found 0 variables in (fstab)
+Looking for sys.fstab
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,fstab): using scope 'sys' for variable 'fstab'
+No such variable found sys.fstab
+
+AddVariableHash(sys.fstab=/etc/fstab (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable fstab in scope sys with value (omitted)
+NewScalar(sys,resolv,/etc/resolv.conf)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,resolv) type=(to be determined)
+IsExpandable(resolv) - syntax verify
+Found 0 variables in (resolv)
+Looking for sys.resolv
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,resolv): using scope 'sys' for variable 'resolv'
+No such variable found sys.resolv
+
+AddVariableHash(sys.resolv=/etc/resolv.conf (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable resolv in scope sys with value (omitted)
+NewScalar(sys,maildir,/var/spool/mail)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,maildir) type=(to be determined)
+IsExpandable(maildir) - syntax verify
+Found 0 variables in (maildir)
+Looking for sys.maildir
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,maildir): using scope 'sys' for variable 'maildir'
+No such variable found sys.maildir
+
+AddVariableHash(sys.maildir=/var/spool/mail (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable maildir in scope sys with value (omitted)
+NewScalar(sys,exports,/etc/exports)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,exports) type=(to be determined)
+IsExpandable(exports) - syntax verify
+Found 0 variables in (exports)
+Looking for sys.exports
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,exports): using scope 'sys' for variable 'exports'
+No such variable found sys.exports
+
+AddVariableHash(sys.exports=/etc/exports (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable exports in scope sys with value (omitted)
+NewScalar(sys,expires,)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,expires) type=(to be determined)
+IsExpandable(expires) - syntax verify
+Found 0 variables in (expires)
+Looking for sys.expires
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,expires): using scope 'sys' for variable 'expires'
+No such variable found sys.expires
+
+AddVariableHash(sys.expires= (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable expires in scope sys with value (omitted)
+NewScalar(sys,cf_version,3.3.8)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cf_version) type=(to be determined)
+IsExpandable(cf_version) - syntax verify
+Found 0 variables in (cf_version)
+Looking for sys.cf_version
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cf_version): using scope 'sys' for variable 'cf_version'
+No such variable found sys.cf_version
+
+AddVariableHash(sys.cf_version=3.3.8 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cf_version in scope sys with value (omitted)
+HashPubKey(0)
+NewScalar(sys,key_digest,MD5=52298128837db3af8c09af5188808e9d)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,key_digest) type=(to be determined)
+IsExpandable(key_digest) - syntax verify
+Found 0 variables in (key_digest)
+Looking for sys.key_digest
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,key_digest): using scope 'sys' for variable 'key_digest'
+No such variable found sys.key_digest
+
+AddVariableHash(sys.key_digest=MD5=52298128837db3af8c09af5188808e9d (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable key_digest in scope sys with value (omitted)
+NewClass(PK_MD5_52298128837db3af8c09af5188808e9d)
+NewScalar(sys,cf_agent,"/var/cfengine/bin/cf-agent")
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cf_agent) type=(to be determined)
+IsExpandable(cf_agent) - syntax verify
+Found 0 variables in (cf_agent)
+Looking for sys.cf_agent
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cf_agent): using scope 'sys' for variable 'cf_agent'
+No such variable found sys.cf_agent
+
+AddVariableHash(sys.cf_agent="/var/cfengine/bin/cf-agent" (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cf_agent in scope sys with value (omitted)
+NewScalar(sys,cf_serverd,"/var/cfengine/bin/cf-serverd")
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cf_serverd) type=(to be determined)
+IsExpandable(cf_serverd) - syntax verify
+Found 0 variables in (cf_serverd)
+Looking for sys.cf_serverd
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cf_serverd): using scope 'sys' for variable 'cf_serverd'
+No such variable found sys.cf_serverd
+
+AddVariableHash(sys.cf_serverd="/var/cfengine/bin/cf-serverd" (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cf_serverd in scope sys with value (omitted)
+NewScalar(sys,cf_monitord,"/var/cfengine/bin/cf-monitord")
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cf_monitord) type=(to be determined)
+IsExpandable(cf_monitord) - syntax verify
+Found 0 variables in (cf_monitord)
+Looking for sys.cf_monitord
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cf_monitord): using scope 'sys' for variable 'cf_monitord'
+No such variable found sys.cf_monitord
+
+AddVariableHash(sys.cf_monitord="/var/cfengine/bin/cf-monitord" (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cf_monitord in scope sys with value (omitted)
+NewScalar(sys,cf_report,"/var/cfengine/bin/cf-report")
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cf_report) type=(to be determined)
+IsExpandable(cf_report) - syntax verify
+Found 0 variables in (cf_report)
+Looking for sys.cf_report
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cf_report): using scope 'sys' for variable 'cf_report'
+No such variable found sys.cf_report
+
+AddVariableHash(sys.cf_report="/var/cfengine/bin/cf-report" (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cf_report in scope sys with value (omitted)
+NewScalar(sys,cf_key,"/var/cfengine/bin/cf-key")
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cf_key) type=(to be determined)
+IsExpandable(cf_key) - syntax verify
+Found 0 variables in (cf_key)
+Looking for sys.cf_key
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cf_key): using scope 'sys' for variable 'cf_key'
+No such variable found sys.cf_key
+
+AddVariableHash(sys.cf_key="/var/cfengine/bin/cf-key" (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cf_key in scope sys with value (omitted)
+NewScalar(sys,cf_runagent,"/var/cfengine/bin/cf-runagent")
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cf_runagent) type=(to be determined)
+IsExpandable(cf_runagent) - syntax verify
+Found 0 variables in (cf_runagent)
+Looking for sys.cf_runagent
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cf_runagent): using scope 'sys' for variable 'cf_runagent'
+No such variable found sys.cf_runagent
+
+AddVariableHash(sys.cf_runagent="/var/cfengine/bin/cf-runagent" (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cf_runagent in scope sys with value (omitted)
+NewScalar(sys,cf_execd,"/var/cfengine/bin/cf-execd")
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cf_execd) type=(to be determined)
+IsExpandable(cf_execd) - syntax verify
+Found 0 variables in (cf_execd)
+Looking for sys.cf_execd
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cf_execd): using scope 'sys' for variable 'cf_execd'
+No such variable found sys.cf_execd
+
+AddVariableHash(sys.cf_execd="/var/cfengine/bin/cf-execd" (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cf_execd in scope sys with value (omitted)
+NewScalar(sys,cf_promises,"/var/cfengine/bin/cf-promises")
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cf_promises) type=(to be determined)
+IsExpandable(cf_promises) - syntax verify
+Found 0 variables in (cf_promises)
+Looking for sys.cf_promises
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cf_promises): using scope 'sys' for variable 'cf_promises'
+No such variable found sys.cf_promises
+
+AddVariableHash(sys.cf_promises="/var/cfengine/bin/cf-promises" (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cf_promises in scope sys with value (omitted)
+NewScalar(sys,cf_twin,"/var/cfengine/bin/cf-agent")
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cf_twin) type=(to be determined)
+IsExpandable(cf_twin) - syntax verify
+Found 0 variables in (cf_twin)
+Looking for sys.cf_twin
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cf_twin): using scope 'sys' for variable 'cf_twin'
+No such variable found sys.cf_twin
+
+AddVariableHash(sys.cf_twin="/var/cfengine/bin/cf-agent" (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cf_twin in scope sys with value (omitted)
+NewScalar(sys,windir,/dev/null)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,windir) type=(to be determined)
+IsExpandable(windir) - syntax verify
+Found 0 variables in (windir)
+Looking for sys.windir
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,windir): using scope 'sys' for variable 'windir'
+No such variable found sys.windir
+
+AddVariableHash(sys.windir=/dev/null (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable windir in scope sys with value (omitted)
+NewScalar(sys,winsysdir,/dev/null)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,winsysdir) type=(to be determined)
+IsExpandable(winsysdir) - syntax verify
+Found 0 variables in (winsysdir)
+Looking for sys.winsysdir
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,winsysdir): using scope 'sys' for variable 'winsysdir'
+No such variable found sys.winsysdir
+
+AddVariableHash(sys.winsysdir=/dev/null (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable winsysdir in scope sys with value (omitted)
+NewScalar(sys,winprogdir,/dev/null)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,winprogdir) type=(to be determined)
+IsExpandable(winprogdir) - syntax verify
+Found 0 variables in (winprogdir)
+Looking for sys.winprogdir
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,winprogdir): using scope 'sys' for variable 'winprogdir'
+No such variable found sys.winprogdir
+
+AddVariableHash(sys.winprogdir=/dev/null (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable winprogdir in scope sys with value (omitted)
+NewScalar(sys,winprogdir86,/dev/null)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,winprogdir86) type=(to be determined)
+IsExpandable(winprogdir86) - syntax verify
+Found 0 variables in (winprogdir86)
+Looking for sys.winprogdir86
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,winprogdir86): using scope 'sys' for variable 'winprogdir86'
+No such variable found sys.winprogdir86
+
+AddVariableHash(sys.winprogdir86=/dev/null (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable winprogdir86 in scope sys with value (omitted)
+# Extended system discovery is only available in version Nova and above
+NewClass(32_bit)
+Additional hard class defined as: 32_bit
+NewClass(linux_2_6_18_164_15_1_el5)
+NewClass(i686)
+Additional hard class defined as: linux_2_6_18_164_15_1_el5
+NewClass(linux_i686)
+Additional hard class defined as: linux_i686
+NewClass(linux_i686_2_6_18_164_15_1_el5)
+Additional hard class defined as: linux_i686_2_6_18_164_15_1_el5
+NewScalar(sys,long_arch,linux_i686_2_6_18_164_15_1_el5__1_SMP_Wed_Mar_17_11_37_14_EDT_2010)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,long_arch) type=(to be determined)
+IsExpandable(long_arch) - syntax verify
+Found 0 variables in (long_arch)
+Looking for sys.long_arch
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,long_arch): using scope 'sys' for variable 'long_arch'
+No such variable found sys.long_arch
+
+AddVariableHash(sys.long_arch=linux_i686_2_6_18_164_15_1_el5__1_SMP_Wed_Mar_17_11_37_14_EDT_2010 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable long_arch in scope sys with value (omitted)
+NewClass(linux_i686_2_6_18_164_15_1_el5__1_SMP_Wed_Mar_17_11_37_14_EDT_2010)
+NewScalar(sys,ostype,linux_i686)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,ostype) type=(to be determined)
+IsExpandable(ostype) - syntax verify
+Found 0 variables in (ostype)
+Looking for sys.ostype
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,ostype): using scope 'sys' for variable 'ostype'
+No such variable found sys.ostype
+
+AddVariableHash(sys.ostype=linux_i686 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable ostype in scope sys with value (omitted)
+NewClass(linux_i686)
+NewClass(compiled_on_linux_gnu)
+GNU autoconf class from compile time: compiled_on_linux_gnu
+Hostname lookup failed on node name "mil-mail01"
+Unix_GetInterfaceInfo()
+ -> No interface exception file /var/cfengine/inputs/ignore_interfaces.rx
+Interface 1: lo
+Interface 2: eth0
+NewScalar(sys,interface,eth0)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,interface) type=(to be determined)
+IsExpandable(interface) - syntax verify
+Found 0 variables in (interface)
+Looking for sys.interface
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,interface): using scope 'sys' for variable 'interface'
+No such variable found sys.interface
+
+AddVariableHash(sys.interface=eth0 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable interface in scope sys with value (omitted)
+NewClass(net_iface_eth0)
+Adding hostip 192.168.40.129..
+NewClass(192_168_40_129)
+No hostinformation for 192.168.40.129 not found
+NewClass(ipv4_192_168_40_129)
+NewScalar(sys,ipv4,192.168.40.129)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,ipv4) type=(to be determined)
+IsExpandable(ipv4) - syntax verify
+Found 0 variables in (ipv4)
+Looking for sys.ipv4
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,ipv4): using scope 'sys' for variable 'ipv4'
+No such variable found sys.ipv4
+
+AddVariableHash(sys.ipv4=192.168.40.129 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable ipv4 in scope sys with value (omitted)
+Appending scalar to rval-list [192.168.40.129]
+CopyRvalItem(s)
+NewClass(ipv4_192_168_40)
+NewClass(ipv4_192_168)
+NewClass(ipv4_192)
+NewScalar(sys,ipv4[eth0],192.168.40.129)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,ipv4[eth0]) type=(to be determined)
+IsExpandable(ipv4[eth0]) - syntax verify
+Found 0 variables in (ipv4[eth0])
+Looking for sys.ipv4[eth0]
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,ipv4[eth0]): using scope 'sys' for variable 'ipv4[eth0]'
+No such variable found sys.ipv4[eth0]
+
+AddVariableHash(sys.ipv4[eth0]=192.168.40.129 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable ipv4[eth0] in scope sys with value (omitted)
+NewScalar(sys,ipv4_3[eth0],192.168.40)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,ipv4_3[eth0]) type=(to be determined)
+IsExpandable(ipv4_3[eth0]) - syntax verify
+Found 0 variables in (ipv4_3[eth0])
+Looking for sys.ipv4_3[eth0]
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,ipv4_3[eth0]): using scope 'sys' for variable 'ipv4_3[eth0]'
+No such variable found sys.ipv4_3[eth0]
+
+AddVariableHash(sys.ipv4_3[eth0]=192.168.40 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable ipv4_3[eth0] in scope sys with value (omitted)
+NewScalar(sys,ipv4_2[eth0],192.168)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,ipv4_2[eth0]) type=(to be determined)
+IsExpandable(ipv4_2[eth0]) - syntax verify
+Found 0 variables in (ipv4_2[eth0])
+Looking for sys.ipv4_2[eth0]
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,ipv4_2[eth0]): using scope 'sys' for variable 'ipv4_2[eth0]'
+No such variable found sys.ipv4_2[eth0]
+
+AddVariableHash(sys.ipv4_2[eth0]=192.168 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable ipv4_2[eth0] in scope sys with value (omitted)
+NewScalar(sys,ipv4_1[eth0],192)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,ipv4_1[eth0]) type=(to be determined)
+IsExpandable(ipv4_1[eth0]) - syntax verify
+Found 0 variables in (ipv4_1[eth0])
+Looking for sys.ipv4_1[eth0]
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,ipv4_1[eth0]): using scope 'sys' for variable 'ipv4_1[eth0]'
+No such variable found sys.ipv4_1[eth0]
+
+AddVariableHash(sys.ipv4_1[eth0]=192 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable ipv4_1[eth0] in scope sys with value (omitted)
+NewScalar(sys,hardware_mac[eth0],00:0c:29:ae:98:5d)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,hardware_mac[eth0]) type=(to be determined)
+IsExpandable(hardware_mac[eth0]) - syntax verify
+Found 0 variables in (hardware_mac[eth0])
+Looking for sys.hardware_mac[eth0]
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,hardware_mac[eth0]): using scope 'sys' for variable 'hardware_mac[eth0]'
+No such variable found sys.hardware_mac[eth0]
+
+AddVariableHash(sys.hardware_mac[eth0]=00:0c:29:ae:98:5d (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable hardware_mac[eth0] in scope sys with value (omitted)
+Appending scalar to rval-list [00:0c:29:ae:98:5d]
+CopyRvalItem(s)
+Appending scalar to rval-list [eth0]
+CopyRvalItem(s)
+NewClass(mac_00_0c_29_ae_98_5d)
+
+GetVariable(sys,interfaces) type=(to be determined)
+IsExpandable(interfaces) - syntax verify
+Found 0 variables in (interfaces)
+Looking for sys.interfaces
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,interfaces): using scope 'sys' for variable 'interfaces'
+No such variable found sys.interfaces
+
+AddVariableHash(sys.interfaces=(list) (slist) rtype=l)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(l)
+Appending scalar to rval-list [eth0]
+CopyRvalItem(s)
+Added Variable interfaces in scope sys with value (omitted)
+
+GetVariable(sys,hardware_addresses) type=(to be determined)
+IsExpandable(hardware_addresses) - syntax verify
+Found 0 variables in (hardware_addresses)
+Looking for sys.hardware_addresses
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,hardware_addresses): using scope 'sys' for variable 'hardware_addresses'
+No such variable found sys.hardware_addresses
+
+AddVariableHash(sys.hardware_addresses=(list) (slist) rtype=l)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(l)
+Appending scalar to rval-list [00:0c:29:ae:98:5d]
+CopyRvalItem(s)
+Added Variable hardware_addresses in scope sys with value (omitted)
+
+GetVariable(sys,ip_addresses) type=(to be determined)
+IsExpandable(ip_addresses) - syntax verify
+Found 0 variables in (ip_addresses)
+Looking for sys.ip_addresses
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,ip_addresses): using scope 'sys' for variable 'ip_addresses'
+No such variable found sys.ip_addresses
+
+AddVariableHash(sys.ip_addresses=(list) (slist) rtype=l)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(l)
+Appending scalar to rval-list [192.168.40.129]
+CopyRvalItem(s)
+Added Variable ip_addresses in scope sys with value (omitted)
+DeleteRvalItem(s)eth0
+DeleteRvalItem(s)00:0c:29:ae:98:5d
+DeleteRvalItem(s)192.168.40.129
+Trying to locate my IPv6 address
+Unix_cf_popen(/sbin/ifconfig -a)
+SplitStringAsItemList(          inet6 addr: fe80::20c:29ff:feae:985d/64 Scope:Link
+, )
+IsIPV6Address(inet6)
+IsIPV6Address(addr:)
+IsIPV6Address(fe80::20c:29ff:feae:985d)
+Found IPv6 address fe80::20c:29ff:feae:985d
+NewClass(fe80__20c_29ff_feae_985d)
+IsIPV6Address(Scope:Link
+)
+SplitStringAsItemList(          inet6 addr: ::1/128 Scope:Host
+, )
+IsIPV6Address(inet6)
+IsIPV6Address(addr:)
+IsIPV6Address(::1)
+Looks more like a MAC addressIsIPV6Address(Scope:Host
+)
+Unix_cf_pclose(pp)
+cf_pwait - Waiting for process 32753
+Looking for environment from cf-monitord...
+Unable to detect environment from cf-monitord
+NewClass(any)
+NewClass(cfengine_3_3_8)
+NewClass(cfengine_3_3)
+NewClass(cfengine_3)
+NewClass(cfengine)
+This appears to be a redhat (or redhat-based) system.
+NewClass(redhat)
+Looking for redhat linux info in "CentOS release 5.4 (Final)"
+NewClass(centos)
+NewClass(centos_5)
+NewClass(centos_5_4)
+NewClass(centos)
+NewClass(centos_5)
+NewScalar(sys,flavour,centos_5)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,flavour) type=(to be determined)
+IsExpandable(flavour) - syntax verify
+Found 0 variables in (flavour)
+Looking for sys.flavour
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,flavour): using scope 'sys' for variable 'flavour'
+No such variable found sys.flavour
+
+AddVariableHash(sys.flavour=centos_5 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable flavour in scope sys with value (omitted)
+NewScalar(sys,flavor,centos_5)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,flavor) type=(to be determined)
+IsExpandable(flavor) - syntax verify
+Found 0 variables in (flavor)
+Looking for sys.flavor
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,flavor): using scope 'sys' for variable 'flavor'
+No such variable found sys.flavor
+
+AddVariableHash(sys.flavor=centos_5 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable flavor in scope sys with value (omitted)
+NewClass(centos_5_4)
+Reading /proc/stat utilization data -------
+-> Found 1 cpu cores
+NewClass(1_cpu)
+NewScalar(sys,cpus,1)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,cpus) type=(to be determined)
+IsExpandable(cpus) - syntax verify
+Found 0 variables in (cpus)
+Looking for sys.cpus
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,cpus): using scope 'sys' for variable 'cpus'
+No such variable found sys.cpus
+
+AddVariableHash(sys.cpus=1 (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable cpus in scope sys with value (omitted)
+Evaluate(SuSE) -> 0
+NewScalar(sys,crontab,/var/spool/cron/crontabs/root)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,crontab) type=(to be determined)
+IsExpandable(crontab) - syntax verify
+Found 0 variables in (crontab)
+Looking for sys.crontab
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,crontab): using scope 'sys' for variable 'crontab'
+No such variable found sys.crontab
+
+AddVariableHash(sys.crontab=/var/spool/cron/crontabs/root (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable crontab in scope sys with value (omitted)
+***********************************************************
+ Loading persistent classes
+***********************************************************
+***********************************************************
+ Loaded persistent memory
+***********************************************************
+NewScalar(const,dollar,$)
+Searching for scope context const
+Found scope reference const
+
+GetVariable(const,dollar) type=(to be determined)
+IsExpandable(dollar) - syntax verify
+Found 0 variables in (dollar)
+Looking for const.dollar
+Searching for scope context const
+Found scope reference const
+GetVariable(const,dollar): using scope 'const' for variable 'dollar'
+No such variable found const.dollar
+
+AddVariableHash(const.dollar=$ (string) rtype=s)
+Searching for scope context const
+Found scope reference const
+CopyRvalItem(s)
+Added Variable dollar in scope const with value (omitted)
+NewScalar(const,n,
+)
+Searching for scope context const
+Found scope reference const
+
+GetVariable(const,n) type=(to be determined)
+IsExpandable(n) - syntax verify
+Found 0 variables in (n)
+Looking for const.n
+Searching for scope context const
+Found scope reference const
+GetVariable(const,n): using scope 'const' for variable 'n'
+No such variable found const.n
+
+AddVariableHash(const.n=
+ (string) rtype=s)
+Searching for scope context const
+Found scope reference const
+CopyRvalItem(s)
+Added Variable n in scope const with value (omitted)
+NewScalar(const,r,)
+Searching for scope context const
+Found scope reference const
+
+GetVariable(const,r) type=(to be determined)
+IsExpandable(r) - syntax verify
+Found 0 variables in (r)
+Looking for const.r
+Searching for scope context const
+Found scope reference const
+GetVariable(const,r): using scope 'const' for variable 'r'
+No such variable found const.r
+
+AddVariableHash(const.r= (string) rtype=s)
+Searching for scope context const
+Found scope reference const
+CopyRvalItem(s)
+Added Variable r in scope const with value (omitted)
+NewScalar(const,t,	)
+Searching for scope context const
+Found scope reference const
+
+GetVariable(const,t) type=(to be determined)
+IsExpandable(t) - syntax verify
+Found 0 variables in (t)
+Looking for const.t
+Searching for scope context const
+Found scope reference const
+GetVariable(const,t): using scope 'const' for variable 't'
+No such variable found const.t
+
+AddVariableHash(const.t=	 (string) rtype=s)
+Searching for scope context const
+Found scope reference const
+CopyRvalItem(s)
+Added Variable t in scope const with value (omitted)
+NewScalar(const,endl,
+)
+Searching for scope context const
+Found scope reference const
+
+GetVariable(const,endl) type=(to be determined)
+IsExpandable(endl) - syntax verify
+Found 0 variables in (endl)
+Looking for const.endl
+Searching for scope context const
+Found scope reference const
+GetVariable(const,endl): using scope 'const' for variable 'endl'
+No such variable found const.endl
+
+AddVariableHash(const.endl=
+ (string) rtype=s)
+Searching for scope context const
+Found scope reference const
+CopyRvalItem(s)
+Added Variable endl in scope const with value (omitted)
+Adding scope data control_agent
+Adding scope data this
+Adding scope data match
+SCOPE Object match already exists
+ -> No policy server (hub) watch yet registered
+NewScalar(sys,policy_hub,undefined)
+Searching for scope context sys
+Found scope reference sys
+
+GetVariable(sys,policy_hub) type=(to be determined)
+IsExpandable(policy_hub) - syntax verify
+Found 0 variables in (policy_hub)
+Looking for sys.policy_hub
+Searching for scope context sys
+Found scope reference sys
+GetVariable(sys,policy_hub): using scope 'sys' for variable 'policy_hub'
+No such variable found sys.policy_hub
+
+AddVariableHash(sys.policy_hub=undefined (string) rtype=s)
+Searching for scope context sys
+Found scope reference sys
+CopyRvalItem(s)
+Added Variable policy_hub in scope sys with value (omitted)
+ -> Input file is outside default repository, validating it
+ -> Promises seem to change
+ -> Input file is changed since last validation, validating it
+ -> Verifying the syntax of the inputs...
+Checking policy with command ""/var/cfengine/bin/cf-promises" -f "./temp.cf" -b "example""
++++++++++++++++++++++++++++++++++++++++++++++++
+  > Parsing file ./temp.cf
++++++++++++++++++++++++++++++++++++++++++++++++
+HashFile(0,./temp.cf)
+----------------------------------------------------------------
+  Bundle                                                            
+----------------------------------------------------------------
+Found block type agent for bundle
+Found identifier example for bundle
+SplitString([edit_line,edit_xml],,=44)
+Appending new bundle agent example ( {})
+Checking for bundle (example,agent)
+CopyRlist()
+
+* Begin new promise type category vars in function 
+
+Subtype vars syntax ok for agent
+Appending new type section vars
+Promising object name 'my_choice'
+Appending Promise from bundle example my_choice if context any
+Recorded LVAL string
+Recorded scalarRVAL true
+Subtype vars syntax ok for agent
+CheckConstraint(vars,string,true)
+Found type vars's body syntax
+CMP-bundle # (string,string)
+Matched syntatically correct bundle (lval,rval) item = (string) to its rval
+ ------------------------------------------------
+ - Checking inline constraint/arg string[string] => mappedval (s) 
+ ------------------------------------------------
+
+CheckParseString(string => true/)
+end CheckConstraintTypeMatch---------
+   Appending Constraint: string => true
+End full promise with promisee my_choice
+
+
+* Begin new promise type category files in function 
+
+Subtype files syntax ok for agent
+Appending new type section files
+Promising object name '/tmp/testfile'
+Appending Promise from bundle example /tmp/testfile if context any
+Recorded LVAL create
+Recorded scalarRVAL $(my_choice)
+Subtype files syntax ok for agent
+CheckConstraint(files,create,$(my_choice))
+Found type files's body syntax
+CMP-bundle # (create,acl)
+CMP-bundle # (create,changes)
+CMP-bundle # (create,copy_from)
+CMP-bundle # (create,create)
+Matched syntatically correct bundle (lval,rval) item = (create) to its rval
+ ------------------------------------------------
+ - Checking inline constraint/arg create[(menu option)] => mappedval (s) true,false,yes,no,on,off
+ ------------------------------------------------
+
+CheckParseOpts(create => $(my_choice)/true,false,yes,no,on,off)
+IsNakedVar($(my_choice),$)!!
+Validation: Unable to verify variable expansion of $(my_choice) at this stage
+end CheckConstraintTypeMatch---------
+   Appending Constraint: create => $(my_choice)
+End full promise with promisee /tmp/testfile
+
+End promise bundle
+
+Initiate variable convergence...
+Adding scope data example
+CheckVariablePromises()
+Evaluate(any) -> 1
+  Verify Constrant name timer_policy
+CopyRvalItem(s)
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=example,type=s)
+
+ExpandPrivateScalar(example,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+DeleteRvalItem(s)true
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+No such variable found example.my_choice
+
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)2.6.18-164.15.1.el5
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,my_choice)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=my_choice (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = my_choice
+typename2type(string)
+AddVariableHash(example.my_choice=true (string) rtype=s)
+Searching for scope context example
+Found scope reference example
+CopyRvalItem(s)
+Added Variable my_choice in scope example with value (omitted)
+ClassAuditLog( -> Added variable my_choice)
+DeleteRvalItem(s)true
+Initiate variable convergence...
+Adding scope data example
+SCOPE Object example already exists
+CheckVariablePromises()
+Evaluate(any) -> 1
+  Verify Constrant name timer_policy
+CopyRvalItem(s)
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=example,type=s)
+
+ExpandPrivateScalar(example,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+DeleteRvalItem(s)true
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)my_choice
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,my_choice)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=my_choice (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = my_choice
+typename2type(string)
+AddVariableHash(example.my_choice=true (string) rtype=s)
+Searching for scope context example
+Found scope reference example
+Added Variable my_choice in scope example with value (omitted)
+ClassAuditLog( -> Added variable my_choice)
+DeleteRvalItem(s)true
+
+GetVariable(control_common,cfinputs_version) type=(to be determined)
+IsExpandable(cfinputs_version) - syntax verify
+Found 0 variables in (cfinputs_version)
+Looking for control_common.cfinputs_version
+Searching for scope context control_common
+Scope for variable "control_common.cfinputs_version" does not seem to exist
+
+GetVariable(control_common,version) type=(to be determined)
+IsExpandable(version) - syntax verify
+Found 0 variables in (version)
+Looking for control_common.version
+Searching for scope context control_common
+Scope for variable "control_common.version" does not seem to exist
+cf3>  -> Defined classes = { 192_168_40_129 1_cpu 32_bit Afternoon Day22 GMT_Hr23 Hr16 Hr16_Q4 Lcycle_2 Min45 Min45_50 Monday October PK_MD5_52298128837db3af8c09af5188808e9d Q4 Yr2012 agent any centos centos_5 centos_5_4 cfengine cfengine_3 cfengine_3_3 cfengine_3_3_8 community_edition compiled_on_linux_gnu debug_mode fe80__20c_29ff_feae_985d i686 ipv4_192 ipv4_192_168 ipv4_192_168_40 ipv4_192_168_40_129 linux linux_2_6_18_164_15_1_el5 linux_i686 linux_i686_2_6_18_164_15_1_el5 linux_i686_2_6_18_164_15_1_el5__1_SMP_Wed_Mar_17_11_37_14_EDT_2010 mac_00_0c_29_ae_98_5d mil_mail01 net_iface_eth0 opt_debug redhat }
+cf3>  -> Negated Classes = { }
+****************************************************
+* ExpandPromises (scope = example )
+****************************************************
+
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)my_choice
+CopyPromise(my_choice->)
+Copying promise constraints
+
+CopyRvalItem(s)
+   Appending Constraint: string => true
+MapIteratorsFromScalar("my_choice", 0)
+MapIteratorsFromScalar("true", 0)
+Searching for scope context this
+Found scope reference this
+  Verify Constrant name handle
+
+*
+NewIterationContext(from example)
+*
+
+*
+Copying scope data example to this
+*
+Adding scope data this
+Searching for scope context example
+Found scope reference example
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+No lists to iterate over
+NewScalar(this,handle,)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,handle) type=(to be determined)
+IsExpandable(handle) - syntax verify
+Found 0 variables in (handle)
+Looking for this.handle
+Searching for scope context this
+Found scope reference this
+GetVariable(this,handle): using scope 'this' for variable 'handle'
+No such variable found this.handle
+
+AddVariableHash(this.handle= (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable handle in scope this with value (omitted)
+NewScalar(this,promise_filename,./temp.cf)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_filename) type=(to be determined)
+IsExpandable(promise_filename) - syntax verify
+Found 0 variables in (promise_filename)
+Looking for this.promise_filename
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_filename): using scope 'this' for variable 'promise_filename'
+No such variable found this.promise_filename
+
+AddVariableHash(this.promise_filename=./temp.cf (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_filename in scope this with value (omitted)
+NewScalar(this,promise_linenumber,7)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_linenumber) type=(to be determined)
+IsExpandable(promise_linenumber) - syntax verify
+Found 0 variables in (promise_linenumber)
+Looking for this.promise_linenumber
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_linenumber): using scope 'this' for variable 'promise_linenumber'
+No such variable found this.promise_linenumber
+
+AddVariableHash(this.promise_linenumber=7 (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_linenumber in scope this with value (omitted)
+NewScalar(this,promiser_uid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_uid) type=(to be determined)
+IsExpandable(promiser_uid) - syntax verify
+Found 0 variables in (promiser_uid)
+Looking for this.promiser_uid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_uid): using scope 'this' for variable 'promiser_uid'
+No such variable found this.promiser_uid
+
+AddVariableHash(this.promiser_uid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_uid in scope this with value (omitted)
+NewScalar(this,promiser_gid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_gid) type=(to be determined)
+IsExpandable(promiser_gid) - syntax verify
+Found 0 variables in (promiser_gid)
+Looking for this.promiser_gid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_gid): using scope 'this' for variable 'promiser_gid'
+No such variable found this.promiser_gid
+
+AddVariableHash(this.promiser_gid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_gid in scope this with value (omitted)
+ExpandDerefPromise()
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,my_choice)
+  Aggregate result |my_choice|, scanning at "" (current delta my_choice)
+Returning complete scalar expansion (my_choice => my_choice)
+
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+CopyRvalItem(s)
+DeleteRvalItem(s)true
+   Appending Constraint: string => true
+
+GetVariable(control_common,version) type=(to be determined)
+IsExpandable(version) - syntax verify
+Found 0 variables in (version)
+Looking for control_common.version
+Searching for scope context control_common
+Scope for variable "control_common.version" does not seem to exist
+  Verify Constrant name handle
+Evaluate(any) -> 1
+  Verify Constrant name ifvarclass
+  Post Check Constraint vars: string =>true
+ ------------------------------------------------
+ - Checking inline constraint/arg string[string] => mappedval (s) 
+ ------------------------------------------------
+
+CheckParseString(string => true/)
+end CheckConstraintTypeMatch---------
+Evaluate(any) -> 1
+  Verify Constrant name timer_policy
+CopyRvalItem(s)
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=example,type=s)
+
+ExpandPrivateScalar(example,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+DeleteRvalItem(s)true
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Deleting scope match
+No such scope to delete
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,my_choice)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=my_choice (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = my_choice
+typename2type(string)
+AddVariableHash(example.my_choice=true (string) rtype=s)
+Searching for scope context example
+Found scope reference example
+Added Variable my_choice in scope example with value (omitted)
+ClassAuditLog( -> Added variable my_choice)
+DeleteRvalItem(s)true
+DeletePromise(my_choice->[X])
+DeleteConstraintList()
+Delete lval = string,s
+DeleteRvalItem(s)true
+Deleting scope this
+Object this exists
+ ----> Delete variable association my_choice
+DeleteRvalItem(s)true
+ ----> Delete variable association handle
+DeleteRvalItem(s)
+ ----> Delete variable association promise_filename
+DeleteRvalItem(s)./temp.cf
+ ----> Delete variable association promise_linenumber
+DeleteRvalItem(s)7
+ ----> Delete variable association promiser_uid
+DeleteRvalItem(s)0
+ ----> Delete variable association promiser_gid
+DeleteRvalItem(s)0
+Deleting scope this
+No such scope to delete
+DeletePromise(my_choice->[ ])
+DeleteConstraintList()
+Delete lval = string,s
+DeleteRvalItem(s)true
+****************************************************
+* ExpandPromises (scope = example )
+****************************************************
+
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)my_choice
+CopyPromise(/tmp/testfile->)
+Copying promise constraints
+
+CopyRvalItem(s)
+   Appending Constraint: create => $(my_choice)
+MapIteratorsFromScalar("/tmp/testfile", 0)
+MapIteratorsFromScalar("$(my_choice)", 0)
+ExtractInnerVarString( $(my_choice) ) - syntax verify
+Returning substring value my_choice
+
+ExpandPrivateScalar(example,my_choice)
+  Aggregate result |my_choice|, scanning at "" (current delta my_choice)
+Returning complete scalar expansion (my_choice => my_choice)
+
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+Scalar variable $(my_choice) found
+Appending scalar to rval-list [my_choice]
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+  Verify Constrant name handle
+
+*
+NewIterationContext(from example)
+*
+
+*
+Copying scope data example to this
+*
+Adding scope data this
+Searching for scope context example
+Found scope reference example
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+No lists to iterate over
+NewScalar(this,handle,)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,handle) type=(to be determined)
+IsExpandable(handle) - syntax verify
+Found 0 variables in (handle)
+Looking for this.handle
+Searching for scope context this
+Found scope reference this
+GetVariable(this,handle): using scope 'this' for variable 'handle'
+No such variable found this.handle
+
+AddVariableHash(this.handle= (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable handle in scope this with value (omitted)
+NewScalar(this,promise_filename,./temp.cf)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_filename) type=(to be determined)
+IsExpandable(promise_filename) - syntax verify
+Found 0 variables in (promise_filename)
+Looking for this.promise_filename
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_filename): using scope 'this' for variable 'promise_filename'
+No such variable found this.promise_filename
+
+AddVariableHash(this.promise_filename=./temp.cf (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_filename in scope this with value (omitted)
+NewScalar(this,promise_linenumber,15)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_linenumber) type=(to be determined)
+IsExpandable(promise_linenumber) - syntax verify
+Found 0 variables in (promise_linenumber)
+Looking for this.promise_linenumber
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_linenumber): using scope 'this' for variable 'promise_linenumber'
+No such variable found this.promise_linenumber
+
+AddVariableHash(this.promise_linenumber=15 (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_linenumber in scope this with value (omitted)
+NewScalar(this,promiser_uid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_uid) type=(to be determined)
+IsExpandable(promiser_uid) - syntax verify
+Found 0 variables in (promiser_uid)
+Looking for this.promiser_uid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_uid): using scope 'this' for variable 'promiser_uid'
+No such variable found this.promiser_uid
+
+AddVariableHash(this.promiser_uid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_uid in scope this with value (omitted)
+NewScalar(this,promiser_gid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_gid) type=(to be determined)
+IsExpandable(promiser_gid) - syntax verify
+Found 0 variables in (promiser_gid)
+Looking for this.promiser_gid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_gid): using scope 'this' for variable 'promiser_gid'
+No such variable found this.promiser_gid
+
+AddVariableHash(this.promiser_gid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_gid in scope this with value (omitted)
+ExpandDerefPromise()
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,/tmp/testfile)
+  Aggregate result |/tmp/testfile|, scanning at "" (current delta /tmp/testfile)
+Returning complete scalar expansion (/tmp/testfile => /tmp/testfile)
+
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,$(my_choice))
+  Aggregate result ||, scanning at "$(my_choice)" (current delta )
+ExtractOuterVarString("$(my_choice)") - syntax verify
+Extracted outer variable |$(my_choice)|
+ExtractInnerVarString( $(my_choice) ) - syntax verify
+Returning substring value my_choice
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+  Delta - my_choice
+
+GetVariable(this,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for this.my_choice
+Searching for scope context this
+Found scope reference this
+GetVariable(this,my_choice): using scope 'this' for variable 'my_choice'
+return final variable type=string, value={
+true}
+Returning complete scalar expansion ($(my_choice) => true)
+
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+CopyRvalItem(s)
+DeleteRvalItem(s)true
+   Appending Constraint: create => true
+
+GetVariable(control_common,version) type=(to be determined)
+IsExpandable(version) - syntax verify
+Found 0 variables in (version)
+Looking for control_common.version
+Searching for scope context control_common
+Scope for variable "control_common.version" does not seem to exist
+  Verify Constrant name handle
+Evaluate(any) -> 1
+  Verify Constrant name ifvarclass
+  Post Check Constraint files: create =>true
+ ------------------------------------------------
+ - Checking inline constraint/arg create[(menu option)] => mappedval (s) true,false,yes,no,on,off
+ ------------------------------------------------
+
+CheckParseOpts(create => true/true,false,yes,no,on,off)
+SplitString([true,false,yes,no,on,off],,=44)
+CheckParseOpts - syntax verified
+
+end CheckConstraintTypeMatch---------
+DeletePromise(/tmp/testfile->[X])
+DeleteConstraintList()
+Delete lval = create,s
+DeleteRvalItem(s)true
+Deleting scope this
+Object this exists
+ ----> Delete variable association my_choice
+DeleteRvalItem(s)true
+ ----> Delete variable association handle
+DeleteRvalItem(s)
+ ----> Delete variable association promise_filename
+DeleteRvalItem(s)./temp.cf
+ ----> Delete variable association promise_linenumber
+DeleteRvalItem(s)15
+ ----> Delete variable association promiser_uid
+DeleteRvalItem(s)0
+ ----> Delete variable association promiser_gid
+DeleteRvalItem(s)0
+Deleting scope this
+No such scope to delete
+DeletePromise(/tmp/testfile->[ ])
+DeleteConstraintList()
+Delete lval = create,s
+DeleteRvalItem(s)$(my_choice)
+DeleteRvalItem(s)my_choice
+Initiate variable convergence...
+Adding scope data example
+SCOPE Object example already exists
+CheckVariablePromises()
+Evaluate(any) -> 1
+  Verify Constrant name timer_policy
+CopyRvalItem(s)
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=example,type=s)
+
+ExpandPrivateScalar(example,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+DeleteRvalItem(s)true
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Deleting scope match
+No such scope to delete
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,my_choice)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=my_choice (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = my_choice
+typename2type(string)
+AddVariableHash(example.my_choice=true (string) rtype=s)
+Searching for scope context example
+Found scope reference example
+Added Variable my_choice in scope example with value (omitted)
+ClassAuditLog( -> Added variable my_choice)
+DeleteRvalItem(s)true
+ -> Immunizing against parental death
+ClassAuditLog(Cfagent starting)
+
+GetVariable(control_common,lastseenexpireafter) type=(to be determined)
+IsExpandable(lastseenexpireafter) - syntax verify
+Found 0 variables in (lastseenexpireafter)
+Looking for control_common.lastseenexpireafter
+Searching for scope context control_common
+Scope for variable "control_common.lastseenexpireafter" does not seem to exist
+
+GetVariable(control_common,fips_mode) type=(to be determined)
+IsExpandable(fips_mode) - syntax verify
+Found 0 variables in (fips_mode)
+Looking for control_common.fips_mode
+Searching for scope context control_common
+Scope for variable "control_common.fips_mode" does not seem to exist
+
+GetVariable(control_common,syslog_port) type=(to be determined)
+IsExpandable(syslog_port) - syntax verify
+Found 0 variables in (syslog_port)
+Looking for control_common.syslog_port
+Searching for scope context control_common
+Scope for variable "control_common.syslog_port" does not seem to exist
+
+GetVariable(control_common,syslog_host) type=(to be determined)
+IsExpandable(syslog_host) - syntax verify
+Found 0 variables in (syslog_host)
+Looking for control_common.syslog_host
+Searching for scope context control_common
+Scope for variable "control_common.syslog_host" does not seem to exist
+ >> Using command line specified bundlesequence
+cf3> -> Bundlesequence =>  {'example'}
+Searching for scope context example
+Found scope reference example
+ExpandPrivateRval(scope=example,type=s)
+
+ExpandPrivateScalar(example,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+DeleteRvalItem(s)true
+
+*****************************************************************
+cf3> BUNDLE example
+*****************************************************************
+
+
+   =========================================================
+   vars in bundle example (1)
+   =========================================================
+
+****************************************************
+* ExpandPromises (scope = example )
+****************************************************
+
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)my_choice
+CopyPromise(my_choice->)
+Copying promise constraints
+
+CopyRvalItem(s)
+   Appending Constraint: string => true
+MapIteratorsFromScalar("my_choice", 0)
+MapIteratorsFromScalar("true", 0)
+Searching for scope context this
+Found scope reference this
+  Verify Constrant name handle
+
+*
+NewIterationContext(from example)
+*
+
+*
+Copying scope data example to this
+*
+Adding scope data this
+Searching for scope context example
+Found scope reference example
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+No lists to iterate over
+NewScalar(this,handle,)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,handle) type=(to be determined)
+IsExpandable(handle) - syntax verify
+Found 0 variables in (handle)
+Looking for this.handle
+Searching for scope context this
+Found scope reference this
+GetVariable(this,handle): using scope 'this' for variable 'handle'
+No such variable found this.handle
+
+AddVariableHash(this.handle= (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable handle in scope this with value (omitted)
+NewScalar(this,promise_filename,./temp.cf)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_filename) type=(to be determined)
+IsExpandable(promise_filename) - syntax verify
+Found 0 variables in (promise_filename)
+Looking for this.promise_filename
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_filename): using scope 'this' for variable 'promise_filename'
+No such variable found this.promise_filename
+
+AddVariableHash(this.promise_filename=./temp.cf (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_filename in scope this with value (omitted)
+NewScalar(this,promise_linenumber,7)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_linenumber) type=(to be determined)
+IsExpandable(promise_linenumber) - syntax verify
+Found 0 variables in (promise_linenumber)
+Looking for this.promise_linenumber
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_linenumber): using scope 'this' for variable 'promise_linenumber'
+No such variable found this.promise_linenumber
+
+AddVariableHash(this.promise_linenumber=7 (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_linenumber in scope this with value (omitted)
+NewScalar(this,promiser_uid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_uid) type=(to be determined)
+IsExpandable(promiser_uid) - syntax verify
+Found 0 variables in (promiser_uid)
+Looking for this.promiser_uid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_uid): using scope 'this' for variable 'promiser_uid'
+No such variable found this.promiser_uid
+
+AddVariableHash(this.promiser_uid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_uid in scope this with value (omitted)
+NewScalar(this,promiser_gid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_gid) type=(to be determined)
+IsExpandable(promiser_gid) - syntax verify
+Found 0 variables in (promiser_gid)
+Looking for this.promiser_gid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_gid): using scope 'this' for variable 'promiser_gid'
+No such variable found this.promiser_gid
+
+AddVariableHash(this.promiser_gid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_gid in scope this with value (omitted)
+ExpandDerefPromise()
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,my_choice)
+  Aggregate result |my_choice|, scanning at "" (current delta my_choice)
+Returning complete scalar expansion (my_choice => my_choice)
+
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+CopyRvalItem(s)
+DeleteRvalItem(s)true
+   Appending Constraint: string => true
+Evaluate(any) -> 1
+  Verify Constrant name ifvarclass
+Evaluate(any) -> 1
+  Verify Constrant name timer_policy
+CopyRvalItem(s)
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=example,type=s)
+
+ExpandPrivateScalar(example,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+DeleteRvalItem(s)true
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Deleting scope match
+No such scope to delete
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,my_choice)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=my_choice (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = my_choice
+typename2type(string)
+AddVariableHash(example.my_choice=true (string) rtype=s)
+Searching for scope context example
+Found scope reference example
+Added Variable my_choice in scope example with value (omitted)
+ClassAuditLog( -> Added variable my_choice)
+DeleteRvalItem(s)true
+Evaluate(any) -> 1
+  Verify Constrant name timer_policy
+CopyRvalItem(s)
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=example,type=s)
+
+ExpandPrivateScalar(example,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+DeleteRvalItem(s)true
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)my_choice
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,my_choice)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=my_choice (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = my_choice
+typename2type(string)
+AddVariableHash(example.my_choice=true (string) rtype=s)
+Searching for scope context example
+Found scope reference example
+Added Variable my_choice in scope example with value (omitted)
+ClassAuditLog( -> Added variable my_choice)
+DeleteRvalItem(s)true
+DeletePromise(my_choice->[X])
+DeleteConstraintList()
+Delete lval = string,s
+DeleteRvalItem(s)true
+Deleting scope this
+Object this exists
+ ----> Delete variable association my_choice
+DeleteRvalItem(s)true
+ ----> Delete variable association handle
+DeleteRvalItem(s)
+ ----> Delete variable association promise_filename
+DeleteRvalItem(s)./temp.cf
+ ----> Delete variable association promise_linenumber
+DeleteRvalItem(s)7
+ ----> Delete variable association promiser_uid
+DeleteRvalItem(s)0
+ ----> Delete variable association promiser_gid
+DeleteRvalItem(s)0
+Deleting scope this
+No such scope to delete
+DeletePromise(my_choice->[ ])
+DeleteConstraintList()
+Delete lval = string,s
+DeleteRvalItem(s)true
+
+     +  Private classes augmented:
+
+     -  Private classes diminished:
+
+     ?  Public class context:
+     ?       192_168_40_129
+     ?       1_cpu
+     ?       32_bit
+     ?       Afternoon
+     ?       Day22
+     ?       GMT_Hr23
+     ?       Hr16
+     ?       Hr16_Q4
+     ?       Lcycle_2
+     ?       Min45
+     ?       Min45_50
+     ?       Monday
+     ?       October
+     ?       PK_MD5_52298128837db3af8c09af5188808e9d
+     ?       Q4
+     ?       Yr2012
+     ?       agent
+     ?       any
+     ?       centos
+     ?       centos_5
+     ?       centos_5_4
+     ?       cfengine
+     ?       cfengine_3
+     ?       cfengine_3_3
+     ?       cfengine_3_3_8
+     ?       community_edition
+     ?       compiled_on_linux_gnu
+     ?       debug_mode
+     ?       fe80__20c_29ff_feae_985d
+     ?       i686
+     ?       ipv4_192
+     ?       ipv4_192_168
+     ?       ipv4_192_168_40
+     ?       ipv4_192_168_40_129
+     ?       linux
+     ?       linux_2_6_18_164_15_1_el5
+     ?       linux_i686
+     ?       linux_i686_2_6_18_164_15_1_el5
+     ?       linux_i686_2_6_18_164_15_1_el5__1_SMP_Wed_Mar_17_11_37_14_EDT_2010
+     ?       mac_00_0c_29_ae_98_5d
+     ?       mil_mail01
+     ?       net_iface_eth0
+     ?       opt_debug
+     ?       redhat
+
+
+   =========================================================
+   files in bundle example (1)
+   =========================================================
+
+****************************************************
+* ExpandPromises (scope = example )
+****************************************************
+
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)my_choice
+CopyPromise(/tmp/testfile->)
+Copying promise constraints
+
+CopyRvalItem(s)
+   Appending Constraint: create => $(my_choice)
+MapIteratorsFromScalar("/tmp/testfile", 0)
+MapIteratorsFromScalar("$(my_choice)", 0)
+ExtractInnerVarString( $(my_choice) ) - syntax verify
+Returning substring value my_choice
+
+ExpandPrivateScalar(example,my_choice)
+  Aggregate result |my_choice|, scanning at "" (current delta my_choice)
+Returning complete scalar expansion (my_choice => my_choice)
+
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+Scalar variable $(my_choice) found
+Appending scalar to rval-list [my_choice]
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+  Verify Constrant name handle
+
+*
+NewIterationContext(from example)
+*
+
+*
+Copying scope data example to this
+*
+Adding scope data this
+Searching for scope context example
+Found scope reference example
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+No lists to iterate over
+NewScalar(this,handle,)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,handle) type=(to be determined)
+IsExpandable(handle) - syntax verify
+Found 0 variables in (handle)
+Looking for this.handle
+Searching for scope context this
+Found scope reference this
+GetVariable(this,handle): using scope 'this' for variable 'handle'
+No such variable found this.handle
+
+AddVariableHash(this.handle= (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable handle in scope this with value (omitted)
+NewScalar(this,promise_filename,./temp.cf)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_filename) type=(to be determined)
+IsExpandable(promise_filename) - syntax verify
+Found 0 variables in (promise_filename)
+Looking for this.promise_filename
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_filename): using scope 'this' for variable 'promise_filename'
+No such variable found this.promise_filename
+
+AddVariableHash(this.promise_filename=./temp.cf (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_filename in scope this with value (omitted)
+NewScalar(this,promise_linenumber,15)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_linenumber) type=(to be determined)
+IsExpandable(promise_linenumber) - syntax verify
+Found 0 variables in (promise_linenumber)
+Looking for this.promise_linenumber
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_linenumber): using scope 'this' for variable 'promise_linenumber'
+No such variable found this.promise_linenumber
+
+AddVariableHash(this.promise_linenumber=15 (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_linenumber in scope this with value (omitted)
+NewScalar(this,promiser_uid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_uid) type=(to be determined)
+IsExpandable(promiser_uid) - syntax verify
+Found 0 variables in (promiser_uid)
+Looking for this.promiser_uid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_uid): using scope 'this' for variable 'promiser_uid'
+No such variable found this.promiser_uid
+
+AddVariableHash(this.promiser_uid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_uid in scope this with value (omitted)
+NewScalar(this,promiser_gid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_gid) type=(to be determined)
+IsExpandable(promiser_gid) - syntax verify
+Found 0 variables in (promiser_gid)
+Looking for this.promiser_gid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_gid): using scope 'this' for variable 'promiser_gid'
+No such variable found this.promiser_gid
+
+AddVariableHash(this.promiser_gid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_gid in scope this with value (omitted)
+ExpandDerefPromise()
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,/tmp/testfile)
+  Aggregate result |/tmp/testfile|, scanning at "" (current delta /tmp/testfile)
+Returning complete scalar expansion (/tmp/testfile => /tmp/testfile)
+
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,$(my_choice))
+  Aggregate result ||, scanning at "$(my_choice)" (current delta )
+ExtractOuterVarString("$(my_choice)") - syntax verify
+Extracted outer variable |$(my_choice)|
+ExtractInnerVarString( $(my_choice) ) - syntax verify
+Returning substring value my_choice
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+  Delta - my_choice
+
+GetVariable(this,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for this.my_choice
+Searching for scope context this
+Found scope reference this
+GetVariable(this,my_choice): using scope 'this' for variable 'my_choice'
+return final variable type=string, value={
+true}
+Returning complete scalar expansion ($(my_choice) => true)
+
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+CopyRvalItem(s)
+DeleteRvalItem(s)true
+   Appending Constraint: create => true
+Evaluate(any) -> 1
+  Verify Constrant name ifvarclass
+  Verify Constrant name handle
+
+    .........................................................
+cf3>     Promise's handle: 
+cf3>     Promise made by: "/tmp/testfile"    .........................................................
+
+  Verify Constrant name pathtype
+Evaluate(any) -> 1
+  Verify Constrant name pathtype
+LocateFilePromiserGroup(/tmp/testfile)
+ -> Using literal pathtype for /tmp/testfile
+  Verify Constrant name edit_template
+  Verify Constrant name repository
+Evaluate(any) -> 1
+  Verify Constrant name transformer
+  Verify Constrant name pathtype
+  Verify Constrant name acl_method
+  Verify Constrant name acl_type
+  Verify Constrant name acl_directory_inherit
+  Verify Constrant name mode
+  Verify Constrant name owners
+  Verify Constrant name groups
+  Verify Constrant name findertype
+  Verify Constrant name rxdirs
+  Verify Constrant name leaf_name
+  Verify Constrant name path_name
+  Verify Constrant name file_types
+  Verify Constrant name issymlinkto
+  Verify Constrant name search_owners
+  Verify Constrant name search_groups
+  Verify Constrant name search_size
+  Verify Constrant name ctime
+  Verify Constrant name atime
+  Verify Constrant name mtime
+  Verify Constrant name exec_regex
+  Verify Constrant name exec_program
+  Verify Constrant name file_result
+  Verify Constrant name dirlinks
+  Verify Constrant name disable_mode
+  Verify Constrant name disable_suffix
+  Verify Constrant name newname
+  Verify Constrant name hash
+  Verify Constrant name report_changes
+  Verify Constrant name update_hashes
+  Verify Constrant name source
+  Verify Constrant name compare
+  Verify Constrant name link_type
+  Verify Constrant name copy_backup
+  Verify Constrant name copy_size
+  Verify Constrant name source
+  Verify Constrant name link_type
+  Verify Constrant name when_no_source
+  Verify Constrant name when_linking_children
+  Verify Constrant name edit_backup
+  Verify Constrant name action_policy
+  Verify Constrant name log_string
+  Verify Constrant name log_priority
+  Verify Constrant name log_kept
+  Verify Constrant name log_repaired
+  Verify Constrant name log_failed
+  Verify Constrant name log_level
+  Verify Constrant name report_level
+  Verify Constrant name measurement_class
+  Verify Constrant name timer_policy
+.....................................................
+File Attribute Set =
+
+ * havecreate
+.....................................................
+
+  Verify Constrant name mode
+ -> No mode was set, choose plain file default 600
+Trying to create a parent directory for /tmp/testfileDirectory for /tmp/testfile exists. Okay
+ -> Created file /tmp/testfile, mode = 600
+ClassAuditLog( -> Created file /tmp/testfile, mode = 600)
+ -> Direct file reference /tmp/testfile, no search implied
+ -> Handling file existence constraints on /tmp/testfile
+Searching for scope context this
+Found scope reference this
+Attempt to delete non-existent variable promiser in scope this
+NewScalar(this,promiser,/tmp/testfile)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser) type=(to be determined)
+IsExpandable(promiser) - syntax verify
+Found 0 variables in (promiser)
+Looking for this.promiser
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser): using scope 'this' for variable 'promiser'
+No such variable found this.promiser
+
+AddVariableHash(this.promiser=/tmp/testfile (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser in scope this with value (omitted)
+Searching for scope context this
+Found scope reference this
+ ----> Delete variable association promiser
+DeleteRvalItem(s)/tmp/testfile
+CompareToFile(/var/cfengine/cfagent.mil-mail01.log)
+  Verify Constrant name measurement_class
+DeletePromise(/tmp/testfile->[X])
+DeleteConstraintList()
+Delete lval = create,s
+DeleteRvalItem(s)true
+Deleting scope this
+Object this exists
+ ----> Delete variable association my_choice
+DeleteRvalItem(s)true
+ ----> Delete variable association handle
+DeleteRvalItem(s)
+ ----> Delete variable association promise_filename
+DeleteRvalItem(s)./temp.cf
+ ----> Delete variable association promise_linenumber
+DeleteRvalItem(s)15
+ ----> Delete variable association promiser_uid
+DeleteRvalItem(s)0
+ ----> Delete variable association promiser_gid
+DeleteRvalItem(s)0
+Deleting scope this
+No such scope to delete
+DeletePromise(/tmp/testfile->[ ])
+DeleteConstraintList()
+Delete lval = create,s
+DeleteRvalItem(s)$(my_choice)
+DeleteRvalItem(s)my_choice
+
+   =========================================================
+   vars in bundle example (2)
+   =========================================================
+
+****************************************************
+* ExpandPromises (scope = example )
+****************************************************
+
+Deleting scope match
+No such scope to delete
+CopyPromise(my_choice->)
+Copying promise constraints
+
+CopyRvalItem(s)
+   Appending Constraint: string => true
+MapIteratorsFromScalar("my_choice", 0)
+MapIteratorsFromScalar("true", 0)
+Searching for scope context this
+Found scope reference this
+  Verify Constrant name handle
+
+*
+NewIterationContext(from example)
+*
+
+*
+Copying scope data example to this
+*
+Adding scope data this
+Searching for scope context example
+Found scope reference example
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+No lists to iterate over
+NewScalar(this,handle,)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,handle) type=(to be determined)
+IsExpandable(handle) - syntax verify
+Found 0 variables in (handle)
+Looking for this.handle
+Searching for scope context this
+Found scope reference this
+GetVariable(this,handle): using scope 'this' for variable 'handle'
+No such variable found this.handle
+
+AddVariableHash(this.handle= (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable handle in scope this with value (omitted)
+NewScalar(this,promise_filename,./temp.cf)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_filename) type=(to be determined)
+IsExpandable(promise_filename) - syntax verify
+Found 0 variables in (promise_filename)
+Looking for this.promise_filename
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_filename): using scope 'this' for variable 'promise_filename'
+No such variable found this.promise_filename
+
+AddVariableHash(this.promise_filename=./temp.cf (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_filename in scope this with value (omitted)
+NewScalar(this,promise_linenumber,7)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_linenumber) type=(to be determined)
+IsExpandable(promise_linenumber) - syntax verify
+Found 0 variables in (promise_linenumber)
+Looking for this.promise_linenumber
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_linenumber): using scope 'this' for variable 'promise_linenumber'
+No such variable found this.promise_linenumber
+
+AddVariableHash(this.promise_linenumber=7 (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_linenumber in scope this with value (omitted)
+NewScalar(this,promiser_uid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_uid) type=(to be determined)
+IsExpandable(promiser_uid) - syntax verify
+Found 0 variables in (promiser_uid)
+Looking for this.promiser_uid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_uid): using scope 'this' for variable 'promiser_uid'
+No such variable found this.promiser_uid
+
+AddVariableHash(this.promiser_uid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_uid in scope this with value (omitted)
+NewScalar(this,promiser_gid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_gid) type=(to be determined)
+IsExpandable(promiser_gid) - syntax verify
+Found 0 variables in (promiser_gid)
+Looking for this.promiser_gid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_gid): using scope 'this' for variable 'promiser_gid'
+No such variable found this.promiser_gid
+
+AddVariableHash(this.promiser_gid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_gid in scope this with value (omitted)
+ExpandDerefPromise()
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,my_choice)
+  Aggregate result |my_choice|, scanning at "" (current delta my_choice)
+Returning complete scalar expansion (my_choice => my_choice)
+
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+CopyRvalItem(s)
+DeleteRvalItem(s)true
+   Appending Constraint: string => true
+Evaluate(any) -> 1
+  Verify Constrant name ifvarclass
+Evaluate(any) -> 1
+  Verify Constrant name timer_policy
+CopyRvalItem(s)
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=example,type=s)
+
+ExpandPrivateScalar(example,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+DeleteRvalItem(s)true
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Deleting scope match
+No such scope to delete
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,my_choice)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=my_choice (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = my_choice
+typename2type(string)
+AddVariableHash(example.my_choice=true (string) rtype=s)
+Searching for scope context example
+Found scope reference example
+Added Variable my_choice in scope example with value (omitted)
+ClassAuditLog( -> Added variable my_choice)
+DeleteRvalItem(s)true
+Evaluate(any) -> 1
+  Verify Constrant name timer_policy
+CopyRvalItem(s)
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=example,type=s)
+
+ExpandPrivateScalar(example,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+DeleteRvalItem(s)true
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)my_choice
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,my_choice)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=my_choice (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = my_choice
+typename2type(string)
+AddVariableHash(example.my_choice=true (string) rtype=s)
+Searching for scope context example
+Found scope reference example
+Added Variable my_choice in scope example with value (omitted)
+ClassAuditLog( -> Added variable my_choice)
+DeleteRvalItem(s)true
+DeletePromise(my_choice->[X])
+DeleteConstraintList()
+Delete lval = string,s
+DeleteRvalItem(s)true
+Deleting scope this
+Object this exists
+ ----> Delete variable association my_choice
+DeleteRvalItem(s)true
+ ----> Delete variable association handle
+DeleteRvalItem(s)
+ ----> Delete variable association promise_filename
+DeleteRvalItem(s)./temp.cf
+ ----> Delete variable association promise_linenumber
+DeleteRvalItem(s)7
+ ----> Delete variable association promiser_uid
+DeleteRvalItem(s)0
+ ----> Delete variable association promiser_gid
+DeleteRvalItem(s)0
+Deleting scope this
+No such scope to delete
+DeletePromise(my_choice->[ ])
+DeleteConstraintList()
+Delete lval = string,s
+DeleteRvalItem(s)true
+
+     +  Private classes augmented:
+
+     -  Private classes diminished:
+
+     ?  Public class context:
+     ?       192_168_40_129
+     ?       1_cpu
+     ?       32_bit
+     ?       Afternoon
+     ?       Day22
+     ?       GMT_Hr23
+     ?       Hr16
+     ?       Hr16_Q4
+     ?       Lcycle_2
+     ?       Min45
+     ?       Min45_50
+     ?       Monday
+     ?       October
+     ?       PK_MD5_52298128837db3af8c09af5188808e9d
+     ?       Q4
+     ?       Yr2012
+     ?       agent
+     ?       any
+     ?       centos
+     ?       centos_5
+     ?       centos_5_4
+     ?       cfengine
+     ?       cfengine_3
+     ?       cfengine_3_3
+     ?       cfengine_3_3_8
+     ?       community_edition
+     ?       compiled_on_linux_gnu
+     ?       debug_mode
+     ?       fe80__20c_29ff_feae_985d
+     ?       i686
+     ?       ipv4_192
+     ?       ipv4_192_168
+     ?       ipv4_192_168_40
+     ?       ipv4_192_168_40_129
+     ?       linux
+     ?       linux_2_6_18_164_15_1_el5
+     ?       linux_i686
+     ?       linux_i686_2_6_18_164_15_1_el5
+     ?       linux_i686_2_6_18_164_15_1_el5__1_SMP_Wed_Mar_17_11_37_14_EDT_2010
+     ?       mac_00_0c_29_ae_98_5d
+     ?       mil_mail01
+     ?       net_iface_eth0
+     ?       opt_debug
+     ?       redhat
+
+
+   =========================================================
+   files in bundle example (2)
+   =========================================================
+
+****************************************************
+* ExpandPromises (scope = example )
+****************************************************
+
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)my_choice
+CopyPromise(/tmp/testfile->)
+Copying promise constraints
+
+CopyRvalItem(s)
+   Appending Constraint: create => $(my_choice)
+MapIteratorsFromScalar("/tmp/testfile", 0)
+MapIteratorsFromScalar("$(my_choice)", 0)
+ExtractInnerVarString( $(my_choice) ) - syntax verify
+Returning substring value my_choice
+
+ExpandPrivateScalar(example,my_choice)
+  Aggregate result |my_choice|, scanning at "" (current delta my_choice)
+Returning complete scalar expansion (my_choice => my_choice)
+
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+Scalar variable $(my_choice) found
+Appending scalar to rval-list [my_choice]
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+  Verify Constrant name handle
+
+*
+NewIterationContext(from example)
+*
+
+*
+Copying scope data example to this
+*
+Adding scope data this
+Searching for scope context example
+Found scope reference example
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+No lists to iterate over
+NewScalar(this,handle,)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,handle) type=(to be determined)
+IsExpandable(handle) - syntax verify
+Found 0 variables in (handle)
+Looking for this.handle
+Searching for scope context this
+Found scope reference this
+GetVariable(this,handle): using scope 'this' for variable 'handle'
+No such variable found this.handle
+
+AddVariableHash(this.handle= (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable handle in scope this with value (omitted)
+NewScalar(this,promise_filename,./temp.cf)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_filename) type=(to be determined)
+IsExpandable(promise_filename) - syntax verify
+Found 0 variables in (promise_filename)
+Looking for this.promise_filename
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_filename): using scope 'this' for variable 'promise_filename'
+No such variable found this.promise_filename
+
+AddVariableHash(this.promise_filename=./temp.cf (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_filename in scope this with value (omitted)
+NewScalar(this,promise_linenumber,15)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_linenumber) type=(to be determined)
+IsExpandable(promise_linenumber) - syntax verify
+Found 0 variables in (promise_linenumber)
+Looking for this.promise_linenumber
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_linenumber): using scope 'this' for variable 'promise_linenumber'
+No such variable found this.promise_linenumber
+
+AddVariableHash(this.promise_linenumber=15 (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_linenumber in scope this with value (omitted)
+NewScalar(this,promiser_uid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_uid) type=(to be determined)
+IsExpandable(promiser_uid) - syntax verify
+Found 0 variables in (promiser_uid)
+Looking for this.promiser_uid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_uid): using scope 'this' for variable 'promiser_uid'
+No such variable found this.promiser_uid
+
+AddVariableHash(this.promiser_uid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_uid in scope this with value (omitted)
+NewScalar(this,promiser_gid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_gid) type=(to be determined)
+IsExpandable(promiser_gid) - syntax verify
+Found 0 variables in (promiser_gid)
+Looking for this.promiser_gid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_gid): using scope 'this' for variable 'promiser_gid'
+No such variable found this.promiser_gid
+
+AddVariableHash(this.promiser_gid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_gid in scope this with value (omitted)
+ExpandDerefPromise()
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,/tmp/testfile)
+  Aggregate result |/tmp/testfile|, scanning at "" (current delta /tmp/testfile)
+Returning complete scalar expansion (/tmp/testfile => /tmp/testfile)
+
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,$(my_choice))
+  Aggregate result ||, scanning at "$(my_choice)" (current delta )
+ExtractOuterVarString("$(my_choice)") - syntax verify
+Extracted outer variable |$(my_choice)|
+ExtractInnerVarString( $(my_choice) ) - syntax verify
+Returning substring value my_choice
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+  Delta - my_choice
+
+GetVariable(this,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for this.my_choice
+Searching for scope context this
+Found scope reference this
+GetVariable(this,my_choice): using scope 'this' for variable 'my_choice'
+return final variable type=string, value={
+true}
+Returning complete scalar expansion ($(my_choice) => true)
+
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+CopyRvalItem(s)
+DeleteRvalItem(s)true
+   Appending Constraint: create => true
+Evaluate(any) -> 1
+DeletePromise(/tmp/testfile->[X])
+DeleteConstraintList()
+Delete lval = create,s
+DeleteRvalItem(s)true
+Deleting scope this
+Object this exists
+ ----> Delete variable association my_choice
+DeleteRvalItem(s)true
+ ----> Delete variable association handle
+DeleteRvalItem(s)
+ ----> Delete variable association promise_filename
+DeleteRvalItem(s)./temp.cf
+ ----> Delete variable association promise_linenumber
+DeleteRvalItem(s)15
+ ----> Delete variable association promiser_uid
+DeleteRvalItem(s)0
+ ----> Delete variable association promiser_gid
+DeleteRvalItem(s)0
+Deleting scope this
+No such scope to delete
+DeletePromise(/tmp/testfile->[ ])
+DeleteConstraintList()
+Delete lval = create,s
+DeleteRvalItem(s)$(my_choice)
+DeleteRvalItem(s)my_choice
+
+   =========================================================
+   vars in bundle example (3)
+   =========================================================
+
+****************************************************
+* ExpandPromises (scope = example )
+****************************************************
+
+Deleting scope match
+No such scope to delete
+CopyPromise(my_choice->)
+Copying promise constraints
+
+CopyRvalItem(s)
+   Appending Constraint: string => true
+MapIteratorsFromScalar("my_choice", 0)
+MapIteratorsFromScalar("true", 0)
+Searching for scope context this
+Found scope reference this
+  Verify Constrant name handle
+
+*
+NewIterationContext(from example)
+*
+
+*
+Copying scope data example to this
+*
+Adding scope data this
+Searching for scope context example
+Found scope reference example
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+No lists to iterate over
+NewScalar(this,handle,)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,handle) type=(to be determined)
+IsExpandable(handle) - syntax verify
+Found 0 variables in (handle)
+Looking for this.handle
+Searching for scope context this
+Found scope reference this
+GetVariable(this,handle): using scope 'this' for variable 'handle'
+No such variable found this.handle
+
+AddVariableHash(this.handle= (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable handle in scope this with value (omitted)
+NewScalar(this,promise_filename,./temp.cf)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_filename) type=(to be determined)
+IsExpandable(promise_filename) - syntax verify
+Found 0 variables in (promise_filename)
+Looking for this.promise_filename
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_filename): using scope 'this' for variable 'promise_filename'
+No such variable found this.promise_filename
+
+AddVariableHash(this.promise_filename=./temp.cf (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_filename in scope this with value (omitted)
+NewScalar(this,promise_linenumber,7)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_linenumber) type=(to be determined)
+IsExpandable(promise_linenumber) - syntax verify
+Found 0 variables in (promise_linenumber)
+Looking for this.promise_linenumber
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_linenumber): using scope 'this' for variable 'promise_linenumber'
+No such variable found this.promise_linenumber
+
+AddVariableHash(this.promise_linenumber=7 (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_linenumber in scope this with value (omitted)
+NewScalar(this,promiser_uid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_uid) type=(to be determined)
+IsExpandable(promiser_uid) - syntax verify
+Found 0 variables in (promiser_uid)
+Looking for this.promiser_uid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_uid): using scope 'this' for variable 'promiser_uid'
+No such variable found this.promiser_uid
+
+AddVariableHash(this.promiser_uid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_uid in scope this with value (omitted)
+NewScalar(this,promiser_gid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_gid) type=(to be determined)
+IsExpandable(promiser_gid) - syntax verify
+Found 0 variables in (promiser_gid)
+Looking for this.promiser_gid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_gid): using scope 'this' for variable 'promiser_gid'
+No such variable found this.promiser_gid
+
+AddVariableHash(this.promiser_gid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_gid in scope this with value (omitted)
+ExpandDerefPromise()
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,my_choice)
+  Aggregate result |my_choice|, scanning at "" (current delta my_choice)
+Returning complete scalar expansion (my_choice => my_choice)
+
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+CopyRvalItem(s)
+DeleteRvalItem(s)true
+   Appending Constraint: string => true
+Evaluate(any) -> 1
+  Verify Constrant name ifvarclass
+Evaluate(any) -> 1
+  Verify Constrant name timer_policy
+CopyRvalItem(s)
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=example,type=s)
+
+ExpandPrivateScalar(example,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+DeleteRvalItem(s)true
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Deleting scope match
+No such scope to delete
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,my_choice)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=my_choice (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = my_choice
+typename2type(string)
+AddVariableHash(example.my_choice=true (string) rtype=s)
+Searching for scope context example
+Found scope reference example
+Added Variable my_choice in scope example with value (omitted)
+ClassAuditLog( -> Added variable my_choice)
+DeleteRvalItem(s)true
+Evaluate(any) -> 1
+  Verify Constrant name timer_policy
+CopyRvalItem(s)
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=example,type=s)
+
+ExpandPrivateScalar(example,true)
+  Aggregate result |true|, scanning at "" (current delta true)
+Returning complete scalar expansion (true => true)
+
+DeleteRvalItem(s)true
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)my_choice
+Adding scope data match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+NewScalar(match,0,my_choice)
+Searching for scope context match
+Found scope reference match
+
+GetVariable(match,0) type=(to be determined)
+IsExpandable(0) - syntax verify
+Found 0 variables in (0)
+Looking for match.0
+Searching for scope context match
+Found scope reference match
+GetVariable(match,0): using scope 'match' for variable '0'
+No such variable found match.0
+
+AddVariableHash(match.0=my_choice (string) rtype=s)
+Searching for scope context match
+Found scope reference match
+CopyRvalItem(s)
+Added Variable 0 in scope match with value (omitted)
+Setting local variable "match.0" context; $(0) = my_choice
+typename2type(string)
+AddVariableHash(example.my_choice=true (string) rtype=s)
+Searching for scope context example
+Found scope reference example
+Added Variable my_choice in scope example with value (omitted)
+ClassAuditLog( -> Added variable my_choice)
+DeleteRvalItem(s)true
+DeletePromise(my_choice->[X])
+DeleteConstraintList()
+Delete lval = string,s
+DeleteRvalItem(s)true
+Deleting scope this
+Object this exists
+ ----> Delete variable association my_choice
+DeleteRvalItem(s)true
+ ----> Delete variable association handle
+DeleteRvalItem(s)
+ ----> Delete variable association promise_filename
+DeleteRvalItem(s)./temp.cf
+ ----> Delete variable association promise_linenumber
+DeleteRvalItem(s)7
+ ----> Delete variable association promiser_uid
+DeleteRvalItem(s)0
+ ----> Delete variable association promiser_gid
+DeleteRvalItem(s)0
+Deleting scope this
+No such scope to delete
+DeletePromise(my_choice->[ ])
+DeleteConstraintList()
+Delete lval = string,s
+DeleteRvalItem(s)true
+
+     +  Private classes augmented:
+
+     -  Private classes diminished:
+
+     ?  Public class context:
+     ?       192_168_40_129
+     ?       1_cpu
+     ?       32_bit
+     ?       Afternoon
+     ?       Day22
+     ?       GMT_Hr23
+     ?       Hr16
+     ?       Hr16_Q4
+     ?       Lcycle_2
+     ?       Min45
+     ?       Min45_50
+     ?       Monday
+     ?       October
+     ?       PK_MD5_52298128837db3af8c09af5188808e9d
+     ?       Q4
+     ?       Yr2012
+     ?       agent
+     ?       any
+     ?       centos
+     ?       centos_5
+     ?       centos_5_4
+     ?       cfengine
+     ?       cfengine_3
+     ?       cfengine_3_3
+     ?       cfengine_3_3_8
+     ?       community_edition
+     ?       compiled_on_linux_gnu
+     ?       debug_mode
+     ?       fe80__20c_29ff_feae_985d
+     ?       i686
+     ?       ipv4_192
+     ?       ipv4_192_168
+     ?       ipv4_192_168_40
+     ?       ipv4_192_168_40_129
+     ?       linux
+     ?       linux_2_6_18_164_15_1_el5
+     ?       linux_i686
+     ?       linux_i686_2_6_18_164_15_1_el5
+     ?       linux_i686_2_6_18_164_15_1_el5__1_SMP_Wed_Mar_17_11_37_14_EDT_2010
+     ?       mac_00_0c_29_ae_98_5d
+     ?       mil_mail01
+     ?       net_iface_eth0
+     ?       opt_debug
+     ?       redhat
+
+
+   =========================================================
+   files in bundle example (3)
+   =========================================================
+
+****************************************************
+* ExpandPromises (scope = example )
+****************************************************
+
+Deleting scope match
+Object match exists
+ ----> Delete variable association 0
+DeleteRvalItem(s)my_choice
+CopyPromise(/tmp/testfile->)
+Copying promise constraints
+
+CopyRvalItem(s)
+   Appending Constraint: create => $(my_choice)
+MapIteratorsFromScalar("/tmp/testfile", 0)
+MapIteratorsFromScalar("$(my_choice)", 0)
+ExtractInnerVarString( $(my_choice) ) - syntax verify
+Returning substring value my_choice
+
+ExpandPrivateScalar(example,my_choice)
+  Aggregate result |my_choice|, scanning at "" (current delta my_choice)
+Returning complete scalar expansion (my_choice => my_choice)
+
+
+GetVariable(example,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for example.my_choice
+Searching for scope context example
+Found scope reference example
+GetVariable(example,my_choice): using scope 'example' for variable 'my_choice'
+return final variable type=string, value={
+true}
+Scalar variable $(my_choice) found
+Appending scalar to rval-list [my_choice]
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+  Verify Constrant name handle
+
+*
+NewIterationContext(from example)
+*
+
+*
+Copying scope data example to this
+*
+Adding scope data this
+Searching for scope context example
+Found scope reference example
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Searching for scope context this
+Found scope reference this
+No lists to iterate over
+NewScalar(this,handle,)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,handle) type=(to be determined)
+IsExpandable(handle) - syntax verify
+Found 0 variables in (handle)
+Looking for this.handle
+Searching for scope context this
+Found scope reference this
+GetVariable(this,handle): using scope 'this' for variable 'handle'
+No such variable found this.handle
+
+AddVariableHash(this.handle= (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable handle in scope this with value (omitted)
+NewScalar(this,promise_filename,./temp.cf)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_filename) type=(to be determined)
+IsExpandable(promise_filename) - syntax verify
+Found 0 variables in (promise_filename)
+Looking for this.promise_filename
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_filename): using scope 'this' for variable 'promise_filename'
+No such variable found this.promise_filename
+
+AddVariableHash(this.promise_filename=./temp.cf (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_filename in scope this with value (omitted)
+NewScalar(this,promise_linenumber,15)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promise_linenumber) type=(to be determined)
+IsExpandable(promise_linenumber) - syntax verify
+Found 0 variables in (promise_linenumber)
+Looking for this.promise_linenumber
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promise_linenumber): using scope 'this' for variable 'promise_linenumber'
+No such variable found this.promise_linenumber
+
+AddVariableHash(this.promise_linenumber=15 (string) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promise_linenumber in scope this with value (omitted)
+NewScalar(this,promiser_uid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_uid) type=(to be determined)
+IsExpandable(promiser_uid) - syntax verify
+Found 0 variables in (promiser_uid)
+Looking for this.promiser_uid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_uid): using scope 'this' for variable 'promiser_uid'
+No such variable found this.promiser_uid
+
+AddVariableHash(this.promiser_uid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_uid in scope this with value (omitted)
+NewScalar(this,promiser_gid,0)
+Searching for scope context this
+Found scope reference this
+
+GetVariable(this,promiser_gid) type=(to be determined)
+IsExpandable(promiser_gid) - syntax verify
+Found 0 variables in (promiser_gid)
+Looking for this.promiser_gid
+Searching for scope context this
+Found scope reference this
+GetVariable(this,promiser_gid): using scope 'this' for variable 'promiser_gid'
+No such variable found this.promiser_gid
+
+AddVariableHash(this.promiser_gid=0 (int) rtype=s)
+Searching for scope context this
+Found scope reference this
+CopyRvalItem(s)
+Added Variable promiser_gid in scope this with value (omitted)
+ExpandDerefPromise()
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,/tmp/testfile)
+  Aggregate result |/tmp/testfile|, scanning at "" (current delta /tmp/testfile)
+Returning complete scalar expansion (/tmp/testfile => /tmp/testfile)
+
+EvaluateFinalRval -- type s
+ExpandPrivateRval(scope=this,type=s)
+
+ExpandPrivateScalar(this,$(my_choice))
+  Aggregate result ||, scanning at "$(my_choice)" (current delta )
+ExtractOuterVarString("$(my_choice)") - syntax verify
+Extracted outer variable |$(my_choice)|
+ExtractInnerVarString( $(my_choice) ) - syntax verify
+Returning substring value my_choice
+IsCf3VarString(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+  Delta - my_choice
+
+GetVariable(this,my_choice) type=(to be determined)
+IsExpandable(my_choice) - syntax verify
+Found 0 variables in (my_choice)
+Looking for this.my_choice
+Searching for scope context this
+Found scope reference this
+GetVariable(this,my_choice): using scope 'this' for variable 'my_choice'
+return final variable type=string, value={
+true}
+Returning complete scalar expansion ($(my_choice) => true)
+
+IsCf3VarString(true) - syntax verify
+Found 0 variables in (true)
+CopyRvalItem(s)
+DeleteRvalItem(s)true
+   Appending Constraint: create => true
+Evaluate(any) -> 1
+DeletePromise(/tmp/testfile->[X])
+DeleteConstraintList()
+Delete lval = create,s
+DeleteRvalItem(s)true
+Deleting scope this
+Object this exists
+ ----> Delete variable association my_choice
+DeleteRvalItem(s)true
+ ----> Delete variable association handle
+DeleteRvalItem(s)
+ ----> Delete variable association promise_filename
+DeleteRvalItem(s)./temp.cf
+ ----> Delete variable association promise_linenumber
+DeleteRvalItem(s)15
+ ----> Delete variable association promiser_uid
+DeleteRvalItem(s)0
+ ----> Delete variable association promiser_gid
+DeleteRvalItem(s)0
+Deleting scope this
+No such scope to delete
+DeletePromise(/tmp/testfile->[ ])
+DeleteConstraintList()
+Delete lval = create,s
+DeleteRvalItem(s)$(my_choice)
+DeleteRvalItem(s)my_choice
+ ==> == Bundle Accounting Summary for "example" ==
+ ==> Promises kept in "example" = 0
+ ==> Promises not kept in "example" = 0
+ ==> Promises repaired in "example" = 1
+ ==> Aggregate compliance (promises kept/repaired) for bundle "example" = 100.0%
+
+GetVariable(control_agent,track_value) type=(to be determined)
+IsExpandable(track_value) - syntax verify
+Found 0 variables in (track_value)
+Looking for control_agent.track_value
+Searching for scope context control_agent
+Found scope reference control_agent
+GetVariable(control_agent,track_value): using scope 'control_agent' for variable 'track_value'
+No such variable found control_agent.track_value
+
+
+GetVariable(control_common,version) type=(to be determined)
+IsExpandable(version) - syntax verify
+Found 0 variables in (version)
+Looking for control_common.version
+Searching for scope context control_common
+Scope for variable "control_common.version" does not seem to exist
+Outcome of version (not specified) (agent-0): Promises observed to be kept 0%, Promises repaired 100%, Promises not repaired 0%
+ClassAuditLog(Outcome of version (not specified) (agent-0): Promises observed to be kept 0%, Promises repaired 100%, Promises not repaired 0%)
+ClassAuditLog(Cfagent closing)
+ -> Checked 1 objects with 2 promises, i.e. model efficiency 33.33%
+ -> The 2 declared promise patterns actually expanded into 1 individual promises, i.e. declaration efficiency -100.00%
+ -> No lock purging scheduled
+GenericDeInitialize()
+]0;root@mil-mail01:~/design-center/examples/verticalsysadmin_training_examples[root@mil-mail01 verticalsysadmin_training_examples]# 
+]0;root@mil-mail01:~/design-center/examples/verticalsysadmin_training_examples[root@mil-mail01 verticalsysadmin_training_examples]# exit
+
+Script done on Mon 22 Oct 2012 04:46:02 PM PDT

@@ -1,0 +1,109 @@
+TO DO:
+
+- Provide a VM with vim installed, with GUI environment, and with vim syntax highlighter installed.
+
+-----------------------------------------------------------
+
+if you put a sequence of signals like
+
+  signals => { "term", "kill" }
+
+how long does CFEngine wait after sending TERM before
+sending KILL?
+
+-----------------------------------------------------------
+
+give an example of shutting down cups and disabling it in a more portable way
+
+chkconfig is a red hat thing
+
+add to cfengine_stdlib.cf standard_services bundle  "disable" handling
+
+--------
+040-0051_Notes_on_Running.__normal_ordering.cf OUT GRADIENT	ZZ
+
+-----------
+080-0172
+:%s/file.tmpl/hello.tmpl/g
+:%s/file.txt/hello.txt/g
+
+----
+where does CFEngine get its lifecycle information?  (3 year lifecycle)
+
+
+
+bundle agent example {
+
+classes: 
+
+  "one-two"
+
+       expression => "any";
+
+reports:
+
+  one_two::
+
+         "Yay!";
+
+
+                     }
+
+cf3> 
+cf3>    =========================================================
+cf3>    classes in bundle example (3)
+cf3>    =========================================================
+cf3> 
+cf3> Class identifier "mil-mail01" contains illegal characters - canonifying
+cf3> Initiate variable convergence...
+cf3> 
+cf3>      +  Private classes augmented:
+cf3> 
+cf3>      -  Private classes diminished:
+cf3> 
+
+
+chapter 100 is out of order, shold be after body-parts
+
+----------------------
+
+how about making promise attributes comma delimited, in body parts?  that
+would be harmonious to how they are detailed in the promise body
+
+---------------------------
+
+add an index to the reference manual (cfengine reserved word index)
+
+---------------------------
+
+500 data types should be before Body Parts (because body parts examples
+contain lists)
+
+0-----
+
+reference value mentions "first, last, all" in comments in examples
+as possible values for "occurrences" but now it is only "first, all"
+
+----
+add more exericses to the course	
+
+-----------
+
+parser:
+
+students type "body agent" instead of "bundle agent" sometimes
+
+(but we do want to be able to say "body agent control")
+
+
+--------
+
+according to 3.3.8 cf-promises, this is a valid promise:
+
+bundle agent myname {
+
+files:
+
+}
+
+----
