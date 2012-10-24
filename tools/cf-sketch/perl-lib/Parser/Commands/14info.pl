@@ -56,8 +56,8 @@ sub command_info {
           if $rec->{version};
         print BLUE."License: ".RESET.$rec->{license}."\n"
           if $rec->{license};
-        print BLUE."Tags: ".RESET.join(", ", @{$rec->{portfolio} or $rec->{tags}})."\n"
-          if $rec->{portfolio} or $rec->{tags};
+        print BLUE."Tags: ".RESET.join(", ", @{$rec->{tags}})."\n"
+          if $rec->{tags};
 # TODO: FIX dependency printing
 #        print BLUE."Dependencies: ".RESET.join(", ", map { $_->{value} } DesignCenter::JSON::recurse_print($rec->{depends}, undef, 1))."\n"
 #          if $rec->{depends};

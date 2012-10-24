@@ -15,7 +15,7 @@
 	"description": "Create and keep Yum repository metadata up to date",
         "version": 2.2,
         "license": "MIT",
-        "portfolio": [ "cfdc" ],
+        "tags": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "tested": [ "redhat_5", "centos_5" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },

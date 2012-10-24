@@ -15,7 +15,7 @@
         "description": "Check out and update a VCS repository.",
         "version": 1.11,
         "license": "MIT",
-        "portfolio": [ "cfdc" ],
+        "tags": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 },
                      "cfengine": { "version": "3.4.0" }
