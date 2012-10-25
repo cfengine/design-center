@@ -1,0 +1,27 @@
+
+bundle agent example {
+
+vars:
+
+   "name"
+
+     string =>  "Micah",
+     policy =>  "overridable";
+
+
+   "name"
+
+     string =>  "Brian",
+     policy =>  "overridable";
+
+
+
+reports:
+
+  linux::
+  
+   "$(name)";
+
+
+}
+

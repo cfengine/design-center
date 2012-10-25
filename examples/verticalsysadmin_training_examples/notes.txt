@@ -107,3 +107,64 @@ files:
 }
 
 ----
+
+in 3.3.8, this creates a directory but does not tell us
+
+it should say:
+  -> Created directory /tmp/etc
+
+Press ENTER or type command to continue
+ >> Using command line specified bundlesequence
+ -> Created file /tmp/etc/motd, mode = 600
+R: All systems nominal
+
+
+------------------
+
+how do you cancel a persistent class?
+
+(add a demo)
+
+------------------
+
+put the COPBL section in logical order.  remove the file select example to an
+Appendix section
+
+------------------------
+Ask neil watson if he could make the vim syntax highlighter 
+warn us if we use anything other than a cfengine reserved 
+word on the LHS.
+--------------------------
+
+Array of lists example does not work
+
+------------------------------
+
+top of page 29
+
+action => if_repaired
+
+should be
+
+classes => if_repaired
+
+------------------------------
+
+discuss default bundlesequence (run all the bundles in the input file in the
+order they appear) on the help-cfengine mailing list
+
+
+---
+
+
+it would be nice if methods type promises, the promiser defaulted to
+"any"
+
+---
+
+question from Shing and Ammon, cleanup of /var/cfengine/outputs results
+in a non-zero Promises Repaired percentage.  How to separate the promises
+related to cfengine's internal maintenance from system repair promises?
+
+---
+

@@ -33,4 +33,9 @@ bundle agent lock_user(user) {
 
             edit_line => set_user_field("$(user)",2,"!LOCKED");
 
+  files:
+
+      "/etc/passwd"
+
+            edit_line => set_user_field("$(user)",7,"/bin/false");
                              }

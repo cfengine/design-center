@@ -7,6 +7,8 @@ bundle agent example {
 commands: 
 
   "/bin/date";
+
+#  "/bin/date"
 #      contain => silent;
 
 }
