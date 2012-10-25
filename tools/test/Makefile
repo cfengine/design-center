@@ -1,9 +1,15 @@
 SOURCEDIR:=`pwd`/../../sketches
-RUNFILE:=~/.cfagent/inputs/standalone-cf-sketch-runfile.cf
 
 CFPATH:=$(dirname $(which cf-agent))
+
 ifeq ($(CFPATH),)
   CFPATH:=/var/cfengine/bin
+endif
+
+RUNFILE:=~/.cfagent/inputs/standalone-cf-sketch-runfile.cf
+
+ifeq ($(LOGNAME),"root")
+  RUNFILE:=/var/cfengine/inputs/standalone-cf-sketch-runfile.cf
 endif
 
 CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH)
