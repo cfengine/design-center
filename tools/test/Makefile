@@ -8,7 +8,7 @@ endif
 
 RUNFILE:=~/.cfagent/inputs/standalone-cf-sketch-runfile.cf
 
-ifeq ($(LOGNAME),"root")
+ifeq ($(LOGNAME),root)
   RUNFILE:=/var/cfengine/inputs/standalone-cf-sketch-runfile.cf
 endif
 
