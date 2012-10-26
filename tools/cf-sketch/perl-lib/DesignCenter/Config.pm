@@ -127,44 +127,38 @@ my @options_desc =
    "---", "\nPlease see https://github.com/cfengine/design-center/wiki for the full cf-sketch documentation.",
   );
 
+# Extend %fields with the options from @options_desc
+{
+  my %opt_desc = @options_desc;
+  foreach my $k (keys %opt_desc) {
+    next if $k =~ /^--/;
+    $k = (split /[:=|!]/, $k)[0];
+    $fields{$k} = undef unless exists($fields{$k});
+  }
+}
+
 ######################################################################
 
-# Automatically generate setters/getters, i.e. MAGIC
-sub AUTOLOAD {
-  my $self = shift;
-  my $type = ref($self) || $self;
-
-  # If an object was given, use it, otherwise access the class-global
-  # options storage
-  my $what = ref($self) ? $self : $object;
-
-  my $name = $AUTOLOAD;
-  $name =~ s/.*://;             # strip fully-qualified portion
-
-  unless (exists $what->{_permitted}->{$name} ) {
-    croak "Can't access `$name' field in class $type";
-  }
-
-  if (@_) {
-    return $what->{$name} = shift;
-  } else {
-    return $what->{$name};
-  }
+# Create accessors for the defined fields
+for my $f (keys %fields) {
+  *{"$f"} = sub {
+    my $self = shift;
+    # If an object was given, use it, otherwise access the class-global
+    # options storage
+    my $what = ref($self) ? $self : $object;
+    if (@_) {
+      return $what->{$f} = shift;
+    } else {
+      return $what->{$f};
+    }
+  };
 }
 
 sub init {
   my $configfile = shift;
   unless ($init_ran) {
-    # Extend %fields with the options from @options_desc
-    my %opt_desc = @options_desc;
-    foreach my $k (keys %opt_desc) {
-      next if $k =~ /^--/;
-      $k =~ s/[:=\|](.).*$//;
-      $fields{$k} = undef unless exists($fields{$k});
-    }
     # Data initialization
     $object  = {
-                _permitted => \%fields,
                 %fields,
                };
     $object->{configfile} = $configfile if $configfile;
@@ -274,3 +268,5 @@ sub print_help {
     }
   }
 }
+
+1;

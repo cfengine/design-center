@@ -4,7 +4,7 @@
 # Representation of a repository containing sketches
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-10 02:31:46 a10022>
+# Time-stamp: <2012-10-26 01:17:47 a10022>
 
 package DesignCenter::Repository;
 
@@ -19,9 +19,7 @@ use Term::ANSIColor qw(:constants);
 use DesignCenter::Config;
 use DesignCenter::Sketch;
 
-our $AUTOLOAD;                  # it's a package global
-
-# Allowed data fields, for setters/getters
+# Default field values
 my %fields = (
     # Internal fields
     _basedir => undef,
@@ -31,34 +29,25 @@ my %fields = (
     uri => undef,
     );
 
-######################################################################
-
-# Automatically generate setters/getters, i.e. MAGIC
-sub AUTOLOAD {
+# Create accessors for the defined fields
+for my $f (keys %fields) {
+  *{"$f"} = sub {
     my $self = shift;
-    my $type = ref($self)
-        or croak "$self is not an object";
-
-    my $name = $AUTOLOAD;
-    $name =~ s/.*://;             # strip fully-qualified portion
-
-    unless (exists $self->{_permitted}->{$name} ) {
-        croak "Can't access `$name' field in class $type";
-    }
-
     if (@_) {
-        return $self->{$name} = shift;
+      return $self->{$f} = shift;
     } else {
-        return $self->{$name};
+      return $self->{$f};
     }
+  };
 }
+
+######################################################################
 
 sub new {
     my $class = shift;
     my $uri = shift;
     # Data initialization
     my $self  = {
-        _permitted => \%fields,
         %fields,
     };
     # Get the URI from the argument if provided (else see default value above)
@@ -458,3 +447,5 @@ sub missing_dependencies
 
     return @missing;
 }
+
+1;
