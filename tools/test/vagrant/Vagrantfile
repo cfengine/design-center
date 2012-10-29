@@ -18,6 +18,8 @@ options= {
   :installer => :core,
   :box => :precise32,
   :url => 'http://files.vagrantup.com/',
+  :dcurl => 'https://github.com/cfengine/design-center.git',
+  :dcbranch => 'master',
   :dcinstall => false,
   :dctest => false,
   :provision_hub => false,
@@ -45,6 +47,16 @@ EOHIPPUS
         [:precise32, :lucid32, :centos],
         "Box to use (precise32, lucid32, centos)") do |v|
     options[:installer] = v
+  end
+
+  op.on("--dcurl=[URL]",
+        "Design Center URL to check out with Git") do |v|
+    options[:dcurl] = v
+  end
+
+  op.on("--dcbranch=[BRANCH]",
+        "Design Center branch to check out with Git") do |v|
+    options[:dcbranch] = v
   end
 
   op.on("-u[URL]", "--base-url=[URL]",
@@ -118,7 +130,7 @@ Vagrant::Config.run do |config|
     if options[:dcinstall]
       hub_config.vm.provision :shell do |shell|
         shell.path = "install_dc.sh"
-        shell.args = dchome
+        shell.args = "#{dchome} #{options[:dcurl]} #{options[:dcbranch]}"
       end
     end
 
