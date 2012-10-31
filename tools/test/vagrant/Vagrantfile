@@ -39,8 +39,8 @@ Example: install from APT and test the ssh and limits DC sketches
 EOHIPPUS
 
   op.on("-i[INSTALLER]", "--installer=[INSTALLER]",
-        [:core, :apt, :v334, :nova, :enterprise],
-        "Installation method for CFEngine (core, apt, v334, nova, enterprise)") do |v|
+        [:none, :core, :apt, :v334, :nova, :enterprise],
+        "Installation method for CFEngine (none, core, apt, v334, nova, enterprise)") do |v|
     options[:installer] = v
   end
 
@@ -128,9 +128,11 @@ Vagrant::Config.run do |config|
     hub_config.vm.network :hostonly, options[:ip]
     hub_config.vm.forward_port 80, 8080
 
-    # Install the Community packages from source
-    hub_config.vm.provision :shell do |shell|
-      shell.path = installer
+    if installer
+      # Install the CFE packages
+      hub_config.vm.provision :shell do |shell|
+        shell.path = installer
+      end
     end
 
     if options[:dcinstall]
