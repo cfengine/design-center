@@ -1,9 +1,89 @@
 {
-   "wp_dir" : "/var/www/wordpress",
-   "wp_params" : {
-     "DB_NAME" : "wordpress_db",
-     "DB_USER" : "wordpress_user",
-     "DB_PASSWORD" : "wordpress_pass"
-   },
-    "include": [ "wordpress-base.json" ],
+  "WebApps::wordpress_install":
+    {
+       "wp_dir" : "/var/www/wordpress",
+       "wp_params" : {
+         "DB_NAME" : "wordpress_db",
+         "DB_USER" : "wordpress_user",
+         "DB_PASSWORD" : "wordpress_pass"
+       },
+       "activated" : true,
+       "wp_dir" : "/var/www/wordpress",
+       "wp_params" : {
+         "DB_NAME" : "wordpress_db",
+         "DB_USER" : "wordpress_user",
+         "DB_PASSWORD" : "wordpress_pass"
+       },
+       "htmlroot":
+       {
+           "bycontext":
+           {
+               "debian": "/var/www",
+               "redhat|centos": "/var/www/html"
+           }
+       },
+       "packages":
+       {
+           "bycontext":
+           {
+               "debian":
+               [
+                   "apache2", 
+                   "php5",
+                   "php5-mysql",
+                   "libapache2-mod-php5",
+                   "mysql-server"
+               ],
+               "redhat|centos":
+               [
+                   "httpd",
+                   "php",
+                   "php-mysql",
+                   "mysql-server"
+               ]
+           }
+       },
+       "mysql_process":
+       {
+           "bycontext":
+           {
+               "debian": "/usr/sbin/mysqld",
+               "redhat": "^mysqld",
+               "centos": "/usr/libexec/mysqld"
+           }
+       },
+       "httpd_process":
+       {
+           "bycontext":
+           {
+               "debian": "/usr/sbin/apache2",
+               "redhat": "^httpd",
+               "centos": "/usr/sbin/httpd"
+           }
+       },
+       "service_cmd":
+       {
+           "bycontext":
+           {
+               "debian": "/usr/sbin/service",
+               "redhat|centos": "/sbin/service"
+           }
+       },
+       "apache_srv":
+       {
+           "bycontext":
+           {
+               "debian": "apache2",
+               "redhat|centos": "httpd"
+           }
+       },
+       "mysql_srv":
+       {
+           "bycontext":
+           {
+               "debian": "mysqld",
+               "redhat|centos": "mysqld"
+           }
+       },
+    }
 }

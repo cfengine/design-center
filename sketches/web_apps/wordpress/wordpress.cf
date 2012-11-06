@@ -39,7 +39,7 @@ bundle agent wp_install(prefix, wp_dir, wp_params, tarfile, downloadurl, htmlroo
       # look in wordpress-base.json to see how we fill in system-specific
       # variables and paths per system we support
       "vars[htmlroot][type]"  string => "PATH";
-      "vars[packages][type]"  string => "LIST()";
+      "vars[packages][type]"  string => "LIST(NON_EMPTY_STRING)";
       "vars[mysql_process][type]"  string => "NON_EMPTY_STRING";
       "vars[httpd_process][type]"  string => "NON_EMPTY_STRING";
       "vars[service_cmd][type]"  string => "PATH";

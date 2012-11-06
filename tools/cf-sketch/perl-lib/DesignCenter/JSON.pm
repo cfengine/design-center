@@ -79,7 +79,7 @@ sub load
                 }
 
                 print "Including $include\n" unless $quiet;
-                my $parent = load_json($include);
+                my $parent = load($include);
                 if (ref $parent eq 'HASH')
                 {
                     $ret->{$_} = $parent->{$_} foreach keys %$parent;
