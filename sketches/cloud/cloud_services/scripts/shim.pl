@@ -12,14 +12,18 @@ $| = 1;                         # autoflush
 
 my %options =
  (
+  verbose => 0,
   install_cfengine => 'ON',
   curl => '/usr/bin/curl',
   ec2 => {},
-  openstack => {},
+  openstack => {
+                flavor => "2",
+               },
  );
 
 my @options_spec =
  (
+  "verbose",
   "hub=s",
   "curl=s",
   "install_cfengine=s",
@@ -143,12 +147,15 @@ if ($ec2)
   }
   else                                  # delta < 0, we need to decom
   {
-   while ($delta < 0)
-   {
-    my $todo = shift @current_instances;
-    stop_and_terminate_ec2_instances([$todo]);
-    $delta++;
-   }
+   # Note the race condition: if a machine is shut down externally,
+   # we won't know about it... so we just shut down 1 at a time and
+   # expect repeated runs to converge.  This race is really hard to
+   # avoid in a distributed system (you're basically trying to count
+   # a distributed resource), so gentle convergence is safer.
+   print "waiting for 1 instance to shut down...";
+   my $todo = shift @current_instances;
+   stop_and_terminate_ec2_instances([$todo]);
+   $delta++;
   }
  }
  elsif ($command eq 'down')
@@ -244,9 +251,12 @@ elsif ($openstack)
  if ($command eq 'list')
  {
   my $servers = curl_openstack('list');
-  foreach my $name (sort keys %$servers)
+  foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
   {
-   printf "%s\timage %s\n", $name, $coder->encode($servers->{$name});
+   printf "id=%s image=%s name=%s\n",
+     $coder->encode($server->{image}),
+      $coder->encode($server->{id}),
+       $server->{name};
   }
  }
  elsif ($command eq 'control')
@@ -256,22 +266,21 @@ elsif ($openstack)
 
   my $servers = curl_openstack('list');
 
-  my @clients = sort grep {
-   $_ ne $options{openstack}->{master} &&
-    $servers->{$_} &&
-     $servers->{$_} ne $options{openstack}->{image}
-    } keys %$servers;
+  my @clients = grep {
+   $_->{name} ne $options{openstack}->{master} &&
+     $_->{image} eq $options{openstack}->{image}
+    } @$servers;
 
-  print "Got clients @clients\n";
+  printf "Got clients %s\n", $coder->encode(\@clients);
 
   my @current_instances = @clients;
-
-  my $delta = $target_count - scalar @current_instances;
+  my $current_count = scalar @current_instances;
+  my $delta = $target_count - $current_count;
 
   if ($delta > 0)
   {
-   print "waiting for $delta instances to start up...";
-   wait_for_openstack_create($delta);
+   print "waiting for 1 instance to start up...";
+   wait_for_openstack_create($current_count+1, $client_class);
    print "done!\n";
   }
   elsif ($delta == 0)
@@ -280,12 +289,14 @@ elsif ($openstack)
   }
   else                                  # delta < 0, we need to decom
   {
-   while ($delta < 0)
-   {
-    my $todo = shift @current_instances;
-    wait_for_openstack_remove($todo);
-    $delta++;
-   }
+   # Note the race condition: if a machine is shut down externally,
+   # we won't know about it... so we just shut down 1 at a time and
+   # expect repeated runs to converge.  This race is really hard to
+   # avoid in a distributed system (you're basically trying to count
+   # a distributed resource), so gentle convergence is safer.
+   print "waiting for 1 instance to shut down...";
+   my $todo = shift @current_instances;
+   curl_openstack('delete', $todo->{id});
   }
  }
 }
@@ -302,6 +313,7 @@ sub curl_openstack
  my $run;
  my $uri;
  my $method_option = '';
+ my $data_option = '';
 
  if ($mode eq 'token')
  {
@@ -314,6 +326,17 @@ EOHIPPUS
  {
   $uri = '/servers/detail';
  }
+ elsif ($mode eq 'create')
+ {
+  $uri = '/servers';
+  $method_option = '-X POST';
+  $data_option = sprintf("-d '%s'", $coder->encode($args));
+ }
+ elsif ($mode eq 'delete')
+ {
+  $uri = "/servers/$args";
+  $method_option = '-X DELETE';
+ }
  else
  {
   die "Unknown curl_openstack mode $mode, exiting";
@@ -322,14 +345,16 @@ EOHIPPUS
  if (!defined $run)
  {
   $run = <<EOHIPPUS;
-$options{curl} -s $method_option $options{url}/$uri -H "X-Auth-Token: $options{token}" -H "Content-type: application/json" |
+$options{curl} -s $method_option $options{url}/$uri -H "X-Auth-Token: $options{token}" -H "Content-type: application/json" $data_option |
 EOHIPPUS
  }
 
+ print "Running: $run\n" if $options{verbose};
  open my $c, $run or die "Could not run command [$run]: $!";
 
  while (<$c>)
  {
+  print if $options{verbose};
   my $data;
   eval
   {
@@ -362,14 +387,15 @@ EOHIPPUS
    $options{servers} = hashref_search($data, qw/servers/);
    if ($options{servers} && ref $options{servers} eq 'ARRAY')
    {
-    my $servers = {};
+    my $servers = [];
     foreach my $server (@{$options{servers}})
     {
      my $name = hashref_search($server, qw/name/);
+     my $id = hashref_search($server, qw/id/);
      my $image = hashref_search($server, qw/image id/);
      die "Could not determine name for server " . $coder->encode($server)
       unless defined $name;
-     $servers->{$name} = $image;
+     push @$servers, { name => $name, image => $image, id => $id };
     }
     return $servers;
    }
@@ -380,39 +406,41 @@ EOHIPPUS
   }
   elsif ($mode eq 'create')
   {
-# {
-#     "server" : {
-#         "name" : "api-test-server-1",
-#         "imageRef" : "3afe97b2-26dc-49c5-a2cc-a2fc8d80c001",
-#         "flavorRef" : "2",
-         
-       
-#         "OS-DCF:diskConfig" : "AUTO",
-#         "metadata" : {
-#             "My Server Name" : "API Test Server 1"
-#         },
-#         "personality" : [
-#             {
-#                 "path" : "/etc/banner.txt",
-#                 "contents" : "ICAgICAgDQoiQSBjbG91ZCBkb2VzIG5vdCBrbm93IHdoeSBp dCBtb3ZlcyBpbiBqdXN0IHN1Y2ggYSBkaXJlY3Rpb24gYW5k IGF0IHN1Y2ggYSBzcGVlZC4uLkl0IGZlZWxzIGFuIGltcHVs c2lvbi4uLnRoaXMgaXMgdGhlIHBsYWNlIHRvIGdvIG5vdy4g QnV0IHRoZSBza3kga25vd3MgdGhlIHJlYXNvbnMgYW5kIHRo ZSBwYXR0ZXJucyBiZWhpbmQgYWxsIGNsb3VkcywgYW5kIHlv dSB3aWxsIGtub3csIHRvbywgd2hlbiB5b3UgbGlmdCB5b3Vy c2VsZiBoaWdoIGVub3VnaCB0byBzZWUgYmV5b25kIGhvcml6 b25zLiINCg0KLVJpY2hhcmQgQmFjaA=="
-#             }
-#         ],
-#         "networks": [
-#             {
-#                  "uuid": "4ebd35cf-bfe7-4d93-b0d8-eb468ce2245a"
-#             }, 
-#             {
-#                  "uuid": "00000000-0000-0000-0000-000000000000"
-#             }, 
-#             {
-#                  "uuid": "11111111-1111-1111-1111-111111111111"
-#             } 
-#         ] 
-#     }
-# }
-}
+   return $data;
+  }
+  elsif ($mode eq 'delete')
+  {
+   return $data;
+  }
   die Dumper [$run, $data];
  }
+}
+
+sub wait_for_openstack_create
+{
+ my $start = shift @_;
+ my $client_class = shift @_;
+
+ die curl_openstack('create',
+                    {
+                     server =>
+                     {
+                      name => "$client_class-" . ($start+1),
+                      imageRef => $options{openstack}->{image},
+                      flavorRef => $options{openstack}->{flavor},
+                      "OS-DCF:diskConfig" => "AUTO",
+                      metadata => { cfmaster => $options{openstack}->{master} },
+                     },
+
+                     personality =>
+                     [
+                      {
+                       path => "/etc/banner.txt",
+                       contents => "ICAgICAgDQoiQSBjbG91ZCBkb2VzIG5vdCBrbm93IHdoeSBp dCBtb3ZlcyBpbiBqdXN0IHN1Y2ggYSBkaXJlY3Rpb24gYW5k IGF0IHN1Y2ggYSBzcGVlZC4uLkl0IGZlZWxzIGFuIGltcHVs c2lvbi4uLnRoaXMgaXMgdGhlIHBsYWNlIHRvIGdvIG5vdy4g QnV0IHRoZSBza3kga25vd3MgdGhlIHJlYXNvbnMgYW5kIHRo ZSBwYXR0ZXJucyBiZWhpbmQgYWxsIGNsb3VkcywgYW5kIHlv dSB3aWxsIGtub3csIHRvbywgd2hlbiB5b3UgbGlmdCB5b3Vy c2VsZiBoaWdoIGVub3VnaCB0byBzZWUgYmV5b25kIGhvcml6 b25zLiINCg0KLVJpY2hhcmQgQmFjaA=="
+                      }
+                     ],
+                    }
+                   );
 }
 
 sub hashref_search
