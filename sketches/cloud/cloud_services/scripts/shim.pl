@@ -19,6 +19,7 @@ my %options =
   openstack => {
                 flavor => "2",
                 entry_url => 'https://identity.api.rackspacecloud.com/v2.0/tokens',
+                password => 'do not -- try !! this',
                },
  );
 
@@ -258,10 +259,12 @@ elsif ($openstack)
   my $servers = curl_openstack('list');
   foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
   {
-   printf "id=%s image=%s name=%s\n",
-     $coder->encode($server->{image}),
-      $coder->encode($server->{id}),
-       $server->{name};
+   printf("id=%s image=%s ip=%-15s progress=%03d%% sname=%s\n",
+          $coder->encode($server->{id}),
+          $coder->encode($server->{image}),
+          $server->{ip},
+          $server->{progress},
+          $server->{name});
   }
  }
  elsif ($command eq 'control')
@@ -396,11 +399,22 @@ EOHIPPUS
     foreach my $server (@{$options{servers}})
     {
      my $name = hashref_search($server, qw/name/);
-     my $id = hashref_search($server, qw/id/);
-     my $image = hashref_search($server, qw/image id/);
      die "Could not determine name for server " . $coder->encode($server)
       unless defined $name;
-     push @$servers, { name => $name, image => $image, id => $id };
+     my $server_data = { name => $name };
+
+     foreach my $v (
+                    [ id => qw/id/ ],
+                    [ ip => qw/accessIPv4/ ],
+                    [ image => qw/image id/ ],
+                    [ progress => qw/progress/ ],
+                   )
+     {
+      my $k = shift @$v;
+      $server_data->{$k} = hashref_search($server, @$v);
+     }
+
+     push @$servers, $server_data;
     }
     return $servers;
    }
@@ -435,6 +449,7 @@ sub wait_for_openstack_create
                       flavorRef => $options{openstack}->{flavor},
                       "OS-DCF:diskConfig" => "AUTO",
                       metadata => { cfmaster => $options{openstack}->{master} },
+                      adminPass => $options{openstack}->{password},
                      },
 
                      personality =>

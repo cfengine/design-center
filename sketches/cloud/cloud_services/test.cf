@@ -64,6 +64,7 @@ bundle common cfsketch_g
       "cloudtest_vcli[user]"                string => "root";
 
       "cloudtest_openstack[entry_url]" string => "https://identity.api.rackspacecloud.com/v2.0/tokens";
+      "cloudtest_openstack[password]"  string => "some password you should fill in";
       "cloudtest_openstack[user]"      string => "youruserid";
       "cloudtest_openstack[key]"       string => "72145782545ab2458456b54b45545a42"; # invalid
       "cloudtest_openstack[image]"     string => "5cebb13a-f783-4f8c-8058-c4182c724ccd";

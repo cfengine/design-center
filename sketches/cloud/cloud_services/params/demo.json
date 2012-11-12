@@ -30,6 +30,8 @@
         "openstack":
         {
             "entry_url": "https://identity.api.rackspacecloud.com/v2.0/tokens",
+            // change this!  it's the admin password of the new machine!
+            "password": "my password here, please!!!",
             "user": "youruserid",
             // invalid
             "key": "72145782545ab2458456b54b45545a42",
