@@ -18,6 +18,7 @@ my %options =
   ec2 => {},
   openstack => {
                 flavor => "2",
+                entry_url => 'https://identity.api.rackspacecloud.com/v2.0/tokens',
                },
  );
 
@@ -56,6 +57,7 @@ if ($ec2)
   die "Sorry, we can't go on until you've specified --ec2 $required"
    unless defined $options{ec2}->{$required};
  }
+
  # Access and secret key inherited from environment if defined
  foreach my $required (qw/aws_access_key aws_secret_key/)
  {
@@ -239,7 +241,10 @@ if ($ec2)
 }
 elsif ($openstack)
 {
- foreach my $required (qw/user key image master/)
+ die "Sorry, we can't go on until you've specified --hub=HUB"
+  unless defined $options{hub};
+
+  foreach my $required (qw/user key image master/)
  {
   die "Sorry, we can't go on until you've specified --openstack $required"
    unless defined $options{openstack}->{$required};
@@ -319,7 +324,7 @@ sub curl_openstack
  {
   $method_option = '-X POST';
 $run = <<EOHIPPUS;
-$options{curl} -s $method_option https://identity.api.rackspacecloud.com/v2.0/tokens -d '{ "auth":{ "RAX-KSKEY:apiKeyCredentials":{ "username":"$options{openstack}->{user}", "apiKey":"$options{openstack}->{key}" } } }' -H "Content-type: application/json" |
+$options{curl} -s $method_option $options{openstack}->{entry_url} -d '{ "auth":{ "RAX-KSKEY:apiKeyCredentials":{ "username":"$options{openstack}->{user}", "apiKey":"$options{openstack}->{key}" } } }' -H "Content-type: application/json" |
 EOHIPPUS
  }
  elsif ($mode eq 'list')
@@ -435,8 +440,8 @@ sub wait_for_openstack_create
                      personality =>
                      [
                       {
-                       path => "/etc/banner.txt",
-                       contents => "ICAgICAgDQoiQSBjbG91ZCBkb2VzIG5vdCBrbm93IHdoeSBp dCBtb3ZlcyBpbiBqdXN0IHN1Y2ggYSBkaXJlY3Rpb24gYW5k IGF0IHN1Y2ggYSBzcGVlZC4uLkl0IGZlZWxzIGFuIGltcHVs c2lvbi4uLnRoaXMgaXMgdGhlIHBsYWNlIHRvIGdvIG5vdy4g QnV0IHRoZSBza3kga25vd3MgdGhlIHJlYXNvbnMgYW5kIHRo ZSBwYXR0ZXJucyBiZWhpbmQgYWxsIGNsb3VkcywgYW5kIHlv dSB3aWxsIGtub3csIHRvbywgd2hlbiB5b3UgbGlmdCB5b3Vy c2VsZiBoaWdoIGVub3VnaCB0byBzZWUgYmV5b25kIGhvcml6 b25zLiINCg0KLVJpY2hhcmQgQmFjaA=="
+                       path => "/var/tmp/cfhub",
+                       contents => $options{hub}
                       }
                      ],
                     }

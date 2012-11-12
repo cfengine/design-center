@@ -3,7 +3,7 @@ body file control
   namespace => "cfdc_cloud_services";
 }
 
-bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2, vcli)
+bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2, vcli, openstack)
 {
   meta:
       # __PREFIX__ will be supplied by cf-sketch
@@ -17,7 +17,7 @@ bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count,
       "vars[install_cfengine][type]"     string => "BOOLEAN";
       "vars[install_cfengine][default]"  string => "1";
 
-      "vars[stype][type]"                string => "=ec2|=vcli";
+      "vars[stype][type]"                string => "=ec2|=vcli|=openstack";
 
       "vars[count][type]"                string => "DIGITS";
 
@@ -54,9 +54,22 @@ fullpath           :PATH
 disable_ssl_verify :BOOLEAN:default=0
 )";
       "vars[vcli][default]"              string => "{}";
+
+      # default to RackSpace 2.0 URLs
+      "vars[openstack][type]"            string => "ARRAY(
+entry_url      :NON_EMPTY_STRING:https://identity.api.rackspacecloud.com/v2.0/tokens
+user           :NON_EMPTY_STRING
+key            :NON_EMPTY_STRING
+image          :NON_EMPTY_STRING
+master         :NON_EMPTY_STRING:cfmaster
+)";
+      "vars[openstack][default]"         string => "{}";
+
+
   classes:
-      "use_ec2"  expression => strcmp($(stype), "ec2");
-      "use_vcli" expression => strcmp($(stype), "vcli");
+      "use_ec2"       expression => strcmp($(stype), "ec2");
+      "use_vcli"      expression => strcmp($(stype), "vcli");
+      "use_openstack" expression => strcmp($(stype), "openstack");
 
   vars:
       "canon_prefix" string => canonify("$(prefix)");
@@ -64,6 +77,8 @@ disable_ssl_verify :BOOLEAN:default=0
       "service"      string => "$(stype)";
     use_ec2::
       "service_bundle" string => "cfdc_cloud_services:ec2";
+    use_openstack::
+      "service_bundle" string => "cfdc_cloud_services:openstack";
     use_vcli::
       "service_bundle" string => "cfdc_cloud_services:vcli";
 
@@ -143,6 +158,54 @@ bundle agent ec2(prefix, bundle_home, install_cfengine, count, class, state, par
       "Decom will be needed";
     cfengine::
       "EC2 goal: put $(count) $(class) in state $(state).";
+}
+
+bundle agent openstack(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
+{
+  classes:
+      "start"   expression => strcmp("start",  "$(state)");
+      "stop"    expression => strcmp("stop",   "$(state)");
+
+      "count_determined" expression => isvariable("current_count");
+
+    count_determined::
+      "change_not_needed" expression => strcmp("$(count)", "$(current_count)");
+      "bootstrap_needed" expression => isgreaterthan("$(count)", "$(current_count)");
+      "decom_needed" expression => islessthan("$(count)", "$(current_count)");
+
+  vars:
+      # adjust for your Perl install, but any Perl should be able to handle this
+      "perl"  string => "/usr/bin/perl";
+
+      "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --openstack entry_url=$($(params)[entry_url]) --openstack user=$($(params)[user]) --openstack key=$($(params)[key]) --openstack image=$($(params)[image]) --openstack master=$($(params)[master]) --hub=$(hub) --install_cfengine=$(install_cfengine) openstack";
+
+      "current_count" string => execresult("$(shim) count $(class)", "useshell");
+
+  commands:
+    count_determined.!change_not_needed::
+      "$(shim) control $(count) $(class)";
+
+  reports:
+    count_determined::
+      "Current count of $(class) = $(current_count)";
+    count_determined.cloud_services_verbose::
+      "To run a command, e.g. ssh to all machine (but beware, this works best if you have just a few count): $(shim) run $(class) 'ssh -i YOUR-PRIVATE-SSH-KEY -l ubuntu'";
+      "To see the console output of all the machines: $(shim) console $(class)";
+      "To list all the machines (just node names or all info, including DNS): $(shim) [list|list-full] $(class)";
+    count_determined.start.change_not_needed::
+      "Service does not need to be started by the shim: $(count) instances of class $(class) already exist";
+    count_determined.stop.change_not_needed::
+      "Service does not need to be stopped by the shim: we have $(count) instances of class $(class)";
+    count_determined.start.!change_not_needed::
+      "Service will be started by the shim: $(count) instances of class $(class) (current $(current_count))";
+    count_determined.stop.!change_not_needed::
+      "Service will be stopped by the shim: $(count) instances (current $(current_count)) of class $(class) ";
+    bootstrap_needed::
+      "Bootstrapping will be needed";
+    decom_needed::
+      "Decom will be needed";
+    cfengine::
+      "OpenStack goal: put $(count) $(class) in state $(state).";
 }
 
 bundle agent vcli(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
