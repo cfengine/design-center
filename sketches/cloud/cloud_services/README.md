@@ -22,6 +22,11 @@ XML::Simple
 You can try the programming_languages/cpanm sketch to install VM::EC2,
 which will automagically install all its dependencies as well.
 
+## ## OpenStack platform
+
+Just curl (in /usr/bin/curl or /bin/curl) and the CPAN JSON::XS module
+are required.
+
 ## ## VMware platform
 
 Perl in /usr/bin/perl and the VMWare interface programs (`vifs` and
@@ -34,7 +39,7 @@ You can also register on that website to download free trial versions of ESXi/vS
 ## DESCRIPTION
 
 This sketch can manage cloud instances in a generic way.  Right now
-EC2 and the VMWare ESXi server are supported.
+EC2, OpenStack, and the VMWare ESXi server are supported.
 
 You specify a few initialization parameters, and then simply say 
 "I want to start N instances of class X" or "I want to stop all instances
@@ -89,10 +94,12 @@ parameters than manually passing them to the `cloud_services` bundle.
     "cloudtest_vcli[child_prefix]"        string => "ubuntu-12.04-i386-clone-";
     "cloudtest_vcli[disable_ssl_verify]"  string => "1";
 
+* `openstack`: TODO, see `params/demo.json` or `test.cf`
+
 * `install_cfengine`: set to 1 to install CFEngine in the EC2 instance
   or 0 not to.  The VMWare integration ignores this parameter.
   
-* `stype`: either `vcli` or `ec2`.
+* `stype`: either `vcli` or `ec2` or `openstack`.
 
 * `count`: number of instances to start.
 

@@ -5,6 +5,7 @@ use warnings;
 
 use Data::Dumper;
 use Getopt::Long;
+use MIME::Base64;
 use JSON::XS;
 my $coder = JSON::XS->new()->relaxed()->utf8()->allow_blessed->convert_blessed->allow_nonref();
 
@@ -267,6 +268,30 @@ elsif ($openstack)
           $server->{name});
   }
  }
+ elsif ($command eq 'ssh')
+ {
+  my $goto = shift @args;
+  die "$0: openstack ssh command requires a machine name argument"
+   unless defined $goto;
+
+  my $servers = curl_openstack('list');
+  foreach my $server (@$servers)
+  {
+   if ($server->{name} eq $goto)
+   {
+    if ($server->{ip})
+    {
+     exec "ssh root\@$server->{ip}";
+    }
+    else
+    {
+     die "$goto has no IPv4 address";
+    }
+   }
+  }
+
+  die "Could not SSH to $goto, it's not in the machine list";
+ }
  elsif ($command eq 'control')
  {
   print "openstack controlling @args\n";
@@ -440,6 +465,9 @@ sub wait_for_openstack_create
  my $start = shift @_;
  my $client_class = shift @_;
 
+ my $hub64 = encode_base64($options{hub});
+ chomp $hub64;
+
  die curl_openstack('create',
                     {
                      server =>
@@ -452,11 +480,12 @@ sub wait_for_openstack_create
                       adminPass => $options{openstack}->{password},
                      },
 
+                     # this is broken on the RackSpace side, ticket opened
                      personality =>
                      [
                       {
-                       path => "/var/tmp/cfhub",
-                       contents => $options{hub}
+                       path => "/etc/cfhub",
+                       contents => $hub64
                       }
                      ],
                     }
