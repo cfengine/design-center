@@ -253,7 +253,7 @@ elsif ($openstack)
  }
 
  my $token = curl_openstack('token');
- printf "Got token %s\n", $token;
+ printf "Got token %s\n", $token if $options{verbose};
 
  if ($command eq 'list')
  {
