@@ -543,28 +543,28 @@ sub wait_for_openstack_create
  my $hub64 = encode_base64($options{hub});
  chomp $hub64;
 
- die curl_openstack('create',
-                    {
-                     server =>
-                     {
-                      name => "$client_class-" . ($start+1),
-                      imageRef => $options{openstack}->{image},
-                      flavorRef => $options{openstack}->{flavor},
-                      "OS-DCF:diskConfig" => "AUTO",
-                      metadata => { cfmaster => $options{openstack}->{master} },
-                      adminPass => $options{openstack}->{password},
-                     },
+ return curl_openstack('create',
+                       {
+                        server =>
+                        {
+                         name => "$client_class-" . ($start+1),
+                         imageRef => $options{openstack}->{image},
+                         flavorRef => $options{openstack}->{flavor},
+                         "OS-DCF:diskConfig" => "AUTO",
+                         metadata => { cfmaster => $options{openstack}->{master} },
+                         adminPass => $options{openstack}->{password},
+                        },
 
-                     # this is broken on the RackSpace side, ticket opened
-                     personality =>
-                     [
-                      {
-                       path => "/etc/cfhub",
-                       contents => $hub64
-                      }
-                     ],
-                    }
-                   );
+                        # this is broken on the RackSpace side, ticket opened
+                        personality =>
+                        [
+                         {
+                          path => "/etc/cfhub",
+                          contents => $hub64
+                         }
+                        ],
+                       }
+                      );
 }
 
 sub hashref_search
