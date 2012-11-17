@@ -94,7 +94,8 @@ if ($ec2)
 
  if ($command eq 'list')
  {
-  my $servers = curl_ec2('list');
+  my $cfclass = shift @args || 'cfworker';
+  my $servers = curl_ec2('list', $cfclass);
   foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
   {
    printf("id=%s image=%s ip=%-15s progress=%03d%% sname=%s\n",
@@ -389,27 +390,6 @@ sub curl_ec2
    {
     $ret = [];
 
-    # {
-    #  'instancesSet' => {
-    #                     'item' => {
-    #                                'ipAddress' => '107.21.47.118',
-    #                                'instanceId' => 'i-bb042fdd',
-    #                                'imageId' => 'ami-249a3c4d',
-    #                                'instanceState' => {
-    #                                                    'name' => 'running',
-    #                                                    'code' => '16'
-    #                                                   },
-    #                                'tagSet' => {
-    #                                             'item' => {
-    #                                                        'PilotInstanceType' => {
-    #                                                                                'value' => 'Policyclient_opensuse11_master'
-    #                                                                               },
-    #                                                        'Name' => {
-    #                                                                   'value' => 'CFEngine Master Pilot Client OpenSuSE 11.4'
-    #                                                                  }
-    #                                                       }
-    #                                            },
-
     my $server_wrappers = hashref_search($data, qw/reservationSet item/);
 
     die "Could not find server instances in aws data"
@@ -430,6 +410,7 @@ sub curl_ec2
 
      foreach my $v (
                     [ name => qw/tagSet item Name/ ],
+                    [ cfclass => qw/tagSet item cfclass/ ],
                     [ id => qw/instanceId/ ],
                     [ ip => qw/ipAddress/ ],
                     [ image => qw/imageId/ ],
@@ -455,6 +436,16 @@ sub curl_ec2
 
      die "Could not find imageId in instance data, giving up"
       unless defined $server_data->{id};
+
+     unless ($server_data->{cfclass} &&
+             $server_data->{cfclass} eq $args)
+     {
+      my $cfclass = $server_data->{cfclass} || '???';
+      my $name = $server_data->{name} || '???';
+      print "Skipping '$name' because its class $cfclass doesn't match $args\n"
+       if $options{verbose};
+      next;
+     }
 
      push @$ret, $server_data;
     }
