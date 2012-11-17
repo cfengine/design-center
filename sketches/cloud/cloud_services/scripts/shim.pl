@@ -98,11 +98,12 @@ if ($ec2)
   my $servers = curl_ec2('list', $cfclass);
   foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
   {
-   printf("id=%s image=%s ip=%-15s progress=%03d%% sname=%s\n",
+   printf("id=%s image=%s ip=%-15s progress=%03d%% cfclass=%s sname=%s\n",
           $coder->encode($server->{id}),
           $coder->encode($server->{image}),
           $server->{ip},
           $server->{progress},
+          $server->{cfclass},
           $server->{name});
   }
  }
@@ -273,14 +274,17 @@ elsif ($openstack)
 
  if ($command eq 'list')
  {
-  my $servers = curl_openstack('list');
+  my ($cfclass, @rest) = @args;
+  my $servers = curl_openstack('list', $cfclass);
+
   foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
   {
-   printf("id=%s image=%s ip=%-15s progress=%03d%% sname=%s\n",
+   printf("id=%s image=%s ip=%-15s progress=%03d%% cfclass=%s sname=%s\n",
           $coder->encode($server->{id}),
           $coder->encode($server->{image}),
           $server->{ip},
           $server->{progress},
+          $server->{cfclass},
           $server->{name});
   }
  }
@@ -311,13 +315,12 @@ elsif ($openstack)
  elsif ($command eq 'control')
  {
   print "openstack controlling @args\n";
-  my ($target_count, $client_class, @rest) = @args;
+  my ($target_count, $cfclass, @rest) = @args;
 
-  my $servers = curl_openstack('list');
+  my $servers = curl_openstack('list', $cfclass);
 
   my @clients = grep {
-   $_->{name} ne $options{openstack}->{master} &&
-     $_->{image} eq $options{openstack}->{image}
+   $_->{name} ne $options{openstack}->{master}
     } @$servers;
 
   printf "Got clients %s\n", $coder->encode(\@clients);
@@ -329,7 +332,7 @@ elsif ($openstack)
   if ($delta > 0)
   {
    print "waiting for 1 instance to start up...";
-   wait_for_openstack_create($current_count+1, $client_class);
+   wait_for_openstack_create($current_count+1, $cfclass);
    print "done!\n";
   }
   elsif ($delta == 0)
@@ -553,11 +556,14 @@ EOHIPPUS
                     [ ip => qw/accessIPv4/ ],
                     [ image => qw/image id/ ],
                     [ progress => qw/progress/ ],
+                    [ cfclass => qw/metadata cfclass/ ],
                    )
      {
       my $k = shift @$v;
       $server_data->{$k} = hashref_search($server, @$v);
      }
+
+     $server_data->{cfclass} ||= '???';
 
      push @$servers, $server_data;
     }
@@ -596,7 +602,7 @@ sub wait_for_openstack_create
                          imageRef => $options{openstack}->{image},
                          flavorRef => $options{openstack}->{flavor},
                          "OS-DCF:diskConfig" => "AUTO",
-                         metadata => { cfmaster => $options{openstack}->{master} },
+                         metadata => { cfmaster => $options{openstack}->{master}, cfclass => $client_class },
                          adminPass => $options{openstack}->{password},
                         },
 
