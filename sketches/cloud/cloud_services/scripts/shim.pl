@@ -367,48 +367,102 @@ sub curl_ec2
  if ($mode eq 'list')
  {
   $run = "$tool --json describe-instances";
-  open my $t, "$run|";
+  open $t, "$run|" or die "Could not get server list with command [$run]: $!";;
  }
  else
  {
   die "Unknown EC2 mode $mode";
  }
 
- if ($t)
+ while (<$t>)
  {
-  while (<$t>)
+  print if $options{verbose};
+  my $data;
+  eval
   {
-   print if $options{verbose};
-   my $data;
-   eval
-   {
-    $data = $coder->decode($_);
-   };
+   $data = $coder->decode($_);
+  };
 
-   if (defined $data)
+  if (defined $data)
+  {
+   if ($mode eq 'list')
    {
-    print Dumper $data;
-    if ($mode eq 'list')
+    $ret = [];
+
+    # {
+    #  'instancesSet' => {
+    #                     'item' => {
+    #                                'ipAddress' => '107.21.47.118',
+    #                                'instanceId' => 'i-bb042fdd',
+    #                                'imageId' => 'ami-249a3c4d',
+    #                                'instanceState' => {
+    #                                                    'name' => 'running',
+    #                                                    'code' => '16'
+    #                                                   },
+    #                                'tagSet' => {
+    #                                             'item' => {
+    #                                                        'PilotInstanceType' => {
+    #                                                                                'value' => 'Policyclient_opensuse11_master'
+    #                                                                               },
+    #                                                        'Name' => {
+    #                                                                   'value' => 'CFEngine Master Pilot Client OpenSuSE 11.4'
+    #                                                                  }
+    #                                                       }
+    #                                            },
+
+    my $server_wrappers = hashref_search($data, qw/reservationSet item/);
+
+    die "Could not find server instances in aws data"
+     unless (defined $server_wrappers && ref $server_wrappers eq 'ARRAY');
+
+    foreach my $server_wrapper (@$server_wrappers)
     {
-     $ret = [];
-     # my $server_data = {
-     #                    name => $d{keyName},
-     #                    id => $d{instanceId},
-     #                    ip => $d{ipAddress},
-     #                    image => $d{imageId},
-     #                    progress => ($d{instanceState} &&
-     #                                 $d{instanceState} =~ m/running/) ? 100 : 0,
-     #                   };
-     push @$ret, $data;
+     my $server = hashref_search($server_wrapper, qw/instancesSet item/);
+
+     unless (defined $server && ref $server eq 'HASH')
+     {
+      warn "Could not find server instance in malformed instanceSet aws data " .
+       $coder->encode($server_wrapper);
+      next;
+     }
+
+     my $server_data = { };
+
+     foreach my $v (
+                    [ name => qw/tagSet item Name/ ],
+                    [ id => qw/instanceId/ ],
+                    [ ip => qw/ipAddress/ ],
+                    [ image => qw/imageId/ ],
+                    [ progress => qw/instanceState name/ ],
+                   )
+     {
+      my $k = shift @$v;
+      $server_data->{$k} = hashref_search($server, @$v);
+
+      # extract key-value pairs from the tags
+      $server_data->{$k} = $server_data->{$k}->{value}
+       if (ref $server_data->{$k} eq 'HASH' &&
+           exists $server_data->{$k}->{value});
+
+     }
+
+     $server_data->{progress} = (defined $server_data->{progress} && $server_data->{progress} eq 'running') ? 100 : 0;
+
+     $server_data->{ip} ||= '0.0.0.0';
+
+     $server_data->{name} = $server_data->{id}
+      unless defined $server_data->{name};
+
+     die "Could not find imageId in instance data, giving up"
+      unless defined $server_data->{id};
+
+     push @$ret, $server_data;
     }
    }
   }
-
-  return $ret;
  }
 
- die "Could not get server list with command [$run]: $!";
-
+ return $ret;
 }
 
 
