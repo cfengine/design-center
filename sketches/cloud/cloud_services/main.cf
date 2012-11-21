@@ -64,12 +64,12 @@ disable_ssl_verify :BOOLEAN:default=0
 
       # default to RackSpace 2.0 URLs
       "vars[openstack][type]"            string => "ARRAY(
-entry_url      :NON_EMPTY_STRING:https://identity.api.rackspacecloud.com/v2.0/tokens
+entry_url      :NON_EMPTY_STRING:default=https://identity.api.rackspacecloud.com/v2.0/tokens
 user           :NON_EMPTY_STRING
 key            :NON_EMPTY_STRING
 password       :NON_EMPTY_STRING
 image          :NON_EMPTY_STRING
-master         :NON_EMPTY_STRING:cfmaster
+master         :NON_EMPTY_STRING:default=cfmaster
 )";
       "vars[openstack][default]"         string => "{}";
 
