@@ -6,8 +6,10 @@ use warnings;
 use Data::Dumper;
 use Getopt::Long;
 use MIME::Base64;
-use JSON::XS;
+use File::Temp qw/ tempfile tempdir /;
 use FindBin;
+use JSON::XS;
+
 my $coder = JSON::XS->new()->relaxed()->utf8()->allow_blessed->convert_blessed->allow_nonref();
 
 $| = 1;                         # autoflush
@@ -126,6 +128,27 @@ if ($ec2)
                   sub { wait_for_ec2_create(shift, $cfclass) },
                   sub { aws_ec2('delete', shift) });
  }
+ elsif ($command eq 'console')
+ {
+  my ($name, @rest) = @args;
+
+  my $servers = aws_ec2('list');
+  foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
+  {
+   if ($server->{name} =~ m/$name/)
+   {
+    my $output = aws_ec2('console', $server->{id});
+    if (ref $output eq '')
+    {
+     print decode_base64($output), "\n\n\n";
+    }
+    else
+    {
+     print "Console output for $server->{name} not available\n";
+    }
+   }
+  }
+ }
  else
  {
   print "unknown ec2 command: $command @args\n";
@@ -233,6 +256,12 @@ sub aws_ec2
   $run = "$tool --json create-tags $args[0] $extra";
   open $t, "$run|" or die "Could not create tags with command [$run]: $!";;
  }
+ elsif ($mode eq 'console')
+ {
+  my $id = $args[0];
+  $run = "$tool --json get-console-output $args[0]";
+  open $t, "$run|" or die "Could not get console with command [$run]: $!";;
+ }
  elsif ($mode eq 'delete')
  {
   $run = "$tool --json terminate-instances $args[0]";
@@ -242,7 +271,23 @@ sub aws_ec2
  {
   # [--group SecurityGroup...|-g SecurityGroup...] [--key KeyName|-k KeyName] [--user-data UserData|-d UserData] [--user-data-file UserData|-f UserData] [-a AddressingType] [--instance-type InstanceType|--type InstanceType|-t InstanceType|-i InstanceType] [--availability-zone Placement.AvailabilityZone|-z Placement.AvailabilityZone] [--kernel KernelId] [--ramdisk RamdiskId] [--block-device-mapping |-b ] [--device-name DeviceName...] [--no-device NoDevice...] [--virtual-name VirtualName...] [--snapshot SnapshotId...|-s SnapshotId...] [--volume-size VolumeSize...] [--delete-on-termination DeleteOnTermination...] [--monitor Monitoring.Enabled...|-m Monitoring.Enabled...] [--disable-api-termination DisableApiTermination...] [--instance-initiated-shutdown-behavior InstanceInitiatedShutdownBehavior...] [--placement-group Placement.GroupName...] [--subnet SubnetId...|-s SubnetId...] [--private-ip-address PrivateIpAddress...] [--client-token ClientToken...]
 
-  $run = sprintf("$tool --json run-instances %s -g %s -t %s --region %s",
+  my $udata = '';
+  if ($options{hub} && $options{install_cfengine})
+  {
+   my $init = ec2_init_script($options{hub}, $args[0]);
+   my $dir = tempdir( CLEANUP => 1 );
+   my ($fh, $filename) = tempfile( DIR => $dir );
+
+   print $fh $init;
+   close $fh;
+
+   if (-f $filename && -r $filename)
+   {
+    $udata = "-f '$filename'";
+   }
+  }
+
+  $run = sprintf("$tool --json run-instances %s -g %s -t %s --region %s $udata",
                  $options{ec2}->{ami},
                  $options{ec2}->{security_group},
                  $options{ec2}->{instance_type},
@@ -336,12 +381,15 @@ sub aws_ec2
      my $cfclass = $server_data->{cfclass} || '???';
      my $name = $server_data->{name} || '???';
 
-     unless ($server_data->{cfclass} &&
-             $server_data->{cfclass} eq $args[0])
+     if (defined $args[0])
      {
-      print "Skipping '$name': its class $cfclass doesn't match $args[0]\n"
-       if $options{verbose};
-      next;
+      unless ($server_data->{cfclass} &&
+              $server_data->{cfclass} eq $args[0])
+      {
+       print "Skipping '$name': its class $cfclass doesn't match $args[0]\n"
+        if $options{verbose};
+       next;
+      }
      }
 
      # terminated EC2 instances remain visible for at least an hour; skip them
@@ -358,6 +406,10 @@ sub aws_ec2
    elsif ($mode eq 'create-tags')
    {
     $ret = $data;
+   }
+   elsif ($mode eq 'console')
+   {
+    $ret = hashref_search($data, 'output');
    }
    elsif ($mode eq 'delete')
    {
@@ -628,77 +680,74 @@ sub generic_control
   }
 }
 
-# sub ec2_init_script
-# {
-#  my $hub_ip = shift @_;
-#  my $client_class = shift @_;
+sub ec2_init_script
+{
+ my $hub_ip = shift @_;
+ my $client_class = shift @_;
 
-#  return "
-# LOG=/tmp/shim.ec2.cfengine.setup.log
+ return "
+LOG=/tmp/shim.ec2.cfengine.setup.log
 
-# echo '000 Bootstrapping host of class $client_class (adding class shim_ec2) to hub $hub_ip.' >> \$LOG 2>&1
+echo '000 Bootstrapping host of class $client_class (adding class shim_ec2) to hub $hub_ip.' >> \$LOG 2>&1
 
-# echo '$hub_ip' > /var/tmp/cfhub.ip
-# echo '$client_class' > /var/tmp/cfclass
-# echo 'shim_ec2' >> /var/tmp/cfclass
+echo '$hub_ip' > /var/tmp/cfhub.ip
+echo '$client_class' > /var/tmp/cfclass
+echo 'shim_ec2' >> /var/tmp/cfclass
 
-# echo '001 Adding the CFEngine APT repo and installing cfengine-community' >> \$LOG 2>&1
+echo '001 Adding the CFEngine APT repo and installing cfengine-community' >> \$LOG 2>&1
 
-# curl -o /tmp/cfengine.gpg.key http://cfengine.com/pub/gpg.key >> \$LOG 2>&1
+curl -o /tmp/cfengine.gpg.key http://cfengine.com/pub/gpg.key >> \$LOG 2>&1
 
-# apt-key add /tmp/cfengine.gpg.key >> \$LOG 2>&1
+apt-key add /tmp/cfengine.gpg.key >> \$LOG 2>&1
 
-# add-apt-repository http://cfengine.com/pub/apt >> \$LOG 2>&1
+add-apt-repository http://cfengine.com/pub/apt >> \$LOG 2>&1
 
-# (apt-get update || echo anyways...) >> \$LOG 2>&1
+(apt-get update || echo anyways...) >> \$LOG 2>&1
 
-# (apt-get install -y --force-yes cfengine-community || echo anyways...) >> \$LOG 2>&1
+(apt-get install -y --force-yes cfengine-community || echo anyways...) >> \$LOG 2>&1
 
-# # this is version 3.1.5, quite old!
-# # apt-get install cfengine3 >> \$LOG 2>&1
+" . ec2_client_init_script($client_class);
 
-# " . ec2_client_init_script($client_class);
+}
 
-# }
+sub ec2_client_init_script
+{
+ # from JH's magic
+ return '
 
-# sub ec2_client_init_script
-# {
-#  # from JH's magic
-#  return '
+echo "002 Installing the persistent classes from /var/tmp/cfclass" >> $LOG 2>&1
 
-# echo "002 Installing the persistent classes from /var/tmp/cfclass" >> $LOG 2>&1
+cat >> /tmp/set_persistent_classes.cf << EOF;
+body common control {
+  bundlesequence => { "set_persistent_classes" };
+  nova_edition|constellation_edition::
+    host_licenses_paid => "1";
+}
 
-# cat >> /tmp/set_persistent_classes.cf << EOF;
-# body common control {
-#   bundlesequence => { "set_persistent_classes" };
-#   nova_edition|constellation_edition::
-#     host_licenses_paid => "1";
-# }
+bundle agent set_persistent_classes {
+  vars:
+    "classes" slist => readstringlist("/var/tmp/cfclass", "#[^n]*", "\s*\n\s*", "100000", "99999999999");
+    "now" int => ago(0,0,0,0,0,0);
+  reports:
+    cfengine_3::
+      "\$(classes) \$(now)"
+        classes => if_repaired_persist_forever("\$(classes)");
+}
+body classes if_repaired_persist_forever(class) {
+  promise_repaired => { "\$(class)" };
+  persist_time => "48417212";
+  timer_policy => "reset";
+}
+EOF
 
-# bundle agent set_persistent_classes {
-#   vars:
-#     "classes" slist => readstringlist("/var/tmp/cfclass", "#[^n]*", "\s*\n\s*", "100000", "99999999999");
-#     "now" int => ago(0,0,0,0,0,0);
-#   reports:
-#     cfengine_3::
-#       "\$(classes) \$(now)"
-#         classes => if_repaired_persist_forever("\$(classes)");
-# }
-# body classes if_repaired_persist_forever(class) {
-#   promise_repaired => { "\$(class)" };
-#   persist_time => "48417212";
-#   timer_policy => "reset";
-# }
-# EOF
+/var/cfengine/bin/cf-agent -KI -f /tmp/set_persistent_classes.cf >> $LOG 2>&1
 
-# /var/cfengine/bin/cf-agent -KI -f /tmp/set_persistent_classes.cf >> $LOG 2>&1
+rm -rf /tmp/set_persistent_classes.cf >> $LOG 2>&1
 
-# rm -rf /tmp/set_persistent_classes.cf >> $LOG 2>&1
+echo "003 Bootstrap to the policy hub" >> $LOG 2>&1
 
-# echo "003 Bootstrap to the policy hub" >> $LOG 2>&1
+echo "Normally we would rm -rf /var/cfengine/inputs" >> $LOG 2>&1
 
-# echo "Normally we would rm -rf /var/cfengine/inputs" >> $LOG 2>&1
-
-# /var/cfengine/bin/cf-agent -B -s `cat /var/tmp/cfhub.ip` >> $LOG 2>&1
-# ';
-# }
+/var/cfengine/bin/cf-agent -B -s `cat /var/tmp/cfhub.ip` >> $LOG 2>&1
+';
+}
