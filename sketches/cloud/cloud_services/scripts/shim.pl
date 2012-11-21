@@ -98,23 +98,8 @@ if ($ec2)
  {
   my $cfclass = shift @args || 'cfworker';
   my $servers = aws_ec2('list', $cfclass);
-  if ($command eq 'count')
-  {
-   print scalar @$servers, "\n";
-  }
-  else
-  {
-   foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
-   {
-    printf("id=%s image=%s ip=%-15s progress=%03d%% cfclass=%s sname=%s\n",
-           $coder->encode($server->{id}),
-           $coder->encode($server->{image}),
-           $server->{ip},
-           $server->{progress},
-           $server->{cfclass},
-           $server->{name});
-   }
-  }
+
+  generic_list_or_count($command, $servers);
  }
  elsif ($command eq 'control')
  {
@@ -127,6 +112,16 @@ if ($ec2)
                   $target_count,
                   sub { wait_for_ec2_create(shift, $cfclass) },
                   sub { aws_ec2('delete', shift) });
+ }
+ elsif ($command eq 'ssh')
+ {
+  my $goto = shift @args;
+  die "$0: ec2 ssh command requires a machine name argument"
+   unless defined $goto;
+
+  my $servers = aws_ec2('list');
+
+  generic_ssh_exec($servers, $goto);
  }
  elsif ($command eq 'console')
  {
@@ -168,21 +163,12 @@ elsif ($openstack)
  my $token = curl_openstack('token');
  printf "Got token %s\n", $token if $options{verbose};
 
- if ($command eq 'list')
+ if ($command eq 'list' || $command eq 'count')
  {
   my ($cfclass, @rest) = @args;
   my $servers = curl_openstack('list', $cfclass);
 
-  foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
-  {
-   printf("id=%s image=%s ip=%-15s progress=%03d%% cfclass=%s sname=%s\n",
-          $coder->encode($server->{id}),
-          $coder->encode($server->{image}),
-          $server->{ip},
-          $server->{progress},
-          $server->{cfclass},
-          $server->{name});
-  }
+  generic_list_or_count($command, $servers);
  }
  elsif ($command eq 'ssh')
  {
@@ -191,22 +177,8 @@ elsif ($openstack)
    unless defined $goto;
 
   my $servers = curl_openstack('list');
-  foreach my $server (@$servers)
-  {
-   if ($server->{name} eq $goto)
-   {
-    if ($server->{ip})
-    {
-     exec "ssh root\@$server->{ip}";
-    }
-    else
-    {
-     die "$goto has no IPv4 address";
-    }
-   }
-  }
 
-  die "Could not SSH to $goto, it's not in the machine list";
+  generic_ssh_exec($servers, $goto);
  }
  elsif ($command eq 'control')
  {
@@ -272,9 +244,12 @@ sub aws_ec2
   # [--group SecurityGroup...|-g SecurityGroup...] [--key KeyName|-k KeyName] [--user-data UserData|-d UserData] [--user-data-file UserData|-f UserData] [-a AddressingType] [--instance-type InstanceType|--type InstanceType|-t InstanceType|-i InstanceType] [--availability-zone Placement.AvailabilityZone|-z Placement.AvailabilityZone] [--kernel KernelId] [--ramdisk RamdiskId] [--block-device-mapping |-b ] [--device-name DeviceName...] [--no-device NoDevice...] [--virtual-name VirtualName...] [--snapshot SnapshotId...|-s SnapshotId...] [--volume-size VolumeSize...] [--delete-on-termination DeleteOnTermination...] [--monitor Monitoring.Enabled...|-m Monitoring.Enabled...] [--disable-api-termination DisableApiTermination...] [--instance-initiated-shutdown-behavior InstanceInitiatedShutdownBehavior...] [--placement-group Placement.GroupName...] [--subnet SubnetId...|-s SubnetId...] [--private-ip-address PrivateIpAddress...] [--client-token ClientToken...]
 
   my $udata = '';
-  if ($options{hub} && $options{install_cfengine})
+  if ($options{hub})
   {
-   my $init = ec2_init_script($options{hub}, $args[0]);
+   my $init = ec2_init_script($options{hub},
+                              $args[0],
+                              $options{install_cfengine},
+                              $options{ec2}->{ssh_pub_key});
    my $dir = tempdir( CLEANUP => 1 );
    my ($fh, $filename) = tempfile( DIR => $dir );
 
@@ -284,6 +259,7 @@ sub aws_ec2
    if (-f $filename && -r $filename)
    {
     $udata = "-f '$filename'";
+    print "Installing init script:\n$init\n" if $options{verbose};
    }
   }
 
@@ -292,7 +268,6 @@ sub aws_ec2
                  $options{ec2}->{security_group},
                  $options{ec2}->{instance_type},
                  $options{ec2}->{region});
-  # TODO: use --ec2 ssh_pub_key, --hub, and --install_cfengine
   open $t, "$run|" or die "Could not create instances with command [$run]: $!";;
  }
  else
@@ -680,12 +655,75 @@ sub generic_control
   }
 }
 
+sub generic_ssh_exec
+{
+ my $servers = shift @_;
+ my $goto    = shift @_;
+
+ foreach my $server (@$servers)
+ {
+  if ($server->{name} eq $goto)
+  {
+   if ($server->{ip})
+   {
+    exec "ssh root\@$server->{ip}";
+   }
+   else
+   {
+    die "$goto has no IPv4 address";
+   }
+  }
+ }
+
+ die "Could not SSH to $goto, it's not in the machine list";
+}
+
+sub generic_list_or_count
+{
+ my $command = shift @_;
+ my $servers = shift @_;
+
+ if ($command eq 'count')
+ {
+  print scalar @$servers, "\n";
+ }
+ else
+ {
+  foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
+  {
+   printf("id=%s image=%s ip=%-15s progress=%03d%% cfclass=%s sname=%s\n",
+          $coder->encode($server->{id}),
+          $coder->encode($server->{image}),
+          $server->{ip},
+          $server->{progress},
+          $server->{cfclass},
+          $server->{name});
+  }
+ }
+}
+
 sub ec2_init_script
 {
- my $hub_ip = shift @_;
+ my $hub_ip       = shift @_;
  my $client_class = shift @_;
+ my $install      = shift @_;
+ my $key          = shift @_;
 
- return "
+ if (-f $key && -r $key)
+ {
+  open my $fk, '<', $key;
+  if ($fk)
+  {
+   $key = <$fk>;
+   chomp $key;
+  }
+ }
+
+ my $go = "#!/bin/bash
+#set -e -x # -e exits on error
+set -x
+export DEBIAN_FRONTEND=noninteractive
+
 LOG=/tmp/shim.ec2.cfengine.setup.log
 
 echo '000 Bootstrapping host of class $client_class (adding class shim_ec2) to hub $hub_ip.' >> \$LOG 2>&1
@@ -694,6 +732,17 @@ echo '$hub_ip' > /var/tmp/cfhub.ip
 echo '$client_class' > /var/tmp/cfclass
 echo 'shim_ec2' >> /var/tmp/cfclass
 
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+cat >> ~/.ssh/authorized_keys <<EOHIPPUS
+$key
+EOHIPPUS
+
+chmod 600 ~/.ssh/authorized_keys
+";
+
+ return $go unless $install;
+ return $go . "
 echo '001 Adding the CFEngine APT repo and installing cfengine-community' >> \$LOG 2>&1
 
 curl -o /tmp/cfengine.gpg.key http://cfengine.com/pub/gpg.key >> \$LOG 2>&1
