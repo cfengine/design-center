@@ -99,10 +99,11 @@ if ($s3)
   my $files = aws_s3($command, $bucket);
   foreach my $f (sort { $a->{Key} cmp $b->{Key} } @$files)
   {
-   printf("bucket=%s md5=%s name=%s\n",
+   printf("bucket=%s md5=%s name=%s URL=%s\n",
           $bucket,
           $f->{md5},
-          $f->{Key});
+          $f->{Key},
+         "https://$bucket.s3.amazonaws.com/$f->{Key}");
   }
  }
  elsif ($command eq 'clear')
