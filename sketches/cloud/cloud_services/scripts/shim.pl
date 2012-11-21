@@ -3,10 +3,13 @@
 use strict;
 use warnings;
 
+use Digest::MD5;
 use Data::Dumper;
 use Getopt::Long;
 use MIME::Base64;
+use File::Spec;
 use File::Temp qw/ tempfile tempdir /;
+use File::Find;
 use FindBin;
 use JSON::XS;
 
@@ -20,7 +23,9 @@ my %options =
   install_cfengine => 'ON',
   curl => '/usr/bin/curl',
   ec2 => {
-          entry_url => 'http://ec2.amazonaws.com',
+          aws_tool => "$FindBin::Bin/aws",
+         },
+  s3 => {
           aws_tool => "$FindBin::Bin/aws",
          },
   openstack => {
@@ -37,6 +42,7 @@ my @options_spec =
   "curl=s",
   "install_cfengine=s",
   "ec2=s%",
+  "s3=s%",
   "openstack=s%",
  );
 
@@ -50,13 +56,80 @@ my $shim_mode = shift @ARGV;
 die "Syntax: $0 [--curl=/bin/curl --hub=xyz --ec2 ec2option=x --openstack openstackoption=y] [ec2|openstack] [command] [arguments]"
  unless defined $shim_mode;
 
-my $ec2 = $shim_mode eq 'ec2';
+my $ec2       = $shim_mode eq 'ec2';
+my $s3        = $shim_mode eq 's3';
 my $openstack = $shim_mode eq 'openstack';
 
 my $command = shift @ARGV;
 my @args = @ARGV;
 
-if ($ec2)
+if ($s3)
+{
+ foreach my $required (qw/acl/)
+ {
+  die "Sorry, we can't go on until you've specified --s3 $required"
+   unless defined $options{s3}->{$required};
+ }
+
+ # Access and secret key inherited from environment if defined
+ foreach my $required (qw/aws_access_key aws_secret_key/)
+ {
+  my $envvarname = uc($required);
+  $envvarname =~ s/^AWS_/EC2_/;
+  if (defined $options{s3}->{$required})
+  {
+   $ENV{$envvarname} = $options{s3}->{$required};
+  }
+  else
+  {
+   if (defined $ENV{$envvarname})
+   {
+    $options{s3}->{$required} = $ENV{$envvarname};
+   }
+   else
+   {
+    die "Sorry, we can't go on until you've specified --s3 $required (or specified it in your $envvarname environment variable)";
+   }
+  }
+ }
+
+ if ($command eq 'ls')
+ {
+  my $bucket = shift @args;
+  my $files = aws_s3($command, $bucket);
+  foreach my $f (sort { $a->{Key} cmp $b->{Key} } @$files)
+  {
+   printf("bucket=%s md5=%s name=%s\n",
+          $bucket,
+          $f->{md5},
+          $f->{Key});
+  }
+ }
+ elsif ($command eq 'clear')
+ {
+  my $bucket = shift @args;
+
+  die "Bucket not given to S3 clear command, syntax [s3 clear BUCKET]"
+   unless defined $bucket;
+
+  aws_s3($command, $bucket);
+ }
+ elsif ($command eq 'sync')
+ {
+  my $dir = shift @args || '.';
+  my $bucket = shift @args;
+
+  die "Bucket not given to S3 sync command, syntax [s3 sync DIR BUCKET]"
+   unless defined $bucket;
+
+  aws_s3($command, $dir, $bucket);
+ }
+ else
+ {
+  print "unknown s3 command: $command @args\n";
+ }
+}
+elsif ($ec2)
 {
  foreach my $required (qw/ssh_pub_key ami instance_type region security_group/)
  {
@@ -203,6 +276,122 @@ elsif ($openstack)
 else
 {
  die "Sorry, can't handle shim mode $shim_mode";
+}
+
+sub aws_s3
+{
+ my $mode = shift @_;
+ my @args = @_;
+
+ my $tool = $options{s3}->{aws_tool};
+ my $run;
+ my $t;
+
+ my $ret;
+
+ if ($mode eq 'ls')
+ {
+  $run = "$tool --json ls $args[0]";
+  open $t, "$run|" or die "Could not list bucket with command [$run]: $!";;
+ }
+ elsif ($mode eq 'clear')
+ {
+  my $bucket = $args[0];
+  my $files = aws_s3('ls', $bucket);
+
+  foreach my $file (@$files)
+  {
+   my $do = "$tool --json delete '$bucket/$file->{Key}'";
+   print "Running [$do]\n" if $options{verbose};
+   system $do;
+  }
+
+  return;
+ }
+ elsif ($mode eq 'sync')
+ {
+  my $dir = $args[0];
+  my $bucket = $args[1];
+
+  my $files = aws_s3('ls', $bucket);
+  my %files = map { $_->{Key} => $_->{md5} } @$files;
+
+  my $mkdir = "$tool --json mkdir '$bucket'";
+  print "Running [$mkdir]\n" if $options{verbose};
+  system($mkdir);
+
+  my %found;
+  find(sub
+       {
+        return unless -f $_;
+
+        my $rel = File::Spec->abs2rel($File::Find::name, $File::Find::topdir);
+
+        if (exists $files{$rel})
+        {
+         my $md5 = '';
+         if (open(my $cfile, $_))
+         {
+          binmode($cfile);
+          $md5 = Digest::MD5->new->addfile($cfile)->hexdigest;
+          close $cfile;
+         }
+
+         if ($files{$rel} eq $md5)
+         {
+          print "Skipping sync of $File::Find::name because its MD5 checksum matches $bucket/$rel\n"
+           if $options{verbose};
+          return;
+         }
+        }
+
+        my $do = "$tool --json put '$bucket/$rel' '$_' --set-acl=$options{s3}->{acl}";
+        print "Running [$do]\n" if $options{verbose};
+        system($do);
+        delete $files{$rel};
+       },
+       $dir);
+
+  foreach my $remaining (sort keys %files)
+  {
+   print "WARNING: file $bucket/$remaining is left over.  Use 's3 clear $bucket' and then resync.\n"
+    if $options{verbose};
+  }
+
+  return;
+ }
+ else
+ {
+  die "Unknown S3 mode $mode";
+ }
+
+ print "Running [$run]\n" if $options{verbose};
+
+ while (<$t>)
+ {
+  print "$_\n" if $options{verbose};
+  my $data;
+  eval
+  {
+   $data = $coder->decode($_);
+  };
+
+  if (defined $data)
+  {
+   if ($mode eq 'ls')
+   {
+    $ret = hashref_search($data, 'Contents') || [];
+    foreach my $f (@$ret)
+    {
+     next unless defined $f->{ETag};
+     next unless $f->{ETag} =~ m/"([0-9a-f]+)"/i;
+     $f->{md5} = $1;
+    }
+   }
+  }
+ }
+
+ return $ret;
 }
 
 sub aws_ec2
