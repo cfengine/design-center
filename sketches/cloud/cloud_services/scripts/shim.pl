@@ -95,7 +95,7 @@ if ($ec2)
  if ($command eq 'list')
  {
   my $cfclass = shift @args || 'cfworker';
-  my $servers = curl_ec2('list', $cfclass);
+  my $servers = aws_ec2('list', $cfclass);
   foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
   {
    printf("id=%s image=%s ip=%-15s progress=%03d%% cfclass=%s sname=%s\n",
@@ -107,152 +107,18 @@ if ($ec2)
           $server->{name});
   }
  }
- # if ($command eq 'control')
- # {
- #  print "ec2 controlling @args\n";
- #  my ($target_count, $client_class, @rest) = @args;
+ elsif ($command eq 'control')
+ {
+  print "ec2 controlling @args\n";
+  my ($target_count, $cfclass, @rest) = @args;
 
- #  my $image = $ec2->describe_images($options{ec2}->{ami});
+  my $servers = aws_ec2('list', $cfclass);
 
- #  # die "Can't authenticate against EC2: please check the AWS secret and access keys";
-
- #  # get some information about the image
- #  my $architecture = $image->architecture;
- #  my $description  = $image->description || '';
- #  print "Using image $image with architecture $architecture (desc: '$description')\n";
-
- #  my $public_key = $options{ec2}->{ssh_pub_key};
-
- #  my $key = $ec2->import_key_pair('shim-ec2-key', $public_key);
- #  if (!$key)
- #  {
- #   die $ec2->error unless $ec2->error =~ /already exists/;
- #  }
-
- #  my @current_instances = find_tagged_ec2_instances($client_class);
-
- #  my $delta = $target_count - scalar @current_instances;
-
- #  if ($delta > 0)
- #  {
- #   my $go = $options{install_cfengine} eq 'ON' ? ec2_init_script($options{hub}, $client_class) : "echo 'Bye now!'";
-
- #   my @instances = $image->run_instances(-key_name      =>'shim-ec2-key',
- #                                         -security_group=> $options{ec2}->{security_group},
- #                                         -min_count     => $delta,
- #                                         -max_count     => $delta,
- #                                         -user_data     => "#!/bin/sh -ex\n$go",
- #                                         -region        => $options{ec2}->{region},
- #                                         -client_token  => $ec2->token(),
- #                                         -instance_type => $options{ec2}->{type})
- #    or die $ec2->error_str;
-
- #   print "waiting for ", scalar @instances, " instances to start up...";
- #   $ec2->wait_for_instances(@instances);
- #   print "done!\n";
-
- #   foreach my $i (@instances)
- #   {
- #    my $status = $i->current_status;
- #    my $dns    = $i->dnsName;
- #    print "Started instance $i $dns $status\n";
- #    my $name = "ec2 instance of class $client_class created by $0";
- #    $i->add_tag(cfclass => $client_class,
- #                Name    => $name);
- #    print "Tagged instance $i: Name = '$name', cfclass = $client_class\n";
- #   }
- #  }
- #  elsif ($delta == 0)
- #  {
- #   print "Nothing to do, we have $target_count instances already\n";
- #  }
- #  else                                  # delta < 0, we need to decom
- #  {
- #   # Note the race condition: if a machine is shut down externally,
- #   # we won't know about it... so we just shut down 1 at a time and
- #   # expect repeated runs to converge.  This race is really hard to
- #   # avoid in a distributed system (you're basically trying to count
- #   # a distributed resource), so gentle convergence is safer.
- #   print "waiting for 1 instance to shut down...";
- #   my $todo = shift @current_instances;
- #   stop_and_terminate_ec2_instances([$todo]);
- #   $delta++;
- #  }
- # }
- # elsif ($command eq 'down')
- # {
- #  my $client_class = shift @args;
-
- #  die "Not enough arguments given to 'ec2 $command': expecting CLIENT_CLASS"
- #   unless defined $client_class;
-
- #  my @instances = find_tagged_ec2_instances($client_class);
- #  if (scalar @instances)
- #  {
- #   stop_and_terminate_ec2_instances(\@instances);
- #  }
- # }
- # elsif ($command eq 'run')
- # {
- #  my $client_class = shift @args;
- #  my $command = shift @args;
-
- #  die "Not enough arguments given to 'ec2 $command': expecting CLIENT_CLASS COMMAND"
- #   unless defined $command;
-
- #  my @instances = find_tagged_ec2_instances($client_class);
- #  if (scalar @instances)
- #  {
- #   system ("$command " . $_->dnsName) foreach @instances;
- #  }
- # }
- # elsif ($command eq 'list' || $command eq 'console' || $command eq 'console-tail' || $command eq 'list-full' || $command eq 'count')
- # {
- #  my $client_class = shift @args;
-
- #  die "Not enough arguments given to 'ec2 $command': expecting CLIENT_CLASS"
- #   unless defined $client_class;
- #  my @instances = find_tagged_ec2_instances($client_class);
- #  if ($command eq 'count')
- #  {
- #   print scalar @instances, "\n";
- #  }
- #  elsif ($command eq 'console')
- #  {
- #   foreach my $i (@instances)
- #   {
- #    my $out = $i->console_output;
- #    my $dns    = $i->dnsName;
- #    print "$i $dns\n$out\n\n";
- #   }
- #  }
- #  elsif ($command eq 'console-tail')
- #  {
- #   while (1)
- #   {
- #    foreach my $i (@instances)
- #    {
- #     my $out = $i->console_output;
- #     my $dns    = $i->dnsName;
- #     print "$i $dns\n$out\n\n";
- #    }
- #   }
- #   print "Press Ctrl-C to abort the tail...";
- #  }
- #  elsif ($command eq 'list-full')
- #  {
- #   foreach my $i (@instances)
- #   {
- #    my $status = $i->current_status;
- #    my $dns    = $i->dnsName;
- #    print "$i $dns $status\n";
- #   }
- #  }
- #  else
- #  {
- #   print join("\n", @instances), "\n";
- #  }
- # }
+  generic_control($servers,
+                  $target_count,
+                  sub { wait_for_ec2_create(shift, $cfclass) },
+                  sub { aws_ec2('delete', shift) });
+ }
  else
  {
   print "unknown ec2 command: $command @args\n";
@@ -318,38 +184,18 @@ elsif ($openstack)
   my ($target_count, $cfclass, @rest) = @args;
 
   my $servers = curl_openstack('list', $cfclass);
-
   my @clients = grep {
    $_->{name} ne $options{openstack}->{master}
     } @$servers;
-
   printf "Got clients %s\n", $coder->encode(\@clients);
-
-  my @current_instances = @clients;
-  my $current_count = scalar @current_instances;
-  my $delta = $target_count - $current_count;
-
-  if ($delta > 0)
-  {
-   print "waiting for 1 instance to start up...";
-   wait_for_openstack_create($current_count+1, $cfclass);
-   print "done!\n";
-  }
-  elsif ($delta == 0)
-  {
-   print "Nothing to do, we have $target_count instances already\n";
-  }
-  else                                  # delta < 0, we need to decom
-  {
-   # Note the race condition: if a machine is shut down externally,
-   # we won't know about it... so we just shut down 1 at a time and
-   # expect repeated runs to converge.  This race is really hard to
-   # avoid in a distributed system (you're basically trying to count
-   # a distributed resource), so gentle convergence is safer.
-   print "waiting for 1 instance to shut down...";
-   my $todo = shift @current_instances;
-   curl_openstack('delete', $todo->{id});
-  }
+  generic_control(\@clients,
+                  $target_count,
+                  sub { wait_for_openstack_create(shift, $cfclass) },
+                  sub { curl_openstack('delete', shift) });
+ }
+ else
+ {
+  print "unknown openstack command: $command @args\n";
  }
 }
 else
@@ -357,10 +203,10 @@ else
  die "Sorry, can't handle shim mode $shim_mode";
 }
 
-sub curl_ec2
+sub aws_ec2
 {
  my $mode = shift @_;
- my $args = shift @_;
+ my @args = @_;
 
  my $tool = $options{ec2}->{aws_tool};
  my $run;
@@ -373,14 +219,40 @@ sub curl_ec2
   $run = "$tool --json describe-instances";
   open $t, "$run|" or die "Could not get server list with command [$run]: $!";;
  }
+ elsif ($mode eq 'create-tags')
+ {
+  my $tags = $args[1];
+  my $extra = join ' ', map { "--tag $_=$tags->{$_}" } keys %$tags;
+  $run = "$tool --json create-tags $args[0] $extra";
+  open $t, "$run|" or die "Could not create tags with command [$run]: $!";;
+ }
+ elsif ($mode eq 'delete')
+ {
+  $run = "$tool --json terminate-instances $args[0]";
+  open $t, "$run|" or die "Could not kill instances with command [$run]: $!";;
+ }
+ elsif ($mode eq 'create')
+ {
+  # [--group SecurityGroup...|-g SecurityGroup...] [--key KeyName|-k KeyName] [--user-data UserData|-d UserData] [--user-data-file UserData|-f UserData] [-a AddressingType] [--instance-type InstanceType|--type InstanceType|-t InstanceType|-i InstanceType] [--availability-zone Placement.AvailabilityZone|-z Placement.AvailabilityZone] [--kernel KernelId] [--ramdisk RamdiskId] [--block-device-mapping |-b ] [--device-name DeviceName...] [--no-device NoDevice...] [--virtual-name VirtualName...] [--snapshot SnapshotId...|-s SnapshotId...] [--volume-size VolumeSize...] [--delete-on-termination DeleteOnTermination...] [--monitor Monitoring.Enabled...|-m Monitoring.Enabled...] [--disable-api-termination DisableApiTermination...] [--instance-initiated-shutdown-behavior InstanceInitiatedShutdownBehavior...] [--placement-group Placement.GroupName...] [--subnet SubnetId...|-s SubnetId...] [--private-ip-address PrivateIpAddress...] [--client-token ClientToken...]
+
+  $run = sprintf("$tool --json run-instances %s -g %s -t %s --region %s",
+                 $options{ec2}->{ami},
+                 $options{ec2}->{security_group},
+                 $options{ec2}->{instance_type},
+                 $options{ec2}->{region});
+  # TODO: use --ec2 ssh_pub_key, --hub, and --install_cfengine
+  open $t, "$run|" or die "Could not create instances with command [$run]: $!";;
+ }
  else
  {
   die "Unknown EC2 mode $mode";
  }
 
+ print "Running [$run]\n" if $options{verbose};
+
  while (<$t>)
  {
-  print if $options{verbose};
+  print "$_\n" if $options{verbose};
   my $data;
   eval
   {
@@ -430,7 +302,19 @@ sub curl_ec2
 
      }
 
-     $server_data->{progress} = (defined $server_data->{progress} && $server_data->{progress} eq 'running') ? 100 : 0;
+     my $p = $server_data->{progress} || 'unknown';
+     if ($p eq 'running')
+     {
+      $server_data->{progress} = 100;
+     }
+     elsif ($p eq 'terminated')
+     {
+      $server_data->{progress} = -99;
+     }
+     else
+     {
+      $server_data->{progress} = 0;
+     }
 
      $server_data->{ip} ||= '0.0.0.0';
 
@@ -440,17 +324,48 @@ sub curl_ec2
      die "Could not find imageId in instance data, giving up"
       unless defined $server_data->{id};
 
+
+     # filtering below
+     my $cfclass = $server_data->{cfclass} || '???';
+     my $name = $server_data->{name} || '???';
+
      unless ($server_data->{cfclass} &&
-             $server_data->{cfclass} eq $args)
+             $server_data->{cfclass} eq $args[0])
      {
-      my $cfclass = $server_data->{cfclass} || '???';
-      my $name = $server_data->{name} || '???';
-      print "Skipping '$name' because its class $cfclass doesn't match $args\n"
+      print "Skipping '$name': its class $cfclass doesn't match $args[0]\n"
+       if $options{verbose};
+      next;
+     }
+
+     # terminated EC2 instances remain visible for at least an hour; skip them
+     if ($server_data->{progress} < 0)
+     {
+      print "Skipping '$name': it is terminated\n"
        if $options{verbose};
       next;
      }
 
      push @$ret, $server_data;
+    }
+   }
+   elsif ($mode eq 'create-tags')
+   {
+    $ret = $data;
+   }
+   elsif ($mode eq 'delete')
+   {
+    $ret = $data;
+   }
+   elsif ($mode eq 'create')
+   {
+    my $id = hashref_search($data, qw/instancesSet item instanceId/);
+    $ret = [$data, $id];
+    if ($id)
+    {
+     my $tagret = aws_ec2('create-tags',
+                          $id,
+                          { Name => $args[1], cfclass => $args[0] });
+     $ret = [$data, $id, $tagret];
     }
    }
   }
@@ -459,7 +374,13 @@ sub curl_ec2
  return $ret;
 }
 
+sub wait_for_ec2_create
+{
+ my $start = shift @_;
+ my $client_class = shift @_;
 
+ return aws_ec2('create', $client_class, "$client_class-$start");
+}
 
 sub curl_openstack
 {
@@ -655,33 +576,50 @@ sub hashref_search
  return undef;
 }
 
-# sub find_tagged_ec2_instances
-# {
-#  my $tag = shift @_;
-#  my $state = shift @_ || 'running';
+sub generic_control
+{
+ my $servers      = shift @_;
+ my $target_count = shift @_;
+ my $creator      = shift @_;
+ my $deleter      = shift @_;
 
-#  return $ec2->describe_instances(-filter => {
-#                                              'instance-state-name'=>$state,
-#                                              'tag:cfclass' => $tag
-#                                             });
-# }
+ my $current_count = scalar @$servers;
+ my $delta = $target_count - $current_count;
 
-# sub stop_and_terminate_ec2_instances
-# {
-#  my $instances = shift @_;
+ if ($delta > 0)
+ {
+  print "waiting for 1 instance to start up...";
+  my $cdata = $creator->($current_count+1);
+  print 'Got creation data ' , $coder->encode($cdata), "\n"
+   if $options{verbose};
+  my $error = hashref_search($cdata, qw/Errors Error/);
 
-#  my @instances = @$instances;
-
-#  print "Stopping instances @instances...";
-#  $ec2->stop_instances(-instance_id=>$instances,-force=>1);
-#  $ec2->wait_for_instances(@instances);
-#  print "done!\n";
-
-#  print "Terminating instances @instances...";
-#  $ec2->terminate_instances(-instance_id=>$instances,-force=>1);
-#  $ec2->wait_for_instances(@instances);
-#  print "done!\n";
-# }
+  if ($error)
+  {
+   printf("error: %s (%s)\n",
+          hashref_search($error, 'Code'),
+          hashref_search($error, 'Message'));
+  }
+  else
+  {
+   print "done!\n";
+  }
+ }
+  elsif ($delta == 0)
+  {
+   print "Nothing to do, we have $target_count instances already\n";
+  }
+  else                                  # delta < 0, we need to decom
+  {
+   # Note the race condition: if a machine is shut down externally,
+   # we won't know about it... so we just shut down 1 at a time and
+   # expect repeated runs to converge.  This race is really hard to
+   # avoid in a distributed system (you're basically trying to count
+   # a distributed resource), so gentle convergence is safer.
+   print "waiting for 1 instance to shut down...";
+   $deleter->($servers->[0]->{id});
+  }
+}
 
 # sub ec2_init_script
 # {

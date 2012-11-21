@@ -2046,8 +2046,13 @@ sub xml2json
 
  my $coder = JSON->new()->relaxed()->utf8()->allow_blessed->convert_blessed->allow_nonref();
 
- my $ref = XML::Simple::XMLin($xml);
- return $coder->encode($ref);
+ if ($xml)
+ {
+  my $ref = XML::Simple::XMLin($xml);
+  return $coder->encode($ref);
+ }
+
+ return;
 }
 
 sub s3
