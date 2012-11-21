@@ -92,19 +92,26 @@ if ($ec2)
   $options{ec2}->{ssh_pub_key} = $line;
  }
 
- if ($command eq 'list')
+ if ($command eq 'list' || $command eq 'count')
  {
   my $cfclass = shift @args || 'cfworker';
   my $servers = aws_ec2('list', $cfclass);
-  foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
+  if ($command eq 'count')
   {
-   printf("id=%s image=%s ip=%-15s progress=%03d%% cfclass=%s sname=%s\n",
-          $coder->encode($server->{id}),
-          $coder->encode($server->{image}),
-          $server->{ip},
-          $server->{progress},
-          $server->{cfclass},
-          $server->{name});
+   print scalar @$servers, "\n";
+  }
+  else
+  {
+   foreach my $server (sort { $a->{name} cmp $b->{name} } @$servers)
+   {
+    printf("id=%s image=%s ip=%-15s progress=%03d%% cfclass=%s sname=%s\n",
+           $coder->encode($server->{id}),
+           $coder->encode($server->{image}),
+           $server->{ip},
+           $server->{progress},
+           $server->{cfclass},
+           $server->{name});
+   }
   }
  }
  elsif ($command eq 'control')
