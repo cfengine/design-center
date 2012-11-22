@@ -26,6 +26,9 @@ my %options =
           aws_tool => "$FindBin::Bin/aws",
          },
   s3 => {
+         aws_tool => "$FindBin::Bin/aws",
+        },
+  sdb => {
           aws_tool => "$FindBin::Bin/aws",
          },
   openstack => {
@@ -43,6 +46,7 @@ my @options_spec =
   "install_cfengine=s",
   "ec2=s%",
   "s3=s%",
+  "sdb=s%",
   "openstack=s%",
  );
 
@@ -58,6 +62,7 @@ die "Syntax: $0 [--curl=/bin/curl --hub=xyz --ec2 ec2option=x --openstack openst
 
 my $ec2       = $shim_mode eq 'ec2';
 my $s3        = $shim_mode eq 's3';
+my $sdb       = $shim_mode eq 'sdb';
 my $openstack = $shim_mode eq 'openstack';
 
 my $command = shift @ARGV;
@@ -93,7 +98,7 @@ if ($s3)
   }
  }
 
- if ($command eq 'ls')
+ if ($command eq 'list')
  {
   my $bucket = shift @args;
   my $files = aws_s3($command, $bucket);
@@ -128,6 +133,79 @@ if ($s3)
  else
  {
   print "unknown s3 command: $command @args\n";
+ }
+}
+elsif ($sdb)
+{
+ # Access and secret key inherited from environment if defined
+ foreach my $required (qw/aws_access_key aws_secret_key/)
+ {
+  my $envvarname = uc($required);
+  $envvarname =~ s/^AWS_/EC2_/;
+  if (defined $options{sdb}->{$required})
+  {
+   $ENV{$envvarname} = $options{sdb}->{$required};
+  }
+  else
+  {
+   if (defined $ENV{$envvarname})
+   {
+    $options{sdb}->{$required} = $ENV{$envvarname};
+   }
+   else
+   {
+    die "Sorry, we can't go on until you've specified --sdb $required (or specified it in your $envvarname environment variable)";
+   }
+  }
+ }
+
+ if ($command eq 'list' || $command eq 'dump')
+ {
+  my $domain = shift @args;
+  my $items = aws_sdb('list', $domain);
+  foreach my $item (sort { $a->{Name} cmp $b->{Name} } @$items)
+  {
+   if ($command eq 'list')
+   {
+    print "SDB ITEM: ", $coder->encode($item), "\n"
+     if $options{verbose};
+    printf("domain=%s\tname=%s",
+           $domain,
+           $coder->encode($item->{Name}));
+    foreach my $k (sort keys %{$item->{attr}})
+    {
+     print "\t", $k, '=', $coder->encode($item->{attr}->{$k});
+    }
+   }
+   elsif ($command eq 'dump')
+   {
+    print $coder->encode($item);
+   }
+   print "\n";
+  }
+ }
+ elsif ($command eq 'clear')
+ {
+  my $domain = shift @args;
+
+  die "Domain not given to SDB clear command, syntax [sdb clear DOMAIN]"
+   unless defined $domain;
+
+  aws_sdb($command, $domain);
+ }
+ elsif ($command eq 'sync')
+ {
+  my $file = shift @args;
+  my $domain = shift @args;
+
+  die "Domain not given to SDB sync command, syntax [sdb sync JSON BUCKET]"
+   unless defined $domain;
+
+  aws_sdb($command, $file, $domain);
+ }
+ else
+ {
+  print "unknown sdb command: $command @args\n";
  }
 }
 elsif ($ec2)
@@ -279,6 +357,147 @@ else
  die "Sorry, can't handle shim mode $shim_mode";
 }
 
+sub aws_sdb
+{
+ my $mode = shift @_;
+ my @args = @_;
+
+ my $tool = $options{sdb}->{aws_tool};
+ my $run;
+ my $t;
+
+ my $ret;
+
+ if ($mode eq 'list')
+ {
+  $run = "$tool --json select 'SELECT * FROM $args[0]'";
+  open $t, "$run|" or die "Could not list domain with command [$run]: $!";;
+ }
+ elsif ($mode eq 'clear')
+ {
+  my $domain = $args[0];
+
+  my $do = "$tool --json delete-domain '$domain'";
+  print "Running [$do]\n" if $options{verbose};
+  system $do;
+
+  return;
+ }
+ elsif ($mode eq 'sync')
+ {
+  my $file = $args[0];
+  my $domain = $args[1];
+
+  my $items = aws_sdb('list', $domain);
+  my %items = map { $_->{Name} => $_ } @$items;
+
+  open my $json, '<', $file or die "Could not load sync file $file: $!";
+
+  my $create = "$tool --json create-domain '$domain'";
+  print "Running [$create]\n" if $options{verbose};
+  system($create);
+
+  my %new;
+  while (<$json>)
+  {
+   my $data;
+   eval
+   {
+    $data = $coder->decode($_);
+   };
+
+   if ($data)
+   {
+    print "\nSynchronizing input line $_"
+     if $options{verbose};
+    die "Invalid sync JSON line $_: not a JSON Object"
+     unless ref $data eq 'HASH';
+
+    die "Invalid sync JSON line $_: no Name"
+     unless exists $data->{Name};
+    die "Invalid sync JSON line $_: invalid Name"
+     unless ref $data->{Name} eq '';
+
+    die "Invalid sync JSON line $_: no attributes in key 'attr'"
+     unless exists $data->{attr};
+    die "Invalid sync JSON line $_: invalid attributes in key 'attr'"
+     unless ref $data->{attr} eq 'HASH';
+
+    my $name = $data->{Name};
+
+    if (exists $items{$name} &&
+        $coder->encode($items{$name}) eq $coder->encode($data))
+    {
+     # nothing to do
+    }
+    else
+    {
+     if (exists $items{$name}) # need to delete old one
+     {
+      foreach my $attr (sort keys %{$items{$name}->{attr}})
+      {
+       my $do = "$tool --json delete-attributes '$domain' -i '$name' -n '$attr'";
+       print "Running [$do]\n" if $options{verbose};
+       system $do;
+      }
+     }
+
+     # insert the new one
+     foreach my $attr (sort keys %{$data->{attr}})
+     {
+      my $do = "$tool --json put-attributes '$domain' -i '$name' -n '$attr' -v '$data->{attr}->{$attr}'";
+      print "Running [$do]\n" if $options{verbose};
+      system $do;
+     }
+    }
+   }
+  }
+
+  foreach my $current (keys %items)
+  {
+  }
+
+  return;
+ }
+ else
+ {
+  die "Unknown SDB mode $mode";
+ }
+
+ print "Running [$run]\n" if $options{verbose};
+
+ while (<$t>)
+ {
+  print "$_\n" if $options{verbose};
+  my $data;
+  eval
+  {
+   $data = $coder->decode($_);
+  };
+
+  if (defined $data)
+  {
+   if ($mode eq 'list')
+   {
+    $ret = [];
+    my $items = hashref_search($data, qw/SelectResult Item/) || [];
+    foreach my $item (@$items)
+    {
+     my $attrs = hashref_search($item, qw/Attribute/) || [];
+     my %attrs;
+     foreach my $r (@$attrs)
+     {
+      $attrs{$r->{Name}} = $r->{Value};
+     }
+     push @$ret, { Name => $item->{Name}, attr => \%attrs };
+    }
+   }
+  }
+ }
+
+ return $ret;
+}
+
 sub aws_s3
 {
  my $mode = shift @_;
@@ -290,7 +509,7 @@ sub aws_s3
 
  my $ret;
 
- if ($mode eq 'ls')
+ if ($mode eq 'list')
  {
   $run = "$tool --json ls $args[0]";
   open $t, "$run|" or die "Could not list bucket with command [$run]: $!";;
@@ -298,7 +517,7 @@ sub aws_s3
  elsif ($mode eq 'clear')
  {
   my $bucket = $args[0];
-  my $files = aws_s3('ls', $bucket);
+  my $files = aws_s3('list', $bucket);
 
   foreach my $file (@$files)
   {
@@ -314,7 +533,7 @@ sub aws_s3
   my $dir = $args[0];
   my $bucket = $args[1];
 
-  my $files = aws_s3('ls', $bucket);
+  my $files = aws_s3('list', $bucket);
   my %files = map { $_->{Key} => $_->{md5} } @$files;
 
   my $mkdir = "$tool --json mkdir '$bucket'";
@@ -379,7 +598,7 @@ sub aws_s3
 
   if (defined $data)
   {
-   if ($mode eq 'ls')
+   if ($mode eq 'list')
    {
     $ret = hashref_search($data, 'Contents') || [];
     foreach my $f (@$ret)

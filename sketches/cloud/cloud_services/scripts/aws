@@ -2048,7 +2048,7 @@ sub xml2json
 
  if ($xml)
  {
-  my $ref = XML::Simple::XMLin($xml, ForceArray => [qw/Attribute/]);
+  my $ref = XML::Simple::XMLin($xml, ForceArray => [qw/Attribute Item/]);
   return $coder->encode($ref);
  }
 
