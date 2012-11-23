@@ -23,13 +23,13 @@ my %options =
   install_cfengine => 'ON',
   curl => '/usr/bin/curl',
   ec2 => {
-          aws_tool => "$FindBin::Bin/aws",
+          aws_tool => "/usr/bin/perl $FindBin::Bin/aws",
          },
   s3 => {
-         aws_tool => "$FindBin::Bin/aws",
+         aws_tool => "/usr/bin/perl $FindBin::Bin/aws",
         },
   sdb => {
-          aws_tool => "$FindBin::Bin/aws",
+          aws_tool => "/usr/bin/perl $FindBin::Bin/aws",
          },
   openstack => {
                 flavor => "2",
