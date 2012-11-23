@@ -3,7 +3,7 @@ body file control
   namespace => "cfdc_cloud_services";
 }
 
-bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2, s3, sdb, vcli, openstack)
+bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2, s3, sdb, vcli, openstack, hub)
 {
   meta:
       # __PREFIX__ will be supplied by cf-sketch
@@ -26,8 +26,8 @@ bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count,
       "vars[state][type]"                string => "=start|=stop";
       "vars[state][default]"             string => "start";
 
-      "vars[install_cfengine][type]"     string => "BOOLEAN";
-      "vars[install_cfengine][default]"  string => "1";
+      "vars[hub][type]"                  string => "IPv4_ADDRESS";
+      "vars[hub][default]"               string => "$(sys.ipv4)";
 
       # you'd say 'ami:NON_EMPTY_STRING:required' if that key was
       # required but didn't have a default
@@ -112,14 +112,15 @@ master         :NON_EMPTY_STRING:default=cfmaster
                                                $(count),
                                                $(class),
                                                $(state),
-                                               "$($(stype))");
+                                               "$($(stype))",
+                                               $(hub));
 
   reports:
     verbose::
       "Invoking cloud_services: $(prefix) $(stype) $(count) $(class)";
 }
 
-body service_method cloud_services_handler(prefix, bundle_home, install_cfengine, service_bundle, count, class, state, params)
+body service_method cloud_services_handler(prefix, bundle_home, install_cfengine, service_bundle, count, class, state, params, hub)
 {
       service_bundle => $(service_bundle)($(prefix),
                                           $(bundle_home),
@@ -128,7 +129,7 @@ body service_method cloud_services_handler(prefix, bundle_home, install_cfengine
                                           $(class),
                                           $(state), # also in $(this.service_policy)
                                           $(params),
-                                          $(sys.ipv4));
+                                          $(hub));
       service_dependence_chain => "start_parent_services";
 }
 
