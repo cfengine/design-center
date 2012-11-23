@@ -81,13 +81,13 @@ if ($s3)
  {
   my $envvarname = uc($required);
   $envvarname =~ s/^AWS_/EC2_/;
-  if (defined $options{s3}->{$required})
+  if ($options{s3}->{$required})
   {
    $ENV{$envvarname} = $options{s3}->{$required};
   }
   else
   {
-   if (defined $ENV{$envvarname})
+   if ($ENV{$envvarname})
    {
     $options{s3}->{$required} = $ENV{$envvarname};
    }
@@ -221,13 +221,13 @@ elsif ($ec2)
  {
   my $envvarname = uc($required);
   $envvarname =~ s/^AWS_/EC2_/;
-  if (defined $options{ec2}->{$required})
+  if ($options{ec2}->{$required})
   {
    $ENV{$envvarname} = $options{ec2}->{$required};
   }
   else
   {
-   if (defined $ENV{$envvarname})
+   if ($ENV{$envvarname})
    {
     $options{ec2}->{$required} = $ENV{$envvarname};
    }
