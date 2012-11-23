@@ -1031,21 +1031,24 @@ sub generic_control
 
  if ($delta > 0)
  {
-  print "waiting for 1 instance to start up...";
-  my $cdata = $creator->($current_count+1);
-  print 'Got creation data ' , $coder->encode($cdata), "\n"
-   if $options{verbose};
-  my $error = hashref_search($cdata, qw/Errors Error/);
-
-  if ($error)
+  foreach my $inc (1..$delta)
   {
-   printf("error: %s (%s)\n",
-          hashref_search($error, 'Code'),
-          hashref_search($error, 'Message'));
-  }
-  else
-  {
-   print "done!\n";
+   print "waiting for instance ".($current_count+$inc)." to start up...";
+   my $cdata = $creator->($current_count+$inc);
+   print 'Got creation data ' , $coder->encode($cdata), "\n"
+    if $options{verbose};
+   my $error = hashref_search($cdata, qw/Errors Error/);
+ 
+   if ($error)
+   {
+    printf("error: %s (%s)\n",
+           hashref_search($error, 'Code'),
+           hashref_search($error, 'Message'));
+   }
+   else
+   {
+    print "done!\n";
+   }
   }
  }
   elsif ($delta == 0)
@@ -1059,8 +1062,11 @@ sub generic_control
    # expect repeated runs to converge.  This race is really hard to
    # avoid in a distributed system (you're basically trying to count
    # a distributed resource), so gentle convergence is safer.
-   print "waiting for 1 instance to shut down...";
-   $deleter->($servers->[0]->{id});
+   foreach my $inc (1..(-$delta))
+   {
+    print "waiting for extra instance $inc to shut down...";
+    $deleter->($servers->[$inc-1]->{id});
+   }
   }
 }
 
