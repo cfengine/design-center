@@ -175,7 +175,7 @@ foreach my $word (@callable) {
    }
    elsif ($word eq 'generate')
    {
-    Parser::command_generate(1);
+    Parser::command_generate($config->standalone);
    }
    elsif ($word eq 'search')
    {

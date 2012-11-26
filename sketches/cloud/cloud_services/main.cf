@@ -3,7 +3,7 @@ body file control
   namespace => "cfdc_cloud_services";
 }
 
-bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2, s3, sdb, vcli, openstack)
+bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2, s3, sdb, vcli, openstack, hub)
 {
   meta:
       # __PREFIX__ will be supplied by cf-sketch
@@ -26,8 +26,8 @@ bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count,
       "vars[state][type]"                string => "=start|=stop";
       "vars[state][default]"             string => "start";
 
-      "vars[install_cfengine][type]"     string => "BOOLEAN";
-      "vars[install_cfengine][default]"  string => "1";
+      "vars[hub][type]"                  string => "IPv4_ADDRESS";
+      "vars[hub][default]"               string => "$(sys.ipv4)";
 
       # you'd say 'ami:NON_EMPTY_STRING:required' if that key was
       # required but didn't have a default
@@ -37,22 +37,22 @@ ami            :NON_EMPTY_STRING
 instance_type  :NON_EMPTY_STRING
 region         :NON_EMPTY_STRING:default=us-east-1
 security_group :NON_EMPTY_STRING
-aws_access_key :NON_EMPTY_STRING
-aws_secret_key :NON_EMPTY_STRING
+aws_access_key :STRING
+aws_secret_key :STRING
 ssh_pub_key    :PATH
 )";
       "vars[ec2][default]"               string => "{}";
 
       "vars[s3][type]"                   string => "ARRAY(
 acl            :=private|=public-read
-aws_access_key :NON_EMPTY_STRING
-aws_secret_key :NON_EMPTY_STRING
+aws_access_key :STRING
+aws_secret_key :STRING
 )";
       "vars[s3][default]"                string => "{}";
 
       "vars[sdb][type]"                  string => "ARRAY(
-aws_access_key :NON_EMPTY_STRING
-aws_secret_key :NON_EMPTY_STRING
+aws_access_key :STRING
+aws_secret_key :STRING
 )";
       "vars[sdb][default]"               string => "{}";
 
@@ -112,14 +112,15 @@ master         :NON_EMPTY_STRING:default=cfmaster
                                                $(count),
                                                $(class),
                                                $(state),
-                                               "$($(stype))");
+                                               "$($(stype))",
+                                               $(hub));
 
   reports:
     verbose::
       "Invoking cloud_services: $(prefix) $(stype) $(count) $(class)";
 }
 
-body service_method cloud_services_handler(prefix, bundle_home, install_cfengine, service_bundle, count, class, state, params)
+body service_method cloud_services_handler(prefix, bundle_home, install_cfengine, service_bundle, count, class, state, params, hub)
 {
       service_bundle => $(service_bundle)($(prefix),
                                           $(bundle_home),
@@ -128,7 +129,7 @@ body service_method cloud_services_handler(prefix, bundle_home, install_cfengine
                                           $(class),
                                           $(state), # also in $(this.service_policy)
                                           $(params),
-                                          $(sys.ipv4));
+                                          $(hub));
       service_dependence_chain => "start_parent_services";
 }
 
@@ -151,7 +152,7 @@ bundle agent ec2(prefix, bundle_home, install_cfengine, count, class, state, par
 
       "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --ec2 ami=$($(params)[ami]) --ec2 instance_type=$($(params)[instance_type]) --ec2 region=$($(params)[region]) --ec2 security_group=$($(params)[security_group]) --ec2 aws_access_key=$($(params)[aws_access_key]) --ec2 aws_secret_key=$($(params)[aws_secret_key]) --ec2 ssh_pub_key=$($(params)[ssh_pub_key]) --hub=$(hub) --install_cfengine=$(install_cfengine) ec2";
 
-      "current_count" string => execresult("$(shim) count $(class)", "useshell");
+      "current_count" string => execresult("$(shim) count $(class) 2>/dev/null", "useshell");
 
   commands:
     count_determined.!change_not_needed::
@@ -259,7 +260,7 @@ bundle agent openstack(prefix, bundle_home, install_cfengine, count, class, stat
 
       "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --openstack entry_url=$($(params)[entry_url]) --openstack password=$($(params)[password]) --openstack user=$($(params)[user]) --openstack key=$($(params)[key]) --openstack image=$($(params)[image]) --openstack master=$($(params)[master]) --hub=$(hub) --install_cfengine=$(install_cfengine) openstack";
 
-      "current_count" string => execresult("$(shim) count $(class)", "useshell");
+      "current_count" string => execresult("$(shim) count $(class) 2>/dev/null", "useshell");
 
   commands:
     count_determined.!change_not_needed::

@@ -23,13 +23,13 @@ my %options =
   install_cfengine => 'ON',
   curl => '/usr/bin/curl',
   ec2 => {
-          aws_tool => "$FindBin::Bin/aws",
+          aws_tool => "/usr/bin/perl $FindBin::Bin/aws",
          },
   s3 => {
-         aws_tool => "$FindBin::Bin/aws",
+         aws_tool => "/usr/bin/perl $FindBin::Bin/aws",
         },
   sdb => {
-          aws_tool => "$FindBin::Bin/aws",
+          aws_tool => "/usr/bin/perl $FindBin::Bin/aws",
          },
   openstack => {
                 flavor => "2",
@@ -81,13 +81,13 @@ if ($s3)
  {
   my $envvarname = uc($required);
   $envvarname =~ s/^AWS_/EC2_/;
-  if (defined $options{s3}->{$required})
+  if ($options{s3}->{$required})
   {
    $ENV{$envvarname} = $options{s3}->{$required};
   }
   else
   {
-   if (defined $ENV{$envvarname})
+   if ($ENV{$envvarname})
    {
     $options{s3}->{$required} = $ENV{$envvarname};
    }
@@ -221,13 +221,13 @@ elsif ($ec2)
  {
   my $envvarname = uc($required);
   $envvarname =~ s/^AWS_/EC2_/;
-  if (defined $options{ec2}->{$required})
+  if ($options{ec2}->{$required})
   {
    $ENV{$envvarname} = $options{ec2}->{$required};
   }
   else
   {
-   if (defined $ENV{$envvarname})
+   if ($ENV{$envvarname})
    {
     $options{ec2}->{$required} = $ENV{$envvarname};
    }
@@ -1031,21 +1031,24 @@ sub generic_control
 
  if ($delta > 0)
  {
-  print "waiting for 1 instance to start up...";
-  my $cdata = $creator->($current_count+1);
-  print 'Got creation data ' , $coder->encode($cdata), "\n"
-   if $options{verbose};
-  my $error = hashref_search($cdata, qw/Errors Error/);
-
-  if ($error)
+  foreach my $inc (1..$delta)
   {
-   printf("error: %s (%s)\n",
-          hashref_search($error, 'Code'),
-          hashref_search($error, 'Message'));
-  }
-  else
-  {
-   print "done!\n";
+   print "waiting for instance ".($current_count+$inc)." to start up...";
+   my $cdata = $creator->($current_count+$inc);
+   print 'Got creation data ' , $coder->encode($cdata), "\n"
+    if $options{verbose};
+   my $error = hashref_search($cdata, qw/Errors Error/);
+ 
+   if ($error)
+   {
+    printf("error: %s (%s)\n",
+           hashref_search($error, 'Code'),
+           hashref_search($error, 'Message'));
+   }
+   else
+   {
+    print "done!\n";
+   }
   }
  }
   elsif ($delta == 0)
@@ -1059,8 +1062,11 @@ sub generic_control
    # expect repeated runs to converge.  This race is really hard to
    # avoid in a distributed system (you're basically trying to count
    # a distributed resource), so gentle convergence is safer.
-   print "waiting for 1 instance to shut down...";
-   $deleter->($servers->[0]->{id});
+   foreach my $inc (1..(-$delta))
+   {
+    print "waiting for extra instance $inc to shut down...";
+    $deleter->($servers->[$inc-1]->{id});
+   }
   }
 }
 
