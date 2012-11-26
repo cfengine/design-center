@@ -2,12 +2,12 @@
     "Cloud::Services":
     {
         "activated" : "am_policy_hub",
-        "install_cfengine" : true,
+        "install_cfengine" : false,
         "ec2":
         {
             //note that region defaults to "us-east-1" as per main.cf:cloud_services()
-            "ami": "ami-b89842d1",
-            "instance_type": "m1.small",
+            "ami": "ami-25ee6f4c",
+            "instance_type": "t1.micro",
             "security_group": "cf",
             "aws_access_key": "",
             "aws_secret_key": "",
