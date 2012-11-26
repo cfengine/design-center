@@ -6,7 +6,7 @@
         "ec2":
         {
             //note that region defaults to "us-east-1" as per main.cf:cloud_services()
-            "ami": "ami-d1f372b8",
+            "ami": "ami-ef840586",
             "instance_type": "t1.micro",
             "security_group": "cf",
             "aws_access_key": "",
