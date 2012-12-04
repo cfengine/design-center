@@ -17,7 +17,7 @@ Important terms:
 
 It's important to remember that the following is the current state of affairs as of CFEngine 3.4.0.  The convergence algorithms and number of passes may change in the future.
 
-CFEngine is not a programming language.  The less you think of it as a programming language, the easier it will be to work within the framework it offers.  If you know Makefiles, CFEngine has similar traits in being declarative and establishing dynamic relationships and dependencies between promises.  But CFEngine goes far beyond, using promise theory and dynamic convergence.  Please see https://cfengine.com for further information as this is a wide-ranging topic.
+CFEngine is not a programming language.  The less you think of it as a programming language, the easier it will be to work within the framework it offers.  If you know Makefiles, CFEngine has similar traits in being declarative and establishing dynamic relationships and dependencies between promises.
 
 When CFEngine converges a bundle, it needs to do it in some order.  The normal ordering is the order in which promises are converged by promise type.  In addition you can force ordering with `ifvarclass` and contexts.  In addition, new in 3.4.0, the `depends_on` promise attribute also lets you explicitly say that one promise handle depends on others to be converged first.
 
@@ -25,7 +25,7 @@ The global convergence logic converges a bundle a limited number of times before
 
 If you find yourself ordering promises explicitly, generally you're approaching the problem incorrectly.  There are rare exceptions when you have to require a specific order of promises, but it's a sure sign of inexperience using CFEngine to try to order all the promises you write.  Trust CFEngine to do the right thing.
 
-Variables and classes are converged 3 times each within the wider 3-cycle iteration, as indicated by the `1 2 3` in the table.  This is done to allow for deeper dependencies between variables and between classes, and to make life easier for the promise author so they don't have to micro-manage their variables and classes.
+Variables and classes are converged 3 times each within the wider 3-cycle iteration, as indicated by the `1 2 3` in the table.  This is done to allow for deeper dependencies between variables and between classes, and to make life easier for the promise author so they don't have to micro-manage their variables and classes.  So if you have variable or class _a_ depending on variable or class _b_ which depends on variable or class _c_, that dependency will be resolved in the *first* cycle before you get to the outputs promise types and beyond.  Again, please remember the convergence algorithms and number of passes may change in the future.  You should not be thinking in terms of iterations and cycles when you work with CFEngine.
 
 |Promise Type       |agent/common|server|monitor|edit_line|Purpose|Reference URL|
 |-------------------|------------|------|-------|---------|-------|-------------|
