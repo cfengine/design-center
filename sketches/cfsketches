@@ -17,6 +17,7 @@ system/etc_hosts System::etc_hosts
 system/set_hostname System::set_hostname
 system/sysctl System::sysctl
 system/tzconfig System::tzconfig
+sketch_template CFEngine::sketch_template
 utilities/abortclasses Utilities::abortclasses
 utilities/nagios_plugin_agent Monitoring::nagios_plugin_agent
 utilities/ping_report Utilities::ping_report
