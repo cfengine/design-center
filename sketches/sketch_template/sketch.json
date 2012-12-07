@@ -5,7 +5,7 @@
         "README.md": { "documentation": true },
         "params/demo.json": { "comment": "simple demo of sketch" },
         "scripts/sample.sh": { "perm": 755, "comment": "Sample script bundled with the sketch" },
-        "modules/mymodule": { "module": true, "perm": 755, "comment": "Sample module bundled with the sketch" },
+        "modules/mymodule": { "module": true, "perm": 755, "comment": "Sample module bundled with the sketch" }
     },
 
     "metadata":
@@ -16,7 +16,7 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin" ] },
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin" ] }
     },
 
     "entry_point": "main.cf",
