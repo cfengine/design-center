@@ -724,6 +724,7 @@ sub aws_ec2
                     [ cfclass => qw/tagSet item cfclass/ ],
                     [ id => qw/instanceId/ ],
                     [ ip => qw/ipAddress/ ],
+		    [ privateip => qw/privateIpAddress/ ],
                     [ image => qw/imageId/ ],
                     [ progress => qw/instanceState name/ ],
                    )
