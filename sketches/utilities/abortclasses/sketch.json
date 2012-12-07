@@ -6,7 +6,7 @@
         "README.md": { "documentation": true },
         "params/example.json": { "comment": "Example parameters" },
         "test.cf": { "comment": "Standalone test policy" },
-        "changelog": { "comment": "changelog" },
+        "changelog": { "comment": "changelog" }
     },
 
     "metadata":
@@ -17,7 +17,7 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Ben Heilman <bheilman@enova.com>", "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "cfengine": { "version": "3.4.0" } },
+        "depends": { "cfengine": { "version": "3.4.0" } }
     },
 
     "entry_point": "main.cf",
