@@ -4,7 +4,7 @@
     {
         "main.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
-        "params/demo.json": { "comment": "simple demo" },
+        "params/demo.json": { "comment": "simple demo" }
 
     },
 
@@ -16,7 +16,7 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] },
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
     },
 
     "entry_point": "main.cf",

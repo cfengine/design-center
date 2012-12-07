@@ -1,9 +1,9 @@
-{ 
+{
 
     "manifest":
     {
         "cfengine_stdlib.cf": { "desc": "COPBL" },
-        "README.md": { "documentation": true },
+        "README.md": { "documentation": true }
     },
 
     "metadata":
@@ -14,7 +14,7 @@
         "license": "LGPL",
         "tags": [ "cfdc" ],
         "authors": [ "CFEngine AS" ],
-        "depends": { "cfengine": { "version": "3.3.0" } },
+        "depends": { "cfengine": { "version": "3.3.0" } }
     },
 
     "entry_point": null,

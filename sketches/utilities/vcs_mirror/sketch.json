@@ -6,7 +6,7 @@
         "params/cfengine-core.json": { "comment": "Sample parameters to use Git to check out the CFEngine core into /tmp/cfengine-core" },
         "params/cfengine-core-runas-tzz.json": { "comment": "Same as cfengine-core.json, but runs as user 'tzz'" },
         "params/cfengine-copbl.json": { "comment": "Sample parameters to use Git to check out the CFEngine standard library (COPBL) into /tmp/cfengine-copbl" },
-        "params/thrift-lib-perl.json": { "comment": "Sample parameters to use Subversion to check out the Thrift Perl libraries into /tmp/thrift-lib-perl" },
+        "params/thrift-lib-perl.json": { "comment": "Sample parameters to use Subversion to check out the Thrift Perl libraries into /tmp/thrift-lib-perl" }
     },
 
     "metadata":

@@ -5,7 +5,7 @@
         "main.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
 
-        "params/demo.json": { "comment": "Install MySQL, PostgreSQL, or SQLite: common parameters" },
+        "params/demo.json": { "comment": "Install MySQL, PostgreSQL, or SQLite: common parameters" }
     },
 
     "metadata":
@@ -16,7 +16,7 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] },
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
     },
 
     "entry_point": "main.cf",
