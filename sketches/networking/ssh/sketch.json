@@ -4,7 +4,7 @@
     {
         "ssh.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
-        "params/simple.json": { },
+        "params/simple.json": { }
     },
 
     "metadata":
@@ -18,7 +18,7 @@
         "depends": { "CFEngine::stdlib": { "version": 105 },
                      "cfengine": { "version": "3.4.0" },
                      "os": [ "linux", "darwin" ]
-                   },
+                   }
     },
     "entry_point": "ssh.cf",
     "interface": [ "ssh.cf" ]

@@ -4,7 +4,7 @@
     {
         "main.cf": { "desc": "main file", "version": 1.1 },
         "README.md": { "documentation": true },
-        "params/US_Central.json": { "comment": "Sample parameters to set timezone to US Central" },
+        "params/US_Central.json": { "comment": "Sample parameters to set timezone to US Central" }
     },
 
     "metadata":
@@ -15,7 +15,7 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] },
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
     },
 
     "entry_point": "main.cf",

@@ -4,7 +4,7 @@
     {
         "main.cf": { "desc": "main file", "version": 2.1 },
         "README.md": { "documentation": true },
-        "params/example.json": { "comment": "Example parameters" },
+        "params/example.json": { "comment": "Example parameters" }
     },
 
     "metadata":
@@ -15,7 +15,7 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin", "windows" ] },
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin", "windows" ] }
     },
 
     "entry_point": "main.cf",
