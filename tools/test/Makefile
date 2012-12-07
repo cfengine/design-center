@@ -112,5 +112,9 @@ vcs_mirror:
 	$(CFSKETCH_DA) --install VCS::vcs_mirror --activate VCS::vcs_mirror=$(SOURCEDIR)/utilities/vcs_mirror/params/cfengine-core-runas-contexts.json
 	$(RUNNER)
 
+sketch_template:
+	$(CFSKETCH_DA) --install CFEngine::sketch_template --activate CFEngine::sketch_template=$(SOURCEDIR)/sketch_template/params/demo.json
+	$(RUNNER)
+
 wordpress:
 	@echo NOT IMPLEMENTED

@@ -1,0 +1,90 @@
+body file control
+{
+  namespace => "cfdc_sketch_template";
+}
+
+bundle agent entry(prefix, bundle_home, myboolean, mytype, myip, myarray)
+{
+  meta:
+      # __PREFIX__ will be supplied by cf-sketch
+      "vars[prefix][type]"               string => "NON_EMPTY_STRING";
+      "vars[prefix][default]"            string => "__PREFIX__";
+
+      # __ABS_BUNDLE_HOME__ will be supplied by cf-sketch; there's
+      # also __BUNDLE_HOME__ for a relative path
+      "vars[bundle_home][type]"          string => "NON_EMPTY_STRING";
+      "vars[bundle_home][default]"       string => "__ABS_BUNDLE_HOME__";
+
+      "vars[myboolean][type]"            string => "BOOLEAN";
+      "vars[myboolean][default]"         string => "1";
+
+      "vars[context1][type]"             string => "CONTEXT";
+
+      "vars[context2][type]"             string => "CONTEXT";
+      "vars[context2][default]"          string => "!any";
+
+      "vars[mytype][type]"               string => "=alpha|=beta|=fallback";
+      "vars[mytype][default]"            string => "fallback";
+
+      "vars[myip][type]"                 string => "IPv4_ADDRESS";
+      "vars[myip][default]"              string => "$(sys.ipv4)";
+
+      # the "myarray" variable passed to the bundle will be the name
+      # of an array, ready for indexing and dereferencing.  See the
+      # reports: section below for usage.
+      "vars[myarray][type]"              string => "ARRAY(
+required1      :NON_EMPTY_STRING:required
+k1             :NON_EMPTY_STRING
+k2             :NON_EMPTY_STRING:default=k2default
+boolean_key1   :BOOLEAN:default=0
+can_be_empty   :STRING
+path1          :PATH
+url1           :HTTP_URL|FILE_URL
+)";
+
+  classes:
+      # note that demo.json uses bycontext to set mytype to "alpha"
+      # when context A is defined, so context A indirectly triggers
+      # use_alpha
+      "use_alpha"     expression => strcmp($(mytype), "alpha");
+
+      # Note that if you don't make the "mymodule" execution
+      # conditional, cf-promises will fail to validate main.cf the
+      # FIRST time, BEFORE "mymodule" is installed in
+      # $(sys.workdir)/modules.
+      "exists_module" expression => fileexists("$(sys.workdir)/modules/mymodule");
+
+      # call the "mymodule" module
+    exists_module::
+      "ran_module" expression => usemodule("mymodule", "");
+
+  vars:
+      # often you need a unique value for the current run through a
+      # bundle, especially if you use if_repaired and such.  The
+      # canon_prefix will give you that.
+      "canon_prefix" string => canonify("$(prefix)");
+
+      # call the sample.sh script
+      "sample_return" string => execresult("$(bundle_home)/scripts/sample.sh",
+                                           "useshell");
+
+  reports:
+    cfengine::
+      # This will define localclass with a locally meaningful prefix
+      # every time (otherwise, localclass will be global and will be
+      # defined with the same name every time).
+      "Hello there"
+      classes => if_repaired("$(canon_prefix)localclass");
+
+      # And this will use the localclass
+      "Hello back"
+      ifvarclass => "$(canon_prefix)localclass";
+
+      # use the "verbose" context to display extra information (for the user)
+    verbose::
+      "Invoking entry_point: prefix $(prefix) type $(mytype) myarray lookup of path1 $($(myarray)[path1])";
+
+      # use the "debug" context to help debug the sketch (for the developer)
+    debug::
+      "This is debugging; running from $(bundle_home)";
+}
