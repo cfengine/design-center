@@ -20,7 +20,7 @@ our $AUTOLOAD;                  # it's a package global
 
 # Allowed data fields, for setters/getters
 our %fields = (
-              install_dest => nil,
+              install_dest => undef,
              );
 
 ######################################################################

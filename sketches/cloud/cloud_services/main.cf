@@ -3,7 +3,7 @@ body file control
   namespace => "cfdc_cloud_services";
 }
 
-bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2, vcli, openstack)
+bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2, s3, sdb, vcli, openstack, hub)
 {
   meta:
       # __PREFIX__ will be supplied by cf-sketch
@@ -17,17 +17,18 @@ bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count,
       "vars[install_cfengine][type]"     string => "BOOLEAN";
       "vars[install_cfengine][default]"  string => "1";
 
-      "vars[stype][type]"                string => "=ec2|=vcli|=openstack";
+      "vars[stype][type]"                string => "=ec2|=vcli|=openstack|=s3|=sdb";
 
-      "vars[count][type]"                string => "DIGITS";
+      "vars[count][type]"                string => "NON_EMPTY_STRING";
 
       "vars[class][type]"                string => "CONTEXT_NAME";
 
       "vars[state][type]"                string => "=start|=stop";
       "vars[state][default]"             string => "start";
 
-      "vars[install_cfengine][type]"     string => "BOOLEAN";
-      "vars[install_cfengine][default]"  string => "1";
+      "vars[hub][type]"                  string => "IPv4_ADDRESS";
+      # No default value for hub - needs to be specified explicitly
+      #"vars[hub][default]"               string => "$(sys.ipv4)";
 
       # you'd say 'ami:NON_EMPTY_STRING:required' if that key was
       # required but didn't have a default
@@ -37,11 +38,24 @@ ami            :NON_EMPTY_STRING
 instance_type  :NON_EMPTY_STRING
 region         :NON_EMPTY_STRING:default=us-east-1
 security_group :NON_EMPTY_STRING
-aws_access_key :NON_EMPTY_STRING
-aws_secret_key :NON_EMPTY_STRING
+aws_access_key :STRING
+aws_secret_key :STRING
 ssh_pub_key    :PATH
 )";
       "vars[ec2][default]"               string => "{}";
+
+      "vars[s3][type]"                   string => "ARRAY(
+acl            :=private|=public-read
+aws_access_key :STRING
+aws_secret_key :STRING
+)";
+      "vars[s3][default]"                string => "{}";
+
+      "vars[sdb][type]"                  string => "ARRAY(
+aws_access_key :STRING
+aws_secret_key :STRING
+)";
+      "vars[sdb][default]"               string => "{}";
 
       "vars[vcli][type]"                 string => "ARRAY(
 master_image       :NON_EMPTY_STRING
@@ -57,18 +71,20 @@ disable_ssl_verify :BOOLEAN:default=0
 
       # default to RackSpace 2.0 URLs
       "vars[openstack][type]"            string => "ARRAY(
-entry_url      :NON_EMPTY_STRING:https://identity.api.rackspacecloud.com/v2.0/tokens
+entry_url      :NON_EMPTY_STRING:default=https://identity.api.rackspacecloud.com/v2.0/tokens
 user           :NON_EMPTY_STRING
 key            :NON_EMPTY_STRING
 password       :NON_EMPTY_STRING
 image          :NON_EMPTY_STRING
-master         :NON_EMPTY_STRING:cfmaster
+master         :NON_EMPTY_STRING:default=cfmaster
 )";
       "vars[openstack][default]"         string => "{}";
 
 
   classes:
       "use_ec2"       expression => strcmp($(stype), "ec2");
+      "use_s3"        expression => strcmp($(stype), "s3");
+      "use_sdb"       expression => strcmp($(stype), "sdb");
       "use_vcli"      expression => strcmp($(stype), "vcli");
       "use_openstack" expression => strcmp($(stype), "openstack");
 
@@ -78,6 +94,10 @@ master         :NON_EMPTY_STRING:cfmaster
       "service"      string => "$(stype)";
     use_ec2::
       "service_bundle" string => "cfdc_cloud_services:ec2";
+    use_s3::
+      "service_bundle" string => "cfdc_cloud_services:s3";
+    use_sdb::
+      "service_bundle" string => "cfdc_cloud_services:sdb";
     use_openstack::
       "service_bundle" string => "cfdc_cloud_services:openstack";
     use_vcli::
@@ -93,14 +113,15 @@ master         :NON_EMPTY_STRING:cfmaster
                                                $(count),
                                                $(class),
                                                $(state),
-                                               "$($(stype))");
+                                               "$($(stype))",
+                                               $(hub));
 
   reports:
     verbose::
       "Invoking cloud_services: $(prefix) $(stype) $(count) $(class)";
 }
 
-body service_method cloud_services_handler(prefix, bundle_home, install_cfengine, service_bundle, count, class, state, params)
+body service_method cloud_services_handler(prefix, bundle_home, install_cfengine, service_bundle, count, class, state, params, hub)
 {
       service_bundle => $(service_bundle)($(prefix),
                                           $(bundle_home),
@@ -109,7 +130,7 @@ body service_method cloud_services_handler(prefix, bundle_home, install_cfengine
                                           $(class),
                                           $(state), # also in $(this.service_policy)
                                           $(params),
-                                          $(sys.ipv4));
+                                          $(hub));
       service_dependence_chain => "start_parent_services";
 }
 
@@ -132,7 +153,7 @@ bundle agent ec2(prefix, bundle_home, install_cfengine, count, class, state, par
 
       "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --ec2 ami=$($(params)[ami]) --ec2 instance_type=$($(params)[instance_type]) --ec2 region=$($(params)[region]) --ec2 security_group=$($(params)[security_group]) --ec2 aws_access_key=$($(params)[aws_access_key]) --ec2 aws_secret_key=$($(params)[aws_secret_key]) --ec2 ssh_pub_key=$($(params)[ssh_pub_key]) --hub=$(hub) --install_cfengine=$(install_cfengine) ec2";
 
-      "current_count" string => execresult("$(shim) count $(class)", "useshell");
+      "current_count" string => execresult("$(shim) count $(class) 2>/dev/null", "useshell");
 
   commands:
     count_determined.!change_not_needed::
@@ -142,9 +163,9 @@ bundle agent ec2(prefix, bundle_home, install_cfengine, count, class, state, par
     count_determined::
       "Current count of $(class) = $(current_count)";
     count_determined.cloud_services_verbose::
-      "To run a command, e.g. ssh to all machine (but beware, this works best if you have just a few count): $(shim) run $(class) 'ssh -i YOUR-PRIVATE-SSH-KEY -l ubuntu'";
-      "To see the console output of all the machines: $(shim) console $(class)";
-      "To list all the machines (just node names or all info, including DNS): $(shim) [list|list-full] $(class)";
+      "To run a command, e.g. ssh to all machine (but beware, this works best if you have just a few count): $(shim) ssh machine-name";
+      "To see the console output of all the machines: $(shim) console machine-name";
+      "To list all the machines: $(shim) list $(class)";
     count_determined.start.change_not_needed::
       "Service does not need to be started by the shim: $(count) instances of class $(class) already exist";
     count_determined.stop.change_not_needed::
@@ -159,6 +180,66 @@ bundle agent ec2(prefix, bundle_home, install_cfengine, count, class, state, par
       "Decom will be needed";
     cfengine::
       "EC2 goal: put $(count) $(class) in state $(state).";
+}
+
+# count = local directory, class = S3 bucket
+
+# sorry about the semantic mismatch, I wanted to keep things inside
+# Cloud::Services
+
+bundle agent s3(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
+{
+  classes:
+      "start"   expression => strcmp("start",  "$(state)");
+      "stop"    expression => strcmp("stop",   "$(state)");
+
+  vars:
+      # adjust for your Perl install, but any Perl should be able to handle this
+      "perl"  string => "/usr/bin/perl";
+
+      "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl  --s3 aws_access_key=$($(params)[aws_access_key]) --s3 aws_secret_key=$($(params)[aws_secret_key]) --s3 acl=$($(params)[acl]) s3";
+
+  commands:
+    start::
+      "$(shim) sync $(count) $(class)";
+    stop::
+      "$(shim) clear $(class)";
+
+  reports:
+    start::
+      "S3 goal: synchronize directory $(count) into S3 bucket $(class).";
+    stop::
+      "S3 goal: clear S3 bucket $(class).";
+}
+
+# count = file with JSON lines, class = SDB domain
+
+# sorry about the semantic mismatch, I wanted to keep things inside
+# Cloud::Services
+
+bundle agent sdb(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
+{
+  classes:
+      "start"   expression => strcmp("start",  "$(state)");
+      "stop"    expression => strcmp("stop",   "$(state)");
+
+  vars:
+      # adjust for your Perl install, but any Perl should be able to handle this
+      "perl"  string => "/usr/bin/perl";
+
+      "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl  --sdb aws_access_key=$($(params)[aws_access_key]) --sdb aws_secret_key=$($(params)[aws_secret_key]) sdb";
+
+  commands:
+    start::
+      "$(shim) sync $(count) $(class)";
+    stop::
+      "$(shim) clear $(class)";
+
+  reports:
+    start::
+      "SDB goal: synchronize JSON file $(count) into SDB domain $(class).";
+    stop::
+      "SDB goal: clear SDB domain $(class).";
 }
 
 bundle agent openstack(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
@@ -180,7 +261,7 @@ bundle agent openstack(prefix, bundle_home, install_cfengine, count, class, stat
 
       "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --openstack entry_url=$($(params)[entry_url]) --openstack password=$($(params)[password]) --openstack user=$($(params)[user]) --openstack key=$($(params)[key]) --openstack image=$($(params)[image]) --openstack master=$($(params)[master]) --hub=$(hub) --install_cfengine=$(install_cfengine) openstack";
 
-      "current_count" string => execresult("$(shim) count $(class)", "useshell");
+      "current_count" string => execresult("$(shim) count $(class) 2>/dev/null", "useshell");
 
   commands:
     count_determined.!change_not_needed::

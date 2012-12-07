@@ -1,0 +1,24 @@
+{
+    "Cloud::Services":
+    {
+        "activated" : "am_policy_hub",
+        "install_cfengine" : true,
+        "ec2":
+        {
+            //note that region defaults to "us-east-1" as per main.cf:cloud_services()
+            "ami": "ami-a29943cb",
+            "instance_type": "t1.micro",
+            "security_group": "cf",
+            "aws_access_key": "",
+            "aws_secret_key": "",
+            "ssh_pub_key": "/root/.ssh/id_rsa.pub"
+        },
+
+	"hub": "1.2.3.4",
+        "class": "cfworker",
+        "stype": "ec2",
+
+        "count": { "bycontext": { "start1": "1", "start10": "10", "stop": "0", "Q1|Q3": "15", "Q2|Q4": "5"    } },
+        "state": { "bycontext": { "start1|start10|Q1|Q2|Q3|Q4": "start",     "stop": "stop" } }
+    }
+}
