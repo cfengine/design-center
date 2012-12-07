@@ -580,7 +580,7 @@ sub install_config {
 
   CFSketch::maybe_ensure_dir(dirname(DesignCenter::Config->actfile));
   CFSketch::maybe_write_file(DesignCenter::Config->actfile, 'activation', DesignCenter::JSON->coder->encode($activations));
-  print GREEN "Configured: $sketch #$activation_id\n" unless DesignCenter::Config->quiet;
+  Util::message("Configured: $sketch #$activation_id\n") unless DesignCenter::Config->quiet;
 
   return 1;
 }
