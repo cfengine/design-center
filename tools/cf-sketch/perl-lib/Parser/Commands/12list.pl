@@ -62,7 +62,7 @@ sub command_list {
                 my $act = $activation->{activated};
                 my $active_str = ($act && $act ne '!any') ? GREEN."(Activated on '$act')" : RED."(Not activated)";
                 print BOLD GREEN."\tInstance #$activation_id: $active_str".RESET."\n";
-                print DesignCenter::JSON::pretty_print($activation, "\t\t", qr/^(prefix|class_prefix|activated)$/);
+                print DesignCenter::JSON::pretty_print($activation, "\t\t", qr/^(prefix|class_prefix|activated|bundle_home)$/);
                 $activation_id++;
               }
             }
