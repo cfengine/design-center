@@ -386,6 +386,12 @@ EOHIPPUS
         my $name = $var->{name};
         my $value = exists $params{$name} ? $params{$name} :  $var->{value};
 
+        if (ref $value eq 'HASH' &&
+            exists $value->{bypass_validation}) {
+          $value = $value->{bypass_validation};
+          $var->{bypass_validation} = 1;
+        }
+
         if (ref $value eq '') {
           # for when a bundle wants access to scripts or modules
           $value =~ s/__BUNDLE_HOME__/$rel_path/g;
