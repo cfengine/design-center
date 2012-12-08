@@ -81,10 +81,10 @@ url1           :HTTP_URL|FILE_URL
       ifvarclass => "$(canon_prefix)localclass";
 
       # use the "verbose" context to display extra information (for the user)
-    verbose::
+    default:verbose::
       "Invoking entry_point: prefix $(prefix) type $(mytype) myarray lookup of path1 $($(myarray)[path1])";
 
       # use the "debug" context to help debug the sketch (for the developer)
-    debug::
+    default:debug::
       "This is debugging; running from $(bundle_home)";
 }
