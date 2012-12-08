@@ -27,7 +27,6 @@ bundle agent entry(prefix, bundle_home, myboolean, mytype, myip, myarray)
       "vars[mytype][default]"            string => "fallback";
 
       "vars[myip][type]"                 string => "IPv4_ADDRESS";
-      "vars[myip][default]"              string => "$(sys.ipv4)";
 
       # the "myarray" variable passed to the bundle will be the name
       # of an array, ready for indexing and dereferencing.  See the
@@ -74,17 +73,17 @@ url1           :HTTP_URL|FILE_URL
       # every time (otherwise, localclass will be global and will be
       # defined with the same name every time).
       "Hello there"
-      classes => if_repaired("$(canon_prefix)localclass");
+      classes => default:if_repaired("$(canon_prefix)localclass");
 
       # And this will use the localclass
       "Hello back"
       ifvarclass => "$(canon_prefix)localclass";
 
       # use the "verbose" context to display extra information (for the user)
-    verbose::
+    default:verbose::
       "Invoking entry_point: prefix $(prefix) type $(mytype) myarray lookup of path1 $($(myarray)[path1])";
 
       # use the "debug" context to help debug the sketch (for the developer)
-    debug::
+    default:debug::
       "This is debugging; running from $(bundle_home)";
 }
