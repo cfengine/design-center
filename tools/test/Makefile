@@ -112,6 +112,10 @@ vcs_mirror:
 	$(CFSKETCH_DA) --install VCS::vcs_mirror --activate VCS::vcs_mirror=$(SOURCEDIR)/utilities/vcs_mirror/params/cfengine-core-runas-contexts.json
 	$(RUNNER)
 
+apache:
+	$(CFSKETCH_DA) --install Webserver::Apache --activate Webserver::Apache=$(SOURCEDIR)/web_servers/apache/params/demo.json
+	$(RUNNER) -Dwebserver
+
 sketch_template:
 	$(CFSKETCH_DA) --install CFEngine::sketch_template --activate CFEngine::sketch_template=$(SOURCEDIR)/sketch_template/params/demo.json
 	$(RUNNER)
