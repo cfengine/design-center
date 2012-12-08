@@ -523,13 +523,20 @@ sub configure_with_file
                 }
             }
 
+            if (ref $aparams->{$var->{name}} eq 'HASH' &&
+                exists $aparams->{$var->{name}}->{bypass_validation}) {
+             $aparams->{$var->{name}} = $aparams->{$var->{name}}->{bypass_validation};
+             $var->{bypass_validation} = 1;
+            }
+
             # for contexts, translate booleans to any or !any
             if (DesignCenter::JSON::is_json_boolean($aparams->{$var->{name}}) &&
                 $var->{type} eq 'CONTEXT') {
               $aparams->{$var->{name}} = $aparams->{$var->{name}} ? 'any' : '!any';
             }
 
-            if (validate($aparams->{$var->{name}}, $var->{type})) {
+            if (exists $var->{bypass_validation} ||
+                validate($aparams->{$var->{name}}, $var->{type})) {
               print "Satisfied by aparams: '$var->{name}'\n" if DesignCenter::Config->verbose;
             } else {
               my $ad = DesignCenter::JSON->coder->encode($aparams->{$var->{name}});

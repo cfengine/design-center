@@ -7,6 +7,10 @@
         "activated" : true,
         // booleans 
         "myboolean" : true,
+
+        // bypass validations for this value
+        "myip": { "bypass_validation": "$(sys.ipv4)" },
+
         "myarray":
         {
             "k1": "v1",
