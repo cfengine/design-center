@@ -2,6 +2,7 @@
     "manifest":
     {
         "main.cf": { "desc": "main file" },
+        "test.cf": { "desc": "standalone test" },
         "README.md": { "documentation": true },
         "params/demo.json": { "comment": "simple demo of sketch" },
         "scripts/sample.sh": { "perm": 755, "comment": "Sample script bundled with the sketch" },

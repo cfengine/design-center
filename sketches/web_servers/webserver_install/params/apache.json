@@ -1,0 +1,183 @@
+{
+    "Webserver::Install":
+    {
+        // you can omit "activated" to make it always true, or set it
+        // to a string like "linux.chicago" to express that the sketch
+        // should only be active in some contexts
+        "activated" : "webserver",
+
+        "config":
+        {
+            "root": "/var/tmp/configuration",
+            "httpd_conf_d": "/var/tmp/cfdc.d",
+            //"httpd_conf_d": "/etc/httpd/conf.d/cfdc/",
+            "template":
+            {
+                // typically these will be maintained outside the sketch
+                "plain": "/var/tmp/templates/plain.conf",
+                "ssl": "/var/tmp/templates/ssl.conf",
+            },
+            "owner": { "function": "getenv", "args": ["LOGNAME", "128"] },
+            "group": { "function": "getenv", "args": ["LOGNAME", "128"] },
+            "perms/dir": "755",
+            "perms/file": "644"
+        },
+
+        "packages":
+        { 
+            "bycontext":
+            {
+                "noinstall": [], 
+                "!noinstall.debian": [ "apache2", "apache2-doc", "apache2-utils" ], 
+                "!noinstall.redhat": [ "httpd", "httpd-tools", "mod_ssl" ]
+            }
+        },
+
+        "environments":
+        {
+            "bycontext":
+            {
+                "any":
+                {
+                    "dev":
+                    {
+                        "deploy":
+                        {
+                            "schedule": "!any",
+                            "vcs": "/usr/bin/git",
+                            "origin": "https://github.com/cfengine/design-center.git",
+                            "branch": "master",
+                            "path": "/var/tmp/dc-dev",
+                            "runas": { "function": "getenv", "args": ["LOGNAME", "128"] },
+                            "umask": "022"
+                        },
+
+                        "credentials": "cred1 cred_all",
+                        "sites": "site1",
+                        "profile": "profile1",
+
+                        "special/setting": "devsetting"
+                    },
+
+                    "prod":
+                    {
+                        "deploy":
+                        {
+                            "schedule": "any",
+                            "vcs": "/usr/bin/git",
+                            "origin": "https://github.com/cfengine/design-center.git",
+                            "branch": "master",
+                            "path": "/var/tmp/dc-prod",
+                            "runas": { "function": "getenv", "args": ["LOGNAME", "128"] },
+                            "umask": "022"
+                        },
+
+                        "credentials": "cred2 cred_all",
+                        "sites": "site2",
+                        "profile": "profile2",
+
+                        "special/setting": "prodsetting"
+                    }
+                }
+            }
+        },
+
+        "sites":
+        {
+            "bycontext":
+            {
+                "any":
+                {
+                    "site1":
+                    {
+                        "type": "ssl",
+                        "vhost": "$(sys.ipv4):443",
+                        "name": "mysite.com:443",
+                        "aliases": "alias1.mysite.com:443 alias2.mysite.com:443",
+                        "favicon": "/path/to/favicon",
+                        "ErrorLog": "/var/log/site1_error_log",
+                        "TransferLog": "/var/log/site1_access_log",
+                        "SSLCertificateKeyFile": "/path/to/keyfile",
+                        "SSLCertificateFile": "/path/to/certfile",
+                        "DirectoryIndex": "index.html",
+                        "DocumentRoot": "/var/tmp/dc-dev",
+                        "overrides": "All",
+                        "extras": "",
+                        "url_aliases": ""
+                    },
+ 
+                    "site2":
+                    {
+                        "type": "plain",
+                        "vhost": "$(sys.ipv4):80",
+                        "name": "mysite.com:80",
+                        "aliases": "alias1.mysite.com:80 alias2.mysite.com:80",
+                        "favicon": "/path/to/favicon",
+                        "ErrorLog": "/var/log/site2_error_log",
+                        "TransferLog": "/var/log/site2_access_log",
+                        "SSLCertificateKeyFile": "/path/to/keyfile",
+                        "SSLCertificateFile": "/path/to/certfile",
+                        "DirectoryIndex": "index.html",
+                        "DocumentRoot": "/var/tmp/dc-prod",
+                        "overrides": "FileInfo Options",
+                        "extras": "\n  <Directory \\\"/var/tmp/dc-prod\\\">\n    AllowOverride None\n  </Directory>\n",
+                        "url_aliases": "\nAlias /special/file /override/path/here\nRewriteRule /special/url /myhandler?specialurl [PT]"
+                    }
+                }
+            }
+        },
+
+        "profiles":
+        {
+            "bycontext":
+            {
+                "any":
+                {
+                    "profile1":
+                    {
+                        "feature/myfeature": "1",
+                        "setting/mysetting": "foobar1",
+                        "auth/htpasswd": "/path/to/password/file"
+                    },
+                    "profile2":
+                    {
+                        "feature/myfeature": "2",
+                        "setting/mysetting": "foobar2",
+                        "auth/htpasswd": false
+                    }
+                }
+            }
+        },
+
+        "credentials":
+        {
+            "bycontext":
+            {
+                "!authorized": {},
+                "authorized":
+                {
+                    "cred_all":
+                    {
+                        "mailto": "tzz@lifelogs.com"
+                    },
+                    "cred1":
+                    {
+                        "db/name": "MYDB1",
+                        "db/user": "myuser1",
+                        "db/pfile": "/path/to/password/file1",
+                        "db/host": "myhost1",
+                        "db/port": "1000"
+                    },
+                    "cred2":
+                    {
+                        "db/name": "MYDB2",
+                        "db/user": "myuser2",
+                        "db/pfile": "/path/to/password/file2",
+                        "db/host": "myhost2",
+                        "db/port": "2000"
+                    }
+                }
+            }
+        }
+    }
+}

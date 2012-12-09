@@ -1,0 +1,46 @@
+body common control
+{
+      bundlesequence => { "cfsketch_run" };
+      inputs => { "../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+
+bundle common cfsketch_g
+{
+  classes:
+      "run_context1" expression => "vampyr";
+      "run_context2" expression => "any";
+
+  vars:
+    any::
+      "run_prefix" string => "cfsketch_g.run_";
+      "run_bundle_home" string => "/home/tzz/.cfagent/inputs/sketches/CFEngine/sketch_template";
+      "run_myboolean" string => "1";
+      "run_myip" string => "$(sys.ipv4)";
+      "run_myarray[boolean_key1]" string => "1";
+      "run_myarray[k1]" string => "v1";
+      "run_myarray[k2]" string => "v2";
+      "run_myarray[path1]" string => "/var/tmp/extrafile.tmp";
+      "run_myarray[required1]" string => "myname";
+      "run_myarray[url1]" string => "https://myserver.com";
+
+    !(A||B)::
+      "run_mytype" string => "fallback";
+    A::
+      "run_mytype" string => "alpha";
+    B.!A::
+      "run_mytype" string => "beta";
+}
+
+bundle agent cfsketch_run
+{
+  methods:
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "!" usebundle => cfdc_sketch_template:entry($(cfsketch_g.run_prefix),
+                                                  $(cfsketch_g.run_bundle_home),
+                                                  $(cfsketch_g.run_myboolean),
+                                                  $(cfsketch_g.run_mytype),
+                                                  $(cfsketch_g.run_myip),
+                                                  "default:cfsketch_g.run_myarray");
+
+}

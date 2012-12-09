@@ -67,7 +67,18 @@ url1           :HTTP_URL|FILE_URL
       "sample_return" string => execresult("$(bundle_home)/scripts/sample.sh",
                                            "useshell");
 
+      # pretty-print the authors and dependencies
+      "dependencies" string => join(", ", "$(prefix)sketch_depends");
+      "authors" string => join(", ", "$(prefix)sketch_authors");
+
   reports:
+    default:debug::
+      "$($(prefix)sketch_name) license = $($(prefix)sketch_license)";
+      "$($(prefix)sketch_name) dependencies = $(dependencies)";
+
+    default:verbose::
+      "$($(prefix)sketch_name) version $($(prefix)sketch_version) by $(authors) starting up...";
+
     cfengine::
       # This will define localclass with a locally meaningful prefix
       # every time (otherwise, localclass will be global and will be
