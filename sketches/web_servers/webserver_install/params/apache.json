@@ -1,5 +1,5 @@
 {
-    "Webserver::Apache":
+    "Webserver::Install":
     {
         // you can omit "activated" to make it always true, or set it
         // to a string like "linux.chicago" to express that the sketch

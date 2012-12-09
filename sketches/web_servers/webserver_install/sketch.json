@@ -4,15 +4,15 @@
         "main.cf": { "desc": "main file" },
         "test.cf": { "desc": "standalone test" },
         "README.md": { "documentation": true },
-        "params/demo.json": { "comment": "simple demo of sketch" },
+        "params/apache.json": { "comment": "Apache demo" },
         "templates/plain.conf": { "comment": "plain web site config" },
         "templates/ssl.conf": { "comment": "SSL web site config" }
     },
 
     "metadata":
     {
-        "name": "Webserver::Apache",
-	"description": "Install and configure the Apache web server",
+        "name": "Webserver::Install",
+	"description": "Install and configure a webserver, e.g. Apache",
         "version": 1.00,
         "license": "MIT",
         "tags": [ "cfdc" ],

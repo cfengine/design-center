@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_apache";
+  namespace => "cfdc_webserver";
 }
 
 bundle agent setup(prefix, config, packages, environments, sites, profiles, credentials)
@@ -155,13 +155,13 @@ bundle agent write(config, env, e, sites, profiles, credentials)
 
       "deploy" usebundle => deploy($(config), $(env), $(e));
 
-      "websites" usebundle => apache_site($(mysites),
-                                          $(config),
-                                          $(env),
-                                          $(e),
-                                          "$(sites)[$(mysites)]",
-                                          $(myprofile),
-                                          "$(profiles)[$(myprofile)]");
+      "websites" usebundle => web_site($(mysites),
+                                       $(config),
+                                       $(env),
+                                       $(e),
+                                       "$(sites)[$(mysites)]",
+                                       $(myprofile),
+                                       "$(profiles)[$(myprofile)]");
 
   reports:
     default:verbose::
@@ -340,7 +340,7 @@ bundle agent deploy(config, env, e)
       perms => default:og("$($(e)[deploy][runas])", "$($(config)[group])");
 }
 
-bundle agent apache_site(site, config, env, e, site_array, profile, profile_array)
+bundle agent web_site(site, config, env, e, site_array, profile, profile_array)
 {
   classes:
       "has_certificate"    expression => fileexists("$($(site_array)[SSLCertificateFile])");
@@ -390,7 +390,14 @@ AllowOverride $($(site_array)[overrides])
       classes => default:if_repaired("httpd_repaired"),
       create => "true",
       edit_defaults => default:empty,
-      edit_line => default:expand_template("$($(config)[template][$(type)])");
+      edit_line => expand_block_template("$($(config)[template][$(type)])");
+
+      # "$($(config)[httpd_conf_d])/$(site).broken"
+      # perms => default:mog("$($(config)[perms/file])", "$($(config)[owner])", "$($(config)[group])"),
+      # classes => default:if_repaired("httpd_repaired"),
+      # create => "true",
+      # edit_defaults => default:empty,
+      # edit_line => expand_block_template2("$($(config)[template][$(type)])");
 
   reports:
     ssl_site.!has_certificate::
@@ -402,4 +409,29 @@ AllowOverride $($(site_array)[overrides])
 
     httpd_repaired::
       "You should reload or restart the web server";
+}
+
+# clone of expand_template from cfengine_stdlib.cf with string + preserve_block
+bundle edit_line expand_block_template(datafile)
+{
+  vars:
+      "data" string => readfile($(datafile), 100000);
+
+  insert_lines:
+
+      "$(data)"
+      insert_type => "preserve_block",
+      comment => "Expand variables in the template string",
+      expand_scalars => "true";
+}
+
+# problem clone of expand_template from cfengine_stdlib.cf with file_preserve_block
+bundle edit_line expand_block_template2(datafile)
+{
+  insert_lines:
+
+      "$(datafile)"
+      insert_type => "file_preserve_block",
+      comment => "Expand variables in the template string",
+      expand_scalars => "true";
 }

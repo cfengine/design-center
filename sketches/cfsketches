@@ -24,4 +24,4 @@ utilities/ping_report Utilities::ping_report
 utilities/ipverify Utilities::ipverify
 utilities/vcs_mirror VCS::vcs_mirror
 web_apps/wordpress WebApps::wordpress_install
-web_servers/apache Webserver::Apache
+web_servers/webserver_install Webserver::Install
