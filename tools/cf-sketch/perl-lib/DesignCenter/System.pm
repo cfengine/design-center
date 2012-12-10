@@ -443,6 +443,7 @@ EOHIPPUS
                              $name,
                              $bycontext{$context},
                              $name);
+            $vars .= "     any:: # go back to global\n";
 
             if ($name eq 'activated') {
               $methods .= sprintf('    _%s_%s_%s::' . "\n",
