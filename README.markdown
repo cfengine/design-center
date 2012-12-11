@@ -1,6 +1,6 @@
 # The CFEngine Design Center
 
-**Please note: you need CFEngine 3.4.0 or later to use the Design Center tools and sketches.**
+**Please note: you need [CFEngine 3.4.0](http://cfengine.com/community/3.4.0) or later to use the Design Center tools and sketches.**
   
 Welcome to the CFEngine Design Center, a place for CFEngine community
 members and developers to share code and information.
