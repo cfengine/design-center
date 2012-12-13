@@ -33,6 +33,16 @@
             }
         },
 
+        "processes":
+        { 
+            "bycontext":
+            {
+                "noinstall": [], 
+                "!noinstall.redhat": { "/etc/init.d/httpd restart": "httpd" }, 
+                "!noinstall.debian": { "/etc/init.d/apache2 restart": "apache2" }
+            }
+        },
+
         "environments":
         {
             "bycontext":

@@ -3,7 +3,7 @@ body file control
   namespace => "cfdc_webserver";
 }
 
-bundle agent setup(prefix, config, packages, environments, sites, profiles, credentials)
+bundle agent setup(prefix, config, packages, processes, environments, sites, profiles, credentials)
 {
   meta:
       # __PREFIX__ will be supplied by cf-sketch
@@ -20,6 +20,9 @@ perms/dir:DIGITS
 
       "vars[packages][type]"             string => "LIST(NON_EMPTY_STRING)";
 
+      "vars[processes][type]"            string => "KVARRAY(
+_key:PATH
+)";
       "vars[environments][type]"         string => "KVARRAY(
 _key:NON_EMPTY_STRING
 )";
@@ -46,10 +49,16 @@ _key:NON_EMPTY_STRING
       "dependencies" string => join(", ", "$(prefix)sketch_depends");
       "authors" string => join(", ", "$(prefix)sketch_authors");
       "active" slist => getindices("$(environments)");
+      "proc_commands" slist => getindices("$(processes)");
+      "canon_proc_commands[$(proc_commands)]" string => canonify("$(proc_commands)");
 
   packages:
       "$(packages)" package_method => default:generic,
       classes => default:if_repaired("$(canon_prefix)installed_$(canon_package[$(packages)])");
+
+  processes:
+      "$($(processes)[$(proc_commands)])"
+      restart_class => "$(canon_prefix)restart_$(canon_proc_commands[$(proc_commands)])";
 
   methods:
       "write" usebundle => write("$(config)",
@@ -58,6 +67,10 @@ _key:NON_EMPTY_STRING
                                  "$(sites)",
                                  "$(profiles)",
                                  "$(credentials)");
+
+  commands:
+      "$(proc_commands)"
+      ifvarclass => "$(canon_prefix)restart_$(canon_proc_commands[$(proc_commands)])";
 
   reports:
     default:debug::
