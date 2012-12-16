@@ -1,7 +1,7 @@
 body common control
 {
       bundlesequence => { "cfsketch_run", "cfsketch_after" };
-      inputs => { "./main.cf" };
+      inputs => { "./main.cf", "../../libraries/copbl/cfengine_stdlib.cf", };
 }
 
 body agent control
@@ -21,6 +21,15 @@ bundle common cfsketch_g
       "abort_abortclass"      string => "cowboy";
       "abort_alert_only"      string => "0";
       "abort_trigger_context" string => "!opt_dry_run";
+      "autoclear[enabled]"    string => "1";
+      "autoclear[timestamp]"  string => "mtime";
+      "autoclear[years]"      string => "0";
+      "autoclear[months]"     string => "0";
+      "autoclear[days]"       string => "0";
+      "autoclear[hours]"      string => "0";
+      "autoclear[minutes]"    string => "2";
+      "autoclear[seconds]"    string => "0";
+
 }
 
 bundle agent cfsketch_run
@@ -29,7 +38,8 @@ bundle agent cfsketch_run
       "go" usebundle => abortclasses_filebased($(cfsketch_g.abort_abortclass),
                                                $(cfsketch_g.abort_trigger_file),
                                                $(cfsketch_g.abort_alert_only),
-                                               $(cfsketch_g.abort_trigger_context));
+                                               $(cfsketch_g.abort_trigger_context),
+                                               "cfsketch_g.autoclear");
 
 }
 bundle agent cfsketch_after

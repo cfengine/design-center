@@ -3,7 +3,7 @@
 
 # N.B. Namespacing this sketch would make it much harder to use.  So we didn't.
 
-bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only, trigger_context)
+bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only, trigger_context, autoclear)
 {
   meta:
       "vars[abortclass][type]"      string => "CONTEXT_NAME";
@@ -18,17 +18,58 @@ bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only, trigge
       "vars[trigger_context][type]"    string => "CONTEXT_NAME";
       "vars[trigger_context][default]" string => "!opt_dry_run";
 
+
+      "vars[autoclear][type]" string => "ARRAY(
+enabled   :NON_EMPTY_STRING:default=0
+timestamp :NON_EMPTY_STRING:default=mtime
+years     :NON_EMPTY_STRING:default=0
+months    :NON_EMPTY_STRING:default=0
+days      :NON_EMPTY_STRING:default=0
+hours     :NON_EMPTY_STRING:default=24
+minutes   :NON_EMPTY_STRING:default=0
+)";
+
+
+# autoclear boolean
+# autoclear_units (years, months, days, hours, *minutes*) default minutes
+# autoclear_time (0-1000)
+# or
+  # autoclear[enabled]
+  # autoclear[years]
+  # autoclear[months]
+  # autoclear[days]
+  # autoclear[hours]
+  # autoclear[minutes]
+
+
   classes:
       "alert_only" expression => strcmp("$(alert_only)", "1");
+      "autoclear_trigger" expression => strcmp("$($(autoclear)[enabled])", "1");
       "alert" or => { "alert_only", "default:test" };
       "fileexists" expression => fileexists($(trigger_file));
 
   methods:
+    fileexists.autoclear_trigger::
+      "remove trigger"
+      usebundle => abortclasses_autoclear("$(trigger_file)",
+                                          "$($(autoclear)[timestamp])",
+                                          "$($(autoclear)[years])",
+                                          "$($(autoclear)[months])",
+                                          "$($(autoclear)[days])",
+                                          "$($(autoclear)[hours])",
+                                          "$($(autoclear)[minutes])",
+                                          "$($(autoclear)[seconds])"),
+      comment   => "Automatically remove $(trigger_file) whos $($(autoclear)[timestamp]) is older than $($(autoclear)[years]) years, $($(autoclear)[months]) months, $($(autoclear)[days]) days, $($(autoclear)[hours]) hours, $($(autoclear)[seconds]) seconds, and $($(autoclear)[seconds]) seconds. It was likely forgotten and we don't want it's configuration to continue to drift.";
+
     fileexists.alert::
       "send alert"
       usebundle  => abortclasses_alert,
       comment    => "Raise alert that $(trigger_file) exists";
 
+    # abortclasses do not respect --dry-run 
+    # We only want to do this in the trigger context (typically !opt_dry_run)
+    # or else CFEngine will abort when the class is raised and we won't have
+    # any visibility into what should be repaired
     fileexists.!alert::
       "do abort"
       usebundle  => abortclasses_abort($(abortclass)),
@@ -38,8 +79,19 @@ bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only, trigge
   reports:
     debug::
       "abortclasses: trigger_file: $(trigger_file), abortclass: $(abortclass) alert_only: $(alert_only), trigger_context: $(trigger_context)";
+      "abortclasses: autoclear[enabled]: $($(autoclear)[enabled])";
+      "abortclasses:$(const.t)autoclear[timestamp]: $($(autoclear)[timestamp])";
+      "abortclasses:$(const.t)autoclear[years]: $($(autoclear)[years])";
+      "abortclasses:$(const.t)autoclear[months]: $($(autoclear)[months])";
+      "abortclasses:$(const.t)autoclear[days]: $($(autoclear)[days])";
+      "abortclasses:$(const.t)autoclear[hours]: $($(autoclear)[hours])";
+      "abortclasses:$(const.t)autoclear[minutes]: $($(autoclear)[minutes])";
+      "abortclasses:$(const.t)autoclear[seconds]: $($(autoclear)[seconds])";
+    debug::
       "abortclasses: trigger_context: $(trigger_context) not currently defined, will not actually abort",
         ifvarclass => "$(trigger_context)";
+    debug.autoclear_trigger::
+      "abortclasses: autoclear trigger mode!!!";
     debug.alert::
       "abortclasses: alert-only mode!!!";
     debug.alert_only::
@@ -71,4 +123,44 @@ bundle agent abortclasses_abort(abort_class)
       expression => "any",
       comment => "Set the abort class";
 
+}
+
+#
+# Remove trigger file if older than specified time
+#
+bundle agent abortclasses_autoclear(file, timestamp, years, months, days, hours, minutes, seconds)
+{
+  files:
+      "$(file)"
+        delete => tidy,
+        file_select => abortclasses_older_than("$(timestamp)", "$(years)", "$(months)", "$(days)", "$(hours)", "$(minutes)", "$(seconds)"), 
+        classes => abortclasses_if_repaired_failed("cleared_trigger_file", "failed_clear_trigger_file");
+
+  reports:
+    # These probably need to be unique classes
+    cleared_trigger_file::
+      "$(file) was removed because it was older than $(years) years, $(months) months, $(days) days, $(hours) hours, $(minutes) minutes, and $(seconds) seconds";
+
+    failed_clear_trigger_file::
+      "I was unable to remove $(file), I tried because it was older than $(years) years, $(months) months, $(days) days, $(hours) hours, $(minutes) minutes, and $(seconds) seconds";
+}
+
+#
+# Select file with timestamp older than specified time
+#
+body file_select abortclasses_older_than(timestamp, years, months, days, hours, minutes, seconds)
+{
+  mtime       => irange(0,ago("$(years)", "$(months)", "$(days)", "$(hours)", "$(minutes)", "$(seconds)"));
+  file_result => "$(timestamp)";
+}
+
+#
+# Raise class yes if repaired, class no if failed, denied, or timed out
+#
+body classes abortclasses_if_repaired_failed(yes, no)
+{
+promise_repaired => { "$(yes)" };
+repair_failed    => { "$(no)" };
+repair_denied    => { "$(no)" };
+repair_timeout   => { "$(no)" };
 }

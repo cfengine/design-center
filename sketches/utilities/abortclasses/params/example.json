@@ -4,6 +4,16 @@
         "trigger_file": { "bycontext": { "!test": "/COWBOY", "test": "/tmp/COWBOY" } },
         "trigger_context": "!opt_dry_run",
         "abortclass": "cowboy",
-        "alert_only": true
+        "alert_only": true,
+        "autoclear": {
+                      "enabled": 0,
+                      "timestamp": "mtime",
+                      "years": 0,
+                      "months": 0,
+                      "days": 1,
+                      "hours": 0,
+                      "minutes": 0,
+                      "seconds": 0
+                     }
     }
 }
