@@ -1,0 +1,36 @@
+# Cfengine code snippet by Valentin Hoebel (valentin@xenuser.org)
+# Created on November 25th; Example for installing ntop (deb)
+# You are free to use and share this code snippet in any way you want.
+
+body common control {
+        version         => "1.0";
+        inputs          => { "cfengine_stdlib.cf" };
+        bundlesequence  => { "setup_ntop" };
+}
+
+bundle agent setup_ntop {
+	vars:
+	  "package_list"	slist	=> { "ntop", "ntop-data" };
+	  "ntop[ENABLED]"	int	=> "1";
+	  "ntop[GETOPT]"	string	=> "\"-i lo,eth0,eth1,eth2 -M -u root\"";
+
+	packages:
+	  "$(package_list)"
+		package_policy  => "add",
+		package_method  => generic,
+		classes		=> if_repaired("SetNtopAdminPassword");
+		
+	commands:
+	  SetNtopAdminPassword::
+		"/usr/sbin/ntop --set-admin-password=mysecretpassword"
+		  classes	=> if_repaired("ConfigureNtop");		
+	  StartNtop::
+		"/etc/init.d/ntop restart"
+		  comment	=> "Starting Ntop for the first time.";
+
+	files:
+	  ConfigureNtop::
+		"/etc/default/ntop"
+		  edit_line	=> set_variable_values("setup_ntop.ntop"),
+		  classes	=> if_repaired("StartNtop");
+}
