@@ -11,6 +11,7 @@ package_management/yumrepo Repository::Yum::Maintain
 programming_languages/cpanm Packages::CPAN::cpanm
 security/limits Security::security_limits
 security/tcpwrappers Security::tcpwrappers
+security/UserRisk/LoggedIn Security::UserRisk::LoggedIn
 system/config_resolver System::config_resolver
 system/cron System::cron
 system/etc_hosts System::etc_hosts

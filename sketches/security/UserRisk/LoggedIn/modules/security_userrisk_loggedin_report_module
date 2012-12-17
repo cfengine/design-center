@@ -1,0 +1,17 @@
+#!/bin/bash
+
+PREFIX=$1
+
+# Return a variable logged_in_userlist as a list of logged in users
+/bin/echo $(/usr/bin/who | /usr/bin/cut -f 1 -d' ' | /usr/bin/sort | /usr/bin/uniq) | /bin/sed -e 's/^/@logged_in_userlist={"/' -e 's/ /", "/g' -e 's/$/"};/g'
+
+# Return a variable logged_in_numusers
+numusers=$(/usr/bin/who --count | /usr/bin/tail -n 1 |/bin/sed 's/# users=//')
+echo "=numusers=$numusers"
+
+# Return 0 if no users are logged in otherwise return 1
+if [[ $numusers -gt 0 ]]; then
+    exit 1
+else
+    exit 0
+fi
