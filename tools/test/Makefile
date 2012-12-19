@@ -94,8 +94,13 @@ tzconfig:
 	$(RUNNER)
 
 abortclasses:
-	$(CFSKETCH_DA) --install Utilities::abortclasses --activate Utilities::abortclasses=$(SOURCEDIR)/utilities/abortclasses/params/example.json
+	$(CFSKETCH_DA) --install Utilities::abortclasses --activate Utilities::abortclasses=$(SOURCEDIR)/utilities/abortclasses/params/test_alert_only.json
 	$(RUNNER)
+	$(CFSKETCH_DA) --install Utilities::abortclasses --activate Utilities::abortclasses=$(SOURCEDIR)/utilities/abortclasses/params/test_no_timeout_action.json
+	$(RUNNER)
+	$(CFSKETCH_DA) --install Utilities::abortclasses --activate Utilities::abortclasses=$(SOURCEDIR)/utilities/abortclasses/params/test_timeout_action.json
+	$(RUNNER)
+
 
 nagios_plugin_agent:
 	@echo NOT IMPLEMENTED
