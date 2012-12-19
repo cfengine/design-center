@@ -20,15 +20,19 @@ bundle common cfsketch_g
     any::
       "abort_abortclass"      string => "cowboy";
       "abort_alert_only"      string => "0";
-      "abort_trigger_context" string => "!opt_dry_run";
-      "autoclear[enabled]"    string => "1";
-      "autoclear[timestamp]"  string => "mtime";
-      "autoclear[years]"      string => "0";
-      "autoclear[months]"     string => "0";
-      "autoclear[days]"       string => "0";
-      "autoclear[hours]"      string => "0";
-      "autoclear[minutes]"    string => "2";
-      "autoclear[seconds]"    string => "0";
+      "abort_trigger_context" string => "any";
+      "timeout[enabled]"    string => "1";
+      "timeout[timestamp]"  string => "mtime";
+      # timeout[action] bundle to be called every time the mtime of the trigger_file is older than time provided
+      #"timeout[action]" string => "abortclasses_remove_trigger"; # included bundle to remove trigger
+      #"timeout[action]" string => "abortclasses_pester_lester";  # included bundle to spam the console
+      "timeout[action]" string => "timeout_action_testbundle";   # test bundle to show an example
+      "timeout[years]"      string => "0";
+      "timeout[months]"     string => "0";
+      "timeout[days]"       string => "0";
+      "timeout[hours]"      string => "0";
+      "timeout[minutes]"    string => "2";
+      "timeout[seconds]"    string => "0";
 
 }
 
@@ -39,7 +43,7 @@ bundle agent cfsketch_run
                                                $(cfsketch_g.abort_trigger_file),
                                                $(cfsketch_g.abort_alert_only),
                                                $(cfsketch_g.abort_trigger_context),
-                                               "cfsketch_g.autoclear");
+                                               "cfsketch_g.timeout");
 
 }
 bundle agent cfsketch_after
@@ -48,3 +52,13 @@ bundle agent cfsketch_after
     opt_dry_run::
       "I didnt abort because I was in dry run";
 }
+
+bundle agent timeout_action_testbundle(file, years, months, days, hours, minutes, seconds)
+{
+  reports:
+  cfengine::
+    "I'm pestering someone, or taking hardcore action like removing the trigger file. Things shouldn't be in manual mode!!!";
+}
+
+
+
