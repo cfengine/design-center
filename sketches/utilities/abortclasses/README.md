@@ -19,10 +19,15 @@ reached.  It is important to note, if CFEngine is unable to update the
 timestamp of the trigger file, the action bundle will be activated during each
 execution of the agent.
  
+
 The alert and abort bundles should be called as early in the
 bundlesequence as possible.
 
 ## REQUIREMENTS
+
+Action bundles must take all of the following arguments in order.
+
+    bundle agent timeout_action_bundle(file, years, months, days, hours, minutes, seconds)
 
 ## SAMPLE USAGE
 

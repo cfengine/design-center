@@ -23,7 +23,7 @@ bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only, trigge
 
       "vars[timeout][type]" string => "ARRAY(
 enabled   :NON_EMPTY_STRING:default=0
-action    :NON_EMPTY_STRING:default=abortclasses_remove_trigger
+action    :NON_EMPTY_STRING:default=abortclasses_timeout_action_noop
 years     :NON_EMPTY_STRING:default=0
 months    :NON_EMPTY_STRING:default=0
 days      :NON_EMPTY_STRING:default=0
@@ -179,6 +179,37 @@ repair_timeout   => { "$(no)" };
 ####################################
 #  Example Trigger Action Bundles  #
 ####################################
+bundle agent abortclasses_timeout_action_noop(file, years, months, days, hours, minutes, seconds)
+# Example trigger action bundle
+#
+# Just a noop bundle as a default
+reports:
+  !any::
+    "Never gonna get it";
+}
+
+bundle agent abortclasses_pester_lester(file, years, months, days, hours, minutes, seconds)
+# Example trigger action bundle
+#
+# Be annoying with output nagging anyone who might be logged into the system to
+# take it out of manual mode.
+# This is the less draconian version of remove_trigger. Hopefully people will
+# be so annoyed they fix it themselves instead of having the carpet yanked out
+# from under them.
+{
+  vars:
+    "msg" string => "'Pssssst..... Hey Lester. Pester Pester Pester. Get out of manual mode!!!!!!'";
+
+  commands:
+    "/bin/echo"
+      args => "$(msg) | /usr/bin/wall",
+      contain => in_shell,
+      comment => "Blast the msg out on WALL in case Lester doesnt see reports";
+
+  reports:
+    cfengine::
+      "$(msg)";
+} 
 
 bundle agent abortclasses_remove_trigger(file, years, months, days, hours, minutes, seconds)
 # Example trigger action bundles
@@ -205,28 +236,7 @@ bundle agent abortclasses_remove_trigger(file, years, months, days, hours, minut
 }
 
 
-bundle agent abortclasses_pester_lester(file, years, months, days, hours, minutes, seconds)
-# Example trigger action bundle
-#
-# Be annoying with output nagging anyone who might be logged into the system to
-# take it out of manual mode.
-# This is the less draconian version of remove_trigger. Hopefully people will
-# be so annoyed they fix it themselves instead of having the carpet yanked out
-# from under them.
-{
-  vars:
-    "msg" string => "'Pssssst..... Hey Lester. Pester Pester Pester. Get out of manual mode!!!!!!'";
 
-  commands:
-    "/bin/echo"
-      args => "$(msg) | /usr/bin/wall",
-      contain => in_shell,
-      comment => "Blast the msg out on WALL in case Lester doesnt see reports";
-
-  reports:
-    cfengine::
-      "$(msg)";
-} 
 ####################################
 
 

@@ -26,6 +26,7 @@ bundle common cfsketch_g
       # timeout[action] bundle to be called every time the mtime of the trigger_file is older than time provided
       #"timeout[action]" string => "abortclasses_remove_trigger"; # included bundle to remove trigger
       #"timeout[action]" string => "abortclasses_pester_lester";  # included bundle to spam the console
+      #"timeout[action]" string => "abortclasses_timeout_action_noop";  # included bundle to spam the console
       "timeout[action]" string => "timeout_action_testbundle";   # test bundle to show an example
       "timeout[years]"      string => "0";
       "timeout[months]"     string => "0";
