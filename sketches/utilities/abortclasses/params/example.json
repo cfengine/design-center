@@ -2,12 +2,12 @@
     "Utilities::abortclasses":
     {
         "trigger_file": { "bycontext": { "!test": "/COWBOY", "test": "/tmp/COWBOY" } },
-        "trigger_context": "!opt_dry_run",
+        "trigger_context": "any",
         "abortclass": "cowboy",
         "alert_only": true,
-        "autoclear": {
+        "timeout": {
                       "enabled": 0,
-                      "timestamp": "mtime",
+                      "action": "abortclasses_pester_lester",
                       "years": 0,
                       "months": 0,
                       "days": 1,
