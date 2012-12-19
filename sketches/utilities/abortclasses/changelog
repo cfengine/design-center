@@ -1,3 +1,7 @@
+utilities_abortclasses 1.6
+  * Add timeout action
+  * Handle dry-run gracefully
+
 halt_agent_if_file_exists 1.2
   * Move meta_ bundle below main entry, cf-sketch complained during install
 halt_agent_if_file_exists 1.0
