@@ -183,6 +183,7 @@ bundle agent abortclasses_timeout_action_noop(file, years, months, days, hours, 
 # Example trigger action bundle
 #
 # Just a noop bundle as a default
+{
 reports:
   !any::
     "Never gonna get it";
