@@ -17,7 +17,9 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Ben Heilman <bheilman@enova.com>", "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "cfengine": { "version": "3.4.0" } }
+        "depends": { "cfengine": { "version": "3.4.0" },
+                     "CFEngine::stdlib":{ "version": 105 }
+                   }
     },
 
     "entry_point": "main.cf",
