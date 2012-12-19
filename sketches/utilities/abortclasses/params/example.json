@@ -2,6 +2,7 @@
     "Utilities::abortclasses":
     {
         "trigger_file": { "bycontext": { "!test": "/COWBOY", "test": "/tmp/COWBOY" } },
+        "trigger_context": "!opt_dry_run",
         "abortclass": "cowboy",
         "alert_only": true
     }

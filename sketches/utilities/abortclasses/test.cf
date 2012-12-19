@@ -1,9 +1,13 @@
 body common control
 {
-      bundlesequence => { "cfsketch_run" };
+      bundlesequence => { "cfsketch_run", "cfsketch_after" };
       inputs => { "./main.cf" };
 }
 
+body agent control
+{
+      abortclasses => { "cowboy" };
+}
 
 bundle common cfsketch_g
 {
@@ -14,8 +18,9 @@ bundle common cfsketch_g
       "abort_trigger_file" string => "/tmp/COWBOY";
 
     any::
-      "abort_abortclass" string => "cowboy";
-      "abort_alert_only" string => "1";
+      "abort_abortclass"      string => "cowboy";
+      "abort_alert_only"      string => "0";
+      "abort_trigger_context" string => "!opt_dry_run";
 }
 
 bundle agent cfsketch_run
@@ -23,6 +28,13 @@ bundle agent cfsketch_run
   methods:
       "go" usebundle => abortclasses_filebased($(cfsketch_g.abort_abortclass),
                                                $(cfsketch_g.abort_trigger_file),
-                                               $(cfsketch_g.abort_alert_only));
+                                               $(cfsketch_g.abort_alert_only),
+                                               $(cfsketch_g.abort_trigger_context));
 
+}
+bundle agent cfsketch_after
+{
+  reports:
+    opt_dry_run::
+      "I didnt abort because I was in dry run";
 }

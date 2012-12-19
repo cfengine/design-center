@@ -13,7 +13,7 @@
     {
         "name": "Utilities::abortclasses",
 	"description": "Abort execution if a certain file exists, aka 'Cowboy mode'",
-        "version": 1.3,
+        "version": 1.4,
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Ben Heilman <bheilman@enova.com>", "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],

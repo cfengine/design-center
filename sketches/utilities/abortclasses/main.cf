@@ -3,7 +3,7 @@
 
 # N.B. Namespacing this sketch would make it much harder to use.  So we didn't.
 
-bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only)
+bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only, trigger_context)
 {
   meta:
       "vars[abortclass][type]"      string => "CONTEXT_NAME";
@@ -14,6 +14,9 @@ bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only)
 
       "vars[alert_only][type]"      string => "BOOLEAN";
       "vars[alert_only][default]"   string => "0";
+
+      "vars[trigger_context][type]"    string => "CONTEXT_NAME";
+      "vars[trigger_context][default]" string => "!opt_dry_run";
 
   classes:
       "alert_only" expression => strcmp("$(alert_only)", "1");
@@ -28,12 +31,15 @@ bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only)
 
     fileexists.!alert::
       "do abort"
-      usebundle  => abortclasses_abort($(abort_class)),
-      comment    => "Define $(abort_class) since file $(trigger_file) exists";
+      usebundle  => abortclasses_abort($(abortclass)),
+      ifvarclass => "$(trigger_context)",
+      comment    => "Define $(abortclass) since file $(trigger_file) exists in the context of $(trigger_context)"; 
 
   reports:
     debug::
-      "abortclasses: trigger_file: $(trigger_file), abortclass: $(abortclass), alert_only: $(alert_only)";
+      "abortclasses: trigger_file: $(trigger_file), abortclass: $(abortclass) alert_only: $(alert_only), trigger_context: $(trigger_context)";
+      "abortclasses: trigger_context: $(trigger_context) not currently defined, will not actually abort",
+        ifvarclass => "$(trigger_context)";
     debug.alert::
       "abortclasses: alert-only mode!!!";
     debug.alert_only::
