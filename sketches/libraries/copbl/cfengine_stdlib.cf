@@ -1650,6 +1650,23 @@ package_add_command => "/usr/sbin/pkg_add -r";
 package_delete_command => "/usr/sbin/pkg_delete";
 }
 
+body package_method emerge
+{
+ package_changes               =>  "individual";
+ package_list_command          =>  "/bin/sh -c \"ls -d /var/db/pkg/*/* | cut -c 13-\"";
+ package_list_name_regex       =>  ".*/([^\s]+)-\d.*";
+ package_list_version_regex    =>  ".*/[^\s]+-(\d.*)";
+ package_installed_regex       =>  ".*";                 # all reported are installed
+ package_name_convention       =>  "$(name)";
+ package_list_update_command    =>  "/usr/bin/emerge --sync";
+ package_list_update_ifelapsed     =>  "2000"; 	
+ package_add_command        =>  "/usr/bin/emerge -q --quiet-build";
+ package_delete_command      =>  "/usr/bin/emerge --depclean";
+ package_update_command      =>   "/usr/bin/emerge --update";
+ package_verify_command      =>  "/usr/bin/emerge -s";
+ package_noverify_regex      =>  ".*(Not Installed|Applications found : 0).*";
+}
+
 ##
 
  # Single bundle for all the similar managers simplifies promises
@@ -1746,6 +1763,21 @@ freebsd::
  package_name_convention => "$(name)-$(version)";
  package_add_command => "/usr/sbin/pkg_add -r";
  package_delete_command => "/usr/sbin/pkg_delete";
+
+gentoo::
+ package_changes               =>  "individual";
+ package_list_command          =>  "/bin/sh -c \"ls -d /var/db/pkg/*/* | cut -c 13-\"";
+ package_list_name_regex       =>  ".*/([^\s]+)-\d.*";
+ package_list_version_regex    =>  ".*/[^\s]+-(\d.*)";
+ package_installed_regex       =>  ".*";                 # all reported are installed
+ package_name_convention       =>  "$(name)";
+ package_list_update_command    =>  "/usr/bin/emerge --sync";
+ package_list_update_ifelapsed     =>  "2000"; 	
+ package_add_command        =>  "/usr/bin/emerge -q --quiet-build";
+ package_delete_command      =>  "/usr/bin/emerge --depclean";
+ package_update_command      =>   "/usr/bin/emerge --update";
+ package_verify_command      =>  "/usr/bin/emerge -s";
+ package_noverify_regex      =>  ".*(Not Installed|Applications found : 0).*";
 }
 
 ##
