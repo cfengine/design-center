@@ -2,7 +2,7 @@
 
     "manifest":
     {
-        "main.cf": { "desc": "main file", "version": 1.1 },
+        "main.cf": { "desc": "main file", "version": 1.2 },
         "README.md": { "documentation": true },
         "params/US_Central.json": { "comment": "Sample parameters to set timezone to US Central" }
     },
@@ -11,7 +11,7 @@
     {
         "name": "System::tzconfig",
 	"description": "Manage system timezone configuration",
-        "version": 1.1,
+        "version": 1.2,
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
