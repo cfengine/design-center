@@ -1,7 +1,7 @@
 {
     "Utilities::abortclasses":
     {
-        "trigger_file": { "bycontext": { "!test": "/COWBOY", "test": "/tmp/COWBOY" } },
+        "trigger_file": { "bycontext": { "!test": "/tmp/COWBOY", "test": "/tmp/COWBOY" } },
         "trigger_context": "any",
         "abortclass": "cowboy",
         "alert_only": true,
@@ -10,7 +10,7 @@
                       "action": "abortclasses_pester_lester",
                       "years": 0,
                       "months": 0,
-                      "days": 1,
+                      "days": 0,
                       "hours": 0,
                       "minutes": 0,
                       "seconds": 0
