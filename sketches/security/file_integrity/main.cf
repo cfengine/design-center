@@ -1,42 +1,31 @@
-bundle agent file_integrity(prefix)
+body file control
 {
-  methods:
-      "any" usebundle => file_integrity_vars("$(prefix)params");
-      "any" usebundle => file_integrity_do;
+  namespace => "cfdc_file_integrity";
 }
 
-
-bundle agent file_integrity_vars(params)
+bundle agent watch(watch, hash_algorithm, ifelapsed)
 {
-  vars:
-      "hash_algorithm" string => "$($(params)[hash_algorithm])";
-      "ifelapsed"      string => "$($(params)[ifelapsed])";
-      "watch"           slist => { "@($(params)[watch])" };
-}
+  meta:
+      "vars[watch][type]"                string => "LIST(PATH)";
 
+      "vars[hash_algorithm][type]"       string => "NON_EMPTY_STRING";
+      "vars[hash_algorithm][default]"    string => "sha256";
 
-bundle agent file_integrity_do
-{
+      "vars[ifelapsed][type]"            string => "DIGITS";
+      "vars[ifelapsed][default]"         string => "1440";
+
   files:
-    "$(file_integrity_vars.watch)"
+    "$(watch)"
       comment      => "Detect changes to files",
-      changes      => _changes_file_integrity("$(file_integrity_vars.hash_algorithm)"),
-      depth_search => recurse("inf"),
-      action       => if_elapsed("$(file_integrity_vars.ifelapsed)");
+      changes      => _changes_file_integrity("$(hash_algorithm)"),
+      depth_search => default:recurse("inf"),
+      action       => default:if_elapsed("$(ifelapsed)");
 }
-
-
-bundle agent meta_file_integrity
-{
-  vars:
-      "argument[params]" string => "array";
-}
-
 
 body changes _changes_file_integrity(hash_algorithm)
 {
-hash           => "$(hash_algorithm)";
-report_changes => "content";
-update_hashes  => "yes";
-report_diffs   => "false";
+      hash           => "$(hash_algorithm)";
+      report_changes => "content";
+      update_hashes  => "yes";
+      report_diffs   => "false";
 }

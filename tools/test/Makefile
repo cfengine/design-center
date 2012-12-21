@@ -120,5 +120,9 @@ sketch_template:
 	$(CFSKETCH_DA) --install CFEngine::sketch_template --activate CFEngine::sketch_template=$(SOURCEDIR)/sketch_template/params/demo.json
 	$(RUNNER)
 
+file_integrity:
+	$(CFSKETCH_DA) --install Security::file_integrity --activate Security::file_integrity=$(SOURCEDIR)/security/file_integrity/params/pcidss_v2.json
+	$(RUNNER)
+
 wordpress:
 	@echo NOT IMPLEMENTED
