@@ -1654,7 +1654,7 @@ body package_method emerge
 {
  package_changes               =>  "bulk";
  package_list_command          =>  "/bin/sh -c \"ls -d /var/db/pkg/*/* | cut -c 13-\"";
- package_list_name_regex       =>  ".*/([^\s]+)-\d.*";
+ package_list_name_regex       =>  "(.*/[^\s]+)-\d.*";
  package_list_version_regex    =>  ".*/[^\s]+-(\d.*)";
  package_installed_regex       =>  ".*";                 # all reported are installed
  package_name_convention       =>  "$(name)";
@@ -1767,7 +1767,7 @@ freebsd::
 gentoo::
  package_changes               =>  "bulk";
  package_list_command          =>  "/bin/sh -c \"ls -d /var/db/pkg/*/* | cut -c 13-\"";
- package_list_name_regex       =>  ".*/([^\s]+)-\d.*";
+ package_list_name_regex       =>  "(.*/[^\s]+)-\d.*";
  package_list_version_regex    =>  ".*/[^\s]+-(\d.*)";
  package_installed_regex       =>  ".*";                 # all reported are installed
  package_name_convention       =>  "$(name)";
