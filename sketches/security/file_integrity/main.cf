@@ -1,0 +1,42 @@
+bundle agent file_integrity(prefix)
+{
+  methods:
+      "any" usebundle => file_integrity_vars("$(prefix)params");
+      "any" usebundle => file_integrity_do;
+}
+
+
+bundle agent file_integrity_vars(params)
+{
+  vars:
+      "hash_algorithm" string => "$($(params)[hash_algorithm])";
+      "ifelapsed"      string => "$($(params)[ifelapsed])";
+      "watch"           slist => { "@($(params)[watch])" };
+}
+
+
+bundle agent file_integrity_do
+{
+  files:
+    "$(file_integrity_vars.watch)"
+      comment      => "Detect changes to files",
+      changes      => _changes_file_integrity("$(file_integrity_vars.hash_algorithm)"),
+      depth_search => recurse("inf"),
+      action       => if_elapsed("$(file_integrity_vars.ifelapsed)");
+}
+
+
+bundle agent meta_file_integrity
+{
+  vars:
+      "argument[params]" string => "array";
+}
+
+
+body changes _changes_file_integrity(hash_algorithm)
+{
+hash           => "$(hash_algorithm)";
+report_changes => "content";
+update_hashes  => "yes";
+report_diffs   => "false";
+}
