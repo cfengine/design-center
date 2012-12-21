@@ -1652,7 +1652,7 @@ package_delete_command => "/usr/sbin/pkg_delete";
 
 body package_method emerge
 {
- package_changes               =>  "individual";
+ package_changes               =>  "bulk";
  package_list_command          =>  "/bin/sh -c \"ls -d /var/db/pkg/*/* | cut -c 13-\"";
  package_list_name_regex       =>  ".*/([^\s]+)-\d.*";
  package_list_version_regex    =>  ".*/[^\s]+-(\d.*)";
@@ -1765,7 +1765,7 @@ freebsd::
  package_delete_command => "/usr/sbin/pkg_delete";
 
 gentoo::
- package_changes               =>  "individual";
+ package_changes               =>  "bulk";
  package_list_command          =>  "/bin/sh -c \"ls -d /var/db/pkg/*/* | cut -c 13-\"";
  package_list_name_regex       =>  ".*/([^\s]+)-\d.*";
  package_list_version_regex    =>  ".*/[^\s]+-(\d.*)";
