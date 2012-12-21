@@ -1,0 +1,26 @@
+{
+    "Security::file_integrity":
+    {
+        // set "activated" to a string and it's a context! e.g. "linux"
+        "activated": true,
+        "watch": [
+            // "/etc",
+            // "/root/.ssh",
+            // "/var/spool/cron",
+            // "/boot",
+            // "/bin",
+            // "/usr/bin",
+            // "/usr/sbin",
+            "/usr/local/bin",
+            // "/usr/local/sbin",
+            // "/sbin",
+            // "/lib",
+            // "/usr/lib",
+            "/usr/lib64"
+        ],
+        // if omitted, this is "sha256"
+        "hash_algorithm": "sha256",
+        // if omitted, this is 1440
+        "ifelapsed": 1440
+    }
+}
