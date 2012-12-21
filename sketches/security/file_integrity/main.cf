@@ -1,0 +1,31 @@
+body file control
+{
+  namespace => "cfdc_file_integrity";
+}
+
+bundle agent watch(watch, hash_algorithm, ifelapsed)
+{
+  meta:
+      "vars[watch][type]"                string => "LIST(PATH)";
+
+      "vars[hash_algorithm][type]"       string => "NON_EMPTY_STRING";
+      "vars[hash_algorithm][default]"    string => "sha256";
+
+      "vars[ifelapsed][type]"            string => "DIGITS";
+      "vars[ifelapsed][default]"         string => "1440";
+
+  files:
+    "$(watch)"
+      comment      => "Detect changes to files",
+      changes      => _changes_file_integrity("$(hash_algorithm)"),
+      depth_search => default:recurse("inf"),
+      action       => default:if_elapsed("$(ifelapsed)");
+}
+
+body changes _changes_file_integrity(hash_algorithm)
+{
+      hash           => "$(hash_algorithm)";
+      report_changes => "content";
+      update_hashes  => "yes";
+      report_diffs   => "false";
+}
