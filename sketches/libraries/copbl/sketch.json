@@ -13,7 +13,8 @@
         "version": 108,
         "license": "LGPL",
         "tags": [ "cfdc" ],
-        "authors": [ "CFEngine AS" ],
+        "authors": [ "CFEngine AS",
+		     "ahdinosaur" ],
         "depends": { "cfengine": { "version": "3.3.0" } }
     },
 
