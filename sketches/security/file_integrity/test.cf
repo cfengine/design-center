@@ -11,9 +11,11 @@ bundle common cfsketch_g
       # Files that need to be loaded for this to work.
       "inputs" slist => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 
-      # string and slist variables for activation 001
+    !test::
+      "integrity_watch" slist => { "/etc", "/root/.ssh", "/var/spool/cron", "/boot", "/bin", "/usr/bin", "/usr/sbin", "/usr/local/bin", "/usr/local/sbin", "/sbin", "/lib", "/usr/lib", "/usr/lib64" };
+    test::
+      "integrity_watch" slist => { "/usr/local/bin" };
     any::
-      "integrity_watch" slist => { "/usr/local/bin", "/usr/lib64" };
       "integrity_hash_algorithm" string => "sha256";
       "integrity_ifelapsed" string => "1440";
       "integrity_contexts[activated]" string => "any"; # text representation of the context "activated"
