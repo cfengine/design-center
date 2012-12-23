@@ -26,6 +26,16 @@ bundle agent set(canon_prefix, hostname, domainname)
       "sethost_command" string => "/bin/hostname";
       "setdomain_command" string => "/bin/domainname";
 
+    gentoo::
+      # Stuff these into an array on gentoo style systems.  It's
+      # convenient because of the way gentoo configs work
+      "confdhostname[hostname]"  string => "$(hostname)";
+      "confdnet[dns_domain_lo]" string => "$(domainname)";
+      "confdnet[nis_domain_lo]" string => "$(domainname)";
+
+      "sethost_command" string => "/bin/hostname";
+      "setdomain_command" string => "/bin/domainname";
+
   files:
     redhat::
       "/etc/sysconfig/network"
@@ -49,12 +59,25 @@ recently bit me.";
       edit_line => default:insert_lines("$(domainname)"),
       classes   => default:if_repaired("$(canon_prefix)updatedomain");
 
+    gentoo::
+      "/etc/conf.d/hostname"
+      create	=> "true",
+      perms	=> default:mog("644", "root", "root"),
+      edit_line	=> default:set_variable_values("cfdc_hostname:set.confdhostname"),
+      classes	=> default:if_repaired("$(canon_prefix)updatehostname");
+
+      "/etc/conf.d/net"
+      create	=> "true",
+      perms	=> default:mog("644", "root", "root"),
+      edit_line	=> default:set_variable_values("cfdc_hostname:set.confdnet"),
+      classes	=> default:if_repaired("$(canon_prefix)updatedomain");
+
   commands:
     darwin::
       "/usr/sbin/scutil --set HostName $(hostname)"
       classes => default:if_repaired("$(canon_prefix)updatehostname");
 
-    redhat||darwin::
+    redhat||darwin||gentoo::
       "$(sethost_command) $(hostname)"
       ifvarclass => "$(canon_prefix)update||$(canon_prefix)updatehostname",
       comment => "Update the hostname on the running system so we
@@ -66,6 +89,6 @@ dont have to wait for a reboot";
 we dont have to reboot for it";
 
   reports:
-    !redhat.!darwin::
-      "Not on RedHat or Darwin, nothing was done!  Please add support for your system!";
+    !redhat.!darwin.!gentoo::
+      "Not on RedHat or Darwin or Gentoo, nothing was done!  Please add support for your system!";
 }
