@@ -7,6 +7,7 @@ Ted Zlatanov <tzz@lifelogs.com>
 darwin
 redhat
 gentoo
+debian
 
 It's easy to add more, please do!
 
@@ -16,7 +17,10 @@ It's easy to add more, please do!
   is useful to correct hostname setting on redhat style machines. Contrary to
   official redhat documentation HOSTNAME in /etc/sysconfig/network should not
   be set to the fqdn, it causes the hostname utility to return the fqdn
-  in stead of the shorthostname when run without arguments.
+  instead of the shorthostname when run without arguments.
+
+  For Debian or Ubuntu, the domain name is not stored across reboots
+  (patches welcome).
 
 ## REQUIREMENTS
 * CFEngine Community 3.4.0 or greater

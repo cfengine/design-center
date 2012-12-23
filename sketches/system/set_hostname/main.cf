@@ -22,6 +22,9 @@ bundle agent set(canon_prefix, hostname, domainname)
       "sethost_command" string => "/bin/hostname";
       "setdomain_command" string => "/bin/domainname";
 
+    debian::
+      "sethost_command" string => "/bin/hostname";
+
     darwin::
       "sethost_command" string => "/bin/hostname";
       "setdomain_command" string => "/bin/domainname";
@@ -37,6 +40,15 @@ bundle agent set(canon_prefix, hostname, domainname)
       "setdomain_command" string => "/bin/domainname";
 
   files:
+    debian::
+      "/etc/hostname"
+      comment       => "Set domain-name, not FQDN in this file - in accordance with man 1 hostname",
+      create        => "true",
+      edit_defaults => default:empty,
+      edit_line     => default:insert_lines("$(config[HOSTNAME])"),
+      perms         => default:mog("644", "root", "root"),
+      classes       => default:if_repaired("$(canon_prefix)_update");
+
     redhat::
       "/etc/sysconfig/network"
       create    => "true",
@@ -77,18 +89,19 @@ recently bit me.";
       "/usr/sbin/scutil --set HostName $(hostname)"
       classes => default:if_repaired("$(canon_prefix)updatehostname");
 
-    redhat||darwin||gentoo::
+    redhat||darwin||gentoo||debian::
       "$(sethost_command) $(hostname)"
       ifvarclass => "$(canon_prefix)update||$(canon_prefix)updatehostname",
       comment => "Update the hostname on the running system so we
 dont have to wait for a reboot";
 
+    redhat||darwin||gentoo::
       "$(setdomain_command) $(domain)"
       ifvarclass => "$(canon_prefix)update||$(canon_prefix)updatedomain",
       comment => "Update the domainname on the running system so
 we dont have to reboot for it";
 
   reports:
-    !redhat.!darwin.!gentoo::
-      "Not on RedHat or Darwin or Gentoo, nothing was done!  Please add support for your system!";
+    !debian.!redhat.!darwin.!gentoo::
+      "Not on RedHat or Darwin or Gentoo or Debian, nothing was done!  Please add support for your system!";
 }
