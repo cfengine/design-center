@@ -3,21 +3,29 @@
     {
         // set "activated" to a string and it's a context! e.g. "linux"
         "activated": true,
-        "watch": [
-            // "/etc",
-            // "/root/.ssh",
-            // "/var/spool/cron",
-            // "/boot",
-            // "/bin",
-            // "/usr/bin",
-            // "/usr/sbin",
-            "/usr/local/bin",
-            // "/usr/local/sbin",
-            // "/sbin",
-            // "/lib",
-            // "/usr/lib",
-            "/usr/lib64"
-        ],
+        // in -Dtest mode, just check a single directory, otherwise sweep the system
+        "watch":
+        { "bycontext":
+          {
+              "test": [ "/usr/local/bin" ],
+              "!test":
+              [
+                  "/etc",
+                  "/root/.ssh",
+                  "/var/spool/cron",
+                  "/boot",
+                  "/bin",
+                  "/usr/bin",
+                  "/usr/sbin",
+                  "/usr/local/bin",
+                  "/usr/local/sbin",
+                  "/sbin",
+                  "/lib",
+                  "/usr/lib",
+                  "/usr/lib64"
+              ]
+          }
+        },
         // if omitted, this is "sha256"
         "hash_algorithm": "sha256",
         // if omitted, this is 1440
