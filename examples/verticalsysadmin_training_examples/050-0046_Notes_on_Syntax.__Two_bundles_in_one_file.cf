@@ -1,9 +1,3 @@
-body common control {
-
-       bundlesequence => { "example2", "example1" };
-                    }
-
-
 bundle agent example1 {
 
       files: "/tmp/file1" create  => "true";

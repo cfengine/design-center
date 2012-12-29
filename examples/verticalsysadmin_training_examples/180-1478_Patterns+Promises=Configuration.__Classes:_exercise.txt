@@ -1,14 +1,10 @@
-Set a custom class based on the existance of a file.
-For example:
+1. Set a custom class if the file /tmp/testme exists.
 
-    classes:
+2. Report the presence or absense of the file using
+   "reports" type promises and the class defined in
+   #1 above.
 
-       "file_exists"
-         
-           expression  =>  fileexists("/etc/site_id") ;
+3. Have a "files" type promise create the file "/tmp/testme".
 
-Then write another promise that is conditional on the 
-above class.
-
-Run it when the file exists, and when it does not, and
-observe how CFEngine dynamically configures your server.
+Now, remove /tmp/testme and run your policy and observe
+and explain what happens.

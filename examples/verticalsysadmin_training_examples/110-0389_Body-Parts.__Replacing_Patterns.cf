@@ -15,7 +15,7 @@ bundle edit_line transform_dogs_to_cats {
               
           replace_with => value("cat");
 
-                                        }
+}
 
 body replace_with value(x)
 {

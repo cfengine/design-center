@@ -20,6 +20,7 @@ bundle agent example {
             edit_line => comment_out_everything,
               classes => if_repaired("reload_httpd");
 
+
   commands:
     reload_httpd::
       "/etc/init.d/httpd reload";
