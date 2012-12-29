@@ -9,3 +9,17 @@ or
 
 $(bundle_name.array_name[key_name])
 
+
+Example: 
+
+
+Food Prices
+-----------
+
+Apple   59c
+Banana  30c
+Oranges 35c
+
+vars:   "food_prices[Apple]"    string =>  "59c";
+
+$(food_prices[Apple])

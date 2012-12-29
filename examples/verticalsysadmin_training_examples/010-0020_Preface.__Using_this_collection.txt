@@ -1,0 +1,13 @@
+Using this collection
+---------------------
+
+The examples are arranged alphanumerically by filename
+in logical order. 
+
+Please list with "ls -1" to get the alphanumeric sorting.
+Go through the examples in sequence.
+
+Additional resources for learning and using CFEngine 3
+are posted at www.verticalsysadmin.com/cfengine/
+
+Professional CFEngine training is available by request.

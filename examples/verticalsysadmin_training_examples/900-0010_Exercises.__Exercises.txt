@@ -93,8 +93,32 @@ Write a policy to create /etc/motd as follows:
 It should *always* say "Unauthorized use forbidden."
 
 EXERCISE 5b.  File Editing and Classes
+Write a policy to create /etc/motd as follows:
+It should *always* say "Unauthorized use forbidden."
+
 On weekends only it should have an extra line that says
 "go home, it's the weekend".
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ===========================================================
 

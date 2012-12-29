@@ -1,5 +1,10 @@
 bundle agent example {
 
+  vars:
+
+     "myname"  string =>  "Aleksey";
+
+
   files:
 
       "/etc/motd"
@@ -7,7 +12,12 @@ bundle agent example {
             edit_line => ExpandMeFrom("/tmpl/motd.tmpl");
                      }
 
+
 bundle edit_line ExpandMeFrom(source) {
+
+  delete_lines:
+
+      ".*";
 
   insert_lines:
 

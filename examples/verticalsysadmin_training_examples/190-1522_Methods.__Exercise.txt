@@ -10,8 +10,8 @@ the second bundle.
 
 The second bundle reports "bundle2".
 
-Run your policy?  What output do you see and in what
-order?  Why?
+What output will you see and in what order?  Why?
+Now run your policy and check.
 
 
 EXERCISE
@@ -25,14 +25,15 @@ EXERCISE
 
 Sysadmin Problem:
 
-/etc/profile should set the ORGANIZATION environment variable when users log in.
+/etc/profile should set the ORGANIZATION environment
+variable when users log in:
 
-export ORGANIZATION=MyOrg
+   export ORGANIZATION=MyOrg
 
-Exercise:
+Policy Writing Exercise:
 
 Write a bundle "etc_profile_contains" that would take an argument
-and ensures /etc/profile contains text string that specified
+and ensure /etc/profile contains the text string specified
 in the argument.
 
 Demonstrate its use by calling it from another bundle:
@@ -56,4 +57,19 @@ specified in the second argument.  Example:
      "any" usebundle => file_contains("/etc/motd", "Unauth. use forbidden");
 
 
+EXERCISE  Methods
 
+Configuring a web server.
+
+Write a bundle "webserver" that will ensure an Apache httpd package is
+installed and process is running if its argument is "on":
+
+     methods:
+
+        "any"
+
+             usebundle => webserver("on");
+
+Then, make sure httpd is not running if its argument is "off".
+
+Hint:  The CFEngine function strcmp() can compare two strings.

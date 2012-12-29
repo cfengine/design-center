@@ -18,9 +18,9 @@ bundle agent example {
 
 ############################################################
 
-body perms mog(mode,user,group)
+body perms mog(mode,owner,group)
 {
-               owners => { "$(user)" };
+               owners => { "$(owner)" };
                groups => { "$(group)" };
                mode   => "$(mode)";
 }

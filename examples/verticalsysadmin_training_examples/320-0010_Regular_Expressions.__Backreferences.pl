@@ -1,5 +1,9 @@
 #!/usr/bin/perl
 
+
+# match "jumped" and "dog."
+
+
 $_ = "The quick brown fox jumped over the lazy dog.";
 
 if ( / (j.*d) .* (.*)$/ ) {

@@ -6,9 +6,9 @@ bundle agent example {
 
                   int => "1.5";
 
-      "my_int2"
-
-                  int => "hello world";
+      	"my_int2"
+     	 	
+      	            int => "hello world";
 
   commands:
 

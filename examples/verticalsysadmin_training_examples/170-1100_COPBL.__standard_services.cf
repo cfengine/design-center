@@ -1,10 +1,12 @@
 bundle agent example {
 
   methods:
+      
+      any::
+      
+          "Manage www service"
 
-      "any"
-
-          usebundle => standard_services ("www", "stop");
+              usebundle => standard_services ("www", "stop");
 
 }
 

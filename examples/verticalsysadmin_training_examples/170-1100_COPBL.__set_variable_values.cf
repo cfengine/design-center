@@ -2,12 +2,14 @@ body common control {
                inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
                     }
 
+
 bundle common global {
 
   vars:
 
-      "stuff[L0cat!on]" string => "bloomington";
-      "stuff[time]"     string => "monday april 2nd to thursday april 5th";
+      "stuff[location]" string => "palo_alto";
+      "stuff[time]"     string => "october-2012";
+      "stuff[students]"     string => "7";
                      }
 
 
@@ -16,7 +18,7 @@ bundle agent example {
 
   files:
 
-      "/tmp/example"
+      "/etc/example.conf"
                create => "true",
             edit_line => set_variable_values("global.stuff");
                      }
