@@ -1,0 +1,7 @@
+Definition: Promise
+-------------------
+
+The CFEngine software manages every intended system outcome as "promises" to
+be kept. A CFEngine Promise corresponds roughly to a rule in other software
+products, but importantly promises are always things that can be kept and
+repaired continuously, on a real time basis, not just once at install-time. 

@@ -1,9 +1,9 @@
 
-bundle agent example {
+bundle common example {
 
   classes:
-      "its_wed"
-           expression => "Wednesday";
+      "myclass"
+           expression => "any";
 
                      }
 
@@ -11,8 +11,8 @@ bundle agent example {
 bundle agent example2 {
 
   reports:
-      its_wed::
-           "Yay!  I love Wednesdays!";
+      myclass::
+           "Yay!  I love Any!";
 
 }
 

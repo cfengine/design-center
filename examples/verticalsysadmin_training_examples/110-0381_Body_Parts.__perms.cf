@@ -4,11 +4,13 @@ files:
 
   "/tmp/testfile"
 
-     perms => acceptable_groups;
+     perms => not_world_writable_and_right_group;
+
 }
 
-body perms acceptable_groups {
+body perms not_world_writable_and_right_group {
 
 groups => {"root", "games", "mail" };
+mode   => "o-w";
 
 }

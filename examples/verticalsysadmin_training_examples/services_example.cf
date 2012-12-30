@@ -1,0 +1,19 @@
+bundle agent example {
+
+  services:
+
+      "www" 
+
+         service_policy => "disable";
+
+                     }
+
+
+###########################################################
+
+
+body common control {
+
+  inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+
+}
