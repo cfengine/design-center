@@ -3,7 +3,7 @@ body file control
   namespace => "cfdc_vcs";
 }
 
-bundle agent mirror(prefix, class_prefix, vcs, path, origin, branch, runas, umask)
+bundle agent mirror(prefix, class_prefix, vcs, path, origin, branch, runas, umask, parent_dir)
 {
   meta:
       # __PREFIX__ will be supplied by cf-sketch
@@ -31,6 +31,12 @@ bundle agent mirror(prefix, class_prefix, vcs, path, origin, branch, runas, umas
 
       "vars[umask][type]"            string => "OCTAL";
       "vars[umask][default]"         string => "022";
+
+      "vars[parent_dir][type]"       string => "ARRAY(
+owner:NON_EMPTY_STRING
+group:NON_EMPTY_STRING
+perms:DIGITS
+)";
 
       # # This is a boolean (e.g. 0 or 1, 'yes' or 'no') stored in a string.
       # "vars[testboolean][type]"    string => "BOOLEAN";
