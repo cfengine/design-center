@@ -338,7 +338,8 @@ bundle agent deploy(config, env, e)
                                             "$($(e)[deploy][origin])",
                                             "$($(e)[deploy][branch])",
                                             "$($(e)[deploy][runas])",
-                                            "$($(e)[deploy][umask])");
+                                            "$($(e)[deploy][umask])",
+                                            "");
   files:
     !have_checkout::
       "$(path)/."
