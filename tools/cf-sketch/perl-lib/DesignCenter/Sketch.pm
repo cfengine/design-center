@@ -4,7 +4,7 @@
 # Representation of a sketch
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-10 01:48:49 a10022>
+# Time-stamp: <2013-01-10 17:50:02 a10022>
 
 package DesignCenter::Sketch;
 
@@ -565,10 +565,13 @@ sub configure_with_file
 sub install_config {
   my $sketch = shift;
   my $aparams = shift;
+  my $num = shift;
   # activation successful, now install it
   my $activations = DesignCenter::JSON::load(DesignCenter::Config->actfile, 1);
 
+  my $count=0;
   foreach my $check (@{$activations->{$sketch}}) {
+    next if (defined($num) && ($count == $num));
     my $p = DesignCenter::JSON->canonical_coder->encode($check);
     my $q = DesignCenter::JSON->canonical_coder->encode($aparams);
     if ($p eq $q) {
@@ -580,10 +583,18 @@ sub install_config {
         return undef;
       }
     }
+    $count++;
   }
 
-  push @{$activations->{$sketch}}, $aparams;
-  my $activation_id = scalar @{$activations->{$sketch}};
+  my $activation_id;
+  if (defined($num)) {
+    $activations->{$sketch}->[$num] = $aparams;
+    $activation_id = $num+1;
+  }
+  else {
+    push @{$activations->{$sketch}}, $aparams;
+    $activation_id = scalar @{$activations->{$sketch}};
+  }
 
   CFSketch::maybe_ensure_dir(dirname(DesignCenter::Config->actfile));
   CFSketch::maybe_write_file(DesignCenter::Config->actfile, 'activation', DesignCenter::JSON->coder->encode($activations));
