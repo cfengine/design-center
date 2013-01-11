@@ -24,14 +24,14 @@ methods:
                                                   "bundle_home",          # bundle_home,
                                                   default,                # tmux_bin,
                                                   default,                # su_bin,
-                                                  "top",                # command,
+                                                  "/usr/bin/htop",            # command,
                                                   "top",                # session_name,
-                                                  "any",                # context_remove_session,
-                                                  default,                # runas,
+                                                  "!any",                # context_remove_session,
+                                                  "cmdln",                # runas,
                                                   "@($(this.bundle).tmux_config)",                # tmux_config,
                                                   "/tmp/tmux.conf",       # tmux_config_path,
-                                                  default,                # context_remove_config
-                                                  "any"                 # conf_emptyfirst
+                                                  "any",                # context_remove_config
+                                                  "any"                 # context_conf_emptyfirst
                                                 );
 }
 

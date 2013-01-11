@@ -50,6 +50,47 @@ defaults:
       string => "!any",
       if_match_regex => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
 
+meta:
+    # __PREFIX__ will be supplied by cf-sketch
+    "vars[prefix][type]"    string => "NON_EMPTY_STRING";
+    "vars[prefix][default]" string => "__PREFIX__";
+
+    "vars[bundle_home][type]"    string => "NON_EMPTY_STRING";
+    "vars[bundle_home][default]" string => "__ABS_BUNDLE_HOME__";
+    
+    "vars[tmux_bin][type]"    string => "PATH";
+    "vars[tmux_bin][default]" string => "/usr/bin/tmux";
+
+    "vars[su_bin][type]"    string => "PATH";
+    "vars[su_bin][default]" string => "/bin/su";
+
+    "vars[command][type]"    string => "STRING";
+    "vars[command][default]" string => "";
+
+    "vars[session_name][type]"    string => "NON_EMPTY_STRING";
+    "vars[session_name][default]" string => "__PREFIX__";
+
+    "vars[context_remove_session][type]"    string => "CONTEXT";
+    "vars[context_remove_session][default]" string => "!any";
+
+    "vars[context_remove_config][type]"    string => "CONTEXT";
+    "vars[context_remove_config][default]" string => "!any";
+
+    "vars[runas][type]"    string => "NON_EMPTY_STRING";
+    "vars[runas][default]" string => "root";
+
+    "vars[tmux_config][type]"    string => "SLIST";
+    "vars[tmux_config][default]"  slist => { "" };
+
+    "vars[tmux_config_path][type]"    string => "PATH";
+    "vars[tmux_config_path][default]" string => "~/.tmux.conf";
+
+    "vars[context_conf_emptyfirst][type]"    string => "CONTEXT";
+    "vars[context_conf_emptyfirst][default]" string => "!any";
+
+
+
+
 vars:
   any::
     # often you need a unique value for the current run through a
@@ -65,7 +106,22 @@ files:
       create => "true",
       edit_defaults => empty,
       edit_line => append_if_no_lines("@($(this.bundle).tmux_config)"),
+      perms => mo("600", "$(runas)"),
       ifvarclass => and(not("$(context_remove_config)"), "$(context_conf_emptyfirst)");
+
+    # Create the config with proper content, but dont remove any non specified lines
+    "$(tmux_config_path)"
+      create => "true",
+      edit_line => append_if_no_lines("@($(this.bundle).tmux_config)"),
+      perms => mo("600", "$(runas)"),
+      ifvarclass => and(not("$(context_remove_config)"), not("$(context_conf_emptyfirst)"));
+
+    
+    "$(tmux_config_path)"
+      delete => tidy,
+      ifvarclass => "$(context_remove_config)";
+
+
 
 commands:
   any::
