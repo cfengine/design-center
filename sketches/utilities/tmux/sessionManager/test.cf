@@ -1,0 +1,38 @@
+body common control {
+
+  bundlesequence => {
+                      "main",
+
+                    };
+
+  inputs => {
+              "../../../libraries/copbl/cfengine_stdlib.cf",
+              "main.cf",
+            };
+}
+
+bundle agent main {
+vars:
+  "tmux_config" slist => {
+                           "unbind ^A",
+                           "bind ^A select-pane -t :.+",
+                         };
+methods:
+
+"any" usebundle => utilities_tmux_sessionManager(
+                                                  "main.prefix",          # prefix
+                                                  "bundle_home",          # bundle_home,
+                                                  default,                # tmux_bin,
+                                                  default,                # su_bin,
+                                                  "top",                # command,
+                                                  "top",                # session_name,
+                                                  "any",                # context_remove_session,
+                                                  default,                # runas,
+                                                  "@($(this.bundle).tmux_config)",                # tmux_config,
+                                                  "/tmp/tmux.conf",       # tmux_config_path,
+                                                  default,                # context_remove_config
+                                                  "any"                 # conf_emptyfirst
+                                                );
+}
+
+

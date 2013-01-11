@@ -1,0 +1,108 @@
+bundle agent utilities_tmux_sessionManager(prefix, bundle_home, tmux_bin, su_bin, command, session_name, context_remove_session, runas, tmux_config, tmux_config_path, context_remove_config, context_conf_emptyfirst)
+{
+# tmux_bin path to tmux binary
+# su_bin path to su binary tmux likes a login session, exec_owner in contain bodies is not sufficient
+# command Command to execute in tmux session
+# session_name name of the tmux session to ensure running
+# runas user to run tmux session as
+# tmux_config list of configuration lines for tmux configfile
+# tmux_config_path path of the tmux config file to use, defaults to user home .tmux.conf
+# config_emptyfirst default false, empty the config file before applying config?
+defaults:
+  any::
+    "tmux_bin"
+      string => "/usr/bin/tmux",
+      if_match_regex => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
+
+    "su_bin"
+      string => "/bin/su",
+      if_match_regex => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
+
+    "command"
+      string => "",
+      if_match_regex => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
+
+    "session_name"
+      string => canonify("$(prefix)"),
+      if_match_regex => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
+
+    "context_remove_session"
+      string => "!any", # Remove or create session
+      if_match_regex => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
+
+    "context_remove_config"
+      string => "!any", # Remove or create session
+      if_match_regex => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
+
+    "runas"
+      string => "root",
+      if_match_regex => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
+
+    "tmux_config"
+      slist => { "" }, # - no defaults
+      if_match_regex  => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
+
+    "tmux_config_path"
+      string => "~/.tmux.conf",
+      if_match_regex => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
+
+    "context_conf_emptyfirst"
+      string => "!any",
+      if_match_regex => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
+
+vars:
+  any::
+    # often you need a unique value for the current run through a
+    # bundle, especially if you use if_repaired and such. The
+    # canon_prefix will give you that.
+    "canon_prefix" string => canonify("$(prefix)");
+
+
+files:
+  any::
+    # Create config with only specified content
+    "$(tmux_config_path)"
+      create => "true",
+      edit_defaults => empty,
+      edit_line => append_if_no_lines("@($(this.bundle).tmux_config)"),
+      ifvarclass => and(not("$(context_remove_config)"), "$(context_conf_emptyfirst)");
+
+commands:
+  any::
+    "$(su_bin)"
+      comment => "Determine if there is an existing session with name $(session_name)",
+      handle  => "utilities_tmux_commands_any_determine_session_existance",
+      args    => "-l $(runas) -c '$(tmux_bin) has-session -t $(session_name)'",
+      contain => in_shell,
+      classes => if_ok("$(canon_prefix)_tmux_session_exists");  
+
+    # Only start the session if we are NOT in the context to remove a session
+    "$(su_bin)"
+      comment    => "Start the desired tmux session since it does not exist",
+      handle     => "utilities_tmux_comands_create_session",
+      args       => "-l $(runas) -c '$(tmux_bin) -f $(tmux_config_path) new-session -d -s $(session_name) $(command)'",
+      contain    => in_shell,
+      ifvarclass => and(not("$(canon_prefix)_tmux_session_exists"),not("$(context_remove_session)")),
+      classes    => if_repaired("$(canon_prefix)_created_tmux_session");
+
+    # Only kill the session if we are in the context to remove the session
+    "$(su_bin)"
+      comment => "Kill the unwanted session $(session_name) in context $(context_remove_session)",
+      handle => "utilities_tmux_commands_kill_session",
+      args => "-l $(runas) -c '$(tmux_bin) kill-session -t $(session_name)'",
+      contain => in_shell,
+      ifvarclass => "$(canon_prefix)_tmux_session_exists.$(context_remove_session)",
+      classes => if_repaired("$(canon_prefix)_killed_tmux_session");
+      
+
+reports:
+  verbose_mode|inform_mode::
+    "Created the tmux session for $(session_name)",
+      ifvarclass => "$(canon_prefix)_created_tmux_session";
+
+    "Tmux session $(session_name) exists as promised",
+      ifvarclass => and(not("$(context_remove_session)"), "$(canon_prefix)_tmux_session_exists");
+
+    "Terminated $(session_name) in context $(context_remove_session) as promised",
+      ifvarclass => "$(canon_prefix)_killed_tmux_session";
+}
