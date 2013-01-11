@@ -77,8 +77,11 @@ bundle agent sshd(prefix, params)
 bundle agent sshd_config(params)
 {
   methods:
-      "vars" usebundle => cfdc_sshd:vars("$(params)");
-      "sshd_cfg"  usebundle => cfdc_sshd:set_cfg("cfdc_sshd:vars.conf");
+      "vars" usebundle => cfdc_sshd:vars("$(params)"),
+        handle => "sshd_set_variables";
+      "sshd_cfg"  usebundle => cfdc_sshd:set_cfg("cfdc_sshd:vars.conf"),
+        handle => "sshd_set_configuration",
+      comments => "Apply the ssh parameters";
 }
 
 ######################################################################
