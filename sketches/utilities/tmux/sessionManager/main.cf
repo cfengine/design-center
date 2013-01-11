@@ -79,8 +79,7 @@ meta:
     "vars[runas][type]"    string => "NON_EMPTY_STRING";
     "vars[runas][default]" string => "root";
 
-    "vars[tmux_config][type]"    string => "SLIST";
-    "vars[tmux_config][default]"  slist => { "" };
+    "vars[tmux_config][type]"    string => "LIST(NON_EMPTY_STRING)";
 
     "vars[tmux_config_path][type]"    string => "PATH";
     "vars[tmux_config_path][default]" string => "~/.tmux.conf";
