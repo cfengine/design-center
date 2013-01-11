@@ -81,7 +81,7 @@ bundle agent sshd_config(params)
         handle => "sshd_set_variables";
       "sshd_cfg"  usebundle => cfdc_sshd:set_cfg("cfdc_sshd:vars.conf"),
         handle => "sshd_set_configuration",
-      comments => "Apply the ssh parameters";
+        comment => "Apply the ssh parameters";
 }
 
 ######################################################################

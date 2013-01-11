@@ -1,7 +1,9 @@
 {
     "Security::SSH":
     {
-        "activated": true,
-        "params": { "Protocol" : "2", "X11Forwarding" : "yes", "UseDNS" : "no" }
+        "activated": "!(Evening|Night)",
+        "params": { "Protocol" : "2",
+                    "X11Forwarding" : "yes",
+                    "PermitRootLogin" : "yes" }
     }
 }
