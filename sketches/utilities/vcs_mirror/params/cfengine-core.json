@@ -8,8 +8,8 @@
         "vcs": "/usr/bin/git",
         "parent_dir":
         {
-            "owner": "tzz",
-            "group": "tzz",
+            "owner": { "function": "getenv", "args": ["LOGNAME", "128"] },
+            "group": { "function": "getenv", "args": ["LOGNAME", "128"] },
             "perms": "755"
         }
     }
