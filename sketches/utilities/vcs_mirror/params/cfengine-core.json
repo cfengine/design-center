@@ -5,6 +5,12 @@
         "path": "/tmp/cfengine-core",
         "origin":"https://github.com/cfengine/core.git",
         "branch": "master",
-        "vcs": "/usr/bin/git"
+        "vcs": "/usr/bin/git",
+        "parent_dir":
+        {
+            "owner": { "function": "getenv", "args": ["LOGNAME", "128"] },
+            "group": { "function": "getenv", "args": ["LOGNAME", "128"] },
+            "perms": "755"
+        }
     }
 }
