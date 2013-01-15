@@ -62,7 +62,7 @@ perms:DIGITS
       "git_update_command" slist =>
       {
         # Fetch repo contents
-        "$(vcs) fetch",
+        "$(vcs) fetch -t origin +refs/heads/*:refs/remotes/origin/*",
         # Remove untracked files
         "$(vcs) clean -f -f -x -q -d .",
         # Discard changes to index and working tree since HEAD
