@@ -187,4 +187,9 @@ sub pretty_print {
   return $result;
 }
 
+sub pretty_print_json
+{
+ return $canonical_coder->pretty()->encode(shift);
+}
+
 1;
