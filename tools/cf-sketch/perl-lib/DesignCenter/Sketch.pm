@@ -92,7 +92,7 @@ sub load {
       push @messages, "Invalid metadata: must be { ... }" unless (exists $json->{metadata} && ref $json->{metadata} eq 'HASH');
 
       # the interface must be an array
-      push @messages, "Invalid interface: must be [ "FILE.cf" ]" unless (exists $json->{interface} && ref $json->{interface} eq 'ARRAY');
+      push @messages, "Invalid interface: must be [ \"FILE.cf\" ]" unless (exists $json->{interface} && ref $json->{interface} eq 'ARRAY');
     }
 
   # stage 3: check metadata details
