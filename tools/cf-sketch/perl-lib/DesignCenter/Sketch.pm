@@ -86,41 +86,41 @@ sub load {
   unless (scalar @messages)
     {
       # the manifest must be a hash
-      push @messages, "Invalid manifest" unless (exists $json->{manifest} && ref $json->{manifest} eq 'HASH');
+      push @messages, "Invalid manifest: must be { ... }" unless (exists $json->{manifest} && ref $json->{manifest} eq 'HASH');
 
       # the metadata must be a hash
-      push @messages, "Invalid metadata" unless (exists $json->{metadata} && ref $json->{metadata} eq 'HASH');
+      push @messages, "Invalid metadata: must be { ... }" unless (exists $json->{metadata} && ref $json->{metadata} eq 'HASH');
 
       # the interface must be an array
-      push @messages, "Invalid interface" unless (exists $json->{interface} && ref $json->{interface} eq 'ARRAY');
+      push @messages, "Invalid interface: must be [ "FILE.cf" ]" unless (exists $json->{interface} && ref $json->{interface} eq 'ARRAY');
     }
 
   # stage 3: check metadata details
   unless (scalar @messages)
     {
       # need a 'depends' key that points to a hash
-      push @messages, "Invalid dependencies structure" unless (exists $json->{metadata}->{depends}  &&
-                                                               ref $json->{metadata}->{depends}  eq 'HASH');
+      push @messages, "Invalid dependencies structure in 'depends'" unless (exists $json->{metadata}->{depends}  &&
+                                                                            ref $json->{metadata}->{depends}  eq 'HASH');
 
       foreach my $scalar (qw/name version license/) {
-        push @messages, "Missing or undefined metadata element $scalar" unless $json->{metadata}->{$scalar};
+        push @messages, "Missing or undefined metadata element '$scalar'" unless $json->{metadata}->{$scalar};
       }
 
       foreach my $array (qw/authors tags/) {
-        push @messages, "Missing, invalid, or undefined metadata array $array" unless ($json->{metadata}->{$array} &&
+        push @messages, "Missing, invalid, or undefined metadata array '$array'" unless ($json->{metadata}->{$array} &&
                                                                                        ref $json->{metadata}->{$array} eq 'ARRAY');
       }
 
       unless (scalar @messages)
         {
-          push @messages, "Tags metadata can't be empty" unless scalar @{$json->{metadata}->{tags}};
+          push @messages, "'tags' metadata can't be empty" unless scalar @{$json->{metadata}->{tags}};
         }
     }
 
   # stage 4: check entry_point and interface
   unless (scalar @messages)
     {
-      push @messages, "Missing entry_point" unless exists $json->{entry_point};
+      push @messages, "Missing 'entry_point'" unless exists $json->{entry_point};
     }
 
   # entry_point has to point to a file in the manifest or be null
@@ -133,7 +133,7 @@ sub load {
   unless (scalar @messages)
     {
       foreach (@{$json->{interface}}) {
-        push @messages, "interface file $_ not in manifest" unless exists $json->{manifest}->{$_};
+        push @messages, "interface file '$_' not in manifest" unless exists $json->{manifest}->{$_};
       }
     }
 
