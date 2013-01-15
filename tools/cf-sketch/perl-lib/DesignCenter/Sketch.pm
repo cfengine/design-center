@@ -8,6 +8,8 @@
 
 package DesignCenter::Sketch;
 
+use warnings;
+use strict;
 use Carp;
 use Util;
 use File::Basename;
@@ -243,7 +245,7 @@ sub verify_entry_point {
   } else {
   }
 
-  # print "PARSING:\n$mcf\n\n" if DesignCenter::Config->veryverbose;
+  print "PARSING:\n$mcf\n\n" if DesignCenter::Config->veryverbose;
 
   print $tfh $mcf;
   close $tfh;
@@ -432,7 +434,8 @@ sub verify_entry_point {
       push @rejects, "Could not parse $maincf_filename with [$tline -f '$tfilename']: $ptree_str";
     }
 
-  print "$maincf_filename bundle parse gave us " . Dumper($meta) if DesignCenter::Config->veryverbose;
+  my $formatted_meta = DesignCenter::JSON::pretty_print_json($meta);
+  print "$maincf_filename bundle parse gave us [$formatted_meta]\n" if DesignCenter::Config->veryverbose;
 
   if (scalar @rejects) {
     foreach (@rejects) {
@@ -695,7 +698,7 @@ sub validate
               unless ($good2)
                 {
                   Util::warning("ARRAY validation: value '$check_value', subtype '$subtype', subkey '$process_key'.  We'll fail the validation.\n")
-                      if $verbose;
+                      if DesignCenter::Config->verbose;
                 }
 
               $good &&= $good2;
