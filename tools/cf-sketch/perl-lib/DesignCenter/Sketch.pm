@@ -171,6 +171,7 @@ sub load {
 sub verify_entry_point {
   my $name = shift;
   my $data = shift;
+  use Carp qw/cluck/;
 
   my $dir       = $data->{fulldir};
   my $mft       = $data->{manifest};
