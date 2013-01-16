@@ -1,0 +1,23 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "test.cf": { "desc": "standalone test" },
+        "README.md": { "documentation": true },
+        "params/demo.json": { "comment": "simple demo of sketch" },
+    },
+
+    "metadata":
+    {
+        "name": "Utilities::tmux::SessionManager",
+        "description": "Manage configuration and existance/non-existance of named tmux sessions",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Nick Anderson <nick@cmdln.org>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+    },
+
+    "entry_point": "main.cf",
+    "interface": [ "main.cf" ]
+}
