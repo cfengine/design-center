@@ -74,7 +74,7 @@ sub list
     foreach my $repo (@{DesignCenter::Config->repolist}) {
       my @sketches = $self->list_internal($repo, $terms);
 
-      my $contents = CFSketch::repo_get_contents($repo);
+      my $contents = CFSketch::repo_get_contents($repo, 1);
 
       if (!scalar @sketches) {
         return $res;
@@ -115,7 +115,7 @@ sub list_internal
     print "Looking for terms [@$terms] in cf-sketch repository [$repo]\n"
       if DesignCenter::Config->verbose;
 
-    my $contents = CFSketch::repo_get_contents($repo);
+    my $contents = CFSketch::repo_get_contents($repo, 1);
     print "Inspecting repo contents: ", DesignCenter::JSON->coder->encode($contents), "\n"
       if DesignCenter::Config->verbose;
 
