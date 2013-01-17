@@ -19,6 +19,10 @@ vars:
                          };
 methods:
 
+# Ensure a tmux session by the name of 'top' exits in any context running as the user 'cmdln'
+# use default values for tmux_bin and su_bin
+# execute the command /usr/bin/htop in the session
+# Use the config /tmp/tmux.conf with only the specified entries (context_conf_empty_first is set to any)
 "any" usebundle => utilities_tmux_sessionManager(
                                                   "main.prefix",          # prefix
                                                   "bundle_home",          # bundle_home,
@@ -30,7 +34,7 @@ methods:
                                                   "cmdln",                # runas,
                                                   "@($(this.bundle).tmux_config)",                # tmux_config,
                                                   "/tmp/tmux.conf",       # tmux_config_path,
-                                                  "any",                # context_remove_config
+                                                  "!any",                # context_remove_config
                                                   "any"                 # context_conf_emptyfirst
                                                 );
 }
