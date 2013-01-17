@@ -1,13 +1,6 @@
 bundle agent utilities_tmux_sessionManager(prefix, bundle_home, tmux_bin, su_bin, command, session_name, context_remove_session, runas, tmux_config, tmux_config_path, context_remove_config, context_conf_emptyfirst)
 {
-# tmux_bin path to tmux binary
-# su_bin path to su binary tmux likes a login session, exec_owner in contain bodies is not sufficient
-# command Command to execute in tmux session
-# session_name name of the tmux session to ensure running
-# runas user to run tmux session as
-# tmux_config list of configuration lines for tmux configfile
-# tmux_config_path path of the tmux config file to use, defaults to user home .tmux.conf
-# config_emptyfirst default false, empty the config file before applying config?
+# This sketch expects to be executed as root, it uses /bin/su to manage a users session
 defaults:
   any::
     "tmux_bin"
@@ -88,8 +81,6 @@ meta:
     "vars[context_conf_emptyfirst][default]" string => "!any";
 
 
-
-
 vars:
   any::
     # often you need a unique value for the current run through a
@@ -132,13 +123,27 @@ commands:
       classes => if_ok("$(canon_prefix)_tmux_session_exists");  
 
     # Only start the session if we are NOT in the context to remove a session
+    # Only start the session with a config file if we have not promised to remove it
     "$(su_bin)"
-      comment    => "Start the desired tmux session since it does not exist",
+      comment    => "Start the desired tmux session since it does not exist, using the promised config file",
       handle     => "utilities_tmux_comands_create_session",
       args       => "-l $(runas) -c '$(tmux_bin) -f $(tmux_config_path) new-session -d -s $(session_name) $(command)'",
       contain    => in_shell,
-      ifvarclass => and(not("$(canon_prefix)_tmux_session_exists"),not("$(context_remove_session)")),
+      ifvarclass => and(and(not("$(canon_prefix)_tmux_session_exists"),not("$(context_remove_session)"), not("$(context_remove_config)"))),
       classes    => if_repaired("$(canon_prefix)_created_tmux_session");
+
+    "$(su_bin)"
+      comment    => "Start the desired tmux session since it does not exist,
+                     use /dev/null as the config file since we have promised to
+                     remove the config. This prevents a benign error during
+                     tmux startup, and also assures we arent using an untrusted
+                     default config.",
+      handle     => "utilities_tmux_comands_create_session",
+      args       => "-l $(runas) -c '$(tmux_bin) -f /dev/null new-session -d -s $(session_name) $(command)'",
+      contain    => in_shell,
+      ifvarclass => and(and(not("$(canon_prefix)_tmux_session_exists"),not("$(context_remove_session)"), "$(context_remove_config)")),
+      classes    => if_repaired("$(canon_prefix)_created_tmux_session");
+
 
     # Only kill the session if we are in the context to remove the session
     "$(su_bin)"
