@@ -23,6 +23,6 @@ utilities/nagios_plugin_agent Monitoring::nagios_plugin_agent
 utilities/ping_report Utilities::ping_report
 utilities/ipverify Utilities::ipverify
 utilities/vcs_mirror VCS::vcs_mirror
-utilities/tmux/sessionManager Utilities::tmux::SessionManager
+utilities/tmux/SessionManager Utilities::tmux::SessionManager
 web_apps/wordpress WebApps::wordpress_install
 web_servers/webserver_install Webserver::Install

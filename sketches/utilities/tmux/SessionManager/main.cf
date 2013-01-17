@@ -1,4 +1,4 @@
-bundle agent utilities_tmux_sessionManager(prefix, bundle_home, tmux_bin, su_bin, command, session_name, context_remove_session, runas, tmux_config, tmux_config_path, context_remove_config, context_conf_emptyfirst)
+bundle agent utilities_tmux_sessionmanager(prefix, bundle_home, tmux_bin, su_bin, command, session_name, context_remove_session, runas, tmux_config, tmux_config_path, context_remove_config, context_conf_emptyfirst)
 {
 # This sketch expects to be executed as root, it uses /bin/su to manage a users session
 defaults:
