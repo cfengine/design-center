@@ -415,8 +415,8 @@ sub get_local_repo
     }
   sub repo_clear_cache {
     my $repo = shift;
-    my $noparse = shift || 0;
-    delete $content_cache{$repo,$noparse};
+    delete $content_cache{$repo,0};
+    delete $content_cache{$repo,1};
   }
 }
 
