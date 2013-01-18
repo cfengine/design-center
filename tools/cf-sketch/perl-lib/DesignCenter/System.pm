@@ -150,6 +150,9 @@ sub generate_runfile
   {
     my $self=shift;
     my $standalone = shift;
+    # If given, this parameter must be a regex that indicates which files should be
+    # omitted from the "inputs" declaration. Used to omit stdlib on the non-standalone runfile.
+    my $omit_files = shift;
     $standalone = DesignCenter::Config->standalone unless defined($standalone);
     # If a filename is given, use it as is always. If we are using the default,
     # modify it depending on $standalone
@@ -333,7 +336,9 @@ sub generate_runfile
         if DesignCenter::Config->verbose;
     }
 
-    my $includes = join ', ', map { my @p = DesignCenter::JSON::recurse_print($_); $p[0]->{value} } Util::uniq(@inputs);
+    my $includes = join ', ',
+      map { my @p = DesignCenter::JSON::recurse_print($_); $p[0]->{value} }
+        grep { !$omit_files || $_ !~ /$omit_files/ } Util::uniq(@inputs);
 
     # maybe make the run template configurable?
     my $output = make_runfile($template_activations, $includes, $standalone, $run_file);
