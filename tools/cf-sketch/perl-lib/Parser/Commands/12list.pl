@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2012-10-10 10:20:26 a10022>
+# Time-stamp: <2013-01-17 23:36:11 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -62,7 +62,7 @@ sub command_list {
                 my $act = $activation->{activated};
                 my $active_str = ($act && $act ne '!any') ? GREEN."(Activated on '$act')" : RED."(Not activated)";
                 print BOLD GREEN."\tInstance #$activation_id: $active_str".RESET."\n";
-                print DesignCenter::JSON::pretty_print($activation, "\t\t", qr/^(prefix|class_prefix|activated|bundle_home)$/);
+                print DesignCenter::JSON::pretty_print($activation, "\t\t", qr/^(prefix|class_prefix|canon_prefix|activated|bundle_home)$/);
                 $activation_id++;
               }
             }
