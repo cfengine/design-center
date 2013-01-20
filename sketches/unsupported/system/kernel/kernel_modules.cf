@@ -1,0 +1,69 @@
+#----------
+# Package method for addition and removal of kernel modules in the
+# currently-running kernel on Linux, HP-UX, and Solaris.
+#
+# This package method can only add modules that have been previously installed
+# and made available to the currently-running kernel. If you want to promise
+# modules to be loaded at boot, or pass parameters to a module, you should
+# write "files" promises for the applicable config files.
+# Module package installation and version promises, or modules for kernels
+# other than the currently-running kernel, should be handled by standard
+# software package promises, or "files" promises in the OS module configs.
+#
+# An example use for this method would be insuring that kernel-bundled USB
+# storage drivers on a sensitive server are always unloaded. Outright deletion
+# of the driver's object file is not always practical - driver names don't
+# always match object file names; object files may be stored in a variety of
+# directories, sometimes as multiple versions; renaming or deleting individual
+# files may disrupt package integrity and complicate returning to the original
+# state; or driver or kernel updates may be installed that affect the module.
+#
+# Example:
+#   bundle agent disable_usb_storage
+#   {
+#      packages:
+#        linux::
+#          "usb_storage" -> { "CCE_4187_1", "NSA_GSCRHEL5_2_2_2_2_1" }
+#            package_policy => "delete",
+#            package_method => kernel_module,
+#                   comment => "Insure that USB drives are not recognized.";
+#   }
+
+body package_method kernel_module
+{
+linux::
+           package_changes => "bulk";
+      package_list_command => "/bin/cat /proc/modules";
+   package_list_name_regex => "(\S+).*";
+package_list_version_regex => "(\S+).*"; # no version info available
+   package_installed_regex => ".+\h(Live\h|Loading).*";
+   package_name_convention => "$(name)";
+
+       package_add_command => "/sbin/modprobe --first-time --all";
+    package_delete_command => "/sbin/modprobe --first-time --remove";
+
+hpux::
+           package_changes => "bulk";
+      package_list_command => "/usr/sbin/kmadmin -s";
+   package_list_name_regex => "(\S+)\h+\d+.*";
+package_list_version_regex => "(\S+)\h+\d+.*"; # no version info available
+   package_installed_regex => "\S+\h+\d+\h+LOADED\h.*";
+   package_name_convention => "$(name)";
+
+       package_add_command => "/usr/sbin/kmadmin -L";
+    package_delete_command => "/usr/sbin/kmadmin -U";
+
+solaris::
+           package_changes => "individual";
+      package_list_command => "/usr/sbin/modinfo";
+   package_list_name_regex => "\h*\d+\h+\S+\h+\S+\h+[\d-]+\h+\d+\h+(\S+).*";
+package_list_version_regex => "\h*\d+\h+\S+\h+\S+\h+[\d-]+\h+(\d+).*";
+   package_list_arch_regex => "\h*(\d+).*"; # Use arch to get ID for unload
+ package_delete_convention => "$(arch)"; # Unload requires numeric ID of module 
+   package_installed_regex => ".*"; # all modules listed are loaded
+   package_name_convention => "$(name)";
+
+       package_add_command => "/usr/sbin/modload -p";
+    package_delete_command => "/usr/sbin/modunload -i";
+}
+#----------
