@@ -6,6 +6,7 @@ Ted Zlatanov <tzz@lifelogs.com>
 ## PLATFORM
 darwin
 redhat
+gentoo
 
 It's easy to add more, please do!
 

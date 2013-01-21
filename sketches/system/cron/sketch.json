@@ -4,7 +4,7 @@
     {
         "main.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
-        "params/example.json": { "comment": "Example parameters" },
+        "params/example.json": { "comment": "Example parameters" }
     },
 
     "metadata":
@@ -15,7 +15,7 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Neil H Watson <neil@watson-wilson.ca>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "solaris", "darwin" ] },
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "solaris", "darwin" ] }
     },
 
     "entry_point": "main.cf",

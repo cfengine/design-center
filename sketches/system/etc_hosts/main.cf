@@ -62,7 +62,7 @@ bundle agent configure(class_prefix, hostfile, hosts)
   files:
       "$(hostfile)"
       create      =>  "true",
-      edit_line   =>  replace_or_add("^$(esc_ips[$(ip)])\s.*",
+      edit_line   =>  default:replace_or_add("^$(esc_ips[$(ip)])\s.*",
                                      "$(ip)    $(config[$(ip)])"),
       comment     =>  "Fix hosts entry to be as defined.";
 

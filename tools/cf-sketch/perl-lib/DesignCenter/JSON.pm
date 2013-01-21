@@ -11,9 +11,6 @@ package DesignCenter::JSON;
 use File::Basename;
 use Term::ANSIColor qw(:constants);
 
-our $coder;
-our $canonical_coder;
-
 use JSON;
 our $coder = JSON->new()->relaxed()->utf8()->allow_nonref();
 # for storing JSON data so it's directly comparable
@@ -79,7 +76,7 @@ sub load
                 }
 
                 print "Including $include\n" unless $quiet;
-                my $parent = load_json($include);
+                my $parent = load($include);
                 if (ref $parent eq 'HASH')
                 {
                     $ret->{$_} = $parent->{$_} foreach keys %$parent;
@@ -188,6 +185,11 @@ sub pretty_print {
     $result .= $indent.BLUE.$name.": ".RESET.$p->{value}."\n";
   }
   return $result;
+}
+
+sub pretty_print_json
+{
+ return $canonical_coder->pretty()->encode(shift);
 }
 
 1;

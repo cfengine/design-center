@@ -1,0 +1,9 @@
+#!/bin/sh
+
+cat <<EOHIPPUS;
+=variable1=1
+=array1[key]=some data
+@slist1=alpha
+@slist1=beta
++class1
+EOHIPPUS

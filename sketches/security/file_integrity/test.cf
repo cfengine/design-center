@@ -1,0 +1,44 @@
+body common control
+{
+      bundlesequence => { "cfsketch_run" };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for this to work.
+      "inputs" slist => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+
+    !test::
+      "integrity_watch" slist => { "/etc", "/root/.ssh", "/var/spool/cron", "/boot", "/bin", "/usr/bin", "/usr/sbin", "/usr/local/bin", "/usr/local/sbin", "/sbin", "/lib", "/usr/lib", "/usr/lib64" };
+    test::
+      "integrity_watch" slist => { "/usr/local/bin" };
+    any::
+      "integrity_hash_algorithm" string => "sha256";
+      "integrity_ifelapsed" string => "1440";
+      "integrity_contexts[activated]" string => "any"; # text representation of the context "activated"
+      any:: # go back to global
+      "integrity_sketch_depends" slist => { "CFEngine::stdlib" };
+      "integrity_sketch_authors" slist => { "Eystein Stenberg <eystein@cfengine.com>" };
+      "integrity_sketch_tags" slist => { "cfdc", "pcidss", "pcidss_v2", "pcidss_v2_sec_11_5" };
+      "integrity_sketch_manifest" slist => { "README.md", "main.cf", "params/pcidss_v2.json" };
+      "integrity_sketch_manifest_cf" slist => { "main.cf" };
+      "integrity_sketch_manifest_docs" slist => { "README.md" };
+      "integrity_sketch_manifest_extra" slist => { "params/pcidss_v2.json" };
+      "integrity_sketch_version" string => "1";
+      "integrity_sketch_name" string => "Security::file_integrity";
+      "integrity_sketch_license" string => "MIT";
+
+}
+
+bundle agent cfsketch_run
+{
+  methods:
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "go" usebundle => cfdc_file_integrity:watch(@(cfsketch_g.integrity_watch),
+                                                  $(cfsketch_g.integrity_hash_algorithm),
+                                                  $(cfsketch_g.integrity_ifelapsed));
+
+}

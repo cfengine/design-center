@@ -27,7 +27,8 @@ bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count,
       "vars[state][default]"             string => "start";
 
       "vars[hub][type]"                  string => "IPv4_ADDRESS";
-      "vars[hub][default]"               string => "$(sys.ipv4)";
+      # No default value for hub - needs to be specified explicitly
+      #"vars[hub][default]"               string => "$(sys.ipv4)";
 
       # you'd say 'ami:NON_EMPTY_STRING:required' if that key was
       # required but didn't have a default

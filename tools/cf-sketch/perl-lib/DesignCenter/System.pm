@@ -20,7 +20,7 @@ our $AUTOLOAD;                  # it's a package global
 
 # Allowed data fields, for setters/getters
 our %fields = (
-              install_dest => nil,
+              install_dest => undef,
              );
 
 ######################################################################
@@ -386,6 +386,12 @@ EOHIPPUS
         my $name = $var->{name};
         my $value = exists $params{$name} ? $params{$name} :  $var->{value};
 
+        if (ref $value eq 'HASH' &&
+            exists $value->{bypass_validation}) {
+          $value = $value->{bypass_validation};
+          $var->{bypass_validation} = 1;
+        }
+
         if (ref $value eq '') {
           # for when a bundle wants access to scripts or modules
           $value =~ s/__BUNDLE_HOME__/$rel_path/g;
@@ -437,6 +443,7 @@ EOHIPPUS
                              $name,
                              $bycontext{$context},
                              $name);
+            $vars .= "     any:: # go back to global\n";
 
             if ($name eq 'activated') {
               $methods .= sprintf('    _%s_%s_%s::' . "\n",

@@ -94,8 +94,13 @@ tzconfig:
 	$(RUNNER)
 
 abortclasses:
-	$(CFSKETCH_DA) --install Utilities::abortclasses --activate Utilities::abortclasses=$(SOURCEDIR)/utilities/abortclasses/params/example.json
+	$(CFSKETCH_DA) --install Utilities::abortclasses --activate Utilities::abortclasses=$(SOURCEDIR)/utilities/abortclasses/params/test_alert_only.json
 	$(RUNNER)
+	$(CFSKETCH_DA) --install Utilities::abortclasses --activate Utilities::abortclasses=$(SOURCEDIR)/utilities/abortclasses/params/test_no_timeout_action.json
+	$(RUNNER)
+	$(CFSKETCH_DA) --install Utilities::abortclasses --activate Utilities::abortclasses=$(SOURCEDIR)/utilities/abortclasses/params/test_timeout_action.json
+	$(RUNNER)
+
 
 nagios_plugin_agent:
 	@echo NOT IMPLEMENTED
@@ -110,6 +115,18 @@ ipverify:
 
 vcs_mirror:
 	$(CFSKETCH_DA) --install VCS::vcs_mirror --activate VCS::vcs_mirror=$(SOURCEDIR)/utilities/vcs_mirror/params/cfengine-core-runas-contexts.json
+	$(RUNNER)
+
+webserver:
+	$(CFSKETCH_DA) --install Webserver::Install --activate Webserver::Install=$(SOURCEDIR)/web_servers/webserver_install/params/apache.json
+	$(RUNNER) -Dwebserver
+
+sketch_template:
+	$(CFSKETCH_DA) --install CFEngine::sketch_template --activate CFEngine::sketch_template=$(SOURCEDIR)/sketch_template/params/demo.json
+	$(RUNNER)
+
+file_integrity:
+	$(CFSKETCH_DA) --install Security::file_integrity --activate Security::file_integrity=$(SOURCEDIR)/security/file_integrity/params/pcidss_v2.json
 	$(RUNNER)
 
 wordpress:

@@ -175,6 +175,10 @@ sub error {
   print STDERR RED @_;
 }
 
+sub message {
+  print STDERR GREEN @_;
+}
+
 # Generate an error message, nicely formatted.
 sub ferror {
   # Output it, but prefixed with "* "

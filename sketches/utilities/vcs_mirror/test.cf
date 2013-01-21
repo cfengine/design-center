@@ -52,7 +52,8 @@ bundle agent cfsketch_run
                                        $(cfsketch_g.mirror1_origin),
                                        $(cfsketch_g.mirror1_branch),
                                        $(cfsketch_g.mirror1_runas),
-                                       $(cfsketch_g.mirror1_umask));
+                                       $(cfsketch_g.mirror1_umask),
+                                       "");
 
       "2" usebundle => cfdc_vcs:mirror($(cfsketch_g.mirror2_prefix),
                                        $(cfsketch_g.mirror2_class_prefix),
@@ -61,6 +62,7 @@ bundle agent cfsketch_run
                                        $(cfsketch_g.mirror2_origin),
                                        $(cfsketch_g.mirror2_branch),
                                        $(cfsketch_g.mirror2_runas),
-                                       $(cfsketch_g.mirror2_umask));
+                                       $(cfsketch_g.mirror2_umask),
+                                       "");
 
 }
