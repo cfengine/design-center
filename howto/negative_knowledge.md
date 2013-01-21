@@ -22,7 +22,7 @@ classes_ are irrevocable units of knowledge about the system:
 
 `solaris.Monday`: "I am running on _Solaris_.  It's a _Monday_."
 
-You can't force-define a hard class.  Try "cf-agent -Dsolaris" and it
+You can't force-define a hard class.  Try `cf-agent -Dsolaris` and it
 will not let you.
 
 _Soft classes_ are units of knowledge that can come from the policy.
