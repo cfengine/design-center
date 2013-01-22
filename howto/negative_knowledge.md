@@ -10,6 +10,7 @@ This is an explanation of negative knowledge and how it matters in CFEngine.
 
 Important terms:
 
+* _knowledge_: the agent's fluid and evolving idea of what's true, e.g. "I am on a _Linux_ machine."
 * _convergence_: the process by which CFEngine evaluates and resolves promises (variables and classes are types of promises, too)
 * _context_ or _class_: a unit of knowledge, like a boolean in programming languages, which can be either present or absent.  The two terms are used interchangeably.
 
