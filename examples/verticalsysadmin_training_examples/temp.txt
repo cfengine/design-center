@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# $Id: temp.txt,v 1.1 2012/10/24 22:55:21 root Exp root $
+
+this is a file

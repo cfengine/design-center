@@ -1,6 +1,6 @@
 # report environmental conditions
 
-bundle agent mon_var {
+bundle agent example {
 
   reports:
 

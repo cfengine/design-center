@@ -2,11 +2,14 @@
 
 # run it with:
 
-# cf-agent -KI -f test.cf -Dstart1 -Dec2
-# cf-agent -KI -f test.cf -Dstop1 -Dec2
+# cf-agent -KI -f ./test.cf -Dstart1 -Dec2
+# cf-agent -KI -f ./test.cf -Dstop1 -Dec2
 
-# cf-agent -KI -f test.cf -Dstart1 -Dvcli
-# cf-agent -KI -f test.cf -Dstop1 -Dvcli
+# cf-agent -KI -f ./test.cf -Dstart1 -Dvcli
+# cf-agent -KI -f ./test.cf -Dstop1 -Dvcli
+
+# cf-agent -KI -f ./test.cf -Dstart1 -Dopenstack
+# cf-agent -KI -f ./test.cf -Dstop1 -Dopenstack
 
 body common control
 {
@@ -22,6 +25,8 @@ bundle common cfsketch_g
       "cloudtest_stype" string => "ec2";
     vcli::
       "cloudtest_stype" string => "vcli";
+    openstack::
+      "cloudtest_stype" string => "openstack";
 
     start1::
       "cloudtest_count" string => "1";
@@ -57,6 +62,13 @@ bundle common cfsketch_g
       "cloudtest_vcli[master_image]"        string => "ubuntu-12.04-i386-master";
       "cloudtest_vcli[password]"            string => "cfengine";
       "cloudtest_vcli[user]"                string => "root";
+
+      "cloudtest_openstack[entry_url]" string => "https://identity.api.rackspacecloud.com/v2.0/tokens";
+      "cloudtest_openstack[password]"  string => "some_password_you_should_fill_in";
+      "cloudtest_openstack[user]"      string => "youruserid";
+      "cloudtest_openstack[key]"       string => "72145782545ab2458456b54b45545a42"; # invalid
+      "cloudtest_openstack[image]"     string => "5cebb13a-f783-4f8c-8058-c4182c724ccd";
+      "cloudtest_openstack[master]"    string => "cfmaster";
 }
 
 bundle agent cfsketch_run
@@ -71,6 +83,7 @@ bundle agent cfsketch_run
                                                                              $(cfsketch_g.cloudtest_class),
                                                                              $(cfsketch_g.cloudtest_state),
                                                                              "cfsketch_g.cloudtest_ec2",
-                                                                             "cfsketch_g.cloudtest_vcli");
+                                                                             "cfsketch_g.cloudtest_vcli",
+                                                                             "cfsketch_g.cloudtest_openstack");
 
 }

@@ -5,22 +5,19 @@ Ted Zlatanov <tzz@lifelogs.com>
 
 ## PLATFORM
 
-## ## EC2 platform
+## ## EC2 and S3 platforms
 
-Anything that supports the Perl CPAN module VM::EC2.
+Anything that supports the Perl CPAN modules `JSON::XS` and
+`XML::Simple`.
 
-VM::EC2 requires the following CPAN dependencies, which may already be
-installed for you:
+You can try the programming_languages/cpanm sketch to install
+`JSON::XS` and `XML::Simple`, which will automagically install all
+their dependencies as well.
 
-Module::Build
-Digest::SHA
-LWP
-MIME::Base64
-URI::URL
-XML::Simple
+## ## OpenStack platform
 
-You can try the programming_languages/cpanm sketch to install VM::EC2,
-which will automagically install all its dependencies as well.
+Just curl (in /usr/bin/curl or /bin/curl) and the CPAN JSON::XS module
+are required.
 
 ## ## VMware platform
 
@@ -34,13 +31,17 @@ You can also register on that website to download free trial versions of ESXi/vS
 ## DESCRIPTION
 
 This sketch can manage cloud instances in a generic way.  Right now
-EC2 and the VMWare ESXi server are supported.
+EC2, OpenStack, and the VMWare ESXi server are supported.
+
+It can also synchronize a directory with a S3 bucket.
 
 You specify a few initialization parameters, and then simply say 
 "I want to start N instances of class X" or "I want to stop all instances
 of class Y".  The "stop" state simply sets N to 0.  An internal Perl
 script will take the delta between the desired and the actual instance
 count and run or terminate that many instances.
+
+For S3, "start" means synchronize; "stop" means clear.
 
 We treat cloud instances as services and accordingly use the
 `services` promise type in the `cloud_services` bundle.
@@ -70,6 +71,8 @@ parameters than manually passing them to the `cloud_services` bundle.
     "cloudtest_ec2[aws_secret_key]"  string => "skey1";
     "cloudtest_ec2[ssh_pub_key]"     string => "/path/to/file";
 
+* `s3`: TODO, see `params/demo.json` or `test.cf`
+
 * `vcli`: an array with keys specific to the vcli (VMWare) service.
   You can use `datastore` to indicate the datastore location;
   `fullpath` for the vmfs path; `password` and `user` for
@@ -89,10 +92,12 @@ parameters than manually passing them to the `cloud_services` bundle.
     "cloudtest_vcli[child_prefix]"        string => "ubuntu-12.04-i386-clone-";
     "cloudtest_vcli[disable_ssl_verify]"  string => "1";
 
+* `openstack`: TODO, see `params/demo.json` or `test.cf`
+
 * `install_cfengine`: set to 1 to install CFEngine in the EC2 instance
   or 0 not to.  The VMWare integration ignores this parameter.
   
-* `stype`: either `vcli` or `ec2`.
+* `stype`: either `vcli` or `ec2` or `openstack` or `s3`.
 
 * `count`: number of instances to start.
 

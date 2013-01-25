@@ -1,0 +1,22 @@
+body common control {
+               inputs => { "cfengine_stdlib.cf" };
+                    }
+
+
+bundle agent example {
+
+  files:
+
+      "/tmp/example.txt"
+
+               create => "true",
+            edit_line => insert_lines("$(sys.date)"),
+        edit_defaults => timestamp;
+                     }
+
+
+
+body edit_defaults timestamp
+{
+          edit_backup => "timestamp";
+}

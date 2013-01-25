@@ -12,11 +12,11 @@ bundle agent example {
 bundle edit_line  proper_greetings {
 
 
-  delete_lines: 
+  delete_lines:
 
       ".*";
 
-  insert_lines: 
+  insert_lines:
 
     "Good morning!";
 

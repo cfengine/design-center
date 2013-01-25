@@ -7,7 +7,7 @@
         "test-complex.cf": {"comment": "Complex Test Policy"},
         "sketch.json": {"comment": "Sketch metadata"},
         "changelog": {"comment": "changelog"},
-        "params/params.json": {"comment": "Example json parameters for cf-sketch"},
+        "params/params.json": {"comment": "Example json parameters for cf-sketch"}
     },
 
     "metadata":
@@ -18,10 +18,10 @@
         "license": "MIT",
         "tags": ["cfdc"],
         "authors": ["Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": {"CFEngine::stdlib": {"version": 105}, "cfengine": {"version": "3.4.0"}, "os": ["linux"] },
+        "depends": {"CFEngine::stdlib": {"version": 105}, "cfengine": {"version": "3.4.0"}, "os": ["linux"] }
     },
 
     "entry_point": "main.cf",
-    "interface": ["main.cf"],
+    "interface": ["main.cf"]
 }
 

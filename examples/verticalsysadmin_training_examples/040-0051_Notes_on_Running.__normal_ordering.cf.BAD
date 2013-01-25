@@ -1,0 +1,39 @@
+# Run this example with, without and again with
+# the -K switch to demonstrate time lock and
+# time lock override
+
+bundle agent example{
+
+  classes:
+      "myclass" 
+           expression => fileexists("/tmp/newfile");
+
+  reports:
+    myclass:: 
+      "file /tmp/newfile exists";
+  reports:
+    !myclass:: 
+      "file /tmp/newfile DOES NOT exist";
+
+  methods:
+      "any"
+            usebundle => create_file;
+
+                    }
+
+bundle agent create_file{
+      
+  files:
+      "/tmp/newfile"
+               create => "true",
+              comment => "file created ";
+
+  classes:
+      "newclass"
+           expression => fileexists("/tmp/newfile");
+
+  reports:
+    newclass::
+      "file has been created";
+                        }
+

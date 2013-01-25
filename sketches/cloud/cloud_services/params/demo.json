@@ -27,8 +27,20 @@
             "disable_ssl_verify": true
         },
 
+        "openstack":
+        {
+            "entry_url": "https://identity.api.rackspacecloud.com/v2.0/tokens",
+            // change this!  it's the admin password of the new machine!
+            "password": "my password here, please!!!",
+            "user": "youruserid",
+            // invalid
+            "key": "72145782545ab2458456b54b45545a42",
+            "image": "5cebb13a-f783-4f8c-8058-c4182c724ccd",
+            "master": "cfmaster"
+        },
+
         "class": "cfworker",
-        "stype": { "bycontext": { "ec2": "ec2", "vcli": "vcli" } },
+        "stype": { "bycontext": { "ec2": "ec2", "vcli": "vcli", "openstack": "openstack" } },
 
         "count": { "bycontext": { "start1": "1", "start10": "10", "stop": "0"    } },
         "state": { "bycontext": { "start1||start10": "start",     "stop": "stop" } }

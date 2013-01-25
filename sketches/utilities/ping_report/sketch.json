@@ -5,7 +5,7 @@
         "README.md": {"documentation": true},
         "test.cf": {"comment": "Test Policy"},
         "changelog": {"comment": "changelog"},
-        "params/example.json": {"comment": "Example parameters to report on a few hosts connectivity."},
+        "params/example.json": {"comment": "Example parameters to report on a few hosts connectivity."}
     },
 
     "metadata":
@@ -16,9 +16,9 @@
         "license": "MIT",
         "tags": ["cfdc"],
         "authors": ["Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": {"CFEngine::stdlib": {"version": 105}, "cfengine": {"version": "3.4.0"}, "os": ["linux"] },
+        "depends": {"CFEngine::stdlib": {"version": 105}, "cfengine": {"version": "3.4.0"}, "os": ["linux"] }
     },
 
     "entry_point": "main.cf",
-    "interface": ["main.cf"],
+    "interface": ["main.cf"]
 }

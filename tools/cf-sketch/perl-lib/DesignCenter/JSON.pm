@@ -11,9 +11,6 @@ package DesignCenter::JSON;
 use File::Basename;
 use Term::ANSIColor qw(:constants);
 
-our $coder;
-our $canonical_coder;
-
 use JSON;
 our $coder = JSON->new()->relaxed()->utf8()->allow_nonref();
 # for storing JSON data so it's directly comparable
@@ -188,6 +185,11 @@ sub pretty_print {
     $result .= $indent.BLUE.$name.": ".RESET.$p->{value}."\n";
   }
   return $result;
+}
+
+sub pretty_print_json
+{
+ return $canonical_coder->pretty()->encode(shift);
 }
 
 1;

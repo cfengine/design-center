@@ -20,7 +20,7 @@ our $AUTOLOAD;                  # it's a package global
 
 # Allowed data fields, for setters/getters
 our %fields = (
-              install_dest => nil,
+              install_dest => undef,
              );
 
 ######################################################################
@@ -74,7 +74,7 @@ sub list
     foreach my $repo (@{DesignCenter::Config->repolist}) {
       my @sketches = $self->list_internal($repo, $terms);
 
-      my $contents = CFSketch::repo_get_contents($repo);
+      my $contents = CFSketch::repo_get_contents($repo, 1);
 
       if (!scalar @sketches) {
         return $res;
@@ -115,7 +115,7 @@ sub list_internal
     print "Looking for terms [@$terms] in cf-sketch repository [$repo]\n"
       if DesignCenter::Config->verbose;
 
-    my $contents = CFSketch::repo_get_contents($repo);
+    my $contents = CFSketch::repo_get_contents($repo, 1);
     print "Inspecting repo contents: ", DesignCenter::JSON->coder->encode($contents), "\n"
       if DesignCenter::Config->verbose;
 
@@ -150,6 +150,9 @@ sub generate_runfile
   {
     my $self=shift;
     my $standalone = shift;
+    # If given, this parameter must be a regex that indicates which files should be
+    # omitted from the "inputs" declaration. Used to omit stdlib on the non-standalone runfile.
+    my $omit_files = shift;
     $standalone = DesignCenter::Config->standalone unless defined($standalone);
     # If a filename is given, use it as is always. If we are using the default,
     # modify it depending on $standalone
@@ -333,7 +336,9 @@ sub generate_runfile
         if DesignCenter::Config->verbose;
     }
 
-    my $includes = join ', ', map { my @p = DesignCenter::JSON::recurse_print($_); $p[0]->{value} } Util::uniq(@inputs);
+    my $includes = join ', ',
+      map { my @p = DesignCenter::JSON::recurse_print($_); $p[0]->{value} }
+        grep { !$omit_files || $_ !~ /$omit_files/ } Util::uniq(@inputs);
 
     # maybe make the run template configurable?
     my $output = make_runfile($template_activations, $includes, $standalone, $run_file);
@@ -386,6 +391,12 @@ EOHIPPUS
         my $name = $var->{name};
         my $value = exists $params{$name} ? $params{$name} :  $var->{value};
 
+        if (ref $value eq 'HASH' &&
+            exists $value->{bypass_validation}) {
+          $value = $value->{bypass_validation};
+          $var->{bypass_validation} = 1;
+        }
+
         if (ref $value eq '') {
           # for when a bundle wants access to scripts or modules
           $value =~ s/__BUNDLE_HOME__/$rel_path/g;
@@ -437,6 +448,7 @@ EOHIPPUS
                              $name,
                              $bycontext{$context},
                              $name);
+            $vars .= "     any:: # go back to global\n";
 
             if ($name eq 'activated') {
               $methods .= sprintf('    _%s_%s_%s::' . "\n",

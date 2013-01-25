@@ -2,22 +2,24 @@
 
     "manifest":
     {
-        "main.cf": { "desc": "main file", "version": 1.3 },
+        "main.cf": { "desc": "main file", "version": 1.6 },
         "README.md": { "documentation": true },
         "params/example.json": { "comment": "Example parameters" },
         "test.cf": { "comment": "Standalone test policy" },
-        "changelog": { "comment": "changelog" },
+        "changelog": { "comment": "changelog" }
     },
 
     "metadata":
     {
         "name": "Utilities::abortclasses",
 	"description": "Abort execution if a certain file exists, aka 'Cowboy mode'",
-        "version": 1.3,
+        "version": 1.6,
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Ben Heilman <bheilman@enova.com>", "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "cfengine": { "version": "3.4.0" } },
+        "depends": { "cfengine": { "version": "3.4.0" },
+                     "CFEngine::stdlib":{ "version": 105 }
+                   }
     },
 
     "entry_point": "main.cf",

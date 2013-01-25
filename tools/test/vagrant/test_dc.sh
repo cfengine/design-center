@@ -9,4 +9,4 @@ test -d $DC || exit 1
 apt-get -qq -y install make
 cd $DC/tools/test/
 export PATH=/var/cfengine/bin:${PATH}
-#make splunk
+make ${EXTRA}

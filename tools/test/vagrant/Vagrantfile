@@ -18,10 +18,13 @@ options= {
   :installer => :core,
   :box => :precise32,
   :url => 'http://files.vagrantup.com/',
+  :dcurl => 'https://github.com/cfengine/design-center.git',
+  :dcbranch => 'master',
   :dcinstall => false,
   :dctest => false,
   :provision_hub => false,
   :provision_client => false,
+  :ip => "10.1.1.12",
 }
 
 OptionParser.new do |op|
@@ -36,8 +39,8 @@ Example: install from APT and test the ssh and limits DC sketches
 EOHIPPUS
 
   op.on("-i[INSTALLER]", "--installer=[INSTALLER]",
-        [:core, :apt, :v334, :nova, :enterprise],
-        "Installation method for CFEngine (core, apt, v334, nova, enterprise)") do |v|
+        [:none, :core, :apt, :v334, :nova, :enterprise],
+        "Installation method for CFEngine (none, core, apt, v334, nova, enterprise)") do |v|
     options[:installer] = v
   end
 
@@ -47,9 +50,24 @@ EOHIPPUS
     options[:installer] = v
   end
 
+  op.on("--dcurl=[URL]",
+        "Design Center URL to check out with Git") do |v|
+    options[:dcurl] = v
+  end
+
+  op.on("--dcbranch=[BRANCH]",
+        "Design Center branch to check out with Git") do |v|
+    options[:dcbranch] = v
+  end
+
   op.on("-u[URL]", "--base-url=[URL]",
         "Base URL to use to get the box") do |v|
     options[:url] = v
+  end
+
+  op.on("-I[IP]", "--ip=[IP]",
+        "IP to assign to the host") do |v|
+    options[:ip] = v
   end
 
   op.on("-d", "--[no]dc-install",
@@ -107,18 +125,20 @@ Vagrant::Config.run do |config|
 
     # Host config
     hub_config.vm.host_name = "cftester"
-    hub_config.vm.network :hostonly, "10.1.1.12"
+    hub_config.vm.network :hostonly, options[:ip]
     hub_config.vm.forward_port 80, 8080
 
-    # Install the Community packages from source
-    hub_config.vm.provision :shell do |shell|
-      shell.path = installer
+    if installer
+      # Install the CFE packages
+      hub_config.vm.provision :shell do |shell|
+        shell.path = installer
+      end
     end
 
     if options[:dcinstall]
       hub_config.vm.provision :shell do |shell|
         shell.path = "install_dc.sh"
-        shell.args = dchome
+        shell.args = "#{dchome} #{options[:dcurl]} #{options[:dcbranch]}"
       end
     end
 

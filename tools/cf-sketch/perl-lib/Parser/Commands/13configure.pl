@@ -3,7 +3,7 @@
 #
 # CFEngine AS, October 2012
 #
-# Time-stamp: <2012-10-10 02:27:59 a10022>
+# Time-stamp: <2013-01-10 18:13:37 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -19,14 +19,14 @@ use DesignCenter::JSON;
    'configure' =>
    [
     [
-     'configure SKETCH [FILE.json]',
-     'Configure the given sketch using the parameters from FILE.json or interactively if the file is ommitted.',
+     'configure SKETCH[#n] [FILE.json]',
+     'Configure the given sketch using the parameters from FILE.json or interactively if the file is ommitted. If #n is specified, the indicated instance is edited instead of creating a new one.',
      '(\S+)\s+(\S+)',
      'configure_file'
     ],
     [
-     '-configure SKETCH',
-     'Configure the given sketch interactively.',
+     '-configure SKETCH[#n]',
+     'Configure the given sketch interactively. If #n is specified, the indicated instance is edited instead of creating a new one.',
      '(\S+)',
      'configure_interactive'
     ],
@@ -56,9 +56,10 @@ sub command_configure_file {
 sub query_and_validate {
   my $var = shift;
   my $input = shift;
+  my $prev = shift;
   my $name = $var->{name};
   my $type = $var->{type};
-  my $def  = (DesignCenter::JSON::recurse_print($var->{default}, undef, 1))[0]->{value};
+  my $def  = $prev || (DesignCenter::JSON::recurse_print($var->{default}, undef, 1))[0]->{value};
   my $value;
   my $valid;
 
@@ -97,10 +98,16 @@ sub query_and_validate {
     Util::output(GREEN."\nParameter '$name' must be an array.\n".RESET);
     Util::output("Please enter each key and value in turn, empty key to finish.\n");
     my $val = {};
+    my @keys = ();
+    if ($def && ref($def) eq 'HASH') {
+      @keys = sort keys %$def;
+    }
     while (1) {
       do {
         $valid = 0;
-        my $k = $input->readline("Please enter next key: ");
+        my $oldkey = shift @keys;
+        my $k = $input->readline("Please enter next key".
+                                 ($oldkey ? " [$oldkey]: " : ": "), $oldkey);
         if ($k eq 'STOP') {
           return (undef, 1);
         }
@@ -112,7 +119,9 @@ sub query_and_validate {
           $val = {};
         }
         else {
-          my $v = $input->readline("Please enter value for $name\[$k\]: ");
+          my $oldval = $def->{$k};
+          my $v = $input->readline("Please enter value for $name\[$k\]".
+                                  ($oldval ? " [$oldval]: " : ": "), $oldval);
           if ($k eq 'STOP') {
             return (undef, 1);
           }
@@ -143,7 +152,8 @@ sub query_and_validate {
 }
 
 sub command_configure_interactive {
-  my $sketch = shift;
+  my $name = shift;
+  my ($sketch, $num) = split(/#/, $name);
 
   my $skobj = find_sketch($sketch) || return;
 
@@ -158,15 +168,24 @@ sub command_configure_interactive {
       if ($entry_point) {
         my $varlist = $entry_point->{varlist};
         my $params = {};
+        if ($num) {
+          my @activations = @{$skobj->_activations};
+          my $count = $skobj->num_instances;
+          if ($num > $count) {
+            Util::warning "Configuration instance #$num does not exist.\n";
+            return;
+          }
+          $params = $activations[$num-1];
+        }
         Parser::_message("Entering interactive configuration for sketch $sketch.\nPlease enter the requested parameters (enter STOP to abort):\n");
         my $input = Term::ReadLine->new("cf-sketch-interactive");
         foreach my $var (@$varlist) {
           # These are internal parameters, we skip them
           if ($var->{name} =~ /^(prefix|class_prefix|canon_prefix)$/) {
-            $params->{$var->{name}} = $var->{default};
+            $params->{$var->{name}} = $params->{$var->{name}} || $var->{default};
             next;
           }
-          my ($value, $stop) = query_and_validate($var, $input);
+          my ($value, $stop) = query_and_validate($var, $input, $params->{$var->{name}});
           if ($stop) {
             Util::warning "Interrupting sketch configuration.\n";
             return;
@@ -174,7 +193,7 @@ sub command_configure_interactive {
           $params->{$var->{name}} = $value;
         }
         # Parameter input complete, let's activate it
-        unless (DesignCenter::Sketch::install_config($sketch, $params)) {
+        unless (DesignCenter::Sketch::install_config($sketch, $params, $num?($num-1):undef)) {
           Util::error "Error installing the sketch configuration.\n";
           return;
         }

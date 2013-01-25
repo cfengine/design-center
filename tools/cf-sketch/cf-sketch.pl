@@ -3,7 +3,7 @@
 package CFSketch;
 
 use FindBin;
-use lib "$FindBin::Bin/../lib/cf-sketch", "$FindBin::Bin/perl-lib", "$FindBin::Bin/perl-lib/File-Which-1.09/lib", "$FindBin::Bin/perl-lib/JSON-2.53/lib";
+use lib "$FindBin::Bin/../lib/cf-sketch", "$FindBin::Bin/../lib/cf-sketch/File-Which-1.09/lib", "$FindBin::Bin/../lib/cf-sketch/JSON-2.53/lib", "$FindBin::Bin/perl-lib", "$FindBin::Bin/perl-lib/File-Which-1.09/lib", "$FindBin::Bin/perl-lib/JSON-2.53/lib";
 
 use warnings;
 use strict;
@@ -27,8 +27,8 @@ use DesignCenter::Sketch;
 
 $Term::ANSIColor::AUTORESET = 1;
 
-my $VERSION="2.0.1";
-my $DATE="September 2012";
+my $VERSION="3.4.0b1";
+my $DATE="December 2012";
 
 
 ######################################################################
@@ -415,8 +415,8 @@ sub get_local_repo
     }
   sub repo_clear_cache {
     my $repo = shift;
-    my $noparse = shift || 0;
-    delete $content_cache{$repo,$noparse};
+    delete $content_cache{$repo,0};
+    delete $content_cache{$repo,1};
   }
 }
 

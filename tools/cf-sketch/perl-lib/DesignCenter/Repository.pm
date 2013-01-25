@@ -97,7 +97,7 @@ sub search {
               my $new =  DesignCenter::Sketch->new(name => $sketch,
                                                    location => $dir,
                                                   );
-              $new->load;
+              $new->load(undef, 1);
               $result->{$sketch}=$new;
               next SKETCH;
             }
@@ -375,7 +375,7 @@ sub missing_dependencies
 
     foreach my $repo (@{DesignCenter::Config->repolist})
     {
-        my $contents = CFSketch::repo_get_contents($repo);
+        my $contents = CFSketch::repo_get_contents($repo, 1);
         foreach my $dep (sort keys %tocheck)
         {
             if ($dep eq 'os' &&

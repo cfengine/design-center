@@ -25,14 +25,14 @@ bundle agent example {
 
   files:
       "/etc/sysconfig/autofs"
-            edit_line => create_our_autofs("$(site)"),
+            edit_line => expand_from_autofs_template("$(site)"),
                create => "true";
                      }
 
 
 #####################################################
 
-bundle edit_line create_our_autofs(site) {
+bundle edit_line expand_from_autofs_template(site) {
 
   delete_lines:
       ".*";
@@ -42,19 +42,9 @@ bundle edit_line create_our_autofs(site) {
   insert_lines:
 
       "/templates/autofs.tmpl"
-          insert_type => "file";                # insert copy of template 
+          insert_type => "file",                # insert copy of template 
+          expand_scalars => "true";             # expand scalars
 
-  replace_patterns:
-
-      "__SITE__"
-
-         replace_with =>  our_replace_body("$(site)");
                                          }
 
 #####################################################
-
-body replace_with our_replace_body(site) {
-
-        replace_value => "$(site)";
-
-                                         }

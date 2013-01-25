@@ -1,4 +1,4 @@
-/usr/local/share/doc/cfengine/inputs:
+/var/cfengine/share/CoreBase/ contains your starting set of config files
 
 promises.cf           the default config file. 
                       Uses cfengine_stdlib.cf 
@@ -10,4 +10,5 @@ failsafe.cf           failsafe config - called if promises.cf is bad
                       Promises to refresh /var/cfengine/inputs
                       from /var/cfengine/masterfiles; and
                       /var/cfengine/bin from /usr/local/sbin/cf-*
+
 
