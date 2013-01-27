@@ -22,7 +22,7 @@ time after the initial checkout.
 
 The bundle definition is:
 
-    bundle agent vcs_mirror(prefix, class_prefix, vcs, path, origin, branch, runas, umask)
+    bundle agent mirror(prefix, class_prefix, vcs, path, origin, branch, runas, umask, parent_dir)
 
 If you choose to call it directly instead of through JSON parameters
 (see `params/*.json`), you need to set the following:
@@ -54,6 +54,8 @@ If you choose to call it directly instead of through JSON parameters
 * `branch` is either a Git branch or ignored for Subversion.
 
 * `runas` and `umask` are the user and umask for the mirror command execution.
+
+* `parent_dir` (optionnal) is the name of the array containing the permission, owner and group for the directory where the mirror will be deployed
 
 ## REQUIREMENTS
 
