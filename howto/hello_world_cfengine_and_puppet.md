@@ -36,7 +36,7 @@ For Puppet, you have to install the Puppet packages from
 [http://info.puppetlabs.com/download-pe.html] and then put the
 following in `manifests/site.pp`:
 
-    notify { "Hello world" };
+    notify { "Hello world":}
 
 Then, run `puppet apply ./site.pp`:
 
