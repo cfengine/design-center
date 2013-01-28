@@ -42,7 +42,7 @@ Output:
 
 ### Puppet hello, world
 
-    notify { "Hello world" };
+    notify { "Hello world":}
 
 Output:
 
