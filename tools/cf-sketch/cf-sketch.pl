@@ -2,6 +2,16 @@
 
 package CFSketch;
 
+BEGIN
+{
+ if (-l $0)
+ {
+  require FindBin;
+  $0 = readlink $0;
+  FindBin->again();
+ }
+}
+
 use FindBin;
 use lib "$FindBin::Bin/../lib/cf-sketch", "$FindBin::Bin/../lib/cf-sketch/File-Which-1.09/lib", "$FindBin::Bin/../lib/cf-sketch/JSON-2.53/lib", "$FindBin::Bin/perl-lib", "$FindBin::Bin/perl-lib/File-Which-1.09/lib", "$FindBin::Bin/perl-lib/JSON-2.53/lib";
 
