@@ -15,12 +15,6 @@ bundle agent example {
               create  => "true",
               perms   => mog("612","aleksey","cfengine"); 
 
-      # shell equivalent: 
-      # touch /tmp/testfile
-      # chmod 612 /tmp/testfile
-      # chown aleksey /tmp/testfile
-      # chgrp cfengine /tmp/testfile
-
                      }
 
 # see cfengine_stdlib.cf for the promise body mog

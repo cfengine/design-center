@@ -3,6 +3,7 @@ body common control {
        inputs         => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
                     }
 
+
 #############################################
 
 bundle agent example {

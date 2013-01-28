@@ -9,6 +9,5 @@ Make an array, student_grades.
    Bob   B
    Linda B
 
-Report the contents
-of the array.
+Report the contents of the array.
 

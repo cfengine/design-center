@@ -62,7 +62,7 @@ sub command_generate {
 }
 
 sub command_deploy {
-  my $file = DesignCenter::Config->_system->generate_runfile(0);
+  my $file = DesignCenter::Config->_system->generate_runfile(0, qr/cfengine_stdlib\.cf$/);
   Util::output(GREEN."This runfile will be automatically executed from promises.cf\n".RESET);
 }
 

@@ -5,6 +5,7 @@ bundle agent example {
 
       "config[packages]" slist => { "httpd", "php" };
 
+
       "keys" slist => getindices("config");
 
 

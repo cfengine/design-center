@@ -1,0 +1,11 @@
+Example: Promise Body
+---------------------
+
+files:
+
+    "/var/cfengine/i_am_alive" 
+
+        create  => "true",                          # body
+        touch   => "true",                          # body
+        comment => "Prove CFEngine is running.";    # body
+        

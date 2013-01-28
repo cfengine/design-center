@@ -1,6 +1,3 @@
-# commands
-#    A promise to execute a command.
-
 bundle agent example
 {
 
@@ -9,3 +6,5 @@ bundle agent example
       "echo Hello world!";
 
 }
+
+# This fails because path to commands must be fully specified for security

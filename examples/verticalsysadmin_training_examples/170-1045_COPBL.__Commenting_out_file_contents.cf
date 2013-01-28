@@ -1,0 +1,28 @@
+body common control {
+
+               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+
+                    }
+
+
+bundle agent example {
+
+
+  files:
+
+      "/tmp/example"
+
+            edit_line => comment_out_everything;
+
+}
+
+bundle edit_line comment_out_everything {
+
+  replace_patterns:
+
+      "^([^#].*)"
+
+         replace_with => comment("# ");
+
+                                        }
+
