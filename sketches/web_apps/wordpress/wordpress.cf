@@ -39,7 +39,7 @@ bundle agent wp_install(prefix, wp_dir, wp_params, tarfile, downloadurl, htmlroo
       # look in wordpress-base.json to see how we fill in system-specific
       # variables and paths per system we support
       "vars[htmlroot][type]"  string => "PATH";
-      "vars[packages][type]"  string => "LIST()";
+      "vars[packages][type]"  string => "LIST(NON_EMPTY_STRING)";
       "vars[mysql_process][type]"  string => "NON_EMPTY_STRING";
       "vars[httpd_process][type]"  string => "NON_EMPTY_STRING";
       "vars[service_cmd][type]"  string => "PATH";
@@ -48,9 +48,12 @@ bundle agent wp_install(prefix, wp_dir, wp_params, tarfile, downloadurl, htmlroo
 
   vars:
       "canon_prefix" string => canonify("$(prefix)");
+
   methods:
-      "wp_vars"  usebundle => wp_vars(prefix, wp_dir, wp_params, tarfile, downloadurl, htmlroot, packages, mysql_process, httpd_process, service_cmd, apache_srv, mysql_srv),
+      "wp_vars"  usebundle => wp_vars("$(prefix)", "$(wp_dir)", "$(wp_params)", "$(tarfile)", "$(downloadurl)", "$(htmlroot)", @(wp_install.packages), "$(mysql_process)", "$(httpd_process)", "$(service_cmd)", "$(apache_srv)", "$(mysql_srv)"),
         classes => always("$(canon_prefix)prepared");
+      "wp_debug" usebundle => wp_report_params("wp_vars.conf"),
+        ifvarclass => "debug";
       "wp_pkgs"  usebundle => wp_packages_installed("wp_vars.conf");
       "wp_svcs"  usebundle => wp_services_up("wp_vars.conf");
       "wp_tar"   usebundle => wp_tarball_is_present("wp_vars.conf");
@@ -58,11 +61,7 @@ bundle agent wp_install(prefix, wp_dir, wp_params, tarfile, downloadurl, htmlroo
       "wp_mysql" usebundle => wp_mysql_configuration("wp_vars.conf", "$(prefix)wp_params"); 
       "wp_cfgcp" usebundle => wp_config_exists("wp_vars.conf");
       "wp_cfg"   usebundle => wp_is_properly_configured("wp_vars.conf", "$(prefix)wp_params");
-}
 
-bundle agent meta_wp_install
-{
-  vars:
 }
 
 #############################################
@@ -84,7 +83,8 @@ bundle agent wp_vars(prefix, wp_dir, wp_params, tarfile, downloadurl, htmlroot, 
       "conf[_httpd_process]"  string => "$(httpd_process)";
       "conf[_sys_mysqlsrv]"   string => "$(mysql_srv)";
       "conf[_mysql_process]"  string => "$(mysql_process)";
-      "wp_packages"  slist => { "@(packages)" };
+      "wp_packages"  slist => { @(packages) };
+
 }
 
 bundle agent wp_report_params(params)
@@ -94,15 +94,22 @@ bundle agent wp_report_params(params)
   reports:
     cfengine_3::
       "$(keys) = $($(params)[$(keys)])";
+      "packages = $(wp_vars.wp_packages)";
 }
 
 bundle agent wp_packages_installed(params)
 {
+  vars:
+      "pkgs" slist => { @(wp_vars.wp_packages) };
   packages:
-      "$(wp_vars.wp_packages)"
+      "$(pkgs)"
         package_policy => "add",
         package_method => generic,
         classes => if_repaired("packages_added");
+
+  reports:
+    debug::
+      "Checked that $(pkgs) is installed.";
 
   commands:
     packages_added::
@@ -221,37 +228,37 @@ bundle agent wp_is_properly_configured(params, wp_array)
 # it has not been fully tested and is not something everyone would want to do. If
 # you want it, add it specifically to your bundlesequence.
 
-bundle agent wp_allow_http_inbound(params)
-{
-  files:
-    redhat:: # tested on RHEL only, file location may vary based on Linux distro or OS
-      "/etc/sysconfig/iptables"
-        edit_line => wp_insert_HTTP_allow_rule_before_the_accept_established_tcp_conns_rule,
-        comment => "insert HTTP allow rule into /etc/sysconfig/iptables",
-        classes => if_repaired("iptables_edited");
+# bundle agent wp_allow_http_inbound(params)
+# {
+#   files:
+#     redhat:: # tested on RHEL only, file location may vary based on Linux distro or OS
+#       "/etc/sysconfig/iptables"
+#         edit_line => wp_insert_HTTP_allow_rule_before_the_accept_established_tcp_conns_rule,
+#         comment => "insert HTTP allow rule into /etc/sysconfig/iptables",
+#         classes => if_repaired("iptables_edited");
 
-  commands: 
-    iptables_edited::
-      "/sbin/service iptables restart"
-        comment => "Restarting iptables to load new config";
-}
+#   commands: 
+#     iptables_edited::
+#       "/sbin/service iptables restart"
+#         comment => "Restarting iptables to load new config";
+# }
 
-bundle edit_line wp_insert_HTTP_allow_rule_before_the_accept_established_tcp_conns_rule(params)
-{
-  vars:
-      "http_rule" string => "-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT";
+# bundle edit_line wp_insert_HTTP_allow_rule_before_the_accept_established_tcp_conns_rule(params)
+# {
+#   vars:
+#       "http_rule" string => "-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT";
 
-  insert_lines:
-      "$(http_rule)"
-        location => wp_before_the_accept_established_tcp_conns_rule;
-}
+#   insert_lines:
+#       "$(http_rule)"
+#         location => wp_before_the_accept_established_tcp_conns_rule;
+# }
 
-body location wp_before_the_accept_established_tcp_conns_rule
-{
-        before_after => "before";
-        first_last => "first";
-        select_line_matching => "^-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT.*";
-}
+# body location wp_before_the_accept_established_tcp_conns_rule
+# {
+#         before_after => "before";
+#         first_last => "first";
+#         select_line_matching => "^-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT.*";
+# }
 
 # Todo:
 #
