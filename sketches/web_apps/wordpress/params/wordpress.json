@@ -1,14 +1,8 @@
 {
   "WebApps::wordpress_install":
     {
-       "wp_dir" : "/var/www/wordpress",
-       "wp_params" : {
-         "DB_NAME" : "wordpress_db",
-         "DB_USER" : "wordpress_user",
-         "DB_PASSWORD" : "wordpress_pass"
-       },
        "activated" : true,
-       "wp_dir" : "/var/www/wordpress",
+       "wp_dir" : { "bycontext": { "debian|ubuntu": "/var/www/blog", "redhat|centos": "/var/www/html/blog" } },
        "wp_params" : {
          "DB_NAME" : "wordpress_db",
          "DB_USER" : "wordpress_user",
@@ -18,7 +12,7 @@
        {
            "bycontext":
            {
-               "debian": "/var/www",
+               "debian|ubuntu": "/var/www",
                "redhat|centos": "/var/www/html"
            }
        },
@@ -26,7 +20,7 @@
        {
            "bycontext":
            {
-               "debian":
+               "debian|ubuntu":
                [
                    "apache2", 
                    "php5",
@@ -47,7 +41,7 @@
        {
            "bycontext":
            {
-               "debian": "/usr/sbin/mysqld",
+               "debian|ubuntu": "/usr/sbin/mysqld",
                "redhat": "^mysqld",
                "centos": "/usr/libexec/mysqld"
            }
@@ -56,7 +50,7 @@
        {
            "bycontext":
            {
-               "debian": "/usr/sbin/apache2",
+               "debian|ubuntu": "/usr/sbin/apache2",
                "redhat": "^httpd",
                "centos": "/usr/sbin/httpd"
            }
@@ -65,7 +59,7 @@
        {
            "bycontext":
            {
-               "debian": "/usr/sbin/service",
+               "debian|ubuntu": "/usr/sbin/service",
                "redhat|centos": "/sbin/service"
            }
        },
@@ -73,7 +67,7 @@
        {
            "bycontext":
            {
-               "debian": "apache2",
+               "debian|ubuntu": "apache2",
                "redhat|centos": "httpd"
            }
        },
@@ -81,9 +75,10 @@
        {
            "bycontext":
            {
-               "debian": "mysqld",
+               "debian|ubuntu": "mysqld",
                "redhat|centos": "mysqld"
            }
        },
     }
 }
+
