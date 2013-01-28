@@ -1,0 +1,85 @@
+{
+   "Database::Install":
+   {
+       "activated" : true,
+       "db": "mysql",
+       "server": { "bycontext": { "server": true, "!server": false } },
+       "purge" : { "bycontext": { "purge": true, "!purge": false } },
+       "process_match":
+       {
+           "bycontext": 
+           {
+               "redhat|centos|fedora": ".*mysqld.*",
+               "!(redhat|centos|fedora)": "/usr/sbin/mysqld.*"
+           }
+       },
+
+       "start_command": "/etc/init.d/mysql restart",
+
+       "packages": 
+       {
+           "bycontext":
+           {
+               "ubuntu_12":
+               [
+                   "mysql-client",
+                   "mysql-common",
+                   "libmysqlclient18",
+                   "libdbd-mysql-perl",
+                   "libdbi-perl",
+                   "libnet-daemon-perl",
+                   "libplrpc-perl"
+               ],
+               "(redhat|centos|fedora)":
+               [
+                   "mysql"
+               ],
+               "(!ubuntu_12.(debian|ubuntu))" :
+               [
+                   "mysql-client-5.1",
+                   "mysql-client-core-5.1",
+                   "mysql-common",
+                   "libmysqlclient16",
+                   "libdbd-mysql-perl",
+                   "libdbi-perl",
+                   "libnet-daemon-perl",
+                   "libplrpc-perl"
+               ],
+               "(suse|SuSe)":
+               [
+                   "mysql-community-server-client",
+                   "libmysqlclient16",
+                   "libmysqlclient_r16"
+               ],
+           }
+       },
+
+       "server_packages": 
+       {
+           "bycontext":
+           {
+               "ubuntu_12":
+               [
+                   "mysql-server-5.1",
+                   "mysql-server-core-5.1",
+                   "libhtml-template-perl"
+               ],
+               "(redhat|centos|fedora)":
+               [
+                   "mysql-server",
+                   "perl-DBD-MySQL"
+               ],
+               "(!ubuntu_12.(debian|ubuntu))":
+               [
+                   "mysql-server-5.1",
+                   "mysql-server-core-5.1",
+                   "libhtml-template-perl"
+               ],
+               "(suse|SuSe)":
+               [
+                   "mysql-community-server"
+               ],
+           }
+       }
+   }
+}
