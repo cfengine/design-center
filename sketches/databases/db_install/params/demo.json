@@ -61,8 +61,8 @@
                ],
                "mysql.(!ubuntu_12.(debian|ubuntu))" :
                [
-                   "mysql-client-5.1",
-                   "mysql-client-core-5.1",
+                   "mysql-client",
+                   "mysql-client-core",
                    "mysql-common",
                    "libmysqlclient16",
                    "libdbd-mysql-perl",
@@ -104,8 +104,8 @@
 
                "mysql.ubuntu_12":
                [
-                   "mysql-server-5.1",
-                   "mysql-server-core-5.1",
+                   "mysql-server",
+                   "mysql-server-core",
                    "libhtml-template-perl"
                ],
                "mysql.(redhat|centos|fedora)":
@@ -115,8 +115,8 @@
                ],
                "mysql.(!ubuntu_12.(debian|ubuntu))":
                [
-                   "mysql-server-5.1",
-                   "mysql-server-core-5.1",
+                   "mysql-server",
+                   "mysql-server-core",
                    "libhtml-template-perl"
                ],
                "mysql.(suse|SuSe)":
