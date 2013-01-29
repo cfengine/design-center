@@ -36,7 +36,7 @@ defaults:
       if_match_regex  => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
 
     "tmux_config_path"
-      string => "~/.tmux.conf",
+      string => "/tmp/cfdc-$(prefix).tmux.conf",
       if_match_regex => "(\$\([a-zA-Z0-9_.]+\)){1}|cf_null|default";
 
     "context_conf_emptyfirst"
@@ -75,7 +75,7 @@ meta:
     "vars[tmux_config][type]"    string => "LIST(NON_EMPTY_STRING)";
 
     "vars[tmux_config_path][type]"    string => "PATH";
-    "vars[tmux_config_path][default]" string => "~/.tmux.conf";
+    "vars[tmux_config_path][default]" string => "/tmp/cfdc-__PREFIX__.tmux.conf";
 
     "vars[context_conf_emptyfirst][type]"    string => "CONTEXT";
     "vars[context_conf_emptyfirst][default]" string => "!any";

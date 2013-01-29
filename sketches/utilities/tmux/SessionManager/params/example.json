@@ -1,0 +1,17 @@
+{
+   "Utilities::tmux::SessionManager":
+   {
+       "bundle_home" : "__ABS_BUNDLE_HOME__",
+       "tmux_bin" : "/usr/bin/tmux",
+       "su_bin" : "/bin/su",
+       "command" : "irssi",
+       "session_name" : "irssi",
+       "context_remove_session" : "!any",
+       "runas" : "root",
+       "tmux_config" : [ "set -g prefix C-a", "unbind C-b", "bind C-a send-prefix" ],
+       "tmux_config_path" : "/tmp/.tmux.conf.irssi",
+       "context_remove_config" : "!any",
+       "context_conf_emptyfirst" : "!any",
+   }
+}
+
