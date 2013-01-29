@@ -158,21 +158,21 @@ if ($config->dcapi)
  my $version = DesignCenter::JSON::hashref_search($data, qw/dc-api-version/);
  my $list = DesignCenter::JSON::hashref_search($data, qw/list/);
  my $search = DesignCenter::JSON::hashref_search($data, qw/search/);
+ my $api = DesignCenter::JSON::hashref_search($data, qw/api/);
 
  if (defined $version && $version eq '0.0.1')
  {
-  my $ret = {};
+  my $ret = DesignCenter::API::make_ok({log => [],
+                                        data => {},
+                                        success => 1});
 
   if (defined $list)
   {
-   $ret = DesignCenter::API::make_ok({log => [],
-                                      data => {},
-                                      success => 1});
-
-   if (defined $list)
-   {
-    $ret->{data}->{list} = DesignCenter::Config->_system->list([$list || '.'], 1, 1);
-   }
+   $ret->{data}->{list} = DesignCenter::Config->_system->list([$list || '.'], 1, 1);
+  }
+  elsif (defined $search)
+  {
+   $ret->{data}->{search} = Parser::command_search(($search||'.'), 1);
   }
   else
   {

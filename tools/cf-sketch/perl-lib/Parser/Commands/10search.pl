@@ -24,7 +24,7 @@ sub command_search {
   my $regex=shift;
   my $data_mode=shift;
 
-  my @ret;
+  my $ret = {};
 
   $regex = "." if ($regex eq 'all' or !$regex);
   my $err = Util::check_regex($regex);
@@ -37,7 +37,7 @@ sub command_search {
       foreach my $found (sort keys %$res) {
         if ($data_mode)
         {
-         push @ret, $res;
+         $ret->{$found} = $res->{$found};
         }
         else
         {
@@ -50,7 +50,7 @@ sub command_search {
     }
   }
 
-  return @ret;
+  return $ret;
 }
 
 1;
