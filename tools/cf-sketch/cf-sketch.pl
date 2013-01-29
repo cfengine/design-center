@@ -58,24 +58,6 @@ $config->load;
 $config->version($VERSION);
 $config->date($DATE);
 
-if ($config->dcapi)
-{
- my $data = DesignCenter::JSON::load(join '', <>);
- my $version = DesignCenter::JSON::hashref_search($data, qw/dc-api-version/);
- if (defined $version && $version eq '0.0.1')
- {
-  my $ret = DesignCenter::API::make_ok({log => ["We're OK"], success => 1});
-  print DesignCenter::JSON::canonical_coder()->encode($ret);
-  exit 0;
- }
- else
- {
-  my $ret = DesignCenter::API::make_error(["DC API Version mismatch"]);
-  print DesignCenter::JSON::canonical_coder()->encode($ret);
-  exit 1;
- }
-}
-
 # Set up repository
 $config->_repository(DesignCenter::Repository->new);
 # Local system
@@ -125,7 +107,7 @@ Parser::set_welcome_message("[default]\nCFEngine AS, 2012.");
 # Make sure at least the stdlib is installed
 $config->_repository->install(['CFEngine::stdlib'], 1);
 
-unless ($config->expert) {
+unless ($config->expert || $config->dcapi) {
   # Run the main command loop
   Parser::parse_commands();
 
@@ -169,6 +151,42 @@ if ($config->search) {
 #   make_packages($config->makepackage);
 #   exit;
 # }
+
+if ($config->dcapi)
+{
+ my $data = DesignCenter::JSON::load(join '', <>);
+ my $version = DesignCenter::JSON::hashref_search($data, qw/dc-api-version/);
+ my $list = DesignCenter::JSON::hashref_search($data, qw/list/);
+ my $search = DesignCenter::JSON::hashref_search($data, qw/search/);
+
+ if (defined $version && $version eq '0.0.1')
+ {
+  my $ret = {};
+
+  if (defined $list)
+  {
+   $ret = DesignCenter::API::make_ok({log => [],
+                                      data => {},
+                                      success => 1});
+
+   if (defined $list)
+   {
+    $ret->{data}->{list} = DesignCenter::Config->_system->list([$list || '.'], 1, 1);
+   }
+  }
+  else
+  {
+   $ret = DesignCenter::API::make_ok({log => ["We're OK"], success => 1});
+  }
+
+  print DesignCenter::JSON::canonical_coder()->allow_blessed()->encode($ret), "\n";
+  exit 0;
+ }
+
+ my $ret = DesignCenter::API::make_error(["DC API Version mismatch"]);
+ print DesignCenter::JSON::canonical_coder()->allow_blessed()->encode($ret), "\n";
+ exit 1;
+}
 
 if ($config->listactivations) {
   Parser::command_listactivations();

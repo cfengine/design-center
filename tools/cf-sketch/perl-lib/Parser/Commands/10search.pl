@@ -22,6 +22,10 @@ use DesignCenter::Config;
 
 sub command_search {
   my $regex=shift;
+  my $data_mode=shift;
+
+  my @ret;
+
   $regex = "." if ($regex eq 'all' or !$regex);
   my $err = Util::check_regex($regex);
   if ($err) {
@@ -31,13 +35,22 @@ sub command_search {
     if (keys %$res) {
       Util::output("The following sketches ".(($regex eq '.')?"are available:":"match your query:")."\n\n");
       foreach my $found (sort keys %$res) {
-        print GREEN, $res->{$found}->name, RESET, " ".(($res->{$found}->metadata||{})->{description} or $res->{$found}->location)."\n";
+        if ($data_mode)
+        {
+         push @ret, $res;
+        }
+        else
+        {
+         print GREEN, $res->{$found}->name, RESET, " ".(($res->{$found}->metadata||{})->{description} or $res->{$found}->location)."\n";
+        }
       }
     }
     else {
       Util::error("No sketches match your query.\n");
     }
   }
+
+  return @ret;
 }
 
 1;

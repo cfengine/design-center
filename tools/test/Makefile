@@ -17,6 +17,9 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --expert --install CFEngine::stdlib --de
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE) -Dverbose -Ddebug -Dtest
 
 api:
+	echo '{ "dc-api-version": "0.0.1", "install": [ "Security::SSH" ], "list": true }' | $(CFSKETCH) --dcapi
+	echo '{ "dc-api-version": "0.0.1", "install": [ "Security::SSH" ], "search": "" }' | $(CFSKETCH) --dcapi
+	echo '{ "dc-api-version": "0.0.1", "install": [ "Security::SSH" ], "search": "Cloud" }' | $(CFSKETCH) --dcapi
 	echo '{"dc-api-version": "0.0.1", "install": [ "Security::SSH" ], "activate": { "Security::SSH": "../../sketches/networking/ssh/params/simple.json" }}' | $(CFSKETCH) --dcapi
 
 cloud_services:

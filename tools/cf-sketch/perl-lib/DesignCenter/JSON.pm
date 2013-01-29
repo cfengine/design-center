@@ -34,7 +34,13 @@ sub load
 
     my @j;
 
-    if ($coder->decode($f)) # detect inline content, must be proper JSON
+    my $try_eval;
+    eval
+    {
+     $try_eval = $coder->decode($f);
+    };
+
+    if ($try_eval) # detect inline content, must be proper JSON
     {
      @j = split "\n", $f;
     }

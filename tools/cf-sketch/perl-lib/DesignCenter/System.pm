@@ -68,6 +68,7 @@ sub list
     my $self = shift;
     my $terms = shift;
     my $noactivations = shift || 0;
+    my $puredata = shift;
 
     my $res = {};
 
@@ -80,15 +81,22 @@ sub list
         return $res;
       }
       foreach my $sketch (@sketches) {
+       if ($puredata)
+       {
+        $res->{$sketch} = $contents->{$sketch};
+       }
+       else
+       {
         # Create new Sketch object
         $res->{$sketch} = DesignCenter::Sketch->new(name => $sketch, %{$contents->{$sketch}});
         # Set installed to its full install location
         $res->{$sketch}->installed($res->{$sketch}->fulldir);
+       }
       }
     }
 
     # Merge activation info
-    unless ($noactivations) {
+    unless ($noactivations || $puredata) {
       my $activations = $self->activations;
       foreach my $sketch (sort keys %$activations) {
         next unless exists($res->{$sketch});
