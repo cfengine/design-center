@@ -30,6 +30,7 @@ use Term::ANSIColor qw(:constants);
 use Parser;
 use Util;
 use DesignCenter::JSON;
+use DesignCenter::API;
 use DesignCenter::Config;
 use DesignCenter::Repository;
 use DesignCenter::System;
@@ -56,6 +57,24 @@ $config->load;
 # Version and date information
 $config->version($VERSION);
 $config->date($DATE);
+
+if ($config->dcapi)
+{
+ my $data = DesignCenter::JSON::load(join '', <>);
+ my $version = DesignCenter::JSON::hashref_search($data, qw/dc-api-version/);
+ if (defined $version && $version eq '0.0.1')
+ {
+  my $ret = DesignCenter::API::make_ok({log => ["We're OK"], success => 1});
+  print DesignCenter::JSON::canonical_coder()->encode($ret);
+  exit 0;
+ }
+ else
+ {
+  my $ret = DesignCenter::API::make_error(["DC API Version mismatch"]);
+  print DesignCenter::JSON::canonical_coder()->encode($ret);
+  exit 1;
+ }
+}
 
 # Set up repository
 $config->_repository(DesignCenter::Repository->new);
