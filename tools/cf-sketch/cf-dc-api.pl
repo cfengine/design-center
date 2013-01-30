@@ -47,9 +47,11 @@ unless ($config)
  api_exit_error("$0 could not load $config_file");
 }
 
+print api_ok({ data => { config => $config } });
+
 sub api_ok
 {
-  print coder->encode(make_ok(@_)), "\n";
+  print $coder->encode(make_ok(@_)), "\n";
 }
 
 sub api_exit_error
@@ -60,12 +62,27 @@ sub api_exit_error
 
 sub api_error
 {
-  print coder->encode(make_error(@_)), "\n";
+  print $coder->encode(make_error(@_)), "\n";
 }
 
 sub make_ok
 {
- return { api_ok => shift };
+ my $ok = shift;
+ $ok->{success} = JSON::true;
+ $ok->{errors} = [];
+ $ok->{warnings} = [];
+ $ok->{log} = [];
+ return { api_ok => $ok };
+}
+
+sub make_not_ok
+{
+ my $nok = shift;
+ $nok->{success} = JSON::false;
+ $nok->{errors} = shift @_;
+ $nok->{warnings} = shift @_;
+ $nok->{log} = shift @_;
+ return { api_not_ok => $nok };
 }
 
 sub make_error
@@ -87,7 +104,7 @@ sub load
 
  if ($try_eval) # detect inline content, must be proper JSON
  {
-  @j = split "\n", $f;
+  return ($try_eval);
  }
  elsif (Util::is_resource_local($f))
  {
@@ -101,148 +118,46 @@ sub load
  }
  else
  {
-  my $j = Util::get_remote($f)
-   or Util::color_die "Unable to retrieve $f";
+  my ($j, $error) = get($f);
 
-  @j = split "\n", $j;
-    }
+  defined $error and return (undef, $error);
+  defined $j or return (undef, "Unable to retrieve $f");
 
-    if (scalar @j)
-    {
-        chomp @j;
-        s/\n//g foreach @j;
-        s/^\s*(#|\/\/).*//g foreach @j;
-        my $ret = $coder->decode(join '', @j);
+  @j = @$j;
+ }
 
-        if (ref $ret eq 'HASH' &&
-            exists $ret->{include} && ref $ret->{include} eq 'ARRAY')
-        {
-            foreach my $include (@{$ret->{include}})
-            {
-                if (dirname($include) eq '.' && ! -f $include)
-                {
-                    if (Util::is_resource_local($f)) {
-                        $include = File::Spec->catfile(dirname($f), $include);
-                    }
-                    else {
-                        $include = dirname($f)."/$include";
-                    }
-                }
+ if (scalar @j)
+ {
+  chomp @j;
+  s/\n//g foreach @j;
+  s/^\s*(#|\/\/).*//g foreach @j;
 
-                print "Including $include\n" unless $quiet;
-                my $parent = load($include);
-                if (ref $parent eq 'HASH')
-                {
-                    $ret->{$_} = $parent->{$_} foreach keys %$parent;
-                }
-                else
-                {
-                    Util::color_warn "Malformed include contents from $include: not a hash" unless $quiet;
-                }
-            }
-            delete $ret->{include};
-        }
+  my $ret = $coder->decode(join '', @j);
 
-        return $ret;
-    }
+  return ($ret);
+ }
 
-    return;
+ return (undef, "No data was loaded from $f");
 }
 
-# sub get
-# {
-#  return curl('GET', @_);
-# }
+sub get
+{
+ return curl('GET', @_);
+}
 
-# sub curl
-# {
-#  my $mode = shift @_;
-#  my $url = shift @_;
+sub curl
+{
+ my $mode = shift @_;
+ my $url = shift @_;
 
-#  my $run = <<EOHIPPUS;
-# $curl -s $mode $url |
-# EOHIPPUS
+ my $run = <<EOHIPPUS;
+$curl -s $mode $url |
+EOHIPPUS
 
-#  print STDERR "Running: $run\n";
-#  open my $c, $run or die "Could not run command [$run]: $!";
-
-#  while (<$c>)
-#  {
-#   print if $options{verbose};
-#   my $data;
-#   eval
-#   {
-#    $data = $coder->decode($_);
-#   };
-#   # print Dumper $data;
-#   if ($mode eq 'token')
-#   {
-#    my $token = hashref_search($data, qw/access token id/);
-#    die "Couldn't get security token through [$run]!" unless defined $token;
-#    $options{auth} = $data;
-#    # we would use service => 'compute' but that also matches 1st
-#    # generation servers, so we match on the name specifically
-#    $options{catalog} = hashref_search($options{auth},
-#                                       qw/access serviceCatalog/,
-#                                       { name => 'cloudServersOpenStack' } );
-
-#    die "Couldn't find service catalog" unless defined $options{catalog};
-
-#    $options{endpoint} = hashref_search($options{catalog},
-#                                        qw/endpoints/,
-#                                        { publicURL => undef });
-#    $options{url} = hashref_search($options{endpoint}, qw/publicURL/);
-
-#    $options{token} = $token;
-#    return $token;
-#   }
-#   elsif ($mode eq 'list')
-#   {
-#    $options{servers} = hashref_search($data, qw/servers/);
-#    if ($options{servers} && ref $options{servers} eq 'ARRAY')
-#    {
-#     my $servers = [];
-#     foreach my $server (@{$options{servers}})
-#     {
-#      my $name = hashref_search($server, qw/name/);
-#      die "Could not determine name for server " . $coder->encode($server)
-#       unless defined $name;
-#      my $server_data = { name => $name };
-
-#      foreach my $v (
-#                     [ id => qw/id/ ],
-#                     [ ip => qw/accessIPv4/ ],
-#                     [ image => qw/image id/ ],
-#                     [ progress => qw/progress/ ],
-#                     [ cfclass => qw/metadata cfclass/ ],
-#                    )
-#      {
-#       my $k = shift @$v;
-#       $server_data->{$k} = hashref_search($server, @$v);
-#      }
-
-#      $server_data->{cfclass} ||= '???';
-
-#      push @$servers, $server_data;
-#     }
-#     return $servers;
-#    }
-#    else
-#    {
-#     die "Could not get server list with command [$run]: data=" . $coder->encode($data);
-#    }
-#   }
-#   elsif ($mode eq 'create')
-#   {
-#    return $data;
-#   }
-#   elsif ($mode eq 'delete')
-#   {
-#    return $data;
-#   }
-#   die Dumper [$run, $data];
-#  }
-# }
+ print STDERR "Running: $run\n";
+ open my $c, $run or return (undef, "Could not run command [$run]: $!");
+ return ([<$c>], undef);
+}
 
 sub hashref_search
 {
