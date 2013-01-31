@@ -1,0 +1,78 @@
+=encoding utf8
+
+=head1 NAME
+
+Mo::Inline - Inline Mo and Features into your package
+
+=head1 SYNOPSIS
+
+In your Mo module:
+
+    # This is effectively your own private Mo(ose) setup
+    package MyModule::Mo;
+    # use Mo qw'build builder default import';
+    1;
+
+From the command line:
+
+    > mo-inline lib/MyModule/Mo.pm
+
+or:
+
+    > mo-inline lib/
+
+or (if you are really lazy):
+
+    > mo-inline
+
+Then from another module:
+
+    package MyModule::Foo;
+    use MyModule::Mo;       # gets build, builder and default automatically
+
+=head1 DESCRIPTION
+
+Mo is so small that you can easily inline it, along with any feature modules.
+Mo provides a script called C<mo-inline> that will do it for you.
+
+All you need to do is comment out the line that uses Mo, and run C<mo-inline>
+on the file. C<mo-inline> will find such comments and do the inlining for you.
+It will also replace any old inlined Mo with the latest version.
+
+What Mo could you possibly want?
+
+=head1 AUTOMATIC FEATURES
+
+By using the L<Mo::import> feature, all uses of your Mo class will turn on all
+the features you specified. You can override it if you want, but that will be
+the default.
+
+=head1 REAL WORLD EXAMPLES
+
+For real world examples of Mo inlined using C<mo-inline>, see L<YAML::Mo>,
+L<Pegex::Mo> and L<TestML::Mo>.
+
+=head1 SEE ALSO
+
+=over
+
+=item *
+
+L<Mo>
+
+=back
+
+=head1 AUTHOR
+
+Ingy döt Net <ingy@ingy.net>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (c) 2011. Ingy döt Net.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+See http://www.perl.com/perl/misc/Artistic.html
+
+=cut

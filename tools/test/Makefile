@@ -12,16 +12,21 @@ ifeq ($(LOGNAME),root)
   RUNFILE:=/var/cfengine/inputs/standalone-cf-sketch-runfile.cf
 endif
 
+CFAPI:=`pwd`/../cf-sketch/cf-dc-api.pl `pwd`/../cf-sketch/config.json
 CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH)
 CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --expert --install CFEngine::stdlib --deactivate-all --generate -v
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE) -Dverbose -Ddebug -Dtest
 
 api:
-	echo '{ "dc-api-version": "0.0.1", "list": true }' | $(CFSKETCH) --dcapi
-	echo '{ "dc-api-version": "0.0.1", "search": "" }' | $(CFSKETCH) --dcapi
-	echo '{ "dc-api-version": "0.0.1", "search": "Cloud" }' | $(CFSKETCH) --dcapi
-	echo '{"dc-api-version": "0.0.1", "api": [ "Security::SSH" ]}' | $(CFSKETCH) --dcapi
-	echo '{"dc-api-version": "0.0.1", "install": [ "Security::SSH" ], "activate": { "Security::SSH": "../../sketches/networking/ssh/params/simple.json" }}' | $(CFSKETCH) --dcapi
+	echo 'broken json' | $(CFAPI)
+	echo '{ "dc-api-version": "5.0.2"}' | $(CFAPI)
+	echo '{ "dc-api-version": "0.0.1"}' | $(CFAPI)
+	echo '{ "dc-api-version": "0.0.1", "request": { } }' | $(CFAPI)
+	echo '{ "dc-api-version": "0.0.1", "request": {"list": true } }' | $(CFAPI)
+	echo '{ "dc-api-version": "0.0.1", "request": {"search": "" } }' | $(CFAPI)
+	echo '{ "dc-api-version": "0.0.1", "request": {"search": "Cloud" } }' | $(CFAPI)
+	echo '{"dc-api-version": "0.0.1", "request": {"api": [ "Security::SSH" ]} }' | $(CFAPI)
+	echo '{"dc-api-version": "0.0.1", "request": {"install": [ "Security::SSH" ], "activate": { "Security::SSH": "../../sketches/networking/ssh/params/simple.json" }} }' | $(CFAPI)
 
 cloud_services:
 	$(CFSKETCH_DA) --install Cloud::Services --activate Cloud::Services=$(SOURCEDIR)/cloud/cloud_services/params/demo.json

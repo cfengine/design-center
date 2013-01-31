@@ -294,4 +294,41 @@ sub read_command
  return $out;
 }
 
+sub hashref_search
+{
+ my $ref = shift @_;
+ my $k = shift @_;
+ if (ref $ref eq 'HASH' && exists $ref->{$k})
+ {
+  if (scalar @_ > 0) # dig further
+  {
+   return hashref_search($ref->{$k}, @_);
+  }
+  else
+  {
+   return $ref->{$k};
+  }
+ }
+
+ if (ref $ref eq 'ARRAY' && ref $k eq 'HASH') # search an array
+ {
+  foreach my $item (@$ref)
+  {
+   foreach my $probe (keys %$k)
+   {
+    if (ref $item eq 'HASH' &&
+        exists $item->{$probe})
+    {
+     # if the value is undef...
+     return $item unless defined $k->{$probe};
+     # or it matches the probe
+     return $item if $item->{$probe} eq $k->{$probe};
+    }
+   }
+  }
+ }
+
+ return undef;
+}
+
 1;

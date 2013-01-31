@@ -1,0 +1,24 @@
+=encoding utf8
+
+=head1 Name
+
+Mo::builder - Adds the builder feature to Mo's has
+
+=head1 Synopsis
+
+    use Mo qw'builder';
+    has name => ( builder => 'name_lookup' );
+
+    sub name_lookup {
+        my ($self) = @_;
+        ...
+    }
+
+=head1 Description
+
+Adds the C<builder> parameter to has, which expects a method name, which is
+executed on C<$self> to set the attribute if it hasn't been set yet.
+
+Currently this is always called lazily.
+
+=cut
