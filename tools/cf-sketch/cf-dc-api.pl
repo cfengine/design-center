@@ -20,32 +20,44 @@ use Util;
 
 $| = 1;                         # autoflush
 
+my @log;
 my $api = DCAPI->new();
 
 unless ($api->curl())
 {
- api_exit_error("$0: could not locate `curl' executable in $ENV{PATH}");
+ $api->exit_error("$0: could not locate `curl' executable in $ENV{PATH}");
 }
 
 my $config_file = shift @ARGV;
 
 unless ($config_file)
 {
- api_exit_error("Syntax: $0 CONFIG_FILE [SERVICE_URL]");
+ $api->exit_error("Syntax: $0 CONFIG_FILE [SERVICE_URL]");
 }
 
-my ($config, @errors) = $api->config($config_file);
+my ($loaded, @errors) = $api->set_config($config_file);
 
-unless ($config)
+unless ($loaded)
 {
- api_exit_error("$0 could not load $config_file");
+ $api->exit_error("$0 could not load $config_file: [@errors]");
+}
+
+if (scalar @errors)
+{
+ $api->exit_error("$0 startup errors", @errors);
 }
 
 my $data = $api->load(join '', <>);
+my $debug = Util::hashref_search($data, qw/debug/);
 my $version = Util::hashref_search($data, qw/dc-api-version/);
 my $request = Util::hashref_search($data, qw/request/);
 my $list = Util::hashref_search($request, qw/list/);
 my $search = Util::hashref_search($request, qw/search/);
+
+if ($debug)
+{
+ push @log, $api->data_dump();
+}
 
 unless (defined $version && $version eq $api->version())
 {
@@ -69,7 +81,8 @@ elsif (defined $search)
 }
 else
 {
- $api->ok({ log => ["Nothing to do, but we're OK, thanks for asking."],
+ push @log, "Nothing to do, but we're OK, thanks for asking.";
+ $api->ok({ log => \@log,
           data => {} });
 }
 
