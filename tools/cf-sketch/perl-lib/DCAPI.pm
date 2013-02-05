@@ -23,6 +23,7 @@ has config => ( );
 
 has curl => ( is => 'ro', default => sub { which('curl') } );
 has repos => ( is => 'ro', default => sub { [] } );
+has recognized_sources => ( is => 'ro', default => sub { [] } );
 has warnings => ( is => 'ro', default => sub { {} } );
 
 has coder =>
@@ -44,11 +45,15 @@ sub set_config
 
  $self->config($self->load($file));
 
+ push @{$self->recognized_sources()},
+  @{(Util::hashref_search($self->config(), qw/recognized_sources/) || [])};
+
  foreach my $repo (@{Util::hashref_search($self->config(), qw/repolist/) || []})
  {
   eval
   {
-   push @{$self->repos()}, DCAPI::Repo->new(location => $repo);
+   push @{$self->repos()}, DCAPI::Repo->new(api => $self,
+                                            location => glob($repo));
   };
 
   if ($@)
@@ -57,7 +62,21 @@ sub set_config
   }
  }
 
- return (1, $self->warnings());
+ my $w = $self->warnings();
+ return scalar keys %$w ? (1,  $w) : (1);
+}
+
+sub data_dump
+{
+ my $self = shift;
+ return
+ {
+  version => $self->version(),
+  config => $self->config(),
+  curl => $self->curl(),
+  warnings => $self->warnings(),
+  repos => [map { $_->data_dump() } @{$self->repos()}],
+ };
 }
 
 sub log { shift; print STDERR @_; };
@@ -87,10 +106,25 @@ EOHIPPUS
  return ([<$c>], undef);
 };
 
+sub load_raw
+{
+ my $self = shift @_;
+ my $f    = shift @_;
+ return $self->load_int($f, 1);
+}
+
 sub load
 {
  my $self = shift @_;
- my $f = shift @_;
+ my $f    = shift @_;
+ return $self->load_int($f, 0);
+}
+
+sub load_int
+{
+ my $self = shift @_;
+ my $f    = shift @_;
+ my $raw  = shift @_;
 
  my @j;
 
@@ -130,9 +164,14 @@ sub load
   s/\n//g foreach @j;
   s/^\s*(#|\/\/).*//g foreach @j;
 
-  my $ret = $self->decode(join '', @j);
-
-  return ($ret);
+  if ($raw)
+  {
+   return (\@j);
+  }
+  else
+  {
+   return ($self->decode(join '', @j));
+  }
  }
 
  return (undef, "No data was loaded from $f");
@@ -182,11 +221,6 @@ sub make_error
 {
  my $self = shift;
  return { api_error => [@_] };
-}
-
-sub data_dump
-{
- return shift;
 }
 
 1;

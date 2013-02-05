@@ -20,7 +20,7 @@ foreach my $f (@todo)
 {
  my $d = dirname($f);
  $d =~ s,^\./,,;
- print $d, " ";
+ print $d, "\t";
  my $j = read_file($f);
  my $out = JSON->new()->relaxed()->utf8()->allow_nonref()->decode($j);
  print JSON->new()->utf8()->canonical()->encode($out), "\n";

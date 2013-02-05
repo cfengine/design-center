@@ -20,7 +20,7 @@ RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE) -Dverbose -Ddebug -Dtest
 api:
 	echo 'broken json' | $(CFAPI)
 	echo '{ "dc-api-version": "5.0.2"}' | $(CFAPI)
-	echo '{ "dc-api-version": "0.0.1"}' | $(CFAPI)
+	echo '{ "debug": true, "dc-api-version": "0.0.1"}' | $(CFAPI)
 	echo '{ "dc-api-version": "0.0.1", "request": { } }' | $(CFAPI)
 	echo '{ "dc-api-version": "0.0.1", "request": {"list": true } }' | $(CFAPI)
 	echo '{ "dc-api-version": "0.0.1", "request": {"search": "" } }' | $(CFAPI)
