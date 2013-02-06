@@ -79,6 +79,31 @@ sub data_dump
  };
 }
 
+sub search
+{
+ my $self = shift;
+ return $self->list_int($self->recognized_sources(), @_);
+}
+
+sub list
+{
+ my $self = shift;
+ return $self->list_int($self->repos(), @_);
+}
+
+sub list_int
+{
+ my $self = shift;
+ my $repos = shift;
+ my $term_data = shift;
+
+ my %ret;
+ foreach my $repo (@$repos)
+ {
+  $ret{$repo->location()} = [ $repo->list($term_data) ];
+ }
+}
+
 sub log { shift; print STDERR @_; };
 
 sub decode { shift; CODER->decode(@_) };

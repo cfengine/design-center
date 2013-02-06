@@ -73,13 +73,11 @@ unless (defined $request)
 
 if (defined $list)
 {
- $api->exit_error("list not implemented yet", @log);
- # api_ok({ data => { list => [] }});
+ $api->ok({ data => { list => [$api->list($list)] }});
 }
 elsif (defined $search)
 {
- $api->exit_error("search not implemented yet", @log);
- # api_ok({ data => { search => [] }});
+ $api->ok({ data => { search => [$api->search($search)] }});
 }
 else
 {

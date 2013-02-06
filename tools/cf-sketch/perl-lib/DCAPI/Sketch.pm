@@ -3,11 +3,12 @@ package DCAPI::Sketch;
 use strict;
 use warnings;
 
+use DCAPI::Terms;
+
 use Util;
 use Mo qw/default build builder is required option/;
 
 use constant MEMBERS => qw/entry_point interface manifest metadata/;
-
 use constant META_MEMBERS => qw/name version description license tags depends/;
 
 has api  => ( is => 'ro', required => 1 );
@@ -16,20 +17,12 @@ has desc => ( is => 'ro', required => 1 );
 has location => ( is => 'ro', required => 1 );
 
 # sketch-specific properties
-has name        => ( is => 'rw' );
-has version     => ( is => 'rw' );
 has entry_point => ( is => 'rw' );
-has description => ( is => 'rw' );
-has license     => ( is => 'rw' );
-has entry_point => ( is => 'rw' );
+has interface   => ( is => 'rw' );
 has library     => ( is => 'rw', default => sub { 0 } );
-
-has interface   => ( is => 'rw', default => sub { [] } );
-has tags        => ( is => 'rw', default => sub { [] } );
 
 has manifest    => ( is => 'rw', default => sub { {} } );
 has metadata    => ( is => 'rw', default => sub { {} } );
-has depends     => ( is => 'rw', default => sub { {} } );
 
 sub BUILD
 {
@@ -62,19 +55,13 @@ sub BUILD
 
   $self->$m($v);
  }
+}
 
- foreach my $mm (META_MEMBERS())
- {
-  my $v = Util::hashref_search($metadata, $mm);
-  unless (defined $v)
-  {
-   die sprintf("Sketch in location %s is missing required metadata: %s\n",
-               $self->location(),
-               $mm);
-  }
-
-  $self->$mm($v);
- }
+# yeah it's a hack
+foreach my $mm (META_MEMBERS())
+{
+ eval sprintf('sub %s { $self = shift @_; if (scalar @_) { $self->metadata()->{%s} = shift; } return $self->metadata()->{%s}',
+              $mm, $mm, $mm);
 }
 
 sub data_dump
@@ -84,6 +71,17 @@ sub data_dump
  return {
          map { $_ => $self->$_ } MEMBERS()
         };
+}
+
+sub matches
+{
+ my $self = shift;
+ my $term_data = shift;
+
+ my $terms = DCAPI::Terms->new(api => $self->api(),
+                               terms => $term_data);
+
+ return $terms->matches($self->data_dump());
 }
 
 sub equals

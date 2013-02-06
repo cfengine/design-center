@@ -67,6 +67,13 @@ sub data_dump
  };
 }
 
+sub list
+{
+ my $self = shift;
+ my $term_data = shift @_;
+ return grep { $_->matches($term_data) } @{$self->sketches()};
+}
+
 sub equals
 {
  my $self = shift;
