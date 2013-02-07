@@ -26,10 +26,10 @@
         entry:
         [
             //  __PREFIX__ will be supplied externally
-            { type: "string", name: "prefix", validation: "\\S", default: "__PREFIX__" },
+            { type: "string", name: "prefix", validation: ".", default: "__PREFIX__" },
 
             //  __ABS_BUNDLE_HOME__ will be supplied by cf-sketch; there's also __BUNDLE_HOME__ for a relative path
-            { type: "string", name: "bundle_home", validation: "\\S", default: "__ABS_BUNDLE_HOME__" },
+            { type: "string", name: "bundle_home", validation: ".", default: "__ABS_BUNDLE_HOME__" },
 
             { type: "boolean", name: "myboolean", default: "1" }, //  true is OK too
             { type: "context", name: "context1" },
@@ -41,7 +41,7 @@
             {
                 type: "list", name: "mylist",
                 //  this says "every element must be a non-empty string"
-                validation: [ { type: "string", validation: "\\S" } ]
+                validation: [ { type: "string", validation: "." } ]
             },
 
             {
@@ -49,9 +49,9 @@
                 //  this lists the required elements in the array in no particular order
                 validation:
                 [
-                    { type: "string", name: "required1", validation: "\\S" },
-                    { type: "string", name: "k1", validation: "\\S" },
-                    { type: "string", name: "k2", validation: "\\S", default: "k2default" },
+                    { type: "string", name: "required1", validation: "." },
+                    { type: "string", name: "k1", validation: "." },
+                    { type: "string", name: "k2", validation: ".", default: "k2default" },
                     { type: "boolean", name: "boolean_key1", default: "0" },
                     { type: "string", name: "can_be_empty" },
                     //  the PATH validator is also a regex

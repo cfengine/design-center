@@ -49,6 +49,7 @@ sub BUILD
   {
    push @{$self->sketches()},
     DCAPI::Sketch->new(location => $abs_location,
+                       rel_location => $location,
                        desc => $desc,
                        dcapi => $self->api(),
                        repo => $self);
@@ -76,6 +77,17 @@ sub data_dump
  };
 }
 
+sub sketches_dump
+{
+ my $self = shift;
+ my @lines =
+  sort { $a cmp $b }
+  map { sprintf("%s %s", $_->rel_location(), $_->desc()); }
+  @{$self->sketches()};
+
+ return @lines;
+}
+
 sub list
 {
  my $self = shift;
@@ -84,18 +96,59 @@ sub list
  return grep { $_->matches($term_data) } @{$self->sketches()};
 }
 
+sub find_sketch
+{
+ my $self = shift;
+ my $name = shift || 'nonesuch';
+
+ foreach (@{$self->sketches()})
+ {
+  return $_ if $name eq $_->name();
+ }
+
+ return;
+}
+
 sub sketch_api
 {
  my $self = shift;
  my $sketches = shift;
 
- foreach (@{$self->sketches()})
+ foreach my $sname (keys %$sketches)
  {
-  next unless exists $sketches->{$_->name()};
-  push @{$sketches->{$_->name()}}, $_->api();
+  my $s = $self->find_sketch($sname);
+  next unless defined $s;
+  push @{$sketches->{$s->name()}}, $s->api();
  }
 
  return $sketches;
+}
+
+sub install
+{
+ my $self = shift @_;
+ my $from = shift @_;
+ my $sketch = shift @_;
+
+ # 1. copy the sketch files as in the manifest
+  my $abs_location = sprintf("%s/%s", $self->location(), $location);
+  eval
+  {
+   push @{$self->sketches()},
+    DCAPI::Sketch->new(location => $abs_location,
+                       rel_location => $location,
+                       desc => $desc,
+                       dcapi => $self->api(),
+                       repo => $self);
+  };
+
+  if ($@)
+  {
+   push @{$self->api()->warnings()->{$abs_location}}, $@;
+  }
+
+ # 2. update cfsketches.json
+ die "installer! " . join("\n", $self->sketches_dump());
 }
 
 sub equals

@@ -76,8 +76,14 @@ sub set_config
 sub all_repos
 {
  my $self = shift;
+ my $sources_first = shift;
 
- return (@{$self->repos()}, @{$self->recognized_sources()});
+ if ($sources_first)
+ {
+  return ( @{$self->recognized_sources()}, @{$self->repos()} );
+ }
+
+ return ( @{$self->repos()}, @{$self->recognized_sources()} );
 }
 
 # note it's not "our" but "my"
@@ -146,11 +152,13 @@ sub sketch_api
 {
  my $self = shift;
  my $sketches_top = shift;
+ my $sources = shift;
 
  $sketches_top = { $sketches_top => undef } unless ref $sketches_top eq 'HASH';
 
  my %ret;
- foreach my $location ($self->all_repos())
+ my @repos = defined $sources ? (@$sources) : ($self->all_repos());
+ foreach my $location (@repos)
  {
   my %sketches = %$sketches_top;
   my $repo = $self->load_repo($location);
@@ -158,6 +166,86 @@ sub sketch_api
  }
 
  return \%ret;
+}
+
+sub install
+{
+ my $self = shift;
+ my $install = shift;
+
+ my %ret;
+
+ # we don't accept strings, the sketches to be installed must be in an array
+
+ if (ref $install eq 'HASH')
+ {
+  $install = [ $install ];
+ }
+
+ if (ref $install ne 'ARRAY')
+ {
+  return (undef, "Invalid install command");
+ }
+
+ my @warnings;
+ my @install_log;
+
+ INSTALLER:
+ foreach my $installer (@$install)
+ {
+  my %d;
+  foreach my $varname (qw/sketch source dest/)
+  {
+   my $v = Util::hashref_search($installer, $varname);
+   unless (defined $v)
+   {
+    push @{$self->warnings()->{''}}, "Installer command was missing key '$varname'";
+    next INSTALLER;
+   }
+   $d{$varname} = $v;
+  }
+
+  my $location = $d{dest};
+  my $drepo;
+  my $srepo;
+
+  eval
+  {
+   $drepo = $self->load_repo($d{dest});
+   $srepo = $self->load_repo($d{source});
+  };
+
+  if ($@)
+  {
+   push @{$self->warnings()->{defined $drepo ? $d{source} : $d{dest}}}, $@;
+  }
+
+  next INSTALLER unless defined $drepo;
+  next INSTALLER unless defined $srepo;
+
+
+  if ($drepo->find_sketch($d{sketch}))
+  {
+   push @{$self->warnings()->{$d{source}}},
+    "Sketch $d{sketch} is already in dest repo; you must uninstall it first";
+   next INSTALLER;
+  }
+
+  my $sketch = $srepo->find_sketch($d{sketch});
+
+  unless (defined $sketch)
+  {
+   push @{$self->warnings()->{$d{source}}},
+    "Sketch $d{sketch} could not be found in source repo";
+   next INSTALLER;
+  }
+
+  $self->log("Installing sketch $d{sketch} from $d{source} into $d{dest}");
+
+  $ret{$d{dest}} = $drepo->install($srepo, $sketch);
+ }
+
+ return (\%ret, $self->warnings());
 }
 
 sub log_mode

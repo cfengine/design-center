@@ -11,10 +11,11 @@ use Mo qw/default build builder is required option/;
 use constant MEMBERS => qw/entry_point interface manifest metadata api/;
 use constant META_MEMBERS => qw/name version description license tags depends/;
 
-has dcapi  => ( is => 'ro', required => 1 );
-has repo => ( is => 'ro', required => 1 );
-has desc => ( is => 'ro', required => 1 );
-has location => ( is => 'ro', required => 1 );
+has dcapi        => ( is => 'ro', required => 1 );
+has repo         => ( is => 'ro', required => 1 );
+has desc         => ( is => 'ro', required => 1 );
+has location     => ( is => 'ro', required => 1 );
+has rel_location => ( is => 'ro', required => 1 );
 
 # sketch-specific properties
 has api         => ( is => 'rw' );

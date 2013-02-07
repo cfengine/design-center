@@ -56,6 +56,7 @@ my $request = Util::hashref_search($data, qw/request/);
 my $list = Util::hashref_search($request, qw/list/);
 my $search = Util::hashref_search($request, qw/search/);
 my $sketch_api = Util::hashref_search($request, qw/api/);
+my $install = Util::hashref_search($request, qw/install/);
 
 if ($debug)
 {
@@ -83,6 +84,12 @@ elsif (defined $search)
 elsif (defined $sketch_api)
 {
  $api->ok({ data => { api => $api->sketch_api($sketch_api) }});
+}
+elsif (defined $install)
+{
+ my ($data, @warnings) = $api->install($install);
+
+ $api->ok({ warnings => \@warnings, data => { install => $data }});
 }
 else
 {
