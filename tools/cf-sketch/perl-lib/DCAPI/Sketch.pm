@@ -57,20 +57,42 @@ sub BUILD
  }
 }
 
-# yeah it's a hack
-foreach my $mm (META_MEMBERS())
+# yeah it's a hack, but better than AUTOLOAD
+# define a metadata accessor for each keyword in META_MEMBERS
+foreach my $mm ( META_MEMBERS() )
 {
- eval sprintf('sub %s { $self = shift @_; if (scalar @_) { $self->metadata()->{%s} = shift; } return $self->metadata()->{%s}',
-              $mm, $mm, $mm);
+ my $method_name = __PACKAGE__ . '::' . $mm;
+ no strict 'refs';
+ *{$method_name} = sub
+ {
+  my $self = shift @_;
+  if (scalar @_)
+  {
+   $self->metadata()->{$mm} = shift;
+  }
+
+  return $self->metadata()->{$mm};
+ };
 }
 
 sub data_dump
 {
  my $self = shift;
+ my $flatten = shift;
 
- return {
-         map { $_ => $self->$_ } MEMBERS()
-        };
+ my %ret = (
+            map { $_ => $self->$_ } MEMBERS()
+           );
+ if ($flatten)
+ {
+  foreach my $mkey (META_MEMBERS())
+  {
+   $ret{$mkey} = $ret{metadata}->{$mkey}
+    if exists $ret{metadata}->{$mkey};
+  }
+ }
+
+ return \%ret;
 }
 
 sub matches
@@ -81,7 +103,15 @@ sub matches
  my $terms = DCAPI::Terms->new(api => $self->api(),
                                terms => $term_data);
 
- return $terms->matches($self->data_dump());
+ my $my_data = $self->data_dump(1);     # flatten it
+ my $ok = $terms->matches($my_data);
+
+ $self->api()->log_int($ok ? 4:5,
+                       "sketch %s %s terms %s",
+                       $self->name,
+                       $ok ? 'matched' : 'did not match',
+                       $term_data);
+ return $ok;
 }
 
 sub equals

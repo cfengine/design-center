@@ -5,6 +5,7 @@ use warnings;
 
 use JSON;
 use File::Which;
+use File::Basename;
 
 use DCAPI::Repo;
 
@@ -45,25 +46,47 @@ sub set_config
 
  $self->config($self->load($file));
 
- push @{$self->recognized_sources()},
-  @{(Util::hashref_search($self->config(), qw/recognized_sources/) || [])};
+ my @sources = @{(Util::hashref_search($self->config(), qw/recognized_sources/) || [])};
+ $self->log5("Adding recognized source $_") foreach @sources;
+ push @{$self->recognized_sources()}, @sources;
 
- foreach my $repo (@{Util::hashref_search($self->config(), qw/repolist/) || []})
+ my @repos = @{(Util::hashref_search($self->config(), qw/repolist/) || [])};
+ $self->log5("Adding recognized repo $_") foreach @repos;
+ push @{$self->repos()}, @repos;
+
+ foreach my $location (@{$self->repos()}, @{$self->recognized_sources()})
  {
+  next unless Util::is_resource_local($location);
+
   eval
   {
-   push @{$self->repos()}, DCAPI::Repo->new(api => $self,
-                                            location => glob($repo));
+   $self->load_repo($location);
   };
 
   if ($@)
   {
-   push @{$self->warnings()->{$repo}}, $@;
+   push @{$self->warnings()->{$location}}, $@;
   }
  }
 
  my $w = $self->warnings();
  return scalar keys %$w ? (1,  $w) : (1);
+}
+
+# note it's not "our" but "my"
+my %repos;
+sub load_repo
+{
+ my $self = shift;
+ my $repo = shift;
+
+ unless (exists $repos{$repo})
+ {
+  $repos{$repo} = DCAPI::Repo->new(api => $self,
+                                   location => glob($repo));
+ }
+
+ return $repos{$repo};
 }
 
 sub data_dump
@@ -75,7 +98,8 @@ sub data_dump
   config => $self->config(),
   curl => $self->curl(),
   warnings => $self->warnings(),
-  repos => [map { $_->data_dump() } @{$self->repos()}],
+  repolist => $self->repos(),
+  recognized_sources => $self->recognized_sources(),
  };
 }
 
@@ -98,17 +122,104 @@ sub list_int
  my $term_data = shift;
 
  my %ret;
- foreach my $repo (@$repos)
+ foreach my $location (@$repos)
  {
-  $ret{$repo->location()} = [ $repo->list($term_data) ];
+  $self->log("Searching location %s for terms %s",
+            $location,
+            $term_data);
+  my $repo = $self->load_repo($location);
+  my @list = map { $_->name() } $repo->list($term_data);
+  $ret{$repo->location()} = [ @list ];
  }
+
+ return \%ret;
 }
 
-sub log { shift; print STDERR @_; };
+sub log_mode
+{
+ my $self = shift @_;
+ return Util::hashref_search($self->config(), qw/log/);
+}
+
+sub log_level
+{
+ my $self = shift @_;
+ return 0+Util::hashref_search($self->config(), qw/log_level/);
+}
+
+sub log
+{
+ my $self = shift @_;
+ return $self->log_int(1, @_);
+}
+
+sub log2
+{
+ my $self = shift @_;
+ return $self->log_int(2, @_);
+}
+
+sub log3
+{
+ my $self = shift @_;
+ return $self->log_int(3, @_);
+}
+
+sub log4
+{
+ my $self = shift @_;
+ return $self->log_int(4, @_);
+}
+
+sub log5
+{
+ my $self = shift @_;
+ return $self->log_int(5, @_);
+}
+
+sub log_int
+{
+ my $self = shift @_;
+ my $log_level = shift @_;
+
+ # only recognize one log mode for now
+ return unless $self->log_mode() eq 'STDERR';
+ return unless $self->log_level() > $log_level;
+
+ my $prefix;
+ foreach my $level (1..4) # probe up to 4 levels to find the real caller
+ {
+  my ($package, $filename, $line, $subroutine, $hasargs, $wantarray,
+     $evaltext, $is_require, $hints, $bitmask, $hinthash) = caller($level);
+
+  $prefix = sprintf ('%s(%s:%s): ', $subroutine, basename($filename), $line);
+  last unless $subroutine eq '(eval)';
+ }
+
+ my @plist;
+ foreach (@_)
+ {
+  if (ref $_ eq 'ARRAY' || ref $_ eq 'HASH')
+  {
+   # we want to log it anyhow
+   eval { push @plist, $self->encode($_) };
+  }
+  else
+  {
+   push @plist, $_;
+  }
+ }
+
+ print STDERR $prefix;
+ printf STDERR @plist;
+ print STDERR "\n";
+};
 
 sub decode { shift; CODER->decode(@_) };
 sub encode { shift; CODER->encode(@_) };
 sub cencode { shift; CAN_CODER->encode(@_) };
+
+sub dump_encode { shift; use Data::Dumper; return Dumper([@_]); }
 
 sub curl_GET { shift->curl('GET', @_) };
 

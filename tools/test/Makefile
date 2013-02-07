@@ -23,8 +23,9 @@ api:
 	echo '{ "debug": true, "dc-api-version": "0.0.1"}' | $(CFAPI)
 	echo '{ "dc-api-version": "0.0.1", "request": { } }' | $(CFAPI)
 	echo '{ "dc-api-version": "0.0.1", "request": {"list": true } }' | $(CFAPI)
-	echo '{ "dc-api-version": "0.0.1", "request": {"search": "" } }' | $(CFAPI)
-	echo '{ "dc-api-version": "0.0.1", "request": {"search": "Cloud" } }' | $(CFAPI)
+	echo '{ "dc-api-version": "0.0.1", "request": {"search": true } }' | $(CFAPI)
+	echo '{ "dc-api-version": "0.0.1", "request": {"search": [["name", "contains", "(Cloud|CFEngine)"]] } }' | $(CFAPI)
+	echo '{ "dc-api-version": "0.0.1", "request": {"search": [["name", "contains", "Cloud"], ["name", "contains", "CFEngine"]] } }' | $(CFAPI)
 	echo '{"dc-api-version": "0.0.1", "request": {"api": [ "Security::SSH" ]} }' | $(CFAPI)
 	echo '{"dc-api-version": "0.0.1", "request": {"install": [ "Security::SSH" ], "activate": { "Security::SSH": "../../sketches/networking/ssh/params/simple.json" }} }' | $(CFAPI)
 

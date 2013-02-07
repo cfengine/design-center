@@ -26,7 +26,16 @@ sub BUILD
 
  my $inv_file = sprintf("%s/%s", $self->location(), SKETCHES_FILE);
 
- my ($inv, $reason) = $self->api()->load_raw($inv_file);
+ my ($inv, $reason);
+
+ if ($self->local() && 0 == -s $inv_file)
+ {
+  $inv = [];
+ }
+ else
+ {
+  ($inv, $reason) = $self->api()->load_raw($inv_file);
+ }
 
  die "Can't use repository without a valid inventory file in $inv_file: $reason"
   unless defined $inv;
@@ -71,6 +80,7 @@ sub list
 {
  my $self = shift;
  my $term_data = shift @_;
+
  return grep { $_->matches($term_data) } @{$self->sketches()};
 }
 
