@@ -3,7 +3,10 @@
 use warnings;
 use strict;
 
-use JSON;
+use FindBin;
+use lib "$FindBin::Bin/perl-lib", "$FindBin::Bin/perl-lib/File-Which-1.09/lib", "$FindBin::Bin/perl-lib/JSON-2.53/lib";
+
+use JSON::PP;
 use File::Basename;
 use File::Slurp;
 use File::Find;
@@ -22,6 +25,7 @@ foreach my $f (@todo)
  $d =~ s,^\./,,;
  print $d, "\t";
  my $j = read_file($f);
- my $out = JSON->new()->relaxed()->utf8()->allow_nonref()->decode($j);
- print JSON->new()->utf8()->canonical()->encode($out), "\n";
+ my $out = JSON::PP->new()->allow_barekey()->relaxed()->utf8()->allow_nonref()->decode($j);
+ $out->{api} = {} unless exists $out->{api};
+ print JSON::PP->new()->utf8()->canonical()->encode($out), "\n";
 }

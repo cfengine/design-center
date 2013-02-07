@@ -51,10 +51,11 @@ if (scalar @errors)
 
 my $data = $api->load(join '', <>);
 my $debug = Util::hashref_search($data, qw/debug/);
-my $version = Util::hashref_search($data, qw/dc-api-version/);
+my $version = Util::hashref_search($data, qw/dc_api_version/);
 my $request = Util::hashref_search($data, qw/request/);
 my $list = Util::hashref_search($request, qw/list/);
 my $search = Util::hashref_search($request, qw/search/);
+my $sketch_api = Util::hashref_search($request, qw/api/);
 
 if ($debug)
 {
@@ -78,6 +79,10 @@ if (defined $list)
 elsif (defined $search)
 {
  $api->ok({ data => { search => [$api->search($search)] }});
+}
+elsif (defined $sketch_api)
+{
+ $api->ok({ data => { api => $api->sketch_api($sketch_api) }});
 }
 else
 {

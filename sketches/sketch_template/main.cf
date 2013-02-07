@@ -5,42 +5,6 @@ body file control
 
 bundle agent entry(prefix, bundle_home, myboolean, mytype, myip, myarray)
 {
-  meta:
-      # __PREFIX__ will be supplied by cf-sketch
-      "vars[prefix][type]"               string => "NON_EMPTY_STRING";
-      "vars[prefix][default]"            string => "__PREFIX__";
-
-      # __ABS_BUNDLE_HOME__ will be supplied by cf-sketch; there's
-      # also __BUNDLE_HOME__ for a relative path
-      "vars[bundle_home][type]"          string => "NON_EMPTY_STRING";
-      "vars[bundle_home][default]"       string => "__ABS_BUNDLE_HOME__";
-
-      "vars[myboolean][type]"            string => "BOOLEAN";
-      "vars[myboolean][default]"         string => "1";
-
-      "vars[context1][type]"             string => "CONTEXT";
-
-      "vars[context2][type]"             string => "CONTEXT";
-      "vars[context2][default]"          string => "!any";
-
-      "vars[mytype][type]"               string => "=alpha|=beta|=fallback";
-      "vars[mytype][default]"            string => "fallback";
-
-      "vars[myip][type]"                 string => "IPv4_ADDRESS";
-
-      # the "myarray" variable passed to the bundle will be the name
-      # of an array, ready for indexing and dereferencing.  See the
-      # reports: section below for usage.
-      "vars[myarray][type]"              string => "ARRAY(
-required1      :NON_EMPTY_STRING:required
-k1             :NON_EMPTY_STRING
-k2             :NON_EMPTY_STRING:default=k2default
-boolean_key1   :BOOLEAN:default=0
-can_be_empty   :STRING
-path1          :PATH
-url1           :HTTP_URL|FILE_URL
-)";
-
   classes:
       # note that demo.json uses bycontext to set mytype to "alpha"
       # when context A is defined, so context A indirectly triggers

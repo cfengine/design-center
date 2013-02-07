@@ -1,25 +1,68 @@
 {
-    "manifest":
+    manifest:
     {
-        "main.cf": { "desc": "main file" },
-        "test.cf": { "desc": "standalone test" },
-        "README.md": { "documentation": true },
-        "params/demo.json": { "comment": "simple demo of sketch" },
-        "scripts/sample.sh": { "perm": 755, "comment": "Sample script bundled with the sketch" },
-        "modules/mymodule": { "module": true, "perm": 755, "comment": "Sample module bundled with the sketch" }
+        "main.cf": { desc: "main file" },
+        "test.cf": { desc: "standalone test" },
+        "README.md": { documentation: true },
+        "params/demo.json": { comment: "simple demo of sketch" },
+        "scripts/sample.sh": { perm: 755, comment: "Sample script bundled with the sketch" },
+        "modules/mymodule": { module: true, perm: 755, comment: "Sample module bundled with the sketch" }
     },
 
     "metadata":
     {
-        "name": "CFEngine::sketch_template",
-	"description": "Standard template for Design Center sketches",
-        "version": 1.00,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin" ] }
+        name: "CFEngine::sketch_template",
+	description: "Standard template for Design Center sketches",
+        version: "1.01",
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 105 }, cfengine: { version: "3.4.0" }, os: [ "linux", "darwin" ] }
     },
 
-    "entry_point": "main.cf",
-    "interface": [ "main.cf" ]
+    api:
+    {
+        // this is the name of the bundle!
+        entry:
+        [
+            //  __PREFIX__ will be supplied externally
+            { type: "string", name: "prefix", validation: "\\S", default: "__PREFIX__" },
+
+            //  __ABS_BUNDLE_HOME__ will be supplied by cf-sketch; there's also __BUNDLE_HOME__ for a relative path
+            { type: "string", name: "bundle_home", validation: "\\S", default: "__ABS_BUNDLE_HOME__" },
+
+            { type: "boolean", name: "myboolean", default: "1" }, //  true is OK too
+            { type: "context", name: "context1" },
+            { type: "context", name: "context2", default: "!any" },
+            { type: "string", name: "mytype", validation: "(alpha|beta|fallback)", default: "fallback" },
+            //  the IPv4 validator is also a regex, but you don't have to write it out
+            { type: "string", name: "myip", validation: "IPv4" },
+
+            {
+                type: "list", name: "mylist",
+                //  this says "every element must be a non-empty string"
+                validation: [ { type: "string", validation: "\\S" } ]
+            },
+
+            {
+                type: "array", name: "myarray",
+                //  this lists the required elements in the array in no particular order
+                validation:
+                [
+                    { type: "string", name: "required1", validation: "\\S" },
+                    { type: "string", name: "k1", validation: "\\S" },
+                    { type: "string", name: "k2", validation: "\\S", default: "k2default" },
+                    { type: "boolean", name: "boolean_key1", default: "0" },
+                    { type: "string", name: "can_be_empty" },
+                    //  the PATH validator is also a regex
+                    { type: "string", name: "path1", validation: "PATH" },
+                    //  you can alternate between validators, they are just regexes
+                    { type: "string", name: "url1", validation: "(HTTP_URL|FILE_URL)" },
+                ],
+            },
+        ],
+    },
+
+    entry_point: "main.cf", // this is where we'll find all the bundles named in the API
+    interface: [ "main.cf" ],
 }

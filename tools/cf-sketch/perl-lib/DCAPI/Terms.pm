@@ -38,7 +38,7 @@ sub matches
     my ($k, $check, $v) = @$q;
     $k = [$k] unless ref $k eq 'ARRAY';
 
-    if ($check eq 'contains')
+    if ($check eq 'matches')
     {
      my $datum = Util::hashref_search($data, @$k);
      $self->api()->log4('Term %s checking against %s', $q, $datum);

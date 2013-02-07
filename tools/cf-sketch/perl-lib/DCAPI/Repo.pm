@@ -50,7 +50,7 @@ sub BUILD
    push @{$self->sketches()},
     DCAPI::Sketch->new(location => $abs_location,
                        desc => $desc,
-                       api => $self->api(),
+                       dcapi => $self->api(),
                        repo => $self);
   };
 
@@ -82,6 +82,20 @@ sub list
  my $term_data = shift @_;
 
  return grep { $_->matches($term_data) } @{$self->sketches()};
+}
+
+sub sketch_api
+{
+ my $self = shift;
+ my $sketches = shift;
+
+ foreach (@{$self->sketches()})
+ {
+  next unless exists $sketches->{$_->name()};
+  push @{$sketches->{$_->name()}}, $_->api();
+ }
+
+ return $sketches;
 }
 
 sub equals

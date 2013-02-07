@@ -3,15 +3,15 @@ package DCAPI;
 use strict;
 use warnings;
 
-use JSON;
+use JSON::PP;
 use File::Which;
 use File::Basename;
 
 use DCAPI::Repo;
 
 use constant API_VERSION => '0.0.1';
-use constant CODER => JSON->new()->relaxed()->utf8()->allow_nonref();
-use constant CAN_CODER => JSON->new()->canonical()->utf8()->allow_nonref();
+use constant CODER => JSON::PP->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
+use constant CAN_CODER => JSON::PP->new()->canonical()->utf8()->allow_nonref();
 
 use Mo qw/build default builder coerce is required/;
 
@@ -73,6 +73,13 @@ sub set_config
  return scalar keys %$w ? (1,  $w) : (1);
 }
 
+sub all_repos
+{
+ my $self = shift;
+
+ return (@{$self->repos()}, @{$self->recognized_sources()});
+}
+
 # note it's not "our" but "my"
 my %repos;
 sub load_repo
@@ -130,6 +137,24 @@ sub list_int
   my $repo = $self->load_repo($location);
   my @list = map { $_->name() } $repo->list($term_data);
   $ret{$repo->location()} = [ @list ];
+ }
+
+ return \%ret;
+}
+
+sub sketch_api
+{
+ my $self = shift;
+ my $sketches_top = shift;
+
+ $sketches_top = { $sketches_top => undef } unless ref $sketches_top eq 'HASH';
+
+ my %ret;
+ foreach my $location ($self->all_repos())
+ {
+  my %sketches = %$sketches_top;
+  my $repo = $self->load_repo($location);
+  $ret{$repo->location()} = $repo->sketch_api(\%sketches);
  }
 
  return \%ret;
@@ -335,7 +360,7 @@ sub make_ok
 {
  my $self = shift;
  my $ok = shift;
- $ok->{success} = JSON::true;
+ $ok->{success} = JSON::PP::true;
  $ok->{errors} ||= [];
  $ok->{warnings} ||= [];
  $ok->{log} ||= [];
@@ -346,7 +371,7 @@ sub make_not_ok
 {
  my $self = shift;
  my $nok = shift;
- $nok->{success} = JSON::false;
+ $nok->{success} = JSON::PP::false;
  $nok->{errors} ||= shift @_;
  $nok->{warnings} ||= shift @_;
  $nok->{log} ||= shift @_;

@@ -8,15 +8,16 @@ use DCAPI::Terms;
 use Util;
 use Mo qw/default build builder is required option/;
 
-use constant MEMBERS => qw/entry_point interface manifest metadata/;
+use constant MEMBERS => qw/entry_point interface manifest metadata api/;
 use constant META_MEMBERS => qw/name version description license tags depends/;
 
-has api  => ( is => 'ro', required => 1 );
+has dcapi  => ( is => 'ro', required => 1 );
 has repo => ( is => 'ro', required => 1 );
 has desc => ( is => 'ro', required => 1 );
 has location => ( is => 'ro', required => 1 );
 
 # sketch-specific properties
+has api         => ( is => 'rw' );
 has entry_point => ( is => 'rw' );
 has interface   => ( is => 'rw' );
 has library     => ( is => 'rw', default => sub { 0 } );
@@ -28,7 +29,7 @@ sub BUILD
 {
  my $self = shift;
 
- my ($config, $reason) = $self->api()->load($self->desc());
+ my ($config, $reason) = $self->dcapi()->load($self->desc());
  die sprintf("Sketch in location %s could not initialize ($reason) from data %s\n",
              $self->location(),
              $self->desc())
@@ -100,17 +101,17 @@ sub matches
  my $self = shift;
  my $term_data = shift;
 
- my $terms = DCAPI::Terms->new(api => $self->api(),
+ my $terms = DCAPI::Terms->new(api => $self->dcapi(),
                                terms => $term_data);
 
  my $my_data = $self->data_dump(1);     # flatten it
  my $ok = $terms->matches($my_data);
 
- $self->api()->log_int($ok ? 4:5,
-                       "sketch %s %s terms %s",
-                       $self->name,
-                       $ok ? 'matched' : 'did not match',
-                       $term_data);
+ $self->dcapi()->log_int($ok ? 4:5,
+                         "sketch %s %s terms %s",
+                         $self->name,
+                         $ok ? 'matched' : 'did not match',
+                         $term_data);
  return $ok;
 }
 
