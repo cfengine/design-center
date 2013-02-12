@@ -28,7 +28,7 @@ sub BUILD
 
  my ($inv, $reason);
 
- if ($self->local() && 0 == -s $inv_file)
+ if ($self->local() && (!-e $inv_file || 0 == -s $inv_file))
  {
   $inv = [];
  }
@@ -100,10 +100,13 @@ sub find_sketch
 {
  my $self = shift;
  my $name = shift || 'nonesuch';
+ my $version = shift;
 
  foreach (@{$self->sketches()})
  {
-  return $_ if $name eq $_->name();
+  next if $name ne $_->name();
+  next if (defined $version && $version ne $_->version());
+  return $_;
  }
 
  return;
@@ -130,22 +133,22 @@ sub install
  my $from = shift @_;
  my $sketch = shift @_;
 
- # 1. copy the sketch files as in the manifest
-  my $abs_location = sprintf("%s/%s", $self->location(), $location);
-  eval
-  {
-   push @{$self->sketches()},
-    DCAPI::Sketch->new(location => $abs_location,
-                       rel_location => $location,
-                       desc => $desc,
-                       dcapi => $self->api(),
-                       repo => $self);
-  };
+ # # 1. copy the sketch files as in the manifest.  USE CFE
+ # my $abs_location = sprintf("%s/%s", $self->location(), $from);
+ # eval
+ # {
+ #  push @{$self->sketches()},
+ #   DCAPI::Sketch->new(location => $abs_location,
+ #                      rel_location => $from,
+ #                      desc => $desc,
+ #                      dcapi => $self->api(),
+ #                      repo => $self);
+ # };
 
-  if ($@)
-  {
-   push @{$self->api()->warnings()->{$abs_location}}, $@;
-  }
+ # if ($@)
+ # {
+ #  push @{$self->api()->warnings()->{$abs_location}}, $@;
+ # }
 
  # 2. update cfsketches.json
  die "installer! " . join("\n", $self->sketches_dump());

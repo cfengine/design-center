@@ -205,6 +205,14 @@ sub install
    $d{$varname} = $v;
   }
 
+  # copy optional install criteria
+  foreach my $varname (qw/version/)
+  {
+   my $v = Util::hashref_search($installer, $varname);
+   next unless defined $v;
+   $d{$varname} = $v;
+  }
+
   my $location = $d{dest};
   my $drepo;
   my $srepo;
@@ -231,7 +239,7 @@ sub install
    next INSTALLER;
   }
 
-  my $sketch = $srepo->find_sketch($d{sketch});
+  my $sketch = $srepo->find_sketch($d{sketch}, $d{version});
 
   unless (defined $sketch)
   {

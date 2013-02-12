@@ -29,6 +29,7 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: {api:"CFEngine::sketch_template"} }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {api:"Security::SSH"} }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", version: "-1", dest: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", dest: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {install: [ "Security::SSH" ], activate: { "Security::SSH": "../../sketches/networking/ssh/params/simple.json" }} }' | $(CFAPI)
 
