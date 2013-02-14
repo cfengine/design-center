@@ -1,0 +1,8 @@
+This example shows a few things
+1) How to write policy that executes like a scrip with the shebang
+2) How to pass an array to a bundle as a parameter
+3) How to do list iteration with arrays
+4) Practical use of hard time classes
+
+chmod +x bemine.cf && ./bemine.cf
+

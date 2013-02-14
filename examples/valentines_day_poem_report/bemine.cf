@@ -1,0 +1,30 @@
+#!/var/cfengine/bin/cf-agent -KIf
+# Happy Valentines Day
+body common control
+{
+  bundlesequence => { "main" };
+}
+
+bundle agent main
+{
+  vars:
+    "poem[roses]" string => "red";
+    "poem[violets]" string => "blue";
+    "poem[chocolates]" string => "sweet";
+    "poem[you]" string => "too";
+  
+  methods:
+    "Woo your infrastructure"
+      usebundle => recite("main.poem");
+
+}
+bundle agent recite(text)
+{
+  vars:
+    "things" slist => getindices("$(text)");
+
+  reports:
+    February.Day14::
+      "$(things) are $($(text)[$(things)])";
+
+}
