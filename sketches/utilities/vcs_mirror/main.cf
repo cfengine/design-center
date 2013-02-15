@@ -122,7 +122,7 @@ perms:DIGITS
       {
         "$(vcs) cleanup",
         "$(vcs) up",
-        "$(vcs) revert",
+        "$(vcs) revert --recursive $(path)",
       };
 
     any::
