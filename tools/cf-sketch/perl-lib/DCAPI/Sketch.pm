@@ -16,6 +16,7 @@ has repo         => ( is => 'ro', required => 1 );
 has desc         => ( is => 'ro', required => 1 );
 has location     => ( is => 'ro', required => 1 );
 has rel_location => ( is => 'ro', required => 1 );
+has verify_files => ( is => 'ro', required => 1 );
 
 # sketch-specific properties
 has api         => ( is => 'rw' );
@@ -33,7 +34,7 @@ sub BUILD
  my ($config, $reason) = $self->dcapi()->load($self->desc());
  die sprintf("Sketch in location %s could not initialize ($reason) from data %s\n",
              $self->location(),
-             $self->desc())
+             $self->desc()||'')
   unless defined $config;
 
  my $metadata = Util::hashref_search($config, 'metadata');
@@ -56,6 +57,18 @@ sub BUILD
   }
 
   $self->$m($v);
+ }
+
+ if ($self->verify_files())
+ {
+  my $manifest = $self->manifest();
+  my $name = $self->name();
+
+  foreach my $f (sort keys %$manifest)
+  {
+   my $file = sprintf("%s/%s", $self->location(), $f);
+   die "Sketch $name is missing manifest file $file" unless -f $file;
+  }
  }
 }
 

@@ -42,7 +42,7 @@ sub BUILD
 
  foreach my $line (@$inv)
  {
-  my ($location, $desc) = split "\t", $line, 2;
+  my ($location, $desc) = split ' ', $line, 2;
 
   my $abs_location = sprintf("%s/%s", $self->location(), $location);
   eval
@@ -52,7 +52,8 @@ sub BUILD
                        rel_location => $location,
                        desc => $desc,
                        dcapi => $self->api(),
-                       repo => $self);
+                       repo => $self,
+                       verify_files => $self->local());
   };
 
   if ($@)
@@ -86,6 +87,23 @@ sub sketches_dump
   @{$self->sketches()};
 
  return @lines;
+}
+
+sub save_inv_file
+{
+ my $self = shift;
+
+ open my $fh, '>', $self->inv_file()
+  or $self->api()->log("Repo at %s could not save inventory file %s: $!",
+                       $self->location(),
+                       $self->inv_file());
+
+ return unless $fh;
+
+ print $fh "$_\n" foreach $self->sketches_dump();
+ close $fh or return 0;
+
+ return 1;
 }
 
 sub list
@@ -133,25 +151,69 @@ sub install
  my $from = shift @_;
  my $sketch = shift @_;
 
- # # 1. copy the sketch files as in the manifest.  USE CFE
- # my $abs_location = sprintf("%s/%s", $self->location(), $from);
- # eval
- # {
- #  push @{$self->sketches()},
- #   DCAPI::Sketch->new(location => $abs_location,
- #                      rel_location => $from,
- #                      desc => $desc,
- #                      dcapi => $self->api(),
- #                      repo => $self);
- # };
+ my $data = {};
+ my @warnings;
 
- # if ($@)
- # {
- #  push @{$self->api()->warnings()->{$abs_location}}, $@;
- # }
+ # 1. copy the sketch files as in the manifest.  USE CFE
+ my $abs_location = sprintf("%s/%s", $self->location(), $sketch->rel_location);
 
- # 2. update cfsketches.json
- die "installer! " . join("\n", $self->sketches_dump());
+ my $manifest = $sketch->manifest();
+
+ my @todo;
+ foreach my $file (sort keys %$manifest)
+ {
+  my $perms = Util::hashref_search($manifest->{$file}, qw/perm/);
+  $self->api()->log("Copying sketch %s:%s from %s to %s",
+                    $sketch->name(),
+                    $file,
+                    $sketch->location(),
+                    $abs_location);
+  push @todo, sprintf('"%s/%s" copy_from => no_backup_cp("%s/%s") %s ;',
+                      $abs_location,
+                      $file,
+                      $sketch->location(),
+                      $file,
+                      defined $perms ? ", perms => m('$perms')" : '');
+ }
+
+ $self->api()->run_cf_promises({ files => join("\n", @todo) });
+
+ foreach my $file (sort keys %$manifest)
+ {
+  my $full_file = "$abs_location/$file";
+  if (-f $full_file)
+  {
+   $data->{$sketch->name()}->{$file} = $full_file;
+  }
+  else
+  {
+   push @warnings, "$file was not installed in $abs_location";
+  }
+ }
+
+ eval
+ {
+  push @{$self->sketches()},
+   DCAPI::Sketch->new(location => $abs_location,
+                      rel_location => $sketch->rel_location(),
+                      desc => $sketch->desc(),
+                      dcapi => $self->api(),
+                      repo => $self,
+                      verify_files => 1);
+ };
+
+ if ($@)
+ {
+  push @{$self->api()->warnings()->{$abs_location}}, $@;
+ }
+
+ my $inv_save = $self->save_inv_file();
+ push @warnings, "Could not save the inventory file!"
+  unless $inv_save;
+
+ $data->{inventory_save} = $inv_save;
+
+ return ($data, @warnings);
 }
 
 sub equals

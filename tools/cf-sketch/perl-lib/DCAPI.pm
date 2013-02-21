@@ -6,6 +6,7 @@ use warnings;
 use JSON::PP;
 use File::Which;
 use File::Basename;
+use File::Temp qw/tempfile tempdir /;
 
 use DCAPI::Repo;
 
@@ -23,6 +24,20 @@ has version => ( is => 'ro', default => sub { API_VERSION } );
 has config => ( );
 
 has curl => ( is => 'ro', default => sub { which('curl') } );
+has cfagent => (
+                is => 'ro',
+                default => sub
+                {
+                 my $c = which('cf-agent');
+
+                 $c = '/var/cfengine/bin/cf-agent' unless $c;
+
+                 return $c if -x $c;
+
+                 return undef;
+                }
+               );
+
 has repos => ( is => 'ro', default => sub { [] } );
 has recognized_sources => ( is => 'ro', default => sub { [] } );
 has warnings => ( is => 'ro', default => sub { {} } );
@@ -256,16 +271,74 @@ sub install
  return (\%ret, $self->warnings());
 }
 
+sub run_cf
+{
+ my $self = shift @_;
+ my $data = shift @_;
+
+ my ($fh, $filename) = tempfile( "./cf-agent-run-XXXX", TMPDIR => 1 );
+ print $fh $data;
+ close $fh;
+ $self->log3("Running %s -KIf %s with data =\n%s",
+             $self->cfagent(),
+             $filename,
+             $data);
+ open my $pipe, '-|', $self->cfagent(), -KIf => $filename;
+ return unless $pipe;
+ while (<$pipe>)
+ {
+  next if m/Running full policy integrity checks/;
+  $self->log2($_);
+ }
+ unlink $filename;
+}
+
+sub run_cf_promises
+{
+ my $self = shift @_;
+ my $promises = shift @_;
+
+ my $policy_template = <<'EOHIPPUS';
+body common control
+{
+  bundlesequence => { "run" };
+}
+
+bundle agent run
+{
+%s
+}
+
+# from cfengine_stdlib
+body copy_from no_backup_cp(from)
+{
+source      => "$(from)";
+copy_backup => "false";
+}
+
+body perms m(mode)
+{
+mode   => "$(mode)";
+}
+EOHIPPUS
+
+ my $policy = sprintf($policy_template,
+                      join("\n",
+                           map { "$_:\n$promises->{$_}\n" }
+                           sort keys %$promises));
+ return $self->run_cf($policy);
+}
+
 sub log_mode
 {
  my $self = shift @_;
- return Util::hashref_search($self->config(), qw/log/);
+ return Util::hashref_search($self->config(), qw/log/) || 'STDERR';
 }
 
 sub log_level
 {
  my $self = shift @_;
- return 0+Util::hashref_search($self->config(), qw/log_level/);
+ return 0+(Util::hashref_search($self->config(), qw/log_level/)||0);
 }
 
 sub log
@@ -305,7 +378,7 @@ sub log_int
 
  # only recognize one log mode for now
  return unless $self->log_mode() eq 'STDERR';
- return unless $self->log_level() > $log_level;
+ return unless $self->log_level() >= $log_level;
 
  my $prefix;
  foreach my $level (1..4) # probe up to 4 levels to find the real caller
@@ -382,6 +455,8 @@ sub load_int
  my $self = shift @_;
  my $f    = shift @_;
  my $raw  = shift @_;
+
+ return (undef, "Fatal: trying to load an undefined value") unless defined $f;
 
  my @j;
 
