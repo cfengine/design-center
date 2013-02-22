@@ -72,6 +72,7 @@ my $list = Util::hashref_search($request, qw/list/);
 my $search = Util::hashref_search($request, qw/search/);
 my $sketch_api = Util::hashref_search($request, qw/api/);
 my $install = Util::hashref_search($request, qw/install/);
+my $uninstall = Util::hashref_search($request, qw/uninstall/);
 
 if ($debug)
 {
@@ -105,6 +106,12 @@ elsif (defined $install)
  my ($data, @warnings) = $api->install($install);
 
  $api->ok({ warnings => \@warnings, data => { install => $data }});
+}
+elsif (defined $uninstall)
+{
+ my ($data, @warnings) = $api->uninstall($uninstall);
+
+ $api->ok({ warnings => \@warnings, data => { uninstall => $data }});
 }
 else
 {

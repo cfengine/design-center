@@ -271,6 +271,82 @@ sub install
  return (\%ret, $self->warnings());
 }
 
+sub uninstall
+{
+ my $self = shift;
+ my $uninstall = shift;
+
+ my %ret;
+
+ # we don't accept strings, the sketches to be installed must be in an array
+
+ if (ref $uninstall eq 'HASH')
+ {
+  $uninstall = [ $uninstall ];
+ }
+
+ if (ref $uninstall ne 'ARRAY')
+ {
+  return (undef, "Invalid uninstall command");
+ }
+
+ my @warnings;
+ my @uninstall_log;
+
+ UNINSTALLER:
+ foreach my $uninstaller (@$uninstall)
+ {
+  my %d;
+  foreach my $varname (qw/sketch target/)
+  {
+   my $v = Util::hashref_search($uninstaller, $varname);
+   unless (defined $v)
+   {
+    push @{$self->warnings()->{''}}, "Uninstaller command was missing key '$varname'";
+    next UNINSTALLER;
+   }
+   $d{$varname} = $v;
+  }
+
+  # copy optional install criteria
+  foreach my $varname (qw/version/)
+  {
+   my $v = Util::hashref_search($uninstaller, $varname);
+   next unless defined $v;
+   $d{$varname} = $v;
+  }
+
+  my $repo;
+
+  eval
+  {
+   $repo = $self->load_repo($d{target});
+  };
+
+  if ($@)
+  {
+   push @{$self->warnings()->{$d{target}}}, $@;
+  }
+
+  next UNINSTALLER unless defined $repo;
+
+  my $sketch = $repo->find_sketch($d{sketch});
+
+  unless ($sketch)
+  {
+   push @{$self->warnings()->{$d{target}}},
+    "Sketch $d{sketch} is not in target repo; you must install it first";
+   next UNINSTALLER;
+  }
+
+  $self->log("Uninstalling sketch $d{sketch} from " . $sketch->location());
+
+  $ret{$d{target}} = $repo->uninstall($sketch);
+ }
+
+ return (\%ret, $self->warnings());
+}
+
 sub run_cf
 {
  my $self = shift @_;
@@ -279,7 +355,7 @@ sub run_cf
  my ($fh, $filename) = tempfile( "./cf-agent-run-XXXX", TMPDIR => 1 );
  print $fh $data;
  close $fh;
- $self->log3("Running %s -KIf %s with data =\n%s",
+ $self->log5("Running %s -KIf %s with data =\n%s",
              $self->cfagent(),
              $filename,
              $data);
@@ -287,10 +363,13 @@ sub run_cf
  return unless $pipe;
  while (<$pipe>)
  {
+  chomp;
   next if m/Running full policy integrity checks/;
-  $self->log2($_);
+  $self->log3($_);
  }
  unlink $filename;
+
+ return $?;
 }
 
 sub run_cf_promises
@@ -312,14 +391,34 @@ bundle agent run
 # from cfengine_stdlib
 body copy_from no_backup_cp(from)
 {
-source      => "$(from)";
-copy_backup => "false";
+    source      => "$(from)";
+    copy_backup => "false";
 }
 
 body perms m(mode)
 {
-mode   => "$(mode)";
+    mode   => "$(mode)";
 }
+
+body delete tidy
+{
+    dirlinks => "delete";
+    rmdirs   => "true";
+}
+
+body depth_search recurse_sketch
+{
+    include_basedir => "true";
+    depth => "inf";
+    xdev  => "false";
+}
+
+body file_select all
+{
+    leaf_name => { ".*" };
+    file_result => "leaf_name";
+}
+
 EOHIPPUS
 
  my $policy = sprintf($policy_template,

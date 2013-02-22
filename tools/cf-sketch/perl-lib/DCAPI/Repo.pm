@@ -152,7 +152,6 @@ sub install
  my $sketch = shift @_;
 
  my $data = {};
- my @warnings;
 
  # 1. copy the sketch files as in the manifest.  USE CFE
  my $abs_location = sprintf("%s/%s", $self->location(), $sketch->rel_location);
@@ -163,7 +162,7 @@ sub install
  foreach my $file (sort keys %$manifest)
  {
   my $perms = Util::hashref_search($manifest->{$file}, qw/perm/);
-  $self->api()->log("Copying sketch %s:%s from %s to %s",
+  $self->api()->log("Will copy sketch %s:%s from %s to %s",
                     $sketch->name(),
                     $file,
                     $sketch->location(),
@@ -187,7 +186,8 @@ sub install
   }
   else
   {
-   push @warnings, "$file was not installed in $abs_location";
+   push @{$self->api()->warnings()->{$abs_location}},
+    "$file was not installed in $abs_location";
   }
  }
 
@@ -208,12 +208,58 @@ sub install
  }
 
  my $inv_save = $self->save_inv_file();
- push @warnings, "Could not save the inventory file!"
+ push @{$self->api()->warnings()->{$abs_location}},
+  "Could not save the inventory file!"
   unless $inv_save;
 
  $data->{inventory_save} = $inv_save;
 
- return ($data, @warnings);
+ return $data;
+}
+
+sub uninstall
+{
+ my $self = shift @_;
+ my $sketch = shift @_;
+
+ my $data = {};
+
+ # 1. delete the sketch files as in the manifest.  USE CFE
+ my $abs_location = sprintf("%s/%s", $self->location(), $sketch->rel_location);
+
+ my $manifest = $sketch->manifest();
+
+ # I know I can do this with File::Path's rmtree().  Shut up, conscience.
+ my @todo = (
+             sprintf('"%s" delete => tidy, file_select => all, depth_search => recurse_sketch;',
+                     $abs_location),
+            );
+
+ $self->api()->run_cf_promises({ files => join("\n", @todo) });
+
+ if (-d $abs_location)
+ {
+  push @{$self->api()->warnings()->{$abs_location}},
+   "It seems that $abs_location could not be removed";
+  return;
+ }
+
+ my @sketches = grep { $_ != $sketch } @{$self->sketches()};
+ @{$self->sketches()} = @sketches;
+
+ $self->api()->log("Saving the inventory after uninstalling %s from repo %s",
+                   $sketch->name(),
+                   $self->location());
+
+ my $inv_save = $self->save_inv_file();
+
+ push @{$self->api()->warnings()->{$abs_location}},
+  "Could not save the inventory file!"
+  unless $inv_save;
+
+ $data->{inventory_save} = $inv_save;
+
+ return $data;
 }
 
 sub equals
