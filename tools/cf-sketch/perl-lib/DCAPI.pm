@@ -40,6 +40,10 @@ has cfagent => (
 
 has repos => ( is => 'ro', default => sub { [] } );
 has recognized_sources => ( is => 'ro', default => sub { [] } );
+has vardata => ( is => 'rw');
+has definitions => ( is => 'rw');
+has activations => ( is => 'rw');
+
 has warnings => ( is => 'ro', default => sub { {} } );
 
 has coder =>
@@ -84,8 +88,70 @@ sub set_config
   }
  }
 
+ my $vardata_file = Util::hashref_search($self->config(), qw/vardata/);
+
+ if ($vardata_file)
+ {
+  $vardata_file = glob($vardata_file);
+  $self->log("Loading vardata file $vardata_file");
+  $self->vardata($vardata_file);
+  if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file))
+  {
+   $self->log("Creating missing vardata file $vardata_file");
+   my @save_warnings = $self->save_vardata({
+                                            activations => $self->activations,
+                                            definitions => $self->definitions
+                                           });
+
+   push @{$self->warnings()->{vardata}}, @save_warnings
+    if scalar @save_warnings;
+  }
+
+  my ($v_data, @v_warnings) = $self->load($vardata_file);
+  push @{$self->warnings()->{vardata}}, @v_warnings
+   if scalar @v_warnings;
+
+  if (ref $v_data ne 'HASH')
+  {
+   push @{$self->warnings()->{$vardata_file}}, "vardata is not a hash";
+  }
+  elsif (!exists $v_data->{activations})
+  {
+   push @{$self->warnings()->{$vardata_file}}, "vardata has no 'activations'";
+  }
+  elsif (!exists $v_data->{definitions})
+  {
+   push @{$self->warnings()->{$vardata_file}}, "vardata has no 'definitions'";
+  }
+  else
+  {
+   $self->log("Successfully loaded vardata file $vardata_file");
+   $self->activations($v_data->{activations});
+   $self->definitions($v_data->{definitions});
+  }
+ }
+ else
+ {
+  push @{$self->warnings()->{vardata}}, "No vardata file specified";
+ }
+
  my $w = $self->warnings();
  return scalar keys %$w ? (1,  $w) : (1);
+}
+
+sub save_vardata
+{
+ my $self = shift;
+ my $vardata_file = $self->vardata();
+
+ $self->log("Saving vardata file $vardata_file");
+ open my $vfh, '>', $vardata_file
+  or return "Vardata file $vardata_file could not be created: $!";
+
+ print $vfh $self->cencode({ activations => {}, definitions => {}});
+ close $vfh;
+
+ return;
 }
 
 sub all_repos
