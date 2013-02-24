@@ -18,23 +18,55 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --expert --install CFEngine::stdlib --de
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE) -Dverbose -Ddebug -Dtest
 
 api:
+	@echo ...invalid data
 	echo 'broken json' | $(CFAPI)
+	@echo ...invalid API version
 	echo '{ dc_api_version: "5.0.2" }' | $(CFAPI)
+	@echo ...debug mode
 	echo '{ dc_api_version: "0.0.1", debug: true }' | $(CFAPI)
+	@echo ...empty request
 	echo '{ dc_api_version: "0.0.1", request: { } }' | $(CFAPI)
+	@echo ...list installed
 	echo '{ dc_api_version: "0.0.1", request: {list: true } }' | $(CFAPI)
+	@echo ...search all available
 	echo '{ dc_api_version: "0.0.1", request: {search: true } }' | $(CFAPI)
+	@echo ...search available matching cloud or cfengine via regex
 	echo '{ dc_api_version: "0.0.1", request: {search: [["name", "matches", "(Cloud|CFEngine)"]] } }' | $(CFAPI)
+	@echo ...search available matching cloud or cfengine via data alternation
 	echo '{ dc_api_version: "0.0.1", request: {search: [["name", "matches", "Cloud"], ["name", "matches", "CFEngine"]] } }' | $(CFAPI)
+	@echo ...get CFEngine::sketch_template API
 	echo '{ dc_api_version: "0.0.1", request: {api:"CFEngine::sketch_template"} }' | $(CFAPI)
+	@echo ...get Security::SSH API
 	echo '{ dc_api_version: "0.0.1", request: {api:"Security::SSH"} }' | $(CFAPI)
+	@echo ...invalid request to install CFEngine::sketch_template: missing destination
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
+	@echo ...invalid request to install CFEngine::sketch_template: bad version
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", version: "-1", dest: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
+	@echo ...valid request to install CFEngine::sketch_template
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", dest: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
+	@echo ...invalid request to uninstall CFEngine::sketch_template: missing target
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::sketch_template" } ] } }' | $(CFAPI)
+	@echo ...valid request to uninstall CFEngine::sketch_template
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::sketch_template", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Security::SSH", dest: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" }, activate: { "Security::SSH": "../../sketches/networking/ssh/params/simple.json" }} }' | $(CFAPI)
+	@echo ...valid request to install Security::SSH
+	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Security::SSH", dest: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } } }' | $(CFAPI)
+	@echo ...valid request to uninstall Security::SSH
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
+
+	@echo ...invalid define
+	echo '{ dc_api_version: "0.0.1", request: {define: [ "moo" ] } }' | $(CFAPI)
+	@echo ...undefine no such definition
+	echo '{ dc_api_version: "0.0.1", request: {undefine: [ "moo" ] } }' | $(CFAPI)
+	@echo ...list definitions
+	echo '{ dc_api_version: "0.0.1", request: {definitions: true } }' | $(CFAPI)
+	@echo ...define moo
+	echo '{ dc_api_version: "0.0.1", request: {define: { "moo": { data: "complex data here" } } } }' | $(CFAPI)
+	@echo ...list definitions
+	echo '{ dc_api_version: "0.0.1", request: {definitions: true } }' | $(CFAPI)
+	@echo ...undefine moo
+	echo '{ dc_api_version: "0.0.1", request: {undefine: [ "moo" ] } }' | $(CFAPI)
+	@echo ...list definitions
+	echo '{ dc_api_version: "0.0.1", request: {definitions: true } }' | $(CFAPI)
 
 cloud_services:
 	$(CFSKETCH_DA) --install Cloud::Services --activate Cloud::Services=$(SOURCEDIR)/cloud/cloud_services/params/demo.json

@@ -98,10 +98,7 @@ sub set_config
   if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file))
   {
    $self->log("Creating missing vardata file $vardata_file");
-   my @save_warnings = $self->save_vardata({
-                                            activations => $self->activations,
-                                            definitions => $self->definitions
-                                           });
+   my @save_warnings = $self->save_vardata();
 
    push @{$self->warnings()->{vardata}}, @save_warnings
     if scalar @save_warnings;
@@ -142,13 +139,18 @@ sub set_config
 sub save_vardata
 {
  my $self = shift;
+
+ my $data = {
+             activations => $self->activations,
+             definitions => $self->definitions
+            };
  my $vardata_file = $self->vardata();
 
  $self->log("Saving vardata file $vardata_file");
  open my $vfh, '>', $vardata_file
   or return "Vardata file $vardata_file could not be created: $!";
 
- print $vfh $self->cencode({ activations => {}, definitions => {}});
+ print $vfh $self->cencode($data);
  close $vfh;
 
  return;
@@ -411,6 +413,79 @@ sub uninstall
  }
 
  return (\%ret, $self->warnings());
+}
+
+sub define
+{
+ my $self = shift;
+ my $define = shift;
+
+ if (ref $define ne 'HASH')
+ {
+  return (undef, "Invalid define command");
+ }
+
+ foreach my $dkey (keys %$define)
+ {
+  $self->definitions()->{$dkey} = $define->{$dkey};
+ }
+
+ $self->save_vardata();
+}
+
+sub undefine
+{
+ my $self = shift;
+ my $undefine = shift;
+
+ if (ref $undefine ne 'ARRAY')
+ {
+  return (undef, "Invalid undefine command");
+ }
+
+ foreach my $ukey (@$undefine)
+ {
+  delete $self->definitions()->{$ukey};
+ }
+
+ $self->save_vardata();
+}
+
+sub activate
+{
+ my $self = shift;
+ my $activate = shift;
+
+ if (ref $activate ne 'HASH')
+ {
+  return (undef, "Invalid activate command");
+ }
+
+ # TODO: handle activation request in form
+ # sketch: [ definition1, definition2, ... ]
+ foreach my $akey (keys %$activate)
+ {
+  die $self->encode($activate->{$akey});
+ }
+
+ $self->save_vardata();
+}
+
+sub deactivate
+{
+ my $self = shift;
+ my $deactivate = shift;
+
+ # TODO: handle three cases:
+
+ # deactivate = true means all;
+
+ # deactivate = sketch means all activations of the sketch;
+
+ # deactivate = activation instance means a specific activation of the
+ # sketch
+
+ $self->save_vardata();
 }
 
 sub run_cf

@@ -71,8 +71,17 @@ my $request = Util::hashref_search($data, qw/request/);
 my $list = Util::hashref_search($request, qw/list/);
 my $search = Util::hashref_search($request, qw/search/);
 my $sketch_api = Util::hashref_search($request, qw/api/);
+
 my $install = Util::hashref_search($request, qw/install/);
 my $uninstall = Util::hashref_search($request, qw/uninstall/);
+
+my $define = Util::hashref_search($request, qw/define/);
+my $undefine = Util::hashref_search($request, qw/undefine/);
+my $definitions = Util::hashref_search($request, qw/definitions/);
+
+my $activate = Util::hashref_search($request, qw/activate/);
+my $deactivate = Util::hashref_search($request, qw/deactivate/);
+my $activations = Util::hashref_search($request, qw/activations/);
 
 if ($debug)
 {
@@ -81,7 +90,7 @@ if ($debug)
 
 unless (defined $version && $version eq $api->version())
 {
- $api->exit_error("DC API Version not provided or mismatch " . $api->version(), @log);
+ $api->exit_error("DC API Version not provided or mismatch " . $api->version() . " vs. " . $version , @log);
 }
 
 unless (defined $request)
@@ -112,6 +121,42 @@ elsif (defined $uninstall)
  my ($data, @warnings) = $api->uninstall($uninstall);
 
  $api->ok({ warnings => \@warnings, data => { uninstall => $data }});
+}
+elsif (defined $activations)
+{
+ my ($data, @warnings) = $api->activations();
+
+ $api->ok({ warnings => \@warnings, data => { activations => $data }});
+}
+elsif (defined $activate)
+{
+ my ($data, @warnings) = $api->activate($activate);
+
+ $api->ok({ warnings => \@warnings, data => { activate => $data }});
+}
+elsif (defined $deactivate)
+{
+ my ($data, @warnings) = $api->deactivate($deactivate);
+
+ $api->ok({ warnings => \@warnings, data => { deactivate => $data }});
+}
+elsif (defined $definitions)
+{
+ my ($data, @warnings) = $api->definitions();
+
+ $api->ok({ warnings => \@warnings, data => { definitions => $data }});
+}
+elsif (defined $define)
+{
+ my ($data, @warnings) = $api->define($define);
+
+ $api->ok({ warnings => \@warnings, data => { define => $data }});
+}
+elsif (defined $undefine)
+{
+ my ($data, @warnings) = $api->undefine($undefine);
+
+ $api->ok({ warnings => \@warnings, data => { undefine => $data }});
 }
 else
 {
