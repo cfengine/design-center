@@ -79,6 +79,10 @@ my $define = Util::hashref_search($request, qw/define/);
 my $undefine = Util::hashref_search($request, qw/undefine/);
 my $definitions = Util::hashref_search($request, qw/definitions/);
 
+my $define_environment = Util::hashref_search($request, qw/define_environment/);
+my $undefine_environment = Util::hashref_search($request, qw/undefine_environment/);
+my $environments = Util::hashref_search($request, qw/environments/);
+
 my $activate = Util::hashref_search($request, qw/activate/);
 my $deactivate = Util::hashref_search($request, qw/deactivate/);
 my $activations = Util::hashref_search($request, qw/activations/);
@@ -157,6 +161,24 @@ elsif (defined $undefine)
  my ($data, @warnings) = $api->undefine($undefine);
 
  $api->ok({ warnings => \@warnings, data => { undefine => $data }});
+}
+elsif (defined $environments)
+{
+ my ($data, @warnings) = $api->environments();
+
+ $api->ok({ warnings => \@warnings, data => { environments => $data }});
+}
+elsif (defined $define_environment)
+{
+ my ($data, @warnings) = $api->define_environment($define_environment);
+
+ $api->ok({ warnings => \@warnings, data => { define_environment => $data }});
+}
+elsif (defined $undefine_environment)
+{
+ my ($data, @warnings) = $api->undefine_environment($undefine_environment);
+
+ $api->ok({ warnings => \@warnings, data => { undefine_environment => $data }});
 }
 else
 {

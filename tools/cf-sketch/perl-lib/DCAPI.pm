@@ -41,8 +41,9 @@ has cfagent => (
 has repos => ( is => 'ro', default => sub { [] } );
 has recognized_sources => ( is => 'ro', default => sub { [] } );
 has vardata => ( is => 'rw');
-has definitions => ( is => 'rw');
-has activations => ( is => 'rw');
+has definitions => ( is => 'rw', default => sub { {} });
+has activations => ( is => 'rw', default => sub { {} });
+has environments => ( is => 'rw', default => sub { {} });
 
 has warnings => ( is => 'ro', default => sub { {} } );
 
@@ -120,11 +121,16 @@ sub set_config
   {
    push @{$self->warnings()->{$vardata_file}}, "vardata has no 'definitions'";
   }
+  elsif (!exists $v_data->{environments})
+  {
+   push @{$self->warnings()->{$vardata_file}}, "vardata has no 'environments'";
+  }
   else
   {
    $self->log("Successfully loaded vardata file $vardata_file");
    $self->activations($v_data->{activations});
    $self->definitions($v_data->{definitions});
+   $self->environments($v_data->{environments});
   }
  }
  else
@@ -142,7 +148,8 @@ sub save_vardata
 
  my $data = {
              activations => $self->activations,
-             definitions => $self->definitions
+             definitions => $self->definitions,
+             environments => $self->environments,
             };
  my $vardata_file = $self->vardata();
 
@@ -446,6 +453,42 @@ sub undefine
  foreach my $ukey (@$undefine)
  {
   delete $self->definitions()->{$ukey};
+ }
+
+ $self->save_vardata();
+}
+
+sub define_environment
+{
+ my $self = shift;
+ my $define_environment = shift;
+
+ if (ref $define_environment ne 'HASH')
+ {
+  return (undef, "Invalid define_environment command");
+ }
+
+ foreach my $dkey (keys %$define_environment)
+ {
+  $self->environments()->{$dkey} = $define_environment->{$dkey};
+ }
+
+ $self->save_vardata();
+}
+
+sub undefine_environment
+{
+ my $self = shift;
+ my $undefine_environment = shift;
+
+ if (ref $undefine_environment ne 'ARRAY')
+ {
+  return (undef, "Invalid undefine_environment command");
+ }
+
+ foreach my $ukey (@$undefine_environment)
+ {
+  delete $self->environments()->{$ukey};
  }
 
  $self->save_vardata();

@@ -68,6 +68,21 @@ api:
 	@echo ...list definitions
 	echo '{ dc_api_version: "0.0.1", request: {definitions: true } }' | $(CFAPI)
 
+	@echo ...invalid define_environment
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: [ "DEV" ] } }' | $(CFAPI)
+	@echo ...undefine_environment no such environment
+	echo '{ dc_api_version: "0.0.1", request: {undefine_environment: [ "DEV" ] } }' | $(CFAPI)
+	@echo ...list environments
+	echo '{ dc_api_version: "0.0.1", request: {environments: true } }' | $(CFAPI)
+	@echo ...define_environment DEV
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "DEV": { test: true, verbose: true } } } }' | $(CFAPI)
+	@echo ...list environments
+	echo '{ dc_api_version: "0.0.1", request: {environments: true } }' | $(CFAPI)
+	@echo ...undefine_environment DEV
+	echo '{ dc_api_version: "0.0.1", request: {undefine_environment: [ "DEV" ] } }' | $(CFAPI)
+	@echo ...list environments
+	echo '{ dc_api_version: "0.0.1", request: {environments: true } }' | $(CFAPI)
+
 cloud_services:
 	$(CFSKETCH_DA) --install Cloud::Services --activate Cloud::Services=$(SOURCEDIR)/cloud/cloud_services/params/demo.json
 	$(RUNNER) -Dvcli -Dstart1
