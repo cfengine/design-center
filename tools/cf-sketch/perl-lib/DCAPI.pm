@@ -43,7 +43,13 @@ has recognized_sources => ( is => 'ro', default => sub { [] } );
 has vardata => ( is => 'rw');
 has definitions => ( is => 'rw', default => sub { {} });
 has activations => ( is => 'rw', default => sub { {} });
-has environments => ( is => 'rw', default => sub { {} });
+has environments => ( is => 'rw', default => sub { { default =>
+                                                     {
+                                                      test => 0,
+                                                      verbose => 0,
+                                                      activated => 1,
+                                                     }
+                                                    } });
 
 has warnings => ( is => 'ro', default => sub { {} } );
 
@@ -470,7 +476,27 @@ sub define_environment
 
  foreach my $dkey (keys %$define_environment)
  {
-  $self->environments()->{$dkey} = $define_environment->{$dkey};
+  my $spec = $define_environment->{$dkey};
+
+  if (ref $spec ne 'HASH')
+  {
+   return (undef, "Invalid environment spec under $dkey");
+  }
+
+  foreach my $required (qw/activated test verbose/)
+  {
+   return (undef, "Invalid environment spec $dkey: missing key $required")
+    unless exists $spec->{$required};
+
+   $spec->{$required} = ! ! $spec->{$required}
+    if Util::is_json_boolean($spec->{$required});
+
+   # only scalars are acceptable
+   return (undef, "Invalid environment spec $dkey: non-scalar key $required")
+    if (ref $spec->{$required});
+  }
+
+  $self->environments()->{$dkey} = $spec;
  }
 
  $self->save_vardata();
@@ -505,10 +531,38 @@ sub activate
  }
 
  # TODO: handle activation request in form
- # sketch: [ definition1, definition2, ... ]
- foreach my $akey (keys %$activate)
+ # sketch: { env:"run environment", repo:"/my/repo", params: [definition1, definition2, ... ] }
+ foreach my $sketch (keys %$activate)
  {
-  die $self->encode($activate->{$akey});
+  my $spec = $activate->{$sketch};
+  if (ref $spec ne 'HASH')
+  {
+   return (undef, "Invalid activate spec under $sketch");
+  }
+
+  my $env = $spec->{env} || '--environment not given (NULL)--';
+
+  unless (exists $self->environments()->{$env})
+  {
+   return (undef, "Invalid activation environment '$env'");
+  }
+
+  my $found;
+  my @repos = grep
+  {
+   defined $spec->{repo} ? $spec->{repo} eq $_->location() : 1
+  } @{$self->repos()};
+
+  foreach my $repo (@repos)
+  {
+   $found = $repo->find_sketch($sketch);
+   last if $found;
+  }
+
+  return (undef, "Could not find sketch $sketch in [@repos]")
+   unless $found;
+
+  return ($found);
  }
 
  $self->save_vardata();

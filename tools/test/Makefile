@@ -74,14 +74,28 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: {undefine_environment: [ "DEV" ] } }' | $(CFAPI)
 	@echo ...list environments
 	echo '{ dc_api_version: "0.0.1", request: {environments: true } }' | $(CFAPI)
-	@echo ...define_environment DEV
+	@echo ...define_incomplete environment DEV, missing activated
 	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "DEV": { test: true, verbose: true } } } }' | $(CFAPI)
+	@echo ...define_environment DEV
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "DEV": { activated: true, test: true, verbose: true } } } }' | $(CFAPI)
 	@echo ...list environments
 	echo '{ dc_api_version: "0.0.1", request: {environments: true } }' | $(CFAPI)
 	@echo ...undefine_environment DEV
 	echo '{ dc_api_version: "0.0.1", request: {undefine_environment: [ "DEV" ] } }' | $(CFAPI)
 	@echo ...list environments
 	echo '{ dc_api_version: "0.0.1", request: {environments: true } }' | $(CFAPI)
+
+	@echo '--- a full test of configuring Security::SSH --'
+
+	@echo ...define Security::SSH run environment
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "DAYTIME": { activated: "!(Evening|Night)", test: true, verbose: true } } } }' | $(CFAPI)
+	@echo ...define Security::SSH parameters
+	echo '{ dc_api_version: "0.0.1", request: {define: { "simple_ssh": { "Security::SSH": { params: { Protocol : "2", X11Forwarding : "yes", PermitRootLogin : "yes" } } } } } }' | $(CFAPI)
+	@echo ...fail to activate Security::SSH with invalid run environments and simple_ssh parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: null, params: ["simple_ssh" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: "bad environment", params: ["simple_ssh" ] } } } }' | $(CFAPI)
+	@echo ...activate Security::SSH with DAYTIME run environment and simple_ssh parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { repo: "/home/tzz/.cfagent/inputs/sketches", env: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
 
 cloud_services:
 	$(CFSKETCH_DA) --install Cloud::Services --activate Cloud::Services=$(SOURCEDIR)/cloud/cloud_services/params/demo.json

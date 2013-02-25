@@ -331,4 +331,9 @@ sub hashref_search
  return undef;
 }
 
+sub is_json_boolean
+{
+ return ((ref shift) =~ m/JSON.*Boolean/);
+}
+
 1;
