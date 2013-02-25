@@ -1,4 +1,7 @@
 Declarative vs. Imperative Programming
+--------------------------------------
+
+(By Mike English)
 
 ... a declarative programming style ... is often unfamiliar
 to newcomers, even if they are experienced programmers in
