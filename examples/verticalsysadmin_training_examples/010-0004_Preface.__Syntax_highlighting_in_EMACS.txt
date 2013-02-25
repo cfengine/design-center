@@ -19,7 +19,7 @@ to the progmodes directory from #2 above.
 
 4) If you want it to always happen, add this to ~/.emacs:
 
-(add-to-list 'auto-mode-alist ("\\.cf\\'" . cfengine3-mode))
+(add-to-list 'auto-mode-alist '("\\.cf\\'" . cfengine3-mode))
 
 5) In 24.2 cfengine-mode will be aliased to cfengine3-mode, but for
    now it's aliased to cfengine-auto-mode, which tries to figure out if
