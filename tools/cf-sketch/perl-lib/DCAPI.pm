@@ -530,11 +530,49 @@ sub activate
   return (undef, "Invalid activate command");
  }
 
- # TODO: handle activation request in form
+ # handle activation request in form
  # sketch: { env:"run environment", repo:"/my/repo", params: [definition1, definition2, ... ] }
  foreach my $sketch (keys %$activate)
  {
   my $spec = $activate->{$sketch};
+
+  my ($verify, @warnings) = $self->verify_activation($sketch, $spec);
+
+  if ($verify)
+  {
+   $self->log("Activating sketch %s with spec %s", $sketch, $spec);
+   my $cspec = $self->cencode($spec);
+   if (exists $self->activations()->{$sketch})
+   {
+    foreach (@{$self->activations()->{$sketch}})
+    {
+     if ($cspec eq $self->cencode($_))
+     {
+      return (undef, "Activation is already in place");
+     }
+    }
+   }
+
+   push @{$self->activations()->{$sketch}}, $spec;
+   $self->log("Activations for sketch %s are now %s",
+              $sketch,
+              $self->activations()->{$sketch});
+  }
+  else
+  {
+   return ($verify, @warnings);
+  }
+ }
+
+ $self->save_vardata();
+}
+
+sub verify_activation
+{
+ my $self = shift;
+ my $sketch = shift;
+ my $spec = shift;
+
   if (ref $spec ne 'HASH')
   {
    return (undef, "Invalid activate spec under $sketch");
@@ -582,12 +620,14 @@ sub activate
    $params{$_} = $self->definitions()->{$_};
   }
 
-  # we have $found with the sketch object, $sketch with the sketch
-  # name, %params with the full parameters
-  return (Util::dump_ref([$found, \%params]));
- }
+  # We have $found with the sketch object, $sketch with the sketch
+  # name, $env with the run environment, and %params with the full parameters.
 
- $self->save_vardata();
+ # TODO: check that %params fit the sketch API
+
+ $self->log3("Verified sketch %s activation: run environment %s and params %s",
+             $sketch, $env, $params);
+ return [$found, $sketch, $env, $params];
 }
 
 sub deactivate
