@@ -336,4 +336,10 @@ sub is_json_boolean
  return ((ref shift) =~ m/JSON.*Boolean/);
 }
 
+sub dump_ref
+{
+ require Data::Dumper;
+ return Dumper(\@_);
+}
+
 1;

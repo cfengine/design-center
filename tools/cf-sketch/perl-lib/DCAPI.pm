@@ -551,7 +551,7 @@ sub activate
   my @repos = grep
   {
    defined $spec->{repo} ? $spec->{repo} eq $_->location() : 1
-  } @{$self->repos()};
+  } map { $self->load_repo($_) } @{$self->repos()};
 
   foreach my $repo (@repos)
   {
@@ -559,10 +559,32 @@ sub activate
    last if $found;
   }
 
-  return (undef, "Could not find sketch $sketch in [@repos]")
+  return (undef, sprintf("Could not find sketch $sketch in [%s]",
+                        join(' ', map { $_->location() } @repos)))
    unless $found;
 
-  return ($found);
+  my $params = $spec->{params} || "--no valid params array found--";
+  if (ref $params ne 'ARRAY')
+  {
+   return (undef, "Invalid activation params, must be an array");
+  }
+
+  unless (scalar @$params)
+  {
+   return (undef, "Activation params can't be an empty array");
+  }
+
+  my %params;
+  foreach (@$params)
+  {
+   return (undef, "The activation params '$_' have not been defined")
+    unless exists $self->definitions()->{$_};
+   $params{$_} = $self->definitions()->{$_};
+  }
+
+  # we have $found with the sketch object, $sketch with the sketch
+  # name, %params with the full parameters
+  return (Util::dump_ref([$found, \%params]));
  }
 
  $self->save_vardata();

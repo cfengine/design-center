@@ -87,6 +87,8 @@ api:
 
 	@echo '--- a full test of configuring Security::SSH --'
 
+	@echo ...valid request to install Security::SSH
+	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Security::SSH", dest: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } } }' | $(CFAPI)
 	@echo ...define Security::SSH run environment
 	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "DAYTIME": { activated: "!(Evening|Night)", test: true, verbose: true } } } }' | $(CFAPI)
 	@echo ...define Security::SSH parameters
@@ -94,8 +96,14 @@ api:
 	@echo ...fail to activate Security::SSH with invalid run environments and simple_ssh parameters
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: null, params: ["simple_ssh" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: "bad environment", params: ["simple_ssh" ] } } } }' | $(CFAPI)
+	@echo ...fail to activate Security::SSH with valid run environments and invalid parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: "DAYTIME", params: "bad params" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: "DAYTIME", params: [ ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: "DAYTIME", params: [ "undefined params" ] } } } }' | $(CFAPI)
 	@echo ...activate Security::SSH with DAYTIME run environment and simple_ssh parameters
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { repo: "/home/tzz/.cfagent/inputs/sketches", env: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+	@echo ...valid request to uninstall Security::SSH
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 
 cloud_services:
 	$(CFSKETCH_DA) --install Cloud::Services --activate Cloud::Services=$(SOURCEDIR)/cloud/cloud_services/params/demo.json
