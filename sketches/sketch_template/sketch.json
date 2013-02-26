@@ -9,7 +9,7 @@
         "modules/mymodule": { module: true, perm: 755, comment: "Sample module bundled with the sketch" }
     },
 
-    "metadata":
+    metadata:
     {
         name: "CFEngine::sketch_template",
 	description: "Standard template for Design Center sketches",

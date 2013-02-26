@@ -271,6 +271,9 @@ sub install
 
  my %ret;
 
+ # TODO: check dependencies
+ # TODO: install library dependencies
+
  # we don't accept strings, the sketches to be installed must be in an array
 
  if (ref $install eq 'HASH')
@@ -617,17 +620,107 @@ sub verify_activation
   {
    return (undef, "The activation params '$_' have not been defined")
     unless exists $self->definitions()->{$_};
-   $params{$_} = $self->definitions()->{$_};
+
+   return (undef, "The activation params '$_' do not apply to sketch $sketch")
+    unless exists $self->definitions()->{$_}->{$sketch};
+
+   $params{$_} = $self->definitions()->{$_}->{$sketch};
   }
-
-  # We have $found with the sketch object, $sketch with the sketch
-  # name, $env with the run environment, and %params with the full parameters.
-
- # TODO: check that %params fit the sketch API
 
  $self->log3("Verified sketch %s activation: run environment %s and params %s",
              $sketch, $env, $params);
- return [$found, $sketch, $env, $params];
+
+ $self->log4("Checking sketch %s: API %s versus extracted parameters %s",
+             $sketch,
+             $found->api(),
+             \%params);
+
+ my @bundles_to_check = sort keys %{$found->api()};
+
+ # look at the specific bundle if requested
+ if (exists $spec->{bundle} &&
+     defined $spec->{bundle})
+ {
+  @bundles_to_check = grep { $_ eq $spec->{bundle}} @bundles_to_check;
+ }
+
+ my $bundle;
+ my @params;
+ foreach my $b (@bundles_to_check)
+ {
+  my $api = $found->api()->{$b};
+
+  my $params_ok = 1;
+  foreach my $p (@$api)
+  {
+   $self->log5("Checking the API of sketch %s: parameter %s", $sketch, $p);
+   my $filled = $self->fill_param($p->{name}, $p->{type}, \%params,
+                                  {
+                                   runenv => $self->environments()->{$env}
+                                  });
+   unless ($filled)
+   {
+    $self->log4("The API of sketch %s did not match parameter %s", $sketch, $p);
+    $params_ok = 0;
+    last;
+   }
+
+   $self->log5("The API of sketch %s matched parameter %s", $sketch, $p);
+   push @params, $filled;
+  }
+
+  $bundle = $b if $params_ok;
+ }
+
+ return (undef, "No bundle in the $sketch api matched the given parameters")
+  unless $bundle;
+
+ # We have $found with the sketch object, $sketch with the sketch
+ # name, $env with the run environment, $bundle with the bundle name,
+ # and @params with the bundle parameters
+
+ $self->log3("Verified sketch %s entry: filled parameters are %s",
+             $sketch, \@params);
+
+ return [$found, $sketch, $env, $bundle, \@params];
+}
+
+sub fill_param
+{
+ my $self = shift;
+ my $name = shift;
+ my $type = shift;
+ my $params = shift;
+ my $extra = shift;
+
+ if ($type eq 'runenv')
+ {
+  return {set=>undef, type => $type, name => $name, value => $extra->{runenv}};
+ }
+
+ foreach my $pkey (sort keys %$params)
+ {
+  my $pval = $params->{$pkey};
+  # TODO: add more parameter types and validate the value!!!
+  if ($type eq 'array' && exists $pval->{$name} && ref $pval->{$name} eq 'HASH')
+  {
+   return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+  }
+  elsif ($type eq 'string' && exists $pval->{$name} && ref $pval->{$name} eq '')
+  {
+   return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+  }
+  elsif ($type eq 'boolean' && exists $pval->{$name} && ref $pval->{$name} eq '')
+  {
+   return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+  }
+  elsif ($type eq 'list' && exists $pval->{$name} && ref $pval->{$name} eq 'ARRAY')
+  {
+   return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+  }
+ }
+
+ return;
 }
 
 sub deactivate
@@ -635,14 +728,30 @@ sub deactivate
  my $self = shift;
  my $deactivate = shift;
 
- # TODO: handle three cases:
-
  # deactivate = true means all;
-
+ if (Util::is_json_boolean($deactivate) && $deactivate)
+ {
+  $self->log("Deactivating all activations: %s", $self->activations());
+  %{$self->activations()} = ();
+ }
  # deactivate = sketch means all activations of the sketch;
-
- # deactivate = activation instance means a specific activation of the
- # sketch
+ elsif (ref $deactivate eq '')
+ {
+  $self->log("Deactivating all activations of $deactivate: %s",
+             delete $self->activations()->{$deactivate});
+ }
+ elsif (ref $deactivate eq 'HASH' &&
+        exists $deactivate->{sketch} &&
+        exists $self->activations()->{$deactivate->{sketch}})
+ {
+  if (exists $deactivate->{position})
+  {
+   $self->log("Deactivating activation %s of %s: %s",
+              $deactivate->{position},
+              $deactivate->{sketch},
+              delete $self->activations()->{$deactivate->{sketch}}->[$deactivate->{position}]);
+  }
+ }
 
  $self->save_vardata();
 }

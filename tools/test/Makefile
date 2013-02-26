@@ -101,7 +101,17 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: "DAYTIME", params: [ ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: "DAYTIME", params: [ "undefined params" ] } } } }' | $(CFAPI)
 	@echo ...activate Security::SSH with DAYTIME run environment and simple_ssh parameters
+	@echo ...we could specify the bundle we want here with the bundle key
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { bundle: "nosuchbundle", repo: "/home/tzz/.cfagent/inputs/sketches", env: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { repo: "/home/tzz/.cfagent/inputs/sketches", env: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+
+	@echo ...deactivate first activation of Security::SSH
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: { sketch: "Security::SSH", position: 0 } } }' | $(CFAPI)
+	@echo ...deactivate all activations of Security::SSH
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: "Security::SSH" } }' | $(CFAPI)
+	@echo ...deactivate all activations
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+
 	@echo ...valid request to uninstall Security::SSH
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 
