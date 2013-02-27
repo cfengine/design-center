@@ -87,6 +87,8 @@ my $activate = Util::hashref_search($request, qw/activate/);
 my $deactivate = Util::hashref_search($request, qw/deactivate/);
 my $activations = Util::hashref_search($request, qw/activations/);
 
+my $regenerate = Util::hashref_search($request, qw/regenerate/);
+
 if ($debug)
 {
  push @log, $api->data_dump();
@@ -179,6 +181,12 @@ elsif (defined $undefine_environment)
  my ($data, @warnings) = $api->undefine_environment($undefine_environment);
 
  $api->ok({ warnings => \@warnings, data => { undefine_environment => $data }});
+}
+elsif (defined $regenerate)
+{
+ my ($data, @warnings) = $api->regenerate($regenerate);
+
+ $api->ok({ warnings => \@warnings, data => { regenerate => $data }});
 }
 else
 {

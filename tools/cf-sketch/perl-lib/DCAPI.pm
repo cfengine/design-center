@@ -682,7 +682,7 @@ sub verify_activation
  $self->log3("Verified sketch %s entry: filled parameters are %s",
              $sketch, \@params);
 
- return [$found, $sketch, $env, $bundle, \@params];
+ return [$found->describe(), $sketch, $env, $bundle, \@params];
 }
 
 sub fill_param
@@ -721,6 +721,45 @@ sub fill_param
  }
 
  return;
+}
+
+sub regenerate
+{
+ my $self = shift;
+ my $regenerate = shift;
+
+ my @all_warnings;
+
+ if (Util::is_json_boolean($regenerate) && $regenerate)
+ {
+  my $acts = $self->activations();
+  foreach my $sketch (keys %$acts)
+  {
+   foreach my $spec (@{$acts->{$sketch}})
+   {
+    my ($verify, @warnings) = $self->verify_activation($sketch, $spec);
+
+    if (scalar @warnings)
+    {
+     push @all_warnings, @warnings;
+     $self->log("Regenerate: verification warnings [@warnings]");
+    }
+
+    if ($verify)
+    {
+     my $sketch = shift @$verify;
+     $self->log("Regenerate: adding activation of %s; spec %s", $sketch, $spec);
+     $self->log("Regenerate: recording activation %s", $verify);
+    }
+    else
+    {
+     return ($verify, @warnings);
+    }
+   }
+  }
+ }
+
+ return (1, @all_warnings);
 }
 
 sub deactivate

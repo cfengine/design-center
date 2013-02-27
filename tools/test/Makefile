@@ -105,6 +105,9 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { bundle: "nosuchbundle", repo: "/home/tzz/.cfagent/inputs/sketches", env: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { repo: "/home/tzz/.cfagent/inputs/sketches", env: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
 
+	@echo ...generate the runfile
+	echo '{ dc_api_version: "0.0.1", request: {regenerate: true } }' | $(CFAPI)
+
 	@echo ...deactivate first activation of Security::SSH
 	echo '{ dc_api_version: "0.0.1", request: {deactivate: { sketch: "Security::SSH", position: 0 } } }' | $(CFAPI)
 	@echo ...deactivate all activations of Security::SSH
