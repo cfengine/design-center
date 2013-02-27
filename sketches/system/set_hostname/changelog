@@ -1,3 +1,5 @@
+set_hostname 1.05.2
+  * Fix domainname setting.
 set_hostname 1.03
   * fix error preventing install via cf-sketch
 set_hostname 1.01
