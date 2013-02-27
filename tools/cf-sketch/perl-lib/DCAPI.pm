@@ -9,6 +9,7 @@ use File::Basename;
 use File::Temp qw/tempfile tempdir /;
 
 use DCAPI::Repo;
+use DCAPI::Activation;
 
 use constant API_VERSION => '0.0.1';
 use constant CODER => JSON::PP->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
@@ -539,7 +540,7 @@ sub activate
  {
   my $spec = $activate->{$sketch};
 
-  my ($verify, @warnings) = $self->verify_activation($sketch, $spec);
+  my ($verify, @warnings) = DCAPI::Activation::make_activation($self, $sketch, $spec);
 
   if ($verify)
   {
@@ -570,159 +571,6 @@ sub activate
  $self->save_vardata();
 }
 
-sub verify_activation
-{
- my $self = shift;
- my $sketch = shift;
- my $spec = shift;
-
-  if (ref $spec ne 'HASH')
-  {
-   return (undef, "Invalid activate spec under $sketch");
-  }
-
-  my $env = $spec->{env} || '--environment not given (NULL)--';
-
-  unless (exists $self->environments()->{$env})
-  {
-   return (undef, "Invalid activation environment '$env'");
-  }
-
-  my $found;
-  my @repos = grep
-  {
-   defined $spec->{repo} ? $spec->{repo} eq $_->location() : 1
-  } map { $self->load_repo($_) } @{$self->repos()};
-
-  foreach my $repo (@repos)
-  {
-   $found = $repo->find_sketch($sketch);
-   last if $found;
-  }
-
-  return (undef, sprintf("Could not find sketch $sketch in [%s]",
-                        join(' ', map { $_->location() } @repos)))
-   unless $found;
-
-  my $params = $spec->{params} || "--no valid params array found--";
-  if (ref $params ne 'ARRAY')
-  {
-   return (undef, "Invalid activation params, must be an array");
-  }
-
-  unless (scalar @$params)
-  {
-   return (undef, "Activation params can't be an empty array");
-  }
-
-  my %params;
-  foreach (@$params)
-  {
-   return (undef, "The activation params '$_' have not been defined")
-    unless exists $self->definitions()->{$_};
-
-   return (undef, "The activation params '$_' do not apply to sketch $sketch")
-    unless exists $self->definitions()->{$_}->{$sketch};
-
-   $params{$_} = $self->definitions()->{$_}->{$sketch};
-  }
-
- $self->log3("Verified sketch %s activation: run environment %s and params %s",
-             $sketch, $env, $params);
-
- $self->log4("Checking sketch %s: API %s versus extracted parameters %s",
-             $sketch,
-             $found->api(),
-             \%params);
-
- my @bundles_to_check = sort keys %{$found->api()};
-
- # look at the specific bundle if requested
- if (exists $spec->{bundle} &&
-     defined $spec->{bundle})
- {
-  @bundles_to_check = grep { $_ eq $spec->{bundle}} @bundles_to_check;
- }
-
- my $bundle;
- my @params;
- foreach my $b (@bundles_to_check)
- {
-  my $api = $found->api()->{$b};
-
-  my $params_ok = 1;
-  foreach my $p (@$api)
-  {
-   $self->log5("Checking the API of sketch %s: parameter %s", $sketch, $p);
-   my $filled = $self->fill_param($p->{name}, $p->{type}, \%params,
-                                  {
-                                   runenv => $self->environments()->{$env}
-                                  });
-   unless ($filled)
-   {
-    $self->log4("The API of sketch %s did not match parameter %s", $sketch, $p);
-    $params_ok = 0;
-    last;
-   }
-
-   $self->log5("The API of sketch %s matched parameter %s", $sketch, $p);
-   push @params, $filled;
-  }
-
-  $bundle = $b if $params_ok;
- }
-
- return (undef, "No bundle in the $sketch api matched the given parameters")
-  unless $bundle;
-
- # We have $found with the sketch object, $sketch with the sketch
- # name, $env with the run environment, $bundle with the bundle name,
- # and @params with the bundle parameters
-
- $self->log3("Verified sketch %s entry: filled parameters are %s",
-             $sketch, \@params);
-
- return [$found->describe(), $sketch, $env, $bundle, \@params];
-}
-
-sub fill_param
-{
- my $self = shift;
- my $name = shift;
- my $type = shift;
- my $params = shift;
- my $extra = shift;
-
- if ($type eq 'runenv')
- {
-  return {set=>undef, type => $type, name => $name, value => $extra->{runenv}};
- }
-
- foreach my $pkey (sort keys %$params)
- {
-  my $pval = $params->{$pkey};
-  # TODO: add more parameter types and validate the value!!!
-  if ($type eq 'array' && exists $pval->{$name} && ref $pval->{$name} eq 'HASH')
-  {
-   return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
-  }
-  elsif ($type eq 'string' && exists $pval->{$name} && ref $pval->{$name} eq '')
-  {
-   return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
-  }
-  elsif ($type eq 'boolean' && exists $pval->{$name} && ref $pval->{$name} eq '')
-  {
-   return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
-  }
-  elsif ($type eq 'list' && exists $pval->{$name} && ref $pval->{$name} eq 'ARRAY')
-  {
-   return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
-  }
- }
-
- return;
-}
-
 sub regenerate
 {
  my $self = shift;
@@ -737,7 +585,7 @@ sub regenerate
   {
    foreach my $spec (@{$acts->{$sketch}})
    {
-    my ($verify, @warnings) = $self->verify_activation($sketch, $spec);
+    my ($activation, @warnings) = DCAPI::Activation::make_activation($self, $sketch, $spec);
 
     if (scalar @warnings)
     {
@@ -745,15 +593,14 @@ sub regenerate
      $self->log("Regenerate: verification warnings [@warnings]");
     }
 
-    if ($verify)
+    if ($activation)
     {
-     my $sketch = shift @$verify;
+     my $sketch_obj = $activation->sketch();
      $self->log("Regenerate: adding activation of %s; spec %s", $sketch, $spec);
-     $self->log("Regenerate: recording activation %s", $verify);
     }
     else
     {
-     return ($verify, @warnings);
+     return ($activation, @warnings);
     }
    }
   }
