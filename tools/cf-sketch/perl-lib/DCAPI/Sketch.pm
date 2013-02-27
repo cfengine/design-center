@@ -14,6 +14,7 @@ use constant META_MEMBERS => qw/name version description license tags depends/;
 has dcapi        => ( is => 'ro', required => 1 );
 has repo         => ( is => 'ro', required => 1 );
 has desc         => ( is => 'ro', required => 1 );
+has describe     => ( is => 'rw' );
 has location     => ( is => 'ro', required => 1 );
 has rel_location => ( is => 'ro', required => 1 );
 has verify_files => ( is => 'ro', required => 1 );
@@ -36,6 +37,8 @@ sub BUILD
              $self->location(),
              $self->desc()||'')
   unless defined $config;
+
+ $self->describe($config);
 
  my $metadata = Util::hashref_search($config, 'metadata');
 

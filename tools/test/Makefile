@@ -34,10 +34,10 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: {search: [["name", "matches", "(Cloud|CFEngine)"]] } }' | $(CFAPI)
 	@echo ...search available matching cloud or cfengine via data alternation
 	echo '{ dc_api_version: "0.0.1", request: {search: [["name", "matches", "Cloud"], ["name", "matches", "CFEngine"]] } }' | $(CFAPI)
-	@echo ...get CFEngine::sketch_template API
-	echo '{ dc_api_version: "0.0.1", request: {api:"CFEngine::sketch_template"} }' | $(CFAPI)
-	@echo ...get Security::SSH API
-	echo '{ dc_api_version: "0.0.1", request: {api:"Security::SSH"} }' | $(CFAPI)
+	@echo ...get CFEngine::sketch_template data
+	echo '{ dc_api_version: "0.0.1", request: {describe:"CFEngine::sketch_template"} }' | $(CFAPI)
+	@echo ...get Security::SSH data
+	echo '{ dc_api_version: "0.0.1", request: {describe:"Security::SSH"} }' | $(CFAPI)
 	@echo ...invalid request to install CFEngine::sketch_template: missing destination
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
 	@echo ...invalid request to install CFEngine::sketch_template: bad version

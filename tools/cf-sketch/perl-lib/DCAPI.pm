@@ -244,7 +244,7 @@ sub list_int
  return \%ret;
 }
 
-sub sketch_api
+sub describe
 {
  my $self = shift;
  my $sketches_top = shift;
@@ -258,7 +258,7 @@ sub sketch_api
  {
   my %sketches = %$sketches_top;
   my $repo = $self->load_repo($location);
-  $ret{$repo->location()} = $repo->sketch_api(\%sketches);
+  $ret{$repo->location()} = $repo->describe(\%sketches);
  }
 
  return \%ret;

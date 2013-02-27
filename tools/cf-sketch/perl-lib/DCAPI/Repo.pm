@@ -130,7 +130,7 @@ sub find_sketch
  return;
 }
 
-sub sketch_api
+sub describe
 {
  my $self = shift;
  my $sketches = shift;
@@ -139,7 +139,7 @@ sub sketch_api
  {
   my $s = $self->find_sketch($sname);
   next unless defined $s;
-  push @{$sketches->{$s->name()}}, $s->api();
+  push @{$sketches->{$s->name()}}, $s->describe();
  }
 
  return $sketches;

@@ -70,7 +70,7 @@ my $version = Util::hashref_search($data, qw/dc_api_version/);
 my $request = Util::hashref_search($data, qw/request/);
 my $list = Util::hashref_search($request, qw/list/);
 my $search = Util::hashref_search($request, qw/search/);
-my $sketch_api = Util::hashref_search($request, qw/api/);
+my $describe = Util::hashref_search($request, qw/describe/);
 
 my $install = Util::hashref_search($request, qw/install/);
 my $uninstall = Util::hashref_search($request, qw/uninstall/);
@@ -94,7 +94,7 @@ if ($debug)
 
 unless (defined $version && $version eq $api->version())
 {
- $api->exit_error("DC API Version not provided or mismatch " . $api->version() . " vs. " . $version , @log);
+ $api->exit_error("Broken JSON, or DC API Version not provided or mismatch: " . $api->version() . " vs. " . $version , @log);
 }
 
 unless (defined $request)
@@ -110,9 +110,9 @@ elsif (defined $search)
 {
  $api->ok({ data => { search => [$api->search($search)] }});
 }
-elsif (defined $sketch_api)
+elsif (defined $describe)
 {
- $api->ok({ data => { api => $api->sketch_api($sketch_api) }});
+ $api->ok({ data => { describe => $api->describe($describe) }});
 }
 elsif (defined $install)
 {
