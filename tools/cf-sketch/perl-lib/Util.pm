@@ -342,4 +342,95 @@ sub dump_ref
  return Dumper(\@_);
 }
 
+sub recurse_print
+{
+    my $ref             = shift @_;
+    my $prefix          = shift @_;
+    my $unquote_scalars = shift @_;
+    my $simplify_arrays = shift @_;
+
+    my @print;
+
+    # recurse for hashes
+    if (ref $ref eq 'HASH')
+    {
+        if (exists $ref->{function} && exists $ref->{args})
+        {
+            push @print, {
+                path => $prefix,
+                type => 'string',
+                value => sprintf('%s(%s)',
+                                 $ref->{function},
+                                 join(', ', map { my @p = recurse_print($_); $p[0]->{value} } @{$ref->{args}}))
+            };
+        }
+        else
+        {
+            # warn Dumper [ $ref            ,
+            #              $prefix         ,
+            #              $unquote_scalars,
+            #              $simplify_arrays];
+            push @print, recurse_print($ref->{$_},
+                                       sprintf("%s%s",
+                                               ($prefix||''),
+                                               $simplify_arrays ? "_${_}" : "[$_]"),
+                                       $unquote_scalars,
+                                       0)
+                foreach sort keys %$ref;
+        }
+    }
+    elsif (ref $ref eq 'ARRAY')
+    {
+        my $joined;
+
+        if (scalar @$ref)
+        {
+            $joined = sprintf('{ %s }',
+                              join(", ",
+                                   map { s,\\,\\\\,g; s,",\\",g; "\"$_\"" } @$ref));
+        }
+        else
+        {
+            $joined = '{ "cf_null" }';
+        }
+
+        push @print, {
+            path => $prefix,
+            type => 'slist',
+            value => $joined
+        };
+    }
+    else
+    {
+        # convert to a 1/0 boolean
+        $ref = ! ! $ref if is_json_boolean($ref);
+        push @print, {
+            path => $prefix,
+            type => 'string',
+            value => $unquote_scalars ? $ref : "\"$ref\""
+        };
+    }
+
+    return @print;
+}
+
+sub make_var_lines
+{
+ my $name            = shift @_;
+ my $ref             = shift @_;
+ my $prefix          = shift @_;
+ my $unquote_scalars = shift @_;
+ my $simplify_arrays = shift @_;
+
+ my @ret;
+
+ foreach my $p (recurse_print($ref, $prefix, $unquote_scalars, $simplify_arrays))
+ {
+  push @ret, sprintf('"%s%s" %s => %s;',
+                     $name, $p->{path}, $p->{type}, $p->{value});
+ }
+
+ return @ret;
+}
+
 1;

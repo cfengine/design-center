@@ -648,8 +648,34 @@ sub regenerate
   $self->log("Regenerate: adding inputs %s", \@inputs);
  }
 
+ @inputs = Util::uniq(@inputs);
+ my $inputs = join "\n", Util::make_var_lines('inputs', \@inputs, '', 0, 0);
  # 2. make cfsketch_g bundle with data
  # 3. make cfsketch_run bundle with invocations
+
+warn <<EOHIPPUS;
+body common control
+{
+    bundlesequence => { "cfsketch_run" };
+    inputs => { @(cfsketch_g.inputs) };
+}
+
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for this to work.
+      $inputs
+}
+
+bundle agent cfsketch_run
+{
+  methods:
+      "cfsketch_g" usebundle => "cfsketch_g";
+    _001_Repository__apt__Maintain_activated::
+      "001 Repository::apt::Maintain 1" usebundle => cfdc_aptrepo:aptrepos($(cfsketch_g._001_Repository__apt__Maintain_class_prefix), "default:cfsketch_g._001_Repository__apt__Maintain_repos", $(cfsketch_g._001_Repository__apt__Maintain_apt_file), $(cfsketch_g._001_Repository__apt__Maintain_apt_dir));
+
+}
+EOHIPPUS
 
  return (1, @all_warnings);
 }
