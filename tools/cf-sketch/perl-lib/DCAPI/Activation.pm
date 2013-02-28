@@ -33,7 +33,7 @@ sub make_activation
   my $found;
   my @repos = grep
   {
-   defined $spec->{repo} ? $spec->{repo} eq $_->location() : 1
+   defined $spec->{target} ? $spec->{target} eq $_->location() : 1
   } map { $api->load_repo($_) } @{$api->repos()};
 
   foreach my $repo (@repos)

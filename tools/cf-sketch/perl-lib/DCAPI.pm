@@ -622,7 +622,7 @@ sub activate
  }
 
  # handle activation request in form
- # sketch: { environment:"run environment", repo:"/my/repo", params: [definition1, definition2, ... ] }
+ # sketch: { environment:"run environment", target:"/my/repo", params: [definition1, definition2, ... ] }
  foreach my $sketch (keys %$activate)
  {
   my $spec = $activate->{$sketch};
