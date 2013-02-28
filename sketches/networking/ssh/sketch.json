@@ -14,16 +14,17 @@
         license: "MIT",
         tags: [ "cfdc" ],
         authors: [ "Diego Zamboni <diego.zamboni@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 105 },
-                     cfengine: { version: "3.4.0" },
-                     os: [ "linux", "darwin" ]
-                   }
+        depends:
+        {
+            "CFEngine::stdlib": { version: 105 },
+            cfengine: { version: "3.4.0" },
+        }
     },
 
     api:
     {
         // the key is the name of the bundle!
-        sshd: [ { type: "runenv", name: "runenv", }, { type: "array", name: "params", }, ],
+        sshd: [ { type: "environment", name: "runenv", }, { type: "array", name: "params", }, ],
     },
 
     entry_point: "ssh.cf", // this is where we'll find all the bundles named in the API

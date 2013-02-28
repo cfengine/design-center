@@ -1,23 +1,27 @@
 {
 
-    "manifest":
+    manifest:
     {
-        "cfengine_stdlib.cf": { "desc": "COPBL" },
-        "README.md": { "documentation": true }
+        "cfengine_stdlib.cf": { desc: "COPBL" },
+        "README.md": { documentation: true }
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "CFEngine::stdlib",
-	"description": "CFEngine standard library (also known as COPBL)",
-        "version": 108,
-        "license": "LGPL",
-        "tags": [ "cfdc" ],
-        "authors": [ "CFEngine AS",
+        name: "CFEngine::stdlib",
+	description: "CFEngine standard library (also known as COPBL)",
+        version: 108,
+        license: "LGPL",
+        tags: [ "cfdc" ],
+        authors: [ "CFEngine AS",
 		     "ahdinosaur" ],
-        "depends": { "cfengine": { "version": "3.3.0" } }
+        depends: { cfengine: { version: "3.3.0" } }
     },
 
-    "entry_point": null,
-    "interface": [ "cfengine_stdlib.cf" ]
+    api:
+    {
+    },
+
+    entry_point: null,
+    interface: [ "cfengine_stdlib.cf" ]
 }

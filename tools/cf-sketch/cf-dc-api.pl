@@ -27,8 +27,8 @@ $| = 1;                         # autoflush
 my $base = basename($0);
 my @log;
 
-my $required_version = '3.4.3';
-my $api = DCAPI->new();
+my $required_version = '3.4.0';
+my $api = DCAPI->new(cfengine_min_version => $required_version);
 
 unless ($api->curl())
 {
@@ -40,9 +40,9 @@ unless ($api->cfagent())
  $api->exit_error("$base: could not locate `cf-agent' executable in $ENV{PATH} or /var/cfengine/bin");
 }
 
-unless (is_ok_cfengine_version($api->cfagent(), $required_version))
+unless ($api->is_ok_cfengine_version())
 {
- $api->exit_error("$base: the `cf-agent' executable version is older than $required_version, sorry");
+ $api->exit_error("$base: the `cf-agent' executable version is before $required_version, sorry");
 }
 
 my $config_file = shift @ARGV;
@@ -196,16 +196,3 @@ else
 }
 
 exit 0;
-
-sub is_ok_cfengine_version
-{
- my $bin = shift @_;
- my $req = shift @_;
- my $cfv = `$bin -V`;
- if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
- {
-  return $1 ge $req;
- }
-
- return 0;
-}

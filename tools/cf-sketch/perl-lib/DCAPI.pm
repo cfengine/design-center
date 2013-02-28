@@ -53,6 +53,8 @@ has environments => ( is => 'rw', default => sub { { default =>
                                                     } });
 
 has warnings => ( is => 'ro', default => sub { {} } );
+has cfengine_min_version => ( is => 'ro', required => 1 );
+has cfengine_version => ( is => 'rw' );
 
 has coder =>
  (
@@ -65,6 +67,17 @@ has canonical_coder =>
   is => 'ro',
   default => sub { CAN_CODER },
  );
+
+sub BUILD
+{
+ my $self = shift @_;
+ my $bin = $self->cfagent();
+ my $cfv = `$bin -V`;
+ if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
+ {
+  $self->cfengine_version($1);
+ }
+}
 
 sub set_config
 {
@@ -170,6 +183,16 @@ sub save_vardata
  return;
 }
 
+sub is_ok_cfengine_version
+{
+ my $self = shift @_;
+ my $req = shift @_ || $self->cfengine_min_version();
+
+ return 0 unless defined $req;
+
+ return $req le $self->cfengine_version();
+}
+
 sub all_repos
 {
  my $self = shift;
@@ -230,7 +253,9 @@ sub list_int
  my $self = shift;
  my $repos = shift;
  my $term_data = shift;
+ my $options = shift || {};
 
+ my @full_list;
  my %ret;
  foreach my $location (@$repos)
  {
@@ -240,9 +265,10 @@ sub list_int
   my $repo = $self->load_repo($location);
   my @list = map { $_->name() } $repo->list($term_data);
   $ret{$repo->location()} = [ @list ];
+  push @full_list, @list;
  }
 
- return \%ret;
+ return exists $options->{flatten} ? \@full_list : \%ret;
 }
 
 sub describe
@@ -272,9 +298,6 @@ sub install
 
  my %ret;
 
- # TODO: check dependencies
- # TODO: install library dependencies
-
  # we don't accept strings, the sketches to be installed must be in an array
 
  if (ref $install eq 'HASH')
@@ -294,7 +317,7 @@ sub install
  foreach my $installer (@$install)
  {
   my %d;
-  foreach my $varname (qw/sketch source dest/)
+  foreach my $varname (qw/sketch source target/)
   {
    my $v = Util::hashref_search($installer, $varname);
    unless (defined $v)
@@ -313,29 +336,28 @@ sub install
    $d{$varname} = $v;
   }
 
-  my $location = $d{dest};
+  my $location = $d{target};
   my $drepo;
   my $srepo;
 
   eval
   {
-   $drepo = $self->load_repo($d{dest});
+   $drepo = $self->load_repo($d{target});
    $srepo = $self->load_repo($d{source});
   };
 
   if ($@)
   {
-   push @{$self->warnings()->{defined $drepo ? $d{source} : $d{dest}}}, $@;
+   push @{$self->warnings()->{defined $drepo ? $d{source} : $d{target}}}, $@;
   }
 
   next INSTALLER unless defined $drepo;
   next INSTALLER unless defined $srepo;
 
-
   if ($drepo->find_sketch($d{sketch}))
   {
    push @{$self->warnings()->{$d{source}}},
-    "Sketch $d{sketch} is already in dest repo; you must uninstall it first";
+    "Sketch $d{sketch} is already in target repo; you must uninstall it first";
    next INSTALLER;
   }
 
@@ -348,9 +370,74 @@ sub install
    next INSTALLER;
   }
 
-  $self->log("Installing sketch $d{sketch} from $d{source} into $d{dest}");
+  # TODO: check dependencies
+  my %deps;
+  %deps = %{$sketch->depends()} if ref $sketch->depends() eq 'HASH';
 
-  $ret{$d{dest}} = $drepo->install($srepo, $sketch);
+  foreach my $dep (sort keys %deps)
+  {
+   $self->log2("Checking sketch $d{sketch} dependency %s", $dep);
+   if ($dep eq 'os')
+   {
+    $self->log2("Ignoring sketch $d{sketch} OS dependency %s", $dep);
+   }
+   elsif ($dep eq 'cfengine')
+   {
+    if (exists $deps{$dep}->{version})
+    {
+     my $v = $deps{$dep}->{version};
+     if ($self->is_ok_cfengine_version($v))
+     {
+      $self->log3("CFEngine version requirement of sketch $d{sketch} OK: %s", $v);
+     }
+     else
+     {
+      $self->log2("CFEngine version requirement of sketch $d{sketch} not OK: %s", $v);
+      return (undef, "CFEngine version below required $v for sketch $d{sketch}");
+     }
+    }
+   }
+   else # anything else is a sketch name...
+   {
+    my %install_request = ( sketch => $dep, target => $d{target} );
+    my @criteria = (["name", "equals", $dep]);
+    if (exists $deps{$dep}->{version})
+    {
+     push @criteria, ["version", ">=", $deps{$dep}->{version}];
+    }
+
+    my $list = $self->list(\@criteria, { flatten => 1 });
+    if (scalar @$list < 1)
+    {
+     # try to install the dependency
+     my $search = $self->search(\@criteria);
+     my $installed = 0;
+     foreach my $srepo (sort keys %$search)
+     {
+      $install_request{source} = $srepo;
+      $self->log("Trying to install dependency $dep for $d{sketch}: %s",
+                 \%install_request);
+      my ($install_result, @install_warnings) = $self->install([\%install_request]);
+      my $check = Util::hashref_search($install_result, $d{target}, $dep);
+      if ($check)
+      {
+       $installed = $install_result;
+      }
+      else
+      {
+       push @{$self->warnings()->{$srepo}}, @install_warnings;
+      }
+     }
+
+     return (undef, "Could not install dependency $dep")
+      unless $installed;
+    }
+   }
+  }
+
+  $self->log("Installing sketch $d{sketch} from $d{source} into $d{target}");
+
+  $ret{$d{target}} = $drepo->install($srepo, $sketch);
  }
 
  return (\%ret, $self->warnings());
@@ -535,7 +622,7 @@ sub activate
  }
 
  # handle activation request in form
- # sketch: { env:"run environment", repo:"/my/repo", params: [definition1, definition2, ... ] }
+ # sketch: { environment:"run environment", repo:"/my/repo", params: [definition1, definition2, ... ] }
  foreach my $sketch (keys %$activate)
  {
   my $spec = $activate->{$sketch};

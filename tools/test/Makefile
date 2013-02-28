@@ -28,6 +28,8 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: { } }' | $(CFAPI)
 	@echo ...list installed
 	echo '{ dc_api_version: "0.0.1", request: {list: true } }' | $(CFAPI)
+	@echo ...list installed matching Cloud or CFEngine
+	echo '{ dc_api_version: "0.0.1", request: {list: [["name", "matches", "(Cloud|CFEngine|Security)"]] } }' | $(CFAPI)
 	@echo ...search all available
 	echo '{ dc_api_version: "0.0.1", request: {search: true } }' | $(CFAPI)
 	@echo ...search available matching cloud or cfengine via regex
@@ -41,17 +43,21 @@ api:
 	@echo ...invalid request to install CFEngine::sketch_template: missing destination
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
 	@echo ...invalid request to install CFEngine::sketch_template: bad version
-	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", version: "-1", dest: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", version: "-1", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
 	@echo ...valid request to install CFEngine::sketch_template
-	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", dest: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
+	@echo ...valid request to reinstall CFEngine::sketch_template
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
 	@echo ...invalid request to uninstall CFEngine::sketch_template: missing target
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::sketch_template" } ] } }' | $(CFAPI)
 	@echo ...valid request to uninstall CFEngine::sketch_template
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::sketch_template", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 	@echo ...valid request to install Security::SSH
-	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Security::SSH", dest: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } } }' | $(CFAPI)
 	@echo ...valid request to uninstall Security::SSH
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
+	@echo ...valid request to uninstall CFEngine::stdlib
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 
 	@echo ...invalid define
 	echo '{ dc_api_version: "0.0.1", request: {define: [ "moo" ] } }' | $(CFAPI)
@@ -88,22 +94,22 @@ api:
 	@echo '--- a full test of configuring Security::SSH --'
 
 	@echo ...valid request to install Security::SSH
-	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Security::SSH", dest: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } } }' | $(CFAPI)
 	@echo ...define Security::SSH run environment
 	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "DAYTIME": { activated: "!(Evening|Night)", test: true, verbose: true } } } }' | $(CFAPI)
 	@echo ...define Security::SSH parameters
 	echo '{ dc_api_version: "0.0.1", request: {define: { "simple_ssh": { "Security::SSH": { params: { Protocol : "2", X11Forwarding : "yes", PermitRootLogin : "yes" } } } } } }' | $(CFAPI)
 	@echo ...fail to activate Security::SSH with invalid run environments and simple_ssh parameters
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: null, params: ["simple_ssh" ] } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: "bad environment", params: ["simple_ssh" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: null, params: ["simple_ssh" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "bad environment", params: ["simple_ssh" ] } } } }' | $(CFAPI)
 	@echo ...fail to activate Security::SSH with valid run environments and invalid parameters
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: "DAYTIME", params: "bad params" } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: "DAYTIME", params: [ ] } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { env: "DAYTIME", params: [ "undefined params" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "DAYTIME", params: "bad params" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "DAYTIME", params: [ ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "DAYTIME", params: [ "undefined params" ] } } } }' | $(CFAPI)
 	@echo ...activate Security::SSH with DAYTIME run environment and simple_ssh parameters
 	@echo ...we could specify the bundle we want here with the bundle key
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { bundle: "nosuchbundle", repo: "/home/tzz/.cfagent/inputs/sketches", env: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { repo: "/home/tzz/.cfagent/inputs/sketches", env: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { bundle: "nosuchbundle", repo: "/home/tzz/.cfagent/inputs/sketches", environment: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { repo: "/home/tzz/.cfagent/inputs/sketches", environment: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
 
 	@echo ...generate the runfile
 	echo '{ dc_api_version: "0.0.1", request: {regenerate: true } }' | $(CFAPI)
@@ -117,6 +123,8 @@ api:
 
 	@echo ...valid request to uninstall Security::SSH
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
+	@echo ...valid request to uninstall CFEngine::stdlib
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 
 cloud_services:
 	$(CFSKETCH_DA) --install Cloud::Services --activate Cloud::Services=$(SOURCEDIR)/cloud/cloud_services/params/demo.json

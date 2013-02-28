@@ -26,26 +26,52 @@ sub matches
  my $terms = $self->terms();
 
  $self->api()->log5('Matching terms %s against %s', $terms, $data);
+
+ my $ok = [];
+
  if (ref $terms eq 'ARRAY')
  {
   foreach my $q (@$terms)
   {
    next unless ref $q eq 'ARRAY';
 
-   my $ok = 0;
    eval
    {
     my ($k, $check, $v) = @$q;
     $k = [$k] unless ref $k eq 'ARRAY';
 
-    if ($check eq 'matches')
+    if ($check eq 'matches' || $check eq 'equals')
     {
      my $datum = Util::hashref_search($data, @$k);
      $self->api()->log4('Term %s checking against %s', $q, $datum);
      if ((!defined $datum && !defined $v) ||
-         (defined $datum && defined $v && $datum =~ m/$v/i))
+         ($check eq 'matches' && defined $datum && defined $v && $datum =~ m/$v/i) ||
+         ($check eq 'equals' && defined $datum && defined $v && $datum eq $v))
      {
-      $ok = [$k, $v];
+      push @$ok, [$k, $v] if $ok;
+     }
+     else
+     {
+      undef $ok;
+     }
+    }
+    elsif ($check =~ m/[<>]=?/) # < > <= >=
+    {
+     my $datum = Util::hashref_search($data, @$k);
+     $self->api()->log4('Term %s comparing against %s', $q, $datum);
+     if (defined $datum && defined $v)
+     {
+      if (($check eq '>' && $datum gt $v) ||
+          ($check eq '>=' && $datum ge $v) ||
+          ($check eq '<' && $datum lt $v) ||
+          ($check eq '<=' && $datum le $v))
+      {
+       push @$ok, [$k, $v] if $ok;
+      }
+      else
+      {
+       undef $ok;
+      }
      }
     }
     else
@@ -53,13 +79,14 @@ sub matches
      $self->api()->log('Invalid term check %s, failing', $check);
     }
    };
-   return $ok if $ok;
   }
+
+  return $ok if $ok;
  }
  else
  {
   $self->api()->log5('Terms %s always match', $terms);
-  return $terms;
+  $ok = $terms;
  }
 
  return; # no match

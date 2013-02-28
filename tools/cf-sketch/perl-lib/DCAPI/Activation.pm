@@ -8,7 +8,7 @@ use Mo qw/default build builder is required option/;
 has api => ( is => 'ro', required => 1 );
 
 has sketch => ( is => 'ro', required => 1 );
-has runenv => ( is => 'ro', required => 1 );
+has environment => ( is => 'ro', required => 1 );
 has bundle => ( is => 'ro', required => 1 );
 has params => ( is => 'ro', required => 1 );
 
@@ -23,7 +23,7 @@ sub make_activation
    return (undef, "Invalid activate spec under $sketch");
   }
 
-  my $env = $spec->{env} || '--environment not given (NULL)--';
+  my $env = $spec->{environment} || '--environment not given (NULL)--';
 
   unless (exists $api->environments()->{$env})
   {
@@ -99,7 +99,7 @@ sub make_activation
    my $filled = fill_param($api,
                            $p->{name}, $p->{type}, \%params,
                            {
-                            runenv => $api->environments()->{$env}
+                            environment => $api->environments()->{$env}
                            });
    unless ($filled)
    {
@@ -123,7 +123,7 @@ sub make_activation
 
  return DCAPI::Activation->new(api => $api,
                                sketch => $found,
-                               runenv => $env,
+                               environment => $env,
                                bundle => $bundle,
                                params => \@params);
 }
@@ -136,9 +136,9 @@ sub fill_param
  my $params = shift;
  my $extra  = shift;
 
- if ($type eq 'runenv')
+ if ($type eq 'environment')
  {
-  return {set=>undef, type => $type, name => $name, value => $extra->{runenv}};
+  return {set=>undef, type => $type, name => $name, value => $extra->{environment}};
  }
 
  foreach my $pkey (sort keys %$params)
