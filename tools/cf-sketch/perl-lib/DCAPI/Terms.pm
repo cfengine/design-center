@@ -86,7 +86,7 @@ sub matches
  else
  {
   $self->api()->log5('Terms %s always match', $terms);
-  $ok = $terms;
+  return $terms;
  }
 
  return; # no match

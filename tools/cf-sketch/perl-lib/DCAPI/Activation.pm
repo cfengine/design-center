@@ -166,4 +166,16 @@ sub fill_param
  return;
 }
 
+sub data_dump
+{
+ my $self = shift @_;
+
+  return {
+          sketch => $self->sketch()->data_dump(),
+          environment => $self->environment(),
+          bundle => $self->bundle(),
+          params => $self->params(),
+         };
+}
+
 1;

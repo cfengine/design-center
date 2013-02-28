@@ -63,6 +63,7 @@
         ],
     },
 
+    namespace: "cfdc_sketch_template",
     entry_point: "main.cf", // this is where we'll find all the bundles named in the API
     interface: [ "main.cf" ],
 }

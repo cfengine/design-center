@@ -276,6 +276,7 @@ sub describe
  my $self = shift;
  my $sketches_top = shift;
  my $sources = shift;
+ my $firstfound = shift;
 
  $sketches_top = { $sketches_top => undef } unless ref $sketches_top eq 'HASH';
 
@@ -285,7 +286,9 @@ sub describe
  {
   my %sketches = %$sketches_top;
   my $repo = $self->load_repo($location);
-  $ret{$repo->location()} = $repo->describe(\%sketches);
+  my $found = $repo->describe(\%sketches, $firstfound);
+  return $found if ($found && $firstfound);
+  $ret{$repo->location()} = $found;
  }
 
  return \%ret;
@@ -370,70 +373,12 @@ sub install
    next INSTALLER;
   }
 
-  # TODO: check dependencies
-  my %deps;
-  %deps = %{$sketch->depends()} if ref $sketch->depends() eq 'HASH';
+  my ($depcheck, @dep_warnings) = $sketch->resolve_dependencies(install => 1,
+                                                                source => $d{source},
+                                                                target => $d{target});
 
-  foreach my $dep (sort keys %deps)
-  {
-   $self->log2("Checking sketch $d{sketch} dependency %s", $dep);
-   if ($dep eq 'os')
-   {
-    $self->log2("Ignoring sketch $d{sketch} OS dependency %s", $dep);
-   }
-   elsif ($dep eq 'cfengine')
-   {
-    if (exists $deps{$dep}->{version})
-    {
-     my $v = $deps{$dep}->{version};
-     if ($self->is_ok_cfengine_version($v))
-     {
-      $self->log3("CFEngine version requirement of sketch $d{sketch} OK: %s", $v);
-     }
-     else
-     {
-      $self->log2("CFEngine version requirement of sketch $d{sketch} not OK: %s", $v);
-      return (undef, "CFEngine version below required $v for sketch $d{sketch}");
-     }
-    }
-   }
-   else # anything else is a sketch name...
-   {
-    my %install_request = ( sketch => $dep, target => $d{target} );
-    my @criteria = (["name", "equals", $dep]);
-    if (exists $deps{$dep}->{version})
-    {
-     push @criteria, ["version", ">=", $deps{$dep}->{version}];
-    }
-
-    my $list = $self->list(\@criteria, { flatten => 1 });
-    if (scalar @$list < 1)
-    {
-     # try to install the dependency
-     my $search = $self->search(\@criteria);
-     my $installed = 0;
-     foreach my $srepo (sort keys %$search)
-     {
-      $install_request{source} = $srepo;
-      $self->log("Trying to install dependency $dep for $d{sketch}: %s",
-                 \%install_request);
-      my ($install_result, @install_warnings) = $self->install([\%install_request]);
-      my $check = Util::hashref_search($install_result, $d{target}, $dep);
-      if ($check)
-      {
-       $installed = $install_result;
-      }
-      else
-      {
-       push @{$self->warnings()->{$srepo}}, @install_warnings;
-      }
-     }
-
-     return (undef, "Could not install dependency $dep")
-      unless $installed;
-    }
-   }
-  }
+  return ($depcheck, @dep_warnings)
+   unless $depcheck;
 
   $self->log("Installing sketch $d{sketch} from $d{source} into $d{target}");
 
@@ -663,35 +608,48 @@ sub regenerate
  my $self = shift;
  my $regenerate = shift;
 
+ my $relocate = Util::hashref_search($regenerate, 'relocate_path');
+
  my @all_warnings;
 
- if (Util::is_json_boolean($regenerate) && $regenerate)
+ my @activations;                # these are DCAPI::Activation objects
+ my $acts = $self->activations();       # these are data structures
+ foreach my $sketch (keys %$acts)
  {
-  my $acts = $self->activations();
-  foreach my $sketch (keys %$acts)
+  foreach my $spec (@{$acts->{$sketch}})
   {
-   foreach my $spec (@{$acts->{$sketch}})
+   # this is how the data structure is turned into a DCAPI::Activation object
+   my ($activation, @warnings) = DCAPI::Activation::make_activation($self, $sketch, $spec);
+
+   if (scalar @warnings)
    {
-    my ($activation, @warnings) = DCAPI::Activation::make_activation($self, $sketch, $spec);
+    push @all_warnings, @warnings;
+    $self->log("Regenerate: verification warnings [@warnings]");
+   }
 
-    if (scalar @warnings)
-    {
-     push @all_warnings, @warnings;
-     $self->log("Regenerate: verification warnings [@warnings]");
-    }
-
-    if ($activation)
-    {
-     my $sketch_obj = $activation->sketch();
-     $self->log("Regenerate: adding activation of %s; spec %s", $sketch, $spec);
-    }
-    else
-    {
-     return ($activation, @warnings);
-    }
+   if ($activation)
+   {
+    my $sketch_obj = $activation->sketch();
+    $self->log("Regenerate: adding activation of %s; spec %s", $sketch, $spec);
+    push @activations, $activation;
+   }
+   else
+   {
+    return ($activation, @warnings);
    }
   }
  }
+
+ my @inputs;
+ # 1. determine includes from sketches, their dependencies, and namespaces
+ foreach $a (@activations)
+ {
+  push @inputs, $a->sketch()->get_inputs($relocate, 5);
+  $self->log("Regenerate: adding inputs %s", \@inputs);
+ }
+
+ # 2. make cfsketch_g bundle with data
+ # 3. make cfsketch_run bundle with invocations
 
  return (1, @all_warnings);
 }

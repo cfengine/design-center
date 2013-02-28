@@ -111,9 +111,13 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { bundle: "nosuchbundle", target: "/home/tzz/.cfagent/inputs/sketches", environment: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
 
-	@echo ...generate the runfile
-	echo '{ dc_api_version: "0.0.1", request: {regenerate: true } }' | $(CFAPI)
-
+	@echo ...list installed
+	echo '{ dc_api_version: "0.0.1", request: {list: true } }' | $(CFAPI)
+	@echo ...generate the runfile with relative paths
+	echo '{ dc_api_version: "0.0.1", request: {regenerate: { relocate_path: "sketches" } } }' | $(CFAPI)
+	@echo ...generate the runfile with absolute paths
+	echo '{ dc_api_version: "0.0.1", request: {regenerate: { relocate_path: null } } }' | $(CFAPI)
+	qqqq
 	@echo ...deactivate first activation of Security::SSH
 	echo '{ dc_api_version: "0.0.1", request: {deactivate: { sketch: "Security::SSH", position: 0 } } }' | $(CFAPI)
 	@echo ...deactivate all activations of Security::SSH

@@ -134,11 +134,13 @@ sub describe
 {
  my $self = shift;
  my $sketches = shift;
+ my $firstfound = shift;
 
  foreach my $sname (keys %$sketches)
  {
   my $s = $self->find_sketch($sname);
   next unless defined $s;
+  return $s if $firstfound;
   push @{$sketches->{$s->name()}}, $s->describe();
  }
 
