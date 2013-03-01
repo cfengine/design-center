@@ -29,11 +29,8 @@
 
             { type: "boolean", name: "myboolean", default: "1" }, //  true is OK too
             { type: "string", name: "mytype", default: "fallback" },
-            //  the IPv4 validator is also a regex, but you don't have to write it out
             { type: "string", name: "myip", },
-
             { type: "list", name: "mylist", },
-
             { type: "array", name: "myarray", },
         ],
     },

@@ -172,7 +172,7 @@ sub fill_param
         }
         elsif ($type eq 'boolean' && exists $pval->{$name} && Util::is_scalar($pval->{$name}))
         {
-            return {set=>$pkey, type => $type, name => $name, value => !!$pval->{$name}};
+            return {set=>$pkey, type => $type, name => $name, value => 0+!!$pval->{$name}};
         }
         elsif ($type eq 'list' && exists $pval->{$name} && ref $pval->{$name} eq 'ARRAY')
         {
