@@ -42,6 +42,7 @@ has cfagent => (
 has repos => ( is => 'ro', default => sub { [] } );
 has recognized_sources => ( is => 'ro', default => sub { [] } );
 has vardata => ( is => 'rw');
+has runfile => ( is => 'ro', default => sub { {} } );
 has definitions => ( is => 'rw', default => sub { {} });
 has activations => ( is => 'rw', default => sub { {} });
 has environments => ( is => 'rw', default => sub { { default =>
@@ -85,6 +86,21 @@ sub set_config
  my $file = shift @_;
 
  $self->config($self->load($file));
+
+ my $runfile = Util::hashref_search($self->config(), qw/runfile/);
+
+ if (ref $runfile ne 'HASH')
+ {
+  push @{$self->warnings()->{runfile}}, "runfile is not a hash";
+ }
+ else
+ {
+  %{$self->runfile()} = %$runfile;
+  push @{$self->warnings()->{runfile}}, "runfile has no location"
+   unless exists $self->runfile()->{location};
+  push @{$self->warnings()->{runfile}}, "runfile has no standalone boolean"
+   unless exists $self->runfile()->{standalone};
+ }
 
  my @sources = @{(Util::hashref_search($self->config(), qw/recognized_sources/) || [])};
  $self->log5("Adding recognized source $_") foreach @sources;
@@ -174,13 +190,30 @@ sub save_vardata
  my $vardata_file = $self->vardata();
 
  $self->log("Saving vardata file $vardata_file");
- open my $vfh, '>', $vardata_file
+ open my $fh, '>', $vardata_file
   or return "Vardata file $vardata_file could not be created: $!";
 
- print $vfh $self->cencode($data);
- close $vfh;
+ print $fh $self->cencode($data);
+ close $fh;
 
- return;
+ return 1;
+}
+
+sub save_runfile
+{
+ my $self = shift @_;
+ my $data = shift @_;
+
+ my $runfile = glob($self->runfile()->{location});
+
+ $self->log("Saving runfile $runfile");
+ open my $fh, '>', $runfile
+  or return "Run file $runfile could not be created: $!";
+
+ print $fh $data;
+ close $fh;
+
+ return 1;
 }
 
 sub is_ok_cfengine_version
@@ -233,6 +266,11 @@ sub data_dump
   warnings => $self->warnings(),
   repolist => $self->repos(),
   recognized_sources => $self->recognized_sources(),
+  vardata => $self->vardata(),
+  runfile => $self->runfile(),
+  definitions => $self->definitions(),
+  activations => $self->activations(),
+  environments => $self->environments(),
  };
 }
 
@@ -671,16 +709,18 @@ sub regenerate
     $self->log("Regenerate: adding environment %s", $p);
     $environments{$p->{value}}++;
    }
-   else
+   # we can't inline some types, so print them explicitly in the data bundle
+   elsif (!$a->can_inline($p->{type}))
    {
-    $self->log("Regenerate: adding data %s", $p);
+    $self->log("Regenerate: adding explicit data %s", $p);
     my $line = join("\n",
-                    sprintf("%s# %s '%s' from definition %s",
+                    sprintf("%s# %s '%s' from definition %s, activation %s",
                             $indent,
                             $p->{type},
                             $p->{name},
-                            $p->{set}),
-                    map { "$indent$_" } Util::make_var_lines($p->{name},
+                            $p->{set},
+                            $a->id()),
+                    map { "$indent$_" } Util::make_var_lines($a->id() . '_' . $p->{name},
                                                              $p->{value},
                                                              '',
                                                              0,
@@ -696,6 +736,9 @@ sub regenerate
  my @environment_lines = ("# environment common bundles\n");
  foreach my $e (keys %environments)
  {
+  my $print_e = $e;
+  $print_e =~ s/\W/_/g;
+
   my @var_data;
   my @class_data;
   my $edata = $self->environments()->{$e};
@@ -731,7 +774,7 @@ sub regenerate
 
     push @class_data, sprintf('%s"%s_%s" expression => "%s";',
                               $indent,
-                              $e,
+                              $print_e,
                               $print_v,
                               $d_expression);
    }
@@ -739,14 +782,14 @@ sub regenerate
 
   push @environment_lines,
    sprintf("# environment %s\nbundle common %s\n{\n%s\n}\n",
-           $e, $e, join("\n",
-                        "${type_indent}vars:",
-                        @var_data,
-                        # don't insert classes: line if there's no classes
-                        (scalar @class_data ? "${type_indent}classes:" : ''),
-                        @class_data));
+           $e, $print_e, join("\n",
+                              "${type_indent}vars:",
+                              @var_data,
+                              # don't insert classes: line if there's no classes
+                              (scalar @class_data ? "${type_indent}classes:" : ''),
+                              @class_data));
 
-  $environment_calls .= "$indent\"$e\" usebundle => \"$e\";\n";
+  $environment_calls .= "$indent\"$e\" usebundle => \"$print_e\";\n";
  }
 
  my $environment_lines = join "\n", @environment_lines;
@@ -762,22 +805,29 @@ sub regenerate
                                   $a->environment(),
                                   'activated');
 
-  push @invocation_lines, sprintf('%s"%s" usebundle => %s:%s(%s)',
+  my $namespace = $a->sketch()->namespace();
+  my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
+
+  push @invocation_lines, sprintf('%s"%s" usebundle => %s%s(%s);',
                                   $indent,
                                   $a->id(),
-                                  $a->sketch()->namespace(),
+                                  $namespace_prefix,
                                   $a->bundle(),
                                   $a->make_bundle_params());
  }
 
- my $invocation_lines = join "\n", @invocation_lines;
-
-warn <<EOHIPPUS;
+ my $standalone_lines = <<EOHIPPUS;
 body common control
 {
     bundlesequence => { "cfsketch_run" };
     inputs => { @(cfsketch_g.inputs) };
 }
+EOHIPPUS
+
+ my $invocation_lines = join "\n", @invocation_lines;
+
+ my $runfile_data = <<EOHIPPUS;
+$standalone_lines
 
 $environment_lines
 
@@ -802,7 +852,10 @@ $invocation_lines
 }
 EOHIPPUS
 
- return (1, @all_warnings);
+ my $save_result = $self->save_runfile($runfile_data);
+ push @all_warnings, $save_result unless $save_result;
+
+ return (! ! $save_result, @all_warnings);
 }
 
 sub deactivate

@@ -1,1 +1,8 @@
-{ "log": "STDERR", "log_level": 4, "repolist": [ "~/.cfagent/inputs/sketches" ], "recognized_sources": [ "~/source/design-center/sketches" ], "vardata": "~/.cfagent/vardata.conf" }
+{
+ log: "STDERR",
+ log_level: 4,
+ repolist: [ "~/.cfagent/inputs/sketches" ],
+ recognized_sources: [ "~/source/design-center/sketches" ],
+ runfile: { location: "~/.cfagent/inputs/api-runfile.cf", standalone: true },
+ vardata: "~/.cfagent/vardata.conf",
+}

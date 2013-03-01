@@ -177,12 +177,39 @@ sub fill_param
  return;
 }
 
+sub can_inline
+{
+ my $self = shift @_;
+ my $type = shift @_;
+
+ return ($type ne 'list' && $type ne 'array');
+}
+
 sub make_bundle_params
 {
  my $self = shift @_;
 
- # $(cfsketch_g._001_Repository__apt__Maintain_class_prefix), "default:cfsketch_g._001_Repository__apt__Maintain_repos", $(cfsketch_g._001_Repository__apt__Maintain_apt_file), $(cfsketch_g._001_Repository__apt__Maintain_apt_dir)
- return 'TODO: make bundle params';
+ my @data;
+ foreach my $p (@{$self->params()})
+ {
+  if ($self->can_inline($p->{type}))
+  {
+   foreach my $pr (Util::recurse_print($p->{value}, '', 0, 0))
+   {
+    push @data, $pr->{value};
+   }
+  }
+  elsif ($p->{type} eq 'array')
+  {
+   push @data, sprintf('"default:cfsketch_g.%s_%s"', $self->id(), $p->{name});
+  }
+  elsif ($p->{type} eq 'list')
+  {
+   push @data, sprintf('@(cfsketch_g.%s_%s)', $self->id(), $p->{name});
+  }
+ }
+
+ return join(', ', @data);;
 }
 
 sub data_dump
