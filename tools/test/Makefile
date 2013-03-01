@@ -20,6 +20,13 @@ RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE) -Dverbose -Ddebug -Dtest
 api:
 	@echo '--- a full test of configuring Security::SSH --'
 
+	@echo ...deactivate all activations
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+	@echo ...valid request to uninstall Security::SSH
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
+	@echo ...valid request to uninstall CFEngine::stdlib
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
+
 	@echo ...valid request to install Security::SSH
 	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } } }' | $(CFAPI)
 	@echo ...define Security::SSH run environment

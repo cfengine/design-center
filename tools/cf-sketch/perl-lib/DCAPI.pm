@@ -685,6 +685,9 @@ sub regenerate
             $edata->{activated} = 1;
         }
 
+        my @ekeys = sort keys %$edata;
+        $edata->{env_vars} = \@ekeys;
+        $edata->{env_vars_str} = join ' ', @ekeys;
         foreach my $v (sort keys %$edata) {
             my $print_v = $v;
             $print_v =~ s/\W/_/g;
@@ -703,7 +706,9 @@ sub regenerate
                     $d_expression = 'any';
                 }
 
-                push @class_data, sprintf('%s"%s_%s" expression => "%s";',
+                $d_expression =~ s/[^a-zA-Z0-9_!&@@$|.()\[\]{}:]/_/g;
+
+                push @class_data, sprintf('%s"runenv_%s_%s" expression => "%s";',
                                           $indent,
                                           $print_e,
                                           $print_v,
@@ -730,7 +735,7 @@ sub regenerate
     foreach my $a (@activations) {
         $self->log("Regenerate: generating activation call %s", $a->id());
 
-        push @invocation_lines, sprintf('%s%s_%s::',
+        push @invocation_lines, sprintf('%srunenv_%s_%s::',
                                         $context_indent,
                                         $a->environment(),
                                         'activated');

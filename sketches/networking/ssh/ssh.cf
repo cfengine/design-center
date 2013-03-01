@@ -61,11 +61,32 @@ body file control
         namespace => "cfdc_sshd";
 }
 
+bundle common runenv(runenv)
+{
+  vars:
+      "vars" slist => splitstring("$(default:$(runenv).env_vars_str)", " ", 999); # unpack the list of runenv scalars
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+  reports:
+    verbose::
+      "Imported var $(vars) with value $($(vars))";
+}
+
 bundle agent sshd(runenv, params)
 {
   methods:
+      "runenv" usebundle => cfdc_sshd:runenv($(runenv));
       "vars" usebundle => cfdc_sshd:vars("$(params)");
       "sshd_cfg"  usebundle => cfdc_sshd:set_cfg("cfdc_sshd:vars.conf");
+
+  reports:
+    verbose::
+      "$(this.bundle) running in verbose mode";
+    test::
+      "$(this.bundle) running in test mode";
 }
 
 bundle agent sshd_config(params)
@@ -83,7 +104,7 @@ bundle agent sshd_config(params)
 bundle agent vars(params)
 {
   classes:
-      default:test::
+    test::
       "SSH_TEST_MODE" expression => "any";
 
   vars:
