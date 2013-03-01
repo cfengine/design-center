@@ -824,6 +824,8 @@ body common control
 }
 EOHIPPUS
 
+ $standalone_lines = '' unless $self->runfile()->{standalone};
+
  my $invocation_lines = join "\n", @invocation_lines;
 
  my $runfile_data = <<EOHIPPUS;
