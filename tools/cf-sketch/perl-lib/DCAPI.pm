@@ -97,6 +97,8 @@ sub set_config
          unless exists $self->runfile()->{location};
         push @{$self->warnings()->{runfile}}, "runfile has no standalone boolean"
          unless exists $self->runfile()->{standalone};
+        push @{$self->warnings()->{runfile}}, "runfile has no relocate_path parameter"
+         unless exists $self->runfile()->{relocate_path};
     }
 
     my @sources = @{(Util::hashref_search($self->config(), qw/recognized_sources/) || [])};
@@ -593,7 +595,7 @@ sub regenerate
     my $self = shift;
     my $regenerate = shift;
 
-    my $relocate = Util::hashref_search($regenerate, 'relocate_path');
+    my $relocate = $self->runfile()->{relocate_path};
 
     my @all_warnings;
 
