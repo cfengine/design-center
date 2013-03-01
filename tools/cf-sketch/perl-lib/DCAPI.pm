@@ -706,7 +706,7 @@ sub regenerate
                     $d_expression = 'any';
                 }
 
-                $d_expression =~ s/[^a-zA-Z0-9_!&@@$|.()\[\]{}:]/_/g;
+                $d_expression =~ s/[^a-zA-Z0-9_!&\@\$|.()\[\]{}:]/_/g;
 
                 push @class_data, sprintf('%s"runenv_%s_%s" expression => "%s";',
                                           $indent,

@@ -3,8 +3,26 @@ body file control
   namespace => "cfdc_sketch_template";
 }
 
-bundle agent entry(prefix, bundle_home, myboolean, mytype, myip, myarray)
+bundle common runenv(runenv)
 {
+  vars:
+      "vars" slist => splitstring("$(default:$(runenv).env_vars_str)", " ", 999); # unpack the list of runenv scalars
+      # "vars" slist => { "@(default:$(runenv).env_vars)" }; # we'll use this when we depend on 3.5.x because of a 3.4.x bug with slist iteration between bundles
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+  reports:
+    verbose::
+      "Imported var $(vars) with value $($(vars))";
+}
+
+bundle agent entry(runenv, myboolean, mytype, myip, mylist, myarray)
+{
+  methods:
+      "runenv" usebundle => cfdc_sketch_template:runenv($(runenv));
+
   classes:
       # note that demo.json uses bycontext to set mytype to "alpha"
       # when context A is defined, so context A indirectly triggers

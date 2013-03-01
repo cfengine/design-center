@@ -22,6 +22,8 @@ api:
 
 	@echo ...deactivate all activations
 	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+	@echo ...valid request to uninstall CFEngine::sketch_template
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::sketch_template", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 	@echo ...valid request to uninstall Security::SSH
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 	@echo ...valid request to uninstall CFEngine::stdlib
@@ -44,6 +46,15 @@ api:
 	@echo ...we could specify the bundle we want here with the bundle key
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { bundle: "nosuchbundle", target: "/home/tzz/.cfagent/inputs/sketches", environment: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+
+	@echo ...valid request to install CFEngine::sketch_template
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
+	@echo ...define CFEngine::sketch_template simple_sketch parameters
+	echo '{ dc_api_version: "0.0.1", request: {define: { "simple_sketch": { "CFEngine::sketch_template": { myboolean: true, myip: "10.0.1.0", mylist: [ 1, 2, 3 ], myarray: { a: 1, b: 3, c: 3 } } } } } }' | $(CFAPI)
+	@echo ...define CFEngine::sketch_template 'testing' run environment
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: true, test: true, verbose: true } } } }' | $(CFAPI)
+	@echo ...activate CFEngine::sketch_template with testing run environment and simple_sketch parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "simple_sketch" ] } } } }' | $(CFAPI)
 
 	@echo ...list installed
 	echo '{ dc_api_version: "0.0.1", request: {list: true } }' | $(CFAPI)

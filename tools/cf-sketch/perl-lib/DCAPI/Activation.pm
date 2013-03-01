@@ -101,7 +101,9 @@ sub make_activation
             my $filled = fill_param($api,
                                     $p->{name}, $p->{type}, \%params,
                                     {
-                                     environment => $env
+                                     environment => $env,
+                                     # insert a 'default' key only if it exists
+                                     (exists $p->{default} ? (default => $p->{default}) : ()),
                                     });
             unless ($filled)
             {
@@ -154,18 +156,23 @@ sub fill_param
     foreach my $pkey (sort keys %$params)
     {
         my $pval = $params->{$pkey};
+        if (!exists $pval->{$name} && exists $extra->{default})
+        {
+            $pval->{$name} = $extra->{default};
+        }
+
         # TODO: add more parameter types and validate the value!!!
         if ($type eq 'array' && exists $pval->{$name} && ref $pval->{$name} eq 'HASH')
         {
             return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
         }
-        elsif ($type eq 'string' && exists $pval->{$name} && ref $pval->{$name} eq '')
+        elsif ($type eq 'string' && exists $pval->{$name} && Util::is_scalar($pval->{$name}))
         {
             return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
         }
-        elsif ($type eq 'boolean' && exists $pval->{$name} && ref $pval->{$name} eq '')
+        elsif ($type eq 'boolean' && exists $pval->{$name} && Util::is_scalar($pval->{$name}))
         {
-            return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+            return {set=>$pkey, type => $type, name => $name, value => !!$pval->{$name}};
         }
         elsif ($type eq 'list' && exists $pval->{$name} && ref $pval->{$name} eq 'ARRAY')
         {

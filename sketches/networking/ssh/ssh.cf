@@ -65,6 +65,7 @@ bundle common runenv(runenv)
 {
   vars:
       "vars" slist => splitstring("$(default:$(runenv).env_vars_str)", " ", 999); # unpack the list of runenv scalars
+      # "vars" slist => { "@(default:$(runenv).env_vars)" }; # we'll use this when we depend on 3.5.x because of a 3.4.x bug with slist iteration between bundles
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
   classes:

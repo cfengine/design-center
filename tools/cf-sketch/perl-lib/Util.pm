@@ -331,6 +331,16 @@ sub hashref_search
  return undef;
 }
 
+sub is_scalar
+{
+ return is_scalar_1(@_) || is_json_boolean(@_);
+}
+
+sub is_scalar_1
+{
+ return ((ref shift) eq '');
+}
+
 sub is_json_boolean
 {
  return ((ref shift) =~ m/JSON.*Boolean/);
