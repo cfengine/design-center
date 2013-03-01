@@ -640,9 +640,9 @@ sub regenerate
   }
  }
 
- my @inputs;
  # 1. determine includes from sketches, their dependencies, and namespaces
- foreach $a (@activations)
+ my @inputs;
+ foreach my $a (@activations)
  {
   push @inputs, $a->sketch()->get_inputs($relocate, 5);
   $self->log("Regenerate: adding inputs %s", \@inputs);
@@ -650,8 +650,127 @@ sub regenerate
 
  @inputs = Util::uniq(@inputs);
  my $inputs = join "\n", Util::make_var_lines('inputs', \@inputs, '', 0, 0);
- # 2. make cfsketch_g bundle with data
+
+ my $type_indent = ' ' x 2;
+ my $context_indent = ' ' x 4;
+ my $indent = ' ' x 6;
+
+ # 2. make cfsketch_g and environment bundles with data
+ my @data;
+ my %environments;
+ my $position = 1;
+
+ foreach my $a (@activations)
+ {
+  $self->log("Regenerate: generating activation %s", $a->id());
+
+  foreach my $p (@{$a->params()})
+  {
+   if ($p->{type} eq 'environment')
+   {
+    $self->log("Regenerate: adding environment %s", $p);
+    $environments{$p->{value}}++;
+   }
+   else
+   {
+    $self->log("Regenerate: adding data %s", $p);
+    my $line = join("\n",
+                    sprintf("%s# %s '%s' from definition %s",
+                            $indent,
+                            $p->{type},
+                            $p->{name},
+                            $p->{set}),
+                    map { "$indent$_" } Util::make_var_lines($p->{name},
+                                                             $p->{value},
+                                                             '',
+                                                             0,
+                                                             0));
+    push @data, $line;
+   }
+  }
+ }
+
+ my $data_lines = join "\n\n", @data;
+
+ my $environment_calls = '';
+ my @environment_lines = ("# environment common bundles\n");
+ foreach my $e (keys %environments)
+ {
+  my @var_data;
+  my @class_data;
+  my $edata = $self->environments()->{$e};
+
+  # ensure there's an "activated" class
+  unless (exists $edata->{activated})
+  {
+   $edata->{activated} = 1;
+  }
+
+  foreach my $v (sort keys %$edata)
+  {
+   my $print_v = $v;
+   $print_v =~ s/\W/_/g;
+   my $d = $edata->{$v};
+   my $line = join("\n",
+                   map { "$indent$_" }
+                   Util::make_var_lines($print_v, $d, '', 0, 0));
+   push @var_data, $line;
+
+   # is it a scalar?
+   if (ref $d eq '')
+   {
+    my $d_expression = $d;
+    if ($d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no')
+    {
+     $d_expression = '!any';
+    }
+    elsif ($d_expression eq '1' || $d_expression eq 'true' || $d_expression eq 'yes')
+    {
+     $d_expression = 'any';
+    }
+
+    push @class_data, sprintf('%s"%s_%s" expression => "%s";',
+                              $indent,
+                              $e,
+                              $print_v,
+                              $d_expression);
+   }
+  }
+
+  push @environment_lines,
+   sprintf("# environment %s\nbundle common %s\n{\n%s\n}\n",
+           $e, $e, join("\n",
+                        "${type_indent}vars:",
+                        @var_data,
+                        # don't insert classes: line if there's no classes
+                        (scalar @class_data ? "${type_indent}classes:" : ''),
+                        @class_data));
+
+  $environment_calls .= "$indent\"$e\" usebundle => \"$e\";\n";
+ }
+
+ my $environment_lines = join "\n", @environment_lines;
+
  # 3. make cfsketch_run bundle with invocations
+ my @invocation_lines;
+ foreach my $a (@activations)
+ {
+  $self->log("Regenerate: generating activation call %s", $a->id());
+
+  push @invocation_lines, sprintf('%s%s_%s::',
+                                  $context_indent,
+                                  $a->environment(),
+                                  'activated');
+
+  push @invocation_lines, sprintf('%s"%s" usebundle => %s:%s(%s)',
+                                  $indent,
+                                  $a->id(),
+                                  $a->sketch()->namespace(),
+                                  $a->bundle(),
+                                  $a->make_bundle_params());
+ }
+
+ my $invocation_lines = join "\n", @invocation_lines;
 
 warn <<EOHIPPUS;
 body common control
@@ -660,20 +779,26 @@ body common control
     inputs => { @(cfsketch_g.inputs) };
 }
 
+$environment_lines
+
+# activation data
 bundle common cfsketch_g
 {
   vars:
-      # Files that need to be loaded for this to work.
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
       $inputs
+
+$data_lines
 }
 
 bundle agent cfsketch_run
 {
   methods:
+    any::
       "cfsketch_g" usebundle => "cfsketch_g";
-    _001_Repository__apt__Maintain_activated::
-      "001 Repository::apt::Maintain 1" usebundle => cfdc_aptrepo:aptrepos($(cfsketch_g._001_Repository__apt__Maintain_class_prefix), "default:cfsketch_g._001_Repository__apt__Maintain_repos", $(cfsketch_g._001_Repository__apt__Maintain_apt_file), $(cfsketch_g._001_Repository__apt__Maintain_apt_dir));
-
+$environment_calls
+$invocation_lines
 }
 EOHIPPUS
 

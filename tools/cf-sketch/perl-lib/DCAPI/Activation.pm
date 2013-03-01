@@ -11,6 +11,9 @@ has sketch => ( is => 'ro', required => 1 );
 has environment => ( is => 'ro', required => 1 );
 has bundle => ( is => 'ro', required => 1 );
 has params => ( is => 'ro', required => 1 );
+has id => ( is => 'ro', required => 1 );
+
+our $activation_position = 1;
 
 sub make_activation
 {
@@ -99,7 +102,7 @@ sub make_activation
    my $filled = fill_param($api,
                            $p->{name}, $p->{type}, \%params,
                            {
-                            environment => $api->environments()->{$env}
+                            environment => $env
                            });
    unless ($filled)
    {
@@ -121,10 +124,18 @@ sub make_activation
  $api->log3("Verified sketch %s entry: filled parameters are %s",
              $sketch, \@params);
 
+ my $activation_id = sprintf('__%03d %s %s',
+                             $activation_position++,
+                             $found->name(),
+                             $bundle);
+
+ $activation_id =~ s/\W+/_/g;
+
  return DCAPI::Activation->new(api => $api,
                                sketch => $found,
                                environment => $env,
                                bundle => $bundle,
+                               id => $activation_id,
                                params => \@params);
 }
 
@@ -166,6 +177,14 @@ sub fill_param
  return;
 }
 
+sub make_bundle_params
+{
+ my $self = shift @_;
+
+ # $(cfsketch_g._001_Repository__apt__Maintain_class_prefix), "default:cfsketch_g._001_Repository__apt__Maintain_repos", $(cfsketch_g._001_Repository__apt__Maintain_apt_file), $(cfsketch_g._001_Repository__apt__Maintain_apt_dir)
+ return 'TODO: make bundle params';
+}
+
 sub data_dump
 {
  my $self = shift @_;
@@ -175,6 +194,7 @@ sub data_dump
           environment => $self->environment(),
           bundle => $self->bundle(),
           params => $self->params(),
+          id => $self->id(),
          };
 }
 

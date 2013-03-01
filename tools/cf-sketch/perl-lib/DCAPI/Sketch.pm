@@ -54,7 +54,7 @@ sub BUILD
    }
    elsif ($m eq 'namespace')
    {
-    # it's OK to have a null namespace
+    # it's OK to have a null namespace, it becomes "default"
    }
    else
    {
@@ -66,6 +66,8 @@ sub BUILD
 
   $self->$m($v);
  }
+
+ $self->namespace('default') unless $self->namespace();
 
  if ($self->verify_files())
  {
