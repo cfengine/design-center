@@ -27,7 +27,7 @@
         sshd: [ { type: "environment", name: "runenv", }, { type: "array", name: "params", }, ],
     },
 
-    namespace: null,
+    namespace: "cfdc_sshd",
     entry_point: "ssh.cf", // this is where we'll find all the bundles named in the API
     interface: [ "ssh.cf" ]
 }
