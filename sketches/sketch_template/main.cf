@@ -46,7 +46,7 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
       "canon_prefix" string => canonify("$(prefix)");
 
       # call the sample.sh script
-      "sample_return" string => execresult("$(bundle_home)/scripts/sample.sh",
+      "sample_return" string => execresult("$($(metadata)[location])/scripts/sample.sh",
                                            "useshell");
 
       # pretty-print the authors and dependencies
@@ -70,6 +70,8 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
       # And this will use the localclass
       "Hello back"
       ifvarclass => "$(canon_prefix)localclass";
+
+      "Running the external sample script gave us $(sample_return)";
 
       # use the "test" context to help debug the sketch (for the developer)
     verbose::
