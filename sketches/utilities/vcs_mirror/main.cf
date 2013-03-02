@@ -3,52 +3,25 @@ body file control
   namespace => "cfdc_vcs";
 }
 
-bundle agent mirror(prefix, class_prefix, vcs, path, origin, branch, runas, umask, parent_dir)
+bundle common runenv(runenv)
 {
-  meta:
-      # __PREFIX__ will be supplied by cf-sketch
-      "vars[prefix][type]"           string => "NON_EMPTY_STRING";
-      "vars[prefix][default]"        string => "__PREFIX__";
+  vars:
+      "vars" slist => splitstring("$(default:$(runenv).env_vars_str)", " ", 999); # unpack the list of runenv scalars
+      # "vars" slist => { "@(default:$(runenv).env_vars)" }; # we'll use this when we depend on 3.5.x because of a 3.4.x bug with slist iteration between bundles
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-      "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
-      "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
-      "vars[nowipe][type]"           string => "CONTEXT";
-      "vars[nowipe][default]"        string => "!any";
+  reports:
+    verbose::
+      "Imported var $(vars) with value $($(vars))";
+}
 
-      "vars[vcs][type]"              string => "PATH";
-
-      "vars[path][type]"             string => "PATH";
-
-      "vars[origin][type]"           string => "HTTP_URL|PATH";
-
-      "vars[branch][type]"           string => "NON_EMPTY_STRING";
-      "vars[branch][default]"        string => "master";
-
-      # this is not called "user"  so it won't be confused with the remote user
-      "vars[runas][type]"            string => "NON_EMPTY_STRING";
-      "vars[runas][default]"         string => getenv("USER", 128);
-
-      "vars[umask][type]"            string => "OCTAL";
-      "vars[umask][default]"         string => "022";
-
-      "vars[parent_dir][type]"       string => "ARRAY(
-owner:NON_EMPTY_STRING
-group:NON_EMPTY_STRING
-perms:DIGITS
-)";
-
-      "vars[parent_dir][default]"    string => "{}";
-
-      # # This is a boolean (e.g. 0 or 1, 'yes' or 'no') stored in a string.
-      # "vars[testboolean][type]"    string => "BOOLEAN";
-
-      # # This is a context (e.g. 'any') stored in a string.
-      # # You could use it with ifvarclass.
-      # "vars[testcontext][type]"    string => "CONTEXT";
-
-      # where was the mirror deployed?
-      "returns[deploy_path]" string => "PATH";
+bundle agent mirror(runenv, metadata, prefix, vcs, path, origin, branch, runas, umask, parent_dir)
+{
+  methods:
+      "runenv" usebundle => cfdc_sshd:runenv($(runenv));
 
   vars:
       # return value
@@ -137,6 +110,11 @@ perms:DIGITS
     parent_parsed::
       "parent_path" string => "$(parent_capture[1])";
 
+    any::
+      # pretty-print the authors and dependencies
+      "dependencies" string => join(", ", "$(metadata)[depends]");
+      "authors" string => join(", ", "$(metadata)[authors]");
+
   classes:
       "nowipe" expression => "$(prefix)nowipe";
       "wipe" expression => "!nowipe";
@@ -205,35 +183,45 @@ perms:DIGITS
       comment    => "Clone a VCS repository in $(path), user override to $(runas)";
 
   reports:
+    verbose::
+      "$($(metadata)[name]) license = $($(metadata)[license])";
+      "$($(metadata)[name]) dependencies = $(dependencies)";
+
+      "$($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
+    verbose::
+      "$(this.bundle) running in verbose mode";
+    test::
+      "$(this.bundle) running in test mode";
+
     unknown_vcs::
       "Sorry, the requested VCS '$(vcs)' is not handled yet.";
 
-    default:debug.variables_ok::
+    verbose.variables_ok::
       "Cool, we're using $(vcs_type).  We will look for the config file $($(vcs_type)_configfile)";
       "VCS is $(vcs), to be executed as user $(runas) / umask $(umask), origin $(origin), branch $(branch), target path $(path).";
       "$(vcs_type)_update_command = $($(vcs_type)_update_command)";
       "$(vcs_type)_mirror_command = $($(vcs_type)_mirror_command)";
 
-    default:debug.variables_ok.vcsconfig_exists::
+    verbose.variables_ok.vcsconfig_exists::
       "VCS config file $($(vcs_type)_configfile) exists";
 
-    default:debug.variables_ok.no_vcsconfig_exists::
+    verbose.variables_ok.no_vcsconfig_exists::
       "VCS config file $($(vcs_type)_configfile) does not exist";
 
     default:verbose::
       "New clone of $(origin) (branch $(branch) created in $(path)"
       ifvarclass => "$(canon_prefix)vcs_mirrored";
 
-    default:debug.parent_parsed::
+    verbose.parent_parsed::
       "The parent path of $(path) was parsed to $(parent_path).";
 
-    default:debug.no_parent_parsed::
+    verbose.no_parent_parsed::
       "The parent path of $(path) could not be parsed to $(parent_path).";
 
-    default:debug.parent_parsed.parent_exists.third_pass::
+    verbose.parent_parsed.parent_exists.third_pass::
       "The parent path $(parent_path) exists.";
 
-    default:debug.parent_parsed.no_parent_exists.third_pass::
+    verbose.parent_parsed.no_parent_exists.third_pass::
       "The parent path $(parent_path) does not exist.";
 
     parent_parsed.no_parent_exists.parent_dir_provided.third_pass::
@@ -250,8 +238,8 @@ body contain test_aware_contain(user, dir, umask)
 {
       chdir => "$(dir)";
       umask => "$(umask)";
-    !default:test::
+    !test::
       exec_owner => "$(user)";
-    default:test::
+    test::
       exec_owner => getenv("LOGNAME", 100);
 }
