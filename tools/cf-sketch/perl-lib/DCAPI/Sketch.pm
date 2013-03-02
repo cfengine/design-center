@@ -37,7 +37,7 @@ sub BUILD
     die sprintf("Sketch in location %s could not initialize ($reason) from data %s\n",
                 $self->location(),
                 $self->desc()||'')
-     unless defined $config;
+    unless defined $config;
 
     $self->describe($config);
 
@@ -113,7 +113,7 @@ sub data_dump
         foreach my $mkey (META_MEMBERS())
         {
             $ret{$mkey} = $ret{metadata}->{$mkey}
-             if exists $ret{metadata}->{$mkey};
+            if exists $ret{metadata}->{$mkey};
         }
     }
 
@@ -139,8 +139,8 @@ sub runfile_data_dump
     $ret{manifest_docs} = [ grep { $self->manifest()->{$_}->{documentation} } @manifest ];
     $ret{manifest_exe} = [ grep {
         exists $self->manifest()->{$_}->{perm} &&
-         (oct($self->manifest()->{$_}->{perm}) & 0111)
-     } @manifest ];
+        (oct($self->manifest()->{$_}->{perm}) & 0111)
+    } @manifest ];
 
     my %known = map { $_ => 1 } (@{$ret{manifest_cf}}, @{$ret{manifest_exe}}, @{$ret{manifest_docs}});
     $ret{manifest_extra} = [ grep { !exists $known{$_} } @manifest ];
@@ -156,7 +156,7 @@ sub matches
     my $terms = DCAPI::Terms->new(api => $self->dcapi(),
                                   terms => $term_data);
 
-    my $my_data = $self->data_dump(1);  # flatten it
+    my $my_data = $self->data_dump(1); # flatten it
     my $ok = $terms->matches($my_data);
 
     $self->dcapi()->log_int($ok ? 4:5,
@@ -248,7 +248,7 @@ sub resolve_dependencies
                 }
             }
         }
-        else                            # anything else is a sketch name...
+        else                    # anything else is a sketch name...
         {
             my %install_request = ( sketch => $dep, target => $options{target} );
             my @criteria = (["name", "equals", $dep]);
@@ -283,7 +283,7 @@ sub resolve_dependencies
                     }
 
                     return (undef, "Could not install dependency $dep")
-                     unless $installed;
+                    unless $installed;
                 }
                 else
                 {

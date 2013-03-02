@@ -38,7 +38,7 @@ sub BUILD
     }
 
     die "Can't use repository without a valid inventory file in $inv_file: $reason"
-     unless defined $inv;
+    unless defined $inv;
 
     foreach my $line (@$inv)
     {
@@ -48,12 +48,12 @@ sub BUILD
         eval
         {
             push @{$self->sketches()},
-             DCAPI::Sketch->new(location => $abs_location,
-                                rel_location => $location,
-                                desc => $desc,
-                                dcapi => $self->api(),
-                                repo => $self,
-                                verify_files => $self->local());
+            DCAPI::Sketch->new(location => $abs_location,
+                               rel_location => $location,
+                               desc => $desc,
+                               dcapi => $self->api(),
+                               repo => $self,
+                               verify_files => $self->local());
         };
 
         if ($@)
@@ -82,9 +82,9 @@ sub sketches_dump
 {
     my $self = shift;
     my @lines =
-     sort { $a cmp $b }
-     map { sprintf("%s %s", $_->rel_location(), $_->desc()); }
-     @{$self->sketches()};
+    sort { $a cmp $b }
+    map { sprintf("%s %s", $_->rel_location(), $_->desc()); }
+    @{$self->sketches()};
 
     return @lines;
 }
@@ -94,9 +94,9 @@ sub save_inv_file
     my $self = shift;
 
     open my $fh, '>', $self->inv_file()
-     or $self->api()->log("Repo at %s could not save inventory file %s: $!",
-                          $self->location(),
-                          $self->inv_file());
+    or $self->api()->log("Repo at %s could not save inventory file %s: $!",
+                         $self->location(),
+                         $self->inv_file());
 
     return unless $fh;
 
@@ -189,19 +189,19 @@ sub install
         else
         {
             push @{$self->api()->warnings()->{$abs_location}},
-             "$file was not installed in $abs_location";
+            "$file was not installed in $abs_location";
         }
     }
 
     eval
     {
         push @{$self->sketches()},
-         DCAPI::Sketch->new(location => $abs_location,
-                            rel_location => $sketch->rel_location(),
-                            desc => $sketch->desc(),
-                            dcapi => $self->api(),
-                            repo => $self,
-                            verify_files => 1);
+        DCAPI::Sketch->new(location => $abs_location,
+                           rel_location => $sketch->rel_location(),
+                           desc => $sketch->desc(),
+                           dcapi => $self->api(),
+                           repo => $self,
+                           verify_files => 1);
     };
 
     if ($@)
@@ -211,8 +211,8 @@ sub install
 
     my $inv_save = $self->save_inv_file();
     push @{$self->api()->warnings()->{$abs_location}},
-     "Could not save the inventory file!"
-     unless $inv_save;
+    "Could not save the inventory file!"
+    unless $inv_save;
 
     $data->{inventory_save} = $inv_save;
 
@@ -242,7 +242,7 @@ sub uninstall
     if (-d $abs_location)
     {
         push @{$self->api()->warnings()->{$abs_location}},
-         "It seems that $abs_location could not be removed";
+        "It seems that $abs_location could not be removed";
         return;
     }
 
@@ -256,8 +256,8 @@ sub uninstall
     my $inv_save = $self->save_inv_file();
 
     push @{$self->api()->warnings()->{$abs_location}},
-     "Could not save the inventory file!"
-     unless $inv_save;
+    "Could not save the inventory file!"
+    unless $inv_save;
 
     $data->{inventory_save} = $inv_save;
 

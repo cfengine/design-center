@@ -87,7 +87,7 @@ sub matches
         return $terms;
     }
 
-    return;                             # no match
+    return;                     # no match
 }
 
 sub equals

@@ -59,23 +59,24 @@ has cfengine_min_version => ( is => 'ro', required => 1 );
 has cfengine_version => ( is => 'rw' );
 
 has coder =>
- (
-  is => 'ro',
-  default => sub { CODER },
- );
+(
+ is => 'ro',
+ default => sub { CODER },
+);
 
 has canonical_coder =>
- (
-  is => 'ro',
-  default => sub { CAN_CODER },
- );
+(
+ is => 'ro',
+ default => sub { CAN_CODER },
+);
 
 sub BUILD
 {
     my $self = shift @_;
     my $bin = $self->cfagent();
     my $cfv = `$bin -V`;
-    if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/) {
+    if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
+    {
         $self->cfengine_version($1);
     }
 }
@@ -89,16 +90,19 @@ sub set_config
 
     my $runfile = Util::hashref_search($self->config(), qw/runfile/);
 
-    if (ref $runfile ne 'HASH') {
+    if (ref $runfile ne 'HASH')
+    {
         push @{$self->warnings()->{runfile}}, "runfile is not a hash";
-    } else {
+    }
+    else
+    {
         %{$self->runfile()} = %$runfile;
         push @{$self->warnings()->{runfile}}, "runfile has no location"
-         unless exists $self->runfile()->{location};
+        unless exists $self->runfile()->{location};
         push @{$self->warnings()->{runfile}}, "runfile has no standalone boolean"
-         unless exists $self->runfile()->{standalone};
+        unless exists $self->runfile()->{standalone};
         push @{$self->warnings()->{runfile}}, "runfile has no relocate_path parameter"
-         unless exists $self->runfile()->{relocate_path};
+        unless exists $self->runfile()->{relocate_path};
     }
 
     my @sources = @{(Util::hashref_search($self->config(), qw/recognized_sources/) || [])};
@@ -109,7 +113,8 @@ sub set_config
     $self->log5("Adding recognized repo $_") foreach @repos;
     push @{$self->repos()}, @repos;
 
-    foreach my $location (@{$self->repos()}, @{$self->recognized_sources()}) {
+    foreach my $location (@{$self->repos()}, @{$self->recognized_sources()})
+    {
         next unless Util::is_resource_local($location);
 
         eval
@@ -117,44 +122,58 @@ sub set_config
             $self->load_repo($location);
         };
 
-        if ($@) {
+        if ($@)
+        {
             push @{$self->warnings()->{$location}}, $@;
         }
     }
 
     my $vardata_file = Util::hashref_search($self->config(), qw/vardata/);
 
-    if ($vardata_file) {
+    if ($vardata_file)
+    {
         $vardata_file = glob($vardata_file);
         $self->log("Loading vardata file $vardata_file");
         $self->vardata($vardata_file);
-        if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file)) {
+        if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file))
+        {
             $self->log("Creating missing vardata file $vardata_file");
             my @save_warnings = $self->save_vardata();
 
             push @{$self->warnings()->{vardata}}, @save_warnings
-             if scalar @save_warnings;
+            if scalar @save_warnings;
         }
 
         my ($v_data, @v_warnings) = $self->load($vardata_file);
         push @{$self->warnings()->{vardata}}, @v_warnings
-         if scalar @v_warnings;
+        if scalar @v_warnings;
 
-        if (ref $v_data ne 'HASH') {
+        if (ref $v_data ne 'HASH')
+        {
             push @{$self->warnings()->{$vardata_file}}, "vardata is not a hash";
-        } elsif (!exists $v_data->{activations}) {
+        }
+        elsif (!exists $v_data->{activations})
+        {
             push @{$self->warnings()->{$vardata_file}}, "vardata has no 'activations'";
-        } elsif (!exists $v_data->{definitions}) {
+        }
+        elsif (!exists $v_data->{definitions})
+        {
             push @{$self->warnings()->{$vardata_file}}, "vardata has no 'definitions'";
-        } elsif (!exists $v_data->{environments}) {
+        }
+        elsif (!exists $v_data->{environments})
+        {
             push @{$self->warnings()->{$vardata_file}}, "vardata has no 'environments'";
-        } else {
+        }
+        else
+        {
             $self->log("Successfully loaded vardata file $vardata_file");
             $self->activations($v_data->{activations});
             $self->definitions($v_data->{definitions});
             $self->environments($v_data->{environments});
         }
-    } else {
+    }
+    else
+    {
         push @{$self->warnings()->{vardata}}, "No vardata file specified";
     }
 
@@ -175,7 +194,7 @@ sub save_vardata
 
     $self->log("Saving vardata file $vardata_file");
     open my $fh, '>', $vardata_file
-     or return "Vardata file $vardata_file could not be created: $!";
+    or return "Vardata file $vardata_file could not be created: $!";
 
     print $fh $self->cencode($data);
     close $fh;
@@ -192,7 +211,7 @@ sub save_runfile
 
     $self->log("Saving runfile $runfile");
     open my $fh, '>', $runfile
-     or return "Run file $runfile could not be created: $!";
+    or return "Run file $runfile could not be created: $!";
 
     print $fh $data;
     close $fh;
@@ -215,7 +234,8 @@ sub all_repos
     my $self = shift;
     my $sources_first = shift;
 
-    if ($sources_first) {
+    if ($sources_first)
+    {
         return ( @{$self->recognized_sources()}, @{$self->repos()} );
     }
 
@@ -229,7 +249,8 @@ sub load_repo
     my $self = shift;
     my $repo = shift;
 
-    unless (exists $repos{$repo}) {
+    unless (exists $repos{$repo})
+    {
         $repos{$repo} = DCAPI::Repo->new(api => $self,
                                          location => glob($repo));
     }
@@ -277,7 +298,8 @@ sub list_int
 
     my @full_list;
     my %ret;
-    foreach my $location (@$repos) {
+    foreach my $location (@$repos)
+    {
         $self->log("Searching location %s for terms %s",
                    $location,
                    $term_data);
@@ -301,7 +323,8 @@ sub describe
 
     my %ret;
     my @repos = defined $sources ? (@$sources) : ($self->all_repos());
-    foreach my $location (@repos) {
+    foreach my $location (@repos)
+    {
         my %sketches = %$sketches_top;
         my $repo = $self->load_repo($location);
         my $found = $repo->describe(\%sketches, $firstfound);
@@ -321,21 +344,25 @@ sub install
 
     # we don't accept strings, the sketches to be installed must be in an array
 
-    if (ref $install eq 'HASH') {
+    if (ref $install eq 'HASH')
+    {
         $install = [ $install ];
     }
 
-    if (ref $install ne 'ARRAY') {
+    if (ref $install ne 'ARRAY')
+    {
         return (undef, "Invalid install command");
     }
 
     my @warnings;
     my @install_log;
 
- INSTALLER:
-    foreach my $installer (@$install) {
+  INSTALLER:
+    foreach my $installer (@$install)
+    {
         my %d;
-        foreach my $varname (qw/sketch source target/) {
+        foreach my $varname (qw/sketch source target/)
+        {
             my $v = Util::hashref_search($installer, $varname);
             unless (defined $v)
             {
@@ -346,7 +373,8 @@ sub install
         }
 
         # copy optional install criteria
-        foreach my $varname (qw/version/) {
+        foreach my $varname (qw/version force/)
+        {
             my $v = Util::hashref_search($installer, $varname);
             next unless defined $v;
             $d{$varname} = $v;
@@ -362,17 +390,27 @@ sub install
             $srepo = $self->load_repo($d{source});
         };
 
-        if ($@) {
+        if ($@)
+        {
             push @{$self->warnings()->{defined $drepo ? $d{source} : $d{target}}}, $@;
         }
 
         next INSTALLER unless defined $drepo;
         next INSTALLER unless defined $srepo;
 
-        if ($drepo->find_sketch($d{sketch})) {
-            push @{$self->warnings()->{$d{source}}},
-             "Sketch $d{sketch} is already in target repo; you must uninstall it first";
-            next INSTALLER;
+        if ($drepo->find_sketch($d{sketch}))
+        {
+            $self->log3("Sketch $d{sketch} is already in target repo");
+            if ($d{force})
+            {
+                $self->log("With force=true, overwriting sketch $d{sketch} in $d{target};");
+            }
+            else
+            {
+                push @{$self->warnings()->{$d{source}}},
+                "Sketch $d{sketch} is already in target repo; you must uninstall it first";
+                next INSTALLER;
+            }
         }
 
         my $sketch = $srepo->find_sketch($d{sketch}, $d{version});
@@ -380,7 +418,7 @@ sub install
         unless (defined $sketch)
         {
             push @{$self->warnings()->{$d{source}}},
-             "Sketch $d{sketch} could not be found in source repo";
+            "Sketch $d{sketch} could not be found in source repo";
             next INSTALLER;
         }
 
@@ -389,7 +427,7 @@ sub install
                                                                       target => $d{target});
 
         return ($depcheck, @dep_warnings)
-         unless $depcheck;
+        unless $depcheck;
 
         $self->log("Installing sketch $d{sketch} from $d{source} into $d{target}");
 
@@ -408,21 +446,25 @@ sub uninstall
 
     # we don't accept strings, the sketches to be installed must be in an array
 
-    if (ref $uninstall eq 'HASH') {
+    if (ref $uninstall eq 'HASH')
+    {
         $uninstall = [ $uninstall ];
     }
 
-    if (ref $uninstall ne 'ARRAY') {
+    if (ref $uninstall ne 'ARRAY')
+    {
         return (undef, "Invalid uninstall command");
     }
 
     my @warnings;
     my @uninstall_log;
 
- UNINSTALLER:
-    foreach my $uninstaller (@$uninstall) {
+  UNINSTALLER:
+    foreach my $uninstaller (@$uninstall)
+    {
         my %d;
-        foreach my $varname (qw/sketch target/) {
+        foreach my $varname (qw/sketch target/)
+        {
             my $v = Util::hashref_search($uninstaller, $varname);
             unless (defined $v)
             {
@@ -433,7 +475,8 @@ sub uninstall
         }
 
         # copy optional install criteria
-        foreach my $varname (qw/version/) {
+        foreach my $varname (qw/version/)
+        {
             my $v = Util::hashref_search($uninstaller, $varname);
             next unless defined $v;
             $d{$varname} = $v;
@@ -446,7 +489,8 @@ sub uninstall
             $repo = $self->load_repo($d{target});
         };
 
-        if ($@) {
+        if ($@)
+        {
             push @{$self->warnings()->{$d{target}}}, $@;
         }
 
@@ -457,7 +501,7 @@ sub uninstall
         unless ($sketch)
         {
             push @{$self->warnings()->{$d{target}}},
-             "Sketch $d{sketch} is not in target repo; you must install it first";
+            "Sketch $d{sketch} is not in target repo; you must install it first";
             next UNINSTALLER;
         }
 
@@ -474,11 +518,13 @@ sub define
     my $self = shift;
     my $define = shift;
 
-    if (ref $define ne 'HASH') {
+    if (ref $define ne 'HASH')
+    {
         return (undef, "Invalid define command");
     }
 
-    foreach my $dkey (keys %$define) {
+    foreach my $dkey (keys %$define)
+    {
         $self->definitions()->{$dkey} = $define->{$dkey};
     }
 
@@ -490,11 +536,13 @@ sub undefine
     my $self = shift;
     my $undefine = shift;
 
-    if (ref $undefine ne 'ARRAY') {
+    if (ref $undefine ne 'ARRAY')
+    {
         return (undef, "Invalid undefine command");
     }
 
-    foreach my $ukey (@$undefine) {
+    foreach my $ukey (@$undefine)
+    {
         delete $self->definitions()->{$ukey};
     }
 
@@ -506,27 +554,31 @@ sub define_environment
     my $self = shift;
     my $define_environment = shift;
 
-    if (ref $define_environment ne 'HASH') {
+    if (ref $define_environment ne 'HASH')
+    {
         return (undef, "Invalid define_environment command");
     }
 
-    foreach my $dkey (keys %$define_environment) {
+    foreach my $dkey (keys %$define_environment)
+    {
         my $spec = $define_environment->{$dkey};
 
-        if (ref $spec ne 'HASH') {
+        if (ref $spec ne 'HASH')
+        {
             return (undef, "Invalid environment spec under $dkey");
         }
 
-        foreach my $required (qw/activated test verbose/) {
+        foreach my $required (qw/activated test verbose/)
+        {
             return (undef, "Invalid environment spec $dkey: missing key $required")
-             unless exists $spec->{$required};
+            unless exists $spec->{$required};
 
             $spec->{$required} = ! ! $spec->{$required}
-             if Util::is_json_boolean($spec->{$required});
+            if Util::is_json_boolean($spec->{$required});
 
             # only scalars are acceptable
             return (undef, "Invalid environment spec $dkey: non-scalar key $required")
-             if (ref $spec->{$required});
+            if (ref $spec->{$required});
         }
 
         $self->environments()->{$dkey} = $spec;
@@ -540,11 +592,13 @@ sub undefine_environment
     my $self = shift;
     my $undefine_environment = shift;
 
-    if (ref $undefine_environment ne 'ARRAY') {
+    if (ref $undefine_environment ne 'ARRAY')
+    {
         return (undef, "Invalid undefine_environment command");
     }
 
-    foreach my $ukey (@$undefine_environment) {
+    foreach my $ukey (@$undefine_environment)
+    {
         delete $self->environments()->{$ukey};
     }
 
@@ -556,23 +610,29 @@ sub activate
     my $self = shift;
     my $activate = shift;
 
-    if (ref $activate ne 'HASH') {
+    if (ref $activate ne 'HASH')
+    {
         return (undef, "Invalid activate command");
     }
 
     # handle activation request in form
     # sketch: { environment:"run environment", target:"/my/repo", params: [definition1, definition2, ... ] }
-    foreach my $sketch (keys %$activate) {
+    foreach my $sketch (keys %$activate)
+    {
         my $spec = $activate->{$sketch};
 
         my ($verify, @warnings) = DCAPI::Activation::make_activation($self, $sketch, $spec);
 
-        if ($verify) {
+        if ($verify)
+        {
             $self->log("Activating sketch %s with spec %s", $sketch, $spec);
             my $cspec = $self->cencode($spec);
-            if (exists $self->activations()->{$sketch}) {
-                foreach (@{$self->activations()->{$sketch}}) {
-                    if ($cspec eq $self->cencode($_)) {
+            if (exists $self->activations()->{$sketch})
+            {
+                foreach (@{$self->activations()->{$sketch}})
+                {
+                    if ($cspec eq $self->cencode($_))
+                    {
                         return (undef, "Activation is already in place");
                     }
                 }
@@ -582,7 +642,9 @@ sub activate
             $self->log("Activations for sketch %s are now %s",
                        $sketch,
                        $self->activations()->{$sketch});
-        } else {
+        }
+        else
+        {
             return ($verify, @warnings);
         }
     }
@@ -599,23 +661,29 @@ sub regenerate
 
     my @all_warnings;
 
-    my @activations;                    # these are DCAPI::Activation objects
-    my $acts = $self->activations();    # these are data structures
-    foreach my $sketch (keys %$acts) {
-        foreach my $spec (@{$acts->{$sketch}}) {
+    my @activations;                 # these are DCAPI::Activation objects
+    my $acts = $self->activations(); # these are data structures
+    foreach my $sketch (keys %$acts)
+    {
+        foreach my $spec (@{$acts->{$sketch}})
+        {
             # this is how the data structure is turned into a DCAPI::Activation object
             my ($activation, @warnings) = DCAPI::Activation::make_activation($self, $sketch, $spec);
 
-            if (scalar @warnings) {
+            if (scalar @warnings)
+            {
                 push @all_warnings, @warnings;
                 $self->log("Regenerate: verification warnings [@warnings]");
             }
 
-            if ($activation) {
+            if ($activation)
+            {
                 my $sketch_obj = $activation->sketch();
                 $self->log("Regenerate: adding activation of %s; spec %s", $sketch, $spec);
                 push @activations, $activation;
-            } else {
+            }
+            else
+            {
                 return ($activation, @warnings);
             }
         }
@@ -623,7 +691,8 @@ sub regenerate
 
     # 1. determine includes from sketches, their dependencies, and namespaces
     my @inputs;
-    foreach my $a (@activations) {
+    foreach my $a (@activations)
+    {
         push @inputs, $a->sketch()->get_inputs($relocate, 5);
         $self->log("Regenerate: adding inputs %s", \@inputs);
     }
@@ -640,16 +709,20 @@ sub regenerate
     my %environments;
     my $position = 1;
 
-    foreach my $a (@activations) {
+    foreach my $a (@activations)
+    {
         $self->log("Regenerate: generating activation %s", $a->id());
 
-        foreach my $p (@{$a->params()}) {
-            if ($p->{type} eq 'environment') {
+        foreach my $p (@{$a->params()})
+        {
+            if ($p->{type} eq 'environment')
+            {
                 $self->log("Regenerate: adding environment %s", $p);
                 $environments{$p->{value}}++;
             }
             # we can't inline some types, so print them explicitly in the data bundle
-            elsif (!$a->can_inline($p->{type})) {
+            elsif (!$a->can_inline($p->{type}))
+            {
                 $self->log("Regenerate: adding explicit data %s", $p);
                 my $line = join("\n",
                                 sprintf("%s# %s '%s' from definition %s, activation %s",
@@ -672,7 +745,8 @@ sub regenerate
 
     my $environment_calls = '';
     my @environment_lines = ("# environment common bundles\n");
-    foreach my $e (keys %environments) {
+    foreach my $e (keys %environments)
+    {
         my $print_e = $e;
         $print_e =~ s/\W/_/g;
 
@@ -681,13 +755,15 @@ sub regenerate
         my $edata = $self->environments()->{$e};
 
         # ensure there's an "activated" class
-        unless (exists $edata->{activated}) {
+        unless (exists $edata->{activated})
+        {
             $edata->{activated} = 1;
         }
 
         my @ekeys = sort keys %$edata;
         $edata->{env_vars} = \@ekeys;
-        foreach my $v (sort keys %$edata) {
+        foreach my $v (sort keys %$edata)
+        {
             my $print_v = $v;
             $print_v =~ s/\W/_/g;
             my $d = $edata->{$v};
@@ -697,11 +773,15 @@ sub regenerate
             push @var_data, $line;
 
             # is it a scalar?
-            if (ref $d eq '') {
+            if (ref $d eq '')
+            {
                 my $d_expression = $d;
-                if ($d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no') {
+                if ($d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no')
+                {
                     $d_expression = '!any';
-                } elsif ($d_expression eq '1' || $d_expression eq 'true' || $d_expression eq 'yes') {
+                }
+                elsif ($d_expression eq '1' || $d_expression eq 'true' || $d_expression eq 'yes')
+                {
                     $d_expression = 'any';
                 }
 
@@ -716,13 +796,13 @@ sub regenerate
         }
 
         push @environment_lines,
-         sprintf("# environment %s\nbundle common %s\n{\n%s\n}\n",
-                 $e, $print_e, join("\n",
-                                    "${type_indent}vars:",
-                                    @var_data,
-                                    # don't insert classes: line if there's no classes
-                                    (scalar @class_data ? "${type_indent}classes:" : ''),
-                                    @class_data));
+        sprintf("# environment %s\nbundle common %s\n{\n%s\n}\n",
+                $e, $print_e, join("\n",
+                                   "${type_indent}vars:",
+                                   @var_data,
+                                   # don't insert classes: line if there's no classes
+                                   (scalar @class_data ? "${type_indent}classes:" : ''),
+                                   @class_data));
 
         $environment_calls .= "$indent\"$e\" usebundle => \"$print_e\";\n";
     }
@@ -731,7 +811,8 @@ sub regenerate
 
     # 3. make cfsketch_run bundle with invocations
     my @invocation_lines;
-    foreach my $a (@activations) {
+    foreach my $a (@activations)
+    {
         $self->log("Regenerate: generating activation call %s", $a->id());
 
         push @invocation_lines, sprintf('%srunenv_%s_%s::',
@@ -800,18 +881,22 @@ sub deactivate
     my $deactivate = shift;
 
     # deactivate = true means all;
-    if (Util::is_json_boolean($deactivate) && $deactivate) {
+    if (Util::is_json_boolean($deactivate) && $deactivate)
+    {
         $self->log("Deactivating all activations: %s", $self->activations());
         %{$self->activations()} = ();
     }
     # deactivate = sketch means all activations of the sketch;
-    elsif (ref $deactivate eq '') {
+    elsif (ref $deactivate eq '')
+    {
         $self->log("Deactivating all activations of $deactivate: %s",
                    delete $self->activations()->{$deactivate});
-    } elsif (ref $deactivate eq 'HASH' &&
-             exists $deactivate->{sketch} &&
-             exists $self->activations()->{$deactivate->{sketch}}) {
-        if (exists $deactivate->{position}) {
+    }
+    elsif (ref $deactivate eq 'HASH' &&
+           exists $deactivate->{sketch} &&
+           exists $self->activations()->{$deactivate->{sketch}}) {
+        if (exists $deactivate->{position})
+        {
             $self->log("Deactivating activation %s of %s: %s",
                        $deactivate->{position},
                        $deactivate->{sketch},
@@ -836,7 +921,8 @@ sub run_cf
                 $data);
     open my $pipe, '-|', $self->cfagent(), -KIf => $filename;
     return unless $pipe;
-    while (<$pipe>) {
+    while (<$pipe>)
+    {
         chomp;
         next if m/Running full policy integrity checks/;
         $self->log3($_);
@@ -954,7 +1040,7 @@ sub log_int
     return unless $self->log_level() >= $log_level;
 
     my $prefix;
-    foreach my $level (1..4)      # probe up to 4 levels to find the real caller
+    foreach my $level (1..4)    # probe up to 4 levels to find the real caller
     {
         my ($package, $filename, $line, $subroutine, $hasargs, $wantarray,
             $evaltext, $is_require, $hints, $bitmask, $hinthash) = caller($level);
@@ -964,11 +1050,15 @@ sub log_int
     }
 
     my @plist;
-    foreach (@_) {
-        if (ref $_ eq 'ARRAY' || ref $_ eq 'HASH') {
+    foreach (@_)
+    {
+        if (ref $_ eq 'ARRAY' || ref $_ eq 'HASH')
+        {
             # we want to log it anyhow
             eval { push @plist, $self->encode($_) };
-        } else {
+        }
+        else
+        {
             push @plist, $_;
         }
     }
@@ -1037,10 +1127,12 @@ sub load_int
         $try_eval = $self->decode($f);
     };
 
-    if ($try_eval)                  # detect inline content, must be proper JSON
+    if ($try_eval)              # detect inline content, must be proper JSON
     {
         return ($try_eval);
-    } elsif (Util::is_resource_local($f)) {
+    }
+    elsif (Util::is_resource_local($f))
+    {
         my $j;
         unless (open($j, '<', $f) && $j)
         {
@@ -1048,7 +1140,9 @@ sub load_int
         }
 
         @j = <$j>;
-    } else {
+    }
+    else
+    {
         my ($j, $error) = $self->curl_GET($f);
 
         defined $error and return (undef, $error);
@@ -1057,14 +1151,18 @@ sub load_int
         @j = @$j;
     }
 
-    if (scalar @j) {
+    if (scalar @j)
+    {
         chomp @j;
         s/\n//g foreach @j;
         s/^\s*(#|\/\/).*//g foreach @j;
 
-        if ($raw) {
+        if ($raw)
+        {
             return (\@j);
-        } else {
+        }
+        else
+        {
             return ($self->decode(join '', @j));
         }
     }

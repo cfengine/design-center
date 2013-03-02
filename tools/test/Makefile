@@ -26,6 +26,8 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::sketch_template", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 	@echo ...valid request to uninstall Security::SSH
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
+	@echo ...valid request to uninstall VCS::vcs_mirror
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "VCS::vcs_mirror", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 	@echo ...valid request to uninstall CFEngine::stdlib
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 

@@ -47,7 +47,7 @@ sub make_activation
 
     return (undef, sprintf("Could not find sketch $sketch in [%s]",
                            join(' ', map { $_->location() } @repos)))
-     unless $found;
+    unless $found;
 
     my $params = $spec->{params} || "--no valid params array found--";
     if (ref $params ne 'ARRAY')
@@ -64,10 +64,10 @@ sub make_activation
     foreach (@$params)
     {
         return (undef, "The activation params '$_' have not been defined")
-         unless exists $api->definitions()->{$_};
+        unless exists $api->definitions()->{$_};
 
         return (undef, "The activation params '$_' do not apply to sketch $sketch")
-         unless exists $api->definitions()->{$_}->{$sketch};
+        unless exists $api->definitions()->{$_}->{$sketch};
 
         $params{$_} = $api->definitions()->{$_}->{$sketch};
     }
@@ -131,7 +131,7 @@ sub make_activation
     }
 
     return (undef, "No bundle in the $sketch api matched the given parameters")
-     unless $bundle;
+    unless $bundle;
 
     $activation_position++;
 

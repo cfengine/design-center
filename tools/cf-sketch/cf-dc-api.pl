@@ -13,16 +13,16 @@ BEGIN
 use File::Basename;
 use FindBin;
 use lib "$FindBin::Bin/perl-lib",
- "$FindBin::Bin/perl-lib/File-Which-1.09/lib",
- "$FindBin::Bin/perl-lib/JSON-2.53/lib",
- "$FindBin::Bin/perl-lib/Mo-0.31/lib";
+"$FindBin::Bin/perl-lib/File-Which-1.09/lib",
+"$FindBin::Bin/perl-lib/JSON-2.53/lib",
+"$FindBin::Bin/perl-lib/Mo-0.31/lib";
 
 use warnings;
 use strict;
 use DCAPI;
 use Util;
 
-$| = 1;                                 # autoflush
+$| = 1;                         # autoflush
 
 my $base = basename($0);
 my @log;
