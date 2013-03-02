@@ -687,7 +687,6 @@ sub regenerate
 
         my @ekeys = sort keys %$edata;
         $edata->{env_vars} = \@ekeys;
-        $edata->{env_vars_str} = join ' ', @ekeys;
         foreach my $v (sort keys %$edata) {
             my $print_v = $v;
             $print_v =~ s/\W/_/g;
