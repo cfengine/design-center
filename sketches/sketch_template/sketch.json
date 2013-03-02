@@ -26,6 +26,8 @@
         entry:
         [
             { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "prefix", default: "__PREFIX__" },
 
             { type: "boolean", name: "myboolean", default: "1" }, //  true is OK too
             { type: "string", name: "mytype", default: "fallback" },

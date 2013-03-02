@@ -9,7 +9,7 @@ use Util;
 use Mo qw/default build builder is required option/;
 
 use constant MEMBERS => qw/entry_point interface manifest metadata api namespace/;
-use constant META_MEMBERS => qw/name version description license tags depends/;
+use constant META_MEMBERS => qw/name version description license tags depends authors/;
 
 has dcapi        => ( is => 'ro', required => 1 );
 has repo         => ( is => 'ro', required => 1 );
@@ -116,6 +116,34 @@ sub data_dump
              if exists $ret{metadata}->{$mkey};
         }
     }
+
+    return \%ret;
+}
+
+sub runfile_data_dump
+{
+    my $self = shift;
+
+    my %ret;
+    foreach my $m (sort qw/authors tags version name license/)
+    {
+        $ret{$m} = $self->$m();
+    }
+
+    # only dependencies with :: are useful
+    $ret{depends} = [ grep { $_ =~ m/::/ } sort keys $self->depends() ];
+
+    my @manifest = sort keys $self->manifest();
+    $ret{manifest}->{all} = \@manifest;
+    $ret{manifest}->{cf} = [ grep { $_ =~ m/\.cf$/ } @manifest ];
+    $ret{manifest}->{docs} = [ grep { $self->manifest()->{$_}->{documentation} } @manifest ];
+    $ret{manifest}->{exe} = [ grep {
+        exists $self->manifest()->{$_}->{perm} &&
+         (oct($self->manifest()->{$_}->{perm}) & 0111)
+     } @manifest ];
+
+    my %known = map { $_ => 1 } (@{$ret{manifest}->{cf}}, @{$ret{manifest}->{exe}}, @{$ret{manifest}->{docs}});
+    $ret{manifest}->{extra} = [ grep { !exists $known{$_} } @manifest ];
 
     return \%ret;
 }

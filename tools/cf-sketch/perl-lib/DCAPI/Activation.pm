@@ -90,8 +90,17 @@ sub make_activation
 
     my $bundle;
     my @params;
+    my $activation_id;
+
     foreach my $b (@bundles_to_check)
     {
+        $activation_id = sprintf('__%03d %s %s',
+                                 $activation_position,
+                                 $found->name(),
+                                 $b);
+
+        $activation_id =~ s/\W+/_/g;
+
         my $sketch_api = $found->api()->{$b};
 
         my $params_ok = 1;
@@ -102,6 +111,8 @@ sub make_activation
                                     $p->{name}, $p->{type}, \%params,
                                     {
                                      environment => $env,
+                                     sketch => $found,
+                                     id => $activation_id,
                                      # insert a 'default' key only if it exists
                                      (exists $p->{default} ? (default => $p->{default}) : ()),
                                     });
@@ -122,15 +133,10 @@ sub make_activation
     return (undef, "No bundle in the $sketch api matched the given parameters")
      unless $bundle;
 
+    $activation_position++;
+
     $api->log3("Verified sketch %s entry: filled parameters are %s",
                $sketch, \@params);
-
-    my $activation_id = sprintf('__%03d %s %s',
-                                $activation_position++,
-                                $found->name(),
-                                $bundle);
-
-    $activation_id =~ s/\W+/_/g;
 
     return DCAPI::Activation->new(api => $api,
                                   sketch => $found,
@@ -153,11 +159,17 @@ sub fill_param
         return {set=>undef, type => $type, name => $name, value => $extra->{environment}};
     }
 
+    if ($type eq 'metadata')
+    {
+        return {set=>'sketch metadata', type => 'array', name => $name, value => $extra->{sketch}->runfile_data_dump()};
+    }
+
     foreach my $pkey (sort keys %$params)
     {
         my $pval = $params->{$pkey};
         if (!exists $pval->{$name} && exists $extra->{default})
         {
+            $extra->{default} =~ s/__PREFIX__/$extra->{id}/g;
             $pval->{$name} = $extra->{default};
         }
 
@@ -188,7 +200,7 @@ sub can_inline
     my $self = shift @_;
     my $type = shift @_;
 
-    return ($type ne 'list' && $type ne 'array');
+    return ($type ne 'list' && $type ne 'array' && $type ne 'metadata');
 }
 
 sub make_bundle_params

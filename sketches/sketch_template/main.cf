@@ -18,7 +18,7 @@ bundle common runenv(runenv)
       "Imported var $(vars) with value $($(vars))";
 }
 
-bundle agent entry(runenv, myboolean, mytype, myip, mylist, myarray)
+bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, myarray)
 {
   methods:
       "runenv" usebundle => cfdc_sketch_template:runenv($(runenv));
@@ -50,16 +50,15 @@ bundle agent entry(runenv, myboolean, mytype, myip, mylist, myarray)
                                            "useshell");
 
       # pretty-print the authors and dependencies
-      "dependencies" string => join(", ", "$(prefix)sketch_depends");
-      "authors" string => join(", ", "$(prefix)sketch_authors");
+      "dependencies" string => join(", ", "$($(metadata)[depends])");
+      "authors" string => join(", ", "$($(metadata)[authors])");
 
   reports:
-    default:debug::
-      "$($(prefix)sketch_name) license = $($(prefix)sketch_license)";
-      "$($(prefix)sketch_name) dependencies = $(dependencies)";
+    verbose::
+      "$($(metadata)[name]) license = $($(metadata)[license])";
+      "$($(metadata)[name]) dependencies = $(dependencies)";
 
-    default:verbose::
-      "$($(prefix)sketch_name) version $($(prefix)sketch_version) by $(authors) starting up...";
+      "$($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
 
     cfengine::
       # This will define localclass with a locally meaningful prefix
@@ -73,10 +72,10 @@ bundle agent entry(runenv, myboolean, mytype, myip, mylist, myarray)
       ifvarclass => "$(canon_prefix)localclass";
 
       # use the "verbose" context to display extra information (for the user)
-    default:verbose::
+    verbose::
       "Invoking entry_point: prefix $(prefix) type $(mytype) myarray lookup of path1 $($(myarray)[path1])";
 
-      # use the "debug" context to help debug the sketch (for the developer)
-    default:debug::
-      "This is debugging; running from $(bundle_home)";
+      # use the "test" context to help debug the sketch (for the developer)
+    test::
+      "This is debugging";
 }
