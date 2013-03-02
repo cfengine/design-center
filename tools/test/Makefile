@@ -32,20 +32,20 @@ api:
 	@echo ...valid request to install Security::SSH
 	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } } }' | $(CFAPI)
 	@echo ...define Security::SSH run environment
-	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "DAYTIME": { activated: "!(Evening|Night)", test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "ANYTIME": { activated: "!nosuchclass", test: true, verbose: true } } } }' | $(CFAPI)
 	@echo ...define Security::SSH parameters
 	echo '{ dc_api_version: "0.0.1", request: {define: { "simple_ssh": { "Security::SSH": { params: { Protocol : "2", X11Forwarding : "yes", PermitRootLogin : "yes" } } } } } }' | $(CFAPI)
 	@echo ...fail to activate Security::SSH with invalid run environments and simple_ssh parameters
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: null, params: ["simple_ssh" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "bad environment", params: ["simple_ssh" ] } } } }' | $(CFAPI)
 	@echo ...fail to activate Security::SSH with valid run environments and invalid parameters
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "DAYTIME", params: "bad params" } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "DAYTIME", params: [ ] } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "DAYTIME", params: [ "undefined params" ] } } } }' | $(CFAPI)
-	@echo ...activate Security::SSH with DAYTIME run environment and simple_ssh parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "ANYTIME", params: "bad params" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "ANYTIME", params: [ ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "ANYTIME", params: [ "undefined params" ] } } } }' | $(CFAPI)
+	@echo ...activate Security::SSH with ANYTIME run environment and simple_ssh parameters
 	@echo ...we could specify the bundle we want here with the bundle key
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { bundle: "nosuchbundle", target: "/home/tzz/.cfagent/inputs/sketches", environment: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "DAYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { bundle: "nosuchbundle", target: "/home/tzz/.cfagent/inputs/sketches", environment: "ANYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "ANYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
 
 	@echo ...valid request to install CFEngine::sketch_template
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)

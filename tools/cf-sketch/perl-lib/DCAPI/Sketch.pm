@@ -125,7 +125,7 @@ sub runfile_data_dump
     my $self = shift;
 
     my %ret;
-    foreach my $m (sort qw/authors tags version name license/)
+    foreach my $m (sort qw/authors tags version name license location/)
     {
         $ret{$m} = $self->$m();
     }
@@ -134,16 +134,16 @@ sub runfile_data_dump
     $ret{depends} = [ grep { $_ =~ m/::/ } sort keys $self->depends() ];
 
     my @manifest = sort keys $self->manifest();
-    $ret{manifest}->{all} = \@manifest;
-    $ret{manifest}->{cf} = [ grep { $_ =~ m/\.cf$/ } @manifest ];
-    $ret{manifest}->{docs} = [ grep { $self->manifest()->{$_}->{documentation} } @manifest ];
-    $ret{manifest}->{exe} = [ grep {
+    $ret{manifest} = \@manifest;
+    $ret{manifest_cf} = [ grep { $_ =~ m/\.cf$/ } @manifest ];
+    $ret{manifest_docs} = [ grep { $self->manifest()->{$_}->{documentation} } @manifest ];
+    $ret{manifest_exe} = [ grep {
         exists $self->manifest()->{$_}->{perm} &&
          (oct($self->manifest()->{$_}->{perm}) & 0111)
      } @manifest ];
 
-    my %known = map { $_ => 1 } (@{$ret{manifest}->{cf}}, @{$ret{manifest}->{exe}}, @{$ret{manifest}->{docs}});
-    $ret{manifest}->{extra} = [ grep { !exists $known{$_} } @manifest ];
+    my %known = map { $_ => 1 } (@{$ret{manifest_cf}}, @{$ret{manifest_exe}}, @{$ret{manifest_docs}});
+    $ret{manifest_extra} = [ grep { !exists $known{$_} } @manifest ];
 
     return \%ret;
 }

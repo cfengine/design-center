@@ -50,8 +50,8 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
                                            "useshell");
 
       # pretty-print the authors and dependencies
-      "dependencies" string => join(", ", "$($(metadata)[depends])");
-      "authors" string => join(", ", "$($(metadata)[authors])");
+      "dependencies" string => join(", ", "$(metadata)[depends]");
+      "authors" string => join(", ", "$(metadata)[authors]");
 
   reports:
     verbose::
@@ -71,11 +71,9 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
       "Hello back"
       ifvarclass => "$(canon_prefix)localclass";
 
-      # use the "verbose" context to display extra information (for the user)
-    verbose::
-      "Invoking entry_point: prefix $(prefix) type $(mytype) myarray lookup of path1 $($(myarray)[path1])";
-
       # use the "test" context to help debug the sketch (for the developer)
+    verbose::
+      "$(this.bundle) running in verbose mode";
     test::
-      "This is debugging";
+      "$(this.bundle) running in test mode";
 }
