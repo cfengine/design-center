@@ -35,6 +35,7 @@
                   { type: "string", name: "umask", },
                   { type: "array", name: "parent_dir", }, // needs owner, group, perms
                 ],
+    },
 
     namespace: "cfdc_vcs",
     entry_point: "main.cf",
