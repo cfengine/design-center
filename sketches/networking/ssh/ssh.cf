@@ -76,14 +76,24 @@ bundle common runenv(runenv)
       "Imported var $(vars) with value $($(vars))";
 }
 
-bundle agent sshd(runenv, params)
+bundle agent sshd(runenv, metadata, params)
 {
   methods:
       "runenv" usebundle => cfdc_sshd:runenv($(runenv));
       "vars" usebundle => cfdc_sshd:vars("$(params)");
       "sshd_cfg"  usebundle => cfdc_sshd:set_cfg("cfdc_sshd:vars.conf");
 
+  vars:
+      # pretty-print the authors and dependencies
+      "dependencies" string => join(", ", "$(metadata)[depends]");
+      "authors" string => join(", ", "$(metadata)[authors]");
+
   reports:
+    verbose::
+      "$($(metadata)[name]) license = $($(metadata)[license])";
+      "$($(metadata)[name]) dependencies = $(dependencies)";
+
+      "$($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
     verbose::
       "$(this.bundle) running in verbose mode";
     test::

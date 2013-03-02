@@ -24,7 +24,9 @@
     api:
     {
         // the key is the name of the bundle!
-        sshd: [ { type: "environment", name: "runenv", }, { type: "array", name: "params", }, ],
+        sshd: [ { type: "environment", name: "runenv", },
+                { type: "metadata", name: "metadata", },
+                { type: "array", name: "params", }, ],
     },
 
     namespace: "cfdc_sshd",
