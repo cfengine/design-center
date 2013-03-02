@@ -18,43 +18,26 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --expert --install CFEngine::stdlib --de
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE) -Dverbose -Ddebug -Dtest
 
 api:
-	@echo '--- a full test of configuring Security::SSH --'
+	@echo '--- a full test of configuring Security::SSH, CFEngine::sketch_template, and VCS::vcs_mirror --'
+
+	@echo ...define ANYTIME run environment
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "ANYTIME": { activated: "!nosuchclass", test: true, verbose: true } } } }' | $(CFAPI)
+	@echo ...define testing run environment
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: true, test: true, verbose: true } } } }' | $(CFAPI)
 
 	@echo ...deactivate all activations
 	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
-	@echo ...valid request to uninstall CFEngine::sketch_template
-	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::sketch_template", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
-	@echo ...valid request to uninstall Security::SSH
-	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
-	@echo ...valid request to uninstall VCS::vcs_mirror
-	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "VCS::vcs_mirror", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
-	@echo ...valid request to uninstall CFEngine::stdlib
-	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 
-	@echo ...valid request to install Security::SSH
-	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } } }' | $(CFAPI)
-	@echo ...define Security::SSH run environment
-	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "ANYTIME": { activated: "!nosuchclass", test: true, verbose: true } } } }' | $(CFAPI)
-	@echo ...define Security::SSH parameters
-	echo '{ dc_api_version: "0.0.1", request: {define: { "simple_ssh": { "Security::SSH": { params: { Protocol : "2", X11Forwarding : "yes", PermitRootLogin : "yes" } } } } } }' | $(CFAPI)
-	@echo ...fail to activate Security::SSH with invalid run environments and simple_ssh parameters
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: null, params: ["simple_ssh" ] } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "bad environment", params: ["simple_ssh" ] } } } }' | $(CFAPI)
-	@echo ...fail to activate Security::SSH with valid run environments and invalid parameters
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "ANYTIME", params: "bad params" } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "ANYTIME", params: [ ] } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "ANYTIME", params: [ "undefined params" ] } } } }' | $(CFAPI)
+	@echo ...valid request to install Security::SSH, CFEngine::sketch_template, and VCS::vcs_mirror
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Security::SSH", force: true, target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" }, { sketch: "CFEngine::sketch_template", force: true, target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" }, { sketch: "VCS::vcs_mirror", force: true, target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
+	@echo ...define Security::SSH simple_ssh and CFEngine::sketch_template simple_sketch parameters
+	echo '{ dc_api_version: "0.0.1", request: {define: { "simple_sketch": { "CFEngine::sketch_template": { myboolean: true, myip: "10.0.1.0", mylist: [ 1, 2, 3 ], myarray: { a: 1, b: 3, c: 3 } } }, "simple_ssh": { "Security::SSH": { params: { Protocol : "2", X11Forwarding : "yes", PermitRootLogin : "yes" } } } } } }' | $(CFAPI)
+	@echo define VCS::vcs_mirror parameters
+	echo '{ dc_api_version: "0.0.1", request: {define: { "vcs_base": { "VCS::vcs_mirror": { vcs: "/usr/bin/git" } } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "vcs_mirror_core": { "VCS::vcs_mirror": { path: "/tmp/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git", options: { parent_dir: { owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: 755, create: true }, nowipe: true, stage: { suffix: ".stage", owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: 755 }, vcs: { runas: { "function": "getenv", "args": ["LOGNAME", "128"] }, umask: 755 } } } } } } }' | $(CFAPI)
+
 	@echo ...activate Security::SSH with ANYTIME run environment and simple_ssh parameters
-	@echo ...we could specify the bundle we want here with the bundle key
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { bundle: "nosuchbundle", target: "/home/tzz/.cfagent/inputs/sketches", environment: "ANYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "ANYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
-
-	@echo ...valid request to install CFEngine::sketch_template
-	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
-	@echo ...define CFEngine::sketch_template simple_sketch parameters
-	echo '{ dc_api_version: "0.0.1", request: {define: { "simple_sketch": { "CFEngine::sketch_template": { myboolean: true, myip: "10.0.1.0", mylist: [ 1, 2, 3 ], myarray: { a: 1, b: 3, c: 3 } } } } } }' | $(CFAPI)
-	@echo ...define CFEngine::sketch_template 'testing' run environment
-	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: true, test: true, verbose: true } } } }' | $(CFAPI)
 	@echo ...activate CFEngine::sketch_template with testing run environment and simple_sketch parameters
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "simple_sketch" ] } } } }' | $(CFAPI)
 
@@ -136,6 +119,38 @@ api_basics:
 	echo '{ dc_api_version: "0.0.1", request: {undefine_environment: [ "DEV" ] } }' | $(CFAPI)
 	@echo ...list environments
 	echo '{ dc_api_version: "0.0.1", request: {environments: true } }' | $(CFAPI)
+
+	@echo '--- a full test of configuring Security::SSH --'
+
+	@echo ...deactivate all activations
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+	@echo ...valid request to uninstall Security::SSH
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
+	@echo ...valid request to uninstall CFEngine::stdlib
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
+
+	@echo ...valid request to install Security::SSH
+	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Security::SSH", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } } }' | $(CFAPI)
+	@echo ...define Security::SSH run environment
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "ANYTIME": { activated: "!nosuchclass", test: true, verbose: true } } } }' | $(CFAPI)
+	@echo ...define Security::SSH parameters
+	echo '{ dc_api_version: "0.0.1", request: {define: { "simple_ssh": { "Security::SSH": { params: { Protocol : "2", X11Forwarding : "yes", PermitRootLogin : "yes" } } } } } }' | $(CFAPI)
+	@echo ...fail to activate Security::SSH with invalid run environments and simple_ssh parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: null, params: ["simple_ssh" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "bad environment", params: ["simple_ssh" ] } } } }' | $(CFAPI)
+	@echo ...fail to activate Security::SSH with valid run environments and invalid parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "ANYTIME", params: "bad params" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "ANYTIME", params: [ ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { environment: "ANYTIME", params: [ "undefined params" ] } } } }' | $(CFAPI)
+	@echo ...activate Security::SSH with ANYTIME run environment and simple_ssh parameters
+	@echo ...we could specify the bundle we want here with the bundle key
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { bundle: "nosuchbundle", target: "/home/tzz/.cfagent/inputs/sketches", environment: "ANYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "ANYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+
+	@echo ...list installed
+	echo '{ dc_api_version: "0.0.1", request: {list: true } }' | $(CFAPI)
+	@echo ...generate the runfile
+	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
 api_cleanup:
 	@echo ...deactivate first activation of Security::SSH

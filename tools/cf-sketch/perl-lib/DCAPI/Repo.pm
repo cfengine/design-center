@@ -195,6 +195,8 @@ sub install
 
     eval
     {
+        @{$self->sketches()} = grep { $_->name() ne $sketch->name() } @{$self->sketches()};
+
         push @{$self->sketches()},
         DCAPI::Sketch->new(location => $abs_location,
                            rel_location => $sketch->rel_location(),

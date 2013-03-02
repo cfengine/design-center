@@ -23,18 +23,16 @@
     api:
     {
         // the key is the name of the bundle!
-        mirror: [ { type: "environment", name: "runenv", },
-                  { type: "metadata", name: "metadata", },
-                  { type: "string", name: "prefix", default: "__PREFIX__" },
-                  { type: "boolean", name: "nowipe", },
-                  { type: "string", name: "vcs", },
-                  { type: "string", name: "path", },
-                  { type: "string", name: "origin", },
-                  { type: "string", name: "branch", },
-                  { type: "string", name: "runas", },
-                  { type: "string", name: "umask", },
-                  { type: "array", name: "parent_dir", }, // needs owner, group, perms
-                ],
+        mirror:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "vcs" },
+            { type: "string", name: "path" },
+            { type: "string", name: "origin" },
+            { type: "string", name: "branch" },
+            { type: "array", name: "options", }, // all extra options go in here
+        ],
     },
 
     namespace: "cfdc_vcs",

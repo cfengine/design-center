@@ -17,7 +17,7 @@ bundle common runenv(runenv)
       "Imported var $(vars) with value $($(vars))";
 }
 
-bundle agent mirror(runenv, metadata, prefix, vcs, path, origin, branch, runas, umask, parent_dir)
+bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
 {
   methods:
       "runenv" usebundle => cfdc_sshd:runenv($(runenv));
@@ -27,7 +27,7 @@ bundle agent mirror(runenv, metadata, prefix, vcs, path, origin, branch, runas, 
       "deploy_path" string => "$(path)",
       ifvarclass => "$(canon_prefix)vcs_mirrored|$(canon_prefix)vcs_updated";
 
-      "canon_prefix" string => canonify("$(prefix)");
+      "canon_prefix" string => canonify("$(path)");
       "vcs_type" string => lastnode("$(vcs)","/");
 
     wipe::

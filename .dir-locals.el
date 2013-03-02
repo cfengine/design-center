@@ -1,6 +1,7 @@
 ((nil . ((indent-tabs-mode . nil)
          (tab-width . 4)
          (fill-column . 80)))
+ (makefile-mode . ((indent-tabs-mode . t)))
  (cperl-mode . ((cperl-indent-level . 4)
                 (cperl-brace-offset . 0)
                 (cperl-close-paren-offset . -1)
