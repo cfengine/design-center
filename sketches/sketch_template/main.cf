@@ -23,22 +23,6 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
   methods:
       "runenv" usebundle => cfdc_sketch_template:runenv($(runenv));
 
-  classes:
-      # note that demo.json uses bycontext to set mytype to "alpha"
-      # when context A is defined, so context A indirectly triggers
-      # use_alpha
-      "use_alpha"     expression => strcmp($(mytype), "alpha");
-
-      # Note that if you don't make the "mymodule" execution
-      # conditional, cf-promises will fail to validate main.cf the
-      # FIRST time, BEFORE "mymodule" is installed in
-      # $(sys.workdir)/modules.
-      "exists_module" expression => fileexists("$(sys.workdir)/modules/mymodule");
-
-      # call the "mymodule" module
-    exists_module::
-      "ran_module" expression => usemodule("mymodule", "");
-
   vars:
       # often you need a unique value for the current run through a
       # bundle, especially if you use if_repaired and such.  The
@@ -52,6 +36,11 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
       # pretty-print the authors and dependencies
       "dependencies" string => join(", ", "$(metadata)[depends]");
       "authors" string => join(", ", "$(metadata)[authors]");
+
+  commands:
+      # call a module included with the bundle
+      "$($(metadata)[location])/modules/mymodule"
+      module => "true";
 
   reports:
     verbose::
@@ -73,9 +62,10 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
 
       "Running the external sample script gave us $(sample_return)";
 
-      # use the "test" context to help debug the sketch (for the developer)
+      # use the "verbose" context to show the sketch operation (for the user)
     verbose::
       "$(this.bundle) running in verbose mode";
+      # use the "test" context to help debug the sketch (for the developer)
     test::
       "$(this.bundle) running in test mode";
 }
