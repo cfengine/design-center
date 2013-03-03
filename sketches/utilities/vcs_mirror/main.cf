@@ -12,7 +12,8 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
                                        $(origin),
                                        $(branch),
                                        $(options)),
-      inherit => "true";
+      inherit => "true",
+      classes => bundle_if_ok("setup_done");
 
     parent_parsed::
       "ensure" usebundle => ensure_parent("$(parent_capture[1])",
@@ -41,7 +42,7 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
       "known_vcs" or => { "use_git", "use_svn" };
       "unknown_vcs" expression => "!known_vcs";
 
-      "variables_ok" and => { "known_vcs" };
+      "variables_ok" and => { "known_vcs", "setup_done" };
       "vcs_has_config_template" expression => "$(vcs_type)_has_config_template";
 
       "path_exists" expression => fileexists("$(path)");
@@ -54,35 +55,33 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
     #   "third_pass" expression => "second_pass";
 
     known_vcs::
-      "vcsconfig_exists" expression => fileexists("$(cfdc_vcs:$(vcs_type).configfile)");
-      "no_vcsconfig_exists" expression => "!vcsconfig_exists";
+      "checkout_exists" expression => fileexists("$(cfdc_vcs:$(vcs_type).configfile)");
+      "no_checkout_exists" expression => "!checkout_exists";
 
   files:
-    # variables_ok.use_git::
-    #   "$(git_configfile)"
-    #   handle => "$(vcs_type)_configfile_contents",
-    #   comment => "Expand Git config file from variable",
-    #   create => "false",
-    #   edit_defaults => default:empty,
-    #   edit_line => default:insert_lines("$(git_config_template)");
+    variables_ok.vcs_has_config_template::
+      "$(cfdc_vcs:$(vcs_type).configfile)"
+      handle => "$(vcs_type)_configfile_contents",
+      comment => "Expand Git config file from variable",
+      create => "false",
+      edit_defaults => default:empty,
+      edit_line => default:insert_lines("$(cfdc_vcs:$(vcs_type).config_template)");
 
   commands:
 
-    # variables_ok.vcsconfig_exists::
-    #   "$($(vcs_type)_update_command)"
-    #   handle     => "$(vcs_type)_update_with_user_command",
-    #   contain    => test_aware_contain("$(runas)", "$(path)", "$(umask)"),
-    #   ifvarclass => "!vcs_mirrored",
-    #   classes    => bundle_if_ok("vcs_updated"),
-    #   comment    => "Update an existing VCS repository in $(path), user override to $(runas)";
+    variables_ok.checkout_exists.!vcs_mirrored::
+      "$(cfdc_vcs:$(vcs_type).update_command)"
+      handle     => "vcs_update_with_user_command",
+      contain    => test_aware_contain("$(runas)", "$(path)", "$(umask)"),
+      classes    => bundle_if_ok("vcs_updated"),
+      comment    => "Update an existing VCS repository in $(path), user override to $(runas)";
 
-    # variables_ok.!vcsconfig_exists::
-    #   "$($(vcs_type)_mirror_command)"
-    #   handle     => "$(vcs_type)_mirror_with_user_command",
-    #   contain    => test_aware_contain("$(runas)", "/", "$(umask)"),
-    #   ifvarclass => "!vcs_mirrored",
-    #   classes    => bundle_if_ok("vcs_mirrored"),
-    #   comment    => "Clone a VCS repository in $(path), user override to $(runas)";
+    variables_ok.!checkout_exists.!vcs_mirrored::
+      "$(cfdc_vcs:$(vcs_type).mirror_command)"
+      handle     => "vcs_mirror_with_user_command",
+      contain    => test_aware_contain("$(runas)", "/", "$(umask)"),
+      classes    => bundle_if_ok("vcs_mirrored"),
+      comment    => "Clone a VCS repository in $(path), user override to $(runas)";
 
   reports:
     verbose::
@@ -112,16 +111,16 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
     verbose.variables_ok.!vcs_has_config_template::
       "$(this.bundle): VCS $(vcs) has no config template";
 
-    verbose.variables_ok.vcsconfig_exists::
+    verbose.variables_ok.checkout_exists::
       "$(this.bundle): VCS config file $(cfdc_vcs:$(vcs_type).configfile) exists";
 
-    verbose.variables_ok.no_vcsconfig_exists::
+    verbose.variables_ok.no_checkout_exists::
       "$(this.bundle): VCS config file $(cfdc_vcs:$(vcs_type).configfile) does not exist";
 
     verbose.vcs_mirrored::
       "$(this.bundle): New clone of $(origin) (branch $(branch) created in $(path)";
 
-    variables_ok.path_exists.no_vcsconfig_exists::
+    variables_ok.path_exists.no_checkout_exists::
       "$(this.bundle): Sorry, we could not clone $(origin) (branch $(branch)) in $(path) because that path already exists";
 
       # return the deployed path when successful
