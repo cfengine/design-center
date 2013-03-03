@@ -1,68 +1,115 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => {
-                  "../../libraries/copbl/cfengine_stdlib.cf",
-                  "./main.cf",
-                };
+      inputs => { @(cfsketch_g.inputs) };
 }
 
+
+# environment common bundles
+
+# environment testing
+bundle common testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_testing_activated" expression => "any";
+      "runenv_testing_test" expression => "any";
+      "runenv_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
-  classes:
-      "mirror1_nowipe" expression => "any";
-      "mirror2_nowipe" expression => "any";
-
   vars:
-      "mirror1_prefix" string => "cfsketch_g.mirror1_";
-      "mirror1_class_prefix" string => "default:mirror1_";
-      "mirror1_vcs" string => "/usr/bin/git";
-      "mirror1_path" string => "/tmp/cfengine-copbl2";
-      "mirror1_origin" string => "https://github.com/cfengine/copbl.git";
-      "mirror1_branch" string => "master";
-    !darwin::
-      "mirror1_runas" string => "root";
-    darwin::
-      "mirror1_runas" string => "tzz";
-    any::
-      "mirror1_umask" string => "022";
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 
-    any::
-      "mirror2_prefix" string => "cfsketch_g.mirror2_";
-      "mirror2_class_prefix" string => "default:mirror2_";
-      "mirror2_vcs" string => "/usr/bin/svn";
-      "mirror2_path" string => "/tmp/test2/test3/svn_mirror";
-      "mirror2_origin" string => "http://svn.apache.org/repos/asf/thrift/trunk/lib/perl";
-      "mirror2_branch" string => "master";
-    !darwin::
-      "mirror2_runas" string => "root";
-    darwin::
-      "mirror2_runas" string => "tzz";
-    any::
-      "mirror2_umask" string => "022";
+      # array 'metadata' from definition sketch metadata, activation __001_VCS_vcs_mirror_mirror
+      "__001_VCS_vcs_mirror_mirror_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_VCS_vcs_mirror_mirror_metadata[depends]" slist => { "CFEngine::stdlib" };
+      "__001_VCS_vcs_mirror_mirror_metadata[license]" string => "MIT";
+      "__001_VCS_vcs_mirror_mirror_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror";
+      "__001_VCS_vcs_mirror_mirror_metadata[manifest]" slist => { "README.md", "main.cf", "params/cfengine-copbl.json", "params/cfengine-core-runas-tzz.json", "params/cfengine-core.json", "params/thrift-lib-perl.json" };
+      "__001_VCS_vcs_mirror_mirror_metadata[manifest_cf]" slist => { "main.cf" };
+      "__001_VCS_vcs_mirror_mirror_metadata[manifest_docs]" slist => { "README.md" };
+      "__001_VCS_vcs_mirror_mirror_metadata[manifest_exe]" slist => { "cf_null" };
+      "__001_VCS_vcs_mirror_mirror_metadata[manifest_extra]" slist => { "params/cfengine-copbl.json", "params/cfengine-core-runas-tzz.json", "params/cfengine-core.json", "params/thrift-lib-perl.json" };
+      "__001_VCS_vcs_mirror_mirror_metadata[name]" string => "VCS::vcs_mirror";
+      "__001_VCS_vcs_mirror_mirror_metadata[tags]" slist => { "cfdc" };
+      "__001_VCS_vcs_mirror_mirror_metadata[version]" string => "1.12";
+
+      # array 'options' from definition vcs_base, activation __001_VCS_vcs_mirror_mirror
+      "__001_VCS_vcs_mirror_mirror_options[nowipe]" string => "1";
+      "__001_VCS_vcs_mirror_mirror_options[parent_dir][ensure]" string => "1";
+      "__001_VCS_vcs_mirror_mirror_options[parent_dir][group]" string => getenv("LOGNAME", "128");
+      "__001_VCS_vcs_mirror_mirror_options[parent_dir][owner]" string => getenv("LOGNAME", "128");
+      "__001_VCS_vcs_mirror_mirror_options[parent_dir][perms]" string => "755";
+      "__001_VCS_vcs_mirror_mirror_options[vcs][runas]" string => getenv("LOGNAME", "128");
+      "__001_VCS_vcs_mirror_mirror_options[vcs][umask]" string => "000";
+
+      # array 'metadata' from definition sketch metadata, activation __002_VCS_vcs_mirror_mirror
+      "__002_VCS_vcs_mirror_mirror_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__002_VCS_vcs_mirror_mirror_metadata[depends]" slist => { "CFEngine::stdlib" };
+      "__002_VCS_vcs_mirror_mirror_metadata[license]" string => "MIT";
+      "__002_VCS_vcs_mirror_mirror_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror";
+      "__002_VCS_vcs_mirror_mirror_metadata[manifest]" slist => { "README.md", "main.cf", "params/cfengine-copbl.json", "params/cfengine-core-runas-tzz.json", "params/cfengine-core.json", "params/thrift-lib-perl.json" };
+      "__002_VCS_vcs_mirror_mirror_metadata[manifest_cf]" slist => { "main.cf" };
+      "__002_VCS_vcs_mirror_mirror_metadata[manifest_docs]" slist => { "README.md" };
+      "__002_VCS_vcs_mirror_mirror_metadata[manifest_exe]" slist => { "cf_null" };
+      "__002_VCS_vcs_mirror_mirror_metadata[manifest_extra]" slist => { "params/cfengine-copbl.json", "params/cfengine-core-runas-tzz.json", "params/cfengine-core.json", "params/thrift-lib-perl.json" };
+      "__002_VCS_vcs_mirror_mirror_metadata[name]" string => "VCS::vcs_mirror";
+      "__002_VCS_vcs_mirror_mirror_metadata[tags]" slist => { "cfdc" };
+      "__002_VCS_vcs_mirror_mirror_metadata[version]" string => "1.12";
+
+      # array 'options' from definition svn_mirror_thrift, activation __002_VCS_vcs_mirror_mirror
+      "__002_VCS_vcs_mirror_mirror_options[nowipe]" string => "1";
+      "__002_VCS_vcs_mirror_mirror_options[parent_dir][ensure]" string => "";
+      "__002_VCS_vcs_mirror_mirror_options[parent_dir][group]" string => getenv("LOGNAME", "128");
+      "__002_VCS_vcs_mirror_mirror_options[parent_dir][owner]" string => getenv("LOGNAME", "128");
+      "__002_VCS_vcs_mirror_mirror_options[parent_dir][perms]" string => "755";
+      "__002_VCS_vcs_mirror_mirror_options[vcs][runas]" string => getenv("LOGNAME", "128");
+      "__002_VCS_vcs_mirror_mirror_options[vcs][umask]" string => "000";
+
+      # array 'metadata' from definition sketch metadata, activation __003_VCS_vcs_mirror_mirror
+      "__003_VCS_vcs_mirror_mirror_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__003_VCS_vcs_mirror_mirror_metadata[depends]" slist => { "CFEngine::stdlib" };
+      "__003_VCS_vcs_mirror_mirror_metadata[license]" string => "MIT";
+      "__003_VCS_vcs_mirror_mirror_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror";
+      "__003_VCS_vcs_mirror_mirror_metadata[manifest]" slist => { "README.md", "main.cf", "params/cfengine-copbl.json", "params/cfengine-core-runas-tzz.json", "params/cfengine-core.json", "params/thrift-lib-perl.json" };
+      "__003_VCS_vcs_mirror_mirror_metadata[manifest_cf]" slist => { "main.cf" };
+      "__003_VCS_vcs_mirror_mirror_metadata[manifest_docs]" slist => { "README.md" };
+      "__003_VCS_vcs_mirror_mirror_metadata[manifest_exe]" slist => { "cf_null" };
+      "__003_VCS_vcs_mirror_mirror_metadata[manifest_extra]" slist => { "params/cfengine-copbl.json", "params/cfengine-core-runas-tzz.json", "params/cfengine-core.json", "params/thrift-lib-perl.json" };
+      "__003_VCS_vcs_mirror_mirror_metadata[name]" string => "VCS::vcs_mirror";
+      "__003_VCS_vcs_mirror_mirror_metadata[tags]" slist => { "cfdc" };
+      "__003_VCS_vcs_mirror_mirror_metadata[version]" string => "1.12";
+
+      # array 'options' from definition git_invalid, activation __003_VCS_vcs_mirror_mirror
+      "__003_VCS_vcs_mirror_mirror_options[umask]" string => "000";
 }
 
 bundle agent cfsketch_run
 {
   methods:
-      "1" usebundle => cfdc_vcs:mirror($(cfsketch_g.mirror1_prefix),
-                                       $(cfsketch_g.mirror1_class_prefix),
-                                       $(cfsketch_g.mirror1_vcs),
-                                       $(cfsketch_g.mirror1_path),
-                                       $(cfsketch_g.mirror1_origin),
-                                       $(cfsketch_g.mirror1_branch),
-                                       $(cfsketch_g.mirror1_runas),
-                                       $(cfsketch_g.mirror1_umask),
-                                       "");
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "testing" usebundle => "testing";
 
-      "2" usebundle => cfdc_vcs:mirror($(cfsketch_g.mirror2_prefix),
-                                       $(cfsketch_g.mirror2_class_prefix),
-                                       $(cfsketch_g.mirror2_vcs),
-                                       $(cfsketch_g.mirror2_path),
-                                       $(cfsketch_g.mirror2_origin),
-                                       $(cfsketch_g.mirror2_branch),
-                                       $(cfsketch_g.mirror2_runas),
-                                       $(cfsketch_g.mirror2_umask),
-                                       "");
+    runenv_testing_activated::
+      "__001_VCS_vcs_mirror_mirror" usebundle => cfdc_vcs:mirror("testing", "default:cfsketch_g.__001_VCS_vcs_mirror_mirror_metadata", "/usr/bin/git", "/tmp/q/cfengine-core", "https://github.com/cfengine/core.git", "master", "default:cfsketch_g.__001_VCS_vcs_mirror_mirror_options"), useresult => "return___001_VCS_vcs_mirror_mirror";
+    runenv_testing_activated::
+      "__002_VCS_vcs_mirror_mirror" usebundle => cfdc_vcs:mirror("testing", "default:cfsketch_g.__002_VCS_vcs_mirror_mirror_metadata", "/usr/bin/svn", "/tmp/thrift-perl-lib", "http://svn.apache.org/repos/asf/thrift/attic/trunk/lib/perl", "", "default:cfsketch_g.__002_VCS_vcs_mirror_mirror_options"), useresult => "return___002_VCS_vcs_mirror_mirror";
+    runenv_testing_activated::
+      "__003_VCS_vcs_mirror_mirror" usebundle => cfdc_vcs:mirror("testing", "default:cfsketch_g.__003_VCS_vcs_mirror_mirror_metadata", "/no/such/versioning_system", "/tmp/cfengine-core", "https://github.com/cfengine/core.git", "master", "default:cfsketch_g.__003_VCS_vcs_mirror_mirror_options"), useresult => "return___003_VCS_vcs_mirror_mirror";
 
+  reports:
+      "activation __001_VCS_vcs_mirror_mirror returned deploy_path = $(return___001_VCS_vcs_mirror_mirror[deploy_path])";
+      "activation __002_VCS_vcs_mirror_mirror returned deploy_path = $(return___002_VCS_vcs_mirror_mirror[deploy_path])";
+      "activation __003_VCS_vcs_mirror_mirror returned deploy_path = $(return___003_VCS_vcs_mirror_mirror[deploy_path])";
 }
