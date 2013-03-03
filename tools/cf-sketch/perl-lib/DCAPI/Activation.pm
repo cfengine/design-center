@@ -60,7 +60,7 @@ sub make_activation
         return (undef, "Activation params can't be an empty array");
     }
 
-    my %params;
+    my @param_sets;
     foreach (@$params)
     {
         return (undef, "The activation params '$_' have not been defined")
@@ -69,7 +69,7 @@ sub make_activation
         return (undef, "The activation params '$_' do not apply to sketch $sketch")
         unless exists $api->definitions()->{$_}->{$sketch};
 
-        $params{$_} = $api->definitions()->{$_}->{$sketch};
+        push @param_sets, [$_, $api->definitions()->{$_}->{$sketch}];
     }
 
     $api->log3("Verified sketch %s activation: run environment %s and params %s",
@@ -78,7 +78,7 @@ sub make_activation
     $api->log4("Checking sketch %s: API %s versus extracted parameters %s",
                $sketch,
                $found->api(),
-               \%params);
+               \@param_sets);
 
     my @bundles_to_check = sort keys %{$found->api()};
 
@@ -89,7 +89,7 @@ sub make_activation
     }
 
     my $bundle;
-    my @params;
+    my @bundle_params;
     my $activation_id;
 
     foreach my $b (@bundles_to_check)
@@ -108,7 +108,7 @@ sub make_activation
         {
             $api->log5("Checking the API of sketch %s: parameter %s", $sketch, $p);
             my $filled = fill_param($api,
-                                    $p->{name}, $p->{type}, \%params,
+                                    $p->{name}, $p->{type}, \@param_sets,
                                     {
                                      environment => $env,
                                      sketch => $found,
@@ -124,7 +124,7 @@ sub make_activation
             }
 
             $api->log5("The API of sketch %s matched parameter %s", $sketch, $p);
-            push @params, $filled;
+            push @bundle_params, $filled;
         }
 
         $bundle = $b if $params_ok;
@@ -136,23 +136,23 @@ sub make_activation
     $activation_position++;
 
     $api->log3("Verified sketch %s entry: filled parameters are %s",
-               $sketch, \@params);
+               $sketch, \@bundle_params);
 
     return DCAPI::Activation->new(api => $api,
                                   sketch => $found,
                                   environment => $env,
                                   bundle => $bundle,
                                   id => $activation_id,
-                                  params => \@params);
+                                  params => \@bundle_params);
 }
 
 sub fill_param
 {
-    my $api    = shift;
-    my $name   = shift;
-    my $type   = shift;
-    my $params = shift;
-    my $extra  = shift;
+    my $api        = shift;
+    my $name       = shift;
+    my $type       = shift;
+    my $param_sets = shift;
+    my $extra      = shift;
 
     if ($type eq 'environment')
     {
@@ -164,9 +164,10 @@ sub fill_param
         return {set=>'sketch metadata', type => 'array', name => $name, value => $extra->{sketch}->runfile_data_dump()};
     }
 
-    foreach my $pkey (sort keys %$params)
+    my $ret;
+    foreach my $pset (@$param_sets)
     {
-        my $pval = $params->{$pkey};
+        my ($pkey, $pval) = @$pset;
         if (!exists $pval->{$name} && exists $extra->{default})
         {
             $extra->{default} =~ s/__PREFIX__/$extra->{id}/g;
@@ -176,23 +177,32 @@ sub fill_param
         # TODO: add more parameter types and validate the value!!!
         if ($type eq 'array' && exists $pval->{$name} && ref $pval->{$name} eq 'HASH')
         {
-            return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+            if (defined $ret)           # merge arrays
+            {
+                my $oldval = $ret->{value};
+                my $newval = $pval->{$name};
+                $ret = {set=>$pkey, type => $type, name => $name, value => Util::hashref_merge($oldval, $newval)};
+            }
+            else
+            {
+                $ret = {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+            }
         }
         elsif ($type eq 'string' && exists $pval->{$name} && Util::is_scalar($pval->{$name}))
         {
-            return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+            $ret = {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
         }
         elsif ($type eq 'boolean' && exists $pval->{$name} && Util::is_scalar($pval->{$name}))
         {
-            return {set=>$pkey, type => $type, name => $name, value => 0+!!$pval->{$name}};
+            $ret = {set=>$pkey, type => $type, name => $name, value => 0+!!$pval->{$name}};
         }
         elsif ($type eq 'list' && exists $pval->{$name} && ref $pval->{$name} eq 'ARRAY')
         {
-            return {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+            $ret = {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
         }
     }
 
-    return;
+    return $ret;
 }
 
 sub can_inline

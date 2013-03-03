@@ -17,21 +17,21 @@ use File::Path qw(make_path remove_tree);
 use Cwd;
 
 BEGIN {
-  # This stuff is executed once when the module is loaded, because it
-  # is static data and initialization.
+    # This stuff is executed once when the module is loaded, because it
+    # is static data and initialization.
 
-  # Initialize Data::Dumper
-  $Data::Dumper::Terse=1;
-  $Data::Dumper::Indent=0;
+    # Initialize Data::Dumper
+    $Data::Dumper::Terse=1;
+    $Data::Dumper::Indent=0;
 
 }
 
 sub function_exists
 {
- no strict 'refs';
- my $funcname = shift;
- return \&{$funcname} if defined &{$funcname};
- return;
+    no strict 'refs';
+    my $funcname = shift;
+    return \&{$funcname} if defined &{$funcname};
+    return;
 }
 
 # Returns an indented string containing a list. Syntax is:
@@ -47,47 +47,52 @@ sub function_exists
 # some other value. A value of 0 for $linelen makes it not do line wrapping.
 # If $lineprefix is given, it is printed at the beginning of each line.
 sub sprintlist {
-  my ($listref, $fline, $separator, $indent, $break, $linelen, $lp) = @_;
-  # Figure out default arguments
-  my @list=@$listref;
-  $separator ||= ", ";
-  $indent = 15 unless defined($indent);
-  my $space=" " x $indent;
-  $fline ||= $space;
-  $break ||= 0;
-  $linelen ||= 80;
-  $lp ||= "";
+    my ($listref, $fline, $separator, $indent, $break, $linelen, $lp) = @_;
+    # Figure out default arguments
+    my @list=@$listref;
+    $separator ||= ", ";
+    $indent = 15 unless defined($indent);
+    my $space=" " x $indent;
+    $fline ||= $space;
+    $break ||= 0;
+    $linelen ||= 80;
+    $lp ||= "";
 
-  $linelen -= length($lp);
+    $linelen -= length($lp);
 
-  # Figure out how to print the first line
-  if (!$break || length($fline)<=$indent) {
-    $fline=substr("$fline$space", 0, length($space));
-  } else {
-    # length($fline)>$indent
-    $fline="$fline\n$space";
-  }
-
-  # Now go through the list, appending until we fill
-  # each line. Lather, rinse, repeat.
-  my $str="";
-  my $line="";
-  foreach (@list) {
-    $line.=$separator if $line;
-    if ($linelen && length($line)+length($_)+length($space)>=$linelen) {
-      $line=~s/\s*$//;
-      $str.="$space$line\n";
-      $line="";
+    # Figure out how to print the first line
+    if (!$break || length($fline)<=$indent)
+    {
+        $fline=substr("$fline$space", 0, length($space));
     }
-    $line.="$_";
-  }
+    else
+    {
+        # length($fline)>$indent
+        $fline="$fline\n$space";
+    }
 
-  # Finishing touches - insert first line and line prefixes, if any.
-  $str.="$space$line";
-  $fline = GREEN . $fline . RESET;
-  $str=~s/^$space/$fline/;
-  $str=~s/^/$lp/mg if $lp;
-  return $str;
+    # Now go through the list, appending until we fill
+    # each line. Lather, rinse, repeat.
+    my $str="";
+    my $line="";
+    foreach (@list)
+    {
+        $line.=$separator if $line;
+        if ($linelen && length($line)+length($_)+length($space)>=$linelen)
+        {
+            $line=~s/\s*$//;
+            $str.="$space$line\n";
+            $line="";
+        }
+        $line.="$_";
+    }
+
+    # Finishing touches - insert first line and line prefixes, if any.
+    $str.="$space$line";
+    $fline = GREEN . $fline . RESET;
+    $str=~s/^$space/$fline/;
+    $str=~s/^/$lp/mg if $lp;
+    return $str;
 }
 
 # Gets a string, and returns it nicely formatted and word-wrapped. It
@@ -99,108 +104,113 @@ sub sprintlist {
 #		[, $lineprefix]]]]]);
 # See sprintlist for the meaning of each parameter.
 sub sprintstr {
-  my ($str, $fl, $ind, $br, $len, $lp)=@_;
-  # Split string into \n-separated parts, preserving all empty fields.
-  my @strs = split(/\n/, $str, -1);
-  # Now process each line separately, to preserve EOLs that were
-  # originally present in the string.
-  my $s;
-  my $result;
-  while (defined($s=shift @strs)) {
-    # Split in words.
-    my @words=(split(/\s+/, $s));
-    $result.=sprintlist(\@words,$fl," ",$ind,$br,$len, $lp);
-    # Add EOL if needed (if there are still more lines to process)
-    $result.="\n" if scalar(@strs);
-    # The $firstline is only needed at the beginning of the first string.
-    $fl=undef;
-  }
-  return $result;
+    my ($str, $fl, $ind, $br, $len, $lp)=@_;
+    # Split string into \n-separated parts, preserving all empty fields.
+    my @strs = split(/\n/, $str, -1);
+    # Now process each line separately, to preserve EOLs that were
+    # originally present in the string.
+    my $s;
+    my $result;
+    while (defined($s=shift @strs))
+    {
+        # Split in words.
+        my @words=(split(/\s+/, $s));
+        $result.=sprintlist(\@words,$fl," ",$ind,$br,$len, $lp);
+        # Add EOL if needed (if there are still more lines to process)
+        $result.="\n" if scalar(@strs);
+        # The $firstline is only needed at the beginning of the first string.
+        $fl=undef;
+    }
+    return $result;
 }
 
 # Takes a list and returns its string form, properly quoted and separated
 # with commas.
 sub joinlist {
-  return join(',', Dumper(@_));
+    return join(',', Dumper(@_));
 }
 
 # Returns true if its argument is an existing user name.
 sub isuser {
-  return $_[0] && defined(getpwnam($_[0]||""));
+    return $_[0] && defined(getpwnam($_[0]||""));
 }
 
 # Colorized warn() & die()
 sub color_warn
 {
-  warn YELLOW "WARN\t", @_;
+    warn YELLOW "WARN\t", @_;
 }
 
 sub color_die
 {
-  my $prelude = '';
-  my $postlude = '';
+    my $prelude = '';
+    my $postlude = '';
 
-  if (defined scalar caller(1))
-  {
-   my ($package, $filename, $line, $sub) = caller(1);
-   $prelude = "$filename:$sub():\n";
-   $postlude = "\n";
-  }
-  else
-  {
-  }
+    if (defined scalar caller(1))
+    {
+        my ($package, $filename, $line, $sub) = caller(1);
+        $prelude = "$filename:$sub():\n";
+        $postlude = "\n";
+    }
+    else
+    {
+    }
 
-  die GREEN $prelude . RED "FATAL\t", @_, $postlude;
+    die GREEN $prelude . RED "FATAL\t", @_, $postlude;
 }
 
 # Output something unconditionally, as is.
 sub output {
-  foreach (@_) {
-    print $_;
-  }
+    foreach (@_)
+    {
+        print $_;
+    }
 }
 
 # Output something unconditionally, nicely formatted.
 sub foutput {
-  foreach (@_) {
-    print sprintstr($_);
-  }
+    foreach (@_)
+    {
+        print sprintstr($_);
+    }
 }
 
 sub warning {
-  print STDERR YELLOW @_;
+    print STDERR YELLOW @_;
 }
 
 sub error {
-  print STDERR RED @_;
+    print STDERR RED @_;
 }
 
 sub message {
-  print STDERR GREEN @_;
+    print STDERR GREEN @_;
 }
 
 # Generate an error message, nicely formatted.
 sub ferror {
-  # Output it, but prefixed with "* "
-  foreach (@_) {
-    error sprintstr($_,undef,undef,undef,undef,"* ");
-  }
+    # Output it, but prefixed with "* "
+    foreach (@_)
+    {
+        error sprintstr($_,undef,undef,undef,undef,"* ");
+    }
 }
 
 # Validate a regex
 sub check_regex {
-  my $regex = shift;
-  my $cregex = eval "qr/$regex/";
-  my $err = $@;
-  if ($err) {
-    $err =~ s/ at.*$//;
-    return "Invalid regex: $err";
-  }
-  return;
+    my $regex = shift;
+    my $cregex = eval "qr/$regex/";
+    my $err = $@;
+    if ($err)
+    {
+        $err =~ s/ at.*$//;
+        return "Invalid regex: $err";
+    }
+    return;
 }
 
 sub local_cfsketches_source
-  {
+{
     my $rootdir   = File::Spec->rootdir();
     my $dir       = Cwd::realpath(shift @_);
     my $inventory = File::Spec->catfile($dir, 'cfsketches');
@@ -215,71 +225,72 @@ sub local_cfsketches_source
     my $updir = Cwd::realpath(dirname($dir));
 
     return local_cfsketches_source($updir);
-  }
+}
 
 sub uniq
-  {
+{
     # Uniquify, preserving order
     my @result = ();
     my %seen = ();
-    foreach (@_) {
-      push @result, $_ unless exists($seen{$_});
-      $seen{$_}=1;
+    foreach (@_)
+    {
+        push @result, $_ unless exists($seen{$_});
+        $seen{$_}=1;
     }
     return @result;
-  }
+}
 
 sub is_resource_local
-  {
+{
     my $resource = shift @_;
     return ($resource !~ m,^[a-z][a-z]+:,);
-  }
+}
 
 sub get_remote
 {
     my $resource = shift @_;
     my $lwp = 1;
     eval
-      {
+    {
         require LWP::Simple;
-      };
+    };
     if ($@)
     {
-      Util::color_warn "Could not load LWP::Simple (you should install libwww-perl)";
-      $lwp = 0;
+        Util::color_warn "Could not load LWP::Simple (you should install libwww-perl)";
+        $lwp = 0;
     }
 
     if ($resource =~ m/^https/)
     {
-      eval
+        eval
         {
-          require LWP::Protocol::https;
+            require LWP::Protocol::https;
         };
-      if ($@ )
-      {
-        Util::color_warn "Could not load LWP::Protocol::https (you should install it)";
-        $lwp = 0;
-      }
+        if ($@ )
+        {
+            Util::color_warn "Could not load LWP::Protocol::https (you should install it)";
+            $lwp = 0;
+        }
     }
 
     if ($lwp)
     {
-     return LWP::Simple::get($resource);
+        return LWP::Simple::get($resource);
     }
     else
     {
-     require File::Which;
-     my $curl = File::Which::which('curl');
-     if (defined $curl)
-     {
-      return read_command($curl, "--silent", $resource);
-     }
+        require File::Which;
+        my $curl = File::Which::which('curl');
+        if (defined $curl)
+        {
+            return read_command($curl, "--silent", $resource);
+        }
 
-     my $wget = File::Which::which('wget');
-     if (defined $wget)
-     {
-      return read_command($wget, "-q", "--output-document=-", $resource);
-     }
+        my $wget = File::Which::which('wget');
+        if (defined $wget)
+        {
+            return read_command($wget, "-q", "--output-document=-", $resource);
+        }
 
     }
 
@@ -288,68 +299,91 @@ sub get_remote
 
 sub read_command
 {
- open(my $pipe, "@_|") or warn "Could not run @_: $!";
- my $out = join('', <$pipe>);
- # print Dumper $out;
- return $out;
+    open(my $pipe, "@_|") or warn "Could not run @_: $!";
+    my $out = join('', <$pipe>);
+    # print Dumper $out;
+    return $out;
 }
 
 sub hashref_search
 {
- my $ref = shift @_;
- my $k = shift @_;
- if (ref $ref eq 'HASH' && exists $ref->{$k})
- {
-  if (scalar @_ > 0) # dig further
-  {
-   return hashref_search($ref->{$k}, @_);
-  }
-  else
-  {
-   return $ref->{$k};
-  }
- }
-
- if (ref $ref eq 'ARRAY' && ref $k eq 'HASH') # search an array
- {
-  foreach my $item (@$ref)
-  {
-   foreach my $probe (keys %$k)
-   {
-    if (ref $item eq 'HASH' &&
-        exists $item->{$probe})
+    my $ref = shift @_;
+    my $k = shift @_;
+    if (ref $ref eq 'HASH' && exists $ref->{$k})
     {
-     # if the value is undef...
-     return $item unless defined $k->{$probe};
-     # or it matches the probe
-     return $item if $item->{$probe} eq $k->{$probe};
+        if (scalar @_ > 0)              # dig further
+        {
+            return hashref_search($ref->{$k}, @_);
+        }
+        else
+        {
+            return $ref->{$k};
+        }
     }
-   }
-  }
- }
 
- return undef;
+    if (ref $ref eq 'ARRAY' && ref $k eq 'HASH') # search an array
+    {
+        foreach my $item (@$ref)
+        {
+            foreach my $probe (keys %$k)
+            {
+                if (ref $item eq 'HASH' &&
+                    exists $item->{$probe}) {
+                    # if the value is undef...
+                    return $item unless defined $k->{$probe};
+                    # or it matches the probe
+                    return $item if $item->{$probe} eq $k->{$probe};
+                }
+            }
+        }
+    }
+
+    return undef;
+}
+
+sub hashref_merge
+{
+    my $old = shift @_;
+    my $new = shift @_;
+
+    return unless ref $new eq 'HASH';
+    return $new unless ref $old eq 'HASH';
+
+    my %ret = %$old;
+    foreach my $nkey (keys %$new)
+    {
+        if (exists $ret{$nkey})
+        {
+            $ret{$nkey} = hashref_merge($ret{$nkey}, $new->{$nkey});
+        }
+        else
+        {
+            $ret{$nkey} = $new->{$nkey};
+        }
+    }
+
+    return \%ret;
 }
 
 sub is_scalar
 {
- return is_scalar_1(@_) || is_json_boolean(@_);
+    return is_scalar_1(@_) || is_json_boolean(@_);
 }
 
 sub is_scalar_1
 {
- return ((ref shift) eq '');
+    return ((ref shift) eq '');
 }
 
 sub is_json_boolean
 {
- return ((ref shift) =~ m/JSON.*Boolean/);
+    return ((ref shift) =~ m/JSON.*Boolean/);
 }
 
 sub dump_ref
 {
- require Data::Dumper;
- return Dumper(\@_);
+    require Data::Dumper;
+    return Dumper(\@_);
 }
 
 sub recurse_print
@@ -367,12 +401,12 @@ sub recurse_print
         if (exists $ref->{function} && exists $ref->{args})
         {
             push @print, {
-                path => $prefix,
-                type => 'string',
-                value => sprintf('%s(%s)',
-                                 $ref->{function},
-                                 join(', ', map { my @p = recurse_print($_); $p[0]->{value} } @{$ref->{args}}))
-            };
+                          path => $prefix,
+                          type => 'string',
+                          value => sprintf('%s(%s)',
+                                           $ref->{function},
+                                           join(', ', map { my @p = recurse_print($_); $p[0]->{value} } @{$ref->{args}}))
+                         };
         }
         else
         {
@@ -386,7 +420,7 @@ sub recurse_print
                                                $simplify_arrays ? "_${_}" : "[$_]"),
                                        $unquote_scalars,
                                        0)
-                foreach sort keys %$ref;
+            foreach sort keys %$ref;
         }
     }
     elsif (ref $ref eq 'ARRAY')
@@ -405,20 +439,20 @@ sub recurse_print
         }
 
         push @print, {
-            path => $prefix,
-            type => 'slist',
-            value => $joined
-        };
+                      path => $prefix,
+                      type => 'slist',
+                      value => $joined
+                     };
     }
     else
     {
         # convert to a 1/0 boolean
         $ref = ! ! $ref if is_json_boolean($ref);
         push @print, {
-            path => $prefix,
-            type => 'string',
-            value => $unquote_scalars ? $ref : "\"$ref\""
-        };
+                      path => $prefix,
+                      type => 'string',
+                      value => $unquote_scalars ? $ref : "\"$ref\""
+                     };
     }
 
     return @print;
@@ -426,21 +460,21 @@ sub recurse_print
 
 sub make_var_lines
 {
- my $name            = shift @_;
- my $ref             = shift @_;
- my $prefix          = shift @_;
- my $unquote_scalars = shift @_;
- my $simplify_arrays = shift @_;
+    my $name            = shift @_;
+    my $ref             = shift @_;
+    my $prefix          = shift @_;
+    my $unquote_scalars = shift @_;
+    my $simplify_arrays = shift @_;
 
- my @ret;
+    my @ret;
 
- foreach my $p (recurse_print($ref, $prefix, $unquote_scalars, $simplify_arrays))
- {
-  push @ret, sprintf('"%s%s" %s => %s;',
-                     $name, $p->{path}, $p->{type}, $p->{value});
- }
+    foreach my $p (recurse_print($ref, $prefix, $unquote_scalars, $simplify_arrays))
+    {
+        push @ret, sprintf('"%s%s" %s => %s;',
+                           $name, $p->{path}, $p->{type}, $p->{value});
+    }
 
- return @ret;
+    return @ret;
 }
 
 1;

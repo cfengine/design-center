@@ -14,7 +14,9 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
                                        $(options)),
       inherit => "true";
 
-      "ensure" usebundle => ensure_parent($(path), "$(options)[parent_dir]"),
+    parent_parsed::
+      "ensure" usebundle => ensure_parent("$(parent_capture[1])",
+                                          "$(options)[parent_dir]"),
       inherit => "true";
 
   vars:
@@ -43,6 +45,10 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
       "vcs_has_config_template" expression => "$(vcs_type)_has_config_template";
 
       "path_exists" expression => fileexists("$(path)");
+
+      "parent_parsed" expression => regextract("(.+)/[^/]+$",
+                                               $(path),
+                                               "parent_capture");
 
     #   "second_pass" expression => "any";
     #   "third_pass" expression => "second_pass";
@@ -233,52 +239,24 @@ bundle agent svn(vcs, path, origin, branch, options)
       "$(this.bundle): mirror_command = $(mirror_command)";
 }
 
-bundle agent ensure_parent(path, options)
+bundle agent ensure_parent(parent_path, options)
 {
-  vars:
-    parent_parsed::
-      "parent_path" string => "$(parent_capture[1])";
-
   classes:
-      "parent_dir_provided" expression => isvariable("$($(options)[parent_dir][owner])");
-      "no_parent_dir_provided" expression => "!parent_dir_provided";
-      "parent_parsed" expression => regextract(
-                                                "(.+)/[^/]+",
-                                                $(path),
-                                                "parent_capture"
-      );
-    parent_parsed::
-      "parent_exists" expression => isdir("$(parent_path)");
-      "no_parent_exists" expression => "!parent_exists";
+      "ensure" expression => strcmp("$($(options)[ensure])", "1");
 
   files:
-    # parent_parsed.no_parent_exists.parent_dir_provided::
-    #   "$(parent_path)/."
-    #   perms => default:mog("$(parent_dir)[perms]",
-    #                        "$(parent_dir)[owner]",
-    #                        "$(parent_dir)[group]");
+    ensure.parent_parsed::
+      "$(parent_path)/."
+      create => "true",
+      perms => default:mog("$($(options)[perms])",
+                           "$($(options)[owner])",
+                           "$($(options)[group])");
 
   reports:
-    verbose.parent_parsed::
-      "$(this.bundle): The parent path of $(path) was parsed to $(parent_path).";
-
-    verbose.no_parent_parsed::
-      "$(this.bundle): The parent path of $(path) could not be parsed to $(parent_path).";
-
-    verbose.parent_parsed.parent_exists::
-      "$(this.bundle): The parent path $(parent_path) exists.";
-
-    verbose.parent_parsed.no_parent_exists::
-      "$(this.bundle): The parent path $(parent_path) does not exist.";
-
-    parent_parsed.no_parent_exists.parent_dir_provided::
-      "$(this.bundle): Creating parent path $(parent_path) because it doesn't exist.";
-
-    parent_parsed.no_parent_exists.no_parent_dir_provided::
-      "$(this.bundle): Not creating parent path $(parent_path) even though it doesn't exist, because the parent_dir parameter was left blank.";
-
-    verbose::
-      "$(this.bundle): path = '$(path)', parent_path = '$(parent_path)'";
+    verbose.!ensure::
+      "$(this.bundle): will not ensure parent path = '$(parent_path)'";
+    verbose.ensure::
+      "$(this.bundle): will ensure parent path '$(parent_path)' with mog parameters '$($(options)[perms])', '$($(options)[owner])', '$($(options)[group])'";
 }
 
 body contain test_aware_contain(user, dir, umask)
