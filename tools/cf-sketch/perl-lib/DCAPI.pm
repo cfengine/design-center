@@ -843,7 +843,8 @@ sub regenerate
         foreach my $p (grep { $_->{type} eq 'return' } @{$a->params()})
         {
             push @report_lines,
-            sprintf('"activation %s returned %s = %s";',
+            sprintf('%s"activation %s returned %s = %s";',
+                    $indent,
                     $a->id(),
                     $p->{name},
                     sprintf('$(return_%s[%s])', $a->id(), $p->{name}));
@@ -855,8 +856,8 @@ sub regenerate
     my $standalone_lines = <<EOHIPPUS;
 body common control
 {
-    bundlesequence => { "cfsketch_run" };
-    inputs => { @(cfsketch_g.inputs) };
+      bundlesequence => { "cfsketch_run" };
+      inputs => { @(cfsketch_g.inputs) };
 }
 EOHIPPUS
 
