@@ -1,16 +1,20 @@
 {
-    "activated": true,
-    "params": {
-        "Protocol": "2",
-        "PermitEmptyPasswords": "no",
-        "ClientAliveInterval": "900",
-        "ClientAliveCountMax": "0"
-    },
-    "tags": [
-        "pcidss",
-        "pcidss_v2",
-        "pcidss_v2_sec_2_1",
-        "pcidss_v2_sec_2_2_3",
-        "pcidss_v2_sec_8_5_15"
-    ]
+    "Security::SSH":
+    {
+        params:
+        {
+            Protocol: "2",
+            PermitEmptyPasswords: "no",
+            ClientAliveInterval: "900",
+            ClientAliveCountMax: "0"
+        },
+        tags:
+        [
+            "pcidss",
+            "pcidss_v2",
+            "pcidss_v2_sec_2_1",
+            "pcidss_v2_sec_2_2_3",
+            "pcidss_v2_sec_8_5_15"
+        ]
+    }
 }
