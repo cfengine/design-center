@@ -3,7 +3,7 @@
     {
         "activated": true,
         "path": "/tmp/thrift-perl-lib",
-        "origin":"http://svn.apache.org/repos/asf/thrift/trunk/lib/perl",
+        "origin":"http://svn.apache.org/repos/asf/thrift/attic/trunk/lib/perl",
         "vcs": "/usr/bin/svn"
     }
 }

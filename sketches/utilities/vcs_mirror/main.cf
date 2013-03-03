@@ -28,6 +28,11 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
       "vcs_type" string => lastnode("$(vcs)","/");
       "runas" string => "$($(options)[vcs][runas])";
       "umask" string => "$($(options)[vcs][umask])";
+    setup_done::
+      "update_command"  slist => { "@(cfdc_vcs:$(vcs_type).update_command)" };
+      "mirror_command"  slist => { "@(cfdc_vcs:$(vcs_type).mirror_command)" };
+      "configfile"      string => "$(cfdc_vcs:$(vcs_type).configfile)";
+      "config_template" string => "$(cfdc_vcs:$(vcs_type).config_template)";
 
     any::
       # pretty-print the authors and dependencies
@@ -55,29 +60,29 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
     #   "third_pass" expression => "second_pass";
 
     known_vcs::
-      "checkout_exists" expression => fileexists("$(cfdc_vcs:$(vcs_type).configfile)");
+      "checkout_exists" expression => fileexists("$(configfile)");
       "no_checkout_exists" expression => "!checkout_exists";
 
   files:
     variables_ok.vcs_has_config_template::
-      "$(cfdc_vcs:$(vcs_type).configfile)"
-      handle => "$(vcs_type)_configfile_contents",
+      "$(configfile)"
+      handle => "vcs_configfile_contents",
       comment => "Expand Git config file from variable",
       create => "false",
       edit_defaults => default:empty,
-      edit_line => default:insert_lines("$(cfdc_vcs:$(vcs_type).config_template)");
+      edit_line => default:insert_lines("$(config_template)");
 
   commands:
 
     variables_ok.checkout_exists.!vcs_mirrored::
-      "$(cfdc_vcs:$(vcs_type).update_command)"
+      "$(update_command)"
       handle     => "vcs_update_with_user_command",
       contain    => test_aware_contain("$(runas)", "$(path)", "$(umask)"),
       classes    => bundle_if_ok("vcs_updated"),
       comment    => "Update an existing VCS repository in $(path), user override to $(runas)";
 
     variables_ok.!checkout_exists.!vcs_mirrored::
-      "$(cfdc_vcs:$(vcs_type).mirror_command)"
+      "$(mirror_command)"
       handle     => "vcs_mirror_with_user_command",
       contain    => test_aware_contain("$(runas)", "/", "$(umask)"),
       classes    => bundle_if_ok("vcs_mirrored"),
@@ -106,22 +111,16 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
       "$(this.bundle): VCS is $(vcs), to be executed as user $(runas) / umask $(umask)";
     verbose.variables_ok.vcs_has_config_template::
       "$(this.bundle): VCS $(vcs) has a config template";
-    veryverbose.variables_ok.vcs_has_config_template::
-      "$(this.bundle): VCS $(vcs) config template = $(cfdc_vcs:$(vcs_type).config_template)";
+    default:verbose.variables_ok.vcs_has_config_template::
+      "$(this.bundle): VCS $(vcs) config template = $(config_template)";
     verbose.variables_ok.!vcs_has_config_template::
       "$(this.bundle): VCS $(vcs) has no config template";
 
-    verbose.variables_ok.checkout_exists::
-      "$(this.bundle): VCS config file $(cfdc_vcs:$(vcs_type).configfile) exists";
-
-    verbose.variables_ok.no_checkout_exists::
-      "$(this.bundle): VCS config file $(cfdc_vcs:$(vcs_type).configfile) does not exist";
-
     verbose.vcs_mirrored::
-      "$(this.bundle): New clone of $(origin) (branch $(branch) created in $(path)";
+      "$(this.bundle): $(origin) (branch $(branch) cloned into $(path)";
 
-    variables_ok.path_exists.no_checkout_exists::
-      "$(this.bundle): Sorry, we could not clone $(origin) (branch $(branch)) in $(path) because that path already exists";
+    verbose.vcs_updated::
+      "$(this.bundle): $(origin) (branch $(branch) updated into $(path)";
 
       # return the deployed path when successful
     vcs_mirrored||vcs_updated::
@@ -133,8 +132,13 @@ bundle agent git(vcs, path, origin, branch, options)
   classes:
       "nowipe" expression => strcmp("$($(options)[nowipe])", "1");
       "wipe" expression => "!nowipe";
+      "stage" expression => strcmp("$($(options)[stage][stage])", "1");
 
   vars:
+    stage::
+      "stage_suffix" string => "$($(options)[stage][suffix])";
+      "stage_path" string => "$(path)$(stage_suffix)";
+
     wipe::
       "update_command" slist =>
       {
@@ -194,6 +198,11 @@ merge = refs/heads/$(branch)
       "$(this.bundle): we will look for the config file $(configfile)";
       "$(this.bundle): update_command = $(update_command)";
       "$(this.bundle): mirror_command = $(mirror_command)";
+
+    verbose.stage::
+      "$(this.bundle): we will stage the deployment into $(stage_path)";
+    verbose.!stage::
+      "$(this.bundle): we will NOT stage the deployment";
 }
 
 bundle agent svn(vcs, path, origin, branch, options)
@@ -202,7 +211,13 @@ bundle agent svn(vcs, path, origin, branch, options)
       "nowipe" expression => strcmp("$($(options)[nowipe])", "1");
       "wipe" expression => "!nowipe";
 
+      "stage" expression => strcmp("$($(options)[stage][stage])", "1");
+
   vars:
+    stage::
+      "stage_suffix" string => "$($(options)[stage][suffix])";
+      "stage_path" string => "$(path)$(stage_suffix)";
+
     nowipe::
       "update_command" slist =>
       {
@@ -236,6 +251,11 @@ bundle agent svn(vcs, path, origin, branch, options)
       "$(this.bundle): we will look for the config file $(configfile)";
       "$(this.bundle): update_command = $(update_command)";
       "$(this.bundle): mirror_command = $(mirror_command)";
+
+    verbose.stage::
+      "$(this.bundle): we will stage the deployment into $(stage_path)";
+    verbose.!stage::
+      "$(this.bundle): we will NOT stage the deployment";
 }
 
 bundle agent ensure_parent(parent_path, options)
