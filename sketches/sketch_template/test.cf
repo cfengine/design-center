@@ -1,46 +1,68 @@
 body common control
 {
-      bundlesequence => { "cfsketch_run" };
-      inputs => { "../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+    bundlesequence => { "cfsketch_run" };
+    inputs => { @(cfsketch_g.inputs) };
 }
 
 
+# environment common bundles
+
+# environment testing
+bundle common testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_testing_activated" expression => "any";
+      "runenv_testing_test" expression => "any";
+      "runenv_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
-  classes:
-      "run_context1" expression => "vampyr";
-      "run_context2" expression => "any";
-
   vars:
-    any::
-      "run_prefix" string => "cfsketch_g.run_";
-      "run_bundle_home" string => "/home/tzz/.cfagent/inputs/sketches/CFEngine/sketch_template";
-      "run_myboolean" string => "1";
-      "run_myip" string => "$(sys.ipv4)";
-      "run_myarray[boolean_key1]" string => "1";
-      "run_myarray[k1]" string => "v1";
-      "run_myarray[k2]" string => "v2";
-      "run_myarray[path1]" string => "/var/tmp/extrafile.tmp";
-      "run_myarray[required1]" string => "myname";
-      "run_myarray[url1]" string => "https://myserver.com";
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 
-    !(A||B)::
-      "run_mytype" string => "fallback";
-    A::
-      "run_mytype" string => "alpha";
-    B.!A::
-      "run_mytype" string => "beta";
+      # array 'mymetadata' from definition sketch metadata, activation __001_CFEngine_sketch_template_entry
+      "__001_CFEngine_sketch_template_entry_mymetadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_CFEngine_sketch_template_entry_mymetadata[depends]" slist => { "CFEngine::stdlib" };
+      "__001_CFEngine_sketch_template_entry_mymetadata[license]" string => "MIT";
+      "__001_CFEngine_sketch_template_entry_mymetadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/sketch_template";
+      "__001_CFEngine_sketch_template_entry_mymetadata[manifest]" slist => { "README.md", "main.cf", "modules/mymodule", "params/demo.json", "scripts/sample.sh", "test.cf" };
+      "__001_CFEngine_sketch_template_entry_mymetadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__001_CFEngine_sketch_template_entry_mymetadata[manifest_docs]" slist => { "README.md" };
+      "__001_CFEngine_sketch_template_entry_mymetadata[manifest_exe]" slist => { "modules/mymodule", "scripts/sample.sh" };
+      "__001_CFEngine_sketch_template_entry_mymetadata[manifest_extra]" slist => { "params/demo.json" };
+      "__001_CFEngine_sketch_template_entry_mymetadata[name]" string => "CFEngine::sketch_template";
+      "__001_CFEngine_sketch_template_entry_mymetadata[tags]" slist => { "cfdc" };
+      "__001_CFEngine_sketch_template_entry_mymetadata[version]" string => "1.01";
+
+      # list 'mylist' from definition simple_sketch, activation __001_CFEngine_sketch_template_entry
+      "__001_CFEngine_sketch_template_entry_mylist" slist => { "1", "2", "3" };
+
+      # array 'myarray' from definition simple_sketch, activation __001_CFEngine_sketch_template_entry
+      "__001_CFEngine_sketch_template_entry_myarray[a]" string => "1";
+      "__001_CFEngine_sketch_template_entry_myarray[b]" string => "3";
+      "__001_CFEngine_sketch_template_entry_myarray[c]" string => "3";
 }
 
 bundle agent cfsketch_run
 {
   methods:
+    any::
       "cfsketch_g" usebundle => "cfsketch_g";
-      "!" usebundle => cfdc_sketch_template:entry($(cfsketch_g.run_prefix),
-                                                  $(cfsketch_g.run_bundle_home),
-                                                  $(cfsketch_g.run_myboolean),
-                                                  $(cfsketch_g.run_mytype),
-                                                  $(cfsketch_g.run_myip),
-                                                  "default:cfsketch_g.run_myarray");
+      "testing" usebundle => "testing";
+
+    runenv_testing_activated::
+      "__001_CFEngine_sketch_template_entry" usebundle => cfdc_sketch_template:entry("testing", "default:cfsketch_g.__001_CFEngine_sketch_template_entry_mymetadata", "__001_CFEngine_sketch_template_entry", "1", "fallback", "10.0.1.0", @(cfsketch_g.__001_CFEngine_sketch_template_entry_mylist), "default:cfsketch_g.__001_CFEngine_sketch_template_entry_myarray"), useresult => "return___001_CFEngine_sketch_template_entry";
+
+  reports:
 
 }
