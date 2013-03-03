@@ -159,6 +159,11 @@ sub fill_param
         return {set=>undef, type => $type, name => $name, value => $extra->{environment}};
     }
 
+    if ($type eq 'return')
+    {
+        return {set=>undef, type => $type, name => $name, value => undef};
+    }
+
     if ($type eq 'metadata')
     {
         return {set=>'sketch metadata', type => 'array', name => $name, value => $extra->{sketch}->runfile_data_dump()};
@@ -210,7 +215,17 @@ sub can_inline
     my $self = shift @_;
     my $type = shift @_;
 
-    return ($type ne 'list' && $type ne 'array' && $type ne 'metadata');
+    return (!$self->ignored_type($type) &&
+            ($type ne 'list' && $type ne 'array' &&
+             $type ne 'metadata'));
+}
+
+sub ignored_type
+{
+    my $self = shift @_;
+    my $type = shift @_;
+
+    return ($type eq 'return');
 }
 
 sub make_bundle_params
@@ -220,7 +235,11 @@ sub make_bundle_params
     my @data;
     foreach my $p (@{$self->params()})
     {
-        if ($self->can_inline($p->{type}))
+        if ($self->ignored_type($p->{type}))
+        {
+            $self->api()->log5("Bundle parameters: ignoring parameter %s", $p);
+        }
+        elsif ($self->can_inline($p->{type}))
         {
             foreach my $pr (Util::recurse_print($p->{value}, '', 0, 0))
             {

@@ -117,14 +117,16 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
       "$(this.bundle): VCS $(vcs) has no config template";
 
     verbose.vcs_mirrored::
-      "$(this.bundle): $(origin) (branch $(branch) cloned into $(path)";
+      "$(this.bundle): $(origin) (branch $(branch) cloned into $(path))";
 
     verbose.vcs_updated::
-      "$(this.bundle): $(origin) (branch $(branch) updated into $(path)";
+      "$(this.bundle): $(origin) (branch $(branch) updated into $(path))";
 
       # return the deployed path when successful
     vcs_mirrored||vcs_updated::
       "$(path)" bundle_return_value_index => "deploy_path";
+    !(vcs_mirrored||vcs_updated)::
+      "" bundle_return_value_index => "deploy_path";
 }
 
 bundle agent git(vcs, path, origin, branch, options)

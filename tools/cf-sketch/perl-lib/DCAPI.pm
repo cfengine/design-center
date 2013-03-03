@@ -720,6 +720,10 @@ sub regenerate
                 $self->log("Regenerate: adding environment %s", $p);
                 $environments{$p->{value}}++;
             }
+            elsif ($a->ignored_type($p->{type}))
+            {
+                $self->log5("Regenerate: ignoring parameter %s", $p);
+            }
             # we can't inline some types, so print them explicitly in the data bundle
             elsif (!$a->can_inline($p->{type}))
             {
@@ -823,13 +827,30 @@ sub regenerate
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
 
-        push @invocation_lines, sprintf('%s"%s" usebundle => %s%s(%s);',
+        push @invocation_lines, sprintf('%s"%s" usebundle => %s%s(%s), useresult => "return_%s";',
                                         $indent,
                                         $a->id(),
                                         $namespace_prefix,
                                         $a->bundle(),
-                                        $a->make_bundle_params());
+                                        $a->make_bundle_params(),
+                                        $a->id());
     }
+
+    # 4. print return value reports
+    my @report_lines;
+    foreach my $a (@activations)
+    {
+        foreach my $p (grep { $_->{type} eq 'return' } @{$a->params()})
+        {
+            push @report_lines,
+            sprintf('"activation %s returned %s = %s";',
+                    $a->id(),
+                    $p->{name},
+                    sprintf('$(return_%s[%s])', $a->id(), $p->{name}));
+        }
+    }
+
+    my $report_lines = join "\n", @report_lines;
 
     my $standalone_lines = <<EOHIPPUS;
 body common control
@@ -866,6 +887,9 @@ bundle agent cfsketch_run
       "cfsketch_g" usebundle => "cfsketch_g";
 $environment_calls
 $invocation_lines
+
+  reports:
+$report_lines
 }
 EOHIPPUS
 

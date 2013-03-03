@@ -33,6 +33,7 @@
             { type: "string", name: "origin" },
             { type: "string", name: "branch" },
             { type: "array", name: "options", }, // all extra options go in here
+            { type: "return", name: "deploy_path", },
         ],
     },
 
