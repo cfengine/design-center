@@ -132,13 +132,8 @@ bundle agent git(vcs, path, origin, branch, options)
   classes:
       "nowipe" expression => strcmp("$($(options)[nowipe])", "1");
       "wipe" expression => "!nowipe";
-      "stage" expression => strcmp("$($(options)[stage][stage])", "1");
 
   vars:
-    stage::
-      "stage_suffix" string => "$($(options)[stage][suffix])";
-      "stage_path" string => "$(path)$(stage_suffix)";
-
     wipe::
       "update_command" slist =>
       {
@@ -198,11 +193,6 @@ merge = refs/heads/$(branch)
       "$(this.bundle): we will look for the config file $(configfile)";
       "$(this.bundle): update_command = $(update_command)";
       "$(this.bundle): mirror_command = $(mirror_command)";
-
-    verbose.stage::
-      "$(this.bundle): we will stage the deployment into $(stage_path)";
-    verbose.!stage::
-      "$(this.bundle): we will NOT stage the deployment";
 }
 
 bundle agent svn(vcs, path, origin, branch, options)
@@ -211,13 +201,7 @@ bundle agent svn(vcs, path, origin, branch, options)
       "nowipe" expression => strcmp("$($(options)[nowipe])", "1");
       "wipe" expression => "!nowipe";
 
-      "stage" expression => strcmp("$($(options)[stage][stage])", "1");
-
   vars:
-    stage::
-      "stage_suffix" string => "$($(options)[stage][suffix])";
-      "stage_path" string => "$(path)$(stage_suffix)";
-
     nowipe::
       "update_command" slist =>
       {
@@ -251,11 +235,6 @@ bundle agent svn(vcs, path, origin, branch, options)
       "$(this.bundle): we will look for the config file $(configfile)";
       "$(this.bundle): update_command = $(update_command)";
       "$(this.bundle): mirror_command = $(mirror_command)";
-
-    verbose.stage::
-      "$(this.bundle): we will stage the deployment into $(stage_path)";
-    verbose.!stage::
-      "$(this.bundle): we will NOT stage the deployment";
 }
 
 bundle agent ensure_parent(parent_path, options)
