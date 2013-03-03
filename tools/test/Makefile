@@ -33,13 +33,20 @@ api:
 	@echo ...define Security::SSH simple_ssh and CFEngine::sketch_template simple_sketch parameters
 	echo '{ dc_api_version: "0.0.1", request: {define: { "simple_sketch": { "CFEngine::sketch_template": { myboolean: true, myip: "10.0.1.0", mylist: [ 1, 2, 3 ], myarray: { a: 1, b: 3, c: 3 } } }, "simple_ssh": { "Security::SSH": { params: { Protocol : "2", X11Forwarding : "yes", PermitRootLogin : "yes" } } } } } }' | $(CFAPI)
 	@echo define VCS::vcs_mirror parameters
-	echo '{ dc_api_version: "0.0.1", request: {define: { "vcs_base": { "VCS::vcs_mirror": { vcs: "/usr/bin/git" } } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define: { "vcs_mirror_core": { "VCS::vcs_mirror": { path: "/tmp/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git", options: { parent_dir: { owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: 755, create: true }, nowipe: true, stage: { suffix: ".stage", owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: 755 }, vcs: { runas: { "function": "getenv", "args": ["LOGNAME", "128"] }, umask: 755 } } } } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "vcs_base": { "VCS::vcs_mirror": { options: { parent_dir: { owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: 755, create: true }, nowipe: true, stage: { suffix: ".stage", owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: 755 }, vcs: { runas: { "function": "getenv", "args": ["LOGNAME", "128"] }, umask: 755 } } } } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "git_mirror_core": { "VCS::vcs_mirror": { vcs: "/usr/bin/git", path: "/tmp/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git"  } } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "svn_mirror_thrift": { "VCS::vcs_mirror": { vcs: "/usr/bin/svn", path: "/tmp/thrift-perl-lib", branch: "", origin: "http://svn.apache.org/repos/asf/thrift/trunk/lib/perl"  } } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "git_invalid": { "VCS::vcs_mirror": { path: "/tmp/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git", options: { umask: 755 }, vcs: "/no/such/versioning_system" } } } } }' | $(CFAPI)
 
-	@echo ...activate Security::SSH with ANYTIME run environment and simple_ssh parameters
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "ANYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
-	@echo ...activate CFEngine::sketch_template with testing run environment and simple_sketch parameters
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "simple_sketch" ] } } } }' | $(CFAPI)
+	# @echo ...activate Security::SSH with ANYTIME run environment and simple_ssh parameters
+	# echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "ANYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+	# @echo ...activate CFEngine::sketch_template with testing run environment and simple_sketch parameters
+	# echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "simple_sketch" ] } } } }' | $(CFAPI)
+	@echo ...activate VCS::vcs_mirror with testing run environment and vcs_base+git_mirror_core and vcs_base+svn_mirror_thrift parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "vcs_base", "git_mirror_core" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "vcs_base", "svn_mirror_thrift" ] } } } }' | $(CFAPI)
+	@echo ...activate VCS::vcs_mirror with testing run environment and git_invalid parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "git_invalid" ] } } } }' | $(CFAPI)
 
 	@echo ...list installed
 	echo '{ dc_api_version: "0.0.1", request: {list: true } }' | $(CFAPI)

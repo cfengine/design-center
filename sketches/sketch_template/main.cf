@@ -3,26 +3,12 @@ body file control
   namespace => "cfdc_sketch_template";
 }
 
-bundle common runenv(runenv)
+bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, myarray)
 {
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-  classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-
-  reports:
-    verbose::
-      "Imported var $(vars) with value $($(vars))";
-}
-
-bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, myarray)
-{
-  methods:
-      "runenv" usebundle => cfdc_sketch_template:runenv($(runenv));
-
-  vars:
       # often you need a unique value for the current run through a
       # bundle, especially if you use if_repaired and such.  The
       # canon_prefix will give you that.
@@ -36,6 +22,9 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
       "dependencies" string => join(", ", "$(metadata)[depends]");
       "authors" string => join(", ", "$(metadata)[authors]");
 
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
   commands:
       # call a module included with the bundle
       "$($(metadata)[location])/modules/mymodule"
@@ -43,28 +32,33 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
 
   reports:
     verbose::
-      "$($(metadata)[name]) license = $($(metadata)[license])";
-      "$($(metadata)[name]) dependencies = $(dependencies)";
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
 
-      "$($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
+    verbose::
+      "$(this.bundle): $($(metadata)[name]) license = $($(metadata)[license])";
+      "$(this.bundle): $($(metadata)[name]) dependencies = $(dependencies)";
+
+      "$(this.bundle): $($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
 
     cfengine::
       # This will define localclass with a locally meaningful prefix
       # every time (otherwise, localclass will be global and will be
       # defined with the same name every time).
-      "Hello there"
+      "$(this.bundle): Hello there"
       classes => default:if_repaired("$(canon_prefix)localclass");
 
       # And this will use the localclass
-      "Hello back"
+      "$(this.bundle): Hello back"
       ifvarclass => "$(canon_prefix)localclass";
 
-      "Running the external sample script gave us $(sample_return)";
+      "$(this.bundle): running the external sample script gave us $(sample_return)";
 
       # use the "verbose" context to show the sketch operation (for the user)
     verbose::
-      "$(this.bundle) running in verbose mode";
+      "$(this.bundle): running in verbose mode";
       # use the "test" context to help debug the sketch (for the developer)
     test::
-      "$(this.bundle) running in test mode";
+      "$(this.bundle): running in test mode";
 }

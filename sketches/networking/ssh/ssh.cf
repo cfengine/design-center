@@ -61,42 +61,37 @@ body file control
         namespace => "cfdc_sshd";
 }
 
-bundle common runenv(runenv)
+bundle agent sshd(runenv, metadata, params)
 {
+  methods:
+      "vars" usebundle => vars("$(params)");
+      "sshd_cfg"  usebundle => set_cfg("cfdc_sshd:vars.conf");
+
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
+      # pretty-print the authors and dependencies
+      "dependencies" string => join(", ", "$(metadata)[depends]");
+      "authors" string => join(", ", "$(metadata)[authors]");
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
   reports:
     verbose::
-      "Imported var $(vars) with value $($(vars))";
-}
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
 
-bundle agent sshd(runenv, metadata, params)
-{
-  methods:
-      "runenv" usebundle => cfdc_sshd:runenv($(runenv));
-      "vars" usebundle => cfdc_sshd:vars("$(params)");
-      "sshd_cfg"  usebundle => cfdc_sshd:set_cfg("cfdc_sshd:vars.conf");
-
-  vars:
-      # pretty-print the authors and dependencies
-      "dependencies" string => join(", ", "$(metadata)[depends]");
-      "authors" string => join(", ", "$(metadata)[authors]");
-
-  reports:
     verbose::
-      "$($(metadata)[name]) license = $($(metadata)[license])";
-      "$($(metadata)[name]) dependencies = $(dependencies)";
+      "$(this.bundle): $($(metadata)[name]) license = $($(metadata)[license])";
+      "$(this.bundle): $($(metadata)[name]) dependencies = $(dependencies)";
 
-      "$($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
+      "$(this.bundle): $($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
     verbose::
-      "$(this.bundle) running in verbose mode";
+      "$(this.bundle): running in verbose mode";
     test::
-      "$(this.bundle) running in test mode";
+      "$(this.bundle): running in test mode";
 }
 
 bundle agent sshd_config(params)
