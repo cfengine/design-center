@@ -46,6 +46,7 @@ my %options = (
                activate => {},
                install => [],
                force => 0,
+               verbose => 0,
                runfile => "$inputs_root/api-runfile.cf",
               );
 
@@ -78,7 +79,7 @@ api_interaction({
                                         {
                                          activated => 1,
                                          test => 1,
-                                         verbose => 1
+                                         verbose => !!$options{verbose}
                                         }
                                        }
                 });
