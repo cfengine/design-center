@@ -1,34 +1,9 @@
 {
     "CFEngine::sketch_template":
     {
-        // you can omit "activated" to make it always true, or set it
-        // to a string like "linux.chicago" to express that the sketch
-        // should only be active in some contexts
-        "activated" : true,
-        // booleans 
-        "myboolean" : true,
-
-        // bypass validations for this value
-        "myip": { "bypass_validation": "$(sys.ipv4)" },
-
-        "myarray":
-        {
-            "k1": "v1",
-            "k2": "v2",
-            // this key must be given
-            "required1": "myname",
-            "boolean_key1": true,
-            "path1": "/var/tmp/extrafile.tmp",
-            "url1": "https://myserver.com"
-        },
-
-        // this is a context, true only if "vampyr" is defined
-        "context1": "vampyr",
-        // this is a context, always true (passed to CFEngine as "any")
-        "context2": true,
-
-        // this key "mytype" can only have a few values
-        // this value will depend on whether the classes A or B or neither are defined 
-        "mytype": { "bycontext": { "A": "alpha", "B.!A": "beta", "!(A||B)": "fallback" } }
+        myboolean: true,
+        myip: "10.0.1.0",
+        mylist: [ 1, 2, 3 ],
+        myarray: { a: 1, b: 3, c: 3 }
     }
 }

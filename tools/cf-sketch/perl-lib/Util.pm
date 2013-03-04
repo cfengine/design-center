@@ -377,7 +377,10 @@ sub is_scalar_1
 
 sub is_json_boolean
 {
-    return ((ref shift) =~ m/JSON.*Boolean/);
+    my $v = shift;
+    return 1 if (is_scalar_1($v) && ($v eq '0' || $v eq '1'));
+
+    return ((ref $v) =~ m/JSON.*Boolean/);
 }
 
 sub dump_ref

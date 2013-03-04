@@ -561,6 +561,9 @@ sub define_environment
 
     foreach my $dkey (keys %$define_environment)
     {
+        return (undef, "Invalid environment name $dkey (must be a valid bundle name)")
+        if $dkey =~ m/\W/;
+
         my $spec = $define_environment->{$dkey};
 
         if (ref $spec ne 'HASH')
@@ -751,9 +754,6 @@ sub regenerate
     my @environment_lines = ("# environment common bundles\n");
     foreach my $e (keys %environments)
     {
-        my $print_e = $e;
-        $print_e =~ s/\W/_/g;
-
         my @var_data;
         my @class_data;
         my $edata = $self->environments()->{$e};
@@ -793,7 +793,7 @@ sub regenerate
 
                 push @class_data, sprintf('%s"runenv_%s_%s" expression => "%s";',
                                           $indent,
-                                          $print_e,
+                                          $e,
                                           $print_v,
                                           $d_expression);
             }
@@ -801,14 +801,14 @@ sub regenerate
 
         push @environment_lines,
         sprintf("# environment %s\nbundle common %s\n{\n%s\n}\n",
-                $e, $print_e, join("\n",
+                $e, $e, join("\n",
                                    "${type_indent}vars:",
                                    @var_data,
                                    # don't insert classes: line if there's no classes
                                    (scalar @class_data ? "${type_indent}classes:" : ''),
                                    @class_data));
 
-        $environment_calls .= "$indent\"$e\" usebundle => \"$print_e\";\n";
+        $environment_calls .= "$indent\"$e\" usebundle => \"$e\";\n";
     }
 
     my $environment_lines = join "\n", @environment_lines;
@@ -1158,13 +1158,26 @@ sub load_int
     }
     elsif (Util::is_resource_local($f))
     {
+        my $multiline = 1;
         my $j;
-        unless (open($j, '<', $f) && $j)
+        if ($f eq '-')
         {
-            return (undef, "Could not inspect $f: $!");
+            $j = \*STDIN;
+            $multiline = 0;
+        }
+        else
+        {
+            unless (open($j, '<', $f) && $j)
+            {
+                return (undef, "Could not inspect $f: $!");
+            }
         }
 
-        @j = <$j>;
+        while (<$j>)
+        {
+            push @j, $_;
+            last unless $multiline;
+        }
     }
     else
     {
