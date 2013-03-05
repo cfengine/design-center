@@ -12,12 +12,12 @@
     metadata:
     {
         name: "CFEngine::sketch_template",
-	description: "Standard template for Design Center sketches",
+	    description: "Standard template for Design Center sketches",
         version: "1.01",
         license: "MIT",
         tags: [ "cfdc" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 105 }, cfengine: { version: "3.4.0" }, os: [ "linux", "darwin" ] }
+        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }, os: [ "linux", "darwin" ] }
     },
 
     api:

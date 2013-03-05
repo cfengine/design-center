@@ -133,7 +133,7 @@ sub set_config
     if ($vardata_file)
     {
         $vardata_file = glob($vardata_file);
-        $self->log("Loading vardata file $vardata_file");
+        $self->log5("Loading vardata file $vardata_file");
         $self->vardata($vardata_file);
         if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file))
         {
@@ -166,7 +166,7 @@ sub set_config
         }
         else
         {
-            $self->log("Successfully loaded vardata file $vardata_file");
+            $self->log3("Successfully loaded vardata file $vardata_file");
             $self->activations($v_data->{activations});
             $self->definitions($v_data->{definitions});
             $self->environments($v_data->{environments});

@@ -12,9 +12,13 @@ ifeq ($(LOGNAME),root)
   RUNFILE:=/var/cfengine/inputs/standalone-cf-sketch-runfile.cf
 endif
 
+ifeq ($(VV),1)
+  EXTRA:=--veryverbose
+endif
+
 CFAPI:=`pwd`/../cf-sketch/cf-dc-api.pl `pwd`/../cf-sketch/config.json
 CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH)
-CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --expert --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE)
+CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --expert --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE) $(EXTRA)
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 # api:
@@ -286,6 +290,10 @@ sketch_template:
 
 file_integrity:
 	$(CFSKETCH_DA) --install Security::file_integrity --activate Security::file_integrity=$(SOURCEDIR)/security/file_integrity/params/pcidss_v2.json
+	$(RUNNER)
+
+dclib:
+	$(CFSKETCH_DA) --install CFEngine::dclib
 	$(RUNNER)
 
 wordpress:

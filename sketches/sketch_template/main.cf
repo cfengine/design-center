@@ -18,12 +18,13 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
       "sample_return" string => execresult("$($(metadata)[location])/scripts/sample.sh",
                                            "useshell");
 
-      # pretty-print the authors and dependencies
-      "dependencies" string => join(", ", "$(metadata)[depends]");
-      "authors" string => join(", ", "$(metadata)[authors]");
-
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   commands:
       # call a module included with the bundle
@@ -35,12 +36,6 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
       "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
       "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
       ifvarclass => "$(vars)";
-
-    verbose::
-      "$(this.bundle): $($(metadata)[name]) license = $($(metadata)[license])";
-      "$(this.bundle): $($(metadata)[name]) dependencies = $(dependencies)";
-
-      "$(this.bundle): $($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
 
     cfengine::
       # This will define localclass with a locally meaningful prefix

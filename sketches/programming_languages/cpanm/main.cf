@@ -3,29 +3,46 @@ body file control
   namespace => "cfdc_cpan";
 }
 
-bundle agent install(cpanm_program, extra_params, packages)
+bundle agent install(runenv, metadata, cpanm_program, extra_params, packages)
 {
-  meta:
-      "vars[cpanm_program][type]"  string => "PATH";
-
-      "vars[extra_params][type]"   string => "STRING";
-
-      "vars[packages][type]"       string => "LIST(NON_EMPTY_STRING)";
-
   vars:
-      "canon_prefix" string => canonify("$(prefix)");
-    default:test::
-      "program" string => "/bin/echo testing cpanm";
-    !default:test::
-      "program" string => $(cpanm_program);
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "installed_list" slist => { @(packages) };
+      "installed" string => join(" ", "installed_list");
+
+    test::
+      "program" string => "/bin/echo testing cpanm", policy => "free";
+    !test::
+      "program" string => $(cpanm_program), policy => "free";
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   commands:
       "$(program) $(extra_params) $(packages)"
       comment => "Install CPAN packages with App::cpanminus",
       handle => "cpan_install_packages_add",
-      action => default:log_repaired("stdout","App::cpanminus installed $(packages)");
+      classes => default:if_ok("cpanm_installed"),
+      action => default:log_repaired("stdout", "App::cpanminus ran '$(program) $(extra_params) $(packages)'");
 
   reports:
-    default:verbose::
+    cpanm_installed::
+      "$(installed)" bundle_return_value_index => "installed";
+    !cpanm_installed::
+      "" bundle_return_value_index => "installed";
+
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    verbose::
       "Installing CPAN package $(packages)";
 }

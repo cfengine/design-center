@@ -131,7 +131,7 @@ sub make_activation
     }
 
     return (undef, "No bundle in the $sketch api matched the given parameters")
-    unless $bundle;
+     unless $bundle;
 
     $activation_position++;
 

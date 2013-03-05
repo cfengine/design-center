@@ -9,16 +9,12 @@
     metadata:
     {
         name: "Security::SSH",
-	description: "Configure and enable sshd",
+	    description: "Configure and enable sshd",
         version: 1.10,
         license: "MIT",
         tags: [ "cfdc" ],
         authors: [ "Diego Zamboni <diego.zamboni@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends:
-        {
-            "CFEngine::stdlib": { version: 105 },
-            cfengine: { version: "3.4.0" },
-        }
+        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }, }
     },
 
     api:

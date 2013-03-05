@@ -20,6 +20,10 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
                                           "$(options)[parent_dir]"),
       inherit => "true";
 
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
@@ -33,11 +37,6 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
       "mirror_command"  slist => { "@(cfdc_vcs:$(vcs_type).mirror_command)" };
       "configfile"      string => "$(cfdc_vcs:$(vcs_type).configfile)";
       "config_template" string => "$(cfdc_vcs:$(vcs_type).config_template)";
-
-    any::
-      # pretty-print the authors and dependencies
-      "dependencies" string => join(", ", "$(metadata)[depends]");
-      "authors" string => join(", ", "$(metadata)[authors]");
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
@@ -94,11 +93,6 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
       "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
       ifvarclass => "$(vars)";
 
-    verbose::
-      "$(this.bundle): $($(metadata)[name]) license = $($(metadata)[license])";
-      "$(this.bundle): $($(metadata)[name]) dependencies = $(dependencies)";
-
-      "$(this.bundle): $($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
     verbose::
       "$(this.bundle): running in verbose mode";
     test::

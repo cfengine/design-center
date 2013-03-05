@@ -1,24 +1,37 @@
 {
-
-    "manifest":
+    manifest:
     {
-        "main.cf": { "desc": "main file" },
-        "README.md": { "documentation": true },
-        "params/demo.json": { "comment": "simple demo" }
-
+        "main.cf": { desc: "main file" },
+        "README.md": { documentation: true },
+        "params/demo.json": { comment: "simple demo" }
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "Packages::CPAN::cpanm",
-	"description": "Install CPAN packages through App::cpanminus",
-        "version": 1.10,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+        name: "Packages::CPAN::cpanm",
+	    description: "Install CPAN packages through App::cpanminus",
+        version: 1.10,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
     },
 
-    "entry_point": "main.cf",
-    "interface": [ "main.cf" ]
+    api:
+    {
+        // the key is the name of the bundle!
+        install:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "cpanm_program", default: "/usr/local/bin/cpanm" },
+            { type: "string", name: "extra_params", default: "" },
+            { type: "list", name: "packages" },
+            { type: "return", name: "installed", },
+        ],
+    },
+
+    namespace: "cfdc_cpan",
+    entry_point: "main.cf",
+    interface: [ "main.cf" ]
 }

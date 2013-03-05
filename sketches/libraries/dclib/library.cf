@@ -1,0 +1,13 @@
+bundle agent report_metadata(bundlename, metadata)
+{
+  vars:
+      # pretty-print the authors and dependencies
+      "dependencies" string => join(", ", "$(metadata)[depends]");
+      "authors" string => join(", ", "$(metadata)[authors]");
+
+  reports:
+      "$(bundlename): $($(metadata)[name]) license = $($(metadata)[license])";
+      "$(bundlename): $($(metadata)[name]) dependencies = $(dependencies)";
+
+      "$(bundlename): $($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
+}

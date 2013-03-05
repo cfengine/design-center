@@ -47,6 +47,7 @@ my %options = (
                install => [],
                force => 0,
                verbose => 0,
+               veryverbose => 0,
                runfile => "$inputs_root/api-runfile.cf",
               );
 
@@ -55,6 +56,7 @@ Getopt::Long::Configure("bundling");
 GetOptions(\%options,
            "expert!",
            "verbose|v!",
+           "veryverbose|vv!",
            "generate!",
            "force|f!",
            "installsource|is=s",
@@ -69,6 +71,8 @@ GetOptions(\%options,
 die "$0: cf-sketch can only be used in --expert mode" unless $options{expert};
 
 die "$0: --installsource DIR must be specified" unless $options{installsource};
+
+$options{verbose} = 1 if $options{veryverbose};
 
 my $sourcedir = dirname($options{installsource});
 die "Sorry, can't locate source directory" unless -d $sourcedir;
@@ -139,13 +143,17 @@ sub api_interaction
     my $api_bin = "$mydir/cf-dc-api.pl";
     open my $api, '|-', "$api_bin -" or die "Could not open $api_bin: $!";
 
+    my $log_level = 1;
+    $log_level = 4 if $options{verbose};
+    $log_level = 5 if $options{veryverbose};
+
     my $config = $dcapi->cencode({
                                   log => "STDERR",
-                                  log_level => $options{verbose} ? 4 : 1,
+                                  log_level => $log_level,
                                   repolist => $options{repolist},
                                   recognized_sources =>
                                   [
-                                   $options{installsource}
+                                   $sourcedir
                                   ],
                                   runfile =>
                                   {
