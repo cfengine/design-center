@@ -10,6 +10,7 @@ use File::Temp qw/tempfile tempdir /;
 
 use DCAPI::Repo;
 use DCAPI::Activation;
+use DCAPI::Result;
 
 use constant API_VERSION => '0.0.1';
 use constant CODER => JSON::PP->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
@@ -54,7 +55,6 @@ has environments => ( is => 'rw', default => sub { { default =>
                                                  }
                                                });
 
-has warnings => ( is => 'ro', default => sub { {} } );
 has cfengine_min_version => ( is => 'ro', required => 1 );
 has cfengine_version => ( is => 'rw' );
 
@@ -86,23 +86,30 @@ sub set_config
     my $self = shift @_;
     my $file = shift @_;
 
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
     $self->config($self->load($file));
 
     my $runfile = Util::hashref_search($self->config(), qw/runfile/);
 
     if (ref $runfile ne 'HASH')
     {
-        push @{$self->warnings()->{runfile}}, "runfile is not a hash";
+        $result->add_error('syntax', "runfile is not a hash");
     }
     else
     {
         %{$self->runfile()} = %$runfile;
-        push @{$self->warnings()->{runfile}}, "runfile has no location"
-        unless exists $self->runfile()->{location};
-        push @{$self->warnings()->{runfile}}, "runfile has no standalone boolean"
-        unless exists $self->runfile()->{standalone};
-        push @{$self->warnings()->{runfile}}, "runfile has no relocate_path parameter"
-        unless exists $self->runfile()->{relocate_path};
+        $result->add_error('runfile', "runfile has no location")
+         unless exists $self->runfile()->{location};
+
+        $result->add_error('runfile', "runfile has no standalone boolean")
+         unless exists $self->runfile()->{standalone};
+
+        $result->add_error('runfile', "runfile has no relocate_path parameter")
+         unless exists $self->runfile()->{relocate_path};
     }
 
     my @sources = @{(Util::hashref_search($self->config(), qw/recognized_sources/) || [])};
@@ -124,7 +131,7 @@ sub set_config
 
         if ($@)
         {
-            push @{$self->warnings()->{$location}}, $@;
+            $result->add_error($location, $@);
         }
     }
 
@@ -140,29 +147,29 @@ sub set_config
             $self->log("Creating missing vardata file $vardata_file");
             my @save_warnings = $self->save_vardata();
 
-            push @{$self->warnings()->{vardata}}, @save_warnings
-            if scalar @save_warnings;
+            $result->add_error('vardata', @save_warnings)
+             if scalar @save_warnings;
         }
 
         my ($v_data, @v_warnings) = $self->load($vardata_file);
-        push @{$self->warnings()->{vardata}}, @v_warnings
-        if scalar @v_warnings;
+        $result->add_error('vardata', @v_warnings)
+         if scalar @v_warnings;
 
         if (ref $v_data ne 'HASH')
         {
-            push @{$self->warnings()->{$vardata_file}}, "vardata is not a hash";
+            $result->add_error($vardata_file, "vardata is not a hash");
         }
         elsif (!exists $v_data->{activations})
         {
-            push @{$self->warnings()->{$vardata_file}}, "vardata has no 'activations'";
+            $result->add_error($vardata_file, "vardata has no 'activations'");
         }
         elsif (!exists $v_data->{definitions})
         {
-            push @{$self->warnings()->{$vardata_file}}, "vardata has no 'definitions'";
+            $result->add_error($vardata_file, "vardata has no 'definitions'");
         }
         elsif (!exists $v_data->{environments})
         {
-            push @{$self->warnings()->{$vardata_file}}, "vardata has no 'environments'";
+            $result->add_error($vardata_file, "vardata has no 'environments'");
         }
         else
         {
@@ -174,11 +181,10 @@ sub set_config
     }
     else
     {
-        push @{$self->warnings()->{vardata}}, "No vardata file specified";
+        $result->add_error('vardata', "No vardata file specified");
     }
 
-    my $w = $self->warnings();
-    return scalar keys %$w ? (1,  $w) : (1);
+    return $result;
 }
 
 sub save_vardata
@@ -266,7 +272,6 @@ sub data_dump
      version => $self->version(),
      config => $self->config(),
      curl => $self->curl(),
-     warnings => $self->warnings(),
      repolist => $self->repos(),
      recognized_sources => $self->recognized_sources(),
      vardata => $self->vardata(),
@@ -280,13 +285,19 @@ sub data_dump
 sub search
 {
     my $self = shift;
-    return $self->list_int($self->recognized_sources(), @_);
+    return DCAPI::Result->new(api => $self,
+                              status => 1,
+                              success => 1,
+                              data => { search => $self->list_int($self->recognized_sources(), @_) });
 }
 
 sub list
 {
     my $self = shift;
-    return $self->list_int($self->repos(), @_);
+    return DCAPI::Result->new(api => $self,
+                              status => 1,
+                              success => 1,
+                              data => { list => $self->list_int($self->repos(), @_) });
 }
 
 sub list_int
@@ -333,7 +344,10 @@ sub describe
         $ret{$repo->location()} = $found;
     }
 
-    return \%ret;
+    return DCAPI::Result->new(api => $self,
+                              status => 1,
+                              success => 1,
+                              data => { describe => \%ret });
 }
 
 sub install
@@ -341,7 +355,10 @@ sub install
     my $self = shift;
     my $install = shift;
 
-    my %ret;
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
 
     # we don't accept strings, the sketches to be installed must be in an array
 
@@ -352,7 +369,8 @@ sub install
 
     if (ref $install ne 'ARRAY')
     {
-        return (undef, "Invalid install command");
+        return $result->add_error('syntax',
+                                  "Invalid install command");
     }
 
     my @warnings;
@@ -367,7 +385,8 @@ sub install
             my $v = Util::hashref_search($installer, $varname);
             unless (defined $v)
             {
-                push @{$self->warnings()->{''}}, "Installer command was missing key '$varname'";
+                $result->add_error('syntax',
+                                   "Installer command was missing key '$varname'");
                 next INSTALLER;
             }
             $d{$varname} = $v;
@@ -393,7 +412,8 @@ sub install
 
         if ($@)
         {
-            push @{$self->warnings()->{defined $drepo ? $d{source} : $d{target}}}, $@;
+            $result->add_error(defined $drepo ? 'install source' : 'install target',
+                               $@);
         }
 
         next INSTALLER unless defined $drepo;
@@ -408,8 +428,8 @@ sub install
             }
             else
             {
-                push @{$self->warnings()->{$d{source}}},
-                "Sketch $d{sketch} is already in target repo; you must uninstall it first";
+                $result->add_log("already have $d{sketch}",
+                                 "Sketch $d{sketch} is already in target repo; you must uninstall it first");
                 next INSTALLER;
             }
         }
@@ -418,8 +438,8 @@ sub install
 
         unless (defined $sketch)
         {
-            push @{$self->warnings()->{$d{source}}},
-            "Sketch $d{sketch} could not be found in source repo";
+            $result->add_error($d{sketch},
+                               "Sketch $d{sketch} could not be found in source repo");
             next INSTALLER;
         }
 
@@ -432,10 +452,15 @@ sub install
 
         $self->log("Installing sketch $d{sketch} from $d{source} into $d{target}");
 
-        $ret{$d{target}} = $drepo->install($srepo, $sketch);
+        my ($install_check, @install_warnings) = $drepo->install($srepo, $sketch);
+        $result->add_error($d{sketch}, @install_warnings)
+         unless $install_check;
+        $result->add_data_key($d{sketch},
+                              ['install', $d{target}, $d{sketch}],
+                              $install_check);
     }
 
-    return (\%ret, $self->warnings());
+    return $result;
 }
 
 sub uninstall
@@ -443,7 +468,10 @@ sub uninstall
     my $self = shift;
     my $uninstall = shift;
 
-    my %ret;
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
 
     # we don't accept strings, the sketches to be installed must be in an array
 
@@ -454,10 +482,10 @@ sub uninstall
 
     if (ref $uninstall ne 'ARRAY')
     {
-        return (undef, "Invalid uninstall command");
+        return $result->add_error('syntax',
+                                  "Invalid uninstall command");
     }
 
-    my @warnings;
     my @uninstall_log;
 
   UNINSTALLER:
@@ -469,7 +497,8 @@ sub uninstall
             my $v = Util::hashref_search($uninstaller, $varname);
             unless (defined $v)
             {
-                push @{$self->warnings()->{''}}, "Uninstaller command was missing key '$varname'";
+                $result->add_error('syntax',
+                                   "Uninstaller command was missing key '$varname'");
                 next UNINSTALLER;
             }
             $d{$varname} = $v;
@@ -492,7 +521,8 @@ sub uninstall
 
         if ($@)
         {
-            push @{$self->warnings()->{$d{target}}}, $@;
+            $result->add_error('uninstall target',
+                               $@);
         }
 
         next UNINSTALLER unless defined $repo;
@@ -501,17 +531,23 @@ sub uninstall
 
         unless ($sketch)
         {
-            push @{$self->warnings()->{$d{target}}},
-            "Sketch $d{sketch} is not in target repo; you must install it first";
+            $result->add_error('uninstall target',
+                               "Sketch $d{sketch} is not in target repo; you must install it first");
             next UNINSTALLER;
         }
 
         $self->log("Uninstalling sketch $d{sketch} from " . $sketch->location());
 
-        $ret{$d{target}} = $repo->uninstall($sketch);
+        my ($uninstall_check, @uninstall_warnings) = $repo->uninstall($sketch);
+        $result->add_error($d{sketch}, @uninstall_warnings)
+         unless $uninstall_check;
+
+        $result->add_data_key($d{sketch},
+                              ['uninstall', $d{target}, $d{sketch}],
+                              $uninstall_check);
     }
 
-    return (\%ret, $self->warnings());
+    return $result;
 }
 
 sub define
@@ -519,17 +555,26 @@ sub define
     my $self = shift;
     my $define = shift;
 
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
     if (ref $define ne 'HASH')
     {
-        return (undef, "Invalid define command");
+        return $result->add_error('syntax',
+                                  "Invalid define command");
     }
 
     foreach my $dkey (keys %$define)
     {
         $self->definitions()->{$dkey} = $define->{$dkey};
+        $result->add_data_key($dkey, ['define', $dkey], 1);
     }
 
     $self->save_vardata();
+
+    return $result;
 }
 
 sub undefine
@@ -537,58 +582,81 @@ sub undefine
     my $self = shift;
     my $undefine = shift;
 
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
     if (ref $undefine ne 'ARRAY')
     {
-        return (undef, "Invalid undefine command");
+        return $result->add_error('syntax',
+                                  "Invalid undefine command");
     }
 
     foreach my $ukey (@$undefine)
     {
-        delete $self->definitions()->{$ukey};
+        $result->add_data_key($ukey,
+                              ['undefine', $ukey],
+                              !! delete $self->definitions()->{$ukey});
     }
 
     $self->save_vardata();
+
+    return $result;
 }
 
 sub define_environment
 {
     my $self = shift;
     my $define_environment = shift;
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
 
     if (ref $define_environment ne 'HASH')
     {
-        return (undef, "Invalid define_environment command");
+        return $result->add_error('syntax',
+                                  "Invalid define_environment command");
     }
+
+    return $result unless $result->success();
 
     foreach my $dkey (keys %$define_environment)
     {
-        return (undef, "Invalid environment name $dkey (must be a valid bundle name)")
-        if $dkey =~ m/\W/;
+        return $result->add_error('environment name',
+                                  "Invalid environment name $dkey (must be a valid bundle name)")
+         if $dkey =~ m/\W/;
 
         my $spec = $define_environment->{$dkey};
 
         if (ref $spec ne 'HASH')
         {
-            return (undef, "Invalid environment spec under $dkey");
+            return $result->add_error('environment spec',
+                                      "Invalid environment spec under $dkey");
         }
 
         foreach my $required (qw/activated test verbose/)
         {
-            return (undef, "Invalid environment spec $dkey: missing key $required")
-            unless exists $spec->{$required};
+            return $result->add_error('environment spec required key',
+                                      "Invalid environment spec $dkey: missing key $required")
+             unless exists $spec->{$required};
 
             $spec->{$required} = ! ! $spec->{$required}
             if Util::is_json_boolean($spec->{$required});
 
             # only scalars are acceptable
-            return (undef, "Invalid environment spec $dkey: non-scalar key $required")
-            if (ref $spec->{$required});
+            return $result->add_error('environment spec value',
+                                      "Invalid environment spec $dkey: non-scalar key $required")
+             if (ref $spec->{$required});
         }
 
         $self->environments()->{$dkey} = $spec;
+        $result->add_data_key($dkey, ['define_environment', $dkey], 1);
     }
 
     $self->save_vardata();
+    return $result;
 }
 
 sub undefine_environment
@@ -596,17 +664,27 @@ sub undefine_environment
     my $self = shift;
     my $undefine_environment = shift;
 
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
     if (ref $undefine_environment ne 'ARRAY')
     {
-        return (undef, "Invalid undefine_environment command");
+        return $result->add_error('syntax',
+                                  "Invalid undefine_environment command");
     }
 
     foreach my $ukey (@$undefine_environment)
     {
-        delete $self->environments()->{$ukey};
+        $result->add_data_key($ukey,
+                              ['undefine_environment', $ukey],
+                              !! delete $self->environments()->{$ukey});
     }
 
     $self->save_vardata();
+
+    return $result;
 }
 
 sub activate
@@ -614,9 +692,15 @@ sub activate
     my $self = shift;
     my $activate = shift;
 
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
     if (ref $activate ne 'HASH')
     {
-        return (undef, "Invalid activate command");
+        return $result->add_error('syntax',
+                                  "Invalid activate command");
     }
 
     # handle activation request in form
@@ -637,7 +721,8 @@ sub activate
                 {
                     if ($cspec eq $self->cencode($_))
                     {
-                        return (undef, "Activation is already in place");
+                        return $result->add_log('activation',
+                                                "Activation is already in place");
                     }
                 }
             }
@@ -646,14 +731,20 @@ sub activate
             $self->log("Activations for sketch %s are now %s",
                        $sketch,
                        $self->activations()->{$sketch});
+
+            $result->add_data_key($sketch,
+                                  ['activate', $sketch],
+                                  $spec);
         }
         else
         {
-            return ($verify, @warnings);
+            return $result->add_error('activation verification', @warnings);
         }
     }
 
     $self->save_vardata();
+
+    return $result;
 }
 
 sub regenerate
@@ -661,9 +752,12 @@ sub regenerate
     my $self = shift;
     my $regenerate = shift;
 
-    my $relocate = $self->runfile()->{relocate_path};
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
 
-    my @all_warnings;
+    my $relocate = $self->runfile()->{relocate_path};
 
     my @activations;                 # these are DCAPI::Activation objects
     my $acts = $self->activations(); # these are data structures
@@ -674,12 +768,6 @@ sub regenerate
             # this is how the data structure is turned into a DCAPI::Activation object
             my ($activation, @warnings) = DCAPI::Activation::make_activation($self, $sketch, $spec);
 
-            if (scalar @warnings)
-            {
-                push @all_warnings, @warnings;
-                $self->log("Regenerate: verification warnings [@warnings]");
-            }
-
             if ($activation)
             {
                 my $sketch_obj = $activation->sketch();
@@ -688,7 +776,8 @@ sub regenerate
             }
             else
             {
-                return ($activation, @warnings);
+                $self->log("Regenerate: verification warnings [@warnings]");
+                return $result->add_warning($sketch, @warnings);
             }
         }
     }
@@ -896,9 +985,9 @@ $report_lines
 EOHIPPUS
 
     my $save_result = $self->save_runfile($runfile_data);
-    push @all_warnings, $save_result unless $save_result;
+    return $result->add_warning('save runfile', $save_result) unless $save_result;
 
-    return (! ! $save_result, @all_warnings);
+    return $result;
 }
 
 sub deactivate
@@ -906,31 +995,48 @@ sub deactivate
     my $self = shift;
     my $deactivate = shift;
 
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
     # deactivate = true means all;
     if (Util::is_json_boolean($deactivate) && $deactivate)
     {
         $self->log("Deactivating all activations: %s", $self->activations());
+
+        $result->add_data_key('deactivate', ['deactivate', $_], 1)
+         foreach keys %{$self->activations()};
+
         %{$self->activations()} = ();
     }
     # deactivate = sketch means all activations of the sketch;
     elsif (ref $deactivate eq '')
     {
-        $self->log("Deactivating all activations of $deactivate: %s",
-                   delete $self->activations()->{$deactivate});
+        my $d = delete $self->activations()->{$deactivate};
+
+        $result->add_data_key('deactivate', ['deactivate', $deactivate], 1);
+
+        $self->log("Deactivating all activations of $deactivate: %s", $d);
     }
     elsif (ref $deactivate eq 'HASH' &&
            exists $deactivate->{sketch} &&
-           exists $self->activations()->{$deactivate->{sketch}}) {
+           exists $self->activations()->{$deactivate->{sketch}})
+    {
         if (exists $deactivate->{position})
         {
+            my $d = delete $self->activations()->{$deactivate->{sketch}}->[$deactivate->{position}];
+            $result->add_data_key('deactivate', ['deactivate', $deactivate->{sketch}, $deactivate->{position}], 1);
             $self->log("Deactivating activation %s of %s: %s",
                        $deactivate->{position},
                        $deactivate->{sketch},
-                       delete $self->activations()->{$deactivate->{sketch}}->[$deactivate->{position}]);
+                       $d);
         }
     }
 
     $self->save_vardata();
+
+    return $result;
 }
 
 sub run_cf
@@ -1230,50 +1336,22 @@ sub load_int
     return (undef, "No data was loaded from $f");
 }
 
-sub ok
-{
-    my $self = shift;
-    print $self->encode($self->make_ok(@_)), "\n";
-}
-
 sub exit_error
 {
-    shift->error(@_);
+    my $self = shift;
+    if (ref $_[0] eq 'DCAPI::Result')
+    {
+        shift->out();
+    }
+    else
+    {
+        DCAPI::Result->new(api => $self,
+                           status => 0,
+                           success => 0,
+                           errors => \@_)
+             ->out();
+    }
     exit 0;
-}
-
-sub error
-{
-    my $self = shift;
-    print $self->encode($self->make_error(@_)), "\n";
-}
-
-sub make_ok
-{
-    my $self = shift;
-    my $ok = shift;
-    $ok->{success} = JSON::PP::true;
-    $ok->{errors} ||= [];
-    $ok->{warnings} ||= [];
-    $ok->{log} ||= [];
-    return { api_ok => $ok };
-}
-
-sub make_not_ok
-{
-    my $self = shift;
-    my $nok = shift;
-    $nok->{success} = JSON::PP::false;
-    $nok->{errors} ||= shift @_;
-    $nok->{warnings} ||= shift @_;
-    $nok->{log} ||= shift @_;
-    return { api_not_ok => $nok };
-}
-
-sub make_error
-{
-    my $self = shift;
-    return { api_error => [@_] };
 }
 
 1;

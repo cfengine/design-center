@@ -38,7 +38,7 @@ sub BUILD
     }
 
     die "Can't use repository without a valid inventory file in $inv_file: $reason"
-    unless defined $inv;
+     unless defined $inv;
 
     foreach my $line (@$inv)
     {
@@ -58,7 +58,7 @@ sub BUILD
 
         if ($@)
         {
-            push @{$self->api()->warnings()->{$abs_location}}, $@;
+            $self->dcapi->log($@);
         }
 
     }
@@ -160,6 +160,8 @@ sub install
 
     my $manifest = $sketch->manifest();
 
+    my @warnings;
+
     my @todo;
     foreach my $file (sort keys %$manifest)
     {
@@ -188,8 +190,7 @@ sub install
         }
         else
         {
-            push @{$self->api()->warnings()->{$abs_location}},
-            "$file was not installed in $abs_location";
+            push @warnings, "$file was not installed in $abs_location";
         }
     }
 
@@ -198,27 +199,26 @@ sub install
         @{$self->sketches()} = grep { $_->name() ne $sketch->name() } @{$self->sketches()};
 
         push @{$self->sketches()},
-        DCAPI::Sketch->new(location => $abs_location,
-                           rel_location => $sketch->rel_location(),
-                           desc => $sketch->desc(),
-                           dcapi => $self->api(),
-                           repo => $self,
-                           verify_files => 1);
+         DCAPI::Sketch->new(location => $abs_location,
+                            rel_location => $sketch->rel_location(),
+                            desc => $sketch->desc(),
+                            dcapi => $self->api(),
+                            repo => $self,
+                            verify_files => 1);
     };
 
     if ($@)
     {
-        push @{$self->api()->warnings()->{$abs_location}}, $@;
+        push @warnings, $@;
     }
 
     my $inv_save = $self->save_inv_file();
-    push @{$self->api()->warnings()->{$abs_location}},
-    "Could not save the inventory file!"
-    unless $inv_save;
+    push @warnings, "Could not save the inventory file!"
+     unless $inv_save;
 
     $data->{inventory_save} = $inv_save;
 
-    return $data;
+    return ($data, @warnings);
 }
 
 sub uninstall
@@ -226,6 +226,7 @@ sub uninstall
     my $self = shift @_;
     my $sketch = shift @_;
 
+    my @warnings;
     my $data = {};
 
     # 1. delete the sketch files as in the manifest.  USE CFE
@@ -243,8 +244,7 @@ sub uninstall
 
     if (-d $abs_location)
     {
-        push @{$self->api()->warnings()->{$abs_location}},
-        "It seems that $abs_location could not be removed";
+        push @warnings, "It seems that $abs_location could not be removed";
         return;
     }
 
@@ -257,13 +257,12 @@ sub uninstall
 
     my $inv_save = $self->save_inv_file();
 
-    push @{$self->api()->warnings()->{$abs_location}},
-    "Could not save the inventory file!"
+    push @warnings, "Could not save the inventory file!"
     unless $inv_save;
 
     $data->{inventory_save} = $inv_save;
 
-    return $data;
+    return ($data, @warnings);
 }
 
 sub equals

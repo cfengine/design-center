@@ -257,7 +257,9 @@ sub resolve_dependencies
                 push @criteria, ["version", ">=", $deps{$dep}->{version}];
             }
 
-            my $list = $self->dcapi()->list(\@criteria, { flatten => 1 });
+            my $list = $self->dcapi()->list_int($self->dcapi()->repos(),
+                                                \@criteria,
+                                                { flatten => 1 });
             if (scalar @$list < 1)
             {
                 if ($options{install})
@@ -270,20 +272,19 @@ sub resolve_dependencies
                         $install_request{source} = $srepo;
                         $self->dcapi()->log("Trying to install dependency $dep for $name: %s",
                                             \%install_request);
-                        my ($install_result, @install_warnings) = $self->dcapi()->install([\%install_request]);
-                        my $check = Util::hashref_search($install_result, $options{target}, $dep);
-                        if ($check)
+                        my $install_result = $self->dcapi()->install([\%install_request]);
+                        if ($install_result->success())
                         {
                             $installed = $install_result;
                         }
                         else
                         {
-                            push @{$self->dcapi()->warnings()->{$srepo}}, @install_warnings;
+                            return (undef, "Could not install dependency $dep", @{$install_result->errors()});
                         }
                     }
 
                     return (undef, "Could not install dependency $dep")
-                    unless $installed;
+                     unless $installed;
                 }
                 else
                 {

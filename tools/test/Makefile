@@ -302,8 +302,13 @@ file_integrity:
 	$(RUNNER)
 
 dclib:
-	$(CFSKETCH_DA) --install CFEngine::dclib
-	$(RUNNER)
+	$(CFSKETCH) --install CFEngine::dclib
+
+stdlib:
+	$(CFSKETCH) --install CFEngine::stdlib
+
+nonesuch:
+	$(CFSKETCH) --install nonesuch
 
 wordpress:
 	@echo NOT IMPLEMENTED

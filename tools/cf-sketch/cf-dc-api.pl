@@ -50,19 +50,14 @@ my $data_file = shift @ARGV;
 
 unless ($config_file)
 {
-    $api->exit_error("Syntax: $base CONFIG_FILE [SERVICE_URL]");
+    $api->exit_error("Syntax: $base CONFIG_FILE [DATA_FILE] [SERVICE_URL]");
 }
 
-my ($loaded, @errors) = $api->set_config($config_file);
+my $config_result = $api->set_config($config_file);
 
-unless ($loaded)
+unless ($config_result->success())
 {
-    $api->exit_error("$base could not load $config_file: [@errors]");
-}
-
-if (scalar @errors)
-{
-    $api->exit_error("$base startup errors", @errors);
+    $api->exit_error($config_result);
 }
 
 my $data = $api->load(defined $data_file ? $data_file : join('', <>));
@@ -97,7 +92,7 @@ if ($debug)
 
 unless (defined $version && $version eq $api->version())
 {
-    $api->exit_error("Broken JSON, or DC API Version not provided or mismatch: " . $api->version() . " vs. " . $version , @log);
+    $api->exit_error("Broken JSON, or DC API Version not provided or mismatch: " . $api->version() . " vs. " . ($version||'???') , @log);
 }
 
 unless (defined $request)
@@ -105,95 +100,83 @@ unless (defined $request)
     $api->exit_error("No request provided.", @log);
 }
 
+my $result;
 if (defined $list)
 {
-    $api->ok({ data => { list => $api->list($list, { describe => $describe}) }});
+    $result = $api->list($list, { describe => $describe});
 }
 elsif (defined $search)
 {
-    $api->ok({ data => { search => $api->search($search, { describe => $describe}) }});
+    $result = $api->search($search, { describe => $describe});
 }
 elsif (defined $describe)
 {
-    $api->ok({ data => { describe => $api->describe($describe) }});
+    $result = $api->describe($describe);
 }
 elsif (defined $install)
 {
-    my ($data, @warnings) = $api->install($install);
-
-    $api->ok({ warnings => \@warnings, data => { install => $data }});
+    $result = $api->install($install);
 }
 elsif (defined $uninstall)
 {
-    my ($data, @warnings) = $api->uninstall($uninstall);
-
-    $api->ok({ warnings => \@warnings, data => { uninstall => $data }});
+    $result = $api->uninstall($uninstall);
 }
 elsif (defined $activations)
 {
-    my ($data, @warnings) = $api->activations();
-
-    $api->ok({ warnings => \@warnings, data => { activations => $data }});
+    $result = DCAPI::Result->new(api => $api,
+                                 status => 1,
+                                 success => 1,
+                                 data=> {activations => $api->activations()});
 }
 elsif (defined $activate)
 {
-    my ($data, @warnings) = $api->activate($activate);
-
-    $api->ok({ warnings => \@warnings, data => { activate => $data }});
+    $result = $api->activate($activate);
 }
 elsif (defined $deactivate)
 {
-    my ($data, @warnings) = $api->deactivate($deactivate);
-
-    $api->ok({ warnings => \@warnings, data => { deactivate => $data }});
+    $result = $api->deactivate($deactivate);
 }
 elsif (defined $definitions)
 {
-    my ($data, @warnings) = $api->definitions();
-
-    $api->ok({ warnings => \@warnings, data => { definitions => $data }});
+    $result = DCAPI::Result->new(api => $api,
+                                 status => 1,
+                                 success => 1,
+                                 data=> {definitions => $api->definitions()});
 }
 elsif (defined $define)
 {
-    my ($data, @warnings) = $api->define($define);
-
-    $api->ok({ warnings => \@warnings, data => { define => $data }});
+    $result = $api->define($define);
 }
 elsif (defined $undefine)
 {
-    my ($data, @warnings) = $api->undefine($undefine);
-
-    $api->ok({ warnings => \@warnings, data => { undefine => $data }});
+    $result = $api->undefine($undefine);
 }
 elsif (defined $environments)
 {
-    my ($data, @warnings) = $api->environments();
-
-    $api->ok({ warnings => \@warnings, data => { environments => $data }});
+    $result = DCAPI::Result->new(api => $api,
+                                 status => 1,
+                                 success => 1,
+                                 data=> {environments => $api->environments()});
 }
 elsif (defined $define_environment)
 {
-    my ($data, @warnings) = $api->define_environment($define_environment);
-
-    $api->ok({ warnings => \@warnings, data => { define_environment => $data }});
+    $result = $api->define_environment($define_environment);
 }
 elsif (defined $undefine_environment)
 {
-    my ($data, @warnings) = $api->undefine_environment($undefine_environment);
-
-    $api->ok({ warnings => \@warnings, data => { undefine_environment => $data }});
+    $result = $api->undefine_environment($undefine_environment);
 }
 elsif (defined $regenerate)
 {
-    my ($data, @warnings) = $api->regenerate($regenerate);
-
-    $api->ok({ warnings => \@warnings, data => { regenerate => $data }});
+    $result = $api->regenerate($regenerate);
 }
 else
 {
-    push @log, "Nothing to do, but we're OK, thanks for asking.";
-    $api->ok({ log => \@log,
-               data => {} });
+    $result = DCAPI::Result->new(api => $api,
+                                 status => 1,
+                                 success => 1,
+                                 log => [ "Nothing to do, but we're OK, thanks for asking." ]);
 }
 
+$result->out();
 exit 0;
