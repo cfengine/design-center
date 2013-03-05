@@ -7,7 +7,7 @@
                 (cperl-close-paren-offset . -1)
                 (cperl-brace-imaginary-offset . 0)
                 (cperl-continued-brace-offset . 0)
-                (cperl-continued-statement-offset . 0)
+                (cperl-continued-statement-offset . 1)
                 (cperl-fix-hanging-brace-when-indent . t)
                 (cperl-extra-newline-before-brace . t)
                 (cperl-merge-trailing-else . nil))))
