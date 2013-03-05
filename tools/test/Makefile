@@ -16,9 +16,13 @@ ifeq ($(VV),1)
   EXTRA:=--veryverbose
 endif
 
+ifeq ($(V),1)
+  EXTRA:=--verbose
+endif
+
 CFAPI:=`pwd`/../cf-sketch/cf-dc-api.pl `pwd`/../cf-sketch/config.json
-CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH)
-CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --expert --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE) $(EXTRA)
+CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH) $(EXTRA)
+CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE)
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 # api:
@@ -202,6 +206,12 @@ db_install:
 	$(RUNNER) -Dmysql -Dserver
 	$(RUNNER) -Dmysql
 
+list:
+	$(CFSKETCH) --list
+
+search:
+	$(CFSKETCH) --search
+
 ssh:
 	$(CFSKETCH_DA) --install Security::SSH --activate Security::SSH=$(SOURCEDIR)/networking/ssh/params/simple.json
 	$(RUNNER)
@@ -263,7 +273,6 @@ abortclasses:
 	$(RUNNER)
 	$(CFSKETCH_DA) --install Utilities::abortclasses --activate Utilities::abortclasses=$(SOURCEDIR)/utilities/abortclasses/params/test_timeout_action.json
 	$(RUNNER)
-
 
 nagios_plugin_agent:
 	@echo NOT IMPLEMENTED

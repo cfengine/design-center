@@ -46,6 +46,7 @@ unless ($api->is_ok_cfengine_version())
 }
 
 my $config_file = shift @ARGV;
+my $data_file = shift @ARGV;
 
 unless ($config_file)
 {
@@ -64,7 +65,7 @@ if (scalar @errors)
     $api->exit_error("$base startup errors", @errors);
 }
 
-my $data = $api->load(join '', <>);
+my $data = $api->load(defined $data_file ? $data_file : join('', <>));
 my $debug = Util::hashref_search($data, qw/debug/);
 my $version = Util::hashref_search($data, qw/dc_api_version/);
 my $request = Util::hashref_search($data, qw/request/);
@@ -106,11 +107,11 @@ unless (defined $request)
 
 if (defined $list)
 {
-    $api->ok({ data => { list => [$api->list($list)] }});
+    $api->ok({ data => { list => $api->list($list, { describe => $describe}) }});
 }
 elsif (defined $search)
 {
-    $api->ok({ data => { search => [$api->search($search)] }});
+    $api->ok({ data => { search => $api->search($search, { describe => $describe}) }});
 }
 elsif (defined $describe)
 {

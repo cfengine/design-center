@@ -304,7 +304,8 @@ sub list_int
                    $location,
                    $term_data);
         my $repo = $self->load_repo($location);
-        my @list = map { $_->name() } $repo->list($term_data);
+        my @list = map { $options->{describe} ? $_->data_dump() : $_->name() }
+         $repo->list($term_data);
         $ret{$repo->location()} = [ @list ];
         push @full_list, @list;
     }
@@ -1060,9 +1061,25 @@ sub log_int
     my $self = shift @_;
     my $log_level = shift @_;
 
-    # only recognize one log mode for now
-    return unless $self->log_mode() eq 'STDERR';
     return unless $self->log_level() >= $log_level;
+
+    my $close_out_fh = 1;
+    my $out_fh;
+    if ($self->log_mode() eq 'STDERR')
+    {
+        $close_out_fh = 0;
+        $out_fh = \*STDERR;
+    }
+    elsif ($self->log_mode() eq 'STDOUT')
+    {
+        $close_out_fh = 0;
+        $out_fh = \*STDOUT;
+    }
+    else
+    {
+        my $f = $self->log_mode();
+        open $out_fh, '>>', $f or warn "Could not append to log file $f: $!";
+    }
 
     my $prefix;
     foreach my $level (1..4)    # probe up to 4 levels to find the real caller
@@ -1088,9 +1105,14 @@ sub log_int
         }
     }
 
-    print STDERR $prefix;
-    printf STDERR @plist;
-    print STDERR "\n";
+    if ($out_fh)
+    {
+        print $out_fh $prefix;
+        printf $out_fh @plist;
+        print $out_fh "\n";
+
+        close $out_fh if $close_out_fh;
+    }
 }
 ;
 
