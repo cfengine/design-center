@@ -245,7 +245,8 @@ sub api_interaction
     }
 
     print "NOT OK: Got bad result: ", $dcapi->encode($result), "\n";
-    return (0, $result);
+    exit 1;
+    # return (0, $result);
 }
 
 sub make_list_printer

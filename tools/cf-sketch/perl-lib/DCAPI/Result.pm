@@ -8,7 +8,7 @@ use Mo qw/default build builder is required option/;
 
 has api => ( is => 'ro', required => 1 );
 
-has status => ( is => 'ro', default => sub { 1 } );
+has status => ( is => 'rw', default => sub { 1 } );
 has success => ( is => 'rw' );
 has warnings => ( is => 'ro', default => sub { [] } );
 has errors => ( is => 'ro', default => sub { [] } );
@@ -99,6 +99,8 @@ sub add_data_key
     my $value = shift @_;
 
     $self->add_tags($tags);
+
+    $keys = [$keys] unless ref $keys eq 'ARRAY';
 
     my $top = $self->data();
     while (my $k = shift @$keys)

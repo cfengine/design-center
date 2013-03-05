@@ -373,10 +373,9 @@ sub install
                                   "Invalid install command");
     }
 
-    my @warnings;
     my @install_log;
 
-  INSTALLER:
+ INSTALLER:
     foreach my $installer (@$install)
     {
         my %d;
@@ -451,12 +450,11 @@ sub install
 
         $self->log("Installing sketch $d{sketch} from $d{source} into $d{target}");
 
-        my ($install_check, @install_warnings) = $drepo->install($srepo, $sketch);
-        $result->add_error($d{sketch}, @install_warnings)
-         unless $install_check;
+        my $install_check = $drepo->install($srepo, $sketch);
+        $result->merge($install_check);
         $result->add_data_key($d{sketch},
                               ['install', $d{target}, $d{sketch}],
-                              $install_check);
+                              1);
     }
 
     return $result;

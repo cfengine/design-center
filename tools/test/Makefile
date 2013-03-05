@@ -21,7 +21,7 @@ ifeq ($(V),1)
 endif
 
 CFAPI:=`pwd`/../cf-sketch/cf-dc-api.pl `pwd`/../cf-sketch/config.json
-CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH) $(EXTRA)
+CFSKETCH:=`pwd`/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH) $(EXTRA) --force
 CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE)
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
