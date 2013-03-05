@@ -876,7 +876,7 @@ sub regenerate
             if (ref $d eq '')
             {
                 my $d_expression = $d;
-                if ($d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no')
+                if ($d_expression eq '' || $d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no')
                 {
                     $d_expression = '!any';
                 }

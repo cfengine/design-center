@@ -207,6 +207,12 @@ db_install:
 	$(RUNNER) -Dmysql -Dserver
 	$(RUNNER) -Dmysql
 
+run:
+	$(RUNNER)
+
+generate:
+	$(CFSKETCH) --generate --runfile $(RUNFILE)
+
 list:
 	$(CFSKETCH) --list
 
