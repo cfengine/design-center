@@ -210,11 +210,12 @@ sub install
 
     if ($@)
     {
-        $result->add_error('installation', $@);
+        return $result->add_error('installation', $@);
     }
 
     my $inv_save = $self->save_inv_file();
-    $result->add_error('installation', "Could not save the inventory file!")
+    return $result->add_error('installation',
+                              "Could not save the inventory file!")
      unless $inv_save;
 
     $result->add_data_key('installation', 'inventory_save', $inv_save);

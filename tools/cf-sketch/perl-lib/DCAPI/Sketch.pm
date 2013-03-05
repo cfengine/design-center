@@ -186,13 +186,15 @@ sub get_inputs
     my @inputs;
     if ($recurse)
     {
-        my ($depcheck, @dep_warnings) = $self->resolve_dependencies(install => 0);
-        if ($depcheck)
+        my $depcheck = $self->resolve_dependencies(install => 0);
+        if ($depcheck->success())
         {
-            foreach my $dep (keys %$depcheck)
+            foreach my $dep (keys %{$depcheck->data()})
             {
-                my $sketch = $self->dcapi()->describe($dep, undef, 1);
-
+                $self->dcapi()->log4("Sketch %s looking for dependency %s",
+                                     $self->name(),
+                                     $dep);
+                my $sketch = $self->dcapi()->describe_int($dep, undef, 1);
                 if ($sketch)
                 {
                     # we decrement the recurse to avoid circular dependencies

@@ -327,6 +327,16 @@ sub list_int
 sub describe
 {
     my $self = shift;
+
+    return DCAPI::Result->new(api => $self,
+                              status => 1,
+                              success => 1,
+                              data => { describe => $self->describe_int(@_) });
+}
+
+sub describe_int
+{
+    my $self = shift;
     my $sketches_top = shift;
     my $sources = shift;
     my $firstfound = shift;
@@ -340,14 +350,11 @@ sub describe
         my %sketches = %$sketches_top;
         my $repo = $self->load_repo($location);
         my $found = $repo->describe(\%sketches, $firstfound);
-        return $found if ($found && $firstfound);
         $ret{$repo->location()} = $found;
+        return $found if ($found && $firstfound);
     }
 
-    return DCAPI::Result->new(api => $self,
-                              status => 1,
-                              success => 1,
-                              data => { describe => \%ret });
+    return \%ret;
 }
 
 sub install
@@ -535,13 +542,11 @@ sub uninstall
 
         $self->log("Uninstalling sketch $d{sketch} from " . $sketch->location());
 
-        my ($uninstall_check, @uninstall_warnings) = $repo->uninstall($sketch);
-        $result->add_error($d{sketch}, @uninstall_warnings)
-         unless $uninstall_check;
+        $result->merge($repo->uninstall($sketch));
 
         $result->add_data_key($d{sketch},
                               ['uninstall', $d{target}, $d{sketch}],
-                              $uninstall_check);
+                              1);
     }
 
     return $result;
@@ -735,6 +740,10 @@ sub activate
         }
         else
         {
+            $self->log("FAILED activation of sketch %s with spec %s: %s",
+                       $sketch,
+                       $spec,
+                       @warnings);
             return $result->add_error('activation verification', @warnings);
         }
     }

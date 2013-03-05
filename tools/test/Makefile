@@ -41,6 +41,7 @@ api2:
 
 	@echo ...valid request to install Security::SSH, CFEngine::sketch_template, and VCS::vcs_mirror
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Security::SSH", force: true, target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" }, { sketch: "CFEngine::sketch_template", force: true, target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" }, { sketch: "VCS::vcs_mirror", force: true, target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
+
 	@echo ...define Security::SSH simple_ssh and CFEngine::sketch_template simple_sketch parameters
 	echo '{ dc_api_version: "0.0.1", request: {define: { "simple_sketch": { "CFEngine::sketch_template": { myboolean: true, myip: "10.0.1.0", mylist: [ 1, 2, 3 ], myarray: { a: 1, b: 3, c: 3 } } }, "simple_ssh": { "Security::SSH": { params: { Protocol : "2", X11Forwarding : "yes", PermitRootLogin : "yes" } } } } } }' | $(CFAPI)
 	@echo define VCS::vcs_mirror parameters
