@@ -119,4 +119,26 @@ sub add_data_key
     return $self;
 }
 
+sub merge
+{
+    my $self = shift @_;
+    my $other = shift @_;
+
+    $self->status($self->status() || $other->status());
+    $self->success($self->success() && $other->success());
+
+    foreach my $avar (qw/warnings errors log/)
+    {
+        push @{$self->$avar()}, @{$other->$avar()};
+    }
+
+    foreach my $hvar (qw/error_tags tags data/)
+    {
+        $self->$hvar()->{$_} = $other->$hvar()->{$_}
+         foreach keys %{$other->$hvar()};
+    }
+
+    return $self;
+}
+
 1;

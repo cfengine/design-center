@@ -443,12 +443,11 @@ sub install
             next INSTALLER;
         }
 
-        my ($depcheck, @dep_warnings) = $sketch->resolve_dependencies(install => 1,
-                                                                      source => $d{source},
-                                                                      target => $d{target});
+        my $depcheck = $sketch->resolve_dependencies(install => 1,
+                                                     source => $d{source},
+                                                     target => $d{target});
 
-        return ($depcheck, @dep_warnings)
-        unless $depcheck;
+        return $depcheck unless $depcheck->success();
 
         $self->log("Installing sketch $d{sketch} from $d{source} into $d{target}");
 

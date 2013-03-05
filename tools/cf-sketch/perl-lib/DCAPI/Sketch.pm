@@ -220,6 +220,11 @@ sub resolve_dependencies
     my $self = shift @_;
     my %options = @_;
 
+    my $result = DCAPI::Result->new(api => $self->dcapi(),
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
     my %ret;
     my %deps;
     %deps = %{$self->depends()} if ref $self->depends() eq 'HASH';
@@ -244,7 +249,8 @@ sub resolve_dependencies
                 else
                 {
                     $self->dcapi()->log2("CFEngine version requirement of sketch $name not OK: %s", $v);
-                    return (undef, "CFEngine version below required $v for sketch $name");
+                    return $result->add_error('dependency',
+                                              "CFEngine version below required $v for sketch $name");
                 }
             }
         }
@@ -279,12 +285,10 @@ sub resolve_dependencies
                         }
                         else
                         {
-                            return (undef, "Could not install dependency $dep", @{$install_result->errors()});
+                            return $install_result->add_error('dependency install',
+                                                              "Could not install dependency $dep");
                         }
                     }
-
-                    return (undef, "Could not install dependency $dep")
-                     unless $installed;
                 }
                 else
                 {
@@ -294,12 +298,12 @@ sub resolve_dependencies
             else
             {
                 # put the first dependency found in the return
-                $ret{$dep} = $list->[0];
+                $result->add_data_key('dependency', [$dep], $list->[0]);
             }
         }
     }
 
-    return \%ret;
+    return $result;
 }
 
 1;

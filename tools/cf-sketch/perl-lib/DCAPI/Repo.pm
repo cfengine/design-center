@@ -153,14 +153,15 @@ sub install
     my $from = shift @_;
     my $sketch = shift @_;
 
-    my $data = {};
+    my $result = DCAPI::Result->new(api => $self->api(),
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
 
     # 1. copy the sketch files as in the manifest.  USE CFE
     my $abs_location = sprintf("%s/%s", $self->location(), $sketch->rel_location);
 
     my $manifest = $sketch->manifest();
-
-    my @warnings;
 
     my @todo;
     foreach my $file (sort keys %$manifest)
@@ -186,11 +187,11 @@ sub install
         my $full_file = "$abs_location/$file";
         if (-f $full_file)
         {
-            $data->{$sketch->name()}->{$file} = $full_file;
+            $result->add_data_key('installation', [$sketch->name(), $file], $full_file);
         }
         else
         {
-            push @warnings, "$file was not installed in $abs_location";
+            $result->add_error('installation', "$file was not installed in $abs_location");
         }
     }
 
@@ -209,16 +210,16 @@ sub install
 
     if ($@)
     {
-        push @warnings, $@;
+        $result->add_error('installation', $@);
     }
 
     my $inv_save = $self->save_inv_file();
-    push @warnings, "Could not save the inventory file!"
+    $result->add_error('installation', "Could not save the inventory file!")
      unless $inv_save;
 
-    $data->{inventory_save} = $inv_save;
+    $result->add_data_key('installation', 'inventory_save', $inv_save);
 
-    return ($data, @warnings);
+    return $result;
 }
 
 sub uninstall
@@ -226,8 +227,10 @@ sub uninstall
     my $self = shift @_;
     my $sketch = shift @_;
 
-    my @warnings;
-    my $data = {};
+    my $result = DCAPI::Result->new(api => $self->api(),
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
 
     # 1. delete the sketch files as in the manifest.  USE CFE
     my $abs_location = sprintf("%s/%s", $self->location(), $sketch->rel_location);
@@ -244,8 +247,8 @@ sub uninstall
 
     if (-d $abs_location)
     {
-        push @warnings, "It seems that $abs_location could not be removed";
-        return;
+        return $result->add_error('uninstallation',
+                                  "It seems that $abs_location could not be removed");
     }
 
     my @sketches = grep { $_ != $sketch } @{$self->sketches()};
@@ -257,12 +260,13 @@ sub uninstall
 
     my $inv_save = $self->save_inv_file();
 
-    push @warnings, "Could not save the inventory file!"
-    unless $inv_save;
+    return $result->add_error('uninstallation',
+                              "Could not save the inventory file!")
+     unless $inv_save;
 
-    $data->{inventory_save} = $inv_save;
+    $result->add_data_key('uninstallation', 'inventory_save', $inv_save);
 
-    return ($data, @warnings);
+    return $result;
 }
 
 sub equals
