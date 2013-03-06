@@ -13,13 +13,12 @@ Just provide a list of CPAN modules as shown in `test.cf` or `params/demo.json`
 
 ## ## Classes
 
-None.
+When the `test` class is defined, the `cpanm_program` is overridden to `echo
+cpanm` so you're not actually installing packages.
 
 ## ## Variables
 
 * `packages`: a list of packages to be installed
-  
-* `prefix`: a prefix to be varied with every call of the cpan_install bundle; provided by `cf-sketch` by default when you activate with JSON parameters.
   
 * `cpanm_program`: the location of the `cpanm` executable, provided by the CPAN module `App::cpanminus`
 
