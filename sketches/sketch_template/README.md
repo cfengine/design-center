@@ -33,6 +33,7 @@ crazy filling it out.  Better to document in `test.cf` and
 ## REQUIREMENTS
 
 CFEngine::stdlib (the COPBL)
+CFEngine::dclib (the DC standard library)
 
 ## SAMPLE USAGE
 
