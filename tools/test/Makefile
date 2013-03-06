@@ -50,15 +50,15 @@ api2:
 	echo '{ dc_api_version: "0.0.1", request: {define: { "svn_mirror_thrift": { "VCS::vcs_mirror": { vcs: "/usr/bin/svn", path: "/tmp/thrift-perl-lib", branch: "", origin: "http://svn.apache.org/repos/asf/thrift/attic/trunk/lib/perl", options: { parent_dir: { ensure: false } }  } } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define: { "git_invalid": { "VCS::vcs_mirror": { path: "/tmp/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git", options: { umask: "000" }, vcs: "/no/such/versioning_system" } } } } }' | $(CFAPI)
 
-	# @echo ...activate Security::SSH with ANYTIME run environment and simple_ssh parameters
-	# echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "ANYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+	@echo ...activate Security::SSH with ANYTIME run environment and simple_ssh parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "ANYTIME", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
 	@echo ...activate CFEngine::sketch_template with testing run environment and simple_sketch parameters
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "simple_sketch" ] } } } }' | $(CFAPI)
-	# @echo ...activate VCS::vcs_mirror with testing run environment and vcs_base+git_mirror_core and vcs_base+svn_mirror_thrift parameters
-	# echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "vcs_base", "git_mirror_core" ] } } } }' | $(CFAPI)
-	# echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "vcs_base", "svn_mirror_thrift" ] } } } }' | $(CFAPI)
-	# @echo ...activate VCS::vcs_mirror with testing run environment and git_invalid parameters
-	# echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "git_invalid" ] } } } }' | $(CFAPI)
+	@echo ...activate VCS::vcs_mirror with testing run environment and vcs_base+git_mirror_core and vcs_base+svn_mirror_thrift parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "vcs_base", "git_mirror_core" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "vcs_base", "svn_mirror_thrift" ] } } } }' | $(CFAPI)
+	@echo ...activate VCS::vcs_mirror with testing run environment and git_invalid parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "git_invalid" ] } } } }' | $(CFAPI)
 
 	@echo ...list installed
 	echo '{ dc_api_version: "0.0.1", request: {list: true } }' | $(CFAPI)
