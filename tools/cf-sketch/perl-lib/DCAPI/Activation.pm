@@ -127,7 +127,11 @@ sub make_activation
             push @{$bundle_params{$b}}, $filled;
         }
 
-        $bundle = $b if $params_ok;
+        if ($params_ok)
+        {
+            $bundle = $b;
+            last;
+        }
     }
 
     return (undef, "No bundle in the $sketch api matched the given parameters")
