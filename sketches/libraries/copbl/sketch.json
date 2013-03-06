@@ -10,12 +10,12 @@
     {
         name: "CFEngine::stdlib",
 	description: "CFEngine standard library (also known as COPBL)",
-        version: 108,
+        version: 109,
         license: "LGPL",
         tags: [ "cfdc" ],
         authors: [ "CFEngine AS",
 		     "ahdinosaur" ],
-        depends: { cfengine: { version: "3.3.0" } }
+        depends: { cfengine: { version: "3.4.0" } }
     },
 
     api:
