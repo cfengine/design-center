@@ -89,7 +89,7 @@ sub make_activation
     }
 
     my $bundle;
-    my @bundle_params;
+    my %bundle_params;
     my $activation_id;
 
     foreach my $b (@bundles_to_check)
@@ -106,7 +106,7 @@ sub make_activation
         my $params_ok = 1;
         foreach my $p (@$sketch_api)
         {
-            $api->log5("Checking the API of sketch %s: parameter %s", $sketch, $p);
+            $api->log5("Checking the API of sketch %s, bundle %s: parameter %s", $sketch, $b, $p);
             my $filled = fill_param($api,
                                     $p->{name}, $p->{type}, \@param_sets,
                                     {
@@ -118,13 +118,13 @@ sub make_activation
                                     });
             unless ($filled)
             {
-                $api->log4("The API of sketch %s did not match parameter %s", $sketch, $p);
+                $api->log4("The API of sketch %s, bundle %s did not match parameter %s", $sketch, $b, $p);
                 $params_ok = 0;
                 last;
             }
 
-            $api->log5("The API of sketch %s matched parameter %s", $sketch, $p);
-            push @bundle_params, $filled;
+            $api->log5("The API of sketch %s, bundle %s matched parameter %s", $sketch, $b, $p);
+            push @{$bundle_params{$b}}, $filled;
         }
 
         $bundle = $b if $params_ok;
@@ -136,14 +136,14 @@ sub make_activation
     $activation_position++;
 
     $api->log3("Verified sketch %s entry: filled parameters are %s",
-               $sketch, \@bundle_params);
+               $sketch, $bundle_params{$bundle});
 
     return DCAPI::Activation->new(api => $api,
                                   sketch => $found,
                                   environment => $env,
                                   bundle => $bundle,
                                   id => $activation_id,
-                                  params => \@bundle_params);
+                                  params => $bundle_params{$bundle});
 }
 
 sub fill_param

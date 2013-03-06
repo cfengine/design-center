@@ -143,24 +143,48 @@ if (scalar @{$options{uninstall}})
 if (scalar keys %{$options{activate}})
 {
     my %todefine;
-    foreach my $file (Util::uniq(values %{$options{activate}}))
+    my %todo;
+    foreach my $sketch (keys %{$options{activate}})
     {
-        $todefine{$file} = $dcapi->load($file);
-        die "Could not load $file: $!" unless defined $todefine{$file};
+        my $file = $options{activate}->{$sketch};
+        my $load = $dcapi->load($file);
+        die "Could not load $file: $!" unless defined $load;
+
+        if (ref $load eq 'ARRAY')
+        {
+            my $i = 1;
+            foreach (@$load)
+            {
+                my $k = "$file $i";
+                $todefine{$k} = $_;
+                $i++;
+                push @{$todo{$sketch}},{
+                                        target => $options{repolist}->[0],
+                                        environment => $options{environment},
+                                        params => [ $k ],
+                                       };
+            }
+        }
+        else
+        {
+            $todefine{$file} = $load;
+            push @{$todo{$sketch}},{
+                                    target => $options{repolist}->[0],
+                                    environment => $options{environment},
+                                    params => [ $file ],
+                                   };
+        }
     }
 
     api_interaction({define => \%todefine});
 
-    my %todo = map
+    foreach my $sketch (keys %todo)
     {
-        $_ => {
-               target => $options{repolist}->[0],
-               environment => $options{environment},
-               params => [ $options{activate}->{$_} ],
-              }
-    } keys %{$options{activate}};
-
-    api_interaction({activate => \%todo});
+        foreach my $activation (@{$todo{$sketch}})
+        {
+            api_interaction({activate => { $sketch => $activation }});
+        }
+    }
 }
 
 if ($options{'generate'})
