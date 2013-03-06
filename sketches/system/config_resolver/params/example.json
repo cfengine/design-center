@@ -1,17 +1,15 @@
 {
     "System::config_resolver":
     {
-        "debug" : false,
-        "empty_first" : true,
-        "defined_only": false,
-        "ifelapsed": "60",
-
-        "file": { "bycontext": { "test": "/tmp/resolv.conf", "!test": "/etc/resolv.conf" } },
-
+        "file": "/tmp/resolv.conf",
         "nameserver": [ "8.8.8.8", "8.8.4.4" ],
         "search": [ "example.net", "example.org" ],
         "options": [ "ndots:1", "timeout:5", "attempts:2", "rotate", "no-check-names", "inet6", "ip6-bytestring", "edns0", "ip6-dotint", "no-ip6-dotint" ],
         "sortlist": [ "130.155.160.0/255.255.240.0", "130.155.0.0" ],
-        "domain": [ "example.com" ]
+        "domain": [ "example.com" ],
+        "extra": [ "# this file is edited by CFEngine",
+                   "# you could put any options here",
+                   "# even write the whole file\n# as you can see, even multiline strings",
+                   "# but that would be uncivilized" ]
     }
 }
