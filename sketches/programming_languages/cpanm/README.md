@@ -27,6 +27,7 @@ cpanm` so you're not actually installing packages.
 ## REQUIREMENTS
 
 CFEngine::stdlib (the COPBL)
+CFEngine::dclib (the DC standard library)
 
 ## SAMPLE USAGE
 
