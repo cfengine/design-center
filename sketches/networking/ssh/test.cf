@@ -1,24 +1,24 @@
 body common control
 {
-    bundlesequence => { "cfsketch_run" };
-    inputs => { @(cfsketch_g.inputs) };
+      bundlesequence => { "cfsketch_run" };
+      inputs => { @(cfsketch_g.inputs) };
 }
 
 
 # environment common bundles
 
-# environment ANYTIME
-bundle common ANYTIME
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
 {
   vars:
-      "activated" string => "!nosuchclass";
+      "activated" string => "1";
       "env_vars" slist => { "activated", "test", "verbose" };
       "test" string => "1";
       "verbose" string => "1";
   classes:
-      "runenv_ANYTIME_activated" expression => "!nosuchclass";
-      "runenv_ANYTIME_test" expression => "any";
-      "runenv_ANYTIME_verbose" expression => "any";
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
 }
 
 
@@ -28,11 +28,11 @@ bundle common cfsketch_g
   vars:
       # Files that need to be loaded for the activated sketches and
       # their dependencies.
-      "inputs" slist => { "../../libraries/copbl/cfengine_stdlib.cf", "ssh.cf" };
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "../../networking/ssh/ssh.cf" };
 
       # array 'metadata' from definition sketch metadata, activation __001_Security_SSH_sshd
       "__001_Security_SSH_sshd_metadata[authors]" slist => { "Diego Zamboni <diego.zamboni@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" };
-      "__001_Security_SSH_sshd_metadata[depends]" slist => { "CFEngine::stdlib" };
+      "__001_Security_SSH_sshd_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
       "__001_Security_SSH_sshd_metadata[license]" string => "MIT";
       "__001_Security_SSH_sshd_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/networking/ssh";
       "__001_Security_SSH_sshd_metadata[manifest]" slist => { "README.md", "params/simple.json", "ssh.cf" };
@@ -44,7 +44,7 @@ bundle common cfsketch_g
       "__001_Security_SSH_sshd_metadata[tags]" slist => { "cfdc" };
       "__001_Security_SSH_sshd_metadata[version]" string => "1.1";
 
-      # array 'params' from definition simple_ssh, activation __001_Security_SSH_sshd
+      # array 'params' from definition /home/tzz/source/design-center/tools/test/../../sketches/networking/ssh/params/simple.json, activation __001_Security_SSH_sshd
       "__001_Security_SSH_sshd_params[PermitRootLogin]" string => "yes";
       "__001_Security_SSH_sshd_params[Protocol]" string => "2";
       "__001_Security_SSH_sshd_params[X11Forwarding]" string => "yes";
@@ -55,10 +55,10 @@ bundle agent cfsketch_run
   methods:
     any::
       "cfsketch_g" usebundle => "cfsketch_g";
-      "ANYTIME" usebundle => "ANYTIME";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
 
-    runenv_ANYTIME_activated::
-      "__001_Security_SSH_sshd" usebundle => cfdc_sshd:sshd("ANYTIME", "default:cfsketch_g.__001_Security_SSH_sshd_metadata", "default:cfsketch_g.__001_Security_SSH_sshd_params"), useresult => "return___001_Security_SSH_sshd";
+    runenv_cf_sketch_testing_activated::
+      "__001_Security_SSH_sshd" usebundle => cfdc_sshd:sshd("cf_sketch_testing", "default:cfsketch_g.__001_Security_SSH_sshd_metadata", "default:cfsketch_g.__001_Security_SSH_sshd_params"), useresult => "return___001_Security_SSH_sshd";
 
   reports:
 
