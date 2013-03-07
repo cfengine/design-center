@@ -3,26 +3,44 @@ body file control
   namespace => "cfdc_file_integrity";
 }
 
-bundle agent watch(watch, hash_algorithm, ifelapsed)
+bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
 {
-  meta:
-      "vars[watch][type]"                string => "LIST(PATH)";
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
-      "vars[hash_algorithm][type]"       string => "NON_EMPTY_STRING";
-      "vars[hash_algorithm][default]"    string => "sha256";
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-      "vars[ifelapsed][type]"            string => "DIGITS";
-      "vars[ifelapsed][default]"         string => "1440";
+    test::
+      "watch" slist => { "/tmp" }, policy => "free";
+    !test::
+      "watch" slist => { @(given_watch) }, policy => "free";
+
+    any::
+      "watch_str" string => join(";", "watch"), policy => "free";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   files:
     "$(watch)"
       comment      => "Detect changes to files",
-      changes      => _changes_file_integrity("$(hash_algorithm)"),
+      changes      => changes_file_integrity("$(hash_algorithm)"),
       depth_search => default:recurse("inf"),
       action       => default:if_elapsed("$(ifelapsed)");
+
+  reports:
+    any::
+      "$(watch_str)" bundle_return_value_index => "paths";
+
+      test::
+      "test mode";
 }
 
-body changes _changes_file_integrity(hash_algorithm)
+body changes changes_file_integrity(hash_algorithm)
 {
       hash           => "$(hash_algorithm)";
       report_changes => "content";

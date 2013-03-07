@@ -12,6 +12,7 @@ File hashes will be generated at intervals specified by ifelapsed. On modificati
 ## REQUIREMENTS
 
 CFEngine::stdlib (the COPBL)
+CFEngine::dclib (the Design Center stdlib)
 
 ## SAMPLE USAGE
 
