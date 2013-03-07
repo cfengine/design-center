@@ -1,58 +1,148 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => {
-                  "../../libraries/copbl/cfengine_stdlib.cf",
-                  "./main.cf",
-                };
+      inputs => { @(cfsketch_g.inputs) };
 }
 
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
-  classes:
-      "crontest_nowipe" expression => "!any";
-
   vars:
-     !test.(debian|darwin)::
-       "crontest_cron_path" string => "/usr/bin/crontab";
-     !test.(ubuntu)::
-       "crontest_cron_path" string => "/etc/cron.d";
-     test.!cat::
-       "crontest_cron_path" string => "/tmp";
-     test.cat::
-       "crontest_cron_path" string => "/bin/cat";
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 
-     darwin::
-       "crontest_tasks[task3][commands]" slist => { "/home/tzz/bin/tunnels3.pl" };
-       "crontest_tasks[task3][runas]" string => "root";
-       "crontest_tasks[task3][when]" string => "0 * * * *";
-       "crontest_tasks[tunnels][commands]" slist => { "/home/tzz/bin/tunnels.pl" };
-       "crontest_tasks[tunnels][runas]" string => "tzz";
-       "crontest_tasks[tunnels][when]" string => "* * * * *";
+      # array 'metadata' from definition sketch metadata, activation __001_System_cron_tab
+      "__001_System_cron_tab_metadata[authors]" slist => { "Neil H Watson <neil@watson-wilson.ca>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_System_cron_tab_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_System_cron_tab_metadata[license]" string => "MIT";
+      "__001_System_cron_tab_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/system/cron";
+      "__001_System_cron_tab_metadata[manifest]" slist => { "README.md", "main.cf", "params/example.json" };
+      "__001_System_cron_tab_metadata[manifest_cf]" slist => { "main.cf" };
+      "__001_System_cron_tab_metadata[manifest_docs]" slist => { "README.md" };
+      "__001_System_cron_tab_metadata[manifest_exe]" slist => { "cf_null" };
+      "__001_System_cron_tab_metadata[manifest_extra]" slist => { "params/example.json" };
+      "__001_System_cron_tab_metadata[name]" string => "System::cron";
+      "__001_System_cron_tab_metadata[tags]" slist => { "cfdc" };
+      "__001_System_cron_tab_metadata[version]" string => "2";
 
-     debian::
-       "crontest_tasks[test1_crontab][commands]" slist => { "/bin/echo test1 &> /dev/null" };
-       "crontest_tasks[test1_crontab][runas]" string => "jremond";
-       "crontest_tasks[test1_crontab][when]" string => "* * * * *";
-       "crontest_tasks[test2_crontab][commands]" slist => { "/bin/echo test2 &> /dev/null" };
-       "crontest_tasks[test2_crontab][runas]" string => "jremond";
-       "crontest_tasks[test2_crontab][when]" string => "* 0 * * *";
+      # list 'commands' from definition /home/tzz/source/design-center/tools/test/../../sketches/system/cron/params/example.json 1, activation __001_System_cron_tab
+      "__001_System_cron_tab_commands" slist => { "/bin/echo test1 &> /dev/null" };
 
-     ubuntu::
-       "crontest_tasks[task2][commands]" slist => { "/home/tzz/bin/tunnels2.pl" };
-       "crontest_tasks[task2][runas]" string => "root";
-       "crontest_tasks[task2][when]" string => "0 * * * *";
-       "crontest_tasks[tunnels][commands]" slist => { "/home/tzz/bin/ubuntu-tunnels.pl" };
-       "crontest_tasks[tunnels][runas]" string => "tzz";
-       "crontest_tasks[tunnels][when]" string => "* * * * *";
+      # array 'metadata' from definition sketch metadata, activation __002_System_cron_tab
+      "__002_System_cron_tab_metadata[authors]" slist => { "Neil H Watson <neil@watson-wilson.ca>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__002_System_cron_tab_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__002_System_cron_tab_metadata[license]" string => "MIT";
+      "__002_System_cron_tab_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/system/cron";
+      "__002_System_cron_tab_metadata[manifest]" slist => { "README.md", "main.cf", "params/example.json" };
+      "__002_System_cron_tab_metadata[manifest_cf]" slist => { "main.cf" };
+      "__002_System_cron_tab_metadata[manifest_docs]" slist => { "README.md" };
+      "__002_System_cron_tab_metadata[manifest_exe]" slist => { "cf_null" };
+      "__002_System_cron_tab_metadata[manifest_extra]" slist => { "params/example.json" };
+      "__002_System_cron_tab_metadata[name]" string => "System::cron";
+      "__002_System_cron_tab_metadata[tags]" slist => { "cfdc" };
+      "__002_System_cron_tab_metadata[version]" string => "2";
+
+      # list 'commands' from definition /home/tzz/source/design-center/tools/test/../../sketches/system/cron/params/example.json 2, activation __002_System_cron_tab
+      "__002_System_cron_tab_commands" slist => { "/bin/echo test2 &> /dev/null" };
+
+      # array 'metadata' from definition sketch metadata, activation __003_System_cron_d
+      "__003_System_cron_d_metadata[authors]" slist => { "Neil H Watson <neil@watson-wilson.ca>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__003_System_cron_d_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__003_System_cron_d_metadata[license]" string => "MIT";
+      "__003_System_cron_d_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/system/cron";
+      "__003_System_cron_d_metadata[manifest]" slist => { "README.md", "main.cf", "params/example.json" };
+      "__003_System_cron_d_metadata[manifest_cf]" slist => { "main.cf" };
+      "__003_System_cron_d_metadata[manifest_docs]" slist => { "README.md" };
+      "__003_System_cron_d_metadata[manifest_exe]" slist => { "cf_null" };
+      "__003_System_cron_d_metadata[manifest_extra]" slist => { "params/example.json" };
+      "__003_System_cron_d_metadata[name]" string => "System::cron";
+      "__003_System_cron_d_metadata[tags]" slist => { "cfdc" };
+      "__003_System_cron_d_metadata[version]" string => "2";
+
+      # list 'commands' from definition /home/tzz/source/design-center/tools/test/../../sketches/system/cron/params/example.json 3, activation __003_System_cron_d
+      "__003_System_cron_d_commands" slist => { "/home/tzz/bin/ubuntu-tunnels.pl" };
+
+      # array 'metadata' from definition sketch metadata, activation __004_System_cron_d
+      "__004_System_cron_d_metadata[authors]" slist => { "Neil H Watson <neil@watson-wilson.ca>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__004_System_cron_d_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__004_System_cron_d_metadata[license]" string => "MIT";
+      "__004_System_cron_d_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/system/cron";
+      "__004_System_cron_d_metadata[manifest]" slist => { "README.md", "main.cf", "params/example.json" };
+      "__004_System_cron_d_metadata[manifest_cf]" slist => { "main.cf" };
+      "__004_System_cron_d_metadata[manifest_docs]" slist => { "README.md" };
+      "__004_System_cron_d_metadata[manifest_exe]" slist => { "cf_null" };
+      "__004_System_cron_d_metadata[manifest_extra]" slist => { "params/example.json" };
+      "__004_System_cron_d_metadata[name]" string => "System::cron";
+      "__004_System_cron_d_metadata[tags]" slist => { "cfdc" };
+      "__004_System_cron_d_metadata[version]" string => "2";
+
+      # list 'commands' from definition /home/tzz/source/design-center/tools/test/../../sketches/system/cron/params/example.json 4, activation __004_System_cron_d
+      "__004_System_cron_d_commands" slist => { "/home/tzz/bin/tunnels2.pl" };
+
+      # array 'metadata' from definition sketch metadata, activation __005_System_cron_tab
+      "__005_System_cron_tab_metadata[authors]" slist => { "Neil H Watson <neil@watson-wilson.ca>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__005_System_cron_tab_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__005_System_cron_tab_metadata[license]" string => "MIT";
+      "__005_System_cron_tab_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/system/cron";
+      "__005_System_cron_tab_metadata[manifest]" slist => { "README.md", "main.cf", "params/example.json" };
+      "__005_System_cron_tab_metadata[manifest_cf]" slist => { "main.cf" };
+      "__005_System_cron_tab_metadata[manifest_docs]" slist => { "README.md" };
+      "__005_System_cron_tab_metadata[manifest_exe]" slist => { "cf_null" };
+      "__005_System_cron_tab_metadata[manifest_extra]" slist => { "params/example.json" };
+      "__005_System_cron_tab_metadata[name]" string => "System::cron";
+      "__005_System_cron_tab_metadata[tags]" slist => { "cfdc" };
+      "__005_System_cron_tab_metadata[version]" string => "2";
+
+      # list 'commands' from definition /home/tzz/source/design-center/tools/test/../../sketches/system/cron/params/example.json 5, activation __005_System_cron_tab
+      "__005_System_cron_tab_commands" slist => { "/home/tzz/bin/tunnels3.pl" };
 }
 
 bundle agent cfsketch_run
 {
   methods:
+    any::
       "cfsketch_g" usebundle => "cfsketch_g";
-      "cron test" usebundle => cfdc_cron("crontest_",
-                                         $(cfsketch_g.crontest_cron_path),
-                                         "cfsketch_g.crontest_tasks");
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
 
+    runenv_cf_sketch_testing_activated::
+      "__001_System_cron_tab" usebundle => cfdc_cron:tab("cf_sketch_testing", "default:cfsketch_g.__001_System_cron_tab_metadata", "/usr/bin/crontab", "test1_crontab", "jremond", "* * * * *", @(cfsketch_g.__001_System_cron_tab_commands)), useresult => "return___001_System_cron_tab";
+    runenv_cf_sketch_testing_activated::
+      "__002_System_cron_tab" usebundle => cfdc_cron:tab("cf_sketch_testing", "default:cfsketch_g.__002_System_cron_tab_metadata", "/usr/bin/crontab", "test2_crontab", "jremond", "* 0 * * *", @(cfsketch_g.__002_System_cron_tab_commands)), useresult => "return___002_System_cron_tab";
+    runenv_cf_sketch_testing_activated::
+      "__003_System_cron_d" usebundle => cfdc_cron:d("cf_sketch_testing", "default:cfsketch_g.__003_System_cron_d_metadata", "/etc/cron.d", "tunnels", "tzz", "* * * * *", @(cfsketch_g.__003_System_cron_d_commands)), useresult => "return___003_System_cron_d";
+    runenv_cf_sketch_testing_activated::
+      "__004_System_cron_d" usebundle => cfdc_cron:d("cf_sketch_testing", "default:cfsketch_g.__004_System_cron_d_metadata", "/etc/cron.d", "task2", "root", "0 * * * *", @(cfsketch_g.__004_System_cron_d_commands)), useresult => "return___004_System_cron_d";
+    runenv_cf_sketch_testing_activated::
+      "__005_System_cron_tab" usebundle => cfdc_cron:tab("cf_sketch_testing", "default:cfsketch_g.__005_System_cron_tab_metadata", "/usr/bin/crontab", "task3", "root", "0 * * * *", @(cfsketch_g.__005_System_cron_tab_commands)), useresult => "return___005_System_cron_tab";
+
+  reports:
+      "activation __001_System_cron_tab returned tab = $(return___001_System_cron_tab[tab])";
+      "activation __001_System_cron_tab returned path = $(return___001_System_cron_tab[path])";
+      "activation __002_System_cron_tab returned tab = $(return___002_System_cron_tab[tab])";
+      "activation __002_System_cron_tab returned path = $(return___002_System_cron_tab[path])";
+      "activation __003_System_cron_d returned tab = $(return___003_System_cron_d[tab])";
+      "activation __003_System_cron_d returned path = $(return___003_System_cron_d[path])";
+      "activation __004_System_cron_d returned tab = $(return___004_System_cron_d[tab])";
+      "activation __004_System_cron_d returned path = $(return___004_System_cron_d[path])";
+      "activation __005_System_cron_tab returned tab = $(return___005_System_cron_tab[tab])";
+      "activation __005_System_cron_tab returned path = $(return___005_System_cron_tab[path])";
 }
