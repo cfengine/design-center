@@ -58,7 +58,7 @@ sub BUILD
 
         if ($@)
         {
-            $self->dcapi->log($@);
+            $self->api->log($@);
         }
 
     }
