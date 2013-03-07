@@ -94,6 +94,7 @@ sub make_activation
 
     foreach my $b (@bundles_to_check)
     {
+        $bundle_params{$b} = [];
         $activation_id = sprintf('__%03d %s %s',
                                  $activation_position,
                                  $found->name(),
@@ -107,15 +108,19 @@ sub make_activation
         foreach my $p (@$sketch_api)
         {
             $api->log5("Checking the API of sketch %s, bundle %s: parameter %s", $sketch, $b, $p);
+            my %extra = (
+                         environment => $env,
+                         sketch => $found,
+                         id => $activation_id,
+                        );
+
+            $extra{default} = $p->{default} if exists $p->{default};
+
             my $filled = fill_param($api,
-                                    $p->{name}, $p->{type}, \@param_sets,
-                                    {
-                                     environment => $env,
-                                     sketch => $found,
-                                     id => $activation_id,
-                                     # insert a 'default' key only if it exists
-                                     (exists $p->{default} ? (default => $p->{default}) : ()),
-                                    });
+                                    $p->{name},
+                                    $p->{type},
+                                    \@param_sets,
+                                    \%extra);
             unless ($filled)
             {
                 $api->log4("The API of sketch %s, bundle %s did not match parameter %s", $sketch, $b, $p);
@@ -123,7 +128,7 @@ sub make_activation
                 last;
             }
 
-            $api->log5("The API of sketch %s, bundle %s matched parameter %s", $sketch, $b, $p);
+            $api->log5("The API of sketch %s, bundle %s matched parameter %s + default %s => %s", $sketch, $b, $p, $extra{default}||'""', $filled);
             push @{$bundle_params{$b}}, $filled;
         }
 
@@ -139,8 +144,8 @@ sub make_activation
 
     $activation_position++;
 
-    $api->log3("Verified sketch %s entry: filled parameters are %s",
-               $sketch, $bundle_params{$bundle});
+    $api->log3("Verified sketch %s, bundle %s: filled parameters are %s",
+               $sketch, $bundle, $bundle_params{$bundle});
 
     return DCAPI::Activation->new(api => $api,
                                   sketch => $found,
@@ -177,37 +182,40 @@ sub fill_param
     foreach my $pset (@$param_sets)
     {
         my ($pkey, $pval) = @$pset;
-        if (!exists $pval->{$name} && exists $extra->{default})
+        # Get the values locally so overwriting them with the default doesn't
+        # set them for the future.  This was a fun bug to hunt.
+        my %pval = %$pval;
+        if (!exists $pval{$name} && exists $extra->{default})
         {
             $extra->{default} =~ s/__PREFIX__/$extra->{id}/g;
-            $pval->{$name} = $extra->{default};
+            $pval{$name} = $extra->{default};
         }
 
         # TODO: add more parameter types and validate the value!!!
-        if ($type eq 'array' && exists $pval->{$name} && ref $pval->{$name} eq 'HASH')
+        if ($type eq 'array' && exists $pval{$name} && ref $pval{$name} eq 'HASH')
         {
             if (defined $ret)           # merge arrays
             {
                 my $oldval = $ret->{value};
-                my $newval = $pval->{$name};
+                my $newval = $pval{$name};
                 $ret = {set=>$pkey, type => $type, name => $name, value => Util::hashref_merge($oldval, $newval)};
             }
             else
             {
-                $ret = {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+                $ret = {set=>$pkey, type => $type, name => $name, value => $pval{$name}};
             }
         }
-        elsif ($type eq 'string' && exists $pval->{$name} && Util::is_scalar($pval->{$name}))
+        elsif ($type eq 'string' && exists $pval{$name} && Util::is_scalar($pval{$name}))
         {
-            $ret = {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+            $ret = {set=>$pkey, type => $type, name => $name, value => $pval{$name}};
         }
-        elsif ($type eq 'boolean' && exists $pval->{$name} && Util::is_scalar($pval->{$name}))
+        elsif ($type eq 'boolean' && exists $pval{$name} && Util::is_scalar($pval{$name}))
         {
-            $ret = {set=>$pkey, type => $type, name => $name, value => 0+!!$pval->{$name}};
+            $ret = {set=>$pkey, type => $type, name => $name, value => 0+!!$pval{$name}};
         }
-        elsif ($type eq 'list' && exists $pval->{$name} && ref $pval->{$name} eq 'ARRAY')
+        elsif ($type eq 'list' && exists $pval{$name} && ref $pval{$name} eq 'ARRAY')
         {
-            $ret = {set=>$pkey, type => $type, name => $name, value => $pval->{$name}};
+            $ret = {set=>$pkey, type => $type, name => $name, value => $pval{$name}};
         }
     }
 
