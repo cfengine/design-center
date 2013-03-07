@@ -11,3 +11,14 @@ bundle agent report_metadata(bundlename, metadata)
 
       "$(bundlename): $($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
 }
+
+bundle edit_line converge(marker, lines)
+{
+  vars:
+      "regex" string => escape($(marker));
+
+  delete_lines:
+      "$(regex)" comment => "Delete lines matching the marker";
+  insert_lines:
+      "$(lines)" comment => "Insert the given lines";
+}
