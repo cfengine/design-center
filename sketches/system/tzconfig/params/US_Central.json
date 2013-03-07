@@ -3,6 +3,5 @@
     {
         "timezone": "America/Chicago",
         "zoneinfo": "/usr/share/zoneinfo",
-        "relocate": { "bycontext": { "!test": "/", "test": "/tmp/tzconfig" } }
     }
 }

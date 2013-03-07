@@ -268,8 +268,6 @@ sysctl:
 	$(RUNNER)
 
 tzconfig:
-	$(CFSKETCH_DA) --install System::tzconfig --activate System::tzconfig=$(SOURCEDIR)/system/tzconfig/params/example.json
-	$(RUNNER)
 	$(CFSKETCH_DA) --install System::tzconfig --activate System::tzconfig=$(SOURCEDIR)/system/tzconfig/params/US_Central.json
 	$(RUNNER)
 
