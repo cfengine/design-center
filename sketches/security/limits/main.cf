@@ -3,36 +3,12 @@ body file control
       namespace => "cfdc_security_limits";
 }
 
-bundle agent limits(class_prefix, canon_prefix, filename, domains)
+bundle agent limits(runenv, metadata, given_filename, domains, empty_first, ensure_absent)
 {
-  meta:
-      "vars[class_prefix][type]"      string => "NON_EMPTY_STRING";
-      "vars[class_prefix][default]"   string => "__CLASS_PREFIX__";
-
-      "vars[canon_prefix][type]"      string => "NON_EMPTY_STRING";
-      "vars[canon_prefix][default]"   string => "__CANON_PREFIX__";
-
-      "vars[ensure_absent][type]"     string => "CONTEXT";
-      "vars[ensure_absent][default]"  string => "!any";
-
-      "vars[empty_first][type]"       string => "CONTEXT";
-      "vars[empty_first][default]"    string => "!any";
-
-      "vars[debug][type]"             string => "CONTEXT";
-      "vars[debug][default]"          string => "!any";
-
-      "vars[test][type]"              string => "CONTEXT";
-      "vars[test][default]"           string => "!any";
-
-      "vars[verbose][type]"           string => "CONTEXT";
-      "vars[verbose][default]"        string => "!any";
-
-      "vars[filename][type]"          string => "PATH";
-      "vars[filename][default]"       string => "/etc/security/limits.conf";
-
-      "vars[domains][type]"           string => "ARRAY()";
-
   vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
       "items" slist => { "core",
                          "data",
                          "fsize",
@@ -63,21 +39,25 @@ bundle agent limits(class_prefix, canon_prefix, filename, domains)
       "escaped[$(domain_keys)]" string => escape($(domain_keys));
       "escaped[$(types)]" string => escape($(types));
 
-    default:test::
-      "owner" string => getenv("LOGNAME", 100);
-    !default:test::
-      "owner" string => "root";
+    test::
+      "owner" string => getenv("LOGNAME", 100), policy => "free";
+      "path_prefix" string => "/tmp", policy => "free";
+    !test::
+      "owner" string => "root", policy => "free";
+      "path_prefix" string => "", policy => "free";
+
+    any::
+      "filename" string => "$(path_prefix)$(given_filename)", policy => "free";
 
   classes:
-      "empty_first" expression => "$(class_prefix)empty_first";
-      "ensure_absent" expression => "$(class_prefix)ensure_absent";
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "empty_first" expression => strcmp($(empty_first), "1");
+      "ensure_absent" expression => strcmp($(ensure_absent), "1");
 
-      "debug_security_limits" or => { "$(class_prefix)debug" };
-      "verbose_security_limits" or => { "$(class_prefix)verbose" };
-    default:debug::
-      "debug_security_limits" or => { "any" };
-    default:verbose::
-      "verbose_security_limits" or => { "any" };
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   files:
     !empty_first.!ensure_absent::
@@ -91,7 +71,7 @@ bundle agent limits(class_prefix, canon_prefix, filename, domains)
                                                   @(limits.types),
                                                   @(limits.domain_keys)),
       perms => default:mog("644", "$(owner)", "$(owner)"),
-      classes => default:if_repaired("$(canon_prefix)repaired"),
+      classes => default:if_repaired("security_limits_repaired"),
       comment => "Ensure the specified lines are present, we dont care about other lines";
 
     empty_first.!ensure_absent::
@@ -105,7 +85,7 @@ bundle agent limits(class_prefix, canon_prefix, filename, domains)
                                                   @(limits.domain_keys)),
       edit_defaults => default:empty,
       perms => default:mog("644", "$(owner)", "$(owner)"),
-      classes => default:if_repaired("$(class_prefix)repaired"),
+      classes => default:if_repaired("security_limits_repaired"),
       comment    => "Ensure only the specified lines exist.";
 
     ensure_absent::
@@ -118,27 +98,30 @@ bundle agent limits(class_prefix, canon_prefix, filename, domains)
                                                   @(limits.types),
                                                   @(limits.domain_keys)),
       perms => default:mog("644", "$(owner)", "$(owner)"),
-      classes => default:if_repaired("$(class_prefix)repaired"),
+      classes => default:if_repaired("security_limits_repaired"),
       comment    => "Ensure the specified lines do not exist.";
 
   reports:
-    debug_security_limits::
-      "cfdc_security_limits: Security limits policy in debug mode, managing domains $(domain_keys)";
+    any::
+      "$(filename)" bundle_return_value_index => "filename";
 
-      "I repaired the $(filename) file",
-      ifvarclass => "$(canon_prefix)repaired";
+    test::
+      "$(this.bundle): Security limits policy in test mode, managing domains $(domain_keys)";
 
-    empty_first::
-      "Empty First: enabled";
+    verbose.security_limits_repaired::
+      "$(this.bundle): I repaired the $(filename) file";
 
-    !empty_first::
-      "Empty First: disabled";
+    verbose.empty_first::
+      "$(this.bundle): Empty First: enabled";
 
-    ensure_absent::
-      "Mgmt Policy: ensure absent";
+    verbose.!empty_first::
+      "$(this.bundle): Empty First: disabled";
 
-    !ensure_absent::
-      "Mgmt Policy: ensure present";
+    verbose.ensure_absent::
+      "$(this.bundle): Mgmt Policy: ensure absent";
+
+    verbose.!ensure_absent::
+      "$(this.bundle): Mgmt Policy: ensure present";
 
 }
 
@@ -156,8 +139,6 @@ bundle edit_line selective(mode, dref, escaped_dref, items, types, domains)
       "removal" expression => strcmp("$(mode)", "remove");
 
       "$(canonified[$(mydomains)_$(mytypes)_$(myitems)_defined])" expression => isvariable("$(dref)[$(mydomains)][$(mytypes)][$(myitems)]");
-    default:debug::
-      "debug_security_limits" or => { "any" };
 
   delete_lines:
       "^\s*$($(escaped_dref)[$(mydomains)])\s+$($(escaped_dref)[$(mytypes)])\s+$(myitems).*$"
@@ -171,13 +152,13 @@ bundle edit_line selective(mode, dref, escaped_dref, items, types, domains)
       ifvarclass => "$(canonified[$(mydomains)_$(mytypes)_$(myitems)_defined])";
 
   reports:
-    debug_security_limits.!removal::
+    verbose.!removal::
       "cfdc_security_limits:selective: invoked in rewrite mode";
 
-    debug_security_limits.removal::
+    verbose.removal::
       "cfdc_security_limits:selective: invoked in removal mode";
 
-    debug_security_limits::
+    verbose::
 
       "For setting '$(mydomains) $(mytypes) $(myitems) = $($(dref)[$(mydomains)][$(mytypes)][$(myitems)])', selectively managing line '^\s*$($(escaped_dref)[$(mydomains)])\s+$($(escaped_dref)[$(mytypes)])\s+$(myitems).*$'"
       ifvarclass => "$(canonified[$(mydomains)_$(mytypes)_$(myitems)_defined])";

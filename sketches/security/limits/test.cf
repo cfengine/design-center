@@ -1,35 +1,64 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => {"../../libraries/copbl/cfengine_stdlib.cf","main.cf",};
+      inputs => { @(cfsketch_g.inputs) };
 }
 
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
-  classes:
-      "testlimits_debug" expression => "any";
-      "testlimits_empty_first" expression => "!any";
-      "testlimits_ensure_absent" expression => "!any";
-      "testlimits_test" expression => "!any";
-      "testlimits_verbose" expression => "!any";
-
   vars:
-     !test::
-       "testlimits_filename" string => "/etc/security/limits.conf";
-     test::
-       "testlimits_filename" string => "/tmp/limits.conf";
-     any::
-       "testlimits_domains[*][-][maxlogins]" string => "100";
-       "testlimits_domains[*][soft][core]" string => "1024";
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+
+      # array 'metadata' from definition sketch metadata, activation __001_Security_security_limits_limits
+      "__001_Security_security_limits_limits_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_Security_security_limits_limits_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_Security_security_limits_limits_metadata[license]" string => "MIT";
+      "__001_Security_security_limits_limits_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/security/limits";
+      "__001_Security_security_limits_limits_metadata[manifest]" slist => { "README.md", "changelog", "main.cf", "params/example.json", "test.cf" };
+      "__001_Security_security_limits_limits_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__001_Security_security_limits_limits_metadata[manifest_docs]" slist => { "README.md" };
+      "__001_Security_security_limits_limits_metadata[manifest_exe]" slist => { "cf_null" };
+      "__001_Security_security_limits_limits_metadata[manifest_extra]" slist => { "changelog", "params/example.json" };
+      "__001_Security_security_limits_limits_metadata[name]" string => "Security::security_limits";
+      "__001_Security_security_limits_limits_metadata[tags]" slist => { "cfdc" };
+      "__001_Security_security_limits_limits_metadata[version]" string => "1.2";
+
+      # array 'domains' from definition /home/tzz/source/design-center/tools/test/../../sketches/security/limits/params/example.json, activation __001_Security_security_limits_limits
+      "__001_Security_security_limits_limits_domains[*][-][maxlogins]" string => "100";
+      "__001_Security_security_limits_limits_domains[*][soft][core]" string => "1024";
 }
 
 bundle agent cfsketch_run
 {
   methods:
+    any::
       "cfsketch_g" usebundle => "cfsketch_g";
-      "test" usebundle => cfdc_security_limits:security_limits("default:testlimits",
-                                                               "testlimits",
-                                                               $(cfsketch_g.testlimits_filename),
-                                                               "default:cfsketch_g.testlimits_domains");
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
 
+    runenv_cf_sketch_testing_activated::
+      "__001_Security_security_limits_limits" usebundle => cfdc_security_limits:limits("cf_sketch_testing", "default:cfsketch_g.__001_Security_security_limits_limits_metadata", "/etc/security/limits.conf", "default:cfsketch_g.__001_Security_security_limits_limits_domains", "", ""), useresult => "return___001_Security_security_limits_limits";
+
+  reports:
+      "activation __001_Security_security_limits_limits returned filename = $(return___001_Security_security_limits_limits[filename])";
 }
