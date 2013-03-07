@@ -1,7 +1,6 @@
 {
     "System::sysctl":
     {
-        "sysctl_file" : { "bycontext": { "!test": "/etc/sysctl.conf", "test": "/tmp/sysctl.conf" } },
         "ensured_kv" : { "net.ipv4.tcp_tw_reuse": 1 },
         "removed_kv" : { "net.ipv4.tcp_tw_reuse": 2 },
         "removed_vars" : [ "bad.entry" ],

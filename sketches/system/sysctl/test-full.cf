@@ -1,3 +1,5 @@
+TODO: this is broken
+
 #cf-agent -KIf ./test.cf  | grep "Test Result"
 #R: Test Result: ensure_present OK
 #R: Test Result: ensure_absent OK
