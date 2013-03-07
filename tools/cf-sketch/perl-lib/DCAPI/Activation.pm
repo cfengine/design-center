@@ -181,10 +181,10 @@ sub fill_param
     my $ret;
     foreach my $pset (@$param_sets)
     {
-        my ($pkey, $pval) = @$pset;
+        my ($pkey, $pval_ref) = @$pset;
         # Get the values locally so overwriting them with the default doesn't
         # set them for the future.  This was a fun bug to hunt.
-        my %pval = %$pval;
+        my %pval = %$pval_ref;
         if (!exists $pval{$name} && exists $extra->{default})
         {
             $extra->{default} =~ s/__PREFIX__/$extra->{id}/g;
