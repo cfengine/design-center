@@ -25,6 +25,7 @@ It's easy to add more, please do!
 ## REQUIREMENTS
 * CFEngine Community 3.4.0 or greater
 * Standard Library
+* Design Center CFEngine::dclib
 
 ## SAMPLE USAGE
 See `test.cf` and `params/example.json` for standalone and JSON-driven usage, respectively.

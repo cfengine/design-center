@@ -1,24 +1,61 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => {"../../libraries/copbl/cfengine_stdlib.cf", "main.cf"};
+      inputs => { @(cfsketch_g.inputs) };
 }
 
 
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
   vars:
-       "fqdn_canon_prefix" string => "fqdn_";
-       "fqdn_hostname" string => "node1";
-       "fqdn_domainname" string => "example.com";
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+
+      # array 'metadata' from definition sketch metadata, activation __001_System_set_hostname_set
+      "__001_System_set_hostname_set_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_System_set_hostname_set_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_System_set_hostname_set_metadata[license]" string => "MIT";
+      "__001_System_set_hostname_set_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/system/set_hostname";
+      "__001_System_set_hostname_set_metadata[manifest]" slist => { "README.md", "changelog", "main.cf", "params/example.json", "test.cf" };
+      "__001_System_set_hostname_set_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__001_System_set_hostname_set_metadata[manifest_docs]" slist => { "README.md" };
+      "__001_System_set_hostname_set_metadata[manifest_exe]" slist => { "cf_null" };
+      "__001_System_set_hostname_set_metadata[manifest_extra]" slist => { "changelog", "params/example.json" };
+      "__001_System_set_hostname_set_metadata[name]" string => "System::set_hostname";
+      "__001_System_set_hostname_set_metadata[tags]" slist => { "cfdc" };
+      "__001_System_set_hostname_set_metadata[version]" string => "1.1";
 }
 
 bundle agent cfsketch_run
 {
   methods:
+    any::
       "cfsketch_g" usebundle => "cfsketch_g";
-      "run" usebundle => cfdc_hostname:set($(cfsketch_g.fqdn_canon_prefix),
-                                           $(cfsketch_g.fqdn_hostname),
-                                           $(cfsketch_g.fqdn_domainname));
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
 
+    runenv_cf_sketch_testing_activated::
+      "__001_System_set_hostname_set" usebundle => cfdc_hostname:set("cf_sketch_testing", "default:cfsketch_g.__001_System_set_hostname_set_metadata", "node1", "example.com"), useresult => "return___001_System_set_hostname_set";
+
+  reports:
+      "activation __001_System_set_hostname_set returned hostname = $(return___001_System_set_hostname_set[hostname])";
+      "activation __001_System_set_hostname_set returned domainname = $(return___001_System_set_hostname_set[domainname])";
 }
