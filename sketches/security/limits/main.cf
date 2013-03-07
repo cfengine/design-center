@@ -153,13 +153,13 @@ bundle edit_line selective(mode, dref, escaped_dref, items, types, domains)
 
   reports:
     verbose.!removal::
-      "cfdc_security_limits:selective: invoked in rewrite mode";
+      "$(this.bundle): invoked in rewrite mode";
 
     verbose.removal::
-      "cfdc_security_limits:selective: invoked in removal mode";
+      "$(this.bundle): invoked in removal mode";
 
     verbose::
 
-      "For setting '$(mydomains) $(mytypes) $(myitems) = $($(dref)[$(mydomains)][$(mytypes)][$(myitems)])', selectively managing line '^\s*$($(escaped_dref)[$(mydomains)])\s+$($(escaped_dref)[$(mytypes)])\s+$(myitems).*$'"
+      "$(this.bundle): For setting '$(mydomains) $(mytypes) $(myitems) = $($(dref)[$(mydomains)][$(mytypes)][$(myitems)])', selectively managing line '^\s*$($(escaped_dref)[$(mydomains)])\s+$($(escaped_dref)[$(mytypes)])\s+$(myitems).*$'"
       ifvarclass => "$(canonified[$(mydomains)_$(mytypes)_$(myitems)_defined])";
 }
