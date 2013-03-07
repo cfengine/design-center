@@ -17,7 +17,8 @@ windows
 
 
 ## REQUIREMENTS
-standard library
+CFEngine::stdlib
+CFEngine::dclib
 
 ## SAMPLE USAGE
 See `test.cf` and `params/example.json` for standalone and JSON-driven usage, respectively.

@@ -1,23 +1,38 @@
 {
 
-    "manifest":
+    manifest:
     {
-        "main.cf": { "desc": "main file", "version": 2.1 },
-        "README.md": { "documentation": true },
-        "params/example.json": { "comment": "Example parameters" }
+        "main.cf": { desc: "main file" },
+        "README.md": { documentation: true },
+        "params/example.json": { comment: "Example parameters" }
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "System::etc_hosts",
-	"description": "Manage /etc/hosts",
-        "version": 2.1,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin", "windows" ] }
+        name: "System::etc_hosts",
+	    description: "Manage /etc/hosts",
+        version: 2.2,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux", "darwin", "windows" ] }
     },
 
-    "entry_point": "main.cf",
-    "interface": [ "main.cf" ]
+    api:
+    {
+        // the key is the name of the bundle!
+        configure:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "hostfile", default: "/etc/hosts" },
+            { type: "boolean", name: "defined_only" },
+            { type: "array", name: "hosts" },
+            { type: "return", name: "file", },
+        ],
+    },
+
+    namespace: "cfdc_etc_hosts",
+    entry_point: "main.cf",
+    interface: [ "main.cf" ]
 }
