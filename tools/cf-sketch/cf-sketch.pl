@@ -50,6 +50,7 @@ my %options = (
                uninstall => [],
                force => 0,
                verbose => 0,
+               test => 0,
                veryverbose => 0,
                runfile => "$inputs_root/api-runfile.cf",
               );
@@ -62,6 +63,7 @@ GetOptions(\%options,
            "veryverbose|vv!",
            "generate!",
            "force|f!",
+           "test!",
            "installsource|is=s",
            "cfpath=s",
            "list:s",
@@ -88,7 +90,7 @@ api_interaction({
                                         $options{environment} =>
                                         {
                                          activated => 1,
-                                         test => 1,
+                                         test => !!$options{test},
                                          verbose => !!$options{verbose}
                                         }
                                        }
