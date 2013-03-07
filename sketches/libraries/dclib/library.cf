@@ -22,3 +22,10 @@ bundle edit_line converge(marker, lines)
   insert_lines:
       "$(lines)" comment => "Insert the given lines";
 }
+
+bundle common env
+{
+  vars:
+      "env" slist => { "LOGNAME", "PATH", "HOME" };
+      "$(env)" string => getenv("$(env)", "128");
+}

@@ -61,23 +61,27 @@ bundle agent tab(runenv, metadata, cron_path, line_task, runas, when, commands)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "need_user_specified" expression => strcmp("$(default:env.LOGNAME)",
+                                                 $(runas));
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-      "marker"    string => "MANAGED_BY_CFENGINE_CRON_SKETCH";
-      "lines"     slist  => maplist("$(when) $(marker)=1 $(this)", "commands");
+      "marker" string => "MANAGED_BY_CFENGINE_CRON_SKETCH";
+      "lines" slist  => maplist("$(when) $(marker)=1 $(this)", "commands");
 
       "class_prefix" string => canonify("$(sys.date) $(cron_path)$(line_task)");
       "toedit" string => "/tmp/$(class_prefix).cron";
 
-    !test::
-      "r_cron_path" string => $(cron_path), policy => "free";
-    test::
-      "r_cron_path" string => "/bin/cat", policy => "free";
+    need_user_specified::
+      "crontab_options" string => "-u $(runas)";
+    !need_user_specified::
+      "crontab_options" string => "";
 
   methods:
+      "env" usebundle => default:env;
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
@@ -85,7 +89,7 @@ bundle agent tab(runenv, metadata, cron_path, line_task, runas, when, commands)
   files:
       # 2) edit the crontab
       "$(toedit)"
-      edit_line      => default:converge($(marker), @(lines)),
+      edit_line      => default:converge($(marker), @(cfdc_cron:tab.lines)),
       edit_defaults  => default:std_defs,
       create         => "true",
       classes        => default:if_ok("$(class_prefix)_edited"),
@@ -98,12 +102,12 @@ bundle agent tab(runenv, metadata, cron_path, line_task, runas, when, commands)
 
   commands:
       # 1) get the crontab
-      "$(cron_path) -u $(runas) -l > $(toedit)",
+      "$(cron_path) $(crontab_options) -l > $(toedit)",
       contain        => default:in_shell,
       classes        => default:if_ok("$(class_prefix)_prepared");
 
       # 3) load the edited crontab from the temp file
-      "$(cron_path) -u $(runas) $(toedit)",
+      "$(cron_path) $(crontab_options) $(toedit)",
       contain        => default:in_shell,
       classes        => default:if_else("$(class_prefix)_processed",
                                         "$(class_prefix)_not_processed"),
@@ -123,7 +127,7 @@ bundle agent tab(runenv, metadata, cron_path, line_task, runas, when, commands)
       ifvarclass => "$(class_prefix)_processed";
 
       "" bundle_return_value_index => "tab",
-      ifvarclass => "$(class_prefix)_not_processed";
+      ifvarclass => "$(class_prefix)_not_processed||!$(class_prefix)_processed";
 
-      "$(r_cron_path)" bundle_return_value_index => "path";
+      "$(cron_path)" bundle_return_value_index => "path";
 }
