@@ -10,7 +10,7 @@
     {
         name: "CFEngine::stdlib",
 	description: "CFEngine standard library (also known as COPBL)",
-        version: 109,
+        version: 110,
         license: "LGPL",
         tags: [ "cfdc" ],
         authors: [ "CFEngine AS",
