@@ -3,20 +3,22 @@ body file control
       namespace => "cfdc_ipverify";
 }
 
-bundle agent maybe_usebundle(ip, maclist, usebundle, arp_command)
+bundle agent maybe_usebundle(runenv, metadata, ip, maclist, usebundle, arp_command)
 {
-  meta:
-      "vars[ip][type]"              string => "IPv4_ADDRESS";
-
-      "vars[maclist][type]"         string => "LIST(NON_EMPTY_STRING)";
-
-      "vars[usebundle][type]"       string => "NON_EMPTY_STRING";
-
-      "vars[arp_command][type]"     string => "NON_EMPTY_STRING";
-      "vars[arp_command][default]"  string => "/usr/sbin/arp";
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
   vars:
-      "pinger" string => "/bin/ping";
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+    !test::
+      "exec_prefix" string => "", policy => "free";
+    test::
+      "exec_prefix" string => "/bin/echo ", policy => "free";
+
+    any::
+      "pinger" string => "$(exec_prefix)$(default:paths.path[ping])", policy => "free";
       "ping_options" string => "-q -c 1";
 
     linux::
@@ -31,20 +33,34 @@ bundle agent maybe_usebundle(ip, maclist, usebundle, arp_command)
       "ip_has_known_mac" expression => regcmp(".*\s$(maclist)\s.*", "$(ip_mac_detected)");
 
   methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
     linux::
-      "exec_bundle"
-      usebundle => "$(usebundle)",
+      "exec_bundle" usebundle => $(usebundle),
       ifvarclass => "can_ping_ip.ip_has_known_mac",
       comment    => "Call requested bundle";
 
   reports:
-    default:debug::
-      "param_usebundle: $(usebundle)";
-      "param_ip: $(ip)";
-      "param_mac: $(maclist)";
-    (default:debug||default:verbose).can_ping_ip.ip_has_known_mac::
-      "calling $(usebundle) because $(ip) has known mac $(ip_mac_detected)";
-    (default:debug||default:verbose).!can_ping_ip::
-      "IP $(ip) can't be reached";
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    verbose::
+      "$(this.bundle): param_usebundle: $(usebundle)";
+      "$(this.bundle): param_ip: $(ip)";
+      "$(this.bundle): param_mac: $(maclist)";
+    verbose.can_ping_ip.ip_has_known_mac::
+      "$(this.bundle): calling $(usebundle) because $(ip) has known mac $(ip_mac_detected)";
+    verbose.!can_ping_ip::
+      "$(this.bundle): IP $(ip) can't be reached";
+
+    can_ping_ip.ip_has_known_mac::
+      "1" bundle_return_value_index => "match";
+
+    !(can_ping_ip.ip_has_known_mac)::
+      "" bundle_return_value_index => "match";
 
 }

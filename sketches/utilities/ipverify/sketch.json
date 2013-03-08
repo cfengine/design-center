@@ -1,24 +1,40 @@
 {
 
-    "manifest":
+    manifest:
     {
-        "main.cf": { "desc": "main file", "version": 1.02 },
-        "README.md": { "documentation": true },
-        "params/if_at_home_backup_pictures.json": { "comment": "Sample parameters to backup my pictures when I am at home" },
-        "params/example.json": { "comment": "Example" }
+        "main.cf": { desc: "main file" },
+        "README.md": { documentation: true },
+        "params/if_at_home_backup_pictures.json": { comment: "Sample parameters to backup my pictures when I am at home" },
+        "params/example.json": { comment: "Example" }
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "Utilities::ipverify",
-	"description": "Execute a bundle if reachable ip has known MAC address",
-        "version": 1.02,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+        name: "Utilities::ipverify",
+	    description: "Execute a bundle if reachable ip has known MAC address",
+        version: 1.1,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
     },
 
-    "entry_point": "main.cf",
-    "interface": [ "main.cf" ]
+    api:
+    {
+        // the key is the name of the bundle!
+        maybe_usebundle:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "ip" },
+            { type: "list", name: "maclist" },
+            { type: "string", name: "usebundle" },
+            { type: "string", name: "arp_command", default: "/usr/sbin/arp" },
+            { type: "return", name: "match", },
+        ],
+    },
+
+    namespace: "cfdc_ipverify",
+    entry_point: "main.cf",
+    interface: [ "main.cf" ]
 }

@@ -1,57 +1,63 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => {"../../libraries/copbl/cfengine_stdlib.cf", "main.cf"};
+      inputs => { @(cfsketch_g.inputs) };
 }
 
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
   vars:
-      "tzz_ipverify_ip" string => "192.168.2.1";
-      "tzz_ipverify_maclist" slist => { "f4:6d:04:6d:34:65" };
-      "tzz_ipverify_usebundle" string => "this_bundle_will_not_run_for_you_unless_you_buy_my_router";
-      "tzz_ipverify_arp_command" string => "/usr/sbin/arp";
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 
-      "nick_ipverify_ip" string => "10.7.2.1";
-      "nick_ipverify_maclist" slist => { "62:3c:b4:57:b8:b3" };
-      "nick_ipverify_usebundle" string => "autocommit_documentation";
-      "nick_ipverify_arp_command" string => "/usr/sbin/arp";
+      # array 'metadata' from definition sketch metadata, activation __001_Utilities_ipverify_maybe_usebundle
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[license]" string => "MIT";
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/utilities/ipverify";
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[manifest]" slist => { "README.md", "main.cf", "params/example.json", "params/if_at_home_backup_pictures.json" };
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[manifest_cf]" slist => { "main.cf" };
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[manifest_docs]" slist => { "README.md" };
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[manifest_exe]" slist => { "cf_null" };
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[manifest_extra]" slist => { "params/example.json", "params/if_at_home_backup_pictures.json" };
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[name]" string => "Utilities::ipverify";
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[tags]" slist => { "cfdc" };
+      "__001_Utilities_ipverify_maybe_usebundle_metadata[version]" string => "1.1";
 
-      "nick2_ipverify_ip" string => "192.168.1.254";
-      "nick2_ipverify_maclist" slist => { "98:2c:be:27:e8:c9" };
-      "nick2_ipverify_usebundle" string => "backup_family_pictures";
-      "nick2_ipverify_arp_command" string => "/usr/sbin/arp";
+      # list 'maclist' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/ipverify/params/example.json, activation __001_Utilities_ipverify_maybe_usebundle
+      "__001_Utilities_ipverify_maybe_usebundle_maclist" slist => { "f4:6d:04:6d:34:65" };
 }
-
 
 bundle agent cfsketch_run
 {
   methods:
-      "tzz" usebundle => cfdc_ipverify:maybe_usebundle($(cfsketch_g.tzz_ipverify_ip),
-                                                       @(cfsketch_g.tzz_ipverify_maclist),
-                                                       $(cfsketch_g.tzz_ipverify_usebundle),
-                                                       $(cfsketch_g.tzz_ipverify_arp_command));
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
 
-      "nick" usebundle => cfdc_ipverify:maybe_usebundle($(cfsketch_g.nick_ipverify_ip),
-                                                        @(cfsketch_g.nick_ipverify_maclist),
-                                                        $(cfsketch_g.nick_ipverify_usebundle),
-                                                        $(cfsketch_g.nick_ipverify_arp_command));
+    runenv_cf_sketch_testing_activated::
+      "__001_Utilities_ipverify_maybe_usebundle" usebundle => cfdc_ipverify:maybe_usebundle("cf_sketch_testing", "default:cfsketch_g.__001_Utilities_ipverify_maybe_usebundle_metadata", "192.168.2.1", @(cfsketch_g.__001_Utilities_ipverify_maybe_usebundle_maclist), "this_bundle_will_not_run_for_you_unless_you_buy_my_router", "/usr/sbin/arp"), useresult => "return___001_Utilities_ipverify_maybe_usebundle";
 
-      "nick2" usebundle => cfdc_ipverify:maybe_usebundle($(cfsketch_g.nick2_ipverify_ip),
-                                                         @(cfsketch_g.nick2_ipverify_maclist),
-                                                         $(cfsketch_g.nick2_ipverify_usebundle),
-                                                         $(cfsketch_g.nick2_ipverify_arp_command));
-
+  reports:
+      "activation __001_Utilities_ipverify_maybe_usebundle returned match = $(return___001_Utilities_ipverify_maybe_usebundle[match])";
 }
-
-bundle agent backup_family_pictures {
-  reports:
-    cfengine::
-      "I am at home, backup my family pictures to my nas";
-                                    }
-
-bundle agent autocommit_documentation{
-  reports:
-    cfengine::
-      "I am at work, autocommit my documentation to the repository in case I get hit by a bus on the way home";
-                                     }
