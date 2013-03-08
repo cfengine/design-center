@@ -1,67 +1,152 @@
-# generated with minor edits from params/repos.json
-
 body common control
 {
-      bundlesequence => { "main" };
-      inputs => {
-                  "../../libraries/copbl/cfengine_stdlib.cf",
-                  "./main.cf",
-                };
+      bundlesequence => { "cfsketch_run" };
+      inputs => { @(cfsketch_g.inputs) };
 }
 
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
-  classes:
-    any::
-      "repotest_use_apt_file" expression => "!any";
-      "repotest_wipe" expression => "!any";
-
   vars:
-      # string and slist variables
-    any::
-      "repotest_class_prefix" string => "repotest_";
-      "repotest_repos[cdw][distrib]" string => "debian";
-      "repotest_repos[cdw][file]" string => "contrib.list";
-      "repotest_repos[cdw][name]" string => "contrib-debian-wheezy";
-      "repotest_repos[cdw][repo_url]" string => "ftp.fr.debian.org";
-      "repotest_repos[cdw][section]" string => "contrib";
-      "repotest_repos[cdw][deb]" string => "1";
-      "repotest_repos[cdw][version_distrib]" string => "wheezy";
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 
-      "repotest_repos[mdw][distrib]" string => "debian";
-      "repotest_repos[mdw][file]" string => "main.list";
-      "repotest_repos[mdw][name]" string => "main-debian-wheezy";
-      "repotest_repos[mdw][repo_url]" string => "http.us.debian.org";
-      "repotest_repos[mdw][section]" string => "main";
-      "repotest_repos[mdw][deb]" string => "1";
-      "repotest_repos[mdw][deb-src]" string => "1";
-      "repotest_repos[mdw][version_distrib]" string => "wheezy";
+      # array 'metadata' from definition sketch metadata, activation __001_Repository_apt_Maintain_wipe
+      "__001_Repository_apt_Maintain_wipe_metadata[authors]" slist => { "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_Repository_apt_Maintain_wipe_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_Repository_apt_Maintain_wipe_metadata[license]" string => "MIT";
+      "__001_Repository_apt_Maintain_wipe_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/package_management/aptrepo";
+      "__001_Repository_apt_Maintain_wipe_metadata[manifest]" slist => { "README.md", "main.cf", "params/repos.json", "test.cf" };
+      "__001_Repository_apt_Maintain_wipe_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__001_Repository_apt_Maintain_wipe_metadata[manifest_docs]" slist => { "README.md" };
+      "__001_Repository_apt_Maintain_wipe_metadata[manifest_exe]" slist => { "cf_null" };
+      "__001_Repository_apt_Maintain_wipe_metadata[manifest_extra]" slist => { "params/repos.json" };
+      "__001_Repository_apt_Maintain_wipe_metadata[name]" string => "Repository::apt::Maintain";
+      "__001_Repository_apt_Maintain_wipe_metadata[tags]" slist => { "cfdc" };
+      "__001_Repository_apt_Maintain_wipe_metadata[version]" string => "1";
 
-      "repotest_repos[uup][distrib]" string => "ubuntu";
-      "repotest_repos[uup][file]" string => "universe.list";
-      "repotest_repos[uup][name]" string => "universe-ubuntu-precise";
-      "repotest_repos[uup][repo_url]" string => "us.archive.ubuntu.com";
-      "repotest_repos[uup][section]" string => "universe";
-      "repotest_repos[uup][deb]" string => "1";
-      "repotest_repos[uup][deb-src]" string => "1";
-      "repotest_repos[uup][version_distrib]" string => "precise";
-    !test::
-      "repotest_apt_file" string => "/etc/apt/sources.list";
-    test::
-      "repotest_apt_file" string => "/tmp/sources.list";
-    !test::
-      "repotest_apt_dir" string => "/etc/apt/sources.list.d";
-    test::
-      "repotest_apt_dir" string => "/tmp";
+      # array 'metadata' from definition sketch metadata, activation __002_Repository_apt_Maintain_ensure
+      "__002_Repository_apt_Maintain_ensure_metadata[authors]" slist => { "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__002_Repository_apt_Maintain_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__002_Repository_apt_Maintain_ensure_metadata[license]" string => "MIT";
+      "__002_Repository_apt_Maintain_ensure_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/package_management/aptrepo";
+      "__002_Repository_apt_Maintain_ensure_metadata[manifest]" slist => { "README.md", "main.cf", "params/repos.json", "test.cf" };
+      "__002_Repository_apt_Maintain_ensure_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__002_Repository_apt_Maintain_ensure_metadata[manifest_docs]" slist => { "README.md" };
+      "__002_Repository_apt_Maintain_ensure_metadata[manifest_exe]" slist => { "cf_null" };
+      "__002_Repository_apt_Maintain_ensure_metadata[manifest_extra]" slist => { "params/repos.json" };
+      "__002_Repository_apt_Maintain_ensure_metadata[name]" string => "Repository::apt::Maintain";
+      "__002_Repository_apt_Maintain_ensure_metadata[tags]" slist => { "cfdc" };
+      "__002_Repository_apt_Maintain_ensure_metadata[version]" string => "1";
 
+      # list 'components' from definition /home/tzz/source/design-center/tools/test/../../sketches/package_management/aptrepo/params/repos.json 2, activation __002_Repository_apt_Maintain_ensure
+      "__002_Repository_apt_Maintain_ensure_components" slist => { "wheezy" };
+
+      # list 'types' from definition /home/tzz/source/design-center/tools/test/../../sketches/package_management/aptrepo/params/repos.json 2, activation __002_Repository_apt_Maintain_ensure
+      "__002_Repository_apt_Maintain_ensure_types" slist => { "deb", "deb-src" };
+
+      # array 'metadata' from definition sketch metadata, activation __003_Repository_apt_Maintain_ensure
+      "__003_Repository_apt_Maintain_ensure_metadata[authors]" slist => { "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__003_Repository_apt_Maintain_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__003_Repository_apt_Maintain_ensure_metadata[license]" string => "MIT";
+      "__003_Repository_apt_Maintain_ensure_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/package_management/aptrepo";
+      "__003_Repository_apt_Maintain_ensure_metadata[manifest]" slist => { "README.md", "main.cf", "params/repos.json", "test.cf" };
+      "__003_Repository_apt_Maintain_ensure_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__003_Repository_apt_Maintain_ensure_metadata[manifest_docs]" slist => { "README.md" };
+      "__003_Repository_apt_Maintain_ensure_metadata[manifest_exe]" slist => { "cf_null" };
+      "__003_Repository_apt_Maintain_ensure_metadata[manifest_extra]" slist => { "params/repos.json" };
+      "__003_Repository_apt_Maintain_ensure_metadata[name]" string => "Repository::apt::Maintain";
+      "__003_Repository_apt_Maintain_ensure_metadata[tags]" slist => { "cfdc" };
+      "__003_Repository_apt_Maintain_ensure_metadata[version]" string => "1";
+
+      # list 'components' from definition /home/tzz/source/design-center/tools/test/../../sketches/package_management/aptrepo/params/repos.json 3, activation __003_Repository_apt_Maintain_ensure
+      "__003_Repository_apt_Maintain_ensure_components" slist => { "comp1", "comp2" };
+
+      # list 'types' from definition /home/tzz/source/design-center/tools/test/../../sketches/package_management/aptrepo/params/repos.json 3, activation __003_Repository_apt_Maintain_ensure
+      "__003_Repository_apt_Maintain_ensure_types" slist => { "deb", "deb-src" };
+
+      # array 'metadata' from definition sketch metadata, activation __004_Repository_apt_Maintain_ensure
+      "__004_Repository_apt_Maintain_ensure_metadata[authors]" slist => { "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__004_Repository_apt_Maintain_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__004_Repository_apt_Maintain_ensure_metadata[license]" string => "MIT";
+      "__004_Repository_apt_Maintain_ensure_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/package_management/aptrepo";
+      "__004_Repository_apt_Maintain_ensure_metadata[manifest]" slist => { "README.md", "main.cf", "params/repos.json", "test.cf" };
+      "__004_Repository_apt_Maintain_ensure_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__004_Repository_apt_Maintain_ensure_metadata[manifest_docs]" slist => { "README.md" };
+      "__004_Repository_apt_Maintain_ensure_metadata[manifest_exe]" slist => { "cf_null" };
+      "__004_Repository_apt_Maintain_ensure_metadata[manifest_extra]" slist => { "params/repos.json" };
+      "__004_Repository_apt_Maintain_ensure_metadata[name]" string => "Repository::apt::Maintain";
+      "__004_Repository_apt_Maintain_ensure_metadata[tags]" slist => { "cfdc" };
+      "__004_Repository_apt_Maintain_ensure_metadata[version]" string => "1";
+
+      # list 'components' from definition /home/tzz/source/design-center/tools/test/../../sketches/package_management/aptrepo/params/repos.json 4, activation __004_Repository_apt_Maintain_ensure
+      "__004_Repository_apt_Maintain_ensure_components" slist => { "wheezy" };
+
+      # list 'types' from definition /home/tzz/source/design-center/tools/test/../../sketches/package_management/aptrepo/params/repos.json 4, activation __004_Repository_apt_Maintain_ensure
+      "__004_Repository_apt_Maintain_ensure_types" slist => { "deb" };
+
+      # array 'metadata' from definition sketch metadata, activation __005_Repository_apt_Maintain_ensure
+      "__005_Repository_apt_Maintain_ensure_metadata[authors]" slist => { "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__005_Repository_apt_Maintain_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__005_Repository_apt_Maintain_ensure_metadata[license]" string => "MIT";
+      "__005_Repository_apt_Maintain_ensure_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/package_management/aptrepo";
+      "__005_Repository_apt_Maintain_ensure_metadata[manifest]" slist => { "README.md", "main.cf", "params/repos.json", "test.cf" };
+      "__005_Repository_apt_Maintain_ensure_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__005_Repository_apt_Maintain_ensure_metadata[manifest_docs]" slist => { "README.md" };
+      "__005_Repository_apt_Maintain_ensure_metadata[manifest_exe]" slist => { "cf_null" };
+      "__005_Repository_apt_Maintain_ensure_metadata[manifest_extra]" slist => { "params/repos.json" };
+      "__005_Repository_apt_Maintain_ensure_metadata[name]" string => "Repository::apt::Maintain";
+      "__005_Repository_apt_Maintain_ensure_metadata[tags]" slist => { "cfdc" };
+      "__005_Repository_apt_Maintain_ensure_metadata[version]" string => "1";
+
+      # list 'components' from definition /home/tzz/source/design-center/tools/test/../../sketches/package_management/aptrepo/params/repos.json 5, activation __005_Repository_apt_Maintain_ensure
+      "__005_Repository_apt_Maintain_ensure_components" slist => { "precise" };
+
+      # list 'types' from definition /home/tzz/source/design-center/tools/test/../../sketches/package_management/aptrepo/params/repos.json 5, activation __005_Repository_apt_Maintain_ensure
+      "__005_Repository_apt_Maintain_ensure_types" slist => { "deb", "deb-src" };
 }
 
-bundle agent main
+bundle agent cfsketch_run
 {
   methods:
+    any::
       "cfsketch_g" usebundle => "cfsketch_g";
-      "runme" usebundle => cfdc_aptrepo:aptrepos($(cfsketch_g.repotest_class_prefix),
-                                                 "default:cfsketch_g.repotest_repos",
-                                                 $(cfsketch_g.repotest_apt_file),
-                                                 $(cfsketch_g.repotest_apt_dir));
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "__001_Repository_apt_Maintain_wipe" usebundle => cfdc_aptrepo:wipe("cf_sketch_testing", "default:cfsketch_g.__001_Repository_apt_Maintain_wipe_metadata", "1", "/etc/apt/sources.list.d/contrib-debian-wheezy.list"), useresult => "return___001_Repository_apt_Maintain_wipe";
+    runenv_cf_sketch_testing_activated::
+      "__002_Repository_apt_Maintain_ensure" usebundle => cfdc_aptrepo:ensure("cf_sketch_testing", "default:cfsketch_g.__002_Repository_apt_Maintain_ensure_metadata", "/etc/apt/sources.list", "http://http.us.debian.org/debian/", "main", @(cfsketch_g.__002_Repository_apt_Maintain_ensure_components), @(cfsketch_g.__002_Repository_apt_Maintain_ensure_types), ""), useresult => "return___002_Repository_apt_Maintain_ensure";
+    runenv_cf_sketch_testing_activated::
+      "__003_Repository_apt_Maintain_ensure" usebundle => cfdc_aptrepo:ensure("cf_sketch_testing", "default:cfsketch_g.__003_Repository_apt_Maintain_ensure_metadata", "/etc/apt/sources.list", "http://bogus-repository/bogus-path", "main", @(cfsketch_g.__003_Repository_apt_Maintain_ensure_components), @(cfsketch_g.__003_Repository_apt_Maintain_ensure_types), "[ arch=amd64 trusted=no ]"), useresult => "return___003_Repository_apt_Maintain_ensure";
+    runenv_cf_sketch_testing_activated::
+      "__004_Repository_apt_Maintain_ensure" usebundle => cfdc_aptrepo:ensure("cf_sketch_testing", "default:cfsketch_g.__004_Repository_apt_Maintain_ensure_metadata", "/etc/apt/sources.list.d/contrib-debian-wheezy.list", "http://ftp.fr.debian.org/debian/", "contrib", @(cfsketch_g.__004_Repository_apt_Maintain_ensure_components), @(cfsketch_g.__004_Repository_apt_Maintain_ensure_types), ""), useresult => "return___004_Repository_apt_Maintain_ensure";
+    runenv_cf_sketch_testing_activated::
+      "__005_Repository_apt_Maintain_ensure" usebundle => cfdc_aptrepo:ensure("cf_sketch_testing", "default:cfsketch_g.__005_Repository_apt_Maintain_ensure_metadata", "/etc/apt/sources.list.d/universe-ubuntu-precise.list", "http://us.archive.ubuntu.com/ubuntu/", "universe", @(cfsketch_g.__005_Repository_apt_Maintain_ensure_components), @(cfsketch_g.__005_Repository_apt_Maintain_ensure_types), ""), useresult => "return___005_Repository_apt_Maintain_ensure";
+
+  reports:
+      "activation __001_Repository_apt_Maintain_wipe returned file = $(return___001_Repository_apt_Maintain_wipe[file])";
+      "activation __002_Repository_apt_Maintain_ensure returned file = $(return___002_Repository_apt_Maintain_ensure[file])";
+      "activation __003_Repository_apt_Maintain_ensure returned file = $(return___003_Repository_apt_Maintain_ensure[file])";
+      "activation __004_Repository_apt_Maintain_ensure returned file = $(return___004_Repository_apt_Maintain_ensure[file])";
+      "activation __005_Repository_apt_Maintain_ensure returned file = $(return___005_Repository_apt_Maintain_ensure[file])";
 }
