@@ -29,3 +29,17 @@ bundle common env
       "env" slist => { "LOGNAME", "PATH", "HOME" };
       "$(env)" string => getenv("$(env)", "128");
 }
+
+bundle edit_line prepend_if_no_line(string)
+{
+  insert_lines:
+      "$(string)"
+      location => dc_start,
+      comment => "Prepend a line to the file if it doesn't already exist";
+}
+
+# same as COPBL start location body
+body location dc_start
+{
+before_after => "before";
+}

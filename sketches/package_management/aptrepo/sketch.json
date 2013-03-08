@@ -1,27 +1,58 @@
 {
 
-    "manifest":
+    manifest:
     {
-        "main.cf": { "desc": "main file" },
-        "README.md": { "documentation": true },
-        "test.cf": { "desc": "Example Policy" },
+        "main.cf": { desc: "main file" },
+        "README.md": { documentation: true },
+        "test.cf": { desc: "Example Policy" },
         "params/repos.json": { }
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "Repository::apt::Maintain",
-	"description": "Manage deb repositories in /etc/apt/sources.list.d/ files or /etc/apt/sources.list",
-        "version": 0.2,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "tested": [ "debian_wheezy" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 },
-                     "cfengine": { "version": "3.4.0" },
-                     "os": [ "Linux" ]
-                   }
+        name: "Repository::apt::Maintain",
+	    description: "Manage deb repositories in /etc/apt/sources.list.d/ files or /etc/apt/sources.list",
+        version: 1.0,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        tested: [ "debian_wheezy" ],
+        depends: { "CFEngine::stdlib": { version: 110 },
+                   "CFEngine::dclib": {},
+                   cfengine: { version: "3.4.0" },
+                   os: [ "Linux" ]
+                 },
     },
-    "entry_point": "main.cf",
-    "interface": [ "main.cf" ]
+
+    api:
+    {
+        // the key is the name of the bundle!
+        ensure:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "file", default: "/etc/apt/sources.list",
+              desc: "The file in which we will write the APT sources lines.  Can be /etc/apt/sources.list.d/whatever.list or /etc/apt/sources.list or any other path." },
+            { type: "string", name: "url" },
+            { type: "string", name: "distribution" },
+            { type: "list", name: "components" },
+            { type: "list", name: "types" },
+            { type: "string", name: "options", default: "" },
+            { type: "return", name: "file", },
+        ],
+
+        wipe:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "boolean", name: "wipe", },
+            { type: "string", name: "file",
+              desc: "The file to wipe.  Can be /etc/apt/sources.list.d/whatever.list or /etc/apt/sources.list or any other path." },
+            { type: "return", name: "file", },
+        ],
+    },
+
+    namespace: "cfdc_aptrepo",
+    entry_point: "main.cf",
+    interface: [ "main.cf" ]
 }
