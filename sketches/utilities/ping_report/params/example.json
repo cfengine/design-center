@@ -3,8 +3,6 @@
    {
        "hosts" : [ "localhost", "127.0.0.1", "boogie.woogie"],
        "count" : "2",
-       "report_success" : "true",
-       "report_failure" : "true"
    }
 }
 
