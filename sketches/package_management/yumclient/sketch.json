@@ -1,27 +1,62 @@
 {
-    "manifest":
+    manifest:
     {
-        "main.cf":     { "desc": "main file", "version": "1.0" },
-        "README.md":   { "documentation": true },
-        "test.cf":     { "comment": "Example policy" },
-        "changelog":     { "comment": "changelog" },
-        "params/demo.json": { "comment": "demo JSON parameters" }
+        "main.cf":     { desc: "main file" },
+        "README.md":   { documentation: true },
+        "test.cf":     { comment: "Example policy" },
+        changelog:     { comment: "changelog" },
+        "params/demo.json": { comment: "demo JSON parameters" }
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "Repository::Yum::Client",
-	"description": "Manage yum repo client configs in /etc/yum.repos.d",
-        "version": 1.10,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "tested": [ "redhat_5", "centos_5" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 },
-                     "cfengine": { "version": "3.4.0" },
-                     "os": [ "linux" ]
-                   }
+        name: "Repository::Yum::Client",
+	    description: "Manage yum repo client configs in /etc/yum.repos.d",
+        version: 1.2,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        tested: [ "redhat_5", "centos_5" ],
+        depends: { "CFEngine::stdlib": { version: 105 },
+                   "CFEngine::dclib": {},
+                   cfengine: { version: "3.4.0" },
+                   os: [ "linux" ]
+                 }
     },
-    "entry_point": "main.cf",
-    "interface": [ "main.cf" ]
+
+    api:
+    {
+        remove_section:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "file", default: "/etc/yum.conf" },
+            { type: "string", name: "remove_section" },
+            { type: "return", name: "section", },
+            { type: "return", name: "file", },
+        ],
+
+        remove_file:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "remove_file" },
+            { type: "return", name: "file", },
+        ],
+
+        ensure:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "file", default: "/etc/yum.conf" },
+            { type: "string", name: "section" },
+            { type: "array", name: "config" },
+            { type: "return", name: "file", },
+            { type: "return", name: "section", },
+        ],
+    },
+
+    namespace: "cfdc_yumclient",
+    entry_point: "main.cf",
+    interface: [ "main.cf" ]
 }

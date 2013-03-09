@@ -12,7 +12,8 @@ Enforce all repository settings or just the specified values.
 
 ## REQUIREMENTS
 * CFEngine Community 3.4.0 or greater
-* Standard Library
+* CFEngine::stdlib
+* CFEngine::dclib
 
 ## SAMPLE USAGE
 See `test.cf` or `params/example.json`
