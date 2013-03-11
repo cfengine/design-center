@@ -74,6 +74,18 @@ The run environment is a set of contexts and configuration data that defines a
 global context for bundles.  For example, it can express *development* versus
 *production* versus *testing*.
 
+Besides `metadata` and `environment`, you can use these data types:
+
+* `string`: a single string.  Nothing fancy.
+
+* `boolean`: same as a string, but either 1 or not-1.  Use `strcmp("1", $(boolean))` to test.
+
+* `list`: a slist.
+
+* `array`: a string naming an array.  Use `$($(arrayvar)[index])` to dereference it.
+
+You also have the `return` data type, which is just like a string.
+
 ### main.cf
 
 The `main.cf` file (although you can name it anything, this is suggested) should
