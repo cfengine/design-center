@@ -6,6 +6,7 @@ bundle agent report_metadata(bundlename, metadata)
       "authors" string => join(", ", "$(metadata)[authors]");
 
   reports:
+    cfengine::
       "$(bundlename): $($(metadata)[name]) license = $($(metadata)[license])";
       "$(bundlename): $($(metadata)[name]) dependencies = $(dependencies)";
 
