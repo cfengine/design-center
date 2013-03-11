@@ -319,20 +319,20 @@ sub list_int
         {
             if ($options->{describe} && $options->{describe} eq 'README')
             {
-                return $_->make_readme();
+                $_->make_readme();
             }
             elsif ($options->{describe})
             {
-                return $_->data_dump();
+                $_->data_dump();
             }
             else
             {
-                return $_->name();
+                $_->name();
             }
         }
         $repo->list($term_data);
 
-        $ret{$repo->location()} = [ @list ];
+        $ret{$repo->location()} = \@list;
         push @full_list, @list;
     }
 
