@@ -114,6 +114,7 @@ bundle agent cfsketch_run
       "__004_Repository_Yum_Client_ensure" usebundle => cfdc_yumclient:ensure("cf_sketch_testing", "default:cfsketch_g.__004_Repository_Yum_Client_ensure_metadata", "/etc/yum.conf", "repo1", "default:cfsketch_g.__004_Repository_Yum_Client_ensure_config"), useresult => "return___004_Repository_Yum_Client_ensure";
 
   reports:
+    cfengine::
       "activation __001_Repository_Yum_Client_remove_section returned section = $(return___001_Repository_Yum_Client_remove_section[section])";
       "activation __001_Repository_Yum_Client_remove_section returned file = $(return___001_Repository_Yum_Client_remove_section[file])";
       "activation __002_Repository_Yum_Client_remove_file returned file = $(return___002_Repository_Yum_Client_remove_file[file])";
