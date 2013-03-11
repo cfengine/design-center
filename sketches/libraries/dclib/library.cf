@@ -39,6 +39,19 @@ bundle edit_line prepend_if_no_line(string)
       comment => "Prepend a line to the file if it doesn't already exist";
 }
 
+bundle edit_line insert_ini_section(name, config)
+{
+  vars:
+      "k" slist => getindices($(config));
+
+  insert_lines:
+      "[$(name)]"
+      location => dc_start,
+      comment => "Prepend a line to the file if it doesn't already exist";
+
+      "$(k)=$($(config)[$(k)])";
+}
+
 # same as COPBL start location body
 body location dc_start
 {

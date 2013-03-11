@@ -98,6 +98,63 @@ bundle agent remove_section(runenv, metadata, given_file, remove_section)
       "" bundle_return_value_index => "file";
 }
 
+bundle agent ensure_template(runenv, metadata, given_file, section, template_conf)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+    !test::
+      "file_prefix" string => "", policy => "free";
+      "owner" string => "root", policy => "free";
+    test::
+      "file_prefix" string => "/tmp", policy => "free";
+      "owner" string => "$(default:env.LOGNAME)", policy => "free";
+
+    any::
+      "file" string => "$(file_prefix)$(given_file)",
+      policy => "free";
+
+      "class_prefix" string => canonify("$(this.bundle) $(file) $(section) $(template_conf)"),
+      policy => "free";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  files:
+      "$(file)"
+      create => "true",
+      perms => default:mog("644", $(owner), $(owner)),
+      edit_defaults => default:empty,
+      handle => "ensure_template_overwrite",
+      edit_line => default:insert_ini_section($(section), $(template_conf)),
+      classes => default:generic("$(class_prefix)");
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    any::
+      "$(section)" bundle_return_value_index => "section",
+      ifvarclass => "$(class_prefix)_ok";
+
+      "$(file)" bundle_return_value_index => "file",
+      ifvarclass => "$(class_prefix)_ok";
+
+      "" bundle_return_value_index => "section",
+      ifvarclass => "$(class_prefix)_not_ok";
+
+      "" bundle_return_value_index => "file",
+      ifvarclass => "$(class_prefix)_not_ok";
+}
+
 bundle agent ensure(runenv, metadata, given_file, section, conf)
 {
   classes:
@@ -165,8 +222,6 @@ detected as end of region",
       "" bundle_return_value_index => "file",
       ifvarclass => "$(class_prefix)_not_ok";
 }
-
-
 
 bundle edit_line manage_variable_values_ini(tab, section)
 # Sets the RHS of configuration items in the file of the form
