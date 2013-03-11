@@ -64,6 +64,7 @@ my $data = $api->load(defined $data_file ? $data_file : join('', <>));
 my $debug = Util::hashref_search($data, qw/debug/);
 my $version = Util::hashref_search($data, qw/dc_api_version/);
 my $request = Util::hashref_search($data, qw/request/);
+
 my $list = Util::hashref_search($request, qw/list/);
 my $search = Util::hashref_search($request, qw/search/);
 my $describe = Util::hashref_search($request, qw/describe/);

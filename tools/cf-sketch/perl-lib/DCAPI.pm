@@ -315,8 +315,23 @@ sub list_int
                    $location,
                    $term_data);
         my $repo = $self->load_repo($location);
-        my @list = map { $options->{describe} ? $_->data_dump() : $_->name() }
-         $repo->list($term_data);
+        my @list = map
+        {
+            if ($options->{describe} && $options->{describe} eq 'README')
+            {
+                return $_->make_readme();
+            }
+            elsif ($options->{describe})
+            {
+                return $_->data_dump();
+            }
+            else
+            {
+                return $_->name();
+            }
+        }
+        $repo->list($term_data);
+
         $ret{$repo->location()} = [ @list ];
         push @full_list, @list;
     }

@@ -25,8 +25,8 @@ CFSKETCH:=(cd $(SOURCEDIR); make); `pwd`/../cf-sketch/cf-sketch.pl --expert --in
 CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE)
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
-# api:
-# 	echo '{ dc_api_version: "0.0.1", request: {install: { sketch: "Library::Hardware::Info", target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } } }' | $(CFAPI)
+api:
+	echo '{ dc_api_version: "0.0.1", request: {describe: "README", list: [["name", "matches", "ping"]] } }' | $(CFAPI)
 
 api2:
 	@echo '--- a full test of configuring Security::SSH, CFEngine::sketch_template, and VCS::vcs_mirror --'

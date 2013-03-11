@@ -148,6 +148,74 @@ sub runfile_data_dump
     return \%ret;
 }
 
+sub make_readme
+{
+    my $self = shift;
+
+    # describe sketch metadata
+    my $readme = <<EOHIPPUS;
+# {{name}} version {{version}}
+
+License: {{license}}
+Tags: {{tags}}
+
+## Description
+{{description}}
+
+## Dependencies
+{{depends}}
+
+## Parameters
+{{parameters}}
+
+## SAMPLE USAGE
+See `test.cf` or the example parameters provided
+
+EOHIPPUS
+
+    my %data = %{$self->data_dump(1)};
+
+    $data{tags} = join ", ", @{$data{tags}};
+    $data{depends} = (join ", ", sort(grep(/::/, keys %{$data{depends}})))||'none';
+
+    # api:
+    # {
+    #     // the key is the name of the bundle!
+    #     ping:
+    #     [
+    #         { type: "environment", name: "runenv", },
+    #         { type: "metadata", name: "metadata", },
+    #         { type: "list", name: "hosts" },
+    #         { type: "string", name: "count" },
+    #         { type: "return", name: "reached", },
+    #         { type: "return", name: "not_reached", },
+    #     ],
+    # },
+    my @p;
+    foreach my $bundle (sort keys %{$data{api}})
+    {
+        my $spec = $data{api}->{$bundle};
+        push @p, "### $bundle";
+        foreach my $param (@$spec)
+        {
+            push @p, sprintf("* [%s] %s (default: %s)\n",
+                             $param->{type},
+                             $param->{name},
+                             (exists $param->{default} ? (defined $param->{default} ? $param->{default}:'null') : 'none'));
+        }
+    }
+
+    $data{parameters} = (join "\n", @p)||'none';
+
+    foreach my $k (keys %data)
+    {
+        $readme =~ s/\{\{(\w+)\}\}/(defined $data{$1} ? $data{$1} : "UNDEFINED:$1")/eg;
+    }
+
+    $self->dcapi()->log4("Generated README:\n$readme\n");
+    return $readme;
+}
+
 sub matches
 {
     my $self = shift;
