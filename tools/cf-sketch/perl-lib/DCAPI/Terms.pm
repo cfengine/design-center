@@ -43,7 +43,7 @@ sub matches
                 if ($check eq 'matches' || $check eq 'equals')
                 {
                     my $datum = Util::hashref_search($data, @$k);
-                    $self->api()->log4('Term %s checking against %s', $q, $datum);
+                    $self->api()->log5('Term %s checking against %s', $q, $datum);
                     if ((!defined $datum && !defined $v) ||
                         ($check eq 'matches' && defined $datum && defined $v && $datum =~ m/$v/i) ||
                         ($check eq 'equals' && defined $datum && defined $v && $datum eq $v)) {
@@ -57,7 +57,7 @@ sub matches
                 elsif ($check =~ m/[<>]=?/) # < > <= >=
                 {
                     my $datum = Util::hashref_search($data, @$k);
-                    $self->api()->log4('Term %s comparing against %s', $q, $datum);
+                    $self->api()->log5('Term %s comparing against %s', $q, $datum);
                     if (defined $datum && defined $v)
                     {
                         if (($check eq '>' && $datum gt $v) ||
