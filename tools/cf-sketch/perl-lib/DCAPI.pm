@@ -1008,7 +1008,7 @@ sub regenerate
     my $standalone_lines = <<EOHIPPUS;
 body common control
 {
-      bundlesequence => { "cfsketch_run" };
+      bundlesequence => { cfsketch_g, cfsketch_run };
       inputs => { @(cfsketch_g.inputs) };
 }
 EOHIPPUS

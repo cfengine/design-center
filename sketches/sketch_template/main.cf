@@ -50,6 +50,12 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
 
       "$(this.bundle): running the external sample script gave us $(sample_return)";
 
+      "$(this.bundle): got myboolean=$(myboolean)";
+      "$(this.bundle): got mytype=$(mytype)";
+      "$(this.bundle): got myip=$(myip)";
+      "$(this.bundle): got mylist=$(mylist)";
+      "$(this.bundle): got myarray=$(myarray)";
+
       # use the "verbose" context to show the sketch operation (for the user)
     verbose::
       "$(this.bundle): running in verbose mode";

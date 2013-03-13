@@ -376,7 +376,7 @@ sub resolve_now
 
                     # NOTE: this is directly linked to the name of the return
                     # array in DCAPI.pm!!!
-                    push @{$param->{value}}, sprintf('$(return_%s[%s])',
+                    push @{$param->{value}}, sprintf('$(cfsketch_run.return_%s[%s])',
                                                      $a->id(), $scalar);
                 }
             }
