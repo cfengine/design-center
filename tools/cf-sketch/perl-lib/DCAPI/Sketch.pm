@@ -259,7 +259,7 @@ sub get_inputs
         {
             foreach my $dep (keys %{$depcheck->data()})
             {
-                $self->dcapi()->log4("Sketch %s looking for dependency %s",
+                $self->dcapi()->log5("Sketch %s looking for dependency %s",
                                      $self->name(),
                                      $dep);
                 my $sketch = $self->dcapi()->describe_int($dep, undef, 1);
@@ -302,7 +302,7 @@ sub resolve_dependencies
 
     foreach my $dep (sort keys %deps)
     {
-        $self->dcapi()->log2("Checking sketch $name dependency %s", $dep);
+        $self->dcapi()->log5("Checking sketch $name dependency %s", $dep);
         if ($dep eq 'os')
         {
             $self->dcapi()->log2("Ignoring sketch $name OS dependency %s", $dep);

@@ -44,6 +44,7 @@ has repos => ( is => 'ro', default => sub { [] } );
 has recognized_sources => ( is => 'ro', default => sub { [] } );
 has vardata => ( is => 'rw');
 has runfile => ( is => 'ro', default => sub { {} } );
+has uses => ( is => 'rw', default => sub { [] });
 has definitions => ( is => 'rw', default => sub { {} });
 has activations => ( is => 'rw', default => sub { {} });
 has environments => ( is => 'rw', default => sub { { default =>
@@ -159,21 +160,26 @@ sub set_config
         {
             $result->add_error($vardata_file, "vardata is not a hash");
         }
+        elsif (!exists $v_data->{uses})
+        {
+            $result->add_error($vardata_file, "vardata has no key 'uses'");
+        }
         elsif (!exists $v_data->{activations})
         {
-            $result->add_error($vardata_file, "vardata has no 'activations'");
+            $result->add_error($vardata_file, "vardata has no key 'activations'");
         }
         elsif (!exists $v_data->{definitions})
         {
-            $result->add_error($vardata_file, "vardata has no 'definitions'");
+            $result->add_error($vardata_file, "vardata has no key 'definitions'");
         }
         elsif (!exists $v_data->{environments})
         {
-            $result->add_error($vardata_file, "vardata has no 'environments'");
+            $result->add_error($vardata_file, "vardata has no key 'environments'");
         }
         else
         {
             $self->log3("Successfully loaded vardata file $vardata_file");
+            $self->uses($v_data->{uses});
             $self->activations($v_data->{activations});
             $self->definitions($v_data->{definitions});
             $self->environments($v_data->{environments});
@@ -192,6 +198,7 @@ sub save_vardata
     my $self = shift;
 
     my $data = {
+                uses => $self->uses,
                 activations => $self->activations,
                 definitions => $self->definitions,
                 environments => $self->environments,
@@ -276,6 +283,7 @@ sub data_dump
      recognized_sources => $self->recognized_sources(),
      vardata => $self->vardata(),
      runfile => $self->runfile(),
+     uses => $self->uses(),
      definitions => $self->definitions(),
      activations => $self->activations(),
      environments => $self->environments(),
@@ -704,6 +712,30 @@ sub undefine_environment
     return $result;
 }
 
+sub use
+{
+    my $self = shift;
+    my $use = shift || [];
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    if (ref $use ne 'ARRAY')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid use command");
+    }
+
+    @{$self->uses()} = @$use;
+    $result->add_data_key('use', 'uses', $self->uses());
+
+    $self->save_vardata();
+
+    return $result;
+}
+
 sub activate
 {
     my $self = shift;
@@ -801,6 +833,15 @@ sub regenerate
                 return $result->add_warning($sketch, @warnings);
             }
         }
+    }
+
+    # resolve each activation from the others
+    foreach my $a (@activations)
+    {
+        my ($resolved, @warnings) = $a->resolve_now(\@activations);
+
+        return $result->add_error($a->sketch()->name(), @warnings)
+         unless $resolved;
     }
 
     # 1. determine includes from sketches, their dependencies, and namespaces
@@ -988,12 +1029,14 @@ bundle common cfsketch_g
       # Files that need to be loaded for the activated sketches and
       # their dependencies.
       $inputs
-
-$data_lines
 }
 
 bundle agent cfsketch_run
 {
+  vars:
+
+$data_lines
+
   methods:
     any::
       "cfsketch_g" usebundle => "cfsketch_g";
