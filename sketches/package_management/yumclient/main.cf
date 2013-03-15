@@ -102,6 +102,7 @@ bundle agent ensure_template(runenv, metadata, given_file, section, template_con
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "empty_given_file" expression => strcmp($(given_file), "");
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
@@ -114,8 +115,15 @@ bundle agent ensure_template(runenv, metadata, given_file, section, template_con
       "file_prefix" string => "/tmp", policy => "free";
       "owner" string => "$(default:env.LOGNAME)", policy => "free";
 
+    empty_given_file::
+      "checked_file" string => "/etc/yum.repos.d/$(section).repo",
+      policy => "free";
+    !empty_given_file::
+      "checked_file" string => "$(given_file)",
+      policy => "free";
+
     any::
-      "file" string => "$(file_prefix)$(given_file)",
+      "file" string => "$(file_prefix)$(checked_file)",
       policy => "free";
 
       "class_prefix" string => canonify("$(this.bundle) $(file) $(section) $(template_conf)"),
