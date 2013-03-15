@@ -38,6 +38,6 @@
     },
 
     namespace: "cfdc_sysctl",
-    entry_point: "main.cf",
+    
     interface: [ "main.cf" ]
 }

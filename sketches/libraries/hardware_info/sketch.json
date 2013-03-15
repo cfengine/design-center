@@ -18,6 +18,6 @@
         depends: { cfengine: { version: "3.2.1" } }
     },
 
-    entry_point: null,
+    
     interface: [ "main.cf" ]
 }

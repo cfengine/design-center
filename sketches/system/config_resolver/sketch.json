@@ -36,6 +36,6 @@
     },
 
     namespace: "cfdc_resolver",
-    entry_point: "main.cf",
+    
     interface: [ "main.cf" ]
 }

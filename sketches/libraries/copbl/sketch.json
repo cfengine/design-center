@@ -23,6 +23,6 @@
     },
 
     namespace: null,
-    entry_point: null,
+    
     interface: [ "cfengine_stdlib.cf" ]
 }

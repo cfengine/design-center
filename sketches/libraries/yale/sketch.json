@@ -16,6 +16,6 @@
         depends: { "cfengine": { "version": "3.3.0" } }
     },
 
-    entry_point: null,
+    
     interface: [ "library.cf" ]
 }

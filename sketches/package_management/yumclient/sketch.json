@@ -68,6 +68,6 @@
     },
 
     namespace: "cfdc_yumclient",
-    entry_point: "main.cf",
+    
     interface: [ "main.cf" ]
 }

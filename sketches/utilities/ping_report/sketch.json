@@ -34,6 +34,6 @@
     },
 
     namespace: "cfdc_ping",
-    entry_point: "main.cf",
+    
     interface: ["main.cf"]
 }

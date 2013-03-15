@@ -53,6 +53,6 @@
     },
 
     namespace: "cfdc_aptrepo",
-    entry_point: "main.cf",
+    
     interface: [ "main.cf" ]
 }

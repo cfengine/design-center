@@ -49,6 +49,6 @@
     },
 
     namespace: "cfdc_cron",
-    entry_point: "main.cf",
+    
     interface: [ "main.cf" ]
 }

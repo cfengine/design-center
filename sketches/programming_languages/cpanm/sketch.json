@@ -32,6 +32,6 @@
     },
 
     namespace: "cfdc_cpan",
-    entry_point: "main.cf",
+    
     interface: [ "main.cf" ]
 }

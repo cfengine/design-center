@@ -35,6 +35,6 @@
     },
 
     namespace: "cfdc_hostname",
-    entry_point: "main.cf",
+    
     interface: [ "main.cf" ]
 }

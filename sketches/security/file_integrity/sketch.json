@@ -38,6 +38,6 @@
     },
 
     namespace: "cfdc_file_integrity",
-    entry_point: "main.cf",
+    
     interface: [ "main.cf" ],
 }

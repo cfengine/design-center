@@ -35,6 +35,6 @@
     },
 
     namespace: "cfdc_security_limits",
-    entry_point: "main.cf",
+    
     interface: [ "main.cf" ],
 }

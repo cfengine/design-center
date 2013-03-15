@@ -33,6 +33,6 @@
     },
 
     namespace: "cfdc_etc_hosts",
-    entry_point: "main.cf",
+    
     interface: [ "main.cf" ]
 }

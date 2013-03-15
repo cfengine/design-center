@@ -22,6 +22,6 @@
         "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin" ] }
     },
 
-    "entry_point": "main.cf",
+    
     "interface": [ "main.cf" ]
 }
