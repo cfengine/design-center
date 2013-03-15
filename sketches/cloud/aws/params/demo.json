@@ -1,0 +1,48 @@
+{
+    "Cloud::Services":
+    {
+        "activated" : true,
+        "install_cfengine" : true,
+        "ec2":
+        {
+            "ami": "ami-b89842d1",
+            "instance_type": "m1.small",
+            "region": "us-east-1",
+            "security_group": "mygroup",
+            "aws_access_key": "akey1",
+            "aws_secret_key": "skey1",
+            "ssh_pub_key": "/var/tmp/mysshrsakey.pub"
+        },
+
+        "vcli":
+        {
+            //note that disable_ssl_verify defaults to false (0) as per main.cf:cloud_services()
+            "master_image": "ubuntu-12.04-i386-master",
+            "child_prefix": "ubuntu-12.04-i386-clone-",
+            "esxi_server": "10.0.0.1",
+            "user": "root",
+            "password": "cfengine",
+            "datastore": "datastore1",
+            "fullpath": "/vmfs/volumes/4fda02bc-744a4c6e-40f2-08002781db6f",
+            "disable_ssl_verify": true
+        },
+
+        "openstack":
+        {
+            "entry_url": "https://identity.api.rackspacecloud.com/v2.0/tokens",
+            // change this!  it's the admin password of the new machine!
+            "password": "my password here, please!!!",
+            "user": "youruserid",
+            // invalid
+            "key": "72145782545ab2458456b54b45545a42",
+            "image": "5cebb13a-f783-4f8c-8058-c4182c724ccd",
+            "master": "cfmaster"
+        },
+
+        "class": "cfworker",
+        "stype": { "bycontext": { "ec2": "ec2", "vcli": "vcli", "openstack": "openstack" } },
+
+        "count": { "bycontext": { "start1": "1", "start10": "10", "stop": "0"    } },
+        "state": { "bycontext": { "start1||start10": "start",     "stop": "stop" } }
+    }
+}

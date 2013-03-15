@@ -1,0 +1,88 @@
+{
+    manifest:
+    {
+        "main.cf": { desc: "main file" },
+        "README.md": { documentation: true },
+        "params/demo.json": { comment: "simple demo of EC2, S3, and SDB integration" },
+        "scripts/shim.pl": { perm: 755, comment: "EC2 shim to start/stop service" },
+        "scripts/aws": { perm: 755, license: "GPL", comment: "EC2 interface to start/stop service" },
+    },
+
+    metadata:
+    {
+        name: "Cloud::Services::AWS",
+	    description: "Manage AWS services",
+        version: 1.0,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 110 }, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
+    },
+    
+    api:
+    {
+        // this is the name of the bundle!
+        entry:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "prefix", default: "__PREFIX__" },
+
+            { type: "boolean", name: "myboolean", default: "1" }, //  true is OK too
+            { type: "string", name: "mytype", default: "fallback" },
+            { type: "string", name: "myip", },
+            { type: "list", name: "mylist", },
+            { type: "array", name: "myarray", },
+        ],
+    },
+    api:
+    {
+        EC2:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "count", },
+            { type: "string", name: "class", },
+            { type: "boolean", name: "install_cfengine", },
+            { type: "string", name: "hub", },
+            { type: "array", name: "options", },
+        ],
+
+        S3_sync:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "directory", },
+            { type: "string", name: "s3_bucket", },
+            { type: "array", name: "options", },
+        ],
+
+        S3_clear:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "s3_clear_bucket", },
+            { type: "array", name: "options", },
+        ],
+
+        SDB_sync:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "directory", },
+            { type: "string", name: "sdb_bucket", },
+            { type: "array", name: "options", },
+        ],
+
+        SDB_clear:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "sdb_clear_bucket", },
+            { type: "array", name: "options", },
+        ],
+    },
+
+    namespace: "cfdc_cloud_aws",
+    interface: [ "main.cf" ]
+}
