@@ -21,31 +21,18 @@
     
     api:
     {
-        // this is the name of the bundle!
-        entry:
-        [
-            { type: "environment", name: "runenv", },
-            { type: "metadata", name: "mymetadata", },
-            { type: "string", name: "prefix", default: "__PREFIX__" },
-
-            { type: "boolean", name: "myboolean", default: "1" }, //  true is OK too
-            { type: "string", name: "mytype", default: "fallback" },
-            { type: "string", name: "myip", },
-            { type: "list", name: "mylist", },
-            { type: "array", name: "myarray", },
-        ],
-    },
-    api:
-    {
         EC2:
         [
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "mymetadata", },
             { type: "string", name: "count", },
-            { type: "string", name: "class", },
+            { type: "string", name: "ami", },
+            { type: "string", name: "region", default: "us-east-1" },
+            { type: "string", name: "type", default: "t1.micro"},
+            { type: "string", name: "class", description: "Logical class to assign to machines" },
             { type: "boolean", name: "install_cfengine", },
-            { type: "string", name: "hub", },
-            { type: "array", name: "options", },
+            { type: "string", name: "hub", description: "Hub from which the instances should bootstrap" },
+            { type: "array", name: "options", description: "Options: security_group, aws_access_key, aws_secret_key, ssh_pub_key." },
         ],
 
         S3_sync:

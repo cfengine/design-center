@@ -215,13 +215,6 @@ api_cleanup:
 	@echo ...valid request to uninstall CFEngine::stdlib
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 
-cloud_services:
-	$(CFSKETCH_DA) --install Cloud::Services --activate Cloud::Services=$(SOURCEDIR)/cloud/cloud_services/params/demo.json
-	$(RUNNER) -Dvcli -Dstart1
-	$(RUNNER) -Dec2 -Dstart1
-	$(RUNNER) -Dvcli -Dstop1
-	$(RUNNER) -Dec2 -Dstop1
-
 db_install:
 	$(CFSKETCH_DA) --install Database::Install --activate Database::Install=$(SOURCEDIR)/databases/db_install/params/demo.json
 	$(RUNNER) -Dpostgresql -Dpurge
@@ -345,6 +338,16 @@ stdlib:
 
 nonesuch:
 	$(CFSKETCH) --install nonesuch
+
+aws:
+	$(CFSKETCH_DA) --install Cloud::Services::AWS --activate Cloud::Services::AWS=$(SOURCEDIR)/cloud/aws/params/demo.json
+	$(RUNNER)
+
+vcli:
+	@echo NOT IMPLEMENTED
+
+openstack:
+	@echo NOT IMPLEMENTED
 
 wordpress:
 	@echo NOT IMPLEMENTED

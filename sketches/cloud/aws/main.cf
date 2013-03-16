@@ -3,15 +3,11 @@ body file control
   namespace => "cfdc_cloud_aws";
 }
 
-bundle agent EC2(count, class, install_cfengine, hub, options)
+bundle agent EC2(runenv, metadata, count, ami, region, type, class, install_cfengine, hub, options)
 {
-  vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
-  classes:
       "start"   expression => strcmp("start",  "$(state)");
       "stop"    expression => strcmp("stop",   "$(state)");
 
@@ -23,12 +19,20 @@ bundle agent EC2(count, class, install_cfengine, hub, options)
       "decom_needed" expression => islessthan($(count), $(current_count));
 
   vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
       # adjust for your Perl install, but any Perl should be able to handle this
       "perl"  string => "/usr/bin/perl";
 
       "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --ec2 ami=$($(params)[ami]) --ec2 instance_type=$($(params)[instance_type]) --ec2 region=$($(params)[region]) --ec2 security_group=$($(params)[security_group]) --ec2 aws_access_key=$($(params)[aws_access_key]) --ec2 aws_secret_key=$($(params)[aws_secret_key]) --ec2 ssh_pub_key=$($(params)[ssh_pub_key]) --hub=$(hub) --install_cfengine=$(install_cfengine) ec2";
 
       "current_count" string => execresult("$(shim) count $(class) 2>/dev/null", "useshell");
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   commands:
     count_determined.!change_not_needed::
@@ -69,6 +73,10 @@ bundle agent S3_sync(directory, bucket, options)
       "$(vars)" string => "$(default:$(runenv).$(vars))";
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
   reports:
     verbose::
       "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
@@ -83,6 +91,10 @@ bundle agent S3_clear(bucket, options)
       "$(vars)" string => "$(default:$(runenv).$(vars))";
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
   reports:
     verbose::
       "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
@@ -97,6 +109,10 @@ bundle agent SDB_sync(directory, bucket, options)
       "$(vars)" string => "$(default:$(runenv).$(vars))";
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
   reports:
     verbose::
       "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
@@ -111,6 +127,10 @@ bundle agent SDB_clear(bucket, options)
       "$(vars)" string => "$(default:$(runenv).$(vars))";
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
   reports:
     verbose::
       "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
@@ -118,398 +138,110 @@ bundle agent SDB_clear(bucket, options)
       ifvarclass => "$(vars)";
 }
 
-# count = local directory, class = S3 bucket
-
-# sorry about the semantic mismatch, I wanted to keep things inside
-# Cloud::Services
-
-bundle agent s3(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
-{
-  classes:
-      "start"   expression => strcmp("start",  "$(state)");
-      "stop"    expression => strcmp("stop",   "$(state)");
-
-  vars:
-      # adjust for your Perl install, but any Perl should be able to handle this
-      "perl"  string => "/usr/bin/perl";
-
-      "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl  --s3 aws_access_key=$($(params)[aws_access_key]) --s3 aws_secret_key=$($(params)[aws_secret_key]) --s3 acl=$($(params)[acl]) s3";
-
-  commands:
-    start::
-      "$(shim) sync $(count) $(class)";
-    stop::
-      "$(shim) clear $(class)";
-
-  reports:
-    start::
-      "S3 goal: synchronize directory $(count) into S3 bucket $(class).";
-    stop::
-      "S3 goal: clear S3 bucket $(class).";
-}
-
-# count = file with JSON lines, class = SDB domain
-
-# sorry about the semantic mismatch, I wanted to keep things inside
-# Cloud::Services
-
-bundle agent sdb(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
-{
-  classes:
-      "start"   expression => strcmp("start",  "$(state)");
-      "stop"    expression => strcmp("stop",   "$(state)");
-
-  vars:
-      # adjust for your Perl install, but any Perl should be able to handle this
-      "perl"  string => "/usr/bin/perl";
-
-      "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl  --sdb aws_access_key=$($(params)[aws_access_key]) --sdb aws_secret_key=$($(params)[aws_secret_key]) sdb";
-
-  commands:
-    start::
-      "$(shim) sync $(count) $(class)";
-    stop::
-      "$(shim) clear $(class)";
-
-  reports:
-    start::
-      "SDB goal: synchronize JSON file $(count) into SDB domain $(class).";
-    stop::
-      "SDB goal: clear SDB domain $(class).";
-}
-
-bundle agent openstack(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
-{
-  classes:
-      "start"   expression => strcmp("start",  "$(state)");
-      "stop"    expression => strcmp("stop",   "$(state)");
-
-      "count_determined" expression => isvariable("current_count");
-
-    count_determined::
-      "change_not_needed" expression => strcmp("$(count)", "$(current_count)");
-      "bootstrap_needed" expression => isgreaterthan("$(count)", "$(current_count)");
-      "decom_needed" expression => islessthan("$(count)", "$(current_count)");
-
-  vars:
-      # adjust for your Perl install, but any Perl should be able to handle this
-      "perl"  string => "/usr/bin/perl";
-
-      "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --openstack entry_url=$($(params)[entry_url]) --openstack password=$($(params)[password]) --openstack user=$($(params)[user]) --openstack key=$($(params)[key]) --openstack image=$($(params)[image]) --openstack master=$($(params)[master]) --hub=$(hub) --install_cfengine=$(install_cfengine) openstack";
-
-      "current_count" string => execresult("$(shim) count $(class) 2>/dev/null", "useshell");
-
-  commands:
-    count_determined.!change_not_needed::
-      "$(shim) control $(count) $(class)";
-
-  reports:
-    count_determined::
-      "Current count of $(class) = $(current_count)";
-    count_determined.cloud_services_verbose::
-      "To run a command, e.g. ssh to all machine (but beware, this works best if you have just a few count): $(shim) run $(class) 'ssh -i YOUR-PRIVATE-SSH-KEY -l ubuntu'";
-      "To see the console output of all the machines: $(shim) console $(class)";
-      "To list all the machines (just node names or all info, including DNS): $(shim) [list|list-full] $(class)";
-    count_determined.start.change_not_needed::
-      "Service does not need to be started by the shim: $(count) instances of class $(class) already exist";
-    count_determined.stop.change_not_needed::
-      "Service does not need to be stopped by the shim: we have $(count) instances of class $(class)";
-    count_determined.start.!change_not_needed::
-      "Service will be started by the shim: $(count) instances of class $(class) (current $(current_count))";
-    count_determined.stop.!change_not_needed::
-      "Service will be stopped by the shim: $(count) instances (current $(current_count)) of class $(class) ";
-    bootstrap_needed::
-      "Bootstrapping will be needed";
-    decom_needed::
-      "Decom will be needed";
-    cfengine::
-      "OpenStack goal: put $(count) $(class) in state $(state).";
-}
-
-bundle agent vcli(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
-{
-  classes:
-      "ssl_noverify" expression => strcmp("$($(params)[disable_ssl_verify])", "1");
-
-    !decided::
-      "decided" expression => usemodule("$(vcli_decision_module)",
-                                        "$(vcli_decision_args)");
-
-    decided::
-      "vcli_decision_valid" expression => regcmp("[^$]+","$(perl.current_count)");
-
-  vars:
-    debug::
-      "cmd_prefix" string => "/bin/echo ",
-      policy => "free";
-    !debug.ssl_noverify::
-      "cmd_prefix" string => "/usr/bin/env PERL_LWP_SSL_VERIFY_HOSTNAME=0 ",
-      policy => "free";
-    !debug.!ssl_noverify::
-      "cmd_prefix" string => "",
-      policy => "free";
-
-    any::
-      "master_image" string => "$($(params)[master_image])";
-      "child_prefix" string => "$($(params)[child_prefix])";
-
-      # NB: these are in /bin or /usr/bin or... but it varies on many
-      # systems, so we'll just accept whatever is in the PATH
-      "grep"  string => "grep";
-
-      "vifs"  string => "$(cmd_prefix)/usr/bin/vifs";
-      "vmcmd" string => "$(cmd_prefix)/usr/bin/vmware-cmd";
-      "vmkfs" string => "$(cmd_prefix)/usr/bin/vmkfstools";
-
-      "u"      string => "$($(params)[user])";
-      "p"      string => "$($(params)[password])";
-      "path"   string => "$($(params)[fullpath])";
-      "ds"     string => "$($(params)[datastore])";
-      "srv"    string => "$($(params)[esxi_server])";
-
-      "VIFS_BASE"       string => "$(vifs) --server $(srv) --username $(u) --password $(p)";
-      "VIFS_COPY"       string => "$(VIFS_BASE) -c";
-      "VIFS_DELETE"     string => "$(VIFS_BASE) -r";
-      "VIFS_DIR"        string => "$(VIFS_BASE) -D";
-      "VIFS_GET"        string => "$(VIFS_BASE) -get";
-      "VIFS_MKDIR"      string => "$(VIFS_BASE) -M";
-      "VIFS_PUT"        string => "$(VIFS_BASE) -put";
-
-      "VMCMD_BASE"      string => "$(vmcmd) -H $(srv) -U $(u) -P $(p)";
-      "VMCMD_PREFIX"    string => "$(VMCMD_BASE) $(path)";
-
-      "VMCMD_LIST"      string => "$(VMCMD_BASE) -l";
-      "VMCMD_LIST_OURS" string => "$(VMCMD_LIST) | $(grep) -v $(master_image) | $(grep) $(child_prefix) | $(grep) $(path)";
-      "VMCMD_REG"       string => "$(VMCMD_BASE) -s register";
-      "VMKFSTOOLS"      string => "$(vmkfs) --server $(srv) --username $(u) --password $(p) -i";
-
-      "vcli_decision_module" string => "vcli_decision";
-      "vcli_decision_args" string => "'$(VMCMD_LIST_OURS)' '$(state)' '$(count)' '$(child_prefix)'";
-
-    vcli_decision_valid::
-      "VMCMD_STOP"  string => "$(VMCMD_PREFIX)/$(vcli_decision.decom_instance)/$(vcli_decision.decom_instance).vmx stop soft";
-      "VMCMD_UNREG" string => "$(VMCMD_BASE) -s unregister $(path)/$(vcli_decision.decom_instance)/$(vcli_decision.decom_instance).vmx";
-
-  methods:
-    vcli_decision_valid.bootstrap_needed::
-      # clone the needed bootstraps
-      "CLONE"  usebundle => cfdc_cloud_services:vmware_clone($(master_image), "$(vcli_decision.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_REG), $(VIFS_DIR), $(VIFS_MKDIR), $(VIFS_COPY), $(VIFS_GET), $(VIFS_PUT), $(VIFS_DELETE), $(VMKFSTOOLS), $(ds), $(path));
-      "START"  usebundle => cfdc_cloud_services:vmware_start("$(vcli_decision.bootstrap_instance)", $(VMCMD_LIST), $(VMCMD_PREFIX));
-      # start all our client count if a bootstrap is needed
-      "START"  usebundle => cfdc_cloud_services:vmware_start("$(vcli_decision.our_count)", $(VMCMD_LIST), $(VMCMD_PREFIX));
-
-    vcli_decision_valid.decom_needed::
-      # "STOP"   usebundle => cfdc_cloud_services:vmware_stop("$(vcli_decision.decom_instance)", $(VMCMD_LIST_OURS), $(VMCMD_STOP), $(VMCMD_PREFIX));
-      "DELETE" usebundle => cfdc_cloud_services:vmware_delete("$(vcli_decision.decom_instance)", $(VIFS_DELETE), $(VMCMD_LIST), $(VMCMD_STOP), $(VMCMD_UNREG), $(VMCMD_PREFIX), $(ds));
-
-  reports:
-    vcli_decision_valid.bootstrap_needed::
-      "Service requires bootstrap: requested instance $(vcli_decision.bootstrap_instance) of class $(class) (current $(vcli_decision.current_count))";
-    vcli_decision_valid.decom_needed::
-      "Service requires decom: requested instance $(vcli_decision.decom_instance) of class $(class) (current $(vcli_decision.current_count))";
-    vcli_decision_valid.nothing_needed::
-      "Service requires no action: it already has $(vcli_decision.current_count) instances of class $(class)";
-    !vcli_decision_valid::
-      "The vcli_decision module \"$(vcli_decision_module) $(vcli_decision_args)\"could not be executed";
-    verbose::
-      "We will list our client instances with '$(VMCMD_LIST_OURS)'";
-      "The vifs commands will start with $(VIFS_BASE)";
-}
-
-# -----------------------------------------------------------------------------
-
-bundle agent vmware_clone(vm_source, vm_clone, VMCMD_LIST, VMCMD_REG, VIFS_DIR, VIFS_MKDIR, VIFS_COPY, VIFS_GET, VIFS_PUT, VIFS_DELETE, VMKFSTOOLS, ds, path)
-{
-  vars:
-    any::
-      "reg_status" string => execresult("$(VMCMD_LIST)","useshell"),
-      policy => "free";
-
-      #
-
-  classes:
-    any::
-      "have_source_dir"  expression => returnszero("$(VIFS_DIR) \"[$(ds)] $(vm_source)/\" > /dev/null","useshell");
-      "have_clone_dir"   expression => returnszero("$(VIFS_DIR) \"[$(ds)] $(vm_clone)/\"  > /dev/null","useshell");
-      "have_clone_vmx"   expression => fileexists("/tmp/$(vm_clone).vmx");
-      "clone_registered" expression => regcmp(".*$(vm_clone).*","$(reg_status)");
-      #
-
-  files:
-    clean_up::
-      "/tmp/$(vm_clone).vmx.*"
-      delete => default:tidy;
-
-    have_clone_vmx.!clone_registered::
-      "/tmp/$(vm_clone).vmx"
-      edit_line => reconfigurevmx("$(vm_source)","$(vm_clone)"),
-      classes => default:if_repaired("then_upload");
-
-      #
-
-  commands:
-    have_source_dir.!have_clone_dir::
-      "$(VIFS_MKDIR) \"[$(ds)] $(vm_clone)/\"";
-      "$(VMKFSTOOLS) \"[$(ds)] $(vm_source)/$(vm_source).vmdk\" \"[$(ds)] $(vm_clone)/$(vm_clone).vmdk\"";
-      "$(VIFS_COPY) \"[$(ds)] $(vm_source)/$(vm_source).nvram\" \"[$(ds)] $(vm_clone)/$(vm_clone).nvram\"";
-
-    !have_clone_vmx.!have_clone_dir::
-      "$(VIFS_GET) \"[$(ds)] $(vm_source)/$(vm_source).vmx\" /tmp/$(vm_clone).vmx";
-
-    then_upload::
-      "$(VIFS_PUT) /tmp/$(vm_clone).vmx \"[$(ds)] $(vm_clone)/$(vm_clone).vmx\""
-      classes => default:if_repaired("register_vm");
-
-    register_vm.!clone_registered::
-      "$(VMCMD_REG) $(path)/$(vm_clone)/$(vm_clone).vmx"
-      classes => default:if_repaired("clean_up");
-
-  reports:
-    verbose::
-      "###### cloning VM $(vm_source) into VM $(vm_clone) ######";
-    verbose.have_source_dir::
-      "The source directory \"[$(ds)] $(vm_source)/\" exists";
-    verbose.have_clone_dir::
-      "The clone target directory \"[$(ds)] $(vm_clone)/\" exists.  Remove it with \"$(VIFS_DELETE) \"[$(ds)] $(vm_clone)\" -f\"";
-}
-
-#####
-
-bundle edit_line reconfigurevmx(s,c)
-{
-  delete_lines:
-      ".*uuid.*";
-      ".*extendedConfigFile.*";
-      ".*$(s).*";
-      ".*sched.swap.derivedName.*";
-
-  insert_lines:
-      "nvram = \"$(c).nvram\"";
-      "displayName = \"$(c)\"";
-      "scsi0:0.fileName = \"$(c).vmdk\"";
-}
-
-# -----------------------------------------------------------------------------
-
-bundle agent vmware_start(vm_name, VMCMD_LIST, VMCMD_PREFIX)
-{
-  vars:
-    vm_valid::
-      "reg_status" string => execresult("$(VMCMD_LIST)","useshell"),
-      policy => "free";
-      "vm_status"  string => execresult("$(VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
-      policy => "free";
-
-      #
-
-  classes:
-    any::
-      "vm_valid"        expression => regcmp("[^ ]+","$(vm_name)");
-      "vm_registered"   expression => regcmp(".*$(vm_name).*","$(reg_status)");
-      "vm_is_off"       expression => regcmp(".*off","$(vm_status)");
-      "vm_is_suspended" expression => regcmp(".*suspended","$(vm_status)");
-
-      "no_reg_status"   not => isvariable("reg_status");
-
-      #
-  commands:
-    vm_valid.vm_registered.(vm_is_off|vm_is_suspended)::
-      "$(VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx start";
-
-  reports:
-    verbose::
-      "###### checking if VM $(vm_name) needs to be started ######";
-    verbose.vm_valid::
-      "###### VM $(vm_name) IS VALID ######";
-    verbose.!vm_valid::
-      "###### VM $(vm_name) IS INVALID ######";
-    verbose.vm_registered::
-      "###### VM $(vm_name) IS REGISTERED ######";
-    verbose.vm_is_off::
-      "###### VM $(vm_name) IS OFF ######";
-    verbose.vm_is_suspended::
-      "###### VM $(vm_name) IS SUSPENDED ######";
-}
-
-
-# -----------------------------------------------------------------------------
-
-bundle agent vmware_stop(vm_name, VMCMD_LIST_OURS, VMCMD_STOP, VMCMD_PREFIX)
-{
-  vars:
-    any::
-      "parameters" slist => getindices("$(inputs)");
-
-      "reg_status" string => execresult("$(VMCMD_LIST_OURS)","useshell"),
-      policy => "free";
-      "vm_status"  string => execresult("$(VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
-      policy => "free";
-
-      #
-
-  classes:
-    any::
-      "vm_registered"   expression => regcmp(".*$(vm_name).*","$(reg_status)");
-      "vm_is_on"        expression => regcmp(".*on","$(vm_status)");
-
-      #
-
-  commands:
-    vm_registered.vm_is_on::
-      "$(VMCMD_STOP)";
-
-  reports:
-    verbose::
-      "###### checking if VM $(vm_name) needs to be stopped ######";
-    verbose.vm_registered::
-      "###### VM $(vm_name) is registered ######";
-    verbose.vm_is_on::
-      "###### VM $(vm_name) is running ######";
-}
-
-# -----------------------------------------------------------------------------
-
-bundle agent vmware_delete(vm_name, VIFS_DELETE, VMCMD_LIST, VMCMD_STOP, VMCMD_UNREG, VMCMD_PREFIX, ds)
-{
-  vars:
-    any::
-      "canon_prefix" string => canonify("$(vm_name)");
-
-      "reg_status" string => execresult("$(VMCMD_LIST)","useshell"),
-      policy => "free";
-      "vm_status"  string => execresult("$(VMCMD_PREFIX)/$(vm_name)/$(vm_name).vmx getstate","useshell"),
-      policy => "free";
-
-      #
-
-  classes:
-    any::
-      "vm_registered"   expression => regcmp(".*$(vm_name).*","$(reg_status)");
-      "vm_is_on"        expression => regcmp(".*on","$(vm_status)");
-
-      #
-
-  commands:
-    vm_registered::
-      "$(VMCMD_STOP)"
-      classes => default:if_ok("$(canon_prefix)_stopped");
-
-      "$(VMCMD_UNREG)"
-      classes => default:if_ok("$(canon_prefix)_unregistered"),
-      ifvarclass => "$(canon_prefix)_stopped";
-
-      "$(VIFS_DELETE) \"[$(ds)] $(vm_name)\" -f"
-      classes => default:if_ok("$(canon_prefix)_deleted"),
-      ifvarclass => "$(canon_prefix)_unregistered";
-
-  reports:
-    verbose::
-      "$(vm_name) was stopped"
-      ifvarclass => "$(canon_prefix)_stopped";
-
-      "$(vm_name) was unregistered"
-      ifvarclass => "$(canon_prefix)_unregistered";
-
-      "$(vm_name) was deleted"
-      ifvarclass => "$(canon_prefix)_deleted";
-}
+# # count = local directory, class = S3 bucket
+
+# # sorry about the semantic mismatch, I wanted to keep things inside
+# # Cloud::Services
+
+# bundle agent s3(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
+# {
+#   classes:
+#       "start"   expression => strcmp("start",  "$(state)");
+#       "stop"    expression => strcmp("stop",   "$(state)");
+
+#   vars:
+#       # adjust for your Perl install, but any Perl should be able to handle this
+#       "perl"  string => "/usr/bin/perl";
+
+#       "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl  --s3 aws_access_key=$($(params)[aws_access_key]) --s3 aws_secret_key=$($(params)[aws_secret_key]) --s3 acl=$($(params)[acl]) s3";
+
+#   commands:
+#     start::
+#       "$(shim) sync $(count) $(class)";
+#     stop::
+#       "$(shim) clear $(class)";
+
+#   reports:
+#     start::
+#       "S3 goal: synchronize directory $(count) into S3 bucket $(class).";
+#     stop::
+#       "S3 goal: clear S3 bucket $(class).";
+# }
+
+# # count = file with JSON lines, class = SDB domain
+
+# # sorry about the semantic mismatch, I wanted to keep things inside
+# # Cloud::Services
+
+# bundle agent sdb(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
+# {
+#   classes:
+#       "start"   expression => strcmp("start",  "$(state)");
+#       "stop"    expression => strcmp("stop",   "$(state)");
+
+#   vars:
+#       # adjust for your Perl install, but any Perl should be able to handle this
+#       "perl"  string => "/usr/bin/perl";
+
+#       "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl  --sdb aws_access_key=$($(params)[aws_access_key]) --sdb aws_secret_key=$($(params)[aws_secret_key]) sdb";
+
+#   commands:
+#     start::
+#       "$(shim) sync $(count) $(class)";
+#     stop::
+#       "$(shim) clear $(class)";
+
+#   reports:
+#     start::
+#       "SDB goal: synchronize JSON file $(count) into SDB domain $(class).";
+#     stop::
+#       "SDB goal: clear SDB domain $(class).";
+# }
+
+# bundle agent openstack(prefix, bundle_home, install_cfengine, count, class, state, params, hub)
+# {
+#   classes:
+#       "start"   expression => strcmp("start",  "$(state)");
+#       "stop"    expression => strcmp("stop",   "$(state)");
+
+#       "count_determined" expression => isvariable("current_count");
+
+#     count_determined::
+#       "change_not_needed" expression => strcmp("$(count)", "$(current_count)");
+#       "bootstrap_needed" expression => isgreaterthan("$(count)", "$(current_count)");
+#       "decom_needed" expression => islessthan("$(count)", "$(current_count)");
+
+#   vars:
+#       # adjust for your Perl install, but any Perl should be able to handle this
+#       "perl"  string => "/usr/bin/perl";
+
+#       "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --openstack entry_url=$($(params)[entry_url]) --openstack password=$($(params)[password]) --openstack user=$($(params)[user]) --openstack key=$($(params)[key]) --openstack image=$($(params)[image]) --openstack master=$($(params)[master]) --hub=$(hub) --install_cfengine=$(install_cfengine) openstack";
+
+#       "current_count" string => execresult("$(shim) count $(class) 2>/dev/null", "useshell");
+
+#   commands:
+#     count_determined.!change_not_needed::
+#       "$(shim) control $(count) $(class)";
+
+#   reports:
+#     count_determined::
+#       "Current count of $(class) = $(current_count)";
+#     count_determined.cloud_services_verbose::
+#       "To run a command, e.g. ssh to all machine (but beware, this works best if you have just a few count): $(shim) run $(class) 'ssh -i YOUR-PRIVATE-SSH-KEY -l ubuntu'";
+#       "To see the console output of all the machines: $(shim) console $(class)";
+#       "To list all the machines (just node names or all info, including DNS): $(shim) [list|list-full] $(class)";
+#     count_determined.start.change_not_needed::
+#       "Service does not need to be started by the shim: $(count) instances of class $(class) already exist";
+#     count_determined.stop.change_not_needed::
+#       "Service does not need to be stopped by the shim: we have $(count) instances of class $(class)";
+#     count_determined.start.!change_not_needed::
+#       "Service will be started by the shim: $(count) instances of class $(class) (current $(current_count))";
+#     count_determined.stop.!change_not_needed::
+#       "Service will be stopped by the shim: $(count) instances (current $(current_count)) of class $(class) ";
+#     bootstrap_needed::
+#       "Bootstrapping will be needed";
+#     decom_needed::
+#       "Decom will be needed";
+#     cfengine::
+#       "OpenStack goal: put $(count) $(class) in state $(state).";
+# }
