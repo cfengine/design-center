@@ -11,6 +11,10 @@ bundle agent EC2(runenv, metadata, count, ami, region, type, class, install_cfen
       "start"   expression => strcmp("start",  "$(state)");
       "stop"    expression => strcmp("stop",   "$(state)");
 
+      "home_extracted" expression => regextract("(.+)/[^/]+",
+                                                $(this.promise_filename),
+                                                "home");
+
       "count_determined" expression => isvariable("current_count");
 
     count_determined::
@@ -22,10 +26,13 @@ bundle agent EC2(runenv, metadata, count, ami, region, type, class, install_cfen
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
+    home_extracted::
+      "bundle_home" string => "$(home[1])";
+
       # adjust for your Perl install, but any Perl should be able to handle this
       "perl"  string => "/usr/bin/perl";
 
-      "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --ec2 ami=$($(params)[ami]) --ec2 instance_type=$($(params)[instance_type]) --ec2 region=$($(params)[region]) --ec2 security_group=$($(params)[security_group]) --ec2 aws_access_key=$($(params)[aws_access_key]) --ec2 aws_secret_key=$($(params)[aws_secret_key]) --ec2 ssh_pub_key=$($(params)[ssh_pub_key]) --hub=$(hub) --install_cfengine=$(install_cfengine) ec2";
+      "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --ec2 ami=$(ami) --ec2 instance_type=$($(options)[instance_type]) --ec2 region=$(region) --ec2 security_group=$($(options)[security_group]) --ec2 aws_access_key=$($(options)[aws_access_key]) --ec2 aws_secret_key=$($(options)[aws_secret_key]) --ec2 ssh_pub_key=$($(options)[ssh_pub_key]) --hub=$(hub) --install_cfengine=$(install_cfengine) ec2";
 
       "current_count" string => execresult("$(shim) count $(class) 2>/dev/null", "useshell");
 
@@ -40,8 +47,8 @@ bundle agent EC2(runenv, metadata, count, ami, region, type, class, install_cfen
 
   reports:
     count_determined::
-      "$(this.bundle): Current count of $(class) = $(current_count)";
-    count_determined.cloud_services_verbose::
+      "$(this.bundle): EC2 current: $(current_count) $(class)";
+    count_determined.verbose::
       "$(this.bundle): To run a command, e.g. ssh to all machine (but beware, this works best if you have just a few count): $(shim) ssh machine-name";
       "$(this.bundle): To see the console output of all the machines: $(shim) console machine-name";
       "$(this.bundle): To list all the machines: $(shim) list $(class)";
@@ -58,12 +65,15 @@ bundle agent EC2(runenv, metadata, count, ami, region, type, class, install_cfen
     decom_needed::
       "$(this.bundle): Decom will be needed";
     cfengine::
-      "$(this.bundle): EC2 goal: put $(count) $(class) in state $(state).";
+      "$(this.bundle): EC2 goal: $(count) $(class).";
 
     verbose::
       "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
       "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
       ifvarclass => "$(vars)";
+
+    verbose.home_extracted::
+      "$(this.bundle): bundle home is $(bundle_home)";
 }
 
 bundle agent S3_sync(directory, bucket, options)

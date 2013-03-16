@@ -5,7 +5,7 @@
         ami: "ami-a29943cb",
         class: "cfworker",
         install_cfengine: true,
-	    hub: "$(sys.ip)",
+	    hub: "$(sys.ipv4)",
         options:
         {
             security_group: "cf",
