@@ -77,7 +77,7 @@ if ($s3)
  }
 
  # Access and secret key inherited from environment if defined
- foreach my $required (qw/aws_access_key aws_secret_key/)
+ foreach my $required (qw/netrc/)
  {
   my $envvarname = uc($required);
   $envvarname =~ s/^AWS_/EC2_/;
@@ -138,7 +138,7 @@ if ($s3)
 elsif ($sdb)
 {
  # Access and secret key inherited from environment if defined
- foreach my $required (qw/aws_access_key aws_secret_key/)
+ foreach my $required (qw/netrc/)
  {
   my $envvarname = uc($required);
   $envvarname =~ s/^AWS_/EC2_/;
@@ -217,7 +217,7 @@ elsif ($ec2)
  }
 
  # Access and secret key inherited from environment if defined
- foreach my $required (qw/aws_access_key aws_secret_key/)
+ foreach my $required (qw/netrc/)
  {
   my $envvarname = uc($required);
   $envvarname =~ s/^AWS_/EC2_/;

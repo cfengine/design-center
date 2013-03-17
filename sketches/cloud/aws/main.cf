@@ -32,8 +32,11 @@ bundle agent EC2(runenv, metadata, count, ami, region, type, class, install_cfen
       # adjust for your Perl install, but any Perl should be able to handle this
       "perl"  string => "/usr/bin/perl";
 
-      "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --ec2 ami=$(ami) --ec2 instance_type=$($(options)[instance_type]) --ec2 region=$(region) --ec2 security_group=$($(options)[security_group]) --ec2 aws_access_key=$($(options)[aws_access_key]) --ec2 aws_secret_key=$($(options)[aws_secret_key]) --ec2 ssh_pub_key=$($(options)[ssh_pub_key]) --hub=$(hub) --install_cfengine=$(install_cfengine) ec2";
+      "shim" string => "$(perl) $(bundle_home)/scripts/shim.pl --ec2 ami=$(ami) --ec2 instance_type=$(type) --ec2 region=$(region) --ec2 security_group=$($(options)[security_group]) --ec2 netrc=$($(options)[netrc]) --ec2 ssh_pub_key=$($(options)[ssh_pub_key]) --hub=$(hub) --install_cfengine=$(install_cfengine) ec2";
 
+    home_extracted.test::
+      "current_count" string => execresult("$(shim) count $(class)", "useshell");
+    home_extracted.!test::
       "current_count" string => execresult("$(shim) count $(class) 2>/dev/null", "useshell");
 
   methods:
