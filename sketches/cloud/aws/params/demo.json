@@ -9,8 +9,7 @@
         options:
         {
             security_group: "cf",
-            aws_access_key: "",
-            aws_secret_key: "",
+            netrc: "~/.netrc",
             ssh_pub_key: "/root/.ssh/id_rsa.pub"
         },
     }

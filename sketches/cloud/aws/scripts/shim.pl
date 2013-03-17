@@ -22,15 +22,7 @@ my %options =
   verbose => 0,
   install_cfengine => 'ON',
   curl => '/usr/bin/curl',
-  ec2 => {
-          aws_tool => "/usr/bin/perl $FindBin::Bin/aws",
-         },
-  s3 => {
-         aws_tool => "/usr/bin/perl $FindBin::Bin/aws",
-        },
-  sdb => {
-          aws_tool => "/usr/bin/perl $FindBin::Bin/aws",
-         },
+  aws_tool => "/usr/bin/perl $FindBin::Bin/aws",
   openstack => {
                 flavor => "2",
                 entry_url => 'https://identity.api.rackspacecloud.com/v2.0/tokens',
@@ -44,6 +36,8 @@ my @options_spec =
   "hub=s",
   "curl=s",
   "install_cfengine=s",
+  "aws_tool=s",
+  "netrc=s",
   "ec2=s%",
   "s3=s%",
   "sdb=s%",
@@ -219,22 +213,9 @@ elsif ($ec2)
  # Access and secret key inherited from environment if defined
  foreach my $required (qw/netrc/)
  {
-  my $envvarname = uc($required);
-  $envvarname =~ s/^AWS_/EC2_/;
-  if ($options{ec2}->{$required})
+  unless ($options{$required})
   {
-   $ENV{$envvarname} = $options{ec2}->{$required};
-  }
-  else
-  {
-   if ($ENV{$envvarname})
-   {
-    $options{ec2}->{$required} = $ENV{$envvarname};
-   }
-   else
-   {
-    die "Sorry, we can't go on until you've specified --ec2 $required (or specified it in your $envvarname environment variable)";
-   }
+      die "Sorry, we can't go on until you've specified --netrc NETRCFILE";
   }
  }
 
@@ -619,7 +600,9 @@ sub aws_ec2
  my $mode = shift @_;
  my @args = @_;
 
- my $tool = $options{ec2}->{aws_tool};
+ my $tool = sprintf ("%s --json --netrc %s",
+                     $options{aws_tool},
+                     $options{netrc});
  my $run;
  my $t;
 
@@ -627,25 +610,25 @@ sub aws_ec2
 
  if ($mode eq 'list')
  {
-  $run = "$tool --json describe-instances";
+  $run = "$tool describe-instances";
   open $t, "$run|" or die "Could not get server list with command [$run]: $!";;
  }
  elsif ($mode eq 'create-tags')
  {
   my $tags = $args[1];
   my $extra = join ' ', map { "--tag $_=$tags->{$_}" } keys %$tags;
-  $run = "$tool --json create-tags $args[0] $extra";
+  $run = "$tool create-tags $args[0] $extra";
   open $t, "$run|" or die "Could not create tags with command [$run]: $!";;
  }
  elsif ($mode eq 'console')
  {
   my $id = $args[0];
-  $run = "$tool --json get-console-output $args[0]";
+  $run = "$tool get-console-output $args[0]";
   open $t, "$run|" or die "Could not get console with command [$run]: $!";;
  }
  elsif ($mode eq 'delete')
  {
-  $run = "$tool --json terminate-instances $args[0]";
+  $run = "$tool terminate-instances $args[0]";
   open $t, "$run|" or die "Could not kill instances with command [$run]: $!";;
  }
  elsif ($mode eq 'create')
@@ -672,7 +655,7 @@ sub aws_ec2
    }
   }
 
-  $run = sprintf("$tool --json run-instances %s -g %s -t %s --region %s $udata",
+  $run = sprintf("$tool run-instances %s -g %s -t %s --region %s $udata",
                  $options{ec2}->{ami},
                  $options{ec2}->{security_group},
                  $options{ec2}->{instance_type},
@@ -724,7 +707,7 @@ sub aws_ec2
                     [ cfclass => qw/tagSet item cfclass/ ],
                     [ id => qw/instanceId/ ],
                     [ ip => qw/ipAddress/ ],
-		    [ privateip => qw/privateIpAddress/ ],
+                    [ privateip => qw/privateIpAddress/ ],
                     [ image => qw/imageId/ ],
                     [ progress => qw/instanceState name/ ],
                    )
@@ -1039,7 +1022,7 @@ sub generic_control
    print 'Got creation data ' , $coder->encode($cdata), "\n"
     if $options{verbose};
    my $error = hashref_search($cdata, qw/Errors Error/);
- 
+
    if ($error)
    {
     printf("error: %s (%s)\n",
