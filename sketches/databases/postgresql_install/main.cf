@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_db_mysql";
+  namespace => "cfdc_db_postgresql";
 }
 
 bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_extra_packages)
@@ -16,74 +16,34 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    ubuntu_12::
+    debian||ubuntu::
       "packages" slist =>
       {
-        "mysql-client",
-        "mysql-common",
-        "libmysqlclient18",
-        "libdbd-mysql-perl",
-        "libdbi-perl",
-        "libnet-daemon-perl",
-        "libplrpc-perl"
+        "postgresql",
+        "postgresql-common"
       }, policy => "free";
 
       "server_packages" slist =>
       {
-        "mysql-server",
-        "mysql-server-core",
+        "postgresql-server",
+        "postgresql-server-core",
         "libhtml-template-perl"
       }, policy => "free";
 
-    redhat|centos|fedora::
+    redhat|centos|fedora|suse|SuSE::
       "packages" slist =>
       {
-        "mysql"
+        "postgresql-server"
       }, policy => "free";
 
       "server_packages" slist =>
       {
-        "mysql-server",
-        "perl-DBD-MySQL"
-      }, policy => "free";
-
-      "process_match" string => ".*mysqld.*", policy => "free";
-
-      !ubuntu_12.(debian|ubuntu)::
-      "packages" slist =>
-      {
-        "mysql-client",
-        "mysql-client-core",
-        "mysql-common",
-        "libmysqlclient16",
-        "libdbd-mysql-perl",
-        "libdbi-perl",
-        "libnet-daemon-perl",
-        "libplrpc-perl"
-      }, policy => "free";
-
-      "server_packages" slist =>
-      {
-        "mysql-server",
-        "mysql-server-core",
-        "libhtml-template-perl"
-      }, policy => "free";
-
-      suse|SuSe::
-      "packages" slist =>
-      {
-        "mysql-community-server-client",
-        "libmysqlclient16",
-        "libmysqlclient_r16"
-      }, policy => "free";
-
-      "server_packages" slist =>
-      {
-        "mysql-community-server"
+        "postgresql-server",
+        "perl-DBD-PostgreSQL"
       }, policy => "free";
 
     !(redhat|centos|fedora)::
-      "process_match" string => "/usr/sbin/mysqld.*", policy => "free";
+      "process_match" string => "[^ ]+postgres.*", policy => "free";
 
     server.test::
       "all_packages" slist => { "test-packages", "test-server-packages" }, policy => "free";
@@ -122,7 +82,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       "mode" string => "test-installing", policy => "free";
 
     any::
-      "start_command" string => "/etc/init.d/mysql restart";
+      "start_command" string => "/etc/init.d/postgresql restart";
       "canon[$(all_packages)]" string => canonify($(all_packages));
 
   methods:
@@ -133,57 +93,42 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
   packages:
     !purge::
       "$(all_packages)"
-      comment => "Install MySQL packages",
-      handle => "mysql_install_packages_add",
+      comment => "Install PostgreSQL packages",
+      handle => "postgresql_install_packages_add",
       package_policy => "add",
       package_method => default:generic,
       classes => scoped_generic("bundle", "install"),
-      action => default:log_repaired("stdout","MySQL $(type) was installed");
+      action => default:log_repaired("stdout","PostgreSQL $(type) was installed");
 
     purge::
       "$(all_packages)"
-      comment => "Remove MySQL packages.",
+      comment => "Remove PostgreSQL packages",
       handle => "db_install_packages_remove",
       package_policy => "delete",
       package_method => default:generic,
       classes => scoped_generic("bundle", "remove"),
-      action => default:log_repaired("stdout","MySQL $(type) was removed");
-
-  files:
-
-    server.(redhat|centos|fedora)::
-      "/tmp/mysql.sock"
-      comment => "Create a temp link to mysql.sock",
-      handle => "db_mysql_files_mysql_sock_redhat_centos_fedora",
-      link_from => default:ln_s("/var/lib/mysql/mysql.sock");
-
-    server.(debian|ubuntu)::
-
-      "/tmp/mysql.sock"
-      comment => "Create a temp link to mysql.sock",
-      handle => "db_mysql_files_mysql_sock_debian_ubuntu",
-      link_from => default:ln_s("/var/run/mysqld/mysqld.sock");
+      action => default:log_repaired("stdout","PostgreSQL $(type) was removed");
 
   processes:
     server.install_ok::
       "$(process_match)"
-      comment => "Check for MySQL process",
-      handle => "mysql_processes_run",
-      restart_class => "start_mysql";
+      comment => "Check for PostgreSQL process",
+      handle => "postgresql_processes_run",
+      restart_class => "start_postgresql";
 
     purge.server::
       "$(process_match)"
-      comment => "Teminate MySQL process",
-      handle => "mysql_processes_terminate",
+      comment => "Teminate PostgreSQL process",
+      handle => "postgresql_processes_terminate",
       classes => scoped_generic("bundle", "terminate"),
       signals => { "term","kill" };
 
   commands:
-    start_mysql::
+    start_postgresql::
       "$(start_command)"
-      comment => "Start/Restart MySQL",
+      comment => "Start/Restart PostgreSQL",
       classes => scoped_generic("bundle", "start"),
-      handle => "mysql_commands_run";
+      handle => "postgresql_commands_run";
 
   reports:
     verbose::
@@ -213,7 +158,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       "$(this.bundle): SIMULATE $(mode) of $(all_packages)";
 
     verbose::
-      "$(this.bundle): MySQL $(mode) in $(type) mode; packages $(all_packages)";
+      "$(this.bundle): PostgreSQL $(mode) in $(type) mode; packages $(all_packages)";
     verbose.purge::
       "$(this.bundle): Purge mode";
     verbose.!purge::
