@@ -1,4 +1,4 @@
-# mysql_install - Install MySQL
+# postgresql_install - Install PostgreSQL
 
 ## AUTHORS
 Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>
