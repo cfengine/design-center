@@ -1,0 +1,236 @@
+body file control
+{
+  namespace => "cfdc_db_mysql";
+}
+
+bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_extra_packages)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+      "server" expression => strcmp($(server), "1");
+      "purge" expression => strcmp($(purge), "1");
+      "use_only_extra_packages" expression => strcmp($(use_only_extra_packages), "1");
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+    ubuntu_12::
+      "packages" slist =>
+      {
+        "mysql-client",
+        "mysql-common",
+        "libmysqlclient18",
+        "libdbd-mysql-perl",
+        "libdbi-perl",
+        "libnet-daemon-perl",
+        "libplrpc-perl"
+      }, policy => "free";
+
+      "server_packages" slist =>
+      {
+        "mysql-server",
+        "mysql-server-core",
+        "libhtml-template-perl"
+      }, policy => "free";
+
+    redhat|centos|fedora::
+      "packages" slist =>
+      {
+        "mysql"
+      }, policy => "free";
+
+      "server_packages" slist =>
+      {
+        "mysql-server",
+        "perl-DBD-MySQL"
+      }, policy => "free";
+
+      "process_match" string => ".*mysqld.*", policy => "free";
+
+      !ubuntu_12.(debian|ubuntu)::
+      "packages" slist =>
+      {
+        "mysql-client",
+        "mysql-client-core",
+        "mysql-common",
+        "libmysqlclient16",
+        "libdbd-mysql-perl",
+        "libdbi-perl",
+        "libnet-daemon-perl",
+        "libplrpc-perl"
+      }, policy => "free";
+
+      "server_packages" slist =>
+      {
+        "mysql-server",
+        "mysql-server-core",
+        "libhtml-template-perl"
+      }, policy => "free";
+
+      suse|SuSe::
+      "packages" slist =>
+      {
+        "mysql-community-server-client",
+        "libmysqlclient16",
+        "libmysqlclient_r16"
+      }, policy => "free";
+
+      "server_packages" slist =>
+      {
+        "mysql-community-server"
+      }, policy => "free";
+
+    !(redhat|centos|fedora)::
+      "process_match" string => "/usr/sbin/mysqld.*", policy => "free";
+
+    server.test::
+      "all_packages" slist => { "test-packages", "test-server-packages" }, policy => "free";
+      "type" string => "test-server", policy => "free";
+
+    !use_only_extra_packages.server.!test::
+      "all_packages" slist => { @(packages), @(server_packages), @(extra_packages) }, policy => "free";
+      "type" string => "server", policy => "free";
+
+    use_only_extra_packages.server.!test::
+      "all_packages" slist => { @(extra_packages) }, policy => "free";
+      "type" string => "server", policy => "free";
+
+    !server.test::
+      "all_packages" slist => { "test-packages" }, policy => "free";
+      "type" string => "test-client", policy => "free";
+
+    !use_only_extra_packages.!server.!test::
+      "all_packages" slist => { @(packages), @(extra_packages) }, policy => "free";
+      "type" string => "client", policy => "free";
+
+    use_only_extra_packages.!server.!test::
+      "all_packages" slist => { @(extra_packages) };
+      "type" string => "client", policy => "free";
+
+    purge.!test::
+      "mode" string => "purging", policy => "free";
+
+    !purge.!test::
+      "mode" string => "installing", policy => "free";
+
+    purge.test::
+      "mode" string => "test-purging", policy => "free";
+
+    !purge.test::
+      "mode" string => "test-installing", policy => "free";
+
+    any::
+      "start_command" string => "/etc/init.d/mysql restart";
+      "canon[$(all_packages)]" string => canonify($(all_packages));
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  packages:
+    !purge::
+      "$(all_packages)"
+      comment => "Install MySQL packages",
+      handle => "mysql_install_packages_add",
+      package_policy => "add",
+      package_method => default:generic,
+      classes => scoped_generic("bundle", "install"),
+      action => default:log_repaired("stdout","MySQL $(type) was installed");
+
+    purge.!(installing_sqlite.redhat)::
+      "$(all_packages)"
+      comment => "Remove $(db) packages.  SQLite packages should not be purged for Redhat-related distributions because RPM/Yum rely on libsqlite.so.0",
+      handle => "db_install_packages_remove",
+      package_policy => "delete",
+      package_method => default:generic,
+      classes => scoped_generic("bundle", "remove"),
+      action => default:log_repaired("stdout","MySQL $(type) was removed");
+
+  files:
+
+    server.(redhat|centos|fedora)::
+      "/tmp/mysql.sock"
+      comment => "Create a temp link to mysql.sock",
+      handle => "db_mysql_files_mysql_sock_redhat_centos_fedora",
+      link_from => default:ln_s("/var/lib/mysql/mysql.sock");
+
+    server.(debian|ubuntu)::
+
+      "/tmp/mysql.sock"
+      comment => "Create a temp link to mysql.sock",
+      handle => "db_mysql_files_mysql_sock_debian_ubuntu",
+      link_from => default:ln_s("/var/run/mysqld/mysqld.sock");
+
+  processes:
+    server.install_ok::
+      "$(process_match)"
+      comment => "Check for MySQL process",
+      handle => "mysql_processes_run",
+      restart_class => "start_mysql";
+
+    purge.server::
+      "$(process_match)"
+      comment => "Teminate MySQL process",
+      handle => "mysql_processes_terminate",
+      classes => scoped_generic("bundle", "terminate"),
+      signals => { "term","kill" };
+
+  commands:
+    start_mysql::
+      "$(start_command)"
+      comment => "Start/Restart MySQL",
+      classes => scoped_generic("bundle", "start"),
+      handle => "mysql_commands_run";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    start_ok::
+      "$(this.bundle): Server started OK";
+      "1" bundle_return_value_index => "running";
+
+    server.!start_ok::
+      "$(this.bundle): Server could not be started";
+    !start_ok::
+      "0" bundle_return_value_index => "running";
+
+    install_ok::
+      "1" bundle_return_value_index => "installed";
+
+    remove_ok::
+      "1" bundle_return_value_index => "installed";
+
+    !remove_ok.!install_ok::
+      "" bundle_return_value_index => "installed";
+
+    test::
+      "$(this.bundle): SIMULATE $(mode) of $(all_packages)";
+
+    verbose::
+      "$(this.bundle): MySQL $(mode) in $(type) mode; packages $(all_packages)";
+    verbose.purge::
+      "$(this.bundle): Purge mode";
+    verbose.!purge::
+      "$(this.bundle): Install mode";
+    verbose.server::
+      "$(this.bundle): Server install mode";
+    verbose.!server::
+      "$(this.bundle): Client install mode";
+}
+
+body classes scoped_generic(scope, x)
+# Define x prefixed/suffixed with promise outcome
+{
+  scope => $(scope);
+  promise_repaired => { "promise_repaired_$(x)", "$(x)_repaired", "$(x)_ok" };
+  repair_failed => { "repair_failed_$(x)", "$(x)_failed", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  repair_denied => { "repair_denied_$(x)", "$(x)_denied", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  repair_timeout => { "repair_timeout_$(x)", "$(x)_timeout", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  promise_kept => { "promise_kept_$(x)", "$(x)_kept", "$(x)_ok", "$(x)_not_repaired" };
+}

@@ -215,22 +215,6 @@ api_cleanup:
 	@echo ...valid request to uninstall CFEngine::stdlib
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "/home/tzz/.cfagent/inputs/sketches" } ] } }' | $(CFAPI)
 
-db_install:
-	$(CFSKETCH_DA) --install Database::Install --activate Database::Install=$(SOURCEDIR)/databases/db_install/params/demo.json
-	$(RUNNER) -Dpostgresql -Dpurge
-	$(RUNNER) -Dsqlite -Dpurge
-	$(RUNNER) -Dmysql -Dpurge
-	$(RUNNER) -Dpostgresql
-	$(RUNNER) -Dsqlite
-	$(RUNNER) -Dmysql
-	$(RUNNER) -Dpostgresql -Dserver -Dpurge
-	$(RUNNER) -Dsqlite -Dserver -Dpurge
-	$(RUNNER) -Dmysql -Dserver -Dpurge
-	$(RUNNER) -Dpostgresql -Dserver
-	$(RUNNER) -Dsqlite -Dserver
-	$(RUNNER) -Dmysql -Dserver
-	$(RUNNER) -Dmysql
-
 run:
 	$(RUNNER)
 
@@ -351,3 +335,23 @@ openstack:
 
 wordpress:
 	@echo NOT IMPLEMENTED
+
+mysql_client:
+	$(CFSKETCH_DA) --install Database::Install::MySQL --activate Database::Install::MySQL=$(SOURCEDIR)/databases/mysql_install/params/demo_client.json
+	$(RUNNER)
+
+mysql_server:
+	$(CFSKETCH_DA) --install Database::Install::MySQL --activate Database::Install::MySQL=$(SOURCEDIR)/databases/mysql_install/params/demo_server.json
+	$(RUNNER)
+
+postgresql_client:
+	$(CFSKETCH_DA) --install Database::Install::PostgreSQL --activate Database::Install::PostgreSQL=$(SOURCEDIR)/databases/postgresql_install/params/demo_client.json
+	$(RUNNER)
+
+postgresql_server:
+	$(CFSKETCH_DA) --install Database::Install::PostgreSQL --activate Database::Install::PostgreSQL=$(SOURCEDIR)/databases/postgresql_install/params/demo_server.json
+	$(RUNNER)
+
+sqlite:
+	$(CFSKETCH_DA) --install Database::Install::SQLite --activate Database::Install::SQLite=$(SOURCEDIR)/databases/sqlite_install/params/demo.json
+	$(RUNNER)
