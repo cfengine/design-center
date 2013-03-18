@@ -1,98 +1,87 @@
-# This test file uses params/demo.json with some minor adjustments for readability
-
-# run with or without -Dpurge and -Dserver
-# run with -Dmysql or -Dsqlite or -Dpostgresql
-
 body common control
 {
-      bundlesequence => { "cfsketch_run" };
-      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
 }
 
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
-  classes:
-    !purge::
-      "dbtest_purge" expression => "!any";
-    purge::
-      "dbtest_purge" expression => "any";
-    !server::
-      "dbtest_server" expression => "!any";
-    server::
-      "dbtest_server" expression => "any";
-
   vars:
-    any::
-      "dbtest_canon_prefix" string => "dbtest_";
-      "dbtest_class_prefix" string => "default:dbtest_";
-    mysql::
-      "dbtest_db" string => "mysql";
-    postgresql::
-      "dbtest_db" string => "postgresql";
-    sqlite::
-      "dbtest_db" string => "sqlite";
-
-    mysql.!(redhat|centos|fedora)::
-      "dbtest_process_match" string => "/usr/sbin/mysqld.*";
-    mysql.redhat|centos|fedora::
-      "dbtest_process_match" string => ".*mysqld.*";
-    postgresql.(debian|ubuntu)::
-      "dbtest_process_match" string => ".*postgres.*";
-    postgresql.(redhat|centos|fedora|suse|SuSE)::
-      "dbtest_process_match" string => "/usr/bin/postmaster.*";
-
-    mysql::
-      "dbtest_start_command" string => "/etc/init.d/mysql restart";
-    postgresql.(debian|ubuntu)::
-      "dbtest_start_command" string => "/etc/init.d/postgresql-8.4 restart";
-    postgresql.(redhat|centos|fedora|suse|SuSE)::
-      "dbtest_start_command" string => "/etc/init.d/postgresql restart";
-
-    mysql.(!ubuntu_12.(debian|ubuntu))::
-      "dbtest_packages" slist => { "mysql-client-5.1", "mysql-client-core-5.1", "mysql-common", "libmysqlclient16", "libdbd-mysql-perl", "libdbi-perl", "libnet-daemon-perl", "libplrpc-perl" };
-    mysql.(redhat|centos|fedora)::
-      "dbtest_packages" slist => { "mysql" };
-    mysql.(suse|SuSe)::
-      "dbtest_packages" slist => { "mysql-community-server-client", "libmysqlclient16", "libmysqlclient_r16" };
-    mysql.ubuntu_12::
-      "dbtest_packages" slist => { "mysql-client", "mysql-common", "libmysqlclient18", "libdbd-mysql-perl", "libdbi-perl", "libnet-daemon-perl", "libplrpc-perl" };
-    postgresql.(debian|ubuntu)::
-      "dbtest_packages" slist => { "postgresql-client-8.4", "postgresql-client-common", "postgresql-doc-8.4", "libpq5" };
-    postgresql.(redhat|centos|fedora|suse|SuSE)::
-      "dbtest_packages" slist => { "postgresql", "postgresql-libs" };
-    sqlite.(debian|ubuntu)::
-      "dbtest_packages" slist => { "sqlite3", "libsqlite3-dev", "sqlite3-doc" };
-    sqlite.(redhat|centos|fedora)::
-      "dbtest_packages" slist => { "sqlite", "sqlite-devel" };
-    sqlite.(suse|SuSE)::
-      "dbtest_packages" slist => { "sqlite3", "sqlite3-devel" };
-
-    mysql.(!ubuntu_12.(debian|ubuntu))::
-      "dbtest_server_packages" slist => { "mysql-server-5.1", "mysql-server-core-5.1", "libhtml-template-perl" };
-    mysql.(redhat|centos|fedora)::
-      "dbtest_server_packages" slist => { "mysql-server", "perl-DBD-MySQL" };
-    mysql.(suse|SuSe)::
-      "dbtest_server_packages" slist => { "mysql-community-server" };
-    mysql.ubuntu_12::
-      "dbtest_server_packages" slist => { "mysql-server-5.1", "mysql-server-core-5.1", "libhtml-template-perl" };
-    postgresql.(debian|ubuntu)::
-      "dbtest_server_packages" slist => { "postgresql-8.4", "postgresql-common" };
-    postgresql.(redhat|centos|fedora|suse|SuSE)::
-      "dbtest_server_packages" slist => { "postgresql-server" };
-    sqlite::
-      "dbtest_server_packages" slist => { "cf_null" };
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../../sketches/libraries/dclib/library.cf", "../../../sketches/libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 }
 
 bundle agent cfsketch_run
 {
-  methods:
-      "cfsketch_g" usebundle => "cfsketch_g";
-      "run" usebundle => cfdc_db:db_install($(cfsketch_g.dbtest_canon_prefix),
-                                            $(cfsketch_g.dbtest_class_prefix),
-                                            $(cfsketch_g.dbtest_db),
-                                            $(cfsketch_g.dbtest_process_match),
-                                            $(cfsketch_g.dbtest_start_command),
-                                            @(cfsketch_g.dbtest_packages),
-                                            @(cfsketch_g.dbtest_server_packages));
+  vars:
 
+      # array 'mymetadata' from definition sketch metadata, activation __001_Database_Install_MySQL_ensure
+      "__001_Database_Install_MySQL_ensure_mymetadata[authors]" slist => { "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_Database_Install_MySQL_ensure_mymetadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_Database_Install_MySQL_ensure_mymetadata[license]" string => "MIT";
+      "__001_Database_Install_MySQL_ensure_mymetadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/databases/mysql_install";
+      "__001_Database_Install_MySQL_ensure_mymetadata[manifest]" slist => { "README.md", "main.cf", "params/demo_client.json", "params/demo_server.json" };
+      "__001_Database_Install_MySQL_ensure_mymetadata[manifest_cf]" slist => { "main.cf" };
+      "__001_Database_Install_MySQL_ensure_mymetadata[manifest_docs]" slist => { "README.md" };
+      "__001_Database_Install_MySQL_ensure_mymetadata[manifest_exe]" slist => { "cf_null" };
+      "__001_Database_Install_MySQL_ensure_mymetadata[manifest_extra]" slist => { "params/demo_client.json", "params/demo_server.json" };
+      "__001_Database_Install_MySQL_ensure_mymetadata[name]" string => "Database::Install::MySQL";
+      "__001_Database_Install_MySQL_ensure_mymetadata[tags]" slist => { "cfdc" };
+      "__001_Database_Install_MySQL_ensure_mymetadata[version]" string => "1";
+
+      # list 'extra_packages' from definition /home/tzz/source/design-center/tools/test/../../sketches/databases/mysql_install/params/demo_server.json 1, activation __001_Database_Install_MySQL_ensure
+      "__001_Database_Install_MySQL_ensure_extra_packages" slist => { "cf_null" };
+
+      # array 'mymetadata' from definition sketch metadata, activation __002_Database_Install_MySQL_ensure
+      "__002_Database_Install_MySQL_ensure_mymetadata[authors]" slist => { "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__002_Database_Install_MySQL_ensure_mymetadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__002_Database_Install_MySQL_ensure_mymetadata[license]" string => "MIT";
+      "__002_Database_Install_MySQL_ensure_mymetadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/databases/mysql_install";
+      "__002_Database_Install_MySQL_ensure_mymetadata[manifest]" slist => { "README.md", "main.cf", "params/demo_client.json", "params/demo_server.json" };
+      "__002_Database_Install_MySQL_ensure_mymetadata[manifest_cf]" slist => { "main.cf" };
+      "__002_Database_Install_MySQL_ensure_mymetadata[manifest_docs]" slist => { "README.md" };
+      "__002_Database_Install_MySQL_ensure_mymetadata[manifest_exe]" slist => { "cf_null" };
+      "__002_Database_Install_MySQL_ensure_mymetadata[manifest_extra]" slist => { "params/demo_client.json", "params/demo_server.json" };
+      "__002_Database_Install_MySQL_ensure_mymetadata[name]" string => "Database::Install::MySQL";
+      "__002_Database_Install_MySQL_ensure_mymetadata[tags]" slist => { "cfdc" };
+      "__002_Database_Install_MySQL_ensure_mymetadata[version]" string => "1";
+
+      # list 'extra_packages' from definition /home/tzz/source/design-center/tools/test/../../sketches/databases/mysql_install/params/demo_server.json 2, activation __002_Database_Install_MySQL_ensure
+      "__002_Database_Install_MySQL_ensure_extra_packages" slist => { "cf_null" };
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "__001_Database_Install_MySQL_ensure" usebundle => cfdc_db_mysql:ensure("cf_sketch_testing", "default:cfsketch_run.__001_Database_Install_MySQL_ensure_mymetadata", "1", "", @(cfsketch_run.__001_Database_Install_MySQL_ensure_extra_packages), ""), useresult => "return___001_Database_Install_MySQL_ensure";
+    runenv_cf_sketch_testing_activated::
+      "__002_Database_Install_MySQL_ensure" usebundle => cfdc_db_mysql:ensure("cf_sketch_testing", "default:cfsketch_run.__002_Database_Install_MySQL_ensure_mymetadata", "1", "1", @(cfsketch_run.__002_Database_Install_MySQL_ensure_extra_packages), ""), useresult => "return___002_Database_Install_MySQL_ensure";
+
+  reports:
+      "activation __001_Database_Install_MySQL_ensure returned installed = $(return___001_Database_Install_MySQL_ensure[installed])";
+      "activation __001_Database_Install_MySQL_ensure returned running = $(return___001_Database_Install_MySQL_ensure[running])";
+      "activation __002_Database_Install_MySQL_ensure returned installed = $(return___002_Database_Install_MySQL_ensure[installed])";
+      "activation __002_Database_Install_MySQL_ensure returned running = $(return___002_Database_Install_MySQL_ensure[running])";
 }
