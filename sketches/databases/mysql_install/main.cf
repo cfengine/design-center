@@ -204,7 +204,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       "1" bundle_return_value_index => "installed";
 
     remove_ok::
-      "1" bundle_return_value_index => "installed";
+      "0" bundle_return_value_index => "installed";
 
     !remove_ok.!install_ok::
       "" bundle_return_value_index => "installed";
