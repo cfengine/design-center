@@ -1,0 +1,123 @@
+body file control
+{
+  namespace => "cfdc_db_sqlite";
+}
+
+bundle agent ensure(runenv, metadata, purge, extra_packages, use_only_extra_packages)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+      "purge" expression => strcmp($(purge), "1");
+      "use_only_extra_packages" expression => strcmp($(use_only_extra_packages), "1");
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+    debian||ubuntu::
+      "packages" slist =>
+      {
+        "sqlite3",
+        "libsqlite3-dev",
+        "sqlite3-doc"
+      }, policy => "free";
+
+    redhat|centos|fedora::
+      "packages" slist =>
+      {
+        "sqlite",
+        "sqlite-devel"
+      }, policy => "free";
+
+    suse|SuSE::
+      "packages" slist =>
+      {
+        "sqlite3",
+        "sqlite3-devel"
+      }, policy => "free";
+
+    test::
+      "all_packages" slist => { "test-packages" }, policy => "free";
+      "type" string => "test-client", policy => "free";
+
+    !use_only_extra_packages.!test::
+      "all_packages" slist => { @(packages), @(extra_packages) }, policy => "free";
+      "type" string => "client", policy => "free";
+
+    use_only_extra_packages.!server.!test::
+      "all_packages" slist => { @(extra_packages) };
+      "type" string => "client", policy => "free";
+
+    purge.!test::
+      "mode" string => "purging", policy => "free";
+
+    !purge.!test::
+      "mode" string => "installing", policy => "free";
+
+    purge.test::
+      "mode" string => "test-purging", policy => "free";
+
+    !purge.test::
+      "mode" string => "test-installing", policy => "free";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  packages:
+    !purge::
+      "$(all_packages)"
+      comment => "Install SQLite packages",
+      handle => "sqlite_install_packages_add",
+      package_policy => "add",
+      package_method => default:generic,
+      classes => scoped_generic("bundle", "install"),
+      action => default:log_repaired("stdout","SQLite $(type) was installed");
+
+    purge::
+      "$(all_packages)"
+      comment => "Remove SQLite packages",
+      handle => "db_install_packages_remove",
+      package_policy => "delete",
+      package_method => default:generic,
+      classes => scoped_generic("bundle", "remove"),
+      action => default:log_repaired("stdout","SQLite $(type) was removed");
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    install_ok::
+      "1" bundle_return_value_index => "installed";
+
+    remove_ok::
+      "0" bundle_return_value_index => "installed";
+
+    !remove_ok.!install_ok::
+      "" bundle_return_value_index => "installed";
+
+    test::
+      "$(this.bundle): SIMULATE $(mode) of $(all_packages)";
+
+    verbose::
+      "$(this.bundle): SQLite $(mode) in $(type) mode; packages $(all_packages)";
+    verbose.purge::
+      "$(this.bundle): Purge mode";
+    verbose.!purge::
+      "$(this.bundle): Install mode";
+}
+
+body classes scoped_generic(scope, x)
+# Define x prefixed/suffixed with promise outcome
+{
+  scope => $(scope);
+  promise_repaired => { "promise_repaired_$(x)", "$(x)_repaired", "$(x)_ok" };
+  repair_failed => { "repair_failed_$(x)", "$(x)_failed", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  repair_denied => { "repair_denied_$(x)", "$(x)_denied", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  repair_timeout => { "repair_timeout_$(x)", "$(x)_timeout", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  promise_kept => { "promise_kept_$(x)", "$(x)_kept", "$(x)_ok", "$(x)_not_repaired" };
+}

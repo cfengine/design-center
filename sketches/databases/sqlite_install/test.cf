@@ -1,0 +1,85 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../../sketches/libraries/dclib/library.cf", "../../../sketches/libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'mymetadata' from definition sketch metadata, activation __001_Database_Install_SQLite_ensure
+      "__001_Database_Install_SQLite_ensure_mymetadata[authors]" slist => { "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_Database_Install_SQLite_ensure_mymetadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_Database_Install_SQLite_ensure_mymetadata[license]" string => "MIT";
+      "__001_Database_Install_SQLite_ensure_mymetadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/databases/sqlite_install";
+      "__001_Database_Install_SQLite_ensure_mymetadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json" };
+      "__001_Database_Install_SQLite_ensure_mymetadata[manifest_cf]" slist => { "main.cf" };
+      "__001_Database_Install_SQLite_ensure_mymetadata[manifest_docs]" slist => { "README.md" };
+      "__001_Database_Install_SQLite_ensure_mymetadata[manifest_exe]" slist => { "cf_null" };
+      "__001_Database_Install_SQLite_ensure_mymetadata[manifest_extra]" slist => { "params/demo.json" };
+      "__001_Database_Install_SQLite_ensure_mymetadata[name]" string => "Database::Install::SQLite";
+      "__001_Database_Install_SQLite_ensure_mymetadata[tags]" slist => { "cfdc" };
+      "__001_Database_Install_SQLite_ensure_mymetadata[version]" string => "1.1";
+
+      # list 'extra_packages' from definition /home/tzz/source/design-center/tools/test/../../sketches/databases/sqlite_install/params/demo.json 1, activation __001_Database_Install_SQLite_ensure
+      "__001_Database_Install_SQLite_ensure_extra_packages" slist => { "cf_null" };
+
+      # array 'mymetadata' from definition sketch metadata, activation __002_Database_Install_SQLite_ensure
+      "__002_Database_Install_SQLite_ensure_mymetadata[authors]" slist => { "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__002_Database_Install_SQLite_ensure_mymetadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__002_Database_Install_SQLite_ensure_mymetadata[license]" string => "MIT";
+      "__002_Database_Install_SQLite_ensure_mymetadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/databases/sqlite_install";
+      "__002_Database_Install_SQLite_ensure_mymetadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json" };
+      "__002_Database_Install_SQLite_ensure_mymetadata[manifest_cf]" slist => { "main.cf" };
+      "__002_Database_Install_SQLite_ensure_mymetadata[manifest_docs]" slist => { "README.md" };
+      "__002_Database_Install_SQLite_ensure_mymetadata[manifest_exe]" slist => { "cf_null" };
+      "__002_Database_Install_SQLite_ensure_mymetadata[manifest_extra]" slist => { "params/demo.json" };
+      "__002_Database_Install_SQLite_ensure_mymetadata[name]" string => "Database::Install::SQLite";
+      "__002_Database_Install_SQLite_ensure_mymetadata[tags]" slist => { "cfdc" };
+      "__002_Database_Install_SQLite_ensure_mymetadata[version]" string => "1.1";
+
+      # list 'extra_packages' from definition /home/tzz/source/design-center/tools/test/../../sketches/databases/sqlite_install/params/demo.json 2, activation __002_Database_Install_SQLite_ensure
+      "__002_Database_Install_SQLite_ensure_extra_packages" slist => { "cf_null" };
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "__001_Database_Install_SQLite_ensure" usebundle => cfdc_db_sqlite:ensure("cf_sketch_testing", "default:cfsketch_run.__001_Database_Install_SQLite_ensure_mymetadata", "", @(cfsketch_run.__001_Database_Install_SQLite_ensure_extra_packages), ""), useresult => "return___001_Database_Install_SQLite_ensure";
+    runenv_cf_sketch_testing_activated::
+      "__002_Database_Install_SQLite_ensure" usebundle => cfdc_db_sqlite:ensure("cf_sketch_testing", "default:cfsketch_run.__002_Database_Install_SQLite_ensure_mymetadata", "1", @(cfsketch_run.__002_Database_Install_SQLite_ensure_extra_packages), ""), useresult => "return___002_Database_Install_SQLite_ensure";
+
+  reports:
+      "activation __001_Database_Install_SQLite_ensure returned installed = $(return___001_Database_Install_SQLite_ensure[installed])";
+      "activation __002_Database_Install_SQLite_ensure returned installed = $(return___002_Database_Install_SQLite_ensure[installed])";
+}
