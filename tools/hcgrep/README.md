@@ -1,7 +1,7 @@
 # hcgrep - shell helper to ease hard classes grepping
 
 ## AUTHOR
-Loic Pefferkorn <loic-cfengine@loicp.eu>
+Loïc Pefferkorn <loic-cfengine@loicp.eu>
 
 ## PLATFORM
 Any OS with bash, awk and grep.
