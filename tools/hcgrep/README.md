@@ -68,6 +68,10 @@ but you will miss the ability to use a specific cf-promises binary.
 
 - Bash  
 
+## LICENSE
+The MIT License (MIT)
+Copyright (c) 2013 Loïc Pefferkorn
+
 ## NOTES
 * Full description: http://www.loicp.eu/blog/cfengine_easy_hard_classes_grepping
 * hcgrep.$(shell) for your favorite shell is welcome :)
