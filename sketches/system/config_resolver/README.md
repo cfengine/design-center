@@ -12,25 +12,25 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### resolver
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] file (default: "/etc/resolv.conf")
+* _string_ *file* (default: `"/etc/resolv.conf"`)
 
-* [list] nameserver (default: none)
+* _list_ *nameserver* (default: none)
 
-* [list] search (default: none)
+* _list_ *search* (default: none)
 
-* [list] domain (default: none)
+* _list_ *domain* (default: none)
 
-* [list] options (default: none)
+* _list_ *options* (default: none)
 
-* [list] sortlist (default: none)
+* _list_ *sortlist* (default: none)
 
-* [list] extra (default: none)
+* _list_ *extra* (default: none)
 
-* [return] resolv_conf (default: none)
+* _return_ *resolv_conf* (default: none)
 
 
 ## SAMPLE USAGE

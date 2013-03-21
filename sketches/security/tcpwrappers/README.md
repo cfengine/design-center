@@ -12,25 +12,25 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### set
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] allow_filename (default: "/etc/hosts.allow")
+* _string_ *allow_filename* (default: `"/etc/hosts.allow"`)
 
-* [string] deny_filename (default: "/etc/hosts.allow")
+* _string_ *deny_filename* (default: `"/etc/hosts.allow"`)
 
-* [array] allow (default: none)
+* _array_ *allow* (default: none)
 
-* [array] deny (default: none)
+* _array_ *deny* (default: none)
 
-* [boolean] empty_first (default: true)
+* _boolean_ *empty_first* (default: `true`)
 
-* [boolean] ensure_absent (default: false)
+* _boolean_ *ensure_absent* (default: `false`)
 
-* [return] allow_filename (default: none)
+* _return_ *allow_filename* (default: none)
 
-* [return] deny_filename (default: none)
+* _return_ *deny_filename* (default: none)
 
 
 ## SAMPLE USAGE

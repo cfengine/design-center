@@ -12,19 +12,19 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### abortclasses_filebased
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] abortclass (default: none)
+* _string_ *abortclass* (default: none)
 
-* [string] trigger_file (default: "/COWBOY")
+* _string_ *trigger_file* (default: `"/COWBOY"`)
 
-* [boolean] alert_only (default: false)
+* _boolean_ *alert_only* (default: `false`)
 
-* [string] trigger_context (default: "any")
+* _string_ *trigger_context* (default: `"any"`)
 
-* [array] timeout (default: {"hours":24,"years":0,"minutes":0,"action":"abortclasses_timeout_action_noop","months":0,"enabled":false,"days":0})
+* _array_ *timeout* (default: `{"hours":24,"years":0,"minutes":0,"action":"abortclasses_timeout_action_noop","months":0,"enabled":false,"days":0}`)
 
 
 ## SAMPLE USAGE

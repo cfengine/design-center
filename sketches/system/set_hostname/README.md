@@ -12,17 +12,17 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### set
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] hostname (default: none)
+* _string_ *hostname* (default: none)
 
-* [string] domainname (default: none)
+* _string_ *domainname* (default: none)
 
-* [return] hostname (default: none)
+* _return_ *hostname* (default: none)
 
-* [return] domainname (default: none)
+* _return_ *domainname* (default: none)
 
 
 ## SAMPLE USAGE

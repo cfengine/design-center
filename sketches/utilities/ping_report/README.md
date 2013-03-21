@@ -12,17 +12,17 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### ping
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [list] hosts (default: none)
+* _list_ *hosts* (default: none)
 
-* [string] count (default: none)
+* _string_ *count* (default: none)
 
-* [return] reached (default: none)
+* _return_ *reached* (default: none)
 
-* [return] not_reached (default: none)
+* _return_ *not_reached* (default: none)
 
 
 ## SAMPLE USAGE

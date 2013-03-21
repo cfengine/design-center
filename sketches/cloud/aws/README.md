@@ -12,69 +12,69 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### EC2
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] mymetadata (default: none)
+* _metadata_ *mymetadata* (default: none)
 
-* [string] count (default: none)
+* _string_ *count* (default: none)
 
-* [string] ami (default: none)
+* _string_ *ami* (default: none)
 
-* [string] region (default: "us-east-1")
+* _string_ *region* (default: `"us-east-1"`)
 
-* [string] type (default: "t1.micro")
+* _string_ *type* (default: `"t1.micro"`)
 
-* [string] class (default: none)
+* _string_ *class* (default: none)
 
-* [boolean] install_cfengine (default: none)
+* _boolean_ *install_cfengine* (default: none)
 
-* [string] hub (default: none)
+* _string_ *hub* (default: none)
 
-* [array] options (default: none)
+* _array_ *options* (default: none)
 
-* [return] instance_count (default: none)
+* _return_ *instance_count* (default: none)
 
-* [return] instances (default: none)
+* _return_ *instances* (default: none)
 
 ### S3_clear
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] mymetadata (default: none)
+* _metadata_ *mymetadata* (default: none)
 
-* [string] s3_clear_bucket (default: none)
+* _string_ *s3_clear_bucket* (default: none)
 
-* [array] options (default: none)
+* _array_ *options* (default: none)
 
 ### S3_sync
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] mymetadata (default: none)
+* _metadata_ *mymetadata* (default: none)
 
-* [string] directory (default: none)
+* _string_ *directory* (default: none)
 
-* [string] s3_bucket (default: none)
+* _string_ *s3_bucket* (default: none)
 
-* [array] options (default: none)
+* _array_ *options* (default: none)
 
 ### SDB_clear
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] mymetadata (default: none)
+* _metadata_ *mymetadata* (default: none)
 
-* [string] sdb_clear_bucket (default: none)
+* _string_ *sdb_clear_bucket* (default: none)
 
-* [array] options (default: none)
+* _array_ *options* (default: none)
 
 ### SDB_sync
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] mymetadata (default: none)
+* _metadata_ *mymetadata* (default: none)
 
-* [string] directory (default: none)
+* _string_ *directory* (default: none)
 
-* [string] sdb_bucket (default: none)
+* _string_ *sdb_bucket* (default: none)
 
-* [array] options (default: none)
+* _array_ *options* (default: none)
 
 
 ## SAMPLE USAGE

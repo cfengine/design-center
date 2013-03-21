@@ -12,34 +12,34 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### ensure
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] file (default: "/etc/apt/sources.list")
+* _string_ *file* (default: `"/etc/apt/sources.list"`)
 
-* [string] url (default: none)
+* _string_ *url* (default: none)
 
-* [string] distribution (default: none)
+* _string_ *distribution* (default: none)
 
-* [list] components (default: none)
+* _list_ *components* (default: none)
 
-* [list] types (default: none)
+* _list_ *types* (default: none)
 
-* [string] options (default: "")
+* _string_ *options* (default: `""`)
 
-* [return] file (default: none)
+* _return_ *file* (default: none)
 
 ### wipe
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [boolean] wipe (default: none)
+* _boolean_ *wipe* (default: none)
 
-* [string] file (default: none)
+* _string_ *file* (default: none)
 
-* [return] file (default: none)
+* _return_ *file* (default: none)
 
 
 ## SAMPLE USAGE

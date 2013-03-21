@@ -12,42 +12,42 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### d
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] cron_path (default: "/etc/cron.d")
+* _string_ *cron_path* (default: `"/etc/cron.d"`)
 
-* [string] file_task (default: none)
+* _string_ *file_task* (default: none)
 
-* [string] runas (default: {"function":"getenv","args":["LOGNAME","128"]})
+* _string_ *runas* (default: `{"function":"getenv","args":["LOGNAME","128"]}`)
 
-* [string] when (default: none)
+* _string_ *when* (default: none)
 
-* [list] commands (default: none)
+* _list_ *commands* (default: none)
 
-* [return] tab (default: none)
+* _return_ *tab* (default: none)
 
-* [return] path (default: none)
+* _return_ *path* (default: none)
 
 ### tab
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] cron_path (default: "/usr/bin/crontab")
+* _string_ *cron_path* (default: `"/usr/bin/crontab"`)
 
-* [string] line_task (default: none)
+* _string_ *line_task* (default: none)
 
-* [string] runas (default: {"function":"getenv","args":["LOGNAME","128"]})
+* _string_ *runas* (default: `{"function":"getenv","args":["LOGNAME","128"]}`)
 
-* [string] when (default: none)
+* _string_ *when* (default: none)
 
-* [list] commands (default: none)
+* _list_ *commands* (default: none)
 
-* [return] tab (default: none)
+* _return_ *tab* (default: none)
 
-* [return] path (default: none)
+* _return_ *path* (default: none)
 
 
 ## SAMPLE USAGE

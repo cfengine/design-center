@@ -12,21 +12,21 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### entry
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] mymetadata (default: none)
+* _metadata_ *mymetadata* (default: none)
 
-* [string] prefix (default: "__PREFIX__")
+* _string_ *prefix* (default: `"__PREFIX__"`)
 
-* [boolean] myboolean (default: "1")
+* _boolean_ *myboolean* (default: `"1"`)
 
-* [string] mytype (default: "fallback")
+* _string_ *mytype* (default: `"fallback"`)
 
-* [string] myip (default: none)
+* _string_ *myip* (default: none)
 
-* [list] mylist (default: none)
+* _list_ *mylist* (default: none)
 
-* [array] myarray (default: none)
+* _array_ *myarray* (default: none)
 
 
 ## SAMPLE USAGE

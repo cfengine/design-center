@@ -12,56 +12,56 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### ensure
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] file (default: "/etc/yum.conf")
+* _string_ *file* (default: `"/etc/yum.conf"`)
 
-* [string] section (default: none)
+* _string_ *section* (default: none)
 
-* [array] config (default: none)
+* _array_ *config* (default: none)
 
-* [return] file (default: none)
+* _return_ *file* (default: none)
 
-* [return] section (default: none)
+* _return_ *section* (default: none)
 
 ### ensure_template
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] file (default: none)
+* _string_ *file* (default: none)
 
-* [string] section (default: none)
+* _string_ *section* (default: none)
 
-* [array] template_config (default: none)
+* _array_ *template_config* (default: none)
 
-* [return] file (default: none)
+* _return_ *file* (default: none)
 
-* [return] section (default: none)
+* _return_ *section* (default: none)
 
 ### remove_file
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] remove_file (default: none)
+* _string_ *remove_file* (default: none)
 
-* [return] file (default: none)
+* _return_ *file* (default: none)
 
 ### remove_section
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] file (default: "/etc/yum.conf")
+* _string_ *file* (default: `"/etc/yum.conf"`)
 
-* [string] remove_section (default: none)
+* _string_ *remove_section* (default: none)
 
-* [return] section (default: none)
+* _return_ *section* (default: none)
 
-* [return] file (default: none)
+* _return_ *file* (default: none)
 
 
 ## SAMPLE USAGE

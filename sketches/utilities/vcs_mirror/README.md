@@ -12,21 +12,21 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### mirror
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] vcs (default: none)
+* _string_ *vcs* (default: none)
 
-* [string] path (default: none)
+* _string_ *path* (default: none)
 
-* [string] origin (default: none)
+* _string_ *origin* (default: none)
 
-* [string] branch (default: none)
+* _string_ *branch* (default: none)
 
-* [array] options (default: none)
+* _array_ *options* (default: none)
 
-* [return] deploy_path (default: none)
+* _return_ *deploy_path* (default: none)
 
 
 ## SAMPLE USAGE

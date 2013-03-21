@@ -12,21 +12,21 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### set
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] sysctl_file (default: "/etc/sysctl.conf")
+* _string_ *sysctl_file* (default: `"/etc/sysctl.conf"`)
 
-* [boolean] empty_first (default: none)
+* _boolean_ *empty_first* (default: none)
 
-* [array] ensured_kv (default: none)
+* _array_ *ensured_kv* (default: none)
 
-* [array] removed_kv (default: none)
+* _array_ *removed_kv* (default: none)
 
-* [list] removed_vars (default: none)
+* _list_ *removed_vars* (default: none)
 
-* [return] sysctl_file (default: none)
+* _return_ *sysctl_file* (default: none)
 
 
 ## SAMPLE USAGE

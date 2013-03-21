@@ -12,21 +12,21 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### ensure
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] mymetadata (default: none)
+* _metadata_ *mymetadata* (default: none)
 
-* [boolean] server (default: none)
+* _boolean_ *server* (default: none)
 
-* [boolean] purge (default: false)
+* _boolean_ *purge* (default: `false`)
 
-* [list] extra_packages (default: [])
+* _list_ *extra_packages* (default: `[]`)
 
-* [boolean] use_only_extra_packages (default: false)
+* _boolean_ *use_only_extra_packages* (default: `false`)
 
-* [return] installed (default: none)
+* _return_ *installed* (default: none)
 
-* [return] running (default: none)
+* _return_ *running* (default: none)
 
 
 ## SAMPLE USAGE

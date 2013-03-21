@@ -12,17 +12,17 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### configure
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] hostfile (default: "/etc/hosts")
+* _string_ *hostfile* (default: `"/etc/hosts"`)
 
-* [boolean] defined_only (default: none)
+* _boolean_ *defined_only* (default: none)
 
-* [array] hosts (default: none)
+* _array_ *hosts* (default: none)
 
-* [return] file (default: none)
+* _return_ *file* (default: none)
 
 
 ## SAMPLE USAGE

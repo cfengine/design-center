@@ -12,19 +12,19 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### walk
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] mymetadata (default: none)
+* _metadata_ *mymetadata* (default: none)
 
-* [string] snmpwalk (default: "/usr/bin/snmpwalk -Oaqt -m ALL -v 2c -c public")
+* _string_ *snmpwalk* (default: `"/usr/bin/snmpwalk -Oaqt -m ALL -v 2c -c public"`)
 
-* [string] agent (default: "localhost")
+* _string_ *agent* (default: `"localhost"`)
 
-* [string] oid (default: "")
+* _string_ *oid* (default: `""`)
 
-* [return] walked (default: none)
+* _return_ *walked* (default: none)
 
-* [return] module_array (default: none)
+* _return_ *module_array* (default: none)
 
 
 ## SAMPLE USAGE

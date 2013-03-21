@@ -12,19 +12,19 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### limits
-* [environment] runenv (default: none)
+* _environment_ *runenv* (default: none)
 
-* [metadata] metadata (default: none)
+* _metadata_ *metadata* (default: none)
 
-* [string] filename (default: "/etc/security/limits.conf")
+* _string_ *filename* (default: `"/etc/security/limits.conf"`)
 
-* [array] domains (default: none)
+* _array_ *domains* (default: none)
 
-* [boolean] empty_first (default: true)
+* _boolean_ *empty_first* (default: `true`)
 
-* [boolean] ensure_absent (default: false)
+* _boolean_ *ensure_absent* (default: `false`)
 
-* [return] filename (default: none)
+* _return_ *filename* (default: none)
 
 
 ## SAMPLE USAGE
