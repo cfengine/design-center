@@ -12,17 +12,17 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### watch
-* _environment_ *runenv* (default: none)
+* _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none)
+* _metadata_ *metadata* (default: none, description: none)
 
-* _list_ *watch* (default: none)
+* _list_ *watch* (default: none, description: none)
 
-* _string_ *hash_algorithm* (default: `"sha256"`)
+* _string_ *hash_algorithm* (default: `"sha256"`, description: none)
 
-* _string_ *ifelapsed* (default: `"1440"`)
+* _string_ *ifelapsed* (default: `"1440"`, description: none)
 
-* _return_ *paths* (default: none)
+* _return_ *paths* (default: none, description: none)
 
 
 ## SAMPLE USAGE

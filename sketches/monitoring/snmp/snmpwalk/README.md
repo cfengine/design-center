@@ -12,19 +12,19 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### walk
-* _environment_ *runenv* (default: none)
+* _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *mymetadata* (default: none)
+* _metadata_ *mymetadata* (default: none, description: none)
 
-* _string_ *snmpwalk* (default: `"/usr/bin/snmpwalk -Oaqt -m ALL -v 2c -c public"`)
+* _string_ *snmpwalk* (default: `"/usr/bin/snmpwalk -Oaqt -m ALL -v 2c -c public"`, description: Command line to execute 'snmpwalk' (with options).  Note that '-Oaqt' is required and '-m ALL' is highly recommended.)
 
-* _string_ *agent* (default: `"localhost"`)
+* _string_ *agent* (default: `"localhost"`, description: Agent to target, e.g. a host name or IP address)
 
-* _string_ *oid* (default: `""`)
+* _string_ *oid* (default: `""`, description: OID to walk)
 
-* _return_ *walked* (default: none)
+* _return_ *walked* (default: none, description: Was the tree walked?  Boolean.)
 
-* _return_ *module_array* (default: none)
+* _return_ *module_array* (default: none, description: Name of array defined by the 'walk' bundle)
 
 
 ## SAMPLE USAGE

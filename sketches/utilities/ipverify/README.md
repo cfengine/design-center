@@ -12,19 +12,19 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### maybe_usebundle
-* _environment_ *runenv* (default: none)
+* _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none)
+* _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *ip* (default: none)
+* _string_ *ip* (default: none, description: none)
 
-* _list_ *maclist* (default: none)
+* _list_ *maclist* (default: none, description: none)
 
-* _string_ *usebundle* (default: none)
+* _string_ *usebundle* (default: none, description: none)
 
-* _string_ *arp_command* (default: `"/usr/sbin/arp"`)
+* _string_ *arp_command* (default: `"/usr/sbin/arp"`, description: none)
 
-* _return_ *match* (default: none)
+* _return_ *match* (default: none, description: none)
 
 
 ## SAMPLE USAGE

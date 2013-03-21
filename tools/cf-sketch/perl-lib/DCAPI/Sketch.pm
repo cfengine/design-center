@@ -200,10 +200,11 @@ EOHIPPUS
         push @p, "### $bundle";
         foreach my $param (@$spec)
         {
-            push @p, sprintf("* _%s_ *%s* (default: %s)\n",
+            push @p, sprintf("* _%s_ *%s* (default: %s, description: %s)\n",
                              $param->{type},
                              $param->{name},
-                             (exists $param->{default} ? '`'.(defined $param->{default} ? $self->dcapi()->encode($param->{default}):'null').'`' : 'none'));
+                             (exists $param->{default} ? '`'.(defined $param->{default} ? $self->dcapi()->encode($param->{default}):'null').'`' : 'none'),
+                             (defined $param->{description} ? $param->{description} : 'none'));
         }
     }
 

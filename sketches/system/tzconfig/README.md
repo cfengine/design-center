@@ -12,15 +12,15 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### set
-* _environment_ *runenv* (default: none)
+* _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none)
+* _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *timezone* (default: none)
+* _string_ *timezone* (default: none, description: none)
 
-* _string_ *zoneinfo* (default: none)
+* _string_ *zoneinfo* (default: none, description: none)
 
-* _return_ *timezone* (default: none)
+* _return_ *timezone* (default: none, description: none)
 
 
 ## SAMPLE USAGE

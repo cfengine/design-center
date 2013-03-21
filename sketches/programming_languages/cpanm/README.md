@@ -12,17 +12,17 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### install
-* _environment_ *runenv* (default: none)
+* _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none)
+* _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *cpanm_program* (default: `"/usr/local/bin/cpanm"`)
+* _string_ *cpanm_program* (default: `"/usr/local/bin/cpanm"`, description: none)
 
-* _string_ *extra_params* (default: `""`)
+* _string_ *extra_params* (default: `""`, description: none)
 
-* _list_ *packages* (default: none)
+* _list_ *packages* (default: none, description: none)
 
-* _return_ *installed* (default: none)
+* _return_ *installed* (default: none, description: none)
 
 
 ## SAMPLE USAGE

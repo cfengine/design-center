@@ -12,11 +12,11 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### sshd
-* _environment_ *runenv* (default: none)
+* _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none)
+* _metadata_ *metadata* (default: none, description: none)
 
-* _array_ *params* (default: none)
+* _array_ *params* (default: none, description: none)
 
 
 ## SAMPLE USAGE

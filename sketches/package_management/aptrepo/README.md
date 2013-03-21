@@ -12,34 +12,34 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## Parameters
 ### ensure
-* _environment_ *runenv* (default: none)
+* _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none)
+* _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *file* (default: `"/etc/apt/sources.list"`)
+* _string_ *file* (default: `"/etc/apt/sources.list"`, description: none)
 
-* _string_ *url* (default: none)
+* _string_ *url* (default: none, description: none)
 
-* _string_ *distribution* (default: none)
+* _string_ *distribution* (default: none, description: none)
 
-* _list_ *components* (default: none)
+* _list_ *components* (default: none, description: none)
 
-* _list_ *types* (default: none)
+* _list_ *types* (default: none, description: none)
 
-* _string_ *options* (default: `""`)
+* _string_ *options* (default: `""`, description: none)
 
-* _return_ *file* (default: none)
+* _return_ *file* (default: none, description: none)
 
 ### wipe
-* _environment_ *runenv* (default: none)
+* _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none)
+* _metadata_ *metadata* (default: none, description: none)
 
-* _boolean_ *wipe* (default: none)
+* _boolean_ *wipe* (default: none, description: none)
 
-* _string_ *file* (default: none)
+* _string_ *file* (default: none, description: none)
 
-* _return_ *file* (default: none)
+* _return_ *file* (default: none, description: none)
 
 
 ## SAMPLE USAGE
