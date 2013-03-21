@@ -38,7 +38,7 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", force: true, target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" }, { sketch: "VCS::vcs_mirror", force: true, target: "/home/tzz/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/sketches" } ] } }' | $(CFAPI)
 
 	@echo ...define CFEngine::sketch_template incomplete_sketch parameters
-	echo '{ dc_api_version: "0.0.1", request: {define: { "incomplete_sketch": { "CFEngine::sketch_template": { myboolean: true, myip: "10.0.1.0", myarray: { a: 1, b: 3, c: 3 } } } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "incomplete_sketch": { "CFEngine::sketch_template": { myboolean: true, myarray: { a: 1, b: 3, c: 3 } } } } } }' | $(CFAPI)
 	@echo define VCS::vcs_mirror parameters
 	echo '{ dc_api_version: "0.0.1", request: {define: { "vcs_base": { "VCS::vcs_mirror": { options: { parent_dir: { owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: "755", ensure: true }, nowipe: true, vcs: { runas: { "function": "getenv", "args": ["LOGNAME", "128"] }, umask: "000" } } } } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define: { "git_mirror_core": { "VCS::vcs_mirror": { vcs: "/usr/bin/git", path: "/tmp/q/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git" } } } } }' | $(CFAPI)
@@ -49,7 +49,7 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "vcs_base", "svn_mirror_thrift" ] } } } }' | $(CFAPI)
 
 	@echo ...use some sketch values in other sketches: sketch composition
-	echo '{ dc_api_version: "0.0.1", request: {use: [ { destination_sketch: "CFEngine::sketch_template", destination_list: "mylist", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {use: [ { destination_sketch: "CFEngine::sketch_template", destination_list: "mylist", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" }, { destination_sketch: "CFEngine::sketch_template", destination_scalar: "myip", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" } ] } }' | $(CFAPI)
 
 	@echo ...activate CFEngine::sketch_template with testing run environment and incomplete_sketch parameters, with the previous use call providing the glue
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "/home/tzz/.cfagent/inputs/sketches", environment: "testing", params: [ "incomplete_sketch" ] } } } }' | $(CFAPI)

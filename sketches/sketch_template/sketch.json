@@ -31,7 +31,7 @@
 
             { type: "boolean", name: "myboolean", default: "1" }, //  true is OK too
             { type: "string", name: "mytype", default: "fallback" },
-            { type: "string", name: "myip", },
+            { type: "string", name: "myip", description: "This is my IP address or whatever" },
             { type: "list", name: "mylist", },
             { type: "array", name: "myarray", },
         ],

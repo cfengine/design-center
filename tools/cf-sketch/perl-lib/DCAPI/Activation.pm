@@ -238,29 +238,43 @@ sub fill_param
     {
         foreach my $use (@uses)
         {
+            next if $ret;
+
             # { destination_sketch: "CFEngine::sketch_template",
             # destination_list: "mylist", source_sketch: "VCS::vcs_mirror",
             # source_scalar: "deploy_path" }
 
-            # TODO maybe: add destination_scalar key
             my $d = Util::hashref_search($use, 'destination_sketch') || 'destination_sketch not given';
             my $dlist = Util::hashref_search($use, 'destination_list') || 'destination_list not given';
+            my $dscalar = Util::hashref_search($use, 'destination_scalar') || 'destination_scalar not given';
             my $dbundle = Util::hashref_search($use, 'destination_bundle');
 
-            $api->log5("Looking for a 'use' match for %s parameter %s in sketch %s, bundle %s",
-                       $type, $name, $extra->{sketch_name}, $extra->{bundle});
+            $api->log3("Looking for a 'use' match for %s parameter %s in sketch %s, bundle %s: %s",
+                       $type, $name, $extra->{sketch_name}, $extra->{bundle}, $use);
 
             # check the optional destination_bundle specifier
             next if (defined $dbundle && $dbundle ne $extra->{bundle});
             # check the mandatory destination_sketch
             next if $d ne $extra->{sketch_name};
             # check the mandatory destination_list
-            next if ($dlist ne $name || $type ne 'list');
-
-            $api->log4("Found a 'use' match for list parameter %s in sketch %s, bundle %s: %s",
-                       $name, $d, $extra->{bundle}, $use);
-
-            $ret = {set=>'use', type => $type, name => $name, deferred_value => $use};
+            if ($dlist eq $name && $type eq 'list')
+            {
+                $api->log4("Found a 'use' match for list parameter %s in sketch %s, bundle %s: %s",
+                           $name, $d, $extra->{bundle}, $use);
+                $ret = {set=>'use', type => $type, name => $name, deferred_value => $use, deferred_list => 0};
+            }
+            # TODO: maybe support other types
+            elsif ($dscalar eq $name && $type eq 'string')
+            {
+                $api->log4("Found a 'use' match for scalar parameter %s in sketch %s, bundle %s: %s",
+                           $name, $d, $extra->{bundle}, $use);
+                $ret = {set=>'use', type => $type, name => $name, deferred_value => $use, deferred_list => 0};
+            }
+            else
+            {
+                $api->log4("There was no 'use' match for parameter %s in sketch %s, bundle %s",
+                           $name, $d, $extra->{bundle});
+            }
         }
     }
 
@@ -353,12 +367,16 @@ sub resolve_now
         USE:
             foreach my $use (@{$self->api()->uses()})
             {
+                my $activation_regex = Util::hashref_search($use, 'activation');
+                # check the optional activation regex... TODO: maybe make this more involved
+                next USE if (defined $activation_regex && $a->id() !~ m/$activation_regex/);
+
             APARAM:
                 foreach my $aparam (@{$a->params()})
                 {
                     my $s = Util::hashref_search($use, 'source_sketch') || 'source_sketch not given';
-                    my $scalar = Util::hashref_search($use, 'source_scalar') || 'source_scalar not given';
                     my $sbundle = Util::hashref_search($use, 'source_bundle');
+                    my $scalar = Util::hashref_search($use, 'source_scalar') || 'source_scalar not given';
 
                     next APARAM if exists $aparam->{deferred_value};
 
@@ -376,8 +394,16 @@ sub resolve_now
 
                     # NOTE: this is directly linked to the name of the return
                     # array in DCAPI.pm!!!
-                    push @{$param->{value}}, sprintf('$(cfsketch_run.return_%s[%s])',
-                                                     $a->id(), $scalar);
+                    if ($param->{deferred_list})
+                    {
+                        push @{$param->{value}}, sprintf('$(cfsketch_run.return_%s[%s])',
+                                                         $a->id(), $scalar);
+                    }
+                    else # deferred scalar for scalar to scalar mapping
+                    {
+                        $param->{value} = sprintf('$(cfsketch_run.return_%s[%s])',
+                                                  $a->id(), $scalar);
+                    }
                 }
             }
         }
