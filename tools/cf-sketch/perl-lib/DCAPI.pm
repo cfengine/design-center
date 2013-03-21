@@ -146,10 +146,10 @@ sub set_config
         if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file))
         {
             $self->log("Creating missing vardata file $vardata_file");
-            my @save_warnings = $self->save_vardata();
+            my ($ok, @save_warnings) = $self->save_vardata();
 
             $result->add_error('vardata', @save_warnings)
-             if scalar @save_warnings;
+             unless $ok;
         }
 
         my ($v_data, @v_warnings) = $self->load($vardata_file);
@@ -206,8 +206,9 @@ sub save_vardata
     my $vardata_file = $self->vardata();
 
     $self->log("Saving vardata file $vardata_file");
+
     open my $fh, '>', $vardata_file
-    or return "Vardata file $vardata_file could not be created: $!";
+     or return (0, "Vardata file $vardata_file could not be created: $!");
 
     print $fh $self->cencode($data);
     close $fh;

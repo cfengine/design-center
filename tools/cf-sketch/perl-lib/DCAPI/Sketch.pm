@@ -346,21 +346,31 @@ sub resolve_dependencies
                     # try to install the dependency
                     my $search = $self->dcapi()->search(\@criteria);
                     my $installed = 0;
-                    foreach my $srepo (sort keys %$search)
+                    if ($search->success())
                     {
-                        $install_request{source} = $srepo;
-                        $self->dcapi()->log("Trying to install dependency $dep for $name: %s",
-                                            \%install_request);
-                        my $install_result = $self->dcapi()->install([\%install_request]);
-                        if ($install_result->success())
+                        my $sdata = Util::hashref_search($search->data(), 'search') || {};
+
+                        foreach my $srepo (sort keys %$sdata)
                         {
-                            $installed = $install_result;
+                            $install_request{source} = $srepo;
+                            $self->dcapi()->log("Trying to install dependency $dep for $name: %s",
+                                                \%install_request);
+                            my $install_result = $self->dcapi()->install([\%install_request]);
+                            if ($install_result->success())
+                            {
+                                $installed = $install_result;
+                            }
+                            else
+                            {
+                                return $install_result->add_error('dependency install',
+                                                                  "Could not install dependency $dep for $name");
+                            }
                         }
-                        else
-                        {
-                            return $install_result->add_error('dependency install',
-                                                              "Could not install dependency $dep");
-                        }
+                    }
+                    else
+                    {
+                        return $$search->add_error('dependency install',
+                                                   "Could not install dependency $dep for $name");
                     }
                 }
                 else
