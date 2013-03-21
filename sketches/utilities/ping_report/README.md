@@ -1,13 +1,30 @@
-# Utilities::ping_report - Report on pingability of hosts
-## AUTHOR
-Nick Anderson <nick@cmdln.org>
-Ted Zlatanov <tzz@lifelogs.com>
+# Utilities::ping_report version 1.2
 
-## PLATFORM
-linux
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
-You can use this bundle to report ping connectivity of other hosts.
+## Description
+Report on pingability of hosts
+
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
+
+## Parameters
+### ping
+* [environment] runenv (default: none)
+
+* [metadata] metadata (default: none)
+
+* [list] hosts (default: none)
+
+* [string] count (default: none)
+
+* [return] reached (default: none)
+
+* [return] not_reached (default: none)
+
 
 ## SAMPLE USAGE
-See `test.cf` or `params/example.json`
+See `test.cf` or the example parameters provided
+

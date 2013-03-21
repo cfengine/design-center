@@ -1,34 +1,30 @@
-# cpanm - Install CPAN packages through App::cpanminus
+# Packages::CPAN::cpanm version 1.1
 
-## AUTHORS
-Ted Zlatanov <tzz@lifelogs.com>
+License: MIT
+Tags: cfdc
+Authors: Ted Zlatanov <tzz@lifelogs.com>
 
-## PLATFORM
+## Description
+Install CPAN packages through App::cpanminus
 
-Most Debian and RedHat Linux derivatives should work.
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-## DESCRIPTION
+## Parameters
+### install
+* [environment] runenv (default: none)
 
-Just provide a list of CPAN modules as shown in `test.cf` or `params/demo.json`
+* [metadata] metadata (default: none)
 
-## ## Classes
+* [string] cpanm_program (default: "/usr/local/bin/cpanm")
 
-When the `test` class is defined, the `cpanm_program` is overridden to `echo
-cpanm` so you're not actually installing packages.
+* [string] extra_params (default: "")
 
-## ## Variables
+* [list] packages (default: none)
 
-* `packages`: a list of packages to be installed
-  
-* `cpanm_program`: the location of the `cpanm` executable, provided by the CPAN module `App::cpanminus`
+* [return] installed (default: none)
 
-* `extra_params`: the extra parameters to pass to `cpanm`
-  
-## REQUIREMENTS
-
-CFEngine::stdlib (the COPBL)
-CFEngine::dclib (the DC standard library)
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf` and `params/demo.json`

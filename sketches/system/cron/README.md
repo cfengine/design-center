@@ -1,28 +1,55 @@
-# cron - Manage crontab and /etc/cron.d contents
-## AUTHOR
-Neil H Watson <neil@watson-wilson.ca>
-Ted Zlatanov <tzz@lifelogs.com>
+# System::cron version 2
 
-## PLATFORM
-linux, darwin, solaris, etc. with crontab/cron.d support
+License: MIT
+Tags: cfdc
+Authors: Neil H Watson <neil@watson-wilson.ca>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
+## Description
+Manage crontab and /etc/cron.d contents
 
-This `cron` sketch takes the original `cron` sketch written by Neil
-Watson and extends it to support `/etc/cron.d` as well.  The latter is
-much more pleasant to use than plain crontabs, in our experience.
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-Furthermore, it moves the configuration of the sketch out of the
-CFEngine policy and into the JSON parameters (examples are supplied).
+## Parameters
+### d
+* [environment] runenv (default: none)
 
-To configure `cron`, use the standard `cf-sketch` tool and the
-supplied parameters as a template.
+* [metadata] metadata (default: none)
 
-## REQUIREMENTS
+* [string] cron_path (default: "/etc/cron.d")
 
-CFEngine::stdlib (the COPBL)
-CFEngine::dclib (the Design Center stdlib)
+* [string] file_task (default: none)
+
+* [string] runas (default: {"function":"getenv","args":["LOGNAME","128"]})
+
+* [string] when (default: none)
+
+* [list] commands (default: none)
+
+* [return] tab (default: none)
+
+* [return] path (default: none)
+
+### tab
+* [environment] runenv (default: none)
+
+* [metadata] metadata (default: none)
+
+* [string] cron_path (default: "/usr/bin/crontab")
+
+* [string] line_task (default: none)
+
+* [string] runas (default: {"function":"getenv","args":["LOGNAME","128"]})
+
+* [string] when (default: none)
+
+* [list] commands (default: none)
+
+* [return] tab (default: none)
+
+* [return] path (default: none)
+
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf` or `params/example.json`.

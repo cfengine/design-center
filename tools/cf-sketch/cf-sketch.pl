@@ -68,6 +68,7 @@ GetOptions(\%options,
            "cfpath=s",
            "list:s",
            "search:s",
+           "make_readme:s",
            "install|i=s@",
            "uninstall=s@",
            "deactivate-all|da",
@@ -95,6 +96,15 @@ api_interaction({
                                         }
                                        }
                 });
+
+if (exists $options{'make_readme'})
+{
+    api_interaction({
+                     describe => 'README',
+                     search => $options{search} eq '' ? 1 : $options{search}
+                    },
+                    make_list_printer('search', 'README.md'));
+}
 
 if (exists $options{'search'})
 {
@@ -278,6 +288,7 @@ sub api_interaction
 sub make_list_printer
 {
     my $type = shift @_;
+    my $target_file = shift @_;
 
     return sub
     {
@@ -288,11 +299,24 @@ sub make_list_printer
         {
             foreach my $repo (sort keys %$list)
             {
-                foreach my $sketch (@{$list->{$repo}})
+                foreach my $sketch (values %{$list->{$repo}})
                 {
-                    my $name = Util::hashref_search($sketch, qw/metadata name/);
-                    my $desc = Util::hashref_search($sketch, qw/metadata description/);
-                    print "$name $desc\n";
+                    if ($target_file && ref $sketch eq 'ARRAY')
+                    {
+                        my ($dir, $content) = @$sketch;
+                        my $file = "$dir/$target_file";
+                        open my $f, '>', $file
+                         or die "Could not write $file: $!";
+                        print $f $content;
+                        close $f;
+                        print "wrote $file...\n";
+                    }
+                    else
+                    {
+                        my $name = Util::hashref_search($sketch, qw/metadata name/);
+                        my $desc = Util::hashref_search($sketch, qw/metadata description/);
+                        print "$name $desc\n";
+                    }
                 }
             }
         }

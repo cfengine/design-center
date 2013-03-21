@@ -1,33 +1,34 @@
-## AUTHOR
-Nick Anderson <nick@cmdln.org>
-Ted Zlatanov <tzz@lifelogs.com>
+# VCS::vcs_mirror version 1.12
 
-## PLATFORM
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
-Have you ever wanted to keep a git clone up to date and clean? Well, I
-did and thats what this sketch will help you with. You specify the path
-that you want the clone to be, the origin, and the branch to keep the
-working tree checked out on.
+## Description
+Check out and update a VCS repository.
 
-Only Git and Subversion are supported.
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-Git: every time it's executed it will clean the working tree of any
-untracked files, reset any modified files in the index or the working
-tree then pull updates from its origin and make sure its checked out
-on the proper branch.  It also overwrites the `.git/config` file.
+## Parameters
+### mirror
+* [environment] runenv (default: none)
 
-Subversion: just does a `svn cleanup`, `svn up` and `svn revert` every
-time after the initial checkout.
+* [metadata] metadata (default: none)
 
-## REQUIREMENTS
+* [string] vcs (default: none)
 
-CFEngine::stdlib
-CFEngine::dclib (the DC standard library)
+* [string] path (default: none)
+
+* [string] origin (default: none)
+
+* [string] branch (default: none)
+
+* [array] options (default: none)
+
+* [return] deploy_path (default: none)
+
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf`.  Note you can automate the usage with `cf-sketch` and the
-configuration template in `params/*.json`
-
-## TODO

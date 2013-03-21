@@ -1,15 +1,28 @@
-# tzconfig - Set the system timezone
-## AUTHOR
-Nick Anderson <nick@cmdln.org>
+# System::tzconfig version 1.2
 
-## PLATFORM
-linux
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
-* tzconfig - set the timezone on a system
+## Description
+Manage system timezone configuration
 
-## REQUIREMENTS
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
+
+## Parameters
+### set
+* [environment] runenv (default: none)
+
+* [metadata] metadata (default: none)
+
+* [string] timezone (default: none)
+
+* [string] zoneinfo (default: none)
+
+* [return] timezone (default: none)
 
 
 ## SAMPLE USAGE
-See `test.cf` and `params/US_Central.json` for standalone and JSON-driven usage, respectively.
+See `test.cf` or the example parameters provided
+

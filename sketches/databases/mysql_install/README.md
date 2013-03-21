@@ -1,14 +1,34 @@
-# mysql_install - Install MySQL
+# Database::Install::MySQL version 1
 
-## AUTHORS
-Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>
-Ted Zlatanov <tzz@lifelogs.com>
+License: MIT
+Tags: cfdc
+Authors: Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>, Ted Zlatanov <tzz@lifelogs.com>
 
-## REQUIREMENTS
+## Description
+Install and enable the MySQL database engine
 
-CFEngine::stdlib (the COPBL)
-CFEngine::dclib
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
+
+## Parameters
+### ensure
+* [environment] runenv (default: none)
+
+* [metadata] mymetadata (default: none)
+
+* [boolean] server (default: none)
+
+* [boolean] purge (default: false)
+
+* [list] extra_packages (default: [])
+
+* [boolean] use_only_extra_packages (default: false)
+
+* [return] installed (default: none)
+
+* [return] running (default: none)
+
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See test.cf.

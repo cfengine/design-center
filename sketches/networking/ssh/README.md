@@ -1,10 +1,24 @@
-# ssh configuration
+# Security::SSH version 1.1
 
-Author: Diego Zamboni <diego.zamboni@cfengine.com>
+License: MIT
+Tags: cfdc
+Authors: Diego Zamboni <diego.zamboni@cfengine.com>, Ted Zlatanov <tzz@lifelogs.com>
 
-## Configure sshd
+## Description
+Configure and enable sshd
 
-1. Set configuration parameters
-2. Ensure daemon is running
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-Sample usage: see `test.cf`
+## Parameters
+### sshd
+* [environment] runenv (default: none)
+
+* [metadata] metadata (default: none)
+
+* [array] params (default: none)
+
+
+## SAMPLE USAGE
+See `test.cf` or the example parameters provided
+

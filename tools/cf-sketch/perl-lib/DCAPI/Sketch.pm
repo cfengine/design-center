@@ -158,6 +158,7 @@ sub make_readme
 
 License: {{license}}
 Tags: {{tags}}
+Authors: {{authors}}
 
 ## Description
 {{description}}
@@ -175,6 +176,7 @@ EOHIPPUS
 
     my %data = %{$self->data_dump(1)};
 
+    $data{authors} = join ", ", @{$data{authors}};
     $data{tags} = join ", ", @{$data{tags}};
     $data{depends} = (join ", ", sort(grep(/::/, keys %{$data{depends}})))||'none';
 
@@ -201,7 +203,7 @@ EOHIPPUS
             push @p, sprintf("* [%s] %s (default: %s)\n",
                              $param->{type},
                              $param->{name},
-                             (exists $param->{default} ? (defined $param->{default} ? $param->{default}:'null') : 'none'));
+                             (exists $param->{default} ? (defined $param->{default} ? $self->dcapi()->encode($param->{default}):'null') : 'none'));
         }
     }
 

@@ -1,1 +1,18 @@
-This is the CFEngine Design Center standard library, see `library.cf` for details.
+# CFEngine::dclib version 1.0.0
+
+License: MIT
+Tags: cfdc, stdlib
+Authors: CFEngine AS
+
+## Description
+Design Center standard library
+
+## Dependencies
+none
+
+## Parameters
+none
+
+## SAMPLE USAGE
+See `test.cf` or the example parameters provided
+

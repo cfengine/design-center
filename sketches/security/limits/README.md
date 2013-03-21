@@ -1,17 +1,32 @@
-# security_limits - Manage /etc/security/limits.conf
-## AUTHOR
-Nick Anderson <nick@cmdln.org>
-Ted Zlatanov <tzz@lifelogs.com>
+# Security::security_limits version 1.2
 
-## PLATFORM
-linux
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
-Supports selective entry management (addition/removal), or complete file
-contents based on the `mgmt_policy` parameter.
+## Description
+Configure /etc/security/limits.conf
 
-Note: the removal of defined limits ignores the limit value. It only looks for
-`domain\s+type\s+item`.
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
+
+## Parameters
+### limits
+* [environment] runenv (default: none)
+
+* [metadata] metadata (default: none)
+
+* [string] filename (default: "/etc/security/limits.conf")
+
+* [array] domains (default: none)
+
+* [boolean] empty_first (default: true)
+
+* [boolean] ensure_absent (default: false)
+
+* [return] filename (default: none)
+
 
 ## SAMPLE USAGE
-See `test.cf` or `params/example.json`
+See `test.cf` or the example parameters provided
+

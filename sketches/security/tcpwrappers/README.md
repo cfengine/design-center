@@ -1,17 +1,38 @@
-# Security::tcpwrappers - Manage /etc/hosts.{allow,deny}
-## AUTHOR
-Nick Anderson <nick@cmdln.org>
-Ted Zlatanov <tzz@lifelogs.com>
+# Security::tcpwrappers version 1.2
 
-## PLATFORM
-linux
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
-Flexibly manage `/etc/hosts.allow` and `/etc/hosts.deny`.
-Support for full file content management with empty_first parameter.
-Support for managing rule presence or absense with ensure_present and
-ensure_absent file editing policies.
+## Description
+Manage /etc/hosts.{allow,deny}
+
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
+
+## Parameters
+### set
+* [environment] runenv (default: none)
+
+* [metadata] metadata (default: none)
+
+* [string] allow_filename (default: "/etc/hosts.allow")
+
+* [string] deny_filename (default: "/etc/hosts.allow")
+
+* [array] allow (default: none)
+
+* [array] deny (default: none)
+
+* [boolean] empty_first (default: true)
+
+* [boolean] ensure_absent (default: false)
+
+* [return] allow_filename (default: none)
+
+* [return] deny_filename (default: none)
+
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf` or `params/params.json` for standalone and data-driven configuration, respectively.

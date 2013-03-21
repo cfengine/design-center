@@ -1,11 +1,18 @@
-# Repository::Yum::Maintain - Create and keep Yum repository metadata up to date
+# Repository::Yum::Maintain version 2.3
 
-## Author
-Nick Anderson <nick@cmdln.org>
-Ted Zlatanov <tzz@lifelogs.com>
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-## PLATFORM
-linux
+## Description
+Create and keep Yum repository metadata up to date
 
-## Sample Usage
-See `test.cf` and `params/repos.json` for standalone and JSON-driven usage, respectively.
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
+
+## Parameters
+none
+
+## SAMPLE USAGE
+See `test.cf` or the example parameters provided
+

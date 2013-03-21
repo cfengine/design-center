@@ -1,40 +1,34 @@
-# sketch_template - Provide a workable sketch template
+# CFEngine::sketch_template version 1.01
 
-## AUTHORS
-Ted Zlatanov <tzz@lifelogs.com>
+License: MIT
+Tags: cfdc
+Authors: Ted Zlatanov <tzz@lifelogs.com>
 
-## PLATFORM
+## Description
+Standard template for Design Center sketches
 
-Platforms...
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-## DESCRIPTION
+## Parameters
+### entry
+* [environment] runenv (default: none)
 
-This sketch demonstrates the recommended layout of a Design Center
-sketch.
+* [metadata] mymetadata (default: none)
 
-## ## Classes
+* [string] prefix (default: "__PREFIX__")
 
-List your classes here.
+* [boolean] myboolean (default: "1")
 
-## ## Variables
+* [string] mytype (default: "fallback")
 
-List your variables here.
+* [string] myip (default: none)
 
-Please note that `params/demo.json` has all these parameters in one
-place, and it's much more convenient to use JSON data to set these
-parameters than manually passing them.
+* [list] mylist (default: none)
 
-We plan to auto-generate this documentation at some point, so don't go
-crazy filling it out.  Better to document in `test.cf` and
-`params/demo.json`.
+* [array] myarray (default: none)
 
-* `myarray`: an array with keys...
-
-## REQUIREMENTS
-
-CFEngine::stdlib (the COPBL)
-CFEngine::dclib (the DC standard library)
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf`.
