@@ -355,3 +355,7 @@ postgresql_server:
 sqlite:
 	$(CFSKETCH_DA) --install Database::Install::SQLite --activate Database::Install::SQLite=$(SOURCEDIR)/databases/sqlite_install/params/demo.json
 	$(RUNNER)
+
+snmpwalk:
+	$(CFSKETCH_DA) --install Monitoring::SNMP::Walk --activate Monitoring::SNMP::Walk=$(SOURCEDIR)/monitoring/snmp/snmpwalk/params/demo.json
+	$(RUNNER)

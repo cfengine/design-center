@@ -1,0 +1,58 @@
+body file control
+{
+  namespace => "cfdc_snmp";
+}
+
+bundle agent walk(runenv, metadata, snmpwalk, agent, oids)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "found" slist => getindices("snmpwalk.w");
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  commands:
+      "$(snmpwalk) $(agent) $(oids) | /usr/bin/perl -n -e'my ($k, $v) = split \" \", $_, 2; $k =~ s/\W/_/g; print \"=w[$k]=$v\\n\";'"
+      comment => "Do the SNMP walk and rewrite output with Perl to fit the module format",
+      classes => scoped_generic("bundle", "walk"),
+      contain => default:in_shell,
+      module => "true",
+      handle => "snmpwalk_command_run";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    verbose.walk_ok::
+      "$(this.bundle): SNMP walk was OK";
+      "$(this.bundle): found SNMP key=$(found), value=$(snmpwalk.w[$(found)])";
+    walk_ok::
+      "1" bundle_return_value_index => "walked";
+      "$(this.namespace):snmpwalk.w" bundle_return_value_index => "module_array";
+
+    !walk_ok::
+      "$(this.bundle): SNMP walk FAILED";
+      "0" bundle_return_value_index => "walked";
+      "" bundle_return_value_index => "module_array";
+}
+
+body classes scoped_generic(scope, x)
+# Define x prefixed/suffixed with promise outcome
+{
+  scope => $(scope);
+  promise_repaired => { "promise_repaired_$(x)", "$(x)_repaired", "$(x)_ok" };
+  repair_failed => { "repair_failed_$(x)", "$(x)_failed", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  repair_denied => { "repair_denied_$(x)", "$(x)_denied", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  repair_timeout => { "repair_timeout_$(x)", "$(x)_timeout", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  promise_kept => { "promise_kept_$(x)", "$(x)_kept", "$(x)_ok", "$(x)_not_repaired" };
+}
