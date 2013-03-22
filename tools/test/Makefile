@@ -370,3 +370,7 @@ sqlite:
 snmpwalk:
 	$(CFSKETCH_DA) --install Monitoring::SNMP::Walk --activate Monitoring::SNMP::Walk=$(SOURCEDIR)/monitoring/snmp/snmpwalk/params/demo.json
 	$(RUNNER)
+
+generic_services:
+	$(CFSKETCH_DA) --install Services::Generic --activate Services::Generic=$(SOURCEDIR)/utilities/generic_services/params/demo.json
+	$(RUNNER)

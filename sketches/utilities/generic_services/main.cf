@@ -1,0 +1,74 @@
+body file control
+{
+      namespace => "cfdc_service_generic";
+}
+
+bundle agent ensure(runenv, metadata, name, given_start, given_stop, pattern, policy)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+      "policy_start" expression => strcmp("start","$(policy)"),
+      comment => "Check if to start a service";
+
+      "policy_stop"  expression => strcmp("stop","$(policy)"),
+      comment => "Check if to stop a service";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+    !test::
+      "exec_prefix" string => "", policy => "free";
+    test::
+      "exec_prefix" string => "/bin/echo ", policy => "free";
+
+    any::
+      "start" string => "$(exec_prefix)$(given_start)", policy => "free";
+      "stop"  string => "$(exec_prefix)$(given_stop)",  policy => "free";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  processes:
+    policy_start::
+      "$(pattern)",
+      comment => "Verify that the service $(name) appears in the process table",
+      restart_class => "restart_$(name)";
+
+    policy_start_ok::
+      "$(pattern)" comment => "Check the start worked",
+      restart_class => "policy_verify_fail";
+
+    policy_stop::
+      "$(pattern)",
+      comment => "Verify that the service $(name) does not appear in the process",
+      process_stop => $(stop),
+      signals => { "term", "kill"};
+
+    policy_stop_ok::
+      "$(pattern)" comment => "Check the start worked",
+      restart_class => "policy_verify_ok";
+
+  commands:
+      "$(start)",
+      comment => "Execute command to restart service $(name)",
+      ifvarclass => "restart_$(name)";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+      "$(this.bundle): requested to ***$(policy)*** service $(name) with start command $(start), stop command $(stop), search pattern $(pattern)";
+
+    cfengine::
+      "0" bundle_return_value_index => "policy_implemented",
+      ifvarclass => "policy_verify_fail";
+
+      "1" bundle_return_value_index => "policy_implemented",
+      ifvarclass => "policy_verify_ok";
+}
