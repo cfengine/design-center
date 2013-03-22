@@ -22,7 +22,7 @@ bundle agent walk(runenv, metadata, snmpwalk, agent, oids)
   commands:
       "$(snmpwalk) $(agent) $(oids) | /usr/bin/perl -n -e'my ($k, $v) = split \" \", $_, 2; $k =~ s/\W/_/g; print \"=w[$k]=$v\\n\";'"
       comment => "Do the SNMP walk and rewrite output with Perl to fit the module format",
-      classes => scoped_generic("bundle", "walk"),
+      classes => cfdc_dclib_350:scoped_generic("bundle", "walk"),
       contain => default:in_shell,
       module => "true",
       handle => "snmpwalk_command_run";
@@ -44,15 +44,4 @@ bundle agent walk(runenv, metadata, snmpwalk, agent, oids)
       "$(this.bundle): SNMP walk FAILED";
       "0" bundle_return_value_index => "walked";
       "" bundle_return_value_index => "module_array";
-}
-
-body classes scoped_generic(scope, x)
-# Define x prefixed/suffixed with promise outcome
-{
-  scope => $(scope);
-  promise_repaired => { "promise_repaired_$(x)", "$(x)_repaired", "$(x)_ok" };
-  repair_failed => { "repair_failed_$(x)", "$(x)_failed", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
-  repair_denied => { "repair_denied_$(x)", "$(x)_denied", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
-  repair_timeout => { "repair_timeout_$(x)", "$(x)_timeout", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
-  promise_kept => { "promise_kept_$(x)", "$(x)_kept", "$(x)_ok", "$(x)_not_repaired" };
 }

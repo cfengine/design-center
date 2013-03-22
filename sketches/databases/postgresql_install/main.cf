@@ -97,7 +97,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       handle => "postgresql_install_packages_add",
       package_policy => "add",
       package_method => default:generic,
-      classes => scoped_generic("bundle", "install"),
+      classes => cfdc_dclib_350:scoped_generic("bundle", "install"),
       action => default:log_repaired("stdout","PostgreSQL $(type) was installed");
 
     purge::
@@ -106,7 +106,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       handle => "db_install_packages_remove",
       package_policy => "delete",
       package_method => default:generic,
-      classes => scoped_generic("bundle", "remove"),
+      classes => cfdc_dclib_350:scoped_generic("bundle", "remove"),
       action => default:log_repaired("stdout","PostgreSQL $(type) was removed");
 
   processes:
@@ -120,14 +120,14 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       "$(process_match)"
       comment => "Teminate PostgreSQL process",
       handle => "postgresql_processes_terminate",
-      classes => scoped_generic("bundle", "terminate"),
+      classes => cfdc_dclib_350:scoped_generic("bundle", "terminate"),
       signals => { "term","kill" };
 
   commands:
     start_postgresql::
       "$(start_command)"
       comment => "Start/Restart PostgreSQL",
-      classes => scoped_generic("bundle", "start"),
+      classes => cfdc_dclib_350:scoped_generic("bundle", "start"),
       handle => "postgresql_commands_run";
 
   reports:
@@ -167,15 +167,4 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       "$(this.bundle): Server install mode";
     verbose.!server::
       "$(this.bundle): Client install mode";
-}
-
-body classes scoped_generic(scope, x)
-# Define x prefixed/suffixed with promise outcome
-{
-  scope => $(scope);
-  promise_repaired => { "promise_repaired_$(x)", "$(x)_repaired", "$(x)_ok" };
-  repair_failed => { "repair_failed_$(x)", "$(x)_failed", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
-  repair_denied => { "repair_denied_$(x)", "$(x)_denied", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
-  repair_timeout => { "repair_timeout_$(x)", "$(x)_timeout", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
-  promise_kept => { "promise_kept_$(x)", "$(x)_kept", "$(x)_ok", "$(x)_not_repaired" };
 }
