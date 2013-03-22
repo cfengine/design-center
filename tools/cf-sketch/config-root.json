@@ -4,5 +4,5 @@
  repolist: [ "/var/cfengine/inputs/sketches" ],
  recognized_sources: [ "~/source/design-center/sketches" ],
  runfile: { location: "/var/cfengine/inputs/api-runfile.cf", standalone: true, relocate_path: "sketches" },
- vardata: "/var/cfengine/inputs/vardata.conf",
+ vardata: "/var/cfengine/vardata.conf",
 }

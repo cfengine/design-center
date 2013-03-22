@@ -1,4 +1,5 @@
-SOURCEDIR:=`pwd`/../../sketches
+PWD:=$(shell pwd)
+SOURCEDIR:=$(PWD)/../../sketches
 
 CFPATH:=$(dirname $(which cf-agent))
 
@@ -9,12 +10,12 @@ endif
 API_DIR:=~/.cfagent/inputs
 RUNFILE:=~/.cfagent/inputs/standalone-cf-sketch-runfile.cf
 
-CFAPI:=`pwd`/../cf-sketch/cf-dc-api.pl `pwd`/../cf-sketch/config.json
+CFAPI:=$(PWD)/../cf-sketch/cf-dc-api.pl $(PWD)/../cf-sketch/config.json
 
 ifeq ($(LOGNAME),root)
   RUNFILE:=/var/cfengine/inputs/standalone-cf-sketch-runfile.cf
   API_DIR:=/var/cfengine/inputs
-  CFAPI:=`pwd`/../cf-sketch/cf-dc-api.pl `pwd`/../cf-sketch/config-root.json
+  CFAPI:=$(PWD)/../cf-sketch/cf-dc-api.pl $(PWD)/../cf-sketch/config-root.json
 endif
 
 API_RUNFILE:=$(API_DIR)/api-runfile.cf
@@ -28,7 +29,7 @@ ifeq ($(V),1)
   EXTRA:=--verbose
 endif
 
-CFSKETCH:=(cd $(SOURCEDIR); make); `pwd`/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH) $(EXTRA) --force --test
+CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH) $(EXTRA) --force --test
 CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE)
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 

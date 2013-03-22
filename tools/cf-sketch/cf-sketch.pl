@@ -233,7 +233,7 @@ sub api_interaction
                                    standalone => 1,
                                    relocate_path => "sketches"
                                   },
-                                  vardata => "$inputs_root/vardata.conf",
+                                  vardata => "$inputs_root/cfsketch-vardata.conf",
                                  });
     print ">> $config\n" if $options{verbose};
     print $fh_config "$config\n";
