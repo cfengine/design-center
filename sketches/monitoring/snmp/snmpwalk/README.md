@@ -8,7 +8,7 @@ Authors: Ted Zlatanov <tzz@lifelogs.com>
 Do a SNMP walk and translate the results to CFEngine classes and variables
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib
+CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 ## Parameters
 ### walk

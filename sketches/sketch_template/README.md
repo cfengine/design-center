@@ -22,11 +22,15 @@ CFEngine::dclib, CFEngine::stdlib
 
 * _string_ *mytype* (default: `"fallback"`, description: none)
 
-* _string_ *myip* (default: none, description: none)
+* _string_ *myip* (default: none, description: This is my IP address or whatever)
 
 * _list_ *mylist* (default: none, description: none)
 
 * _array_ *myarray* (default: none, description: none)
+
+* _return_ *myreturn* (default: none, description: none)
+
+* _return_ *myreturn2* (default: none, description: none)
 
 
 ## SAMPLE USAGE

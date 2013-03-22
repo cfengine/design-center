@@ -5,7 +5,7 @@ Tags: cfdc, stdlib
 Authors: CFEngine AS
 
 ## Description
-Design Center standard library
+Design Center standard library for CFEngine 3.5.0 and higher
 
 ## Dependencies
 none

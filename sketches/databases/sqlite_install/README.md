@@ -8,7 +8,7 @@ Authors: Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>, Ted Zlatanov <tzz
 Install and enable the SQLite database engine
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib
+CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 ## Parameters
 ### ensure

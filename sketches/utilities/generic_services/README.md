@@ -1,28 +1,32 @@
-# Utilities::ping_report version 1.2
+# Services::Generic version 1
 
 License: MIT
 Tags: cfdc
-Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
+Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
-Report on pingability of hosts
+Control services in a generic way
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib
+CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 ## Parameters
-### ping
+### ensure
 * _environment_ *runenv* (default: none, description: none)
 
 * _metadata_ *metadata* (default: none, description: none)
 
-* _list_ *hosts* (default: none, description: none)
+* _string_ *name* (default: none, description: none)
 
-* _string_ *count* (default: none, description: none)
+* _string_ *start* (default: none, description: startcommand)
 
-* _return_ *reached* (default: none, description: none)
+* _string_ *stop* (default: none, description: stopcommand)
 
-* _return_ *not_reached* (default: none, description: none)
+* _string_ *pattern* (default: none, description: none)
+
+* _string_ *policy* (default: `"start"`, description: Indicate desired service state: start, stop)
+
+* _return_ *policy_implemented* (default: none, description: none)
 
 
 ## SAMPLE USAGE
