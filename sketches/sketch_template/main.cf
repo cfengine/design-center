@@ -56,6 +56,9 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
       "$(this.bundle): got mylist=$(mylist)";
       "$(this.bundle): got myarray=$(myarray)";
 
+      "[anything I want to return goes here]" bundle_return_value_index => "myreturn";
+      "[anything else I want to return goes here]" bundle_return_value_index => "myreturn2";
+
       # use the "verbose" context to show the sketch operation (for the user)
     verbose::
       "$(this.bundle): running in verbose mode";

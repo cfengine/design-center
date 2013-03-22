@@ -34,6 +34,9 @@
             { type: "string", name: "myip", description: "This is my IP address or whatever" },
             { type: "list", name: "mylist", },
             { type: "array", name: "myarray", },
+            // you can have any number of return variables
+            { type: "return", name: "myreturn" },
+            { type: "return", name: "myreturn2" },
         ],
     },
 
