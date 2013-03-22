@@ -1,167 +1,153 @@
 body file control
 {
-      namespace => "cfdc_yumrepo";
+      namespace => "cfdc_yumrepo_3_0";
 }
 
-bundle agent repo_yum_maintain(class_prefix, createrepo, refresh_interval, repo)
+bundle common example_runenv
+# Default settings for run environment.
+# If you wish for the sketch to behave differently, copy the runenv and tweak to taste
 {
-      # Creates repomd (xml-rpm-metadata) repository
-      # Updates metadata if any packages are added changed or removed
+  vars:
+    any::
+      "env_vars"     slist =>{ "activated", "test", "verbose", "inform", "debug" };
+      "activated"   string => "1";
 
-      # In addition to the parameters, takes these lasses:
-      # $(class_prefix)debug, $(class_prefix)verbose, $(class_prefix)test
+      "test"        string => "false";
+      "verbose"     string => "false";
+      "inform"      string => "false";
+      "debug"       string => "false";
 
-  meta:
-      "vars[class_prefix][type]"         string => "NON_EMPTY_STRING";
-      "vars[class_prefix][default]"      string => "__CLASS_PREFIX__";
+}
 
-      "vars[debug][type]"                string => "CONTEXT";
-      "vars[debug][default]"             string => "!any";
+bundle agent manage_metadata(runenv, metadata, name, given_path, perm, refresh_interval, createrepo)
+# Creates repomd (xml-rpm-metadata) repository
+# Updates metadata if any packages are added changed or removed
+{
+  vars:
+      "vars"     slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-      "vars[test][type]"                 string => "CONTEXT";
-      "vars[test][default]"              string => "!any";
+    !test::
+      "file_prefix" string => "", policy => "free";
+      "mode"  string => "$($(perm)[m])", policy => "free";
+      "owner" string => "$($(perm)[o])", policy => "free";
+      "group" string => "$($(perm)[g])", policy => "free";
 
-      "vars[verbose][type]"              string => "CONTEXT";
-      "vars[verbose][default]"           string => "!any";
+    test::
+      "file_prefix" string => "/tmp", policy => "free";
+      "mode" string => "600", policy => "free";
+      "owner" string => "$(default:env.LOGNAME)", policy => "free";
+      "group" string => "$(owner)", policy => "free";
 
-      "vars[refresh_interval][type]"     string => "DIGITS";
-      "vars[refresh_interval][default]"  string => "60";
+    any::
+      "path" string => "$(file_prefix)$(given_path)", policy => "free";
 
-      "vars[createrepo][type]"           string => "PATH";
-      "vars[createrepo][default]"        string => "/usr/bin/createrepo";
+      "class_prefix"
+        string => canonify("$(this.bundle)_$(runenv)_$(path)"),
+        policy => "free";
 
-      "vars[repo][type]"                 string => "KVARRAY(
-_key:NON_EMPTY_STRING
-path:PATH:required
-perms_m:OCTAL:default=755
-perms_o:NON_EMPTY_STRING:default=root
-perms_g:NON_EMPTY_STRING:default=root
-)";
 
   classes:
-    any::
-      "_verbose"  or => { "$(class_prefix)verbose" };
-      "_debug"    or => { "$(class_prefix)debug"};
-      "_test"     or => { "$(class_prefix)test" };
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
-    default:verbose::
-      "_verbose"  or => { "any" };
-    default:test::
-      "_test"  or => { "any" };
-    default:debug::
-      "_debug"  or => { "any" };
+      "_$(vars)" expression => strcmp("1", "$($(vars))");
+      "_inform" or => { "inform_mode"};
+      "_verbose" or => { "verbose_mode" };
+      "_debug" or => { "debug_mode" };
 
-  vars:
-      "bundle" string => "repo_yum_maintain";
-      "keys" slist => getindices("$(repo)");
-
-    redhat|centos::
-      "deps" slist => { "createrepo" };
+      "$(class_prefix)_exists"
+        expression => fileexists("$(path)/repodata/repomd.xml"),
+        comment    => "Check if a repo exists yet";
 
   methods:
-      "Yum Repository Client Configuration"
-      usebundle => cfdc_yumrepo:do($(class_prefix),
-                                   $(createrepo),
-                                   $(refresh_interval),
-                                   $(keys),
-                                   "$($(repo)[$(keys)][path])",
-                                   "$($(repo)[$(keys)][perm_m])",
-                                   "$($(repo)[$(keys)][perm_o])",
-                                   "$($(repo)[$(keys)][perm_g])"
-                                   ),
-      comment => "Configure each yum repository";
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
-  reports:
-    _debug::
-      "DEBUG $(bundle)  Maintain Yum Repository: array $(repo) KVKEYS $(keys)";
-}
-
-bundle agent do(class_prefix, createrepo, refresh_interval, reponame, path, mode, owner, group)
-{
   files:
       "$(path)/."
-      create => "true",
-      perms  => default:mog("$(mode)", "$(owner)", "$(group)"),
-      depth_search => default:recurse("inf"),
-      action => default:if_elapsed("$(refresh_interval)"),
-      comment => "Ensure repository root directory exists with proper permissions";
+        create       => "true",
+        perms        => default:mog($(mode), $(owner), $(group)),
+        depth_search => default:recurse("inf"),
+        comment      => "Ensure repository root directory exists with proper permissions";
 
-      # Only check 1 level deep otherwise you will be detecting the change in the metadata itself as well.
-      # That in turn will lead to an execution of creatrepo --update each time.
+      # TODO: this only sees new/content change but not removals or file stats!
+      # I expected that any change (including mtime would cause a repair)
       "$(path)"
-      changes      => default:detect_content,
-      depth_search => default:recurse("1"),
-      classes      => default:if_repaired("$(class_prefix)$(reponame)_needs_metadata_update"),
-      action       => default:if_elapsed("$(refresh_interval)"),
-      comment      => "If any changes are detected we need to signal to update the metadata";
-
-  classes:
-      "_verbose"  or => { "$(class_prefix)verbose", "verbose" };
-      "_test"     or => { "$(class_prefix)test",    "test" };
-      "_debug"    or => { "$(class_prefix)debug",   "debug" };
-
-      "$(class_prefix)$(reponame)_exists"
-      expression => fileexists("$(path)/repodata/repomd.xml"),
-      comment    => "Check if a repo exists yet";
-
-  packages:
-    redhat|centos::
-      "$(deps)"
-      package_policy => "add",
-      package_method => default:yum_rpm,
-      action         => default:if_elapsed("$(refresh_interval)"),
-      comment        => "createrepo is needed to create and update
-the metadata for a yum repository";
+        changes      => default:dc_detect_all_change_using("md5"),
+        depth_search => default:recurse("1"),
+        classes      => default:dc_generic("$(class_prefix)_detected_change"),
+        comment      => "If any changes are detected we need to signal to update the metadata";
 
   commands:
-      "$(createrepo)"
-      args       => "$(path)",
-      action     => default:if_elapsed("$(refresh_interval)"),
-      contain    => repo_yum_maintain_umask("022"),
-      classes    => default:if_repaired("$(class_prefix)$(reponame)_initalized"),
-      ifvarclass => not(canonify("$(class_prefix)$(reponame)_exists")),
-      comment    => "Create repository if one does not exist";
+    !test::
+      "$(default:dc_paths.createrepo)"
+        args       => "$(path)",
+        contain    => default:dc_setuid_gid_umask($(owner), $(group), "022"),
+        classes    => default:dc_generic("$(class_prefix)_create"),
+        ifvarclass => not(canonify("$(class_prefix)_exists")),
+        comment    => "Create repository if one does not exist";
 
-      # We only want to update the repo once per run. The metadata has not
-      # yet been updated. Update it and signal that it has been updated if
-      # the command returns zero.
-      "$(createrepo)"
-      args => "--update $(path)",
-      action     => default:if_elapsed("$(refresh_interval)"),
-      contain    => repo_yum_maintain_umask("022"),
-      classes    => default:if_repaired("$(class_prefix)$(reponame)_metadata_updated"),
-      ifvarclass => "$(class_prefix)$(reponame)_needs_metadata_update",
-      comment    => "We need to update the metadata since a change was detected";
+      "$(default:dc_paths.createrepo)"
+        args       => "--update $(path)",
+        contain    => default:dc_setuid_gid_umask($(owner), $(group), "022"),
+        classes    => default:dc_generic("$(class_prefix)_metadata_update"),
+        ifvarclass => "$(class_prefix)_detected_change_repaired",
+        comment    => "We need to update the metadata since a change was detected";
+
+    test::
+      "$(default:dc_paths.createrepo)"
+        args       => $(path),
+        classes    => default:dc_generic("$(class_prefix)_create"),
+        ifvarclass => not(canonify("$(class_prefix)_exists")),
+        comment    => "Create repository if one does not exist";
+
+      "$(default:dc_paths.createrepo)"
+        args       => "--update $(path)",
+        classes    => default:dc_generic("$(class_prefix)_metadata_update"),
+        ifvarclass => "$(class_prefix)_detected_change_repaired",
+        comment    => "We need to update the metadata since a change was detected";
+
 
   reports:
     _verbose::
-      "I updated the yum repository $(reponame) at $(path)",
-      ifvarclass => "$(class_prefix)$(reponame)_metadata_updated";
+      "$(this.bundle): Repository metadata does not exist at $(path)",
+        ifvarclass => not(canonify("$(class_prefix)_exists"));
 
-      "I initalized the yum repository $(reponame) at $(path)",
-      ifvarclass => "$(class_prefix)$(reponame)_initalized";
+      "$(this.bundle): Detected changes in $(path)/",
+        ifvarclass => "$(class_prefix)_detected_change_repaired";
 
-    _debug::
-      "DEBUG $(bundle)  Maintain Yum Repository: $(reponame) at $(path)";
-      "DEBUG $(bundle)  createrepo path: $(createrepo)";
-      "DEBUG $(bundle)  Owner of $(reponame) should be $(owner)";
-      "DEBUG $(bundle)  Group of $(reponame) should be $(group)";
-      "DEBUG $(bundle)  Mode of $(reponame) should be $(mode)";
-}
+    _inform::
+      "$(this.bundle): Initalized repository metadata at $(path)",
+        ifvarclass => "$(class_prefix)_create_ok";
 
-# Bodies not in stdlib
-body contain repo_yum_maintain_umask(umask)
-###################################################
-#       | Files               | Directories       #
-###################################################
-# Umask | Octal   Symbolic    | Octal   Symbolic  #
-########+#####################+###################+
-# 000   | 666     (rw-rw-rw-) | 777     (rwxrwxrwx)
-# 002   | 664     (rw-rw-r--) | 775     (rwxrwxr-x)
-# 022   | 644     (rw-r--r--) | 755     (rwxr-xr-x)
-# 027   | 640     (rw-r-----) | 750     (rwxr-x---)
-# 077   | 600     (rw-------) | 700     (rwx------)
-# 277   | 400     (r--------) | 500     (r-x------)
-{
-      umask => "$(umask)";
+      "$(this.bundle): Repository metadata updated at $(path)",
+        ifvarclass => "$(class_prefix)_metadata_update_repaired";
+
+    any::
+      "Successfully created repository in $(path)"
+        bundle_return_value_index => "status",
+        ifvarclass => "$(class_prefix)_create_not_ok";
+
+      "Successfully updated repository in $(path)"
+        bundle_return_value_index => "status",
+        ifvarclass => "$(class_prefix)_metadata_update_ok";
+
+      "Unable to create or update repository in $(path) using $(createrepo)"
+        bundle_return_value_index => "status",
+        ifvarclass => "$(class_prefix)_create_not_ok|$(class_prefix)_metadata_update_not_ok";
+
+      "1"
+        bundle_return_value_index => "return_code",
+        ifvarclass => "$(class_prefix)_create_not_ok|$(class_prefix)_metadata_update_not_ok";
+
+      "0"
+        bundle_return_value_index => "return_code",
+        ifvarclass => "$(class_prefix)_create_ok|$(class_prefix)_metadata_update_ok";
+
+      ""
+        bundle_return_value_index => "return_code",
+        ifvarclass => "!($(class_prefix)_create_ok|$(class_prefix)_metadata_update_ok|$(class_prefix)_create_not_ok|$(class_prefix)_metadata_update_not_ok)";
+
+
 }

@@ -1336,6 +1336,7 @@ sub load_int
     my $raw  = shift @_;
 
     return (undef, "Fatal: trying to load an undefined value") unless defined $f;
+    return (undef, "Fatal: bad JSON data or empty file") unless length $f;
 
     my @j;
 

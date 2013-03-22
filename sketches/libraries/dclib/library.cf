@@ -57,3 +57,255 @@ body location dc_start
 {
 before_after => "before";
 }
+
+# same as COPBL paths location body
+bundle common dc_paths
+# In addition to defining common paths, this bundle also defines context
+# classes for paths that are defined (_stdlib_has_path_xxx) and paths that
+# exist (_stdlib_path_exists_xxx)
+{
+  vars:
+
+      #
+      # Common full pathname of commands for OS
+      #
+
+    aix::
+
+      "path[awk]"      string => "/usr/bin/awk";
+      "path[bc]"       string => "/usr/bin/bc";
+      "path[cat]"      string => "/bin/cat";
+      "path[cksum]"    string => "/usr/bin/cksum";
+      "path[crontabs]" string => "/var/spool/cron/crontabs";
+      "path[cut]"      string => "/usr/bin/cut";
+      "path[dc]"       string => "/usr/bin/dc";
+      "path[df]"       string => "/usr/bin/df";
+      "path[diff]"     string => "/usr/bin/diff";
+      "path[dig]"      string => "/usr/bin/dig";
+      "path[echo]"     string => "/usr/bin/echo";
+      "path[egrep]"    string => "/usr/bin/egrep";
+      "path[find]"     string => "/usr/bin/find";
+      "path[grep]"     string => "/usr/bin/grep";
+      "path[ls]"       string => "/usr/bin/ls";
+      "path[netstat]"  string => "/usr/bin/netstat";
+      "path[ping]"     string => "/usr/bin/ping";
+      "path[printf]"   string => "/usr/bin/printf";
+      "path[sed]"      string => "/usr/bin/sed";
+      "path[sort]"     string => "/usr/bin/sort";
+      "path[tr]"       string => "/usr/bin/tr";
+
+    freebsd|netbsd::
+
+      "path[awk]"      string => "/usr/bin/awk";
+      "path[bc]"       string => "/usr/bin/bc";
+      "path[cat]"      string => "/bin/cat";
+      "path[cksum]"    string => "/usr/bin/cksum";
+      "path[crontabs]" string => "/var/cron/tabs";
+      "path[cut]"      string => "/usr/bin/cut";
+      "path[dc]"       string => "/usr/bin/dc";
+      "path[df]"       string => "/bin/df";
+      "path[diff]"     string => "/usr/bin/diff";
+      "path[dig]"      string => "/usr/bin/dig";
+      "path[echo]"     string => "/bin/echo";
+      "path[egrep]"    string => "/usr/bin/egrep";
+      "path[find]"     string => "/usr/bin/find";
+      "path[grep]"     string => "/usr/bin/grep";
+      "path[ls]"       string => "/bin/ls";
+      "path[netstat]"  string => "/usr/bin/netstat";
+      "path[ping]"     string => "/usr/bin/ping";
+      "path[printf]"   string => "/usr/bin/printf";
+      "path[sed]"      string => "/usr/bin/sed";
+      "path[sort]"     string => "/usr/bin/sort";
+      "path[tr]"       string => "/usr/bin/tr";
+
+    openbsd::
+
+      "path[awk]"      string => "/usr/bin/awk";
+      "path[bc]"       string => "/usr/bin/bc";
+      "path[cat]"      string => "/bin/cat";
+      "path[cksum]"    string => "/bin/cksum";
+      "path[crontabs]" string => "/var/cron/tabs";
+      "path[cut]"      string => "/usr/bin/cut";
+      "path[dc]"       string => "/usr/bin/dc";
+      "path[df]"       string => "/bin/df";
+      "path[diff]"     string => "/usr/bin/diff";
+      "path[dig]"      string => "/usr/sbin/dig";
+      "path[echo]"     string => "/bin/echo";
+      "path[egrep]"    string => "/usr/bin/egrep";
+      "path[find]"     string => "/usr/bin/find";
+      "path[grep]"     string => "/usr/bin/grep";
+      "path[ls]"       string => "/bin/ls";
+      "path[netstat]"  string => "/usr/bin/netstat";
+      "path[ping]"     string => "/usr/bin/ping";
+      "path[printf]"   string => "/usr/bin/printf";
+      "path[sed]"      string => "/usr/bin/sed";
+      "path[sort]"     string => "/usr/bin/sort";
+      "path[tr]"       string => "/usr/bin/tr";
+
+    solaris::
+
+      "path[awk]"      string => "/usr/bin/awk";
+      "path[bc]"       string => "/usr/bin/bc";
+      "path[cat]"      string => "/usr/bin/cat";
+      "path[cksum]"    string => "/usr/bin/cksum";
+      "path[crontabs]" string => "/var/spool/cron/crontabs";
+      "path[cut]"      string => "/usr/bin/cut";
+      "path[dc]"       string => "/usr/bin/dc";
+      "path[df]"       string => "/usr/bin/df";
+      "path[diff]"     string => "/usr/bin/diff";
+      "path[dig]"      string => "/usr/sbin/dig";
+      "path[echo]"     string => "/usr/bin/echo";
+      "path[egrep]"    string => "/usr/bin/egrep";
+      "path[find]"     string => "/usr/bin/find";
+      "path[grep]"     string => "/usr/bin/grep";
+      "path[ls]"       string => "/usr/bin/ls";
+      "path[netstat]"  string => "/usr/bin/netstat";
+      "path[ping]"     string => "/usr/bin/ping";
+      "path[printf]"   string => "/usr/bin/printf";
+      "path[sed]"      string => "/usr/bin/sed";
+      "path[sort]"     string => "/usr/bin/sort";
+      "path[tr]"       string => "/usr/bin/tr";
+      #
+      "path[svcs]"     string => "/usr/bin/svcs";
+      "path[svcadm]"   string => "/usr/sbin/svcadm";
+
+    redhat::
+
+      "path[awk]"        string => "/bin/awk";
+      "path[bc]"         string => "/usr/bin/bc";
+      "path[cat]"        string => "/bin/cat";
+      "path[cksum]"      string => "/usr/bin/cksum";
+      "path[createrepo]" string => "/usr/bin/createrepo";
+      "path[crontab]"    string => "/usr/bin/crontab";
+      "path[crontabs]"   string => "/var/spool/cron";
+      "path[cut]"        string => "/bin/cut";
+      "path[dc]"         string => "/usr/bin/dc";
+      "path[df]"         string => "/bin/df";
+      "path[diff]"       string => "/usr/bin/diff";
+      "path[dig]"        string => "/usr/bin/dig";
+      "path[domainname]" string => "/bin/domainname";
+      "path[echo]"       string => "/bin/echo";
+      "path[egrep]"      string => "/bin/egrep";
+      "path[find]"       string => "/usr/bin/find";
+      "path[grep]"       string => "/bin/grep";
+      "path[hostname]"   string => "/bin/hostname";
+      "path[ls]"         string => "/bin/ls";
+      "path[netstat]"    string => "/bin/netstat";
+      "path[ping]"       string => "/usr/bin/ping";
+      "path[printf]"     string => "/usr/bin/printf";
+      "path[sed]"        string => "/bin/sed";
+      "path[sort]"       string => "/bin/sort";
+      "path[tr]"         string => "/usr/bin/tr";
+
+      #
+      "path[chkconfig]" string => "/sbin/chkconfig";
+      "path[groupadd]"  string => "/usr/sbin/groupadd";
+      "path[groupdel]"  string => "/usr/sbin/groupdel";
+      "path[ifconfig]"  string => "/sbin/ifconfig";
+      "path[ip]"        string => "/sbin/ip";
+      "path[rpm]"       string => "/bin/rpm";
+      "path[service]"   string => "/sbin/service";
+      "path[svc]"       string => "/sbin/service";
+      "path[useradd]"   string => "/usr/sbin/useradd";
+      "path[userdel]"   string => "/usr/sbin/userdel";
+      "path[yum]"       string => "/usr/bin/yum";
+
+    debian::
+
+      "path[awk]"        string => "/usr/bin/awk";
+      "path[bc]"         string => "/usr/bin/bc";
+      "path[cat]"        string => "/bin/cat";
+      "path[cksum]"      string => "/usr/bin/cksum";
+      "path[createrepo]" string => "/usr/bin/createrepo";
+      "path[crontab]"    string => "/usr/bin/crontab";
+      "path[crontabs]"   string => "/var/spool/cron/crontabs";
+      "path[cut]"        string => "/usr/bin/cut";
+      "path[dc]"         string => "/usr/bin/dc";
+      "path[df]"         string => "/bin/df";
+      "path[diff]"       string => "/usr/bin/diff";
+      "path[dig]"        string => "/usr/bin/dig";
+      "path[dmidecode]"  string => "/usr/sbin/dmidecode";
+      "path[domainname]" string => "/bin/domainname";
+      "path[echo]"       string => "/bin/echo";
+      "path[egrep]"      string => "/bin/egrep";
+      "path[find]"       string => "/usr/bin/find";
+      "path[grep]"       string => "/bin/grep";
+      "path[hostname]"   string => "/bin/hostname";
+      "path[ls]"         string => "/bin/ls";
+      "path[netstat]"    string => "/bin/netstat";
+      "path[ping]"       string => "/bin/ping";
+      "path[printf]"     string => "/usr/bin/printf";
+      "path[sed]"        string => "/bin/sed";
+      "path[sort]"       string => "/usr/bin/sort";
+      "path[tr]"         string => "/usr/bin/tr";
+
+      #
+      "path[apt_cache]"           string => "/usr/bin/apt-cache";
+      "path[apt_config]"          string => "/usr/bin/apt-config";
+      "path[apt_get]"             string => "/usr/bin/apt-get";
+      "path[apt_key]"             string => "/usr/bin/apt-key";
+      "path[aptitude]"            string => "/usr/bin/aptitude";
+      "path[dpkg]"                string => "/usr/bin/dpkg";
+      "path[groupadd]"            string => "/usr/sbin/groupadd";
+      "path[ifconfig]"            string => "/sbin/ifconfig";
+      "path[ip]"                  string => "/sbin/ip";
+      "path[service]"             string => "/usr/sbin/service";
+      "path[svc]"                 string => "/usr/sbin/service";
+      "path[update_alternatives]" string => "/usr/bin/update-alternatives";
+      "path[update_rc_d]"         string => "/usr/sbin/update-rc.d";
+      "path[useradd]"             string => "/usr/sbin/useradd";
+
+
+    any::
+      "all_paths"     slist => getindices("path");
+      "$(all_paths)" string => "$(path[$(all_paths)])";
+
+  classes:
+    "_stdlib_has_path_$(all_paths)"
+      expression => isvariable("$(all_paths)"),
+      comment    => "It's useful to know if a given path is defined";
+
+    "_stdlib_path_exists_$(all_paths)"
+      expression => fileexists("$(path[$(all_paths)])"),
+      comment    => "It's useful to know if $(all_paths) exists on the filesystem as defined";
+}
+
+body contain dc_setuid_gid_umask(uid, gid, umask)
+###################################################
+#       | Files               | Directories       #
+###################################################
+# Umask | Octal   Symbolic    | Octal   Symbolic  #
+########+#####################+###################+
+# 000   | 666     (rw-rw-rw-) | 777     (rwxrwxrwx)
+# 002   | 664     (rw-rw-r--) | 775     (rwxrwxr-x)
+# 022   | 644     (rw-r--r--) | 755     (rwxr-xr-x)
+# 027   | 640     (rw-r-----) | 750     (rwxr-x---)
+# 077   | 600     (rw-------) | 700     (rwx------)
+# 277   | 400     (r--------) | 500     (r-x------)
+{
+exec_owner => "$(uid)";
+exec_group => "$(uid)";
+umask => "$(umask)";
+}
+
+body classes dc_generic(x)
+# 
+# Define x prefixed/suffixed with promise outcome
+{
+  promise_repaired => { "promise_repaired_$(x)", "$(x)_repaired", "$(x)_ok" };
+  repair_failed => { "repair_failed_$(x)", "$(x)_failed", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  repair_denied => { "repair_denied_$(x)", "$(x)_denied", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  repair_timeout => { "repair_timeout_$(x)", "$(x)_timeout", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+  promise_kept => { "promise_kept_$(x)", "$(x)_kept", "$(x)_ok", "$(x)_not_repaired" };
+}
+
+body changes dc_detect_all_change_using(hash)
+# Detect all changes using a configurable hashing algorithm
+# for times when you care about both content and file stats e.g. mtime
+# hash - supported hashing algorithm (md5, sha1, sha224, sha256, sha384,
+#   sha512, best)
+{
+hash           => "$(hash)";
+report_changes => "all";
+update_hashes  => "yes";
+}
