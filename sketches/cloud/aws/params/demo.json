@@ -8,8 +8,9 @@
 	    hub: "$(sys.ipv4)",
         options:
         {
-            security_group: "cf",
-            netrc: "~/.netrc",
+            // security_group: "cf",
+            security_group: "none",
+            netrc: "/home/tzz/.netrc",
             ssh_pub_key: "/root/.ssh/id_rsa.pub"
         },
     }

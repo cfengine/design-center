@@ -51,7 +51,7 @@ GetOptions (
 
 my $shim_mode = shift @ARGV;
 
-die "Syntax: $0 [--curl=/bin/curl --hub=xyz --ec2 ec2option=x --openstack openstackoption=y] [ec2|openstack] [command] [arguments]"
+die "Syntax: $0 [--netrc=NETRC-FILE --curl=/bin/curl --hub=xyz --ec2 ec2option=x --openstack openstackoption=y] [ec2|openstack] [command] [arguments]"
  unless defined $shim_mode;
 
 my $ec2       = $shim_mode eq 'ec2';
@@ -600,7 +600,7 @@ sub aws_ec2
  my $mode = shift @_;
  my @args = @_;
 
- my $tool = sprintf ("%s --json --netrc %s",
+ my $tool = sprintf ("%s --json --secrets_file=%s",
                      $options{aws_tool},
                      $options{netrc});
  my $run;
@@ -685,6 +685,11 @@ sub aws_ec2
     $ret = [];
 
     my $server_wrappers = hashref_search($data, qw/reservationSet item/);
+
+    if (defined $server_wrappers && ref $server_wrappers eq 'HASH')
+    {
+        $server_wrappers = [ $server_wrappers ];
+    }
 
     die "Could not find server instances in aws data"
      unless (defined $server_wrappers && ref $server_wrappers eq 'ARRAY');
@@ -796,9 +801,9 @@ sub aws_ec2
     }
    }
   }
- }
+}
 
- return $ret;
+ return ($ret||[]);
 }
 
 sub wait_for_ec2_create
@@ -1021,7 +1026,22 @@ sub generic_control
    my $cdata = $creator->($current_count+$inc);
    print 'Got creation data ' , $coder->encode($cdata), "\n"
     if $options{verbose};
-   my $error = hashref_search($cdata, qw/Errors Error/);
+
+   # {"RequestID":"4b25d7e2-f0bf-4b94-b436-17765cd7dedc",
+   #  "Errors":{"Error":{"Code":"InvalidGroup.NotFound",
+   #                     "Message":"The security group 'none' does not exist"}}}
+
+   if (defined $cdata && ref $cdata ne 'ARRAY')
+   {
+       $cdata = [$cdata];
+   }
+
+   my $error;
+   foreach (@$cdata)
+   {
+       next if $error;
+       $error = hashref_search($_, qw/Errors Error/);
+   }
 
    if ($error)
    {
