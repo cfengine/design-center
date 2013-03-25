@@ -49,7 +49,7 @@ bundle agent ensure(runenv, metadata, name, given_start, given_stop, pattern, po
       signals => { "term", "kill"};
 
     policy_stop_ok::
-      "$(pattern)" comment => "Check the start worked",
+      "$(pattern)" comment => "Check the stop worked",
       restart_class => "policy_verify_ok";
 
   commands:
@@ -67,8 +67,14 @@ bundle agent ensure(runenv, metadata, name, given_start, given_stop, pattern, po
 
     cfengine::
       "0" bundle_return_value_index => "policy_implemented",
-      ifvarclass => "policy_verify_fail";
+      ifvarclass => "policy_start.policy_verify_fail";
+
+      "0" bundle_return_value_index => "policy_implemented",
+      ifvarclass => "policy_stop.!policy_verify_ok";
 
       "1" bundle_return_value_index => "policy_implemented",
-      ifvarclass => "policy_verify_ok";
+      ifvarclass => "policy_start.!policy_verify_fail";
+
+      "1" bundle_return_value_index => "policy_implemented",
+      ifvarclass => "policy_stop.!policy_verify_fail";
 }
