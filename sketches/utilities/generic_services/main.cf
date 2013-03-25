@@ -65,16 +65,15 @@ bundle agent ensure(runenv, metadata, name, given_start, given_stop, pattern, po
 
       "$(this.bundle): requested to ***$(policy)*** service $(name) with start command $(start), stop command $(stop), search pattern $(pattern)";
 
-    cfengine::
-      "0" bundle_return_value_index => "policy_implemented",
-      ifvarclass => "policy_start.policy_verify_fail";
+    policy_start.policy_verify_fail::
+      "0" bundle_return_value_index => "policy_implemented";
 
-      "0" bundle_return_value_index => "policy_implemented",
-      ifvarclass => "policy_stop.!policy_verify_ok";
+    policy_start.!policy_verify_fail::
+      "1" bundle_return_value_index => "policy_implemented";
 
-      "1" bundle_return_value_index => "policy_implemented",
-      ifvarclass => "policy_start.!policy_verify_fail";
+    policy_stop.!policy_verify_ok::
+      "0" bundle_return_value_index => "policy_implemented";
 
-      "1" bundle_return_value_index => "policy_implemented",
-      ifvarclass => "policy_stop.!policy_verify_fail";
+    policy_stop.!policy_verify_fail::
+      "1" bundle_return_value_index => "policy_implemented";
 }
