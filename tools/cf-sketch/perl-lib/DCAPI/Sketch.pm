@@ -329,7 +329,7 @@ sub resolve_dependencies
         }
         else                    # anything else is a sketch name...
         {
-            my %install_request = ( sketch => $dep, target => $options{target} );
+            my %install_request = ( sketch => $dep, target => $options{target}, force => $options{force} );
             my @criteria = (["name", "equals", $dep]);
             if (exists $deps{$dep}->{version})
             {
@@ -339,7 +339,7 @@ sub resolve_dependencies
             my $list = $self->dcapi()->list_int($self->dcapi()->repos(),
                                                 \@criteria,
                                                 { flatten => 1 });
-            if (scalar @$list < 1)
+            if (scalar @$list < 1 || $options{force})
             {
                 if ($options{install})
                 {

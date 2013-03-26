@@ -474,6 +474,7 @@ sub install
         }
 
         my $depcheck = $sketch->resolve_dependencies(install => 1,
+                                                     force => $d{force},
                                                      source => $d{source},
                                                      target => $d{target});
 

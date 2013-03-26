@@ -334,8 +334,16 @@ stdlib:
 nonesuch:
 	$(CFSKETCH) --install nonesuch
 
-aws:
-	$(CFSKETCH_DA) --install Cloud::Services::AWS --activate Cloud::Services::AWS=$(SOURCEDIR)/cloud/aws/params/demo.json
+aws_ec2:
+	$(CFSKETCH_DA) --install Cloud::Services::AWS::EC2 --activate Cloud::Services::AWS::EC2=$(SOURCEDIR)/cloud/aws_ec2/params/demo.json
+	$(RUNNER)
+
+aws_s3:
+	$(CFSKETCH_DA) --install Cloud::Services::AWS::S3 --activate Cloud::Services::AWS::S3=$(SOURCEDIR)/cloud/aws_s3/params/demo.json
+	$(RUNNER)
+
+aws_sdb:
+	$(CFSKETCH_DA) --install Cloud::Services::AWS::SDB --activate Cloud::Services::AWS::SDB=$(SOURCEDIR)/cloud/aws_sdb/params/demo.json
 	$(RUNNER)
 
 vcli:

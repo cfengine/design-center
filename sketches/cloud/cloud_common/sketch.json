@@ -1,0 +1,26 @@
+{
+    manifest:
+    {
+        "library.cf": { desc: "main library" },
+        "README.md": { documentation: true },
+        "scripts/shim.pl": { perm: 755, comment: "AWS and OpenStack shim" },
+        "scripts/aws": { perm: 755, license: "GPL", comment: "AWS interface to start/stop service" },
+    },
+
+    metadata:
+    {
+        name: "Cloud::Services::Common",
+	    description: "Common library for cloud services",
+        version: 1.0,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 110 }, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
+    },
+    
+    api:
+    {
+    },
+
+    interface: [ "library.cf" ]
+}

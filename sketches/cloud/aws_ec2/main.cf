@@ -1,0 +1,78 @@
+body file control
+{
+  namespace => "cfdc_aws_ec2";
+}
+
+bundle agent ensure(runenv, metadata, count, ami, region, type, class, install_cfengine, hub, options)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+      "start"   expression => strcmp("start", "$(state)");
+      "stop"    expression => strcmp("stop",  "$(state)");
+
+      "count_determined" expression => isvariable("current_count");
+
+    count_determined::
+      "change_not_needed" expression => strcmp($(count), $(current_count));
+      "bootstrap_needed" expression => isgreaterthan($(count), $(current_count));
+      "decom_needed" expression => islessthan($(count), $(current_count));
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "shim" string => "$(default:cloud_shim.shim) --netrc $($(options)[netrc]) --ec2 ami=$(ami) --ec2 instance_type=$(type) --ec2 region=$(region) --ec2 security_group=$($(options)[security_group]) --ec2 ssh_pub_key=$($(options)[ssh_pub_key]) --hub=$(hub) --install_cfengine=$(install_cfengine) ec2";
+
+    AWS_home_called.test::
+      "current_count" string => execresult("$(shim) count $(class)", "useshell");
+    AWS_home_called.!test::
+      "current_count" string => execresult("$(shim) count $(class) 2>/dev/null", "useshell");
+
+  methods:
+      "E.T." usebundle => default:cloud_shim,
+      classes => default:always("AWS_home_called");
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  commands:
+    count_determined.!change_not_needed::
+      "$(shim) control $(count) $(class)";
+
+  reports:
+    count_determined::
+      "$(this.bundle): EC2 current: $(current_count) $(class)";
+      "$(current_count)" bundle_return_value_index => "instance_count";
+
+    !count_determined::
+      "" bundle_return_value_index => "instance_count";
+
+    count_determined.verbose::
+      "$(this.bundle): To run a command, e.g. ssh to all machine (but beware, this works best if you have just a few count): $(shim) ssh machine-name";
+      "$(this.bundle): To see the console output of all the machines: $(shim) console machine-name";
+      "$(this.bundle): To list all the machines: $(shim) list $(class)";
+    count_determined.start.change_not_needed::
+      "$(this.bundle): Service does not need to be started by the shim: $(count) instances of class $(class) already exist";
+    count_determined.stop.change_not_needed::
+      "$(this.bundle): Service does not need to be stopped by the shim: we have $(count) instances of class $(class)";
+    count_determined.start.!change_not_needed::
+      "$(this.bundle): Service will be started by the shim: $(count) instances of class $(class) (current $(current_count))";
+    count_determined.stop.!change_not_needed::
+      "$(this.bundle): Service will be stopped by the shim: $(count) instances (current $(current_count)) of class $(class) ";
+    bootstrap_needed::
+      "$(this.bundle): Bootstrapping will be needed";
+    decom_needed::
+      "$(this.bundle): Decom will be needed";
+    cfengine::
+      "$(this.bundle): EC2 goal: $(count) $(class).";
+
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    verbose.AWS_home_called::
+      "$(this.bundle): shim is $(shim)";
+}

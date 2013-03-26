@@ -118,28 +118,6 @@ if ($s3)
 }
 elsif ($sdb)
 {
- # Access and secret key inherited from environment if defined
- foreach my $required (qw/netrc/)
- {
-  my $envvarname = uc($required);
-  $envvarname =~ s/^AWS_/EC2_/;
-  if (defined $options{sdb}->{$required})
-  {
-   $ENV{$envvarname} = $options{sdb}->{$required};
-  }
-  else
-  {
-   if (defined $ENV{$envvarname})
-   {
-    $options{sdb}->{$required} = $ENV{$envvarname};
-   }
-   else
-   {
-    die "Sorry, we can't go on until you've specified --sdb $required (or specified it in your $envvarname environment variable)";
-   }
-  }
- }
-
  if ($command eq 'list' || $command eq 'dump')
  {
   my $domain = shift @args;
@@ -321,7 +299,9 @@ sub aws_sdb
  my $mode = shift @_;
  my @args = @_;
 
- my $tool = $options{sdb}->{aws_tool};
+ my $tool = sprintf ("%s --json --secrets_file=%s",
+                     $options{aws_tool},
+                     $options{netrc});
  my $run;
  my $t;
 
@@ -329,14 +309,14 @@ sub aws_sdb
 
  if ($mode eq 'list')
  {
-  $run = "$tool --json select 'SELECT * FROM $args[0]'";
+  $run = "$tool select 'SELECT * FROM $args[0]'";
   open $t, "$run|" or die "Could not list domain with command [$run]: $!";;
  }
  elsif ($mode eq 'clear')
  {
   my $domain = $args[0];
 
-  my $do = "$tool --json delete-domain '$domain'";
+  my $do = "$tool delete-domain '$domain'";
   print "Running [$do]\n" if $options{verbose};
   system $do;
 
@@ -352,7 +332,7 @@ sub aws_sdb
 
   open my $json, '<', $file or die "Could not load sync file $file: $!";
 
-  my $create = "$tool --json create-domain '$domain'";
+  my $create = "$tool create-domain '$domain'";
   print "Running [$create]\n" if $options{verbose};
   system($create);
 
@@ -395,7 +375,7 @@ sub aws_sdb
      {
       foreach my $attr (sort keys %{$items{$name}->{attr}})
       {
-       my $do = "$tool --json delete-attributes '$domain' -i '$name' -n '$attr'";
+       my $do = "$tool delete-attributes '$domain' -i '$name' -n '$attr'";
        print "Running [$do]\n" if $options{verbose};
        system $do;
       }
@@ -404,7 +384,7 @@ sub aws_sdb
      # insert the new one
      foreach my $attr (sort keys %{$data->{attr}})
      {
-      my $do = "$tool --json put-attributes '$domain' -i '$name' -n '$attr' -v '$data->{attr}->{$attr}'";
+      my $do = "$tool put-attributes '$domain' -i '$name' -n '$attr' -v '$data->{attr}->{$attr}'";
       print "Running [$do]\n" if $options{verbose};
       system $do;
      }
