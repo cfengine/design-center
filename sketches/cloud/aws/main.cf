@@ -51,6 +51,11 @@ bundle agent EC2(runenv, metadata, count, ami, region, type, class, install_cfen
   reports:
     count_determined::
       "$(this.bundle): EC2 current: $(current_count) $(class)";
+      "$(current_count)" bundle_return_value_index => "instance_count";
+
+    !count_determined::
+      "" bundle_return_value_index => "instance_count";
+
     count_determined.verbose::
       "$(this.bundle): To run a command, e.g. ssh to all machine (but beware, this works best if you have just a few count): $(shim) ssh machine-name";
       "$(this.bundle): To see the console output of all the machines: $(shim) console machine-name";

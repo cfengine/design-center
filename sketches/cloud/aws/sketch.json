@@ -34,7 +34,6 @@
             { type: "string", name: "hub", description: "Hub from which the instances should bootstrap" },
             { type: "array", name: "options", description: "Options: security_group, netrc, ssh_pub_key." },
             { type: "return", name: "instance_count", },
-            { type: "return", name: "instances", },
         ],
 
         S3_sync:
