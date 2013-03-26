@@ -395,6 +395,7 @@ sub recurse_print
     my $prefix          = shift @_;
     my $unquote_scalars = shift @_;
     my $simplify_arrays = shift @_;
+    my $empty_false     = shift @_;
 
     my @print;
 
@@ -449,8 +450,15 @@ sub recurse_print
     }
     else
     {
-        # convert to a 1/0 boolean
-        $ref = ! ! $ref if is_json_boolean($ref);
+        if (defined $ref && $ref eq '0' && !$empty_false)
+        {
+        }
+        elsif (is_json_boolean($ref))
+        {
+            # convert to a 1/0 boolean
+            $ref = ! ! $ref;
+        }
+
         push @print, {
                       path => $prefix,
                       type => 'string',

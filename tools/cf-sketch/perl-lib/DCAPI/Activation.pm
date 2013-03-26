@@ -319,7 +319,7 @@ sub make_bundle_params
         }
         elsif ($self->can_inline($p->{type}))
         {
-            foreach my $pr (Util::recurse_print($p->{value}, '', 0, 0))
+            foreach my $pr (Util::recurse_print($p->{value}, '', 0, 0, $p->{type} eq 'boolean'))
             {
                 push @data, $pr->{value};
             }

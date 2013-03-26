@@ -1,20 +1,38 @@
-{
-    "Cloud::Services::AWS":
+[
     {
-        count: 1,
-        ami: "ami-a29943cb",
-        class: "cfworker",
-        install_cfengine: true,
-	    hub: "$(sys.ipv4)",
-        options:
+        "Cloud::Services::AWS":
         {
-            // security_group: "cf",
-            security_group: "none",
-            netrc: "/home/tzz/.netrc",
-            ssh_pub_key: "/root/.ssh/id_rsa.pub"
-        },
+            count: 1,
+            ami: "ami-a29943cb",
+            class: "cfworker",
+            install_cfengine: true,
+	        hub: "$(sys.ipv4)",
+            options:
+            {
+                // security_group: "cf",
+                security_group: "default",
+                netrc: "/home/tzz/.netrc",
+                ssh_pub_key: "/root/.ssh/id_rsa.pub"
+            },
+        }
+    },
+    {
+        "Cloud::Services::AWS":
+        {
+            count: 0,
+            ami: "ignored",
+            class: "cfworker",
+            install_cfengine: "ignored",
+	        hub: "ignored",
+            options:
+            {
+                security_group: "ignored",
+                netrc: "/home/tzz/.netrc",
+                ssh_pub_key: "ignored"
+            },
+        }
     }
-}
+]
 
 // {
 //     "Cloud::Services":
