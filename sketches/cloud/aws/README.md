@@ -34,8 +34,6 @@ CFEngine::dclib, CFEngine::stdlib
 
 * _return_ *instance_count* (default: none, description: none)
 
-* _return_ *instances* (default: none, description: none)
-
 ### S3_clear
 * _environment_ *runenv* (default: none, description: none)
 
