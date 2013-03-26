@@ -1,89 +1,89 @@
-# This test file uses params/demo.json with some minor adjustments for readability
-
-# run it with:
-
-# cf-agent -KI -f ./test.cf -Dstart1 -Dec2
-# cf-agent -KI -f ./test.cf -Dstop1 -Dec2
-
-# cf-agent -KI -f ./test.cf -Dstart1 -Dvcli
-# cf-agent -KI -f ./test.cf -Dstop1 -Dvcli
-
-# cf-agent -KI -f ./test.cf -Dstart1 -Dopenstack
-# cf-agent -KI -f ./test.cf -Dstop1 -Dopenstack
-
 body common control
 {
-      bundlesequence => { "cfsketch_run" };
-      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
 }
 
 
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
   vars:
-    ec2::
-      "cloudtest_stype" string => "ec2";
-    vcli::
-      "cloudtest_stype" string => "vcli";
-    openstack::
-      "cloudtest_stype" string => "openstack";
-
-    start1::
-      "cloudtest_count" string => "1";
-    start10::
-      "cloudtest_count" string => "10";
-    stop::
-      "cloudtest_count" string => "0";
-
-    start1||start10::
-      "cloudtest_state" string => "start";
-    stop::
-      "cloudtest_state" string => "stop";
-
-    any::
-      "cloudtest_prefix"            string => "cfsketch_g.cloudtest";
-      "cloudtest_bundle_home"       string => dirname("$(this.promise_filename)");
-      "cloudtest_install_cfengine"  string => "1";
-      "cloudtest_class"             string => "cfworker";
-
-      "cloudtest_ec2[ami]"             string => "ami-b89842d1";
-      "cloudtest_ec2[aws_access_key]"  string => "akey1";
-      "cloudtest_ec2[aws_secret_key]"  string => "skey1";
-      "cloudtest_ec2[instance_type]"   string => "m1.small";
-      "cloudtest_ec2[region]"          string => "us-east-1";
-      "cloudtest_ec2[security_group]"  string => "mygroup";
-      "cloudtest_ec2[ssh_pub_key]"     string => "/var/tmp/mysshrsakey.pub";
-
-      "cloudtest_vcli[child_prefix]"        string => "ubuntu-12.04-i386-clone-";
-      "cloudtest_vcli[datastore]"           string => "datastore1";
-      "cloudtest_vcli[disable_ssl_verify]"  string => "1";
-      "cloudtest_vcli[esxi_server]"         string => "10.0.0.1";
-      "cloudtest_vcli[fullpath]"            string => "/vmfs/volumes/4fda02bc-744a4c6e-40f2-08002781db6f";
-      "cloudtest_vcli[master_image]"        string => "ubuntu-12.04-i386-master";
-      "cloudtest_vcli[password]"            string => "cfengine";
-      "cloudtest_vcli[user]"                string => "root";
-
-      "cloudtest_openstack[entry_url]" string => "https://identity.api.rackspacecloud.com/v2.0/tokens";
-      "cloudtest_openstack[password]"  string => "some_password_you_should_fill_in";
-      "cloudtest_openstack[user]"      string => "youruserid";
-      "cloudtest_openstack[key]"       string => "72145782545ab2458456b54b45545a42"; # invalid
-      "cloudtest_openstack[image]"     string => "5cebb13a-f783-4f8c-8058-c4182c724ccd";
-      "cloudtest_openstack[master]"    string => "cfmaster";
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 }
 
 bundle agent cfsketch_run
 {
-  methods:
-      "cfsketch_g" usebundle => "cfsketch_g";
-      "Cloud::Services test" usebundle => cfdc_cloud_services:cloud_services($(cfsketch_g.cloudtest_prefix),
-                                                                             $(cfsketch_g.cloudtest_bundle_home),
-                                                                             $(cfsketch_g.cloudtest_install_cfengine),
-                                                                             $(cfsketch_g.cloudtest_stype),
-                                                                             $(cfsketch_g.cloudtest_count),
-                                                                             $(cfsketch_g.cloudtest_class),
-                                                                             $(cfsketch_g.cloudtest_state),
-                                                                             "cfsketch_g.cloudtest_ec2",
-                                                                             "cfsketch_g.cloudtest_vcli",
-                                                                             "cfsketch_g.cloudtest_openstack");
+  vars:
 
+      # array 'mymetadata' from definition sketch metadata, activation __001_Cloud_Services_AWS_EC2
+      "__001_Cloud_Services_AWS_EC2_mymetadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_Cloud_Services_AWS_EC2_mymetadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_Cloud_Services_AWS_EC2_mymetadata[license]" string => "MIT";
+      "__001_Cloud_Services_AWS_EC2_mymetadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/cloud/aws";
+      "__001_Cloud_Services_AWS_EC2_mymetadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json", "scripts/aws", "scripts/shim.pl" };
+      "__001_Cloud_Services_AWS_EC2_mymetadata[manifest_cf]" slist => { "main.cf" };
+      "__001_Cloud_Services_AWS_EC2_mymetadata[manifest_docs]" slist => { "README.md" };
+      "__001_Cloud_Services_AWS_EC2_mymetadata[manifest_exe]" slist => { "scripts/aws", "scripts/shim.pl" };
+      "__001_Cloud_Services_AWS_EC2_mymetadata[manifest_extra]" slist => { "params/demo.json" };
+      "__001_Cloud_Services_AWS_EC2_mymetadata[name]" string => "Cloud::Services::AWS";
+      "__001_Cloud_Services_AWS_EC2_mymetadata[tags]" slist => { "cfdc" };
+      "__001_Cloud_Services_AWS_EC2_mymetadata[version]" string => "1";
+
+      # array 'options' from definition /home/tzz/source/design-center/tools/test/../../sketches/cloud/aws/params/demo.json 1, activation __001_Cloud_Services_AWS_EC2
+      "__001_Cloud_Services_AWS_EC2_options[netrc]" string => "/home/tzz/.netrc";
+      "__001_Cloud_Services_AWS_EC2_options[security_group]" string => "default";
+      "__001_Cloud_Services_AWS_EC2_options[ssh_pub_key]" string => "/root/.ssh/id_rsa.pub";
+
+      # array 'mymetadata' from definition sketch metadata, activation __002_Cloud_Services_AWS_EC2
+      "__002_Cloud_Services_AWS_EC2_mymetadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__002_Cloud_Services_AWS_EC2_mymetadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__002_Cloud_Services_AWS_EC2_mymetadata[license]" string => "MIT";
+      "__002_Cloud_Services_AWS_EC2_mymetadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/cloud/aws";
+      "__002_Cloud_Services_AWS_EC2_mymetadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json", "scripts/aws", "scripts/shim.pl" };
+      "__002_Cloud_Services_AWS_EC2_mymetadata[manifest_cf]" slist => { "main.cf" };
+      "__002_Cloud_Services_AWS_EC2_mymetadata[manifest_docs]" slist => { "README.md" };
+      "__002_Cloud_Services_AWS_EC2_mymetadata[manifest_exe]" slist => { "scripts/aws", "scripts/shim.pl" };
+      "__002_Cloud_Services_AWS_EC2_mymetadata[manifest_extra]" slist => { "params/demo.json" };
+      "__002_Cloud_Services_AWS_EC2_mymetadata[name]" string => "Cloud::Services::AWS";
+      "__002_Cloud_Services_AWS_EC2_mymetadata[tags]" slist => { "cfdc" };
+      "__002_Cloud_Services_AWS_EC2_mymetadata[version]" string => "1";
+
+      # array 'options' from definition /home/tzz/source/design-center/tools/test/../../sketches/cloud/aws/params/demo.json 2, activation __002_Cloud_Services_AWS_EC2
+      "__002_Cloud_Services_AWS_EC2_options[netrc]" string => "/home/tzz/.netrc";
+      "__002_Cloud_Services_AWS_EC2_options[security_group]" string => "ignored";
+      "__002_Cloud_Services_AWS_EC2_options[ssh_pub_key]" string => "ignored";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "__001_Cloud_Services_AWS_EC2" usebundle => cfdc_cloud_aws:EC2("cf_sketch_testing", "default:cfsketch_run.__001_Cloud_Services_AWS_EC2_mymetadata", "1", "ami-a29943cb", "us-east-1", "t1.micro", "cfworker", "1", "$(sys.ipv4)", "default:cfsketch_run.__001_Cloud_Services_AWS_EC2_options"), useresult => "return___001_Cloud_Services_AWS_EC2";
+    runenv_cf_sketch_testing_activated::
+      "__002_Cloud_Services_AWS_EC2" usebundle => cfdc_cloud_aws:EC2("cf_sketch_testing", "default:cfsketch_run.__002_Cloud_Services_AWS_EC2_mymetadata", "0", "ignored", "us-east-1", "t1.micro", "cfworker", "1", "ignored", "default:cfsketch_run.__002_Cloud_Services_AWS_EC2_options"), useresult => "return___002_Cloud_Services_AWS_EC2";
+
+  reports:
+      "activation __001_Cloud_Services_AWS_EC2 returned instance_count = $(return___001_Cloud_Services_AWS_EC2[instance_count])";
+      "activation __002_Cloud_Services_AWS_EC2 returned instance_count = $(return___002_Cloud_Services_AWS_EC2[instance_count])";
 }
