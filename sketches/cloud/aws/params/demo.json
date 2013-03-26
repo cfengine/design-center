@@ -1,5 +1,6 @@
 [
     {
+        // EC2, ensure 1 cfworkers
         "Cloud::Services::AWS":
         {
             count: 1,
@@ -17,6 +18,7 @@
         }
     },
     {
+        // EC2, ensure 0 cfworkers
         "Cloud::Services::AWS":
         {
             count: 0,
@@ -31,26 +33,34 @@
                 ssh_pub_key: "ignored"
             },
         }
-    }
+    },
+    {
+        // S3, sync bucket from directory
+        "Cloud::Services::AWS":
+        {
+            directory: "/tmp/uploadthis",
+            s3_bucket: "cfsketch_cloud_uploads",
+            options:
+            {
+                acl: "public-read",
+                netrc: "/home/tzz/.netrc",
+            },
+        }
+    },
+    {
+        // S3, clear bucket
+        "Cloud::Services::AWS":
+        {
+            s3_clear_bucket: "cfsketch_cloud_uploads",
+            options:
+            {
+                acl: "ignored",
+                netrc: "/home/tzz/.netrc",
+            },
+        }
+    },
 ]
 
-// {
-//     "Cloud::Services":
-//     {
-//         "s3":
-//         {
-//             acl: "public-read",
-//             aws_access_key: "",
-//             aws_secret_key: ""
-//         },
-
-//         class: "cfcloudbucket",
-//         stype: "s3",
-//         count: "/var/cfengine/masterfiles/html",
-//         state: { bycontext: { "upload|Q1|Q3": "start", "rmbucket|Q2|Q4": "stop" } },
-//         activated: "am_policy_hub",
-//     }
-// }
 
 // {
 //     "Cloud::Services":

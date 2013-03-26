@@ -54,6 +54,15 @@ my $shim_mode = shift @ARGV;
 die "Syntax: $0 [--netrc=NETRC-FILE --curl=/bin/curl --hub=xyz --ec2 ec2option=x --openstack openstackoption=y] [ec2|openstack] [command] [arguments]"
  unless defined $shim_mode;
 
+# Access and secret key inherited from environment if defined
+foreach my $required (qw/netrc/)
+{
+    unless ($options{$required})
+    {
+        die "Sorry, we can't go on until you've specified --netrc NETRCFILE";
+    }
+}
+
 my $ec2       = $shim_mode eq 'ec2';
 my $s3        = $shim_mode eq 's3';
 my $sdb       = $shim_mode eq 'sdb';
@@ -68,28 +77,6 @@ if ($s3)
  {
   die "Sorry, we can't go on until you've specified --s3 $required"
    unless defined $options{s3}->{$required};
- }
-
- # Access and secret key inherited from environment if defined
- foreach my $required (qw/netrc/)
- {
-  my $envvarname = uc($required);
-  $envvarname =~ s/^AWS_/EC2_/;
-  if ($options{s3}->{$required})
-  {
-   $ENV{$envvarname} = $options{s3}->{$required};
-  }
-  else
-  {
-   if ($ENV{$envvarname})
-   {
-    $options{s3}->{$required} = $ENV{$envvarname};
-   }
-   else
-   {
-    die "Sorry, we can't go on until you've specified --s3 $required (or specified it in your $envvarname environment variable)";
-   }
-  }
  }
 
  if ($command eq 'list')
@@ -208,15 +195,6 @@ elsif ($ec2)
  {
   die "Sorry, we can't go on until you've specified --ec2 $required"
    unless defined $options{ec2}->{$required};
- }
-
- # Access and secret key inherited from environment if defined
- foreach my $required (qw/netrc/)
- {
-  unless ($options{$required})
-  {
-      die "Sorry, we can't go on until you've specified --netrc NETRCFILE";
-  }
  }
 
  if (-r $options{ec2}->{ssh_pub_key})
@@ -484,7 +462,9 @@ sub aws_s3
  my $mode = shift @_;
  my @args = @_;
 
- my $tool = $options{s3}->{aws_tool};
+ my $tool = sprintf ("%s --json --secrets_file=%s",
+                     $options{aws_tool},
+                     $options{netrc});
  my $run;
  my $t;
 
@@ -492,7 +472,7 @@ sub aws_s3
 
  if ($mode eq 'list')
  {
-  $run = "$tool --json ls $args[0]";
+  $run = "$tool ls $args[0]";
   open $t, "$run|" or die "Could not list bucket with command [$run]: $!";;
  }
  elsif ($mode eq 'clear')
@@ -502,7 +482,7 @@ sub aws_s3
 
   foreach my $file (@$files)
   {
-   my $do = "$tool --json delete '$bucket/$file->{Key}'";
+   my $do = "$tool delete '$bucket/$file->{Key}'";
    print "Running [$do]\n" if $options{verbose};
    system $do;
   }
@@ -517,7 +497,7 @@ sub aws_s3
   my $files = aws_s3('list', $bucket);
   my %files = map { $_->{Key} => $_->{md5} } @$files;
 
-  my $mkdir = "$tool --json mkdir '$bucket'";
+  my $mkdir = "$tool mkdir '$bucket'";
   print "Running [$mkdir]\n" if $options{verbose};
   system($mkdir);
 
@@ -582,6 +562,8 @@ sub aws_s3
    if ($mode eq 'list')
    {
     $ret = hashref_search($data, 'Contents') || [];
+    $ret = [$ret] if (ref $ret eq 'HASH');
+
     foreach my $f (@$ret)
     {
      next unless defined $f->{ETag};
