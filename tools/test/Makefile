@@ -350,7 +350,8 @@ vcli:
 	@echo NOT IMPLEMENTED
 
 openstack:
-	@echo NOT IMPLEMENTED
+	$(CFSKETCH_DA) --install Cloud::Services::OpenStack --activate Cloud::Services::OpenStack=$(SOURCEDIR)/cloud/openstack/params/demo.json
+	$(RUNNER)
 
 wordpress:
 	@echo NOT IMPLEMENTED

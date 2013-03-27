@@ -26,7 +26,6 @@ my %options =
   openstack => {
                 flavor => "2",
                 entry_url => 'https://identity.api.rackspacecloud.com/v2.0/tokens',
-                password => 'do not -- try !! this',
                },
  );
 
@@ -243,7 +242,41 @@ elsif ($openstack)
  die "Sorry, we can't go on until you've specified --hub=HUB"
   unless defined $options{hub};
 
-  foreach my $required (qw/user key image master/)
+ open my $netrc, $options{netrc}
+  or die "Couldn't open netrc file $options{netrc}: $!";
+
+ while (<$netrc>)
+ {
+     next unless m/^machine\s+OpenStack/;
+     next unless m/\susername\s+(\S+)/;
+     my $u = $1;
+     next unless m/\spassword\s+(\S+)/;
+     my $p = $1;
+     next unless m/\skey\s+(\S+)/;
+     my $k = $1;
+
+     # the following are optional
+     if (m/\sflavor\s+(\S+)/)
+     {
+         $options{openstack}->{flavor} = $1;
+     }
+
+     if (m/\sentry_url\s+(\S+)/)
+     {
+         $options{openstack}->{entry_url} = $1;
+     }
+
+     $options{openstack}->{username} = $u;
+     $options{openstack}->{password} = $p;
+     $options{openstack}->{key} = $k;
+ }
+ close $netrc;
+
+ die "Sorry, the netrc file $options{netrc} didn't provide the required tokens, e.g.
+'machine OpenStack username myuser password mypass key mykey'\n"
+  unless exists $options{openstack}->{password};
+
+ foreach my $required (qw/image master/)
  {
   die "Sorry, we can't go on until you've specified --openstack $required"
    unless defined $options{openstack}->{$required};
@@ -790,7 +823,7 @@ sub curl_openstack
  {
   $method_option = '-X POST';
 $run = <<EOHIPPUS;
-$options{curl} -s $method_option $options{openstack}->{entry_url} -d '{ "auth":{ "RAX-KSKEY:apiKeyCredentials":{ "username":"$options{openstack}->{user}", "apiKey":"$options{openstack}->{key}" } } }' -H "Content-type: application/json" |
+$options{curl} -s $method_option $options{openstack}->{entry_url} -d '{ "auth":{ "RAX-KSKEY:apiKeyCredentials":{ "username":"$options{openstack}->{username}", "apiKey":"$options{openstack}->{key}" } } }' -H "Content-type: application/json" |
 EOHIPPUS
  }
  elsif ($mode eq 'list')
