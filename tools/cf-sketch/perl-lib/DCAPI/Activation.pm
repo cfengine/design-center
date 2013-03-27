@@ -65,10 +65,10 @@ sub make_activation
     foreach (@$params)
     {
         return (undef, "The activation params '$_' have not been defined")
-        unless exists $api->definitions()->{$_};
+         unless exists $api->definitions()->{$_};
 
         return (undef, "The activation params '$_' do not apply to sketch $sketch")
-        unless exists $api->definitions()->{$_}->{$sketch};
+         unless exists $api->definitions()->{$_}->{$sketch};
 
         push @param_sets, [$_, $api->definitions()->{$_}->{$sketch}];
     }
@@ -194,8 +194,24 @@ sub fill_param
         @uses = @{$extra->{uses}};
     }
 
-    my $ret;
+    my @filtered_param_sets;
     foreach my $pset (@$param_sets)
+    {
+        my $specific_bundle = $pset->[1]->{__bundle__};
+        if (defined $specific_bundle && $specific_bundle ne $extra->{bundle})
+        {
+            $api->log("skipping parameter set because __bundle__ parameter '%s' was specified and doesn't match our bundle '%s'",
+                      $specific_bundle,
+                      $extra->{bundle});
+        }
+        else
+        {
+            push @filtered_param_sets, $pset;
+        }
+    }
+
+    my $ret;
+    foreach my $pset (@filtered_param_sets)
     {
         my ($pkey, $pval_ref) = @$pset;
         # Get the values locally so overwriting them with the default doesn't

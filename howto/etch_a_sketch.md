@@ -138,3 +138,57 @@ bundle agent ping(runenv, metadata, hosts, count)
 This example shows you how to use the `metadata` parameter and how to import the
 run environment through the `runenv` parameter.
 
+### parameters.json
+
+You need to specify the bundle parameters in a separate JSON file.
+
+They look like this:
+
+```
+{
+   "Utilities::ping_report":
+   {
+       hosts: [ "localhost", "127.0.0.1", "boogie.woogie"],
+       count: 2,
+   }
+}
+```
+
+Simple, right?  If you give `cf-sketch` a list instead, it creates multiple activations:
+
+```
+[{
+   "Utilities::ping_report":
+   {
+       hosts: [ "127.0.0.1", "boogie.woogie"],
+       count: 8,
+   }
+},
+{
+   "Utilities::ping_report":
+   {
+       hosts: [ "localhost"],
+       count: 2,
+   }
+}]
+
+```
+
+If a parameter set specifies a `__bundle__` key, it only applies to that bundle
+(normally you don't need to specify this, because parameters are matched by
+name).
+
+
+```
+{
+   "Utilities::ping_report":
+   {
+       __bundle__: "not_the_one_you_want",
+       hosts: [ "localhost", "127.0.0.1", "boogie.woogie"],
+       count: 2,
+   }
+}
+```
+
+In the example above, the bundle `ping` defined in the sketch API won't match
+`not_the_one_you_want` and you won't be able to use that parameter set.
