@@ -12,7 +12,7 @@
 	    description: "Manage AWS EC2 services",
         version: 1.0,
         license: "MIT",
-        tags: [ "cfdc" ],
+        tags: [ "cfdc", "cloud", "aws", "ec2" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
         depends: { "Cloud::Services::Common": {}, "CFEngine::stdlib": { version: 110 }, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
     },

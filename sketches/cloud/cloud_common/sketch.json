@@ -13,7 +13,7 @@
 	    description: "Common library for cloud services",
         version: 1.0,
         license: "MIT",
-        tags: [ "cfdc" ],
+        tags: [ "cfdc", "cloud", "aws", "openstack" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
         depends: { "CFEngine::stdlib": { version: 110 }, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
     },

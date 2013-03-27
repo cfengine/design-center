@@ -1,7 +1,7 @@
 # Cloud::Services::Common version 1
 
 License: MIT
-Tags: cfdc
+Tags: cfdc, cloud, aws, openstack
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description

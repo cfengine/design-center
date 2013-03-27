@@ -1,7 +1,7 @@
 # Cloud::Services::AWS::S3 version 1
 
 License: MIT
-Tags: cfdc
+Tags: cfdc, cloud, aws, s3
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description

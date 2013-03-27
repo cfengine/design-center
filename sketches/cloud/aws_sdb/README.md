@@ -1,7 +1,7 @@
 # Cloud::Services::AWS::SDB version 1
 
 License: MIT
-Tags: cfdc
+Tags: cfdc, cloud, aws, sdb
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description

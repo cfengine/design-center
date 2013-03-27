@@ -1,7 +1,7 @@
 # Cloud::Services::AWS::EC2 version 1
 
 License: MIT
-Tags: cfdc
+Tags: cfdc, cloud, aws, ec2
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
