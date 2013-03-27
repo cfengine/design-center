@@ -1,0 +1,26 @@
+[
+    {
+        // sync domain from directory
+        "Cloud::Services::AWS::SDB":
+        {
+            // you can see an example datafile in sample.sdb.lines.json
+            datafile: "/tmp/sdb.json",
+            domain: "cfsketch_sdb_cloud",
+            options:
+            {
+                netrc: "/home/tzz/.netrc",
+            },
+        }
+    },
+    {
+        // clear domain
+        "Cloud::Services::AWS::SDB":
+        {
+            clear_domain: "cfsketch_sdb_cloud",
+            options:
+            {
+                netrc: "/home/tzz/.netrc",
+            },
+        }
+    },
+]

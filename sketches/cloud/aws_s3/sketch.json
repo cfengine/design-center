@@ -1,0 +1,43 @@
+{
+    manifest:
+    {
+        "main.cf": { desc: "main file" },
+        "README.md": { documentation: true },
+        "params/demo.json": { comment: "simple demo of S3 integration" },
+    },
+
+    metadata:
+    {
+        name: "Cloud::Services::AWS::S3",
+	    description: "Manage AWS S3 buckets",
+        version: 1.0,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "Cloud::Services::Common": {}, "CFEngine::stdlib": { version: 110 }, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
+    },
+    
+    api:
+    {
+        sync:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "directory", },
+            { type: "string", name: "bucket", },
+            { type: "array", name: "options", },
+        ],
+
+        clear:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "clear_bucket", },
+            { type: "array", name: "options", },
+        ],
+
+    },
+
+    namespace: "cfdc_aws_s3",
+    interface: [ "main.cf" ]
+}

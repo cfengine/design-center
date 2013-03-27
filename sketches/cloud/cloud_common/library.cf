@@ -7,7 +7,9 @@ bundle agent cloud_shim
       # adjust for your Perl install, but any Perl should be able to handle this
       "perl"  string => "/usr/bin/perl";
 
-      "shim" string => "$(perl) $(default:home.home)/scripts/shim.pl";
+      # TODO: due to a bug in this.promise_filename we hard-code this
+      # "shim" string => "$(perl) $(default:home.home)/scripts/shim.pl";
+      "shim" string => "$(perl) $(default:home.home)/../cloud_common/scripts/shim.pl";
 
   methods:
       "E.T." usebundle => default:home($(this.promise_filename));
