@@ -56,10 +56,11 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "$(API_SKETCHDIR)", environment: "testing", params: [ "vcs_base", "git_mirror_core" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "$(API_SKETCHDIR)", environment: "testing", params: [ "vcs_base", "svn_mirror_thrift" ] } } } }' | $(CFAPI)
 
-	@echo ...use some sketch values in other sketches: sketch composition
-	echo '{ dc_api_version: "0.0.1", request: {use: [ { destination_sketch: "CFEngine::sketch_template", destination_list: "mylist", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" }, { destination_sketch: "CFEngine::sketch_template", destination_scalar: "myip", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" } ] } }' | $(CFAPI)
+	@echo ...compose some sketch values in other sketches: sketch composition
+	echo '{ dc_api_version: "0.0.1", request: {decompose: "mirror_to_template_1" } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {compose: { mirror_to_template_1: { destination_sketch: "CFEngine::sketch_template", destination_list: "mylist", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" }, mirror_to_template_2: { destination_sketch: "CFEngine::sketch_template", destination_scalar: "myip", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" } } } }' | $(CFAPI)
 
-	@echo ...activate CFEngine::sketch_template with testing run environment and incomplete_sketch parameters, with the previous use call providing the glue
+	@echo ...activate CFEngine::sketch_template with testing run environment and incomplete_sketch parameters, with the previous compose call providing the glue
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "$(API_SKETCHDIR)", environment: "testing", params: [ "incomplete_sketch" ] } } } }' | $(CFAPI)
 
 	@echo ...generate the runfile

@@ -115,7 +115,7 @@ sub make_activation
                          sketch_name => $found->name(),
                          bundle => $b,
                          id => $activation_id,
-                         uses => $api->uses(),
+                         compositions => $api->compositions(),
                         );
 
             $extra{default} = $p->{default} if exists $p->{default};
@@ -188,10 +188,10 @@ sub fill_param
                  type => 'array', name => $name, value => $extra->{sketch}->runfile_data_dump()};
     }
 
-    my @uses;
-    if (defined $extra->{uses})
+    my %compositions;
+    if (defined $extra->{compositions})
     {
-        @uses = @{$extra->{uses}};
+        %compositions = %{$extra->{compositions}};
     }
 
     my @filtered_param_sets;
@@ -253,21 +253,22 @@ sub fill_param
 
     unless (defined $ret)
     {
-        foreach my $use (@uses)
+        foreach my $compose_key (sort keys %compositions)
         {
+            my $compose = $compositions{$compose_key};
             next if $ret;
 
             # { destination_sketch: "CFEngine::sketch_template",
             # destination_list: "mylist", source_sketch: "VCS::vcs_mirror",
             # source_scalar: "deploy_path" }
 
-            my $d = Util::hashref_search($use, 'destination_sketch') || 'destination_sketch not given';
-            my $dlist = Util::hashref_search($use, 'destination_list') || 'destination_list not given';
-            my $dscalar = Util::hashref_search($use, 'destination_scalar') || 'destination_scalar not given';
-            my $dbundle = Util::hashref_search($use, 'destination_bundle');
+            my $d = Util::hashref_search($compose, 'destination_sketch') || 'destination_sketch not given';
+            my $dlist = Util::hashref_search($compose, 'destination_list') || 'destination_list not given';
+            my $dscalar = Util::hashref_search($compose, 'destination_scalar') || 'destination_scalar not given';
+            my $dbundle = Util::hashref_search($compose, 'destination_bundle');
 
-            $api->log3("Looking for a 'use' match for %s parameter %s in sketch %s, bundle %s: %s",
-                       $type, $name, $extra->{sketch_name}, $extra->{bundle}, $use);
+            $api->log3("Looking for a 'compose' match for %s parameter %s in sketch %s, bundle %s: %s",
+                       $type, $name, $extra->{sketch_name}, $extra->{bundle}, $compose);
 
             # check the optional destination_bundle specifier
             next if (defined $dbundle && $dbundle ne $extra->{bundle});
@@ -276,20 +277,20 @@ sub fill_param
             # check the mandatory destination_list
             if ($dlist eq $name && $type eq 'list')
             {
-                $api->log4("Found a 'use' match for list parameter %s in sketch %s, bundle %s: %s",
-                           $name, $d, $extra->{bundle}, $use);
-                $ret = {set=>'use', type => $type, name => $name, deferred_value => $use, deferred_list => 0};
+                $api->log4("Found a 'compose' match for list parameter %s in sketch %s, bundle %s: %s=%s",
+                           $name, $d, $extra->{bundle}, $compose_key, $compose);
+                $ret = {set=>'compose', type => $type, name => $name, deferred_value => $compose, deferred_list => 0};
             }
             # TODO: maybe support other types
             elsif ($dscalar eq $name && $type eq 'string')
             {
-                $api->log4("Found a 'use' match for scalar parameter %s in sketch %s, bundle %s: %s",
-                           $name, $d, $extra->{bundle}, $use);
-                $ret = {set=>'use', type => $type, name => $name, deferred_value => $use, deferred_list => 0};
+                $api->log4("Found a 'compose' match for scalar parameter %s in sketch %s, bundle %s: %s=%s",
+                           $name, $d, $extra->{bundle}, $compose_key, $compose);
+                $ret = {set=>'compose', type => $type, name => $name, deferred_value => $compose, deferred_list => 0};
             }
             else
             {
-                $api->log4("There was no 'use' match for parameter %s in sketch %s, bundle %s",
+                $api->log4("There was no 'compose' match for parameter %s in sketch %s, bundle %s",
                            $name, $d, $extra->{bundle});
             }
         }
@@ -381,19 +382,20 @@ sub resolve_now
     ACTIVATION:
         foreach my $a (@$all)
         {
-        USE:
-            foreach my $use (@{$self->api()->uses()})
+        COMPOSE:
+            foreach my $compose_key (sort keys %{$self->api()->compositions()})
             {
-                my $activation_regex = Util::hashref_search($use, 'activation');
+                my $compose = $self->api()->compositions()->{$compose_key};
+                my $activation_regex = Util::hashref_search($compose, 'activation');
                 # check the optional activation regex... TODO: maybe make this more involved
-                next USE if (defined $activation_regex && $a->id() !~ m/$activation_regex/);
+                next COMPOSE if (defined $activation_regex && $a->id() !~ m/$activation_regex/);
 
             APARAM:
                 foreach my $aparam (@{$a->params()})
                 {
-                    my $s = Util::hashref_search($use, 'source_sketch') || 'source_sketch not given';
-                    my $sbundle = Util::hashref_search($use, 'source_bundle');
-                    my $scalar = Util::hashref_search($use, 'source_scalar') || 'source_scalar not given';
+                    my $s = Util::hashref_search($compose, 'source_sketch') || 'source_sketch not given';
+                    my $sbundle = Util::hashref_search($compose, 'source_bundle');
+                    my $scalar = Util::hashref_search($compose, 'source_scalar') || 'source_scalar not given';
 
                     next APARAM if exists $aparam->{deferred_value};
 
@@ -406,8 +408,8 @@ sub resolve_now
                     next APARAM if ($scalar ne $aparam->{name} ||
                                     'return' ne $aparam->{type});
 
-                    $self->api()->log4("Found a 'use' match for deferred parameter %s: %s matches %s",
-                                       $param, $use, $aparam);
+                    $self->api()->log4("Found a 'compose' match for deferred parameter %s: %s=%s matches %s",
+                                       $param, $compose_key, $compose, $aparam);
 
                     # NOTE: this is directly linked to the name of the return
                     # array in DCAPI.pm!!!

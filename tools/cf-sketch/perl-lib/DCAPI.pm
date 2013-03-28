@@ -44,7 +44,7 @@ has repos => ( is => 'ro', default => sub { [] } );
 has recognized_sources => ( is => 'ro', default => sub { [] } );
 has vardata => ( is => 'rw');
 has runfile => ( is => 'ro', default => sub { {} } );
-has uses => ( is => 'rw', default => sub { [] });
+has compositions => ( is => 'rw', default => sub { {} });
 has definitions => ( is => 'rw', default => sub { {} });
 has activations => ( is => 'rw', default => sub { {} });
 has environments => ( is => 'rw', default => sub { { default =>
@@ -160,9 +160,9 @@ sub set_config
         {
             $result->add_error($vardata_file, "vardata is not a hash");
         }
-        elsif (!exists $v_data->{uses})
+        elsif (!exists $v_data->{compositions})
         {
-            $result->add_error($vardata_file, "vardata has no key 'uses'");
+            $result->add_error($vardata_file, "vardata has no key 'compositions'");
         }
         elsif (!exists $v_data->{activations})
         {
@@ -179,7 +179,7 @@ sub set_config
         else
         {
             $self->log3("Successfully loaded vardata file $vardata_file");
-            $self->uses($v_data->{uses});
+            $self->compositions($v_data->{compositions});
             $self->activations($v_data->{activations});
             $self->definitions($v_data->{definitions});
             $self->environments($v_data->{environments});
@@ -198,7 +198,7 @@ sub save_vardata
     my $self = shift;
 
     my $data = {
-                uses => $self->uses,
+                compositions => $self->compositions,
                 activations => $self->activations,
                 definitions => $self->definitions,
                 environments => $self->environments,
@@ -284,7 +284,7 @@ sub data_dump
      recognized_sources => $self->recognized_sources(),
      vardata => $self->vardata(),
      runfile => $self->runfile(),
-     uses => $self->uses(),
+     compositions => $self->compositions(),
      definitions => $self->definitions(),
      activations => $self->activations(),
      environments => $self->environments(),
@@ -714,24 +714,43 @@ sub undefine_environment
     return $result;
 }
 
-sub use
+sub compose
 {
     my $self = shift;
-    my $use = shift || [];
+    my $compose = shift || [];
 
     my $result = DCAPI::Result->new(api => $self,
                                     status => 1,
                                     success => 1,
                                     data => { });
 
-    if (ref $use ne 'ARRAY')
+    if (ref $compose ne 'HASH')
     {
         return $result->add_error('syntax',
-                                  "Invalid use command");
+                                  "Invalid compose command");
     }
 
-    @{$self->uses()} = @$use;
-    $result->add_data_key('use', 'uses', $self->uses());
+    $self->compositions()->{$_} = $compose->{$_} foreach keys %$compose;
+    $result->add_data_key('compose', 'compositions', $self->compositions());
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub decompose
+{
+    my $self = shift;
+    my $compose_key = shift || [];
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    # delete and return in one statement
+    $result->add_data_key('compose', 'compositions',
+                          delete $self->compositions()->{$compose_key});
 
     $self->save_vardata();
 

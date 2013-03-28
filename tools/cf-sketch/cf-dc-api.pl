@@ -83,7 +83,8 @@ my $environments = Util::hashref_search($request, qw/environments/);
 my $activate = Util::hashref_search($request, qw/activate/);
 my $deactivate = Util::hashref_search($request, qw/deactivate/);
 my $activations = Util::hashref_search($request, qw/activations/);
-my $use = Util::hashref_search($request, qw/use/);
+my $compose = Util::hashref_search($request, qw/compose/);
+my $decompose = Util::hashref_search($request, qw/decompose/);
 
 my $regenerate = Util::hashref_search($request, qw/regenerate/);
 
@@ -130,13 +131,17 @@ elsif (defined $activations)
                                  success => 1,
                                  data=> {activations => $api->activations()});
 }
-elsif (defined $use)
+elsif (defined $compose)
 {
-    $result = $api->use($use);
+    $result = $api->compose($compose);
+}
+elsif (defined $compose)
+{
+    $result = $api->decompose($decompose);
 }
 elsif (defined $activate)
 {
-    $result = $api->activate($activate, { use => $use });
+    $result = $api->activate($activate, { compose => $compose });
 }
 elsif (defined $deactivate)
 {
