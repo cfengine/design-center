@@ -384,3 +384,8 @@ snmpwalk:
 generic_services:
 	$(CFSKETCH_DA) --install Services::Generic --activate Services::Generic=$(SOURCEDIR)/utilities/generic_services/params/demo.json
 	$(RUNNER)
+
+access:
+	$(CFSKETCH_DA) --install System::access --activate System::access=$(SOURCEDIR)/security/access/params/example.json
+	$(RUNNER)
+
