@@ -389,3 +389,6 @@ access:
 	$(CFSKETCH_DA) --install System::access --activate System::access=$(SOURCEDIR)/security/access/params/example.json
 	$(RUNNER)
 
+data_classes:
+	$(CFSKETCH_DA) --install Data::Classes --activate Data::Classes=$(SOURCEDIR)/utilities/data_classes/params/demo.json
+	$(RUNNER)

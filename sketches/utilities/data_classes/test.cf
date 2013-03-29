@@ -1,0 +1,102 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # list 'files' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 1, activation __001_Data_Classes_byfile
+      "__001_Data_Classes_byfile_files" slist => { "/etc/ssh/sshd_config" };
+
+      # list 'process_patterns' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 2, activation __002_Data_Classes_byprocess
+      "__002_Data_Classes_byprocess_process_patterns" slist => { "sshd" };
+
+      # list 'process_patterns' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 3, activation __003_Data_Classes_byprocess
+      "__003_Data_Classes_byprocess_process_patterns" slist => { "sshd" };
+
+      # list 'ports' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 4, activation __004_Data_Classes_byport
+      "__004_Data_Classes_byport_ports" slist => { "22" };
+
+      # list 'files' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 5, activation __005_Data_Classes_byfile
+      "__005_Data_Classes_byfile_files" slist => { "/etc/rc3.d/S85httpd" };
+
+      # list 'process_patterns' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 6, activation __006_Data_Classes_byprocess
+      "__006_Data_Classes_byprocess_process_patterns" slist => { "httpd" };
+
+      # list 'ports' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 7, activation __007_Data_Classes_byport
+      "__007_Data_Classes_byport_ports" slist => { "80" };
+
+      # list 'files' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 8, activation __008_Data_Classes_byfile
+      "__008_Data_Classes_byfile_files" slist => { "/etc/rc3.d/S85tomcat7" };
+
+      # list 'process_patterns' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 9, activation __009_Data_Classes_byprocess
+      "__009_Data_Classes_byprocess_process_patterns" slist => { "java" };
+
+      # list 'ports' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 10, activation __010_Data_Classes_byport
+      "__010_Data_Classes_byport_ports" slist => { "8080" };
+
+      # list 'commands' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 11, activation __011_Data_Classes_byshell
+      "__011_Data_Classes_byshell_commands" slist => { "/bin/echo put your own commands here" };
+
+      # list 'commands' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/data_classes/params/demo.json 12, activation __012_Data_Classes_byshell
+      "__012_Data_Classes_byshell_commands" slist => { "/bin/false" };
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+
+    any::
+      "__001_Data_Classes_byfile" usebundle => byfile("sshd_config_exists", @(cfsketch_run.__001_Data_Classes_byfile_files)), useresult => "return___001_Data_Classes_byfile";
+    any::
+      "__002_Data_Classes_byprocess" usebundle => byprocess("sshd_processes_running", @(cfsketch_run.__002_Data_Classes_byprocess_process_patterns), "", "1", "1000000"), useresult => "return___002_Data_Classes_byprocess";
+    any::
+      "__003_Data_Classes_byprocess" usebundle => byprocess("root_sshd_processes_running", @(cfsketch_run.__003_Data_Classes_byprocess_process_patterns), "root", "1", "1000000"), useresult => "return___003_Data_Classes_byprocess";
+    any::
+      "__004_Data_Classes_byport" usebundle => byport("sshd_ports_open", @(cfsketch_run.__004_Data_Classes_byport_ports)), useresult => "return___004_Data_Classes_byport";
+    any::
+      "__005_Data_Classes_byfile" usebundle => byfile("httpd_init_exists", @(cfsketch_run.__005_Data_Classes_byfile_files)), useresult => "return___005_Data_Classes_byfile";
+    any::
+      "__006_Data_Classes_byprocess" usebundle => byprocess("httpd_processes_running", @(cfsketch_run.__006_Data_Classes_byprocess_process_patterns), "", "10", "1000000"), useresult => "return___006_Data_Classes_byprocess";
+    any::
+      "__007_Data_Classes_byport" usebundle => byport("httpd_ports_open", @(cfsketch_run.__007_Data_Classes_byport_ports)), useresult => "return___007_Data_Classes_byport";
+    any::
+      "__008_Data_Classes_byfile" usebundle => byfile("tomcat_init_exists", @(cfsketch_run.__008_Data_Classes_byfile_files)), useresult => "return___008_Data_Classes_byfile";
+    any::
+      "__009_Data_Classes_byprocess" usebundle => byprocess("tomcat_processes_running", @(cfsketch_run.__009_Data_Classes_byprocess_process_patterns), "tomcat", "1", "1000000"), useresult => "return___009_Data_Classes_byprocess";
+    any::
+      "__010_Data_Classes_byport" usebundle => byport("tomcat_ports_open", @(cfsketch_run.__010_Data_Classes_byport_ports)), useresult => "return___010_Data_Classes_byport";
+    any::
+      "__011_Data_Classes_byshell" usebundle => byshell("raid_OK", @(cfsketch_run.__011_Data_Classes_byshell_commands)), useresult => "return___011_Data_Classes_byshell";
+    any::
+      "__012_Data_Classes_byshell" usebundle => byshell("broken_should_not_be_defined", @(cfsketch_run.__012_Data_Classes_byshell_commands)), useresult => "return___012_Data_Classes_byshell";
+
+  reports:
+      "activation __001_Data_Classes_byfile returned defined = $(return___001_Data_Classes_byfile[defined])";
+      "activation __002_Data_Classes_byprocess returned defined = $(return___002_Data_Classes_byprocess[defined])";
+      "activation __003_Data_Classes_byprocess returned defined = $(return___003_Data_Classes_byprocess[defined])";
+      "activation __004_Data_Classes_byport returned defined = $(return___004_Data_Classes_byport[defined])";
+      "activation __005_Data_Classes_byfile returned defined = $(return___005_Data_Classes_byfile[defined])";
+      "activation __006_Data_Classes_byprocess returned defined = $(return___006_Data_Classes_byprocess[defined])";
+      "activation __007_Data_Classes_byport returned defined = $(return___007_Data_Classes_byport[defined])";
+      "activation __008_Data_Classes_byfile returned defined = $(return___008_Data_Classes_byfile[defined])";
+      "activation __009_Data_Classes_byprocess returned defined = $(return___009_Data_Classes_byprocess[defined])";
+      "activation __010_Data_Classes_byport returned defined = $(return___010_Data_Classes_byport[defined])";
+      "activation __011_Data_Classes_byshell returned defined = $(return___011_Data_Classes_byshell[defined])";
+      "activation __012_Data_Classes_byshell returned defined = $(return___012_Data_Classes_byshell[defined])";
+}

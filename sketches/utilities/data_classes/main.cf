@@ -1,0 +1,146 @@
+bundle agent byport(classname, ports)
+{
+  classes:
+      "$(classname)_port_$(netstat.ports)" expression => "any";
+      "$(classname)" expression => "$(classname)_port_$(ports)";
+
+  commands:
+      "$(paths.netstat) -ln | $(paths.grep) LISTEN | /usr/bin/perl -n -e'next unless m/:(\d+)\s+.+\s+LISTEN/; push @v, \"\\\"$1\\\"\"; END { $\"=\",\"; print \"\\@ports={@v}\\n\" };'"
+      comment => "Look for listening sockets rewrite output with Perl to fit the module format",
+      contain => in_shell,
+      module => "true",
+      handle => "dataclasses_command_run";
+
+  reports:
+    cfengine::
+      "" bundle_return_value_index => "defined",
+      ifvarclass => "!$(classname)";
+
+      "$(classname)" bundle_return_value_index => "defined",
+      ifvarclass => "$(classname)";
+
+    inform_mode::
+      "$(this.bundle): Defined class $(classname)"
+      ifvarclass => "$(classname)";
+
+      "$(this.bundle): Defined class $(classname) because port $(ports) was open"
+      ifvarclass => "$(classname)_port_$(ports)";
+
+      "$(this.bundle): open ports: $(netstat.ports)";
+      "$(this.bundle): looking for listening ports $(ports) to define class $(classname)";
+}
+
+bundle agent byfile(classname, files)
+{
+  classes:
+      "$(classname)_exists_$(canon[$(files)])" expression => fileexists($(files));
+      "$(classname)" expression => "$(classname)_exists_$(canon[$(files)])";
+
+  vars:
+      "canon[$(files)]" string => canonify($(files));
+
+  reports:
+    cfengine::
+      "" bundle_return_value_index => "defined",
+      ifvarclass => "!$(classname)";
+
+      "$(classname)" bundle_return_value_index => "defined",
+      ifvarclass => "$(classname)";
+
+    inform_mode::
+      "$(this.bundle): Defined class $(classname)"
+      ifvarclass => "$(classname)";
+
+      "$(this.bundle): Defined class $(classname) because file '$(files)' exists"
+      ifvarclass => "$(classname)_exists_$(canon[$(files)])";
+
+      "$(this.bundle): looking for file '$(files)' to define class $(classname)";
+}
+
+bundle agent byshell(classname, commands)
+{
+  classes:
+      "$(classname)" expression => "$(classname)_ran_$(canon[$(commands)])";
+
+  vars:
+      "canon[$(commands)]" string => canonify($(commands));
+
+  commands:
+      "$(commands)"
+      contain => in_shell,
+      classes => if_ok("$(classname)_ran_$(canon[$(commands)])");
+
+  reports:
+    cfengine::
+      "" bundle_return_value_index => "defined",
+      ifvarclass => "!$(classname)";
+
+      "$(classname)" bundle_return_value_index => "defined",
+      ifvarclass => "$(classname)";
+
+    inform_mode::
+      "$(this.bundle): Defined class $(classname)"
+      ifvarclass => "$(classname)";
+
+      "$(this.bundle): Defined class $(classname) because command '$(commands)' returned OK"
+      ifvarclass => "$(classname)_ran_$(canon[$(commands)])";
+
+      "$(this.bundle): running command '$(commands)' to define class $(classname)";
+}
+
+bundle agent byprocess(classname, process_patterns, owner, min, max)
+{
+  classes:
+      "$(classname)" expression => "$(classname)_found_$(canon[$(process_patterns)])";
+      "owner_not_given" expression => strcmp($(owner), "");
+
+  vars:
+      "canon[$(process_patterns)]" string => canonify($(process_patterns));
+
+  processes:
+    !owner_not_given::
+      "$(process_patterns)"
+      process_select => process_owner($(owner)),
+      process_count => process_count_range($(min), $(max),
+                                           "$(classname)_found_$(canon[$(process_patterns)])");
+
+    owner_not_given::
+      "$(process_patterns)"
+      process_count => process_count_range($(min), $(max),
+                                           "$(classname)_found_$(canon[$(process_patterns)])");
+
+  reports:
+    cfengine::
+      "" bundle_return_value_index => "defined",
+      ifvarclass => "!$(classname)";
+
+      "$(classname)" bundle_return_value_index => "defined",
+      ifvarclass => "$(classname)";
+
+    inform_mode::
+      "$(this.bundle): Defined class $(classname)"
+      ifvarclass => "$(classname)";
+
+      "$(this.bundle): Defined class $(classname) because process pattern '$(process_patterns)' (owner '$(owner)', min. count $(min), max. count $(max)) returned OK"
+      ifvarclass => "$(classname)_found_$(canon[$(process_patterns)])";
+
+      "$(this.bundle): looking for process pattern '$(process_patterns)' (owner '$(owner)', min. count $(min), max. count $(max)) to define class $(classname)";
+
+    !owner_not_given::
+      "$(this.bundle): owner search: '$(owner)'";
+
+    owner_not_given::
+      "$(this.bundle): owner NOT given, match any owner";
+}
+
+body process_count process_count_range(lower, upper, class)
+{
+      match_range => irange($(lower), $(upper));
+      in_range_define => { $(class) };
+}
+
+body process_select process_owner(owner)
+{
+      process_owner => { $(owner) };
+      process_result => "process_owner";
+ }
