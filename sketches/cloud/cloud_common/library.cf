@@ -1,9 +1,6 @@
 bundle agent cloud_shim
 {
   vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
       # adjust for your Perl install, but any Perl should be able to handle this
       "perl"  string => "/usr/bin/perl";
 
