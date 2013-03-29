@@ -992,10 +992,17 @@ sub regenerate
     {
         $self->log("Regenerate: generating activation call %s", $a->id());
 
-        push @invocation_lines, sprintf('%srunenv_%s_%s::',
-                                        $context_indent,
-                                        $a->environment(),
-                                        'activated');
+        if (exists $environments{$a->environment()})
+        {
+            push @invocation_lines, sprintf('%srunenv_%s_%s::',
+                                            $context_indent,
+                                            $a->environment(),
+                                            'activated');
+        }
+        else                            # if the bundle doesn't want an runenv
+        {
+            push @invocation_lines, sprintf('%sany::', $context_indent);
+        }
 
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
