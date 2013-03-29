@@ -13,6 +13,24 @@ bundle agent report_metadata(bundlename, metadata)
       "$(bundlename): $($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
 }
 
+# an example of how a sketch can install itself
+# "install" usebundle => default:install_sketch(METADATA, "sourcedir", "destdir");
+# TODO: add permissions and owner/group
+bundle agent install_sketch(metadata, source_dir, dest_dir)
+{
+  vars:
+      # pretty-print the authors and dependencies
+      "files" slist => { "@($(metadata)[manifest])" };
+
+  files:
+      "$(dest_dir)/$(files)"
+      copy_from => local_cp("$(source_dir)/$(files)");
+
+  reports:
+    cfengine::
+      "$(this.bundle): installing $(files) from $(source_dir) to $(dest_dir)";
+}
+
 bundle agent home(filename)
 {
   classes:
