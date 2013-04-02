@@ -83,8 +83,10 @@ my $environments = Util::hashref_search($request, qw/environments/);
 my $activate = Util::hashref_search($request, qw/activate/);
 my $deactivate = Util::hashref_search($request, qw/deactivate/);
 my $activations = Util::hashref_search($request, qw/activations/);
+
 my $compose = Util::hashref_search($request, qw/compose/);
 my $decompose = Util::hashref_search($request, qw/decompose/);
+my $compositions = Util::hashref_search($request, qw/compositions/);
 
 my $regenerate = Util::hashref_search($request, qw/regenerate/);
 
@@ -135,9 +137,16 @@ elsif (defined $compose)
 {
     $result = $api->compose($compose);
 }
-elsif (defined $compose)
+elsif (defined $decompose)
 {
     $result = $api->decompose($decompose);
+}
+elsif (defined $compositions)
+{
+    $result = DCAPI::Result->new(api => $api,
+                                 status => 1,
+                                 success => 1,
+                                 data=> {compositions => $api->compositions()});
 }
 elsif (defined $activate)
 {
