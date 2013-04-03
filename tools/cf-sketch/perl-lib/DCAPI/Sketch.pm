@@ -131,9 +131,11 @@ sub runfile_data_dump
     }
 
     # only dependencies with :: are useful
-    $ret{depends} = [ grep { $_ =~ m/::/ } sort keys $self->depends() ];
+    my %depends = defined $self->depends() ? %{$self->depends()} : ();
+    $ret{depends} = [ grep { $_ =~ m/::/ } sort keys %depends ];
 
-    my @manifest = sort keys $self->manifest();
+    my %manifest = defined $self->manifest() ? %{$self->manifest()} : ();
+    my @manifest = sort keys %manifest;
     $ret{manifest} = \@manifest;
     $ret{manifest_cf} = [ grep { $_ =~ m/\.cf$/ } @manifest ];
     $ret{manifest_docs} = [ grep { $self->manifest()->{$_}->{documentation} } @manifest ];
