@@ -54,7 +54,7 @@ bundle agent ping(runenv, metadata, hosts, count)
       "$(pinger)"
       args => "$(ping_count_option) $(count) $(hosts)",
       contain => default:silent,
-      classes => default:generic("$(hosts)");
+      classes => default:classes_generic("$(hosts)");
 
   reports:
     verbose::
