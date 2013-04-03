@@ -80,11 +80,17 @@ my $define_environment = Util::hashref_search($request, qw/define_environment/);
 my $undefine_environment = Util::hashref_search($request, qw/undefine_environment/);
 my $environments = Util::hashref_search($request, qw/environments/);
 
+my $define_validation = Util::hashref_search($request, qw/define_validation/);
+my $undefine_validation = Util::hashref_search($request, qw/undefine_validation/);
+my $validations = Util::hashref_search($request, qw/validations/);
+
 my $activate = Util::hashref_search($request, qw/activate/);
 my $deactivate = Util::hashref_search($request, qw/deactivate/);
 my $activations = Util::hashref_search($request, qw/activations/);
+
 my $compose = Util::hashref_search($request, qw/compose/);
 my $decompose = Util::hashref_search($request, qw/decompose/);
+my $compositions = Util::hashref_search($request, qw/compositions/);
 
 my $regenerate = Util::hashref_search($request, qw/regenerate/);
 
@@ -124,20 +130,27 @@ elsif (defined $uninstall)
 {
     $result = $api->uninstall($uninstall);
 }
+elsif (defined $compositions)
+{
+    $result = DCAPI::Result->new(api => $api,
+                                 status => 1,
+                                 success => 1,
+                                 data=> {compositions => $api->compositions()});
+}
+elsif (defined $compose)
+{
+    $result = $api->compose($compose);
+}
+elsif (defined $decompose)
+{
+    $result = $api->decompose($decompose);
+}
 elsif (defined $activations)
 {
     $result = DCAPI::Result->new(api => $api,
                                  status => 1,
                                  success => 1,
                                  data=> {activations => $api->activations()});
-}
-elsif (defined $compose)
-{
-    $result = $api->compose($compose);
-}
-elsif (defined $compose)
-{
-    $result = $api->decompose($decompose);
 }
 elsif (defined $activate)
 {
@@ -176,6 +189,21 @@ elsif (defined $define_environment)
 elsif (defined $undefine_environment)
 {
     $result = $api->undefine_environment($undefine_environment);
+}
+elsif (defined $validations)
+{
+    $result = DCAPI::Result->new(api => $api,
+                                 status => 1,
+                                 success => 1,
+                                 data=> {validations => $api->validations()});
+}
+elsif (defined $define_validation)
+{
+    $result = $api->define_validation($define_validation);
+}
+elsif (defined $undefine_validation)
+{
+    $result = $api->undefine_validation($undefine_validation);
 }
 elsif (defined $regenerate)
 {

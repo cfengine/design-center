@@ -47,6 +47,7 @@ has runfile => ( is => 'ro', default => sub { {} } );
 has compositions => ( is => 'rw', default => sub { {} });
 has definitions => ( is => 'rw', default => sub { {} });
 has activations => ( is => 'rw', default => sub { {} });
+has validations => ( is => 'rw', default => sub { {} });
 has environments => ( is => 'rw', default => sub { { default =>
                                                      {
                                                       test => 0,
@@ -176,6 +177,10 @@ sub set_config
         {
             $result->add_error($vardata_file, "vardata has no key 'environments'");
         }
+        elsif (!exists $v_data->{validations})
+        {
+            $result->add_error($vardata_file, "vardata has no key 'validations'");
+        }
         else
         {
             $self->log3("Successfully loaded vardata file $vardata_file");
@@ -183,6 +188,7 @@ sub set_config
             $self->activations($v_data->{activations});
             $self->definitions($v_data->{definitions});
             $self->environments($v_data->{environments});
+            $self->validations($v_data->{validations});
         }
     }
     else
@@ -202,6 +208,7 @@ sub save_vardata
                 activations => $self->activations,
                 definitions => $self->definitions,
                 environments => $self->environments,
+                validations => $self->validations,
                };
     my $vardata_file = $self->vardata();
 
@@ -288,6 +295,7 @@ sub data_dump
      definitions => $self->definitions(),
      activations => $self->activations(),
      environments => $self->environments(),
+     validations => $self->validations(),
     };
 }
 
@@ -751,6 +759,49 @@ sub decompose
     # delete and return in one statement
     $result->add_data_key('compose', 'compositions',
                           delete $self->compositions()->{$compose_key});
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub define_validation
+{
+    my $self = shift;
+    my $define_validation = shift || [];
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    if (ref $define_validation ne 'HASH')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid define_validation command");
+    }
+
+    $self->validations()->{$_} = $define_validation->{$_} foreach keys %$define_validation;
+    $result->add_data_key('define_validation', 'validations', $self->validations());
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub undefine_validation
+{
+    my $self = shift;
+    my $undefine_validation_key = shift || [];
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    # delete and return in one statement
+    $result->add_data_key('undefine_validation', 'validations',
+                          delete $self->validations()->{$undefine_validation_key});
 
     $self->save_vardata();
 
