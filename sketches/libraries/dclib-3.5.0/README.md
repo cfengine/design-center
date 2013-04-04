@@ -10,7 +10,7 @@ Design Center standard library for CFEngine 3.5.0 and higher
 ## Dependencies
 none
 
-## Parameters
+## API
 none
 
 ## SAMPLE USAGE

@@ -10,7 +10,7 @@ Install and configure Wordpress
 ## Dependencies
 CFEngine::stdlib
 
-## Parameters
+## API
 none
 
 ## SAMPLE USAGE

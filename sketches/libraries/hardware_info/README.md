@@ -10,7 +10,7 @@ Discover hardware information
 ## Dependencies
 none
 
-## Parameters
+## API
 none
 
 ## SAMPLE USAGE

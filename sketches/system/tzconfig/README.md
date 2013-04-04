@@ -10,17 +10,17 @@ Manage system timezone configuration
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
-### set
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: set
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none, description: none)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *timezone* (default: none, description: none)
+* parameter _string_ *timezone* (default: none, description: none)
 
-* _string_ *zoneinfo* (default: none, description: none)
+* parameter _string_ *zoneinfo* (default: none, description: none)
 
-* _return_ *timezone* (default: none, description: none)
+* returns _return_ *timezone* (default: none, description: none)
 
 
 ## SAMPLE USAGE

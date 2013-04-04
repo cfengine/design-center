@@ -10,19 +10,19 @@ Configure system hostname
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
-### set
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: set
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none, description: none)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *hostname* (default: none, description: none)
+* parameter _string_ *hostname* (default: none, description: none)
 
-* _string_ *domainname* (default: none, description: none)
+* parameter _string_ *domainname* (default: none, description: none)
 
-* _return_ *hostname* (default: none, description: none)
+* returns _return_ *hostname* (default: none, description: none)
 
-* _return_ *domainname* (default: none, description: none)
+* returns _return_ *domainname* (default: none, description: none)
 
 
 ## SAMPLE USAGE

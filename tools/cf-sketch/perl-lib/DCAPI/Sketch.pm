@@ -168,7 +168,7 @@ Authors: {{authors}}
 ## Dependencies
 {{depends}}
 
-## Parameters
+## API
 {{parameters}}
 
 ## SAMPLE USAGE
@@ -199,10 +199,11 @@ EOHIPPUS
     foreach my $bundle (sort keys %{$data{api}})
     {
         my $spec = $data{api}->{$bundle};
-        push @p, "### $bundle";
+        push @p, "### bundle: $bundle";
         foreach my $param (@$spec)
         {
-            push @p, sprintf("* _%s_ *%s* (default: %s, description: %s)\n",
+            push @p, sprintf("* %s _%s_ *%s* (default: %s, description: %s)\n",
+                             $param->{type} eq 'return' ? 'returns' : 'parameter',
                              $param->{type},
                              $param->{name},
                              (exists $param->{default} ? '`'.(defined $param->{default} ? $self->dcapi()->encode($param->{default}):'null').'`' : 'none'),

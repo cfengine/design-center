@@ -10,27 +10,27 @@ Standard template for Design Center sketches
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
-### entry
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: entry
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *mymetadata* (default: none, description: none)
+* parameter _metadata_ *mymetadata* (default: none, description: none)
 
-* _string_ *prefix* (default: `"__PREFIX__"`, description: none)
+* parameter _string_ *prefix* (default: `"__PREFIX__"`, description: none)
 
-* _boolean_ *myboolean* (default: `"1"`, description: none)
+* parameter _boolean_ *myboolean* (default: `"1"`, description: none)
 
-* _string_ *mytype* (default: `"fallback"`, description: none)
+* parameter _string_ *mytype* (default: `"fallback"`, description: none)
 
-* _string_ *myip* (default: none, description: This is my IP address or whatever)
+* parameter _string_ *myip* (default: none, description: This is my IP address or whatever)
 
-* _list_ *mylist* (default: none, description: none)
+* parameter _list_ *mylist* (default: none, description: none)
 
-* _array_ *myarray* (default: none, description: none)
+* parameter _array_ *myarray* (default: none, description: none)
 
-* _return_ *myreturn* (default: none, description: none)
+* returns _return_ *myreturn* (default: none, description: none)
 
-* _return_ *myreturn2* (default: none, description: none)
+* returns _return_ *myreturn2* (default: none, description: none)
 
 
 ## SAMPLE USAGE

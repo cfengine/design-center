@@ -10,21 +10,21 @@ Manage access.conf values
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
-### set
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: set
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none, description: none)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *access_file* (default: `"/etc/security/access.conf"`, description: none)
+* parameter _string_ *access_file* (default: `"/etc/security/access.conf"`, description: none)
 
-* _boolean_ *empty_first* (default: none, description: none)
+* parameter _boolean_ *empty_first* (default: none, description: none)
 
-* _list_ *ensured_lines* (default: none, description: none)
+* parameter _list_ *ensured_lines* (default: none, description: none)
 
-* _list_ *removed_patterns* (default: none, description: none)
+* parameter _list_ *removed_patterns* (default: none, description: none)
 
-* _return_ *access_file* (default: none, description: none)
+* returns _return_ *access_file* (default: none, description: none)
 
 
 ## SAMPLE USAGE

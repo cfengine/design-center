@@ -10,7 +10,7 @@ CFEngine standard library (also known as COPBL)
 ## Dependencies
 none
 
-## Parameters
+## API
 none
 
 ## SAMPLE USAGE

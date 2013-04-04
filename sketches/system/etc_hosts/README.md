@@ -10,19 +10,19 @@ Manage /etc/hosts
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
-### configure
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: configure
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none, description: none)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *hostfile* (default: `"/etc/hosts"`, description: none)
+* parameter _string_ *hostfile* (default: `"/etc/hosts"`, description: none)
 
-* _boolean_ *defined_only* (default: none, description: none)
+* parameter _boolean_ *defined_only* (default: none, description: none)
 
-* _array_ *hosts* (default: none, description: none)
+* parameter _array_ *hosts* (default: none, description: none)
 
-* _return_ *file* (default: none, description: none)
+* returns _return_ *file* (default: none, description: none)
 
 
 ## SAMPLE USAGE

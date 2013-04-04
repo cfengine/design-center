@@ -10,7 +10,7 @@ Install and configure a webserver, e.g. Apache
 ## Dependencies
 CFEngine::stdlib, VCS::vcs_mirror
 
-## Parameters
+## API
 none
 
 ## SAMPLE USAGE

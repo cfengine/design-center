@@ -10,7 +10,7 @@ Install and optionally configure hp-snmp-agents
 ## Dependencies
 CFEngine::stdlib
 
-## Parameters
+## API
 none
 
 ## SAMPLE USAGE

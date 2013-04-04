@@ -10,7 +10,7 @@ Yale standard library
 ## Dependencies
 none
 
-## Parameters
+## API
 none
 
 ## SAMPLE USAGE

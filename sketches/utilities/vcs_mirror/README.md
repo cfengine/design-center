@@ -10,23 +10,23 @@ Check out and update a VCS repository.
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
-### mirror
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: mirror
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none, description: none)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *vcs* (default: none, description: none)
+* parameter _string_ *vcs* (default: none, description: none)
 
-* _string_ *path* (default: none, description: none)
+* parameter _string_ *path* (default: none, description: none)
 
-* _string_ *origin* (default: none, description: none)
+* parameter _string_ *origin* (default: none, description: none)
 
-* _string_ *branch* (default: none, description: none)
+* parameter _string_ *branch* (default: none, description: none)
 
-* _array_ *options* (default: none, description: none)
+* parameter _array_ *options* (default: none, description: none)
 
-* _return_ *deploy_path* (default: none, description: none)
+* returns _return_ *deploy_path* (default: none, description: none)
 
 
 ## SAMPLE USAGE

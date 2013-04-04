@@ -10,26 +10,26 @@ Manage AWS S3 buckets
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib, Cloud::Services::Common
 
-## Parameters
-### clear
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: clear
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *mymetadata* (default: none, description: none)
+* parameter _metadata_ *mymetadata* (default: none, description: none)
 
-* _string_ *clear_bucket* (default: none, description: none)
+* parameter _string_ *clear_bucket* (default: none, description: none)
 
-* _array_ *options* (default: none, description: none)
+* parameter _array_ *options* (default: none, description: none)
 
-### sync
-* _environment_ *runenv* (default: none, description: none)
+### bundle: sync
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *mymetadata* (default: none, description: none)
+* parameter _metadata_ *mymetadata* (default: none, description: none)
 
-* _string_ *directory* (default: none, description: none)
+* parameter _string_ *directory* (default: none, description: none)
 
-* _string_ *bucket* (default: none, description: none)
+* parameter _string_ *bucket* (default: none, description: none)
 
-* _array_ *options* (default: none, description: none)
+* parameter _array_ *options* (default: none, description: none)
 
 
 ## SAMPLE USAGE

@@ -10,7 +10,7 @@ Run Nagios plugins and optionally take action
 ## Dependencies
 CFEngine::stdlib
 
-## Parameters
+## API
 none
 
 ## SAMPLE USAGE

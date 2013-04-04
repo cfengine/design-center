@@ -10,7 +10,7 @@ Manage EC2 and VMware instances
 ## Dependencies
 CFEngine::stdlib
 
-## Parameters
+## API
 none
 
 ## SAMPLE USAGE

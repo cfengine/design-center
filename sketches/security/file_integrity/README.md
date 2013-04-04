@@ -10,19 +10,19 @@ File hashes will be generated at intervals specified by ifelapsed. On modificati
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
-### watch
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: watch
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none, description: none)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* _list_ *watch* (default: none, description: none)
+* parameter _list_ *watch* (default: none, description: none)
 
-* _string_ *hash_algorithm* (default: `"sha256"`, description: none)
+* parameter _string_ *hash_algorithm* (default: `"sha256"`, description: none)
 
-* _string_ *ifelapsed* (default: `"1440"`, description: none)
+* parameter _string_ *ifelapsed* (default: `"1440"`, description: none)
 
-* _return_ *paths* (default: none, description: none)
+* returns _return_ *paths* (default: none, description: none)
 
 
 ## SAMPLE USAGE

@@ -10,19 +10,19 @@ Report on pingability of hosts
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
-### ping
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: ping
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none, description: none)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* _list_ *hosts* (default: none, description: none)
+* parameter _list_ *hosts* (default: none, description: none)
 
-* _string_ *count* (default: none, description: none)
+* parameter _string_ *count* (default: none, description: none)
 
-* _return_ *reached* (default: none, description: none)
+* returns _return_ *reached* (default: none, description: none)
 
-* _return_ *not_reached* (default: none, description: none)
+* returns _return_ *not_reached* (default: none, description: none)
 
 
 ## SAMPLE USAGE

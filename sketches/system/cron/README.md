@@ -10,44 +10,44 @@ Manage crontab and /etc/cron.d contents
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
-### d
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: d
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none, description: none)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *cron_path* (default: `"/etc/cron.d"`, description: none)
+* parameter _string_ *cron_path* (default: `"/etc/cron.d"`, description: none)
 
-* _string_ *file_task* (default: none, description: none)
+* parameter _string_ *file_task* (default: none, description: none)
 
-* _string_ *runas* (default: `{"function":"getenv","args":["LOGNAME","128"]}`, description: none)
+* parameter _string_ *runas* (default: `{"function":"getenv","args":["LOGNAME","128"]}`, description: none)
 
-* _string_ *when* (default: none, description: none)
+* parameter _string_ *when* (default: none, description: none)
 
-* _list_ *commands* (default: none, description: none)
+* parameter _list_ *commands* (default: none, description: none)
 
-* _return_ *tab* (default: none, description: none)
+* returns _return_ *tab* (default: none, description: none)
 
-* _return_ *path* (default: none, description: none)
+* returns _return_ *path* (default: none, description: none)
 
-### tab
-* _environment_ *runenv* (default: none, description: none)
+### bundle: tab
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none, description: none)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *cron_path* (default: `"/usr/bin/crontab"`, description: none)
+* parameter _string_ *cron_path* (default: `"/usr/bin/crontab"`, description: none)
 
-* _string_ *line_task* (default: none, description: none)
+* parameter _string_ *line_task* (default: none, description: none)
 
-* _string_ *runas* (default: `{"function":"getenv","args":["LOGNAME","128"]}`, description: none)
+* parameter _string_ *runas* (default: `{"function":"getenv","args":["LOGNAME","128"]}`, description: none)
 
-* _string_ *when* (default: none, description: none)
+* parameter _string_ *when* (default: none, description: none)
 
-* _list_ *commands* (default: none, description: none)
+* parameter _list_ *commands* (default: none, description: none)
 
-* _return_ *tab* (default: none, description: none)
+* returns _return_ *tab* (default: none, description: none)
 
-* _return_ *path* (default: none, description: none)
+* returns _return_ *path* (default: none, description: none)
 
 
 ## SAMPLE USAGE

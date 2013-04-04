@@ -10,13 +10,13 @@ Configure and enable sshd
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
-### sshd
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: sshd
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none, description: none)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* _array_ *params* (default: none, description: none)
+* parameter _array_ *params* (default: none, description: none)
 
 
 ## SAMPLE USAGE

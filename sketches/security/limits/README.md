@@ -10,21 +10,21 @@ Configure /etc/security/limits.conf
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
-### limits
-* _environment_ *runenv* (default: none, description: none)
+## API
+### bundle: limits
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* _metadata_ *metadata* (default: none, description: none)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* _string_ *filename* (default: `"/etc/security/limits.conf"`, description: none)
+* parameter _string_ *filename* (default: `"/etc/security/limits.conf"`, description: none)
 
-* _array_ *domains* (default: none, description: none)
+* parameter _array_ *domains* (default: none, description: none)
 
-* _boolean_ *empty_first* (default: `true`, description: none)
+* parameter _boolean_ *empty_first* (default: `true`, description: none)
 
-* _boolean_ *ensure_absent* (default: `false`, description: none)
+* parameter _boolean_ *ensure_absent* (default: `false`, description: none)
 
-* _return_ *filename* (default: none, description: none)
+* returns _return_ *filename* (default: none, description: none)
 
 
 ## SAMPLE USAGE

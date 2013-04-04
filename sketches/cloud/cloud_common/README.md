@@ -10,7 +10,7 @@ Common library for cloud services
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
 
-## Parameters
+## API
 none
 
 ## SAMPLE USAGE

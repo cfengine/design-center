@@ -101,7 +101,7 @@ if (exists $options{'make_readme'})
 {
     api_interaction({
                      describe => 'README',
-                     search => $options{search} eq '' ? 1 : $options{search}
+                     search => $options{search} eq '' ? '.' : $options{search}
                     },
                     make_list_printer('search', 'README.md'));
 }
