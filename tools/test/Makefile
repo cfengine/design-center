@@ -80,8 +80,8 @@ api:
 	echo '{ dc_api_version: "0.0.1", request: {decompose: "mirror_to_template_1" } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {compose: { mirror_to_template_1: { destination_sketch: "CFEngine::sketch_template", destination_list: "mylist", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" }, mirror_to_template_2: { destination_sketch: "CFEngine::sketch_template", destination_scalar: "myip", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" } } } }' | $(CFAPI)
 
-	@echo ...activate CFEngine::sketch_template with testing run environment and incomplete_sketch parameters, with the previous compose call providing the glue
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "$(API_SKETCHDIR)", environment: "testing", params: [ "incomplete_sketch" ] } } } }' | $(CFAPI)
+	@echo ...activate CFEngine::sketch_template with testing run environment and incomplete_sketch parameters, with the previous compositions providing the glue
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { compositions: [ "mirror_to_template_1", "mirror_to_template_2",], target: "$(API_SKETCHDIR)", environment: "testing", params: [ "incomplete_sketch" ] } } } }' | $(CFAPI)
 
 	@echo ...generate the runfile
 	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)

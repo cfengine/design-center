@@ -11,6 +11,7 @@ has sketch => ( is => 'ro', required => 1 );
 has environment => ( is => 'ro', required => 1 );
 has bundle => ( is => 'ro', required => 1 );
 has params => ( is => 'ro', required => 1 );
+has compositions => ( is => 'ro', required => 1, default => [] );
 has id => ( is => 'ro', required => 1 );
 
 our $activation_position = 1;
@@ -31,6 +32,13 @@ sub make_activation
     unless (exists $api->environments()->{$env})
     {
         return (undef, "Invalid activation environment '$env'");
+    }
+
+    my $compositions = $spec->{compositions} || [];
+
+    if (ref $compositions ne 'ARRAY')
+    {
+        return (undef, "Invalid compositions parameter");
     }
 
     my $found;
@@ -115,7 +123,8 @@ sub make_activation
                          sketch_name => $found->name(),
                          bundle => $b,
                          id => $activation_id,
-                         compositions => $api->compositions(),
+                         compositions => $compositions,
+                         available_compositions => $api->compositions(),
                         );
 
             $extra{default} = $p->{default} if exists $p->{default};
@@ -156,6 +165,7 @@ sub make_activation
                                   environment => $env,
                                   bundle => $bundle,
                                   id => $activation_id,
+                                  compositions => $compositions,
                                   params => $bundle_params{$bundle});
 }
 
@@ -188,10 +198,16 @@ sub fill_param
                  type => 'array', name => $name, value => $extra->{sketch}->runfile_data_dump()};
     }
 
-    my %compositions;
+    my @compositions;
+    my %available_compositions;
     if (defined $extra->{compositions})
     {
-        %compositions = %{$extra->{compositions}};
+        @compositions = @{$extra->{compositions}};
+    }
+
+    if (defined $extra->{available_compositions})
+    {
+        %available_compositions = %{$extra->{available_compositions}};
     }
 
     my @filtered_param_sets;
@@ -253,9 +269,10 @@ sub fill_param
 
     unless (defined $ret)
     {
-        foreach my $compose_key (sort keys %compositions)
+        foreach my $compose_key (@compositions)
         {
-            my $compose = $compositions{$compose_key};
+            next unless exists $available_compositions{$compose_key};
+            my $compose = $available_compositions{$compose_key};
             next if $ret;
 
             # { destination_sketch: "CFEngine::sketch_template",
@@ -383,9 +400,10 @@ sub resolve_now
         foreach my $a (@$all)
         {
         COMPOSE:
-            foreach my $compose_key (sort keys %{$self->api()->compositions()})
+            foreach my $compose_key (@{$self->compositions()})
             {
                 my $compose = $self->api()->compositions()->{$compose_key};
+                next COMPOSE unless defined $compose;
                 my $activation_regex = Util::hashref_search($compose, 'activation');
                 # check the optional activation regex... TODO: maybe make this more involved
                 next COMPOSE if (defined $activation_regex && $a->id() !~ m/$activation_regex/);
