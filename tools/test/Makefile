@@ -33,6 +33,26 @@ CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --i
 CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE)
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
+api_search:
+	@echo ...list installed
+	echo '{ dc_api_version: "0.0.1", request: {list: true } }' | $(CFAPI)
+	@echo ...list installed matching Cloud or CFEngine
+	echo '{ dc_api_version: "0.0.1", request: {list: [["name", "matches", "(Cloud|CFEngine|Security)"]] } }' | $(CFAPI)
+	@echo ...dynamically generate a README for any installed sketch matching ping
+	echo '{ dc_api_version: "0.0.1", request: {describe: "README", list: [["name", "matches", "ping"]] } }' | $(CFAPI)
+	@echo ...search none
+	echo '{ dc_api_version: "0.0.1", request: {search: false } }' | $(CFAPI)
+	@echo ...search all available
+	echo '{ dc_api_version: "0.0.1", request: {search: true } }' | $(CFAPI)
+	@echo ...search all matching Cloud
+	echo '{ dc_api_version: "0.0.1", request: {search: "Cloud" } }' | $(CFAPI)
+	@echo ...search all matching Security
+	echo '{ dc_api_version: "0.0.1", request: {search: ["Security"] } }' | $(CFAPI)
+	@echo ...search available matching cloud or cfengine via regex
+	echo '{ dc_api_version: "0.0.1", request: {search: [["name", "matches", "(Cloud|CFEngine)"]] } }' | $(CFAPI)
+	@echo ...search available matching cloud or cfengine via data alternation
+	echo '{ dc_api_version: "0.0.1", request: {search: [["name", "matches", "Cloud"], ["name", "matches", "CFEngine"]] } }' | $(CFAPI)
+
 api:
 	@echo '--- a full test of configuring VCS::vcs_mirror and reporting the directories it mirrors --'
 

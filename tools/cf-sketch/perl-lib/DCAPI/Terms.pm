@@ -29,10 +29,25 @@ sub matches
 
     my $ok = [];
 
+    if (ref $terms eq '')               # string at top
+    {
+        $terms = [ [ 'name', 'matches', $terms ] ];
+    }
+
     if (ref $terms eq 'ARRAY')
     {
         foreach my $q (@$terms)
         {
+            if (Util::is_json_boolean($q))
+            {
+                $q = $q ? '.*' : 'nothing should match this';
+            }
+
+            if (ref $q eq '')
+            {
+                $q = [ 'name', 'matches', $q ];
+            }
+
             next unless ref $q eq 'ARRAY';
 
             eval
