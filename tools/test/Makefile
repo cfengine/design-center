@@ -18,6 +18,11 @@ ifeq ($(LOGNAME),root)
   CFAPI:=$(PWD)/../cf-sketch/cf-dc-api.pl $(PWD)/../cf-sketch/config-root.json
 endif
 
+PYGMENTIZE:=$(shell which pygmentize)
+ifneq ($(PYGMENTIZE),)
+  CFAPI:=$(CFAPI) | $(PYGMENTIZE) -l js
+endif
+
 API_RUNFILE:=$(API_DIR)/api-runfile.cf
 API_SKETCHDIR:=$(API_DIR)/sketches
 
