@@ -4,7 +4,7 @@
 
 ### Author: Ted Zlatanov <tzz@lifelogs.com>
 
-### Version: 1.0.0
+### Version: 0.0.1-1
 
 ### API General Information
 
