@@ -101,8 +101,32 @@ Here are examples of three `list` commands.  The first one lists everything inst
 ```
 
 ```json
-{"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"list":{"/home/tzz/.cfagent/inputs/sketches":{"CFEngine::dclib::3.5.0":"CFEngine::dclib::3.5.0","CFEngine::dclib":"CFEngine::dclib","CFEngine::sketch_template":"CFEngine::sketch_template","VCS::vcs_mirror":"VCS::vcs_mirror","Security::SSH":"Security::SSH","Utilities::ping_report":"Utilities::ping_report","Monitoring::SNMP::Walk":"Monitoring::SNMP::Walk","Data::Classes":"Data::Classes","CFEngine::stdlib":"CFEngine::stdlib","Utilities::ipverify":"Utilities::ipverify"}}},"log":[],"tags":{}}}
-```
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "list": {
+                "/home/tzz/.cfagent/inputs/sketches": {
+                    "CFEngine::dclib::3.5.0": "CFEngine::dclib::3.5.0",
+                    "CFEngine::dclib": "CFEngine::dclib",
+                    "CFEngine::sketch_template": "CFEngine::sketch_template",
+                    "VCS::vcs_mirror": "VCS::vcs_mirror",
+                    "Security::SSH": "Security::SSH",
+                    "Utilities::ping_report": "Utilities::ping_report",
+                    "Monitoring::SNMP::Walk": "Monitoring::SNMP::Walk",
+                    "Data::Classes": "Data::Classes",
+                    "CFEngine::stdlib": "CFEngine::stdlib",
+                    "Utilities::ipverify": "Utilities::ipverify"
+                }
+            }
+        },
+        "log": [],
+        "tags": {}
+    }
+}```
 
 Note the top-level key under `data` is the name of the repository, which is
 always a local directory.
@@ -115,8 +139,27 @@ The next one takes *terms* and lists all the sketches whose name satisfies the
 ```
 
 ```json
-{"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"list":{"/home/tzz/.cfagent/inputs/sketches":{"Security::SSH":"Security::SSH","CFEngine::dclib::3.5.0":"CFEngine::dclib::3.5.0","CFEngine::dclib":"CFEngine::dclib","CFEngine::sketch_template":"CFEngine::sketch_template","CFEngine::stdlib":"CFEngine::stdlib"}}},"log":[],"tags":{}}}
-```
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "list": {
+                "/home/tzz/.cfagent/inputs/sketches": {
+                    "Security::SSH": "Security::SSH",
+                    "CFEngine::dclib::3.5.0": "CFEngine::dclib::3.5.0",
+                    "CFEngine::dclib": "CFEngine::dclib",
+                    "CFEngine::sketch_template": "CFEngine::sketch_template",
+                    "CFEngine::stdlib": "CFEngine::stdlib"
+                }
+            }
+        },
+        "log": [],
+        "tags": {}
+    }
+}```
 
 ##### option: `describe`
 
@@ -128,8 +171,88 @@ example below, the returned data is the contents of `sketch.json`.
 ```
 
 ```json
-{"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"list":{"/home/tzz/.cfagent/inputs/sketches":{"Utilities::ping_report":{"namespace":"cfdc_ping","manifest":{"changelog":{"comment":"changelog"},"test.cf":{"comment":"Test Policy"},"README.md":{"documentation":true},"params/example.json":{"comment":"Example parameters to report on a few hosts connectivity."},"main.cf":{"desc":"main file"}},"interface":["main.cf"],"metadata":{"authors":["Nick Anderson <nick@cmdln.org>","Ted Zlatanov <tzz@lifelogs.com>"],"version":1.2,"name":"Utilities::ping_report","license":"MIT","description":"Report on pingability of hosts","tags":["cfdc"],"depends":{"cfengine":{"version":"3.4.0"},"CFEngine::dclib":{},"os":["linux"],"CFEngine::stdlib":{"version":105}}},"entry_point":null,"api":{"ping":[{"name":"runenv","type":"environment"},{"name":"metadata","type":"metadata"},{"name":"hosts","type":"list"},{"name":"count","type":"string"},{"name":"reached","type":"return"},{"name":"not_reached","type":"return"}]}}}}},"log":[],"tags":{}}}
-```
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "list": {
+                "/home/tzz/.cfagent/inputs/sketches": {
+                    "Utilities::ping_report": {
+                        "namespace": "cfdc_ping",
+                        "manifest": {
+                            "changelog": {
+                                "comment": "changelog"
+                            },
+                            "test.cf": {
+                                "comment": "Test Policy"
+                            },
+                            "README.md": {
+                                "documentation": true
+                            },
+                            "params/example.json": {
+                                "comment": "Example parameters to report on a few hosts connectivity."
+                            },
+                            "main.cf": {
+                                "desc": "main file"
+                            }
+                        },
+                        "interface": ["main.cf"],
+                        "metadata": {
+                            "authors": ["Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>"],
+                            "version": 1.2,
+                            "name": "Utilities::ping_report",
+                            "license": "MIT",
+                            "description": "Report on pingability of hosts",
+                            "tags": ["cfdc"],
+                            "depends": {
+                                "cfengine": {
+                                    "version": "3.4.0"
+                                },
+                                "CFEngine::dclib": {},
+                                "os": ["linux"],
+                                "CFEngine::stdlib": {
+                                    "version": 105
+                                }
+                            }
+                        },
+                        "entry_point": null,
+                        "api": {
+                            "ping": [{
+                                "name": "runenv",
+                                "type": "environment"
+                            },
+                            {
+                                "name": "metadata",
+                                "type": "metadata"
+                            },
+                            {
+                                "name": "hosts",
+                                "type": "list"
+                            },
+                            {
+                                "name": "count",
+                                "type": "string"
+                            },
+                            {
+                                "name": "reached",
+                                "type": "return"
+                            },
+                            {
+                                "name": "not_reached",
+                                "type": "return"
+                            }]
+                        }
+                    }
+                }
+            }
+        },
+        "log": [],
+        "tags": {}
+    }
+}```
 
 When `describe` is given as a top-level option with a value of `README`, as in
 the example below, the returned data is actually the sketch's auto-generated
@@ -142,8 +265,23 @@ the DC sketches.
 ```
 
 ```json
-{"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"list":{"/home/tzz/.cfagent/inputs/sketches":{"Utilities::ping_report":["/home/tzz/.cfagent/inputs/sketches/utilities/ping_report","# Utilities::ping_report version 1.2\n\nLicense: MIT\nTags: cfdc\nAuthors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>\n\n## Description\nReport on pingability of hosts\n\n## Dependencies\nCFEngine::dclib, CFEngine::stdlib\n\n## API\n### bundle: ping\n* parameter _environment_ *runenv* (default: none, description: none)\n\n* parameter _metadata_ *metadata* (default: none, description: none)\n\n* parameter _list_ *hosts* (default: none, description: none)\n\n* parameter _string_ *count* (default: none, description: none)\n\n* returns _return_ *reached* (default: none, description: none)\n\n* returns _return_ *not_reached* (default: none, description: none)\n\n\n## SAMPLE USAGE\nSee `test.cf` or the example parameters provided\n\n"]}}},"log":[],"tags":{}}}
-```
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "list": {
+                "/home/tzz/.cfagent/inputs/sketches": {
+                    "Utilities::ping_report": ["/home/tzz/.cfagent/inputs/sketches/utilities/ping_report", "# Utilities::ping_report version 1.2\n\nLicense: MIT\nTags: cfdc\nAuthors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>\n\n## Description\nReport on pingability of hosts\n\n## Dependencies\nCFEngine::dclib, CFEngine::stdlib\n\n## API\n### bundle: ping\n* parameter _environment_ *runenv* (default: none, description: none)\n\n* parameter _metadata_ *metadata* (default: none, description: none)\n\n* parameter _list_ *hosts* (default: none, description: none)\n\n* parameter _string_ *count* (default: none, description: none)\n\n* returns _return_ *reached* (default: none, description: none)\n\n* returns _return_ *not_reached* (default: none, description: none)\n\n\n## SAMPLE USAGE\nSee `test.cf` or the example parameters provided\n\n"]
+                }
+            }
+        },
+        "log": [],
+        "tags": {}
+    }
+}```
 
 #### `search`
 
@@ -165,8 +303,116 @@ installed sketches by name.
 ```
 
 ```json
-{"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"describe":{"/home/tzz/.cfagent/inputs/sketches":{"Security::SSH":[{"namespace":"cfdc_sshd","manifest":{"ssh.cf":{"desc":"main file"},"README.md":{"documentation":true},"params/simple.json":{}},"interface":["ssh.cf"],"metadata":{"authors":["Diego Zamboni <diego.zamboni@cfengine.com>","Ted Zlatanov <tzz@lifelogs.com>"],"version":1.1,"name":"Security::SSH","license":"MIT","description":"Configure and enable sshd","tags":["cfdc"],"depends":{"cfengine":{"version":"3.4.0"},"CFEngine::dclib":{"version":"1.0.0"},"CFEngine::stdlib":{"version":105}}},"api":{"sshd":[{"name":"runenv","type":"environment"},{"name":"metadata","type":"metadata"},{"name":"params","type":"array"}]}}]},"/home/tzz/source/design-center/sketches":{"Security::SSH":[{"namespace":"cfdc_sshd","manifest":{"ssh.cf":{"desc":"main file"},"README.md":{"documentation":true},"params/simple.json":{}},"interface":["ssh.cf"],"metadata":{"authors":["Diego Zamboni <diego.zamboni@cfengine.com>","Ted Zlatanov <tzz@lifelogs.com>"],"version":1.1,"name":"Security::SSH","license":"MIT","description":"Configure and enable sshd","tags":["cfdc"],"depends":{"cfengine":{"version":"3.4.0"},"CFEngine::dclib":{"version":"1.0.0"},"CFEngine::stdlib":{"version":105}}},"api":{"sshd":[{"name":"runenv","type":"environment"},{"name":"metadata","type":"metadata"},{"name":"params","type":"array"}]}}]}}},"log":[],"tags":{}}}
-```
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "describe": {
+                "/home/tzz/.cfagent/inputs/sketches": {
+                    "Security::SSH": [{
+                        "namespace": "cfdc_sshd",
+                        "manifest": {
+                            "ssh.cf": {
+                                "desc": "main file"
+                            },
+                            "README.md": {
+                                "documentation": true
+                            },
+                            "params/simple.json": {}
+                        },
+                        "interface": ["ssh.cf"],
+                        "metadata": {
+                            "authors": ["Diego Zamboni <diego.zamboni@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>"],
+                            "version": 1.1,
+                            "name": "Security::SSH",
+                            "license": "MIT",
+                            "description": "Configure and enable sshd",
+                            "tags": ["cfdc"],
+                            "depends": {
+                                "cfengine": {
+                                    "version": "3.4.0"
+                                },
+                                "CFEngine::dclib": {
+                                    "version": "1.0.0"
+                                },
+                                "CFEngine::stdlib": {
+                                    "version": 105
+                                }
+                            }
+                        },
+                        "api": {
+                            "sshd": [{
+                                "name": "runenv",
+                                "type": "environment"
+                            },
+                            {
+                                "name": "metadata",
+                                "type": "metadata"
+                            },
+                            {
+                                "name": "params",
+                                "type": "array"
+                            }]
+                        }
+                    }]
+                },
+                "/home/tzz/source/design-center/sketches": {
+                    "Security::SSH": [{
+                        "namespace": "cfdc_sshd",
+                        "manifest": {
+                            "ssh.cf": {
+                                "desc": "main file"
+                            },
+                            "README.md": {
+                                "documentation": true
+                            },
+                            "params/simple.json": {}
+                        },
+                        "interface": ["ssh.cf"],
+                        "metadata": {
+                            "authors": ["Diego Zamboni <diego.zamboni@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>"],
+                            "version": 1.1,
+                            "name": "Security::SSH",
+                            "license": "MIT",
+                            "description": "Configure and enable sshd",
+                            "tags": ["cfdc"],
+                            "depends": {
+                                "cfengine": {
+                                    "version": "3.4.0"
+                                },
+                                "CFEngine::dclib": {
+                                    "version": "1.0.0"
+                                },
+                                "CFEngine::stdlib": {
+                                    "version": 105
+                                }
+                            }
+                        },
+                        "api": {
+                            "sshd": [{
+                                "name": "runenv",
+                                "type": "environment"
+                            },
+                            {
+                                "name": "metadata",
+                                "type": "metadata"
+                            },
+                            {
+                                "name": "params",
+                                "type": "array"
+                            }]
+                        }
+                    }]
+                }
+            }
+        },
+        "log": [],
+        "tags": {}
+    }
+}```
 
 #### `install`
 
@@ -184,14 +430,66 @@ list of key-value arrays with keys:
 * `source`: the sketch source repository.  Must be in the API's `recognized_sources`.
 
 ```json
-{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", force: true, target: "~/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/tools/test/../../sketches" }, { sketch: "VCS::vcs_mirror", force: true, target: "~/.cfagent/inputs/sketches", source: "/home/tzz/source/design-center/tools/test/../../sketches" } ] } }
-```
+{
+    dc_api_version: "0.0.1",
+    request: {
+        install: [{
+            sketch: "CFEngine::sketch_template",
+            force: true,
+            target: "~/.cfagent/inputs/sketches",
+            source: "/home/tzz/source/design-center/tools/test/../../sketches"
+        },
+        {
+            sketch: "VCS::vcs_mirror",
+            force: true,
+            target: "~/.cfagent/inputs/sketches",
+            source: "/home/tzz/source/design-center/tools/test/../../sketches"
+        }]
+    }
+}```
 
 The return data is a key-value array as follows, describing the installation details.
 
 ```json
-{"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"VCS::vcs_mirror":{"params/thrift-lib-perl.json":"/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/params/thrift-lib-perl.json","README.md":"/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/README.md","params/cfengine-core.json":"/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/params/cfengine-core.json","params/cfengine-copbl.json":"/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/params/cfengine-copbl.json","main.cf":"/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/main.cf","params/cfengine-core-runas-tzz.json":"/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/params/cfengine-core-runas-tzz.json"},"install":{"~/.cfagent/inputs/sketches":{"VCS::vcs_mirror":1,"CFEngine::sketch_template":1}},"inventory_save":1,"CFEngine::sketch_template":{"test.cf":"/home/tzz/.cfagent/inputs/sketches/sketch_template/test.cf","scripts/sample.sh":"/home/tzz/.cfagent/inputs/sketches/sketch_template/scripts/sample.sh","params/demo.json":"/home/tzz/.cfagent/inputs/sketches/sketch_template/params/demo.json","README.md":"/home/tzz/.cfagent/inputs/sketches/sketch_template/README.md","modules/mymodule":"/home/tzz/.cfagent/inputs/sketches/sketch_template/modules/mymodule","main.cf":"/home/tzz/.cfagent/inputs/sketches/sketch_template/main.cf"}},"log":[],"tags":{"VCS::vcs_mirror":1,"installation":7,"CFEngine::sketch_template":1}}}
-```
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "VCS::vcs_mirror": {
+                "params/thrift-lib-perl.json": "/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/params/thrift-lib-perl.json",
+                "README.md": "/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/README.md",
+                "params/cfengine-core.json": "/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/params/cfengine-core.json",
+                "params/cfengine-copbl.json": "/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/params/cfengine-copbl.json",
+                "main.cf": "/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/main.cf",
+                "params/cfengine-core-runas-tzz.json": "/home/tzz/.cfagent/inputs/sketches/utilities/vcs_mirror/params/cfengine-core-runas-tzz.json"
+            },
+            "install": {
+                "~/.cfagent/inputs/sketches": {
+                    "VCS::vcs_mirror": 1,
+                    "CFEngine::sketch_template": 1
+                }
+            },
+            "inventory_save": 1,
+            "CFEngine::sketch_template": {
+                "test.cf": "/home/tzz/.cfagent/inputs/sketches/sketch_template/test.cf",
+                "scripts/sample.sh": "/home/tzz/.cfagent/inputs/sketches/sketch_template/scripts/sample.sh",
+                "params/demo.json": "/home/tzz/.cfagent/inputs/sketches/sketch_template/params/demo.json",
+                "README.md": "/home/tzz/.cfagent/inputs/sketches/sketch_template/README.md",
+                "modules/mymodule": "/home/tzz/.cfagent/inputs/sketches/sketch_template/modules/mymodule",
+                "main.cf": "/home/tzz/.cfagent/inputs/sketches/sketch_template/main.cf"
+            }
+        },
+        "log": [],
+        "tags": {
+            "VCS::vcs_mirror": 1,
+            "installation": 7,
+            "CFEngine::sketch_template": 1
+        }
+    }
+}```
 
 #### `uninstall`
 
@@ -207,8 +505,27 @@ everything under it.  It takes a list of key-value arrays with keys:
 ```
 
 ```json
-{"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"inventory_save":1,"uninstall":{"~/.cfagent/inputs/sketches":{"CFEngine::stdlib":1}}},"log":[],"tags":{"uninstallation":1,"CFEngine::stdlib":1}}}
-```
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "inventory_save": 1,
+            "uninstall": {
+                "~/.cfagent/inputs/sketches": {
+                    "CFEngine::stdlib": 1
+                }
+            }
+        },
+        "log": [],
+        "tags": {
+            "uninstallation": 1,
+            "CFEngine::stdlib": 1
+        }
+    }
+}```
 
 The `inventory_save` key in the return indicates whether the inventory (`cfsketches.json`) was written successfully.
 
@@ -221,20 +538,87 @@ The `compositions` command lists the defined compositions.
 ```
 
 ```json
-{"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"compositions":{"mirror_to_template_2":{"destination_sketch":"CFEngine::sketch_template","source_scalar":"deploy_path","source_sketch":"VCS::vcs_mirror","destination_scalar":"myip"},"mirror_to_template_1":{"destination_sketch":"CFEngine::sketch_template","source_scalar":"deploy_path","source_sketch":"VCS::vcs_mirror","destination_list":"mylist"}}},"log":[],"tags":{}}}
-```
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "compositions": {
+                "mirror_to_template_2": {
+                    "destination_sketch": "CFEngine::sketch_template",
+                    "source_scalar": "deploy_path",
+                    "source_sketch": "VCS::vcs_mirror",
+                    "destination_scalar": "myip"
+                },
+                "mirror_to_template_1": {
+                    "destination_sketch": "CFEngine::sketch_template",
+                    "source_scalar": "deploy_path",
+                    "source_sketch": "VCS::vcs_mirror",
+                    "destination_list": "mylist"
+                }
+            }
+        },
+        "log": [],
+        "tags": {}
+    }
+}```
 
 #### `compose`
 
 The `compose` command defines a composition.  It returns the same data as `compositions`.
 
 ```json
-{ dc_api_version: "0.0.1", request: {compose: { mirror_to_template_1: { destination_sketch: "CFEngine::sketch_template", destination_list: "mylist", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" }, mirror_to_template_2: { destination_sketch: "CFEngine::sketch_template", destination_scalar: "myip", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" } } } }
-```
+{
+    dc_api_version: "0.0.1",
+    request: {
+        compose: {
+            mirror_to_template_1: {
+                destination_sketch: "CFEngine::sketch_template",
+                destination_list: "mylist",
+                source_sketch: "VCS::vcs_mirror",
+                source_scalar: "deploy_path"
+            },
+            mirror_to_template_2: {
+                destination_sketch: "CFEngine::sketch_template",
+                destination_scalar: "myip",
+                source_sketch: "VCS::vcs_mirror",
+                source_scalar: "deploy_path"
+            }
+        }
+    }
+}```
 
 ```json
-{"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"compositions":{"mirror_to_template_2":{"destination_sketch":"CFEngine::sketch_template","source_scalar":"deploy_path","source_sketch":"VCS::vcs_mirror","destination_scalar":"myip"},"mirror_to_template_1":{"destination_sketch":"CFEngine::sketch_template","source_scalar":"deploy_path","source_sketch":"VCS::vcs_mirror","destination_list":"mylist"}}},"log":[],"tags":{"compose":1}}}
-```
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "compositions": {
+                "mirror_to_template_2": {
+                    "destination_sketch": "CFEngine::sketch_template",
+                    "source_scalar": "deploy_path",
+                    "source_sketch": "VCS::vcs_mirror",
+                    "destination_scalar": "myip"
+                },
+                "mirror_to_template_1": {
+                    "destination_sketch": "CFEngine::sketch_template",
+                    "source_scalar": "deploy_path",
+                    "source_sketch": "VCS::vcs_mirror",
+                    "destination_list": "mylist"
+                }
+            }
+        },
+        "log": [],
+        "tags": {
+            "compose": 1
+        }
+    }
+}```
 
 #### `decompose`
 
@@ -245,8 +629,26 @@ The `decompose` command undefines a composition by name.  It returns the same da
 ```
 
 ```json
-{"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"compositions":{"destination_sketch":"CFEngine::sketch_template","source_scalar":"deploy_path","source_sketch":"VCS::vcs_mirror","destination_list":"mylist"}},"log":[],"tags":{"compose":1}}}
-```
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "compositions": {
+                "destination_sketch": "CFEngine::sketch_template",
+                "source_scalar": "deploy_path",
+                "source_sketch": "VCS::vcs_mirror",
+                "destination_list": "mylist"
+            }
+        },
+        "log": [],
+        "tags": {
+            "compose": 1
+        }
+    }
+}```
 
 #### `activations`
 
