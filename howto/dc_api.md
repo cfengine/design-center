@@ -677,15 +677,139 @@ The `decompose` command undefines a composition by name.  It returns the same da
 
 The `activations` command lists the defined activations.
 
+```json
+{ dc_api_version: "0.0.1", request: {activations:true} }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "activations": {
+                "VCS::vcs_mirror": [{
+                    "params": ["vcs_base", "git_mirror_core"],
+                    "environment": "testing",
+                    "target": "~/.cfagent/inputs/sketches"
+                },
+                {
+                    "params": ["vcs_base", "svn_mirror_thrift"],
+                    "environment": "testing",
+                    "target": "~/.cfagent/inputs/sketches"
+                }],
+                "CFEngine::sketch_template": [{
+                    "params": ["incomplete_sketch"],
+                    "environment": "testing",
+                    "target": "~/.cfagent/inputs/sketches",
+                    "compositions": ["mirror_to_template_1", "mirror_to_template_2"]
+                }]
+            }
+        },
+        "log": [],
+        "tags": {}
+    }
+}
+```
+
 #### `activate`
 
 The `activate` command defines a new activation of a sketch.
 
+An activation is a matching of a sketch bundle with parameters, a run
+environment, and optionally compositions.  The sketch name is matched with a
+target (so the API knows which installed sketch to inspect), a run environment
+name, and a list of parameter names.
+
+```json
+{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "~/.cfagent/inputs/sketches", environment: "testing", params: [ "vcs_base", "git_mirror_core" ] } } } }
+```
+
+The sketch bundle will be selected based on which one is satisfied by the given
+parameters and compositions.  You can use the `__bundle__` parameter key to
+specify the bundle explicitly.
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "activate": {
+                "VCS::vcs_mirror": {
+                    "params": ["vcs_base", "git_mirror_core"],
+                    "environment": "testing",
+                    "target": "~/.cfagent/inputs/sketches"
+                }
+            }
+        },
+        "log": [],
+        "tags": {
+            "VCS::vcs_mirror": 1
+        }
+    }
+}
+```
+
 ##### option: `compose`
+
+When the `activate` command has a `compose` key with a list of composition
+names, those compositions are considered whenever the parameters alone are not
+enough to activate the sketch.  Thus compositions and parameters work together,
+as late and immediate bindings of the passed data respectively.
 
 #### `deactivate`
 
-The `deactivate` command removes a sketch activation.
+The `deactivate` command removes sketch activations.  It can take either the
+name of a sketch or `true` to indicate all activations should be removed.
+
+```json
+{ dc_api_version: "0.0.1", request: {deactivate: "VCS::vcs_mirror" } }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "deactivate": {
+                "VCS::vcs_mirror": 1
+            }
+        },
+        "log": [],
+        "tags": {
+            "deactivate": 1
+        }
+    }
+}
+```
+
+```json
+{ dc_api_version: "0.0.1", request: {deactivate: true } }
+```
+
+(No activations existed at this point, so the return data is empty.)
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {},
+        "log": [],
+        "tags": {}
+    }
+}
+```
 
 #### `definitions`
 

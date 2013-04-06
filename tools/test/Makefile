@@ -47,6 +47,11 @@ CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --i
 CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE)
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
+do:
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: "VCS::vcs_mirror" } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "$(API_SKETCHDIR)", environment: "testing", params: [ "vcs_base", "git_mirror_core" ] } } } }' | $(CFAPI)
+
 api_validations:
 	@echo ...define some basic validations
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { IPv4_local: { type: "IPv4", ip_match: "10.0.0/24" } } } }' | $(CFAPI)
