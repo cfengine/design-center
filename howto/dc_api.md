@@ -112,7 +112,9 @@ The next one takes *terms* and lists all the sketches whose name satisfies the
     
 ```json
 { dc_api_version: "0.0.1", request: {list: [["name", "matches", "(Cloud|CFEngine|Security)"]] } }
+```
 
+```json
 {"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"list":{"/home/tzz/.cfagent/inputs/sketches":{"Security::SSH":"Security::SSH","CFEngine::dclib::3.5.0":"CFEngine::dclib::3.5.0","CFEngine::dclib":"CFEngine::dclib","CFEngine::sketch_template":"CFEngine::sketch_template","CFEngine::stdlib":"CFEngine::stdlib"}}},"log":[],"tags":{}}}
 ```
 
@@ -137,7 +139,9 @@ the DC sketches.
 
 ```json
 { dc_api_version: "0.0.1", request: {describe: "README", list: [["name", "matches", "ping"]] } }
+```
 
+```json
 {"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"list":{"/home/tzz/.cfagent/inputs/sketches":{"Utilities::ping_report":["/home/tzz/.cfagent/inputs/sketches/utilities/ping_report","# Utilities::ping_report version 1.2\n\nLicense: MIT\nTags: cfdc\nAuthors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>\n\n## Description\nReport on pingability of hosts\n\n## Dependencies\nCFEngine::dclib, CFEngine::stdlib\n\n## API\n### bundle: ping\n* parameter _environment_ *runenv* (default: none, description: none)\n\n* parameter _metadata_ *metadata* (default: none, description: none)\n\n* parameter _list_ *hosts* (default: none, description: none)\n\n* parameter _string_ *count* (default: none, description: none)\n\n* returns _return_ *reached* (default: none, description: none)\n\n* returns _return_ *not_reached* (default: none, description: none)\n\n\n## SAMPLE USAGE\nSee `test.cf` or the example parameters provided\n\n"]}}},"log":[],"tags":{}}}
 ```
 
