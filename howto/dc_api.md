@@ -35,7 +35,18 @@ compatibility, this is just a way to avoid misunderstandings.
 API responses look like this:
 
 ```json
-{"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{}, "log":[], "tags": {}, "data":{ ...response data... }}}
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "log": [],
+        "tags": {},
+        "data": {...response data...
+        }
+    }
+}
 ```
 
 The top key can be one of the following:
@@ -126,7 +137,8 @@ Here are examples of three `list` commands.  The first one lists everything inst
         "log": [],
         "tags": {}
     }
-}```
+}
+```
 
 Note the top-level key under `data` is the name of the repository, which is
 always a local directory.
@@ -159,7 +171,8 @@ The next one takes *terms* and lists all the sketches whose name satisfies the
         "log": [],
         "tags": {}
     }
-}```
+}
+```
 
 ##### option: `describe`
 
@@ -252,7 +265,8 @@ example below, the returned data is the contents of `sketch.json`.
         "log": [],
         "tags": {}
     }
-}```
+}
+```
 
 When `describe` is given as a top-level option with a value of `README`, as in
 the example below, the returned data is actually the sketch's auto-generated
@@ -281,7 +295,8 @@ the DC sketches.
         "log": [],
         "tags": {}
     }
-}```
+}
+```
 
 #### `search`
 
@@ -412,7 +427,8 @@ installed sketches by name.
         "log": [],
         "tags": {}
     }
-}```
+}
+```
 
 #### `install`
 
@@ -446,7 +462,8 @@ list of key-value arrays with keys:
             source: "/home/tzz/source/design-center/tools/test/../../sketches"
         }]
     }
-}```
+}
+```
 
 The return data is a key-value array as follows, describing the installation details.
 
@@ -489,7 +506,8 @@ The return data is a key-value array as follows, describing the installation det
             "CFEngine::sketch_template": 1
         }
     }
-}```
+}
+```
 
 #### `uninstall`
 
@@ -525,7 +543,8 @@ everything under it.  It takes a list of key-value arrays with keys:
             "CFEngine::stdlib": 1
         }
     }
-}```
+}
+```
 
 The `inventory_save` key in the return indicates whether the inventory (`cfsketches.json`) was written successfully.
 
@@ -563,7 +582,8 @@ The `compositions` command lists the defined compositions.
         "log": [],
         "tags": {}
     }
-}```
+}
+```
 
 #### `compose`
 
@@ -588,7 +608,8 @@ The `compose` command defines a composition.  It returns the same data as `compo
             }
         }
     }
-}```
+}
+```
 
 ```json
 {
@@ -618,7 +639,8 @@ The `compose` command defines a composition.  It returns the same data as `compo
             "compose": 1
         }
     }
-}```
+}
+```
 
 #### `decompose`
 
@@ -648,7 +670,8 @@ The `decompose` command undefines a composition by name.  It returns the same da
             "compose": 1
         }
     }
-}```
+}
+```
 
 #### `activations`
 
