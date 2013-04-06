@@ -98,7 +98,9 @@ Here are examples of three `list` commands.  The first one lists everything inst
 
 ```json
 { dc_api_version: "0.0.1", request: {list: true } }
-    
+```
+
+```json
 {"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"list":{"/home/tzz/.cfagent/inputs/sketches":{"CFEngine::dclib::3.5.0":"CFEngine::dclib::3.5.0","CFEngine::dclib":"CFEngine::dclib","CFEngine::sketch_template":"CFEngine::sketch_template","VCS::vcs_mirror":"VCS::vcs_mirror","Security::SSH":"Security::SSH","Utilities::ping_report":"Utilities::ping_report","Monitoring::SNMP::Walk":"Monitoring::SNMP::Walk","Data::Classes":"Data::Classes","CFEngine::stdlib":"CFEngine::stdlib","Utilities::ipverify":"Utilities::ipverify"}}},"log":[],"tags":{}}}
 ```
 
@@ -121,7 +123,9 @@ example below, the returned data is the contents of `sketch.json`.
 
 ```json
 { dc_api_version: "0.0.1", request: {describe: true, list: [["name", "matches", "ping"]] } }
+```
 
+```json
 {"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"list":{"/home/tzz/.cfagent/inputs/sketches":{"Utilities::ping_report":{"namespace":"cfdc_ping","manifest":{"changelog":{"comment":"changelog"},"test.cf":{"comment":"Test Policy"},"README.md":{"documentation":true},"params/example.json":{"comment":"Example parameters to report on a few hosts connectivity."},"main.cf":{"desc":"main file"}},"interface":["main.cf"],"metadata":{"authors":["Nick Anderson <nick@cmdln.org>","Ted Zlatanov <tzz@lifelogs.com>"],"version":1.2,"name":"Utilities::ping_report","license":"MIT","description":"Report on pingability of hosts","tags":["cfdc"],"depends":{"cfengine":{"version":"3.4.0"},"CFEngine::dclib":{},"os":["linux"],"CFEngine::stdlib":{"version":105}}},"entry_point":null,"api":{"ping":[{"name":"runenv","type":"environment"},{"name":"metadata","type":"metadata"},{"name":"hosts","type":"list"},{"name":"count","type":"string"},{"name":"reached","type":"return"},{"name":"not_reached","type":"return"}]}}}}},"log":[],"tags":{}}}
 ```
 
@@ -154,7 +158,9 @@ installed sketches by name.
 
 ```json
 { dc_api_version: "0.0.1", request: {describe:"Security::SSH"} }
-    
+```
+
+```json
 {"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"describe":{"/home/tzz/.cfagent/inputs/sketches":{"Security::SSH":[{"namespace":"cfdc_sshd","manifest":{"ssh.cf":{"desc":"main file"},"README.md":{"documentation":true},"params/simple.json":{}},"interface":["ssh.cf"],"metadata":{"authors":["Diego Zamboni <diego.zamboni@cfengine.com>","Ted Zlatanov <tzz@lifelogs.com>"],"version":1.1,"name":"Security::SSH","license":"MIT","description":"Configure and enable sshd","tags":["cfdc"],"depends":{"cfengine":{"version":"3.4.0"},"CFEngine::dclib":{"version":"1.0.0"},"CFEngine::stdlib":{"version":105}}},"api":{"sshd":[{"name":"runenv","type":"environment"},{"name":"metadata","type":"metadata"},{"name":"params","type":"array"}]}}]},"/home/tzz/source/design-center/sketches":{"Security::SSH":[{"namespace":"cfdc_sshd","manifest":{"ssh.cf":{"desc":"main file"},"README.md":{"documentation":true},"params/simple.json":{}},"interface":["ssh.cf"],"metadata":{"authors":["Diego Zamboni <diego.zamboni@cfengine.com>","Ted Zlatanov <tzz@lifelogs.com>"],"version":1.1,"name":"Security::SSH","license":"MIT","description":"Configure and enable sshd","tags":["cfdc"],"depends":{"cfengine":{"version":"3.4.0"},"CFEngine::dclib":{"version":"1.0.0"},"CFEngine::stdlib":{"version":105}}},"api":{"sshd":[{"name":"runenv","type":"environment"},{"name":"metadata","type":"metadata"},{"name":"params","type":"array"}]}}]}}},"log":[],"tags":{}}}
 ```
 
@@ -194,7 +200,9 @@ everything under it.  It takes a list of key-value arrays with keys:
 
 ```json
 { dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "~/.cfagent/inputs/sketches" } ] } }
+```
 
+```json
 {"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"inventory_save":1,"uninstall":{"~/.cfagent/inputs/sketches":{"CFEngine::stdlib":1}}},"log":[],"tags":{"uninstallation":1,"CFEngine::stdlib":1}}}
 ```
 
@@ -206,7 +214,9 @@ The `compositions` command lists the defined compositions.
 
 ```json
 { dc_api_version: "0.0.1", request: {compositions: true} }
+```
 
+```json
 {"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"compositions":{"mirror_to_template_2":{"destination_sketch":"CFEngine::sketch_template","source_scalar":"deploy_path","source_sketch":"VCS::vcs_mirror","destination_scalar":"myip"},"mirror_to_template_1":{"destination_sketch":"CFEngine::sketch_template","source_scalar":"deploy_path","source_sketch":"VCS::vcs_mirror","destination_list":"mylist"}}},"log":[],"tags":{}}}
 ```
 
@@ -216,7 +226,9 @@ The `compose` command defines a composition.  It returns the same data as `compo
 
 ```json
 { dc_api_version: "0.0.1", request: {compose: { mirror_to_template_1: { destination_sketch: "CFEngine::sketch_template", destination_list: "mylist", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" }, mirror_to_template_2: { destination_sketch: "CFEngine::sketch_template", destination_scalar: "myip", source_sketch: "VCS::vcs_mirror", source_scalar: "deploy_path" } } } }
-    
+```
+
+```json
 {"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"compositions":{"mirror_to_template_2":{"destination_sketch":"CFEngine::sketch_template","source_scalar":"deploy_path","source_sketch":"VCS::vcs_mirror","destination_scalar":"myip"},"mirror_to_template_1":{"destination_sketch":"CFEngine::sketch_template","source_scalar":"deploy_path","source_sketch":"VCS::vcs_mirror","destination_list":"mylist"}}},"log":[],"tags":{"compose":1}}}
 ```
 
@@ -226,7 +238,9 @@ The `decompose` command undefines a composition by name.  It returns the same da
 
 ```json
 { dc_api_version: "0.0.1", request: {decompose: "mirror_to_template_1" } }
+```
 
+```json
 {"api_ok":{"warnings":[],"success":true,"errors":[],"error_tags":{},"data":{"compositions":{"destination_sketch":"CFEngine::sketch_template","source_scalar":"deploy_path","source_sketch":"VCS::vcs_mirror","destination_list":"mylist"}},"log":[],"tags":{"compose":1}}}
 ```
 
