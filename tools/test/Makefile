@@ -18,9 +18,18 @@ ifeq ($(LOGNAME),root)
   CFAPI:=$(PWD)/../cf-sketch/cf-dc-api.pl $(PWD)/../cf-sketch/config-root.json
 endif
 
+JSINDENT:=$(shell perl -MJavaScript::Beautifier=js_beautify -e"print 1")
+ifeq ($(JSINDENT),1)
+  CFAPI:=$(CFAPI) | perl -MJavaScript::Beautifier=js_beautify -e'print js_beautify(join "", <> )'
+else
+# You should install the Perl JavaScript::Beautifier module (libjavascript-beautifier-perl in Debian)
+endif
+
 PYGMENTIZE:=$(shell which pygmentize)
 ifneq ($(PYGMENTIZE),)
   CFAPI:=$(CFAPI) | $(PYGMENTIZE) -l js
+else
+# You should install pygmentize, it rocks
 endif
 
 API_RUNFILE:=$(API_DIR)/api-runfile.cf
@@ -38,11 +47,26 @@ CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --i
 CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE)
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
+api_validations:
+	@echo ...define some basic validations
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { IPv4_local: { type: "IPv4", ip_match: "10.0.0/24" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { NONEMPTY_STRING: { valid_regex: "." } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { OCTAL: { invalid_regex: "[^0-7]" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { DIGITS: { invalid_regex: "[^0-9]" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { NUMBER: ["min", "max", { min_value: "\$(min)", max_value: "\$(max)" } ] } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL: { type: "URL" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL_TYPED: [ "type", { type: "URL", valid_regex: "^\$(type)://.+" } ] } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL_HTTP_OR_FTP: { type: "URL", valid_regex: "^(ftp|https?)://.+" } } } }' | $(CFAPI)
+
 api_search:
+	@echo ...describe Security::SSH
+	echo '{ dc_api_version: "0.0.1", request: {describe:"Security::SSH"} }' | $(CFAPI)
 	@echo ...list installed
 	echo '{ dc_api_version: "0.0.1", request: {list: true } }' | $(CFAPI)
 	@echo ...list installed matching Cloud or CFEngine
 	echo '{ dc_api_version: "0.0.1", request: {list: [["name", "matches", "(Cloud|CFEngine|Security)"]] } }' | $(CFAPI)
+	@echo ...list and describe any installed sketch matching ping
+	echo '{ dc_api_version: "0.0.1", request: {describe: true, list: [["name", "matches", "ping"]] } }' | $(CFAPI)
 	@echo ...dynamically generate a README for any installed sketch matching ping
 	echo '{ dc_api_version: "0.0.1", request: {describe: "README", list: [["name", "matches", "ping"]] } }' | $(CFAPI)
 	@echo ...search none
@@ -66,6 +90,9 @@ api:
 
 	@echo ...deactivate all activations
 	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+
+	@echo ...valid request to uninstall CFEngine::stdlib
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "$(API_SKETCHDIR)" } ] } }' | $(CFAPI)
 
 	@echo ...valid request to install CFEngine::sketch_template and VCS::vcs_mirror
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" }, { sketch: "VCS::vcs_mirror", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
