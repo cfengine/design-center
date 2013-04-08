@@ -219,6 +219,9 @@ if ($options{'generate'})
 }
 
 unless ($options{'expert'}) {
+    use Term::ANSIColor qw(:constants);
+    $Term::ANSIColor::AUTORESET = 1;
+
     # Determine where to load command modules from
     (-d ($options{'cmddir'}="$FindBin::Bin/../lib/cf-sketch/Parser/Commands")) ||
     (-d ($options{'cmddir'}="$FindBin::Bin/perl-lib/Parser/Commands")) ||
