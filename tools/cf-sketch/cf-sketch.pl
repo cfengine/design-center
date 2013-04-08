@@ -120,7 +120,7 @@ if (exists $options{'search'})
 {
     api_interaction({
                      describe => 1,
-                     search => $options{search} eq '' ? 1 : $options{search}
+                     search => $options{search} eq '' ? '.' : $options{search}
                     },
                     make_list_printer('search'));
 }
