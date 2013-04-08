@@ -64,5 +64,6 @@ bundle agent cfsketch_run
       "__001_System_access_set" usebundle => cfdc_access:set("cf_sketch_testing", "default:cfsketch_run.__001_System_access_set_metadata", "/etc/security/access.conf", "", @(cfsketch_run.__001_System_access_set_ensured_lines), @(cfsketch_run.__001_System_access_set_removed_patterns)), useresult => "return___001_System_access_set";
 
   reports:
+    cfengine::
       "activation __001_System_access_set returned access_file = $(return___001_System_access_set[access_file])";
 }

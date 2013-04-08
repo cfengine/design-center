@@ -87,6 +87,7 @@ bundle agent cfsketch_run
       "__012_Data_Classes_byshell" usebundle => byshell("broken_should_not_be_defined", @(cfsketch_run.__012_Data_Classes_byshell_commands)), useresult => "return___012_Data_Classes_byshell";
 
   reports:
+    cfengine::
       "activation __001_Data_Classes_byfile returned defined = $(return___001_Data_Classes_byfile[defined])";
       "activation __002_Data_Classes_byprocess returned defined = $(return___002_Data_Classes_byprocess[defined])";
       "activation __003_Data_Classes_byprocess returned defined = $(return___003_Data_Classes_byprocess[defined])";
