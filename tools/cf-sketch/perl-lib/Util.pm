@@ -176,15 +176,15 @@ sub foutput {
 }
 
 sub warning {
-    print STDERR YELLOW @_;
+    print STDERR YELLOW @_, RESET;
 }
 
 sub error {
-    print STDERR RED @_;
+    print STDERR RED @_, RESET;
 }
 
 sub message {
-    print STDERR GREEN @_;
+    print STDERR GREEN @_, RESET;
 }
 
 # Generate an error message, nicely formatted.
