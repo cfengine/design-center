@@ -96,6 +96,8 @@ die "$0: --installsource DIR must be specified" unless $options{installsource};
 $options{verbose} = 1 if $options{veryverbose};
 
 my $sourcedir = dirname($options{installsource});
+$options{sourcedir} = $sourcedir;
+
 die "Sorry, can't locate source directory" unless -d $sourcedir;
 
 api_interaction({
