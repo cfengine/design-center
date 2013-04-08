@@ -213,12 +213,12 @@ sub local_cfsketches_source
 {
     my $rootdir   = File::Spec->rootdir();
     my $dir       = Cwd::realpath(shift @_);
-    my $inventory = File::Spec->catfile($dir, 'cfsketches');
+    my $inventory = File::Spec->catfile($dir, 'cfsketches.json');
 
     return $inventory if -f $inventory;
 
     # as we go up the tree, check for 'sketches/cfsketches' as well (so we don't crawl the whole file tree)
-    my $sketches_probe = File::Spec->catfile($dir, 'sketches', 'cfsketches');
+    my $sketches_probe = File::Spec->catfile($dir, 'sketches', 'cfsketches.json');
     return $sketches_probe if -f $sketches_probe;
 
     return undef if $rootdir eq $dir;

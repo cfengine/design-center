@@ -10,6 +10,11 @@ BEGIN
     }
 }
 
+######################################################################
+my $VERSION="3.5.0b1";
+my $DATE="March 2013";
+######################################################################
+
 my $inputs_root;
 my $configdir;
 my @toremove;
@@ -34,6 +39,7 @@ use strict;
 use DCAPI;
 use Util;
 use File::Temp qw/tempfile tempdir /;
+use Parser;
 
 $| = 1;                                 # autoflush
 
@@ -53,6 +59,10 @@ my %options = (
                test => 0,
                veryverbose => 0,
                runfile => "$inputs_root/api-runfile.cf",
+               installsource => Util::local_cfsketches_source(File::Spec->curdir()) || undef,
+               # These are hardcoded above, we put them here for convenience
+               version => $VERSION,
+               date => $DATE,
               );
 
 Getopt::Long::Configure("bundling");
@@ -77,7 +87,7 @@ GetOptions(\%options,
            "repolist|rl=s@",
           );
 
-die "$0: cf-sketch can only be used in --expert mode" unless $options{expert};
+#die "$0: cf-sketch can only be used in --expert mode" unless $options{expert};
 
 die "$0: --installsource DIR must be specified" unless $options{installsource};
 
@@ -203,6 +213,26 @@ if ($options{'generate'})
 {
     api_interaction({regenerate => 1});
 }
+
+unless ($options{'expert'}) {
+    # Determine where to load command modules from
+    (-d ($options{'cmddir'}="$FindBin::Bin/../lib/cf-sketch/Parser/Commands")) ||
+    (-d ($options{'cmddir'}="$FindBin::Bin/perl-lib/Parser/Commands")) ||
+    ($options{'cmddir'}=undef);
+
+    # Load commands and do other parser initialization
+    Parser::init('cf-sketch', \%options, @ARGV);
+    Parser::set_welcome_message("[default]\nCFEngine AS, 2012.");
+
+    # Run the main command loop
+    Parser::parse_commands();
+
+    # Finishing code.
+    Parser::finish();
+
+    exit(0);
+}
+
 
 sub api_interaction
 {
