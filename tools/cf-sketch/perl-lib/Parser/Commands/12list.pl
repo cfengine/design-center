@@ -2,12 +2,11 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2013-04-08 03:17:16 a10022>
+# Time-stamp: <2013-04-08 03:26:26 a10022>
 
 use Term::ANSIColor qw(:constants);
 
 use Util;
-use DesignCenter::Config;
 
 ######################################################################
 
@@ -15,16 +14,22 @@ use DesignCenter::Config;
  (
   'list' =>
   [
+   # [
+   #  '-list activations',
+   #  'List activated sketches, with their parameters.',
+   #  'activations',
+   #  'listactivations',
+   # ],
+   # [
+   #  'list [-v] [REGEX|all]',
+   #  'List installed sketches and their configuration status. Specify REGEX to filter, no argument or "all" to list everything, use -v to show full configuration details.',
+   #  '(?:(-v)\b\s*)?(.*)',
+   #  'list',
+   # ],
    [
-    '-list activations',
-    'List activated sketches, with their parameters.',
-    'activations',
-    'listactivations',
-   ],
-   [
-    'list [-v] [REGEX|all]',
-    'List installed sketches and their configuration status. Specify REGEX to filter, no argument or "all" to list everything, use -v to show full configuration details.',
-    '(?:(-v)\b\s*)?(.*)',
+    'list [REGEX|all]',
+    'List installed sketches. Specify REGEX to filter, no argument or "all" to list everything.',
+    '(.*)',
     'list',
    ],
   ]
@@ -33,7 +38,6 @@ use DesignCenter::Config;
 ######################################################################
 
 sub command_list {
-    my $full=shift;
     my $regex=shift;
     $regex = "." if ($regex eq 'all' or !$regex);
     my $err = Util::check_regex($regex);
@@ -43,80 +47,39 @@ sub command_list {
     }
     else
     {
-        my $res=DesignCenter::Config->_system->list([$regex]);
-        my @res = sort keys %$res;
-        if (@res)
+        ($success, $result) = main::api_interaction({
+                                               describe => 1,
+                                               list => $regex,
+                                              });
+        my $list = Util::hashref_search($result, 'data', 'list');
+        if (ref $list eq 'HASH')
         {
-            my $id = 1;
-            Util::output("The following sketches ".(($regex eq '.')?"are installed:":"match your query:")."\n\n");
-            foreach my $found (@res)
+            # If we have multiple repos, include repo names in the results
+            my $multiple_repos = (keys %$list > 1);
+            foreach my $repo (sort keys %$list)
             {
-                print BOLD GREEN."$id. ".YELLOW."$found".RESET;
-                if ($res->{$found}->entry_point)
+                my %found = ();
+                foreach my $sketch (values %{$list->{$repo}})
                 {
-                    my @activations = @{$res->{$found}->_activations};
-                    my $count = $res->{$found}->num_instances;
-                    if ($count)
+                    my $name = Util::hashref_search($sketch, qw/metadata name/);
+                    my $desc = Util::hashref_search($sketch, qw/metadata description/);
+                    $found{$name} = $desc || "(no description found)";
+                }
+                if (keys %found)
+                {
+                    Util::output("The following ".(($regex eq '.')?"sketches are installed":"installed sketches match your query").($multiple_repos?" in repository $repo":"").":\n\n");
+                    foreach my $name (sort keys %found)
                     {
-                        print GREEN." (configured";
-                        if ($count > 1)
-                        {
-                            print ", $count instances";
-                        }
-                        print ")\n";
-                        if ($full)
-                        {
-                            my $activation_id=1;
-                            foreach my $activation (@activations)
-                            {
-                                my $act = $activation->{activated};
-                                my $active_str = ($act && $act ne '!any') ? GREEN."(Activated on '$act')" : RED."(Not activated)";
-                                print BOLD GREEN."\tInstance #$activation_id: $active_str".RESET."\n";
-                                print DesignCenter::JSON::pretty_print($activation, "\t\t", qr/^(prefix|class_prefix|canon_prefix|activated|bundle_home)$/);
-                                $activation_id++;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        print RED." (not configured)\n";
+                        print RESET, GREEN, $name, RESET, " ".$found{$name}."\n";
                     }
                 }
                 else
                 {
-                    print CYAN." (library)\n";
+                    Util::error("No sketches ".(($regex eq '.')?"are installed":"match your query").". Maybe use 'search' instead?\n");
                 }
-                print RESET;
-                $id++;
             }
-            Util::output("\nUse list -v to show the activation parameters.\n") unless $full;
-        }
-        else
-        {
-            Util::error("No sketches ".(($regex eq '.')?"are installed":"match your query").". Maybe use 'search' instead?\n");
         }
     }
 }
 
-sub command_listactivations {
-    my $activations = DesignCenter::Config->_system->activations;
-
-    my $activation_id = 1;
-    foreach my $sketch (sort keys %$activations)
-    {
-        if ('HASH' eq ref $activations->{$sketch})
-        {
-            Util::color_warn "Skipping unusable activations for sketch $sketch!";
-            next;
-        }
-
-        foreach my $activation (@{$activations->{$sketch}})
-        {
-            print BOLD GREEN."$activation_id\t".YELLOW."$sketch".RESET,
-             DesignCenter::JSON->coder->encode($activation),
-               "\n";
-
-            $activation_id++;
-        }
-    }
-}
+1;
