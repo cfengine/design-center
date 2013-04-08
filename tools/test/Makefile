@@ -64,14 +64,25 @@ do:
 
 api_validations:
 	@echo ...define some basic validations
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { IPv4_local: { type: "IPv4", ip_match: "10.0.0/24" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { IPv4_local: { valid_ipv4: "10.0.0/24", invalid_ipv4: "10.0.0.1" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { IPv4: { valid_ipv4: "0.0.0.0/0" } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { NONEMPTY_STRING: { valid_regex: "." } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { OCTAL: { invalid_regex: "[^0-7]" } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { DIGITS: { invalid_regex: "[^0-9]" } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { NUMBER: ["min", "max", { min_value: "\$(min)", max_value: "\$(max)" } ] } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL: { type: "URL" } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL_TYPED: [ "type", { type: "URL", valid_regex: "^\$(type)://.+" } ] } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL_HTTP_OR_FTP: { type: "URL", valid_regex: "^(ftp|https?)://.+" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { NUMBER: { derived: [ "DIGITS" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { 8BIT_NUMBER: { minimum_value: 0, maximum_value: 255 } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL: { valid_regex: "/((([A-Za-z]{3,9}:(?:\\/\\/)?)(?:[-;:&=\\+\\$,\\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\\+\\$,\\w]+@)[A-Za-z0-9.-]+)((?:\\/[\\+~%\\/.\\w-_]*)?\\??(?:[-\\+=&;%@.\\w_]*)#?(?:[\\w]*))?)/" } } } }' | $(CFAPI)
+	@echo ...define a derived validation
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL_HTTP_OR_FTP: { derived: [ "URL" ], valid_regex: "^(ftp|https?)://.+" } } } }' | $(CFAPI)
+	@echo ...define some compound types
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { ARRAY_OF_NUMBERS_TO_URLS: { array_k: [ "NUMBER" ], array_v: [ "URL" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { LIST_OF_NUMBERS: { list: [ "NUMBER" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { LIST_OF_LIST_OF_NUMBERS: { list: [ "LIST_OF_NUMBERS" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { ARRAY_OF_NONEMPTY_STRINGS_TO_LIST_OF_LIST_OF_NUMBERS: { array_k: [ "NONEMPTY_STRING" ], array_v: [ "LIST_OF_LIST_OF_NUMBERS" ] } } } }' | $(CFAPI)
+
+	@echo ...now validate some data
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "NONEMPTY_STRING", data: "hello" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "NONEMPTY_STRING", data: "" } } }' | $(CFAPI)
 
 api_environments:
 	@echo ...show all environments

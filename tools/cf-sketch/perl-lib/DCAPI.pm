@@ -11,6 +11,7 @@ use File::Temp qw/tempfile tempdir /;
 use DCAPI::Repo;
 use DCAPI::Activation;
 use DCAPI::Result;
+use DCAPI::Validation;
 
 use constant API_VERSION => '0.0.1';
 use constant CODER => JSON::PP->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
@@ -781,7 +782,19 @@ sub define_validation
                                   "Invalid define_validation command");
     }
 
-    $self->validations()->{$_} = $define_validation->{$_} foreach keys %$define_validation;
+    foreach my $vdef (keys %$define_validation)
+    {
+        my $result = DCAPI::Validation::make_validation($self, $vdef, $define_validation->{$vdef});
+        if (ref $result ne 'DCAPI::Result')
+        {
+            $self->validations()->{$vdef} = $define_validation->{$vdef};
+        }
+        else
+        {
+            return $result;
+        }
+    }
+
     $result->add_data_key('define_validation', 'validations', $self->validations());
 
     $self->save_vardata();
@@ -805,6 +818,47 @@ sub undefine_validation
 
     $self->save_vardata();
 
+    return $result;
+}
+
+sub validate
+{
+    my $self = shift;
+    my $validate = shift || [];
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    if (ref $validate ne 'HASH')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid validate command");
+    }
+
+    unless (exists $validate->{validation})
+    {
+        return $result->add_error('syntax',
+                                  "Invalid validate command: no validation key");
+    }
+
+    unless (exists $validate->{data})
+    {
+        return $result->add_error('syntax',
+                                  "Invalid validate command: no data key");
+    }
+
+    my $validation = DCAPI::Validation::make_validation($self,
+                                                        $validate->{validation},
+                                                        $self->validations()->{$validate->{validation}});
+
+    if (ref $result eq 'DCAPI::Validation') # it's a validation
+    {
+        return $result->validate($validate->{data});
+    }
+
+    # else, there was an error
     return $result;
 }
 

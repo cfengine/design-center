@@ -83,6 +83,7 @@ my $environments = Util::hashref_search($request, qw/environments/);
 my $define_validation = Util::hashref_search($request, qw/define_validation/);
 my $undefine_validation = Util::hashref_search($request, qw/undefine_validation/);
 my $validations = Util::hashref_search($request, qw/validations/);
+my $validate = Util::hashref_search($request, qw/validate/);
 
 my $activate = Util::hashref_search($request, qw/activate/);
 my $deactivate = Util::hashref_search($request, qw/deactivate/);
@@ -204,6 +205,10 @@ elsif (defined $define_validation)
 elsif (defined $undefine_validation)
 {
     $result = $api->undefine_validation($undefine_validation);
+}
+elsif (defined $validate)
+{
+    $result = $api->validate($validate);
 }
 elsif (defined $regenerate)
 {

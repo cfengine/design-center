@@ -1084,6 +1084,10 @@ The `define_validation` command defines a data validation.
 
 The `undefine_validation` command removes a data validation.
 
+#### `validate`
+
+The `validate` command validates data using a named data validation.
+
 #### `regenerate`
 
 The `regenerate` command writes the API runfile (as specified in the API
