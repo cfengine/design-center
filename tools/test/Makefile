@@ -7,15 +7,25 @@ ifeq ($(CFPATH),)
   CFPATH:=/var/cfengine/bin
 endif
 
+# If $HOME/.cf-sketch-config.json exists, use it, otherwise use the defaults
+ifeq ($(wildcard $(HOME)/.cf-sketch-config.json),)
+  ifeq ($(LOGNAME),root)
+    CFGFILE=$(PWD)/../cf-sketch/config-root.json
+  else
+    CFGFILE=$(PWD)/../cf-sketch/config.json
+  endif
+else
+  CFGFILE=$(HOME)/.cf-sketch-config.json
+endif
+
 API_DIR:=~/.cfagent/inputs
 RUNFILE:=~/.cfagent/inputs/standalone-cf-sketch-runfile.cf
 
-CFAPI:=$(PWD)/../cf-sketch/cf-dc-api.pl $(PWD)/../cf-sketch/config.json
+CFAPI:=$(PWD)/../cf-sketch/cf-dc-api.pl $(CFGFILE)
 
 ifeq ($(LOGNAME),root)
   RUNFILE:=/var/cfengine/inputs/standalone-cf-sketch-runfile.cf
   API_DIR:=/var/cfengine/inputs
-  CFAPI:=$(PWD)/../cf-sketch/cf-dc-api.pl $(PWD)/../cf-sketch/config-root.json
 endif
 
 JSINDENT:=$(shell perl -MJavaScript::Beautifier=js_beautify -e"print 1")
