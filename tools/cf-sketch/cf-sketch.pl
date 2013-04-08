@@ -133,7 +133,7 @@ if (exists $options{'list'})
 {
     api_interaction({
                      describe => 1,
-                     list => $options{list} eq '' ? 1 : $options{list}
+                     list => $options{list} eq '' ? '.' : $options{list}
                     },
                     make_list_printer('list'));
 }
