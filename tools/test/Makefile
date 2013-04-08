@@ -63,6 +63,22 @@ api_validations:
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL_TYPED: [ "type", { type: "URL", valid_regex: "^\$(type)://.+" } ] } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL_HTTP_OR_FTP: { type: "URL", valid_regex: "^(ftp|https?)://.+" } } } }' | $(CFAPI)
 
+api_environments:
+	@echo ...show all environments
+	echo '{ dc_api_version: "0.0.1", request: {environments:true} }' | $(CFAPI)
+	@echo ...define testing run environment
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: true, test: true, verbose: true } } } }' | $(CFAPI)
+	@echo ...undefine testing run environment
+	echo '{ dc_api_version: "0.0.1", request: {undefine_environment: [ "testing" ] } }' | $(CFAPI)
+
+api_definitions:
+	@echo ...show all definiions
+	echo '{ dc_api_version: "0.0.1", request: {definitions:true} }' | $(CFAPI)
+	@echo ...define some parameters
+	echo '{ dc_api_version: "0.0.1", request: {define: { "vcs_base": { "VCS::vcs_mirror": { options: { parent_dir: { owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: "755", ensure: true }, nowipe: true, vcs: { runas: { "function": "getenv", "args": ["LOGNAME", "128"] }, umask: "000" } } } } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "git_mirror_core": { "VCS::vcs_mirror": { vcs: "/usr/bin/git", path: "/tmp/q/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git" } } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {undefine: ["git_mirror_core"] } }' | $(CFAPI)
+
 api_search:
 	@echo ...describe Security::SSH
 	echo '{ dc_api_version: "0.0.1", request: {describe:"Security::SSH"} }' | $(CFAPI)

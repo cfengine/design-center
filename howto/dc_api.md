@@ -813,27 +813,264 @@ name of a sketch or `true` to indicate all activations should be removed.
 
 #### `definitions`
 
-The `definitions` command lists the parameter definitions.
+The `definitions` command lists the parameter definitions.  This is the DC API's
+central library of knowledge.  Every parameter definition is a source of
+configuration data (like a CFEngine common bundle, but applied directly to a
+sketch bundle).  Parameter definitions have names, which are used when you want
+to activate a sketch, and can contain more than one sketch's parameters or only
+part of a sketch's parameters.
+
+```json
+{ dc_api_version: "0.0.1", request: {definitions:true} }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "definitions": {
+                "simple_ssh": {
+                    "Security::SSH": {
+                        "params": {
+                            "X11Forwarding": "yes",
+                            "Protocol": "2",
+                            "PermitRootLogin": "yes"
+                        }
+                    }
+                },
+            }
+        },
+        "log": [],
+        "tags": {}
+    }
+}
+```
 
 #### `define`
 
-The `define` command creates a parameter definition.
+The `define` command creates a parameter definition with a name.  The example
+here creates some base parameters for the `VCS::vcs_mirror` sketch and then lays
+specific configuration to mirror the [https://github.com/cfengine/core.git]
+repository's master branch from Git.  In this case, we do it in two steps, but
+could have done it in one step.
+
+Note that the reply doesn't tell you more than "I got it, thanks."
+
+You can use the `function` expression in data, as shown below, to make sure that
+the DC API will make a function call and not just pass a string.  So, instead of
+`getenv("LOGNAME", "128")` you need to use
+`{ "function": "getenv", "args": ["LOGNAME", "128"] }` to make sure the function
+call is preserved.
+
+
+```json
+{ dc_api_version: "0.0.1", request: {define: { "vcs_base": { "VCS::vcs_mirror": { options: { parent_dir: { owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: "755", ensure: true }, nowipe: true, vcs: { runas: { "function": "getenv", "args": ["LOGNAME", "128"] }, umask: "000" } } } } } } }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "define": {
+                "vcs_base": 1
+            }
+        },
+        "log": [],
+        "tags": {
+            "vcs_base": 1
+        }
+    }
+}
+```
+
+```json
+{ dc_api_version: "0.0.1", request: {define: { "git_mirror_core": { "VCS::vcs_mirror": { vcs: "/usr/bin/git", path: "/tmp/q/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git" } } } } }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "define": {
+                "git_mirror_core": 1
+            }
+        },
+        "log": [],
+        "tags": {
+            "git_mirror_core": 1
+        }
+    }
+}
+```
 
 #### `undefine`
 
-The `undefine` command removes a parameter definition by name.
+The `undefine` command removes a parameter definition by name.  You can pass a
+list of string parameter definition names or simply `true` to remove all the
+parameter definitions.
+
+```json
+{ dc_api_version: "0.0.1", request: {undefine: ["git_mirror_core"] } }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "undefine": {
+                "git_mirror_core": "1"
+            }
+        },
+        "log": [],
+        "tags": {
+            "git_mirror_core": 1
+        }
+    }
+}
+```
 
 #### `environments`
 
 The `environments` command lists the run environments.
 
+A run environment is a common bundle of general settings.  It affects the
+execution of bundles globally, so it's not intended to be specific for each
+bundle activation.
+
+The sketch bundle chooses to have a run environment by specifying a parameter
+with type `environment`.  Only a run environment can satisfy that API parameter.
+
+Good examples of run environments are *production*, *production_debug*, or
+*development_nodebug*.  In a run environment you'd expect to find at least the
+`activated`, `verbose`, and `test` variables.  For each of those, the DC API
+will also provide a class named `runenv_ENVIRONMENTNAME_ENVIRONMENTVARIABLE`.
+Here's an example of a `testing` run environment, as it appears in the generated
+runfile:
+
+```
+bundle common testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_testing_activated" expression => "any";
+      "runenv_testing_test" expression => "any";
+      "runenv_testing_verbose" expression => "any";
+}
+```
+
+And here is the definition of that run environment:
+
+```json
+{ dc_api_version: "0.0.1", request: {environments:true} }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "environments": {
+                "testing": {
+                    "verbose": "1",
+                    "test": "1",
+                    "activated": "1"
+                }
+            }
+        },
+        "log": [],
+        "tags": {}
+    }
+}
+```
+
+The last thing to note is that any run environment variable can have values
+other than `true` and `false`.  If they are a string, then that string is a
+class expression.  So, for instance, if `activated` is `Monday` then the run
+environment will only be activated on Mondays.
+
 #### `define_environment`
 
-The `define_environemnt` command defines a run environment.
+The `define_environemnt` command defines a run environment.  The `testing`
+example above can be defined like so:
+
+```json
+{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: true, test: true, verbose: true } } } }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "define_environment": {
+                "testing": 1
+            }
+        },
+        "log": [],
+        "tags": {
+            "testing": 1
+        }
+    }
+}
+```
+
+Again, remember that each of those variables can be a string, to be interpreted
+as a class expression, and that you can have more than those three variables.
 
 #### `undefine_environment`
 
-The `undefine_environemnt` command removes a run environment.
+The `undefine_environemnt` command removes a run environment.  It takes a list
+of environment names.
+
+```json
+{ dc_api_version: "0.0.1", request: {undefine_environment: [ "testing" ] } }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "undefine_environment": {
+                "testing": "1"
+            }
+        },
+        "log": [],
+        "tags": {
+            "testing": 1
+        }
+    }
+}
+```
 
 #### `validations`
 
