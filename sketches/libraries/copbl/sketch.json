@@ -9,7 +9,7 @@
     metadata:
     {
         name: "CFEngine::stdlib",
-	description: "CFEngine standard library (also known as COPBL)",
+	    description: "The portions of the CFEngine standard library (also known as COPBL) that are compatible with 3.4.0 releases",
         version: 110,
         license: "LGPL",
         tags: [ "cfdc" ],

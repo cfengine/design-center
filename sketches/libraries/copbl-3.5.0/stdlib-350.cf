@@ -1,0 +1,26 @@
+# Cfengine Community Open Promise-Body Library
+# extracted from core.git
+# For Cfengine Core: 3.5.0
+
+body classes scoped_classes_generic(scope, x)
+# Define x prefixed/suffixed with promise outcome
+{
+  scope => "$(scope)";
+  promise_repaired => { "promise_repaired_$(x)", "$(x)_repaired", "$(x)_ok", "$(x)_reached" };
+  repair_failed => { "repair_failed_$(x)", "$(x)_failed", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired", "$(x)_reached" };
+  repair_denied => { "repair_denied_$(x)", "$(x)_denied", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired", "$(x)_reached" };
+  repair_timeout => { "repair_timeout_$(x)", "$(x)_timeout", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired", "$(x)_reached" };
+  promise_kept => { "promise_kept_$(x)", "$(x)_kept", "$(x)_ok", "$(x)_not_repaired", "$(x)_reached" };
+}
+
+bundle agent fileinfo(f)
+{
+  vars:
+      "fields" slist => splitstring("size,gid,uid,ino,nlink,ctime,atime,mtime,mode,modeoct,permstr,permoct,type,devno,dev_minor,dev_major,basename,dirname", ",", 999);
+
+      "stat[$(f)][$(fields)]" string => filestat($(f), $(fields));
+
+  reports:
+    verbose_mode::
+      "$(this.bundle): file $(f) has $(fields) = $(stat[$(f)][$(fields)])";
+}
