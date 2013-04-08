@@ -1136,7 +1136,9 @@ sub regenerate
         }
     }
 
-    my $report_lines = join "\n", @report_lines;
+    my $report_lines = join "\n",
+     "${context_indent}cfengine::",
+      @report_lines;
 
     my $standalone_lines = <<EOHIPPUS;
 body common control
