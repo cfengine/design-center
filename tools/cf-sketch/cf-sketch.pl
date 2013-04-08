@@ -55,6 +55,7 @@ my %options = (
                install => [],
                uninstall => [],
                force => 0,
+               quiet => 0,
                verbose => 0,
                test => 0,
                veryverbose => 0,
@@ -69,6 +70,7 @@ Getopt::Long::Configure("bundling");
 
 GetOptions(\%options,
            "expert!",
+           "quiet|q!",
            "verbose|v!",
            "veryverbose|vv!",
            "generate!",
