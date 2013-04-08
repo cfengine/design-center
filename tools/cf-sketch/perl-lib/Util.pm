@@ -183,8 +183,12 @@ sub error {
     print STDERR RED @_, RESET;
 }
 
-sub message {
+sub success {
     print STDERR GREEN @_, RESET;
+}
+
+sub message {
+    print STDERR BLUE @_, RESET;
 }
 
 # Generate an error message, nicely formatted.
@@ -194,6 +198,21 @@ sub ferror {
     {
         error sprintstr($_,undef,undef,undef,undef,"* ");
     }
+}
+
+# Print warnings and errors from an API result data structure
+sub print_api_messages
+{
+  my $result = shift;
+
+  my $warns = hashref_search($result, 'warnings');
+  my $errs  = hashref_search($result, 'errors');
+  my $logs  = hashref_search($result, 'log');
+
+  warning("Warning: $_\n") foreach @$warns;
+  error("Error: $_\n") foreach @$errs;
+  message("$_\n") foreach @$logs;
+
 }
 
 # Validate a regex
