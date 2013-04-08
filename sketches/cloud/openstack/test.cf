@@ -84,6 +84,7 @@ bundle agent cfsketch_run
       "__002_Cloud_Services_OpenStack_ensure" usebundle => cfdc_cloud_openstack:ensure("cf_sketch_testing", "default:cfsketch_run.__002_Cloud_Services_OpenStack_ensure_mymetadata", "0", "cfworker", "1", "ignored", "default:cfsketch_run.__002_Cloud_Services_OpenStack_ensure_options"), useresult => "return___002_Cloud_Services_OpenStack_ensure";
 
   reports:
+    cfengine::
       "activation __001_Cloud_Services_OpenStack_ensure returned instance_count = $(return___001_Cloud_Services_OpenStack_ensure[instance_count])";
       "activation __002_Cloud_Services_OpenStack_ensure returned instance_count = $(return___002_Cloud_Services_OpenStack_ensure[instance_count])";
 }

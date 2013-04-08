@@ -80,5 +80,6 @@ bundle agent cfsketch_run
       "__002_Cloud_Services_AWS_SDB_clear" usebundle => cfdc_aws_sdb:clear("cf_sketch_testing", "default:cfsketch_run.__002_Cloud_Services_AWS_SDB_clear_mymetadata", "cfsketch_sdb_cloud", "default:cfsketch_run.__002_Cloud_Services_AWS_SDB_clear_options"), useresult => "return___002_Cloud_Services_AWS_SDB_clear";
 
   reports:
+    cfengine::
 
 }

@@ -64,5 +64,6 @@ bundle agent cfsketch_run
       "__001_CFEngine_sketch_template_entry" usebundle => cfdc_sketch_template:entry("cf_sketch_testing", "default:cfsketch_g.__001_CFEngine_sketch_template_entry_mymetadata", "__001_CFEngine_sketch_template_entry", "1", "fallback", "10.0.1.0", @(cfsketch_g.__001_CFEngine_sketch_template_entry_mylist), "default:cfsketch_g.__001_CFEngine_sketch_template_entry_myarray"), useresult => "return___001_CFEngine_sketch_template_entry";
 
   reports:
+    cfengine::
 
 }

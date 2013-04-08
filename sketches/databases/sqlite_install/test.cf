@@ -80,6 +80,7 @@ bundle agent cfsketch_run
       "__002_Database_Install_SQLite_ensure" usebundle => cfdc_db_sqlite:ensure("cf_sketch_testing", "default:cfsketch_run.__002_Database_Install_SQLite_ensure_mymetadata", "1", @(cfsketch_run.__002_Database_Install_SQLite_ensure_extra_packages), ""), useresult => "return___002_Database_Install_SQLite_ensure";
 
   reports:
+    cfengine::
       "activation __001_Database_Install_SQLite_ensure returned installed = $(return___001_Database_Install_SQLite_ensure[installed])";
       "activation __002_Database_Install_SQLite_ensure returned installed = $(return___002_Database_Install_SQLite_ensure[installed])";
 }

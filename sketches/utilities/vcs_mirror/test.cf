@@ -61,5 +61,6 @@ bundle agent cfsketch_run
       "__001_VCS_vcs_mirror_mirror" usebundle => cfdc_vcs:mirror("cf_sketch_testing", "default:cfsketch_g.__001_VCS_vcs_mirror_mirror_metadata", "/usr/bin/git", "/tmp/cfengine-core2", "https://github.com/cfengine/core.git", "master", "default:cfsketch_g.__001_VCS_vcs_mirror_mirror_options"), useresult => "return___001_VCS_vcs_mirror_mirror";
 
   reports:
+    cfengine::
       "activation __001_VCS_vcs_mirror_mirror returned deploy_path = $(return___001_VCS_vcs_mirror_mirror[deploy_path])";
 }

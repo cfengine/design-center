@@ -71,5 +71,6 @@ bundle agent cfsketch_run
       "__001_Utilities_abortclasses_abortclasses_filebased" usebundle => abortclasses_filebased("cf_sketch_testing", "default:cfsketch_g.__001_Utilities_abortclasses_abortclasses_filebased_metadata", "cowboy", "/tmp/COWBOY", "", "any", "default:cfsketch_g.__001_Utilities_abortclasses_abortclasses_filebased_timeout"), useresult => "return___001_Utilities_abortclasses_abortclasses_filebased";
 
   reports:
+    cfengine::
 
 }

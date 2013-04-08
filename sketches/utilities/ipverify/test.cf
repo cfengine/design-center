@@ -59,5 +59,6 @@ bundle agent cfsketch_run
       "__001_Utilities_ipverify_maybe_usebundle" usebundle => cfdc_ipverify:maybe_usebundle("cf_sketch_testing", "default:cfsketch_g.__001_Utilities_ipverify_maybe_usebundle_metadata", "192.168.2.1", @(cfsketch_g.__001_Utilities_ipverify_maybe_usebundle_maclist), "this_bundle_will_not_run_for_you_unless_you_buy_my_router", "/usr/sbin/arp"), useresult => "return___001_Utilities_ipverify_maybe_usebundle";
 
   reports:
+    cfengine::
       "activation __001_Utilities_ipverify_maybe_usebundle returned match = $(return___001_Utilities_ipverify_maybe_usebundle[match])";
 }

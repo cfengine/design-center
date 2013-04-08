@@ -60,5 +60,6 @@ bundle agent cfsketch_run
       "__001_System_etc_hosts_configure" usebundle => cfdc_etc_hosts:configure("cf_sketch_testing", "default:cfsketch_g.__001_System_etc_hosts_configure_metadata", "/etc/hosts", "", "default:cfsketch_g.__001_System_etc_hosts_configure_hosts"), useresult => "return___001_System_etc_hosts_configure";
 
   reports:
+    cfengine::
       "activation __001_System_etc_hosts_configure returned file = $(return___001_System_etc_hosts_configure[file])";
 }

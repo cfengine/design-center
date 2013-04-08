@@ -82,5 +82,6 @@ bundle agent cfsketch_run
       "__002_Cloud_Services_AWS_S3_clear" usebundle => cfdc_aws_s3:clear("cf_sketch_testing", "default:cfsketch_run.__002_Cloud_Services_AWS_S3_clear_mymetadata", "cfsketch_cloud_uploads", "default:cfsketch_run.__002_Cloud_Services_AWS_S3_clear_options"), useresult => "return___002_Cloud_Services_AWS_S3_clear";
 
   reports:
+    cfengine::
 
 }

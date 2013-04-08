@@ -59,5 +59,6 @@ bundle agent cfsketch_run
       "__001_Security_file_integrity_watch" usebundle => cfdc_file_integrity:watch("cf_sketch_testing", "default:cfsketch_g.__001_Security_file_integrity_watch_metadata", @(cfsketch_g.__001_Security_file_integrity_watch_watch), "sha256", "1440"), useresult => "return___001_Security_file_integrity_watch";
 
   reports:
+    cfengine::
       "activation __001_Security_file_integrity_watch returned paths = $(return___001_Security_file_integrity_watch[paths])";
 }

@@ -74,6 +74,7 @@ bundle agent cfsketch_run
       "__002_Services_Generic_ensure" usebundle => cfdc_service_generic:ensure("cf_sketch_testing", "default:cfsketch_run.__002_Services_Generic_ensure_metadata", "www", "/etc/init.d/httpd start", "/etc/init.d/httpd stop", ".*httpd.*", "stop"), useresult => "return___002_Services_Generic_ensure";
 
   reports:
+    cfengine::
       "activation __001_Services_Generic_ensure returned policy_implemented = $(return___001_Services_Generic_ensure[policy_implemented])";
       "activation __002_Services_Generic_ensure returned policy_implemented = $(return___002_Services_Generic_ensure[policy_implemented])";
 }

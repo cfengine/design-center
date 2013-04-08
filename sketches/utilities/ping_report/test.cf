@@ -59,6 +59,7 @@ bundle agent cfsketch_run
       "__001_Utilities_ping_report_ping" usebundle => cfdc_ping:ping("cf_sketch_testing", "default:cfsketch_g.__001_Utilities_ping_report_ping_metadata", @(cfsketch_g.__001_Utilities_ping_report_ping_hosts), "2"), useresult => "return___001_Utilities_ping_report_ping";
 
   reports:
+    cfengine::
       "activation __001_Utilities_ping_report_ping returned reached = $(return___001_Utilities_ping_report_ping[reached])";
       "activation __001_Utilities_ping_report_ping returned not_reached = $(return___001_Utilities_ping_report_ping[not_reached])";
 }

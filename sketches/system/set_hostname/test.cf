@@ -56,6 +56,7 @@ bundle agent cfsketch_run
       "__001_System_set_hostname_set" usebundle => cfdc_hostname:set("cf_sketch_testing", "default:cfsketch_g.__001_System_set_hostname_set_metadata", "node1", "example.com"), useresult => "return___001_System_set_hostname_set";
 
   reports:
+    cfengine::
       "activation __001_System_set_hostname_set returned hostname = $(return___001_System_set_hostname_set[hostname])";
       "activation __001_System_set_hostname_set returned domainname = $(return___001_System_set_hostname_set[domainname])";
 }

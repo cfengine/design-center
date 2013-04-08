@@ -65,5 +65,6 @@ bundle agent cfsketch_run
       "__001_System_sysctl_set" usebundle => cfdc_sysctl:set("cf_sketch_testing", "default:cfsketch_g.__001_System_sysctl_set_metadata", "/etc/sysctl.conf", "", "default:cfsketch_g.__001_System_sysctl_set_ensured_kv", "default:cfsketch_g.__001_System_sysctl_set_removed_kv", @(cfsketch_g.__001_System_sysctl_set_removed_vars)), useresult => "return___001_System_sysctl_set";
 
   reports:
+    cfengine::
       "activation __001_System_sysctl_set returned sysctl_file = $(return___001_System_sysctl_set[sysctl_file])";
 }

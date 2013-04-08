@@ -64,6 +64,7 @@ bundle agent cfsketch_run
       "__001_Security_tcpwrappers_set" usebundle => cfdc_tcpwrappers:set("cf_sketch_testing", "default:cfsketch_g.__001_Security_tcpwrappers_set_metadata", "/etc/hosts.allow", "/etc/hosts.allow", "default:cfsketch_g.__001_Security_tcpwrappers_set_allow", "default:cfsketch_g.__001_Security_tcpwrappers_set_deny", "1", ""), useresult => "return___001_Security_tcpwrappers_set";
 
   reports:
+    cfengine::
       "activation __001_Security_tcpwrappers_set returned allow_filename = $(return___001_Security_tcpwrappers_set[allow_filename])";
       "activation __001_Security_tcpwrappers_set returned deny_filename = $(return___001_Security_tcpwrappers_set[deny_filename])";
 }

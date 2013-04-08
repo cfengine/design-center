@@ -75,5 +75,6 @@ bundle agent cfsketch_run
       "__001_System_config_resolver_resolver" usebundle => cfdc_resolver:resolver("cf_sketch_testing", "default:cfsketch_g.__001_System_config_resolver_resolver_metadata", "/tmp/resolv.conf", @(cfsketch_g.__001_System_config_resolver_resolver_nameserver), @(cfsketch_g.__001_System_config_resolver_resolver_search), @(cfsketch_g.__001_System_config_resolver_resolver_domain), @(cfsketch_g.__001_System_config_resolver_resolver_options), @(cfsketch_g.__001_System_config_resolver_resolver_sortlist), @(cfsketch_g.__001_System_config_resolver_resolver_extra)), useresult => "return___001_System_config_resolver_resolver";
 
   reports:
+    cfengine::
       "activation __001_System_config_resolver_resolver returned resolv_conf = $(return___001_System_config_resolver_resolver[resolv_conf])";
 }

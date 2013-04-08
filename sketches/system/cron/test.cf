@@ -135,6 +135,7 @@ bundle agent cfsketch_run
       "__005_System_cron_tab" usebundle => cfdc_cron:tab("cf_sketch_testing", "default:cfsketch_g.__005_System_cron_tab_metadata", "/usr/bin/crontab", "task3", "root", "0 * * * *", @(cfsketch_g.__005_System_cron_tab_commands)), useresult => "return___005_System_cron_tab";
 
   reports:
+    cfengine::
       "activation __001_System_cron_tab returned tab = $(return___001_System_cron_tab[tab])";
       "activation __001_System_cron_tab returned path = $(return___001_System_cron_tab[path])";
       "activation __002_System_cron_tab returned tab = $(return___002_System_cron_tab[tab])";

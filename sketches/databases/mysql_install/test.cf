@@ -80,6 +80,7 @@ bundle agent cfsketch_run
       "__002_Database_Install_MySQL_ensure" usebundle => cfdc_db_mysql:ensure("cf_sketch_testing", "default:cfsketch_run.__002_Database_Install_MySQL_ensure_mymetadata", "1", "1", @(cfsketch_run.__002_Database_Install_MySQL_ensure_extra_packages), ""), useresult => "return___002_Database_Install_MySQL_ensure";
 
   reports:
+    cfengine::
       "activation __001_Database_Install_MySQL_ensure returned installed = $(return___001_Database_Install_MySQL_ensure[installed])";
       "activation __001_Database_Install_MySQL_ensure returned running = $(return___001_Database_Install_MySQL_ensure[running])";
       "activation __002_Database_Install_MySQL_ensure returned installed = $(return___002_Database_Install_MySQL_ensure[installed])";

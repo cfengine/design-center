@@ -56,5 +56,6 @@ bundle agent cfsketch_run
       "__001_System_tzconfig_set" usebundle => cfdc_tzconfig:set("cf_sketch_testing", "default:cfsketch_g.__001_System_tzconfig_set_metadata", "America/Chicago", "/usr/share/zoneinfo"), useresult => "return___001_System_tzconfig_set";
 
   reports:
+    cfengine::
       "activation __001_System_tzconfig_set returned timezone = $(return___001_System_tzconfig_set[timezone])";
 }

@@ -144,6 +144,7 @@ bundle agent cfsketch_run
       "__005_Repository_apt_Maintain_ensure" usebundle => cfdc_aptrepo:ensure("cf_sketch_testing", "default:cfsketch_g.__005_Repository_apt_Maintain_ensure_metadata", "/etc/apt/sources.list.d/universe-ubuntu-precise.list", "http://us.archive.ubuntu.com/ubuntu/", "universe", @(cfsketch_g.__005_Repository_apt_Maintain_ensure_components), @(cfsketch_g.__005_Repository_apt_Maintain_ensure_types), ""), useresult => "return___005_Repository_apt_Maintain_ensure";
 
   reports:
+    cfengine::
       "activation __001_Repository_apt_Maintain_wipe returned file = $(return___001_Repository_apt_Maintain_wipe[file])";
       "activation __002_Repository_apt_Maintain_ensure returned file = $(return___002_Repository_apt_Maintain_ensure[file])";
       "activation __003_Repository_apt_Maintain_ensure returned file = $(return___003_Repository_apt_Maintain_ensure[file])";

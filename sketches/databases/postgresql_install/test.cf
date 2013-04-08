@@ -80,6 +80,7 @@ bundle agent cfsketch_run
       "__002_Database_Install_PostgreSQL_ensure" usebundle => cfdc_db_postgresql:ensure("cf_sketch_testing", "default:cfsketch_run.__002_Database_Install_PostgreSQL_ensure_mymetadata", "1", "1", @(cfsketch_run.__002_Database_Install_PostgreSQL_ensure_extra_packages), ""), useresult => "return___002_Database_Install_PostgreSQL_ensure";
 
   reports:
+    cfengine::
       "activation __001_Database_Install_PostgreSQL_ensure returned installed = $(return___001_Database_Install_PostgreSQL_ensure[installed])";
       "activation __001_Database_Install_PostgreSQL_ensure returned running = $(return___001_Database_Install_PostgreSQL_ensure[running])";
       "activation __002_Database_Install_PostgreSQL_ensure returned installed = $(return___002_Database_Install_PostgreSQL_ensure[installed])";

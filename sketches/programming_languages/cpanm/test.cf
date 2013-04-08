@@ -59,5 +59,6 @@ bundle agent cfsketch_run
       "__001_Packages_CPAN_cpanm_install" usebundle => cfdc_cpan:install("cf_sketch_testing", "default:cfsketch_g.__001_Packages_CPAN_cpanm_install_metadata", "/usr/local/bin/cpanm", "", @(cfsketch_g.__001_Packages_CPAN_cpanm_install_packages)), useresult => "return___001_Packages_CPAN_cpanm_install";
 
   reports:
+    cfengine::
       "activation __001_Packages_CPAN_cpanm_install returned installed = $(return___001_Packages_CPAN_cpanm_install[installed])";
 }
