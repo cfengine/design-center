@@ -2,10 +2,10 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2013-04-08 03:26:26 a10022>
+# Time-stamp: <2013-04-09 01:32:37 a10022>
 
 use Term::ANSIColor qw(:constants);
-
+use DesignCenter::JSON;
 use Util;
 
 ######################################################################
@@ -27,9 +27,15 @@ use Util;
    #  'list',
    # ],
    [
-    'list [REGEX|all]',
+    'list [-v] params [REGEX]',
+    'List defined parameter sets. If REGEX is given, only list sets that match it (either in the set name or the sketch name to which they correspond). Use -v to show the values in each parameter set.',
+    '(?:(-v)\b\s*)?param\S*(?:\s+(.*))?',
+    'listparams',
+   ],
+   [
+    'list [sketches] [REGEX|all]',
     'List installed sketches. Specify REGEX to filter, no argument or "all" to list everything.',
-    '(.*)',
+    '(?:sketch\S*\b\s*)?(.*)',
     'list',
    ],
   ]
@@ -79,7 +85,54 @@ sub command_list {
                 }
             }
         }
+        else
+        {
+            Util::error("Internal error: The API 'list' command returned an unknown data structure.");
+        }
     }
 }
 
+sub command_listparams
+{
+    my $full=shift;
+    my $regex=shift;
+    $regex = "." if ($regex eq 'all' or !$regex);
+    my $err = Util::check_regex($regex);
+    if ($err)
+    {
+        Util::error($err);
+    }
+    else
+    {
+        my ($success, $result) = main::api_interaction({ definitions => 1 });
+        my $list = Util::hashref_search($result, 'data', 'definitions');
+        if (ref $list eq 'HASH')
+        {
+            my %found = ();
+            foreach my $param (sort keys %$list)
+            {
+                my @sketches = sort keys %{$list->{$param}};
+                $found{$param} = [ @sketches ] if ($param =~ /$regex/i || grep(/$regex/i, @sketches));
+            }
+            if (keys %found)
+            {
+                Util::output("The following parameter sets".(($regex eq '.')?" are defined":" match your query").":\n\n");
+                foreach my $name (sort keys %found)
+                {
+                    my @sketches = @{$found{$name}};
+                    my $word = (scalar(@sketches)>1 ? "Sketches" : "Sketch");
+                    print RESET, GREEN, $name, RESET, ": $word ".join(", ", @sketches)."\n";
+                    if ($full)
+                    {
+                        print DesignCenter::JSON::pretty_print_json($list->{$name})."\n";
+                    }
+                }
+            }
+        }
+        else
+        {
+            Util::error("Internal error: The API 'definitions' command returned an unknown data structure.");
+        }
+    }
+}
 1;
