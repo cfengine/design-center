@@ -129,8 +129,9 @@ api_definitions:
 	echo '{ dc_api_version: "0.0.1", request: {definitions:true} }' | $(CFAPI)
 	@echo ...define some parameters
 	echo '{ dc_api_version: "0.0.1", request: {define: { "vcs_base": { "VCS::vcs_mirror": { options: { parent_dir: { owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: "755", ensure: true }, nowipe: true, vcs: { runas: { "function": "getenv", "args": ["LOGNAME", "128"] }, umask: "000" } } } } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define: { "git_mirror_core": { "VCS::vcs_mirror": { vcs: "/usr/bin/git", path: "/tmp/q/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git" } } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {undefine: ["git_mirror_core"] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "git_mirror_core": { "VCS::vcs_mirror": { vcs: "/usr/bin/git", path: "/tmp/q/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git" }, "Security::SSH": { params: { "PermitRootLogin": "yes" } } } } } }' | $(CFAPI)
+	@echo ...undefine a set of parameters
+	echo '{ dc_api_version: "0.0.1", request: {undefine: ["vcs_base"] } }' | $(CFAPI)
 
 api_search:
 	@echo ...describe Security::SSH
