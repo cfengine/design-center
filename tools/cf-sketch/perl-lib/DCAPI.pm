@@ -853,9 +853,9 @@ sub validate
                                                         $validate->{validation},
                                                         $self->validations()->{$validate->{validation}});
 
-    if (ref $result eq 'DCAPI::Validation') # it's a validation
+    if (ref $validation eq 'DCAPI::Validation') # it's a validation
     {
-        return $result->validate($validate->{data});
+        return $validation->validate($validate->{data});
     }
 
     # else, there was an error

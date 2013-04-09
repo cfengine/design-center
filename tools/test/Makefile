@@ -63,15 +63,19 @@ do:
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "$(API_SKETCHDIR)", environment: "testing", params: [ "vcs_base", "git_mirror_core" ] } } } }' | $(CFAPI)
 
 api_validations:
+	@echo ...define a choice-of validation with choice and derived
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { AB: { choice: [ "A", "B" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { C: { choice: [ "C" ] } } } }' | $(CFAPI)
 	@echo ...define some basic validations
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { IPv4_local: { valid_ipv4: "10.0.0/24", invalid_ipv4: "10.0.0.1" } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { IPv4: { valid_ipv4: "0.0.0.0/0" } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { NONEMPTY_STRING: { valid_regex: "." } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { OCTAL: { invalid_regex: "[^0-7]" } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { DIGITS: { invalid_regex: "[^0-9]" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { OCTAL: { valid_regex: "^[0-7]+$" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { DIGITS: { valid_regex: "^[0-9]+$" } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { NUMBER: { derived: [ "DIGITS" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { 8BIT_NUMBER: { minimum_value: 0, maximum_value: 255 } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL: { valid_regex: "/((([A-Za-z]{3,9}:(?:\\/\\/)?)(?:[-;:&=\\+\\$,\\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\\+\\$,\\w]+@)[A-Za-z0-9.-]+)((?:\\/[\\+~%\\/.\\w-_]*)?\\??(?:[-\\+=&;%@.\\w_]*)#?(?:[\\w]*))?)/" } } } }' | $(CFAPI)
+	@echo TODO broken JSON here
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL: { valid_regex: "^((([A-Za-z]{3,9}:(?:\\/\\/)?)(?:[-;:&=\\+\\$,\\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\\+\\$,\\w]+@)[A-Za-z0-9.-]+)((?:\\/[\\+~%\\/.\\w-_]*)?\\??(?:[-\\+=&;%@.\\w_]*)#?(?:[\\w]*))?)$" } } } }' | $(CFAPI)
 	@echo ...define a derived validation
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL_HTTP_OR_FTP: { derived: [ "URL" ], valid_regex: "^(ftp|https?)://.+" } } } }' | $(CFAPI)
 	@echo ...define some compound types
@@ -80,9 +84,37 @@ api_validations:
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { LIST_OF_LIST_OF_NUMBERS: { list: [ "LIST_OF_NUMBERS" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { ARRAY_OF_NONEMPTY_STRINGS_TO_LIST_OF_LIST_OF_NUMBERS: { array_k: [ "NONEMPTY_STRING" ], array_v: [ "LIST_OF_LIST_OF_NUMBERS" ] } } } }' | $(CFAPI)
 
-	@echo ...now validate some data
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { UID: { derived: [ "NONEMPTY_STRING" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { GID: { derived: [ "NONEMPTY_STRING" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { MOG_SEQUENCE: { sequence: [ "OCTAL", "UID", "GID"  ] } } } }' | $(CFAPI)
+
+api_validate:
+	@echo ...now validate choices
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "AB", data: "A" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "AB", data: "" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "C", data: "C" } } }' | $(CFAPI)
+
+	@echo ...now validate numeric data
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "8BIT_NUMBER", data: 100 } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "8BIT_NUMBER", data: 0 } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "8BIT_NUMBER", data: -1 } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "8BIT_NUMBER", data: 255 } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "8BIT_NUMBER", data: 256 } } }' | $(CFAPI)
+
+	@echo ...now validate regex data
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "OCTAL", data: "100" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "OCTAL", data: "800" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "OCTAL", data: "" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "URL_HTTP_OR_FTP", data: "" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "URL_HTTP_OR_FTP", data: "http://github.com?p1=v1&p2=v2" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "URL_HTTP_OR_FTP", data: "file:///here" } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "NONEMPTY_STRING", data: "hello" } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "NONEMPTY_STRING", data: "" } } }' | $(CFAPI)
+
+	@echo ...now validate IPs
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "IPv4_local", data: "10." } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "IPv4_local", data: "10.0.0.1" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "IPv4_local", data: "10.0.0.99" } } }' | $(CFAPI)
 
 api_environments:
 	@echo ...show all environments
