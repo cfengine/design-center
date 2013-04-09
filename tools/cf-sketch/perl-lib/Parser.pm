@@ -494,7 +494,7 @@ sub _do_command {
     _log($_);
 
     my $result;
-    if ($result=_execute_command($_, \@_)) {
+    if ($result=_execute_command($_, @_)) {
       # If it returns something, it is an error message.
       Util::error($result);
     }
