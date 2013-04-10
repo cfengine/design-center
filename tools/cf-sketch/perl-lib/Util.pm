@@ -228,6 +228,19 @@ sub check_regex {
     return;
 }
 
+sub validate_and_set_regex
+{
+    my $regex = shift;
+    $regex = "." if ($regex eq 'all' or !$regex);
+    my $err = Util::check_regex($regex);
+    if ($err)
+    {
+        Util::error($err);
+        $regex = undef;
+    }
+    return $regex;
+}
+
 sub local_cfsketches_source
 {
     my $rootdir   = File::Spec->rootdir();
