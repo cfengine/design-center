@@ -305,20 +305,21 @@ sub api_interaction
         my $success = Util::hashref_search($result, 'success');
         if ($success)
         {
-            print "OK: Got successful result: ", $dcapi->encode($result), "\n"
+            Util::success("OK: Got successful result: ".$dcapi->encode($result)."\n")
              if $options{verbose};
         }
         else
         {
-            print "OK: Got unsuccessful result: ", $dcapi->encode($result), "\n"
-             if $options{verbose};
+            print "OK: Got unsuccessful result: ".$dcapi->encode($result)."\n"
+              if $options{verbose};
+            Util::print_api_messages($result);
         }
 
         $ok_callback->($success, $result) if defined $ok_callback;
         return ($success, $result);
     }
 
-    print "NOT OK: Got bad result: ", $dcapi->encode($result), "\n";
+    Util::error("API fatal error: Got bad result: ".$dcapi->encode($result)."\n");
     exit 1;
     # return (0, $result);
 }
