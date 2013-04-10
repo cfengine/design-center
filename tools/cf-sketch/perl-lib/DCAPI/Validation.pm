@@ -219,7 +219,7 @@ sub validate
                 next if $ok;
 
                 my $each_ok = 1;
-                foreach my $element (@$list)
+                foreach my $element (@$data)
                 {
                     my $check = $self->api()->validate({ validation => $list_type,
                                                          data => $element});
