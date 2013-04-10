@@ -64,6 +64,7 @@ my %options = (
                # These are hardcoded above, we put them here for convenience
                version => $VERSION,
                date => $DATE,
+               dcapi => $dcapi,
               );
 
 Getopt::Long::Configure("bundling");
