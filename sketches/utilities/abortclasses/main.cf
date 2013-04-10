@@ -3,36 +3,15 @@
 
 # N.B. Namespacing this sketch would make it much harder to use.  So we didn't.
 
-bundle agent abortclasses_filebased(abortclass, trigger_file, alert_only, trigger_context, timeout)
+bundle agent abortclasses_filebased(runenv, metadata, abortclass, trigger_file, alert_only, trigger_context, timeout)
 {
-  meta:
-      "vars[abortclass][type]"      string => "CONTEXT_NAME";
-      "vars[abortclass][default]"   string => "cowboy";
-
-      "vars[trigger_file][type]"    string => "PATH";
-      "vars[trigger_file][default]" string => "/COWBOY";
-
-      "vars[alert_only][type]"      string => "BOOLEAN";
-      "vars[alert_only][default]"   string => "0";
-
-      "vars[trigger_context][type]"    string => "CONTEXT_NAME";
-      "vars[trigger_context][default]" string => "any"; # Context class expression in which 
-                                                        # abortclass is actually defined, and
-                                                        # timeout actions will execute
-
-
-      "vars[timeout][type]" string => "ARRAY(
-enabled   :NON_EMPTY_STRING:default=0
-action    :NON_EMPTY_STRING:default=abortclasses_timeout_action_noop
-years     :NON_EMPTY_STRING:default=0
-months    :NON_EMPTY_STRING:default=0
-days      :NON_EMPTY_STRING:default=0
-hours     :NON_EMPTY_STRING:default=24
-minutes   :NON_EMPTY_STRING:default=0
-)";
-
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
   vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
     "timeout_action" string => "$($(timeout)[action])";
 
   classes:
@@ -67,8 +46,11 @@ minutes   :NON_EMPTY_STRING:default=0
         classes => abortclasses_if_repaired_failed("trigger_timeout_action", "trigger_timeout_action");
                 # We define the trigger_timeout_action class on repair or fail because it meets the 
                 # minimum criteria of the file has not been modified inside the window.
-  
+
   methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
     fileexists::
       # We always alert if the trigger is tripped.
@@ -79,7 +61,7 @@ minutes   :NON_EMPTY_STRING:default=0
     fileexists.trigger_timeout_action::
       "Trigger Timeout Action"
         # This bundle is executed when the mtime of the file(years, months, days, hours, minutes, seconds)
-        # begining from mtime of $(trigger_file). 
+        # begining from mtime of $(trigger_file).
         usebundle => $(timeout_action)("$(trigger_file)",
                                        "$($(timeout)[years])",
                                        "$($(timeout)[months])",
@@ -88,7 +70,7 @@ minutes   :NON_EMPTY_STRING:default=0
                                        "$($(timeout)[minutes])",
                                        "$($(timeout)[seconds])"), 
         comment => "Call $(timeout_action) for $(trigger_file) on interval";
- 
+
 
     fileexists.!alert_only::
       # Raise a class that matches abortclasses defined in body control executor
@@ -98,29 +80,35 @@ minutes   :NON_EMPTY_STRING:default=0
         comment    => "Define $(abortclass) since file $(trigger_file) exists in the context of $(trigger_context)"; 
 
   reports:
-    debug::
-      "abortclasses: trigger_file: $(trigger_file)";
-      "abortclasses: abortclass: $(abortclass)";
-      "abortclasses: alert_only: $(alert_only)";
-      "abortclasses: trigger_context: $(trigger_context)";
-      "abortclasses: timeout[enabled]: $($(timeout)[enabled])";
-      "abortclasses:$(const.t)timeout[action]: $($(timeout)[action])";
-      "abortclasses:$(const.t)timeout[years]: $($(timeout)[years])";
-      "abortclasses:$(const.t)timeout[months]: $($(timeout)[months])";
-      "abortclasses:$(const.t)timeout[days]: $($(timeout)[days])";
-      "abortclasses:$(const.t)timeout[hours]: $($(timeout)[hours])";
-      "abortclasses:$(const.t)timeout[minutes]: $($(timeout)[minutes])";
-      "abortclasses:$(const.t)timeout[seconds]: $($(timeout)[seconds])";
-    debug::
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    verbose::
+      "$(this.bundle): trigger_file: $(trigger_file)";
+      "$(this.bundle): abortclass: $(abortclass)";
+      "$(this.bundle): alert_only: $(alert_only)";
+      "$(this.bundle): trigger_context: $(trigger_context)";
+      "$(this.bundle): timeout[enabled]: $($(timeout)[enabled])";
+      "$(this.bundle):$(const.t)timeout[action]: $($(timeout)[action])";
+      "$(this.bundle):$(const.t)timeout[years]: $($(timeout)[years])";
+      "$(this.bundle):$(const.t)timeout[months]: $($(timeout)[months])";
+      "$(this.bundle):$(const.t)timeout[days]: $($(timeout)[days])";
+      "$(this.bundle):$(const.t)timeout[hours]: $($(timeout)[hours])";
+      "$(this.bundle):$(const.t)timeout[minutes]: $($(timeout)[minutes])";
+      "$(this.bundle):$(const.t)timeout[seconds]: $($(timeout)[seconds])";
+
       "abortclasses: trigger_context: $(trigger_context) not currently defined, will not actually abort",
         ifvarclass => "$(trigger_context)";
-    debug.timeout_trigger::
+
+    verbose.timeout_trigger::
       "abortclasses: timeout trigger mode!!!";
-    debug.alert_only::
+    test.alert_only::
       "abortclasses: alert-only mode!!!";
-    debug.test::
+    test::
       "abortclasses: 'test' context class implies alert_only";
-    debug.updated_mtime_of_trigger_file::
+    verbose.updated_mtime_of_trigger_file::
       "abortclasses: updated mtime of trigger file";
 
 }
@@ -132,7 +120,7 @@ bundle agent abortclasses_alert
 {
   reports:
     cfengine::
-      "Warning: system is under manual control!!!"
+      "$(this.bundle): Warning: system is under manual control!!!"
       comment => "Alert that system is under manual control";
 
 }
@@ -227,17 +215,15 @@ bundle agent abortclasses_remove_trigger(file, years, months, days, hours, minut
 
   reports:
     debug::
-    "abortclasses: IN abortclasses_remove_trigger";
+    "$(this.bundle): IN abortclasses_remove_trigger";
     # These probably need to be unique classes
     cleared_trigger_file::
-      "$(file) was removed because it was older than $(years) years, $(months) months, $(days) days, $(hours) hours, $(minutes) minutes, and $(seconds) seconds";
+      "$(this.bundle): $(file) was removed because it was older than $(years) years, $(months) months, $(days) days, $(hours) hours, $(minutes) minutes, and $(seconds) seconds";
 
     failed_clear_trigger_file::
-      "I was unable to remove $(file), I tried because it was older than $(years) years, $(months) months, $(days) days, $(hours) hours, $(minutes) minutes, and $(seconds) seconds";
+      "$(this.bundle): I was unable to remove $(file), I tried because it was older than $(years) years, $(months) months, $(days) days, $(hours) hours, $(minutes) minutes, and $(seconds) seconds";
 }
 
 
 
 ####################################
-
-

@@ -29,22 +29,12 @@ body file control
 # 3. Any line beginning with ::1 will never be deleted by this bundle, only
 #    replaced if you provide an entry for it
 
-bundle agent configure(class_prefix, hostfile, hosts)
+bundle agent configure(runenv, metadata, original_hostfile, defined_only, hosts)
 {
-  meta:
-      "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
-      "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
-
-      "vars[defined_only][type]"     string => "CONTEXT";
-      "vars[defined_only][default]"  string => "!any";
-
-      # we don't use filename validation because we use $(sys.windir) on Windows
-      "vars[hostfile][type]"         string => "NON_EMPTY_STRING";
-      "vars[hostfile][default]"      string => "/etc/hosts";
-
-      "vars[hosts][type]"            string => "ARRAY()";
-
   vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
       "ip" slist   => getindices("$(hosts)"),
       comment => "We need the list of IPs to look for in the hosts file";
 
@@ -56,14 +46,29 @@ bundle agent configure(class_prefix, hostfile, hosts)
       "CFEnotice" string  => "# This file is managed by CFEngine, manual edits will be reverted",
       comment => "It's nice to let people know why the file keep magically reverting on them";
 
+      "class_prefix" string => canonify($(hostfile));
+
+    !test::
+      "hostfile" string => "$(original_hostfile)", policy => "free";
+    test::
+      "hostfile" string => "/tmp/hosts", policy => "free";
+
   classes:
-      "defined_only" expression => "$(class_prefix)defined_only";
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "defined_only" expression => strcmp($(defined_only), "1");
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   files:
       "$(hostfile)"
       create      =>  "true",
       edit_line   =>  default:replace_or_add("^$(esc_ips[$(ip)])\s.*",
-                                     "$(ip)    $(config[$(ip)])"),
+                                             "$(ip)    $(config[$(ip)])"),
+      classes     =>  default:if_else("$(class_prefix)_converged",
+                                      "$(class_prefix)_not_converged"),
       comment     =>  "Fix hosts entry to be as defined.";
 
       # We only need to delete nonmanaged entries if we specify the
@@ -79,14 +84,26 @@ bundle agent configure(class_prefix, hostfile, hosts)
       comment     =>  "Notice that the file is managed by CFEngine";
 
       # I have no idea what windows permissions should be for this file
-    !windows.!default:test::
+    !windows.!test::
       "$(hostfile)"
       perms   => default:mog("644", "root", "root"),
       comment => "Set proper permissions so everyone can read it";
 
   reports:
-    default:debug::
-      "$(ip)    $(config[$(ip)])";
+    defined_only::
+      "$(this.bundle): only the defined hosts will be left in $(hostfile)";
+    !defined_only::
+      "$(this.bundle): the defined hosts will be added to $(hostfile)";
+
+    verbose::
+      "$(this.bundle): given hosts: $(ip)    $(config[$(ip)])";
+
+    any::
+      "$(hostfile)" bundle_return_value_index => "file",
+      ifvarclass => "$(class_prefix)_converged";
+
+      "" bundle_return_value_index => "file",
+      ifvarclass => "$(class_prefix)_not_converged";
 }
 
 bundle edit_line prepend_if_no_line(string)

@@ -1,0 +1,37 @@
+[
+    {
+        // ensure 1 cfworkers
+        "Cloud::Services::AWS::EC2":
+        {
+            count: 1,
+            ami: "ami-a29943cb",
+            class: "cfworker",
+            install_cfengine: true,
+	        hub: "$(sys.ipv4)",
+            options:
+            {
+                // security_group: "cf",
+                security_group: "default",
+                netrc: "/home/tzz/.netrc",
+                ssh_pub_key: "/root/.ssh/id_rsa.pub"
+            },
+        }
+    },
+    {
+        // ensure 0 cfworkers
+        "Cloud::Services::AWS::EC2":
+        {
+            count: 0,
+            ami: "ignored",
+            class: "cfworker",
+            install_cfengine: "ignored",
+	        hub: "ignored",
+            options:
+            {
+                security_group: "ignored",
+                netrc: "/home/tzz/.netrc",
+                ssh_pub_key: "ignored"
+            },
+        }
+    },
+]

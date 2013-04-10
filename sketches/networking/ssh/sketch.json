@@ -1,25 +1,31 @@
 {
-
-    "manifest":
+    manifest:
     {
-        "ssh.cf": { "desc": "main file" },
-        "README.md": { "documentation": true },
+        "ssh.cf": { desc: "main file" },
+        "README.md": { documentation: true },
         "params/simple.json": { }
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "Security::SSH",
-	"description": "Configure and enable sshd",
-        "version": 1.10,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Diego Zamboni <diego.zamboni@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 },
-                     "cfengine": { "version": "3.4.0" },
-                     "os": [ "linux", "darwin" ]
-                   }
+        name: "Security::SSH",
+	    description: "Configure and enable sshd",
+        version: 1.10,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Diego Zamboni <diego.zamboni@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }, }
     },
-    "entry_point": "ssh.cf",
-    "interface": [ "ssh.cf" ]
+
+    api:
+    {
+        // the key is the name of the bundle!
+        sshd: [ { type: "environment", name: "runenv", },
+                { type: "metadata", name: "metadata", },
+                { type: "array", name: "params", }, ],
+    },
+
+    namespace: "cfdc_sshd",
+    
+    interface: [ "ssh.cf" ]
 }

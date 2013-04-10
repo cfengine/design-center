@@ -1,3 +1,6 @@
+configure_etc_hosts 2.2
+  * love the DC API
+
 configure_etc_hosts 2.0
   * cfsketchify
   * Added parameter to toggle deleting undefined entries

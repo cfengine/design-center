@@ -1,34 +1,30 @@
-# cpanm - Install CPAN packages through App::cpanminus
+# Packages::CPAN::cpanm version 1.1
 
-## AUTHORS
-Ted Zlatanov <tzz@lifelogs.com>
+License: MIT
+Tags: cfdc
+Authors: Ted Zlatanov <tzz@lifelogs.com>
 
-## PLATFORM
+## Description
+Install CPAN packages through App::cpanminus
 
-Most Debian and RedHat Linux derivatives should work.
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-## DESCRIPTION
+## API
+### bundle: install
+* parameter _environment_ *runenv* (default: none, description: none)
 
-Just provide a list of CPAN modules as shown in `test.cf` or `params/demo.json`
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-## ## Classes
+* parameter _string_ *cpanm_program* (default: `"/usr/local/bin/cpanm"`, description: none)
 
-None.
+* parameter _string_ *extra_params* (default: `""`, description: none)
 
-## ## Variables
+* parameter _list_ *packages* (default: none, description: none)
 
-* `packages`: a list of packages to be installed
-  
-* `prefix`: a prefix to be varied with every call of the cpan_install bundle; provided by `cf-sketch` by default when you activate with JSON parameters.
-  
-* `cpanm_program`: the location of the `cpanm` executable, provided by the CPAN module `App::cpanminus`
+* returns _return_ *installed* (default: none, description: none)
 
-* `extra_params`: the extra parameters to pass to `cpanm`
-  
-## REQUIREMENTS
-
-CFEngine::stdlib (the COPBL)
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf` and `params/demo.json`

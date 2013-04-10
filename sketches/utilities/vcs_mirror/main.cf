@@ -1,65 +1,137 @@
 body file control
 {
-  namespace => "cfdc_vcs";
+      namespace => "cfdc_vcs";
 }
 
-bundle agent mirror(prefix, class_prefix, vcs, path, origin, branch, runas, umask, parent_dir)
+bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
 {
-  meta:
-      # __PREFIX__ will be supplied by cf-sketch
-      "vars[prefix][type]"           string => "NON_EMPTY_STRING";
-      "vars[prefix][default]"        string => "__PREFIX__";
+  methods:
+    known_vcs::
+      "setup" usebundle => $(vcs_type)($(vcs),
+                                       $(path),
+                                       $(origin),
+                                       $(branch),
+                                       $(options)),
+      inherit => "true",
+      classes => bundle_if_ok("setup_done");
 
-      "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
-      "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
+    parent_parsed::
+      "ensure" usebundle => ensure_parent("$(parent_capture[1])",
+                                          "$(options)[parent_dir]"),
+      inherit => "true";
 
-      "vars[nowipe][type]"           string => "CONTEXT";
-      "vars[nowipe][default]"        string => "!any";
-
-      "vars[vcs][type]"              string => "PATH";
-
-      "vars[path][type]"             string => "PATH";
-
-      "vars[origin][type]"           string => "HTTP_URL|PATH";
-
-      "vars[branch][type]"           string => "NON_EMPTY_STRING";
-      "vars[branch][default]"        string => "master";
-
-      # this is not called "user"  so it won't be confused with the remote user
-      "vars[runas][type]"            string => "NON_EMPTY_STRING";
-      "vars[runas][default]"         string => getenv("USER", 128);
-
-      "vars[umask][type]"            string => "OCTAL";
-      "vars[umask][default]"         string => "022";
-
-      "vars[parent_dir][type]"       string => "ARRAY(
-owner:NON_EMPTY_STRING
-group:NON_EMPTY_STRING
-perms:DIGITS
-)";
-
-      "vars[parent_dir][default]"    string => "{}";
-
-      # # This is a boolean (e.g. 0 or 1, 'yes' or 'no') stored in a string.
-      # "vars[testboolean][type]"    string => "BOOLEAN";
-
-      # # This is a context (e.g. 'any') stored in a string.
-      # # You could use it with ifvarclass.
-      # "vars[testcontext][type]"    string => "CONTEXT";
-
-      # where was the mirror deployed?
-      "returns[deploy_path]" string => "PATH";
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   vars:
-      # return value
-      "deploy_path" string => "$(path)",
-      ifvarclass => "$(canon_prefix)vcs_mirrored|$(canon_prefix)vcs_updated";
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-      "canon_prefix" string => canonify("$(prefix)");
+    any::
       "vcs_type" string => lastnode("$(vcs)","/");
+      "runas" string => "$($(options)[vcs][runas])";
+      "umask" string => "$($(options)[vcs][umask])";
+    setup_done::
+      "update_command"  slist => { "@(cfdc_vcs:$(vcs_type).update_command)" };
+      "mirror_command"  slist => { "@(cfdc_vcs:$(vcs_type).mirror_command)" };
+      "configfile"      string => "$(cfdc_vcs:$(vcs_type).configfile)";
+      "config_template" string => "$(cfdc_vcs:$(vcs_type).config_template)";
 
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+      "use_git" expression => strcmp($(vcs_type), "git");
+      "use_svn" expression => strcmp($(vcs_type), "svn");
+      "known_vcs" or => { "use_git", "use_svn" };
+      "unknown_vcs" expression => "!known_vcs";
+
+      "variables_ok" and => { "known_vcs", "setup_done" };
+      "vcs_has_config_template" expression => "$(vcs_type)_has_config_template";
+
+      "path_exists" expression => fileexists("$(path)");
+
+      "parent_parsed" expression => regextract("(.+)/[^/]+$",
+                                               $(path),
+                                               "parent_capture");
+
+    #   "second_pass" expression => "any";
+    #   "third_pass" expression => "second_pass";
+
+    known_vcs::
+      "checkout_exists" expression => fileexists("$(configfile)");
+      "no_checkout_exists" expression => "!checkout_exists";
+
+  files:
+    variables_ok.vcs_has_config_template::
+      "$(configfile)"
+      handle => "vcs_configfile_contents",
+      comment => "Expand Git config file from variable",
+      create => "false",
+      edit_defaults => default:empty,
+      edit_line => default:insert_lines("$(config_template)");
+
+  commands:
+
+    variables_ok.checkout_exists.!vcs_mirrored::
+      "$(update_command)"
+      handle     => "vcs_update_with_user_command",
+      contain    => test_aware_contain("$(runas)", "$(path)", "$(umask)"),
+      classes    => bundle_if_ok("vcs_updated"),
+      comment    => "Update an existing VCS repository in $(path), user override to $(runas)";
+
+    variables_ok.!checkout_exists.!vcs_mirrored::
+      "$(mirror_command)"
+      handle     => "vcs_mirror_with_user_command",
+      contain    => test_aware_contain("$(runas)", "/", "$(umask)"),
+      classes    => bundle_if_ok("vcs_mirrored"),
+      comment    => "Clone a VCS repository in $(path), user override to $(runas)";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    verbose::
+      "$(this.bundle): running in verbose mode";
+    test::
+      "$(this.bundle): running in test mode";
+
+    unknown_vcs::
+      "$(this.bundle): sorry, the requested VCS '$(vcs)' is not handled yet.";
+
+    verbose.variables_ok::
+      "$(this.bundle): VCS is $(vcs), to be executed as user $(runas) / umask $(umask)";
+    verbose.variables_ok.vcs_has_config_template::
+      "$(this.bundle): VCS $(vcs) has a config template";
+    default:verbose.variables_ok.vcs_has_config_template::
+      "$(this.bundle): VCS $(vcs) config template = $(config_template)";
+    verbose.variables_ok.!vcs_has_config_template::
+      "$(this.bundle): VCS $(vcs) has no config template";
+
+    verbose.vcs_mirrored::
+      "$(this.bundle): $(origin) (branch $(branch)) cloned into $(path)";
+
+    verbose.vcs_updated::
+      "$(this.bundle): $(origin) (branch $(branch)) updated into $(path)";
+
+      # return the deployed path when successful
+    vcs_mirrored||vcs_updated::
+      "$(path)" bundle_return_value_index => "deploy_path";
+    !(vcs_mirrored||vcs_updated)::
+      "" bundle_return_value_index => "deploy_path";
+}
+
+bundle agent git(vcs, path, origin, branch, options)
+{
+  classes:
+      "nowipe" expression => strcmp("$($(options)[nowipe])", "1");
+      "wipe" expression => "!nowipe";
+
+  vars:
     wipe::
-      "git_update_command" slist =>
+      "update_command" slist =>
       {
         # Fetch repo contents
         "$(vcs) fetch -t origin +refs/heads/*:refs/remotes/origin/*",
@@ -76,49 +148,65 @@ perms:DIGITS
       };
 
     nowipe::
-      "git_update_command" slist =>
+      "update_command" slist =>
       {
         "$(vcs) pull origin $(branch)",
       };
 
     any::
 
-      "git_mirror_command" slist =>
+      "mirror_command" slist =>
       {
         # clone the given repository with Git
         "$(vcs) clone -b $(branch) $(origin) $(path)"
       };
 
-      "git_configfile" string => "$(path)/.git/config";
+      "configfile" string => "$(path)/.git/config";
 
-      "git_config_template" string => "
+      "config_template" string => "
 [core]
-        repositoryformatversion = 0
-        filemode = true
-        bare = false
-        logallrefupdates = true
+repositoryformatversion = 0
+filemode = true
+bare = false
+logallrefupdates = true
 [remote \"origin\"]
-        fetch = +refs/heads/*:refs/remotes/origin/*
-        url = $(origin)
+fetch = +refs/heads/*:refs/remotes/origin/*
+url = $(origin)
 [branch \"master\"]
-        remote = origin
-        merge = refs/heads/master
+remote = origin
+merge = refs/heads/master
 [branch \"$(branch)\"]
-        remote = origin
-        merge = refs/heads/$(branch)
+remote = origin
+merge = refs/heads/$(branch)
 ",
-      comment => "The $(git_configfile) template.",
-      handle => "update_vars_git_config_template";
+      comment => "The configfile template.",
+      handle => "update_vars_git_config_template",
+      classes => default:always("git_has_config_template");
 
+  reports:
+    verbose::
+      "$(this.bundle): setting up $(vcs) commands for path '$(path)', origin '$(origin)', branch '$(branch)'";
+      "$(this.bundle): we will look for the config file $(configfile)";
+      "$(this.bundle): update_command = $(update_command)";
+      "$(this.bundle): mirror_command = $(mirror_command)";
+}
+
+bundle agent svn(vcs, path, origin, branch, options)
+{
+  classes:
+      "nowipe" expression => strcmp("$($(options)[nowipe])", "1");
+      "wipe" expression => "!nowipe";
+
+  vars:
     nowipe::
-      "svn_update_command" slist =>
+      "update_command" slist =>
       {
         "$(vcs) cleanup",
         "$(vcs) up",
       };
 
     wipe::
-      "svn_update_command" slist =>
+      "update_command" slist =>
       {
         "$(vcs) cleanup",
         "$(vcs) up",
@@ -126,132 +214,58 @@ perms:DIGITS
       };
 
     any::
-      "svn_mirror_command" slist =>
+      "mirror_command" slist =>
       {
         # clone the given repository with Subversion
         "$(vcs) co $(origin) $(path)"
       };
 
-      "svn_configfile" string => "$(path)/.svn/entries";
+      "configfile" string => "$(path)/.svn/entries";
 
-    parent_parsed::
-      "parent_path" string => "$(parent_capture[1])";
-
-  classes:
-      "nowipe" expression => "$(prefix)nowipe";
-      "wipe" expression => "!nowipe";
-
-      "use_git" expression => strcmp(lastnode("$(vcs)","/"), "git");
-      "use_svn" expression => strcmp(lastnode("$(vcs)","/"), "svn");
-      "known_vcs" or => { "use_git", "use_svn" };
-      "unknown_vcs" expression => "!known_vcs";
-
-      "variables_ok" and => { "known_vcs" };
-
-      "parent_dir_provided" expression => isvariable("$(parent_dir)[owner]");
-      "no_parent_dir_provided" expression => "!parent_dir_provided";
-      "parent_parsed" expression => regextract(
-                                                "(.+)/[^/]+",
-                                                $(path),
-                                                "parent_capture"
-                                              );
-
-      "path_exists" expression => fileexists("$(path)");
-
-      # I can't use vcs_configfile here because it doesn't converge soon enough
-      "vcsconfig_exists" expression => fileexists("$($(vcs_type)_configfile)"),
-      ifvarclass => "known_vcs";
-
-      "no_vcsconfig_exists" expression => "!vcsconfig_exists";
-
-      "second_pass" expression => "any";
-      "third_pass" expression => "second_pass";
-
-    parent_parsed::
-      "parent_exists" expression => isdir("$(parent_path)");
-      "no_parent_exists" expression => "!parent_exists";
-
-  files:
-    parent_parsed.no_parent_exists.parent_dir_provided::
-      "$(parent_path)/."
-      perms => default:mog("$(parent_dir)[perms]",
-                           "$(parent_dir)[owner]",
-                           "$(parent_dir)[group]");
-
-    variables_ok.use_git::
-      "$(git_configfile)"
-      handle => "$(vcs_type)_configfile_contents",
-      comment => "Expand Git config file from variable",
-      create => "false",
-      edit_defaults => default:empty,
-      edit_line => default:insert_lines("$(git_config_template)");
-
-  commands:
-
-    variables_ok.vcsconfig_exists::
-      "$($(vcs_type)_update_command)"
-      handle     => "$(vcs_type)_update_with_user_command",
-      contain    => test_aware_contain("$(runas)", "$(path)", "$(umask)"),
-      ifvarclass => "!$(canon_prefix)vcs_mirrored",
-      classes    => default:if_ok("$(canon_prefix)vcs_updated"),
-      comment    => "Update an existing VCS repository in $(path), user override to $(runas)";
-
-    variables_ok.!vcsconfig_exists::
-      "$($(vcs_type)_mirror_command)"
-      handle     => "$(vcs_type)_mirror_with_user_command",
-      contain    => test_aware_contain("$(runas)", "/", "$(umask)"),
-      ifvarclass => "!$(canon_prefix)vcs_mirrored",
-      classes    => default:if_ok("$(canon_prefix)vcs_mirrored"),
-      comment    => "Clone a VCS repository in $(path), user override to $(runas)";
+      # no config template
+      "config_template" string => "";
 
   reports:
-    unknown_vcs::
-      "Sorry, the requested VCS '$(vcs)' is not handled yet.";
+    verbose::
+      "$(this.bundle): setting up $(vcs) commands for path '$(path)', origin '$(origin)', branch '$(branch)'";
+      "$(this.bundle): we will look for the config file $(configfile)";
+      "$(this.bundle): update_command = $(update_command)";
+      "$(this.bundle): mirror_command = $(mirror_command)";
+}
 
-    default:debug.variables_ok::
-      "Cool, we're using $(vcs_type).  We will look for the config file $($(vcs_type)_configfile)";
-      "VCS is $(vcs), to be executed as user $(runas) / umask $(umask), origin $(origin), branch $(branch), target path $(path).";
-      "$(vcs_type)_update_command = $($(vcs_type)_update_command)";
-      "$(vcs_type)_mirror_command = $($(vcs_type)_mirror_command)";
+bundle agent ensure_parent(parent_path, options)
+{
+  classes:
+      "ensure" expression => strcmp("$($(options)[ensure])", "1");
 
-    default:debug.variables_ok.vcsconfig_exists::
-      "VCS config file $($(vcs_type)_configfile) exists";
+  files:
+    ensure.parent_parsed::
+      "$(parent_path)/."
+      create => "true",
+      perms => default:mog("$($(options)[perms])",
+                           "$($(options)[owner])",
+                           "$($(options)[group])");
 
-    default:debug.variables_ok.no_vcsconfig_exists::
-      "VCS config file $($(vcs_type)_configfile) does not exist";
-
-    default:verbose::
-      "New clone of $(origin) (branch $(branch) created in $(path)"
-      ifvarclass => "$(canon_prefix)vcs_mirrored";
-
-    default:debug.parent_parsed::
-      "The parent path of $(path) was parsed to $(parent_path).";
-
-    default:debug.no_parent_parsed::
-      "The parent path of $(path) could not be parsed to $(parent_path).";
-
-    default:debug.parent_parsed.parent_exists.third_pass::
-      "The parent path $(parent_path) exists.";
-
-    default:debug.parent_parsed.no_parent_exists.third_pass::
-      "The parent path $(parent_path) does not exist.";
-
-    parent_parsed.no_parent_exists.parent_dir_provided.third_pass::
-      "Creating parent path $(parent_path) because it doesn't exist.";
-
-    parent_parsed.no_parent_exists.no_parent_dir_provided.third_pass::
-      "Not creating parent path $(parent_path) even though it doesn't exist, because the parent_dir parameter was left blank.";
-
-    variables_ok.path_exists.no_vcsconfig_exists::
-      "Sorry, we could not clone $(origin) (branch $(branch)) in $(path) because that path already exists";
+  reports:
+    verbose.!ensure::
+      "$(this.bundle): will not ensure parent path = '$(parent_path)'";
+    verbose.ensure::
+      "$(this.bundle): will ensure parent path '$(parent_path)' with mog parameters '$($(options)[perms])', '$($(options)[owner])', '$($(options)[group])'";
 }
 
 body contain test_aware_contain(user, dir, umask)
 {
       chdir => "$(dir)";
       umask => "$(umask)";
-    !default:test::
+    !test::
       exec_owner => "$(user)";
-    default:test::
+    test::
       exec_owner => getenv("LOGNAME", 100);
+}
+
+body classes bundle_if_ok(x)
+{
+      scope => "bundle";
+      promise_repaired => { "$(x)" };
+      promise_kept => { "$(x)" };
 }

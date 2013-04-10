@@ -1,46 +1,52 @@
-{
-    "Repository::apt::Maintain":
+[
     {
-        "defined_only": false,
-        "use_apt_dir": true,
-        "apt_dir": { "bycontext": { "test": "/tmp", "!test": "/etc/apt/sources.list.d" } },
-        "apt_file": { "bycontext": { "test": "/tmp/sources.list", "!test": "/etc/apt/sources.list" } },
-        "wipe": false,
-        "repos":
+        "Repository::apt::Maintain":
         {
-            "mdw":
-            {
-                "name": "main-debian-wheezy",
-                "section": "main",
-                "file": "main.list",
-                "repo_url": "http://http.us.debian.org",
-                "distrib": "debian",
-                "version_distrib": "wheezy",
-                "deb": true,
-                "deb-src": true
-            },
-            "cdw":
-            {
-                "name": "contrib-debian-wheezy",
-                "section": "contrib",
-                "file": "contrib.list",
-                "repo_url": "http://ftp.fr.debian.org",
-                "distrib": "debian",
-                "version_distrib": "wheezy",
-                "deb": true,
-                "deb-src": false
-            },
-            "uup":
-            {
-                "name": "universe-ubuntu-precise",
-                "section": "universe",
-                "file": "universe.list",
-                "repo_url": "http://us.archive.ubuntu.com",
-                "distrib": "ubuntu",
-                "version_distrib": "precise",
-                "deb": true,
-                "deb-src": true
-            }
+            wipe: true,
+            file: "/etc/apt/sources.list.d/contrib-debian-wheezy.list",
+        },
+    },
+
+    {
+        "Repository::apt::Maintain":
+        {
+            url: "http://http.us.debian.org/debian/",
+            distribution: "main",
+            components: ["wheezy"],
+            types: ["deb", "deb-src"],
+        },
+    },
+
+    {
+        "Repository::apt::Maintain":
+        {
+            url: "http://bogus-repository/bogus-path",
+            distribution: "main",
+            components: ["comp1", "comp2"],
+            options: "[ arch=amd64 trusted=no ]",
+            types: ["deb", "deb-src"],
+        },
+    },
+
+    {
+        "Repository::apt::Maintain":
+        {
+            file: "/etc/apt/sources.list.d/contrib-debian-wheezy.list",
+            distribution: "contrib",
+            url: "http://ftp.fr.debian.org/debian/",
+            components: ["wheezy"],
+            types: ["deb"],
+        },
+    },
+
+    {
+        "Repository::apt::Maintain":
+        {
+            file: "/etc/apt/sources.list.d/universe-ubuntu-precise.list",
+            distribution: "universe",
+            url: "http://us.archive.ubuntu.com/ubuntu/",
+            components: ["precise"],
+            types: ["deb", "deb-src"],
         }
-    }
-}
+    },
+]

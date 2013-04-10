@@ -1,9 +1,6 @@
 {
    "Packages::CPAN::cpanm":
    {
-       "activated" : true,
-       "cpanm_program": { "bycontext": { "!solaris": "/usr/local/bin/cpanm", "solaris": "/opt/local/bin/cpanm"       } },
-       "extra_params":  { "bycontext": { "!solaris": "",                     "solaris": "--local-lib=/opt/cpan"      } },
-       "packages":      { "bycontext": { "!solaris": [ "Every" ],            "solaris": [ "Solaris::NoSuchPackage" ] } }
+       "packages": [ "Every", "JSON::XS" ],
    }
 }

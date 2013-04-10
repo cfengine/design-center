@@ -1,25 +1,65 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf"};
+      inputs => { @(cfsketch_g.inputs) };
 }
 
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
   vars:
-      "ping_canon_prefix" string => "ping_";
-      "ping_hosts" slist => { "localhost", "127.0.0.1", "boogie.woogie" };
-      "ping_count" string => "2";
-      "ping_report_success" string => "true";
-      "ping_report_failure" string => "true";
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+
+      # array 'metadata' from definition sketch metadata, activation __001_Utilities_ping_report_ping
+      "__001_Utilities_ping_report_ping_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_Utilities_ping_report_ping_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_Utilities_ping_report_ping_metadata[license]" string => "MIT";
+      "__001_Utilities_ping_report_ping_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/utilities/ping_report";
+      "__001_Utilities_ping_report_ping_metadata[manifest]" slist => { "README.md", "changelog", "main.cf", "params/example.json", "test.cf" };
+      "__001_Utilities_ping_report_ping_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__001_Utilities_ping_report_ping_metadata[manifest_docs]" slist => { "README.md" };
+      "__001_Utilities_ping_report_ping_metadata[manifest_exe]" slist => { "cf_null" };
+      "__001_Utilities_ping_report_ping_metadata[manifest_extra]" slist => { "changelog", "params/example.json" };
+      "__001_Utilities_ping_report_ping_metadata[name]" string => "Utilities::ping_report";
+      "__001_Utilities_ping_report_ping_metadata[tags]" slist => { "cfdc" };
+      "__001_Utilities_ping_report_ping_metadata[version]" string => "1.2";
+
+      # list 'hosts' from definition /home/tzz/source/design-center/tools/test/../../sketches/utilities/ping_report/params/example.json, activation __001_Utilities_ping_report_ping
+      "__001_Utilities_ping_report_ping_hosts" slist => { "localhost", "127.0.0.1", "boogie.woogie" };
 }
 
 bundle agent cfsketch_run
 {
   methods:
-      "go" usebundle => cfdc_ping:ping($(cfsketch_g.ping_canon_prefix),
-                                       @(cfsketch_g.ping_hosts),
-                                       $(cfsketch_g.ping_count),
-                                       $(cfsketch_g.ping_report_success),
-                                       $(cfsketch_g.ping_report_failure));
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "__001_Utilities_ping_report_ping" usebundle => cfdc_ping:ping("cf_sketch_testing", "default:cfsketch_g.__001_Utilities_ping_report_ping_metadata", @(cfsketch_g.__001_Utilities_ping_report_ping_hosts), "2"), useresult => "return___001_Utilities_ping_report_ping";
+
+  reports:
+    cfengine::
+      "activation __001_Utilities_ping_report_ping returned reached = $(return___001_Utilities_ping_report_ping[reached])";
+      "activation __001_Utilities_ping_report_ping returned not_reached = $(return___001_Utilities_ping_report_ping[not_reached])";
 }

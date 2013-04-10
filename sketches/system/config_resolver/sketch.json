@@ -1,23 +1,41 @@
+
 {
-
-    "manifest":
+    manifest:
     {
-        "main.cf": { "desc": "main file", "version": 2.1 },
-        "README.md": { "documentation": true },
-        "params/example.json": { "comment": "Example parameters" }
+        "main.cf": { desc: "main file", version: 2.1 },
+        "README.md": { documentation: true },
+        "params/example.json": { comment: "Example parameters" }
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "System::config_resolver",
-	"description": "Configure DNS resolver",
-        "version": 1.1,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+        name: "System::config_resolver",
+	    description: "Configure DNS resolver",
+        version: 1.1,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Nick Anderson <nick@cmdln.org>", "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": { }, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
     },
 
-    "entry_point": "main.cf",
-    "interface": [ "main.cf" ]
+    api:
+    {
+        resolver:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "file", default: "/etc/resolv.conf" },
+            { type: "list", name: "nameserver" },
+            { type: "list", name: "search" },
+            { type: "list", name: "domain" },
+            { type: "list", name: "options" },
+            { type: "list", name: "sortlist" },
+            { type: "list", name: "extra" },
+            { type: "return", name: "resolv_conf", },
+        ],
+    },
+
+    namespace: "cfdc_resolver",
+    
+    interface: [ "main.cf" ]
 }

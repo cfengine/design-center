@@ -1,0 +1,42 @@
+{
+    manifest:
+    {
+        "main.cf": { desc: "main file" },
+        "README.md": { documentation: true },
+        "params/demo.json": { comment: "simple demo of SDB integration" },
+    },
+
+    metadata:
+    {
+        name: "Cloud::Services::AWS::SDB",
+	    description: "Manage AWS SDB domains",
+        version: 1.0,
+        license: "MIT",
+        tags: [ "cfdc", "cloud", "aws", "sdb" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "Cloud::Services::Common": {}, "CFEngine::stdlib": { version: 110 }, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
+    },
+    
+    api:
+    {
+        sync:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "datafile", },
+            { type: "string", name: "domain", },
+            { type: "array", name: "options", },
+        ],
+
+        clear:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "clear_domain", },
+            { type: "array", name: "options", },
+        ],
+    },
+
+    namespace: "cfdc_aws_sdb",
+    interface: [ "main.cf" ]
+}

@@ -134,7 +134,7 @@ sub init {
       $inputline=new Term::ReadLine $parser_id;
       if ($Term::ReadLine::ISA[0] ne 'Term::ReadLine::Gnu') {
         Util::warning("You should install the Term::ReadLine::Gnu Perl package for a better experience.\n")
-            unless DesignCenter::Config->quiet;
+            unless $config->{'quiet'};
       }
       $inter_command_separator="\n";
     } else {
@@ -494,7 +494,7 @@ sub _do_command {
     _log($_);
 
     my $result;
-    if ($result=_execute_command($_, \@_)) {
+    if ($result=_execute_command($_, @_)) {
       # If it returns something, it is an error message.
       Util::error($result);
     }

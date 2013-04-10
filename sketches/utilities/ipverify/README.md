@@ -1,21 +1,32 @@
-# ipverify - Execute a bundle if reachable ip has known mac 
-## AUTHOR
-Nick Anderson <nick@cmdln.org>
-Ted Zlatanov <tzz@lifelogs.com>
+# Utilities::ipverify version 1.1
 
-## PLATFORM
-linux
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
-Execute a bundle if an ip has a known mac addres
-Usefull for performing operatings under certain network conditions.
+## Description
+Execute a bundle if reachable ip has known MAC address
 
-Consider when networks overlap in multiple enviornments and the agent may
-migrate between them like a laptop.
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-Important note, the bundle to call may not take any paramaters
+## API
+### bundle: maybe_usebundle
+* parameter _environment_ *runenv* (default: none, description: none)
 
-## REQUIREMENTS
+* parameter _metadata_ *metadata* (default: none, description: none)
+
+* parameter _string_ *ip* (default: none, description: none)
+
+* parameter _list_ *maclist* (default: none, description: none)
+
+* parameter _string_ *usebundle* (default: none, description: none)
+
+* parameter _string_ *arp_command* (default: `"/usr/sbin/arp"`, description: none)
+
+* returns _return_ *match* (default: none, description: none)
+
 
 ## SAMPLE USAGE
-See `test.cf` or `params/example.json`
+See `test.cf` or the example parameters provided
+

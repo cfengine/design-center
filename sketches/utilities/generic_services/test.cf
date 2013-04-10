@@ -1,0 +1,80 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib-3.5.0/library.cf", "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation __001_Services_Generic_ensure
+      "__001_Services_Generic_ensure_metadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_Services_Generic_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::dclib::3.5.0", "CFEngine::stdlib" };
+      "__001_Services_Generic_ensure_metadata[license]" string => "MIT";
+      "__001_Services_Generic_ensure_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/utilities/generic_services";
+      "__001_Services_Generic_ensure_metadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json", "test.cf" };
+      "__001_Services_Generic_ensure_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__001_Services_Generic_ensure_metadata[manifest_docs]" slist => { "README.md" };
+      "__001_Services_Generic_ensure_metadata[manifest_exe]" slist => { "cf_null" };
+      "__001_Services_Generic_ensure_metadata[manifest_extra]" slist => { "params/demo.json" };
+      "__001_Services_Generic_ensure_metadata[name]" string => "Services::Generic";
+      "__001_Services_Generic_ensure_metadata[tags]" slist => { "cfdc" };
+      "__001_Services_Generic_ensure_metadata[version]" string => "1";
+
+      # array 'metadata' from definition sketch metadata, activation __002_Services_Generic_ensure
+      "__002_Services_Generic_ensure_metadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__002_Services_Generic_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::dclib::3.5.0", "CFEngine::stdlib" };
+      "__002_Services_Generic_ensure_metadata[license]" string => "MIT";
+      "__002_Services_Generic_ensure_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/utilities/generic_services";
+      "__002_Services_Generic_ensure_metadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json", "test.cf" };
+      "__002_Services_Generic_ensure_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__002_Services_Generic_ensure_metadata[manifest_docs]" slist => { "README.md" };
+      "__002_Services_Generic_ensure_metadata[manifest_exe]" slist => { "cf_null" };
+      "__002_Services_Generic_ensure_metadata[manifest_extra]" slist => { "params/demo.json" };
+      "__002_Services_Generic_ensure_metadata[name]" string => "Services::Generic";
+      "__002_Services_Generic_ensure_metadata[tags]" slist => { "cfdc" };
+      "__002_Services_Generic_ensure_metadata[version]" string => "1";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "__001_Services_Generic_ensure" usebundle => cfdc_service_generic:ensure("cf_sketch_testing", "default:cfsketch_run.__001_Services_Generic_ensure_metadata", "www", "/etc/init.d/httpd start", "/etc/init.d/httpd stop", ".*httpd.*", "start"), useresult => "return___001_Services_Generic_ensure";
+    runenv_cf_sketch_testing_activated::
+      "__002_Services_Generic_ensure" usebundle => cfdc_service_generic:ensure("cf_sketch_testing", "default:cfsketch_run.__002_Services_Generic_ensure_metadata", "www", "/etc/init.d/httpd start", "/etc/init.d/httpd stop", ".*httpd.*", "stop"), useresult => "return___002_Services_Generic_ensure";
+
+  reports:
+    cfengine::
+      "activation __001_Services_Generic_ensure returned policy_implemented = $(return___001_Services_Generic_ensure[policy_implemented])";
+      "activation __002_Services_Generic_ensure returned policy_implemented = $(return___002_Services_Generic_ensure[policy_implemented])";
+}

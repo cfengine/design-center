@@ -1,0 +1,90 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "../cloud_common/library.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'mymetadata' from definition sketch metadata, activation __001_Cloud_Services_OpenStack_ensure
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib", "Cloud::Services::Common" };
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[license]" string => "MIT";
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/cloud/openstack";
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json" };
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[manifest_cf]" slist => { "main.cf" };
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[manifest_docs]" slist => { "README.md" };
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[manifest_exe]" slist => { "cf_null" };
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[manifest_extra]" slist => { "params/demo.json" };
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[name]" string => "Cloud::Services::OpenStack";
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[tags]" slist => { "cfdc", "cloud", "openstack" };
+      "__001_Cloud_Services_OpenStack_ensure_mymetadata[version]" string => "1";
+
+      # array 'options' from definition /home/tzz/source/design-center/tools/test/../../sketches/cloud/openstack/params/demo.json 1, activation __001_Cloud_Services_OpenStack_ensure
+      "__001_Cloud_Services_OpenStack_ensure_options[image]" string => "5cebb13a-f783-4f8c-8058-c4182c724ccd";
+      "__001_Cloud_Services_OpenStack_ensure_options[master]" string => "cfmaster";
+      "__001_Cloud_Services_OpenStack_ensure_options[netrc]" string => "/home/tzz/.netrc";
+
+      # array 'mymetadata' from definition sketch metadata, activation __002_Cloud_Services_OpenStack_ensure
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib", "Cloud::Services::Common" };
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[license]" string => "MIT";
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/cloud/openstack";
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json" };
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[manifest_cf]" slist => { "main.cf" };
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[manifest_docs]" slist => { "README.md" };
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[manifest_exe]" slist => { "cf_null" };
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[manifest_extra]" slist => { "params/demo.json" };
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[name]" string => "Cloud::Services::OpenStack";
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[tags]" slist => { "cfdc", "cloud", "openstack" };
+      "__002_Cloud_Services_OpenStack_ensure_mymetadata[version]" string => "1";
+
+      # array 'options' from definition /home/tzz/source/design-center/tools/test/../../sketches/cloud/openstack/params/demo.json 2, activation __002_Cloud_Services_OpenStack_ensure
+      "__002_Cloud_Services_OpenStack_ensure_options[image]" string => "ignored";
+      "__002_Cloud_Services_OpenStack_ensure_options[master]" string => "ignored";
+      "__002_Cloud_Services_OpenStack_ensure_options[netrc]" string => "/home/tzz/.netrc";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "__001_Cloud_Services_OpenStack_ensure" usebundle => cfdc_cloud_openstack:ensure("cf_sketch_testing", "default:cfsketch_run.__001_Cloud_Services_OpenStack_ensure_mymetadata", "1", "cfworker", "1", "$(sys.ipv4)", "default:cfsketch_run.__001_Cloud_Services_OpenStack_ensure_options"), useresult => "return___001_Cloud_Services_OpenStack_ensure";
+    runenv_cf_sketch_testing_activated::
+      "__002_Cloud_Services_OpenStack_ensure" usebundle => cfdc_cloud_openstack:ensure("cf_sketch_testing", "default:cfsketch_run.__002_Cloud_Services_OpenStack_ensure_mymetadata", "0", "cfworker", "1", "ignored", "default:cfsketch_run.__002_Cloud_Services_OpenStack_ensure_options"), useresult => "return___002_Cloud_Services_OpenStack_ensure";
+
+  reports:
+    cfengine::
+      "activation __001_Cloud_Services_OpenStack_ensure returned instance_count = $(return___001_Cloud_Services_OpenStack_ensure[instance_count])";
+      "activation __002_Cloud_Services_OpenStack_ensure returned instance_count = $(return___002_Cloud_Services_OpenStack_ensure[instance_count])";
+}

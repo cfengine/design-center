@@ -6,136 +6,113 @@ body file control
 # Used for enforcing the contents of /etc/apt/sources.list or
 # /etc/apt/sources.list.d/*.list
 
-bundle agent aptrepos(class_prefix, repos, apt_file, apt_dir)
+bundle agent ensure(runenv, metadata, given_file, url, distribution, components, types, options)
 {
-  meta:
-      "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
-      "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
-
-      "vars[repos][type]"            string => "KVARRAY(
-_key:NON_EMPTY_STRING
-name:NON_EMPTY_STRING:required
-section:NON_EMPTY_STRING:required
-file:NON_EMPTY_STRING:required
-repo_url:HTTP_URL|FTP_URL|FILE_URL:required
-distrib:NON_EMPTY_STRING:required
-version_distrib:NON_EMPTY_STRING:required
-deb:BOOLEAN:required
-deb-src:BOOLEAN:required
-)";
-
-      "vars[wipe][type]"             string => "CONTEXT",
-      comment => "If true, existing lines will be removed";
-      "vars[wipe][default]"          string => "!any";
-
-      "vars[use_apt_file][type]"      string => "CONTEXT",
-      comment => "If true, all the configuration will be in $(apt_file)";
-      "vars[use_apt_file][default]"   string => "!any";
-
-      "vars[apt_file][type]"         string => "PATH";
-      "vars[apt_file][default]"      string => "/etc/apt/sources.list";
-
-      "vars[apt_dir][type]"          string => "PATH";
-      "vars[apt_dir][default]"       string => "/etc/apt/sources.list.d";
-
   classes:
-      "wipe" expression => "$(class_prefix)wipe";
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
   vars:
-      "sources" slist => { getindices("$(repos)") },
-      comment => "The repo list for APT";
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
 
       "CFEnotice"
       string  => "# This file is managed by CFEngine, manual edits will be reverted",
       comment => "It's nice to let people know why the file keep magically reverting on them";
 
-    wipe::
-      "wipe_bool" string => "true";
+      "components_str" string => join(" ", "components");
 
-    !wipe::
-      "wipe_bool" string => "false";
-
-  methods:
-      "write" usebundle => cfdc_aptrepo:write
-      (
-        $(class_prefix),
-        "$(apt_dir)/$($(repos)[$(sources)][file])",
-        "$($(repos)[$(sources)][repo_url])",
-        "$($(repos)[$(sources)][distrib])",
-        "$($(repos)[$(sources)][version_distrib])",
-        "$($(repos)[$(sources)][section])",
-        $(wipe_bool),
-        "$($(repos)[$(sources)][deb])", # a boolean
-        "$($(repos)[$(sources)][deb-src])", # a boolean
-        $(CFEnotice)
-      );
-
-  reports:
-    default:verbose::
-      "Source $($(repos)[$(sources)][name]) is active";
-      "Proposing file $(apt_dir)/$($(repos)[$(sources)][file]) for $($(repos)[$(sources)][name])";
-    default:debug::
-      "We looked in the indices of $(repos) to get $(sources)";
-
-}
-
-bundle edit_line prepend_if_no_line(string)
-{
-  insert_lines:
-      "$(string)"
-      location => default:start,
-      comment => "Prepend a line to the file if it doesn't already exist";
-}
-
-body edit_defaults empty_if_ask(bool)
-{
-      edit_backup => "false";
-      max_file_size => "300000";
-      empty_file_before_editing => "$(bool)";
-}
-
-bundle agent write(class_prefix, maybe_file, url, distrib, version, section, wipe_bool, deb, deb_src, notice)
-{
-  classes:
-      "use_apt_file" expression => "$(class_prefix)use_apt_file";
-      "use_deb" expression => strcmp("1", $(deb));
-      "use_deb_src" expression => strcmp("1", $(deb_src));
-
-  vars:
-    use_deb.!use_deb_src::
-      "types" slist => { "deb" };
-    !use_deb.use_deb_src::
-      "types" slist => { "deb_src" };
-    use_deb.use_deb_src::
-      "types" slist => { "deb", "deb_src" };
+    !test::
+      "file_prefix" string => "", policy => "free";
+    test::
+      "file_prefix" string => "/tmp", policy => "free";
 
     any::
-      "e" string => "$(url)/$(distrib)/ $(version) $(section)";
+      "file" string => "$(file_prefix)$(given_file)",
+      policy => "free";
 
-    use_apt_file::
-      "file" string  => $(apt_file);
+      "class_prefix" string => canonify($(file)),
+      policy => "free";
 
-    !use_apt_file::
-      "file" string  => $(maybe_file);
+      "entries" slist => maplist("$(this) $(options) $(url) $(distribution) $(components_str)", "types");
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   files:
       "$(file)"
       create        => "true",
-      handle        => "prepfile_$(file)",
-      edit_defaults => cfdc_aptrepo:empty_if_ask($(wipe_bool)),
-      edit_line     => cfdc_aptrepo:prepend_if_no_line($(notice)),
+      handle        => "repo_prepfile",
+      edit_defaults => default:std_defs,
+      edit_line     => default:prepend_if_no_line($(CFEnotice)),
+      classes       => default:generic("$(class_prefix)_prep"),
       comment       => "Create $(file) and note that the file is managed by CFEngine";
 
       # note that we need to edit the file AFTER it's been possibly
       # created with a notice
       "$(file)"
       edit_defaults =>  default:std_defs,
-      edit_line     =>  default:append_if_no_line("$(types) $(e)"),
+      edit_line     =>  default:append_if_no_line("$(entries)"),
+      classes       => default:generic("$(class_prefix)_ensure"),
       comment       =>  "Complete or fix $(file).";
 
   reports:
-    default:debug::
-      "Got parameters class_prefix=$(class_prefix), maybe_file=$(maybe_file), deb=$(deb), deb_src=$(deb_src), url=$(url), distrib=$(distrib), version=$(version), section=$(section), wipe_bool=$(wipe_bool)";
-      "Got types $(types)";
-      "Writing $(file): $(types) $(e)";
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+      "$(this.bundle): file $(file); ensuring line $(entries)";
+
+    any::
+      "$(file)" bundle_return_value_index => "file",
+      ifvarclass => canonify("$(class_prefix)_ensure_ok");
+
+      "" bundle_return_value_index => "file",
+      ifvarclass => canonify("$(class_prefix)_ensure_not_ok");
+}
+
+bundle agent wipe(runenv, metadata, wipe, given_file)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+    !test::
+      "file_prefix" string => "", policy => "free";
+    test::
+      "file_prefix" string => "/tmp", policy => "free";
+
+    any::
+      "file" string => "$(file_prefix)$(given_file)",
+      policy => "free";
+
+      "class_prefix" string => canonify($(file)),
+      policy => "free";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  files:
+      "$(file)"
+      edit_defaults => default:empty,
+      classes       => default:generic("$(class_prefix)_wipe"),
+      comment       => "Wipe $(file)";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+      "$(this.bundle): wiping file $(file)";
+
+    any::
+      "$(file)" bundle_return_value_index => "file";
 }

@@ -3,22 +3,26 @@ body file control
       namespace => "cfdc_hostname";
 }
 
-bundle agent set(canon_prefix, hostname, domainname)
+bundle agent set(runenv, metadata, hostname, domainname)
 {
-  meta:
-      "vars[canon_prefix][type]"         string => "NON_EMPTY_STRING";
-      "vars[canon_prefix][default]"      string => "__CANON_PREFIX__";
-
-      "vars[hostname][type]"             string => "NON_EMPTY_STRING";
-      "vars[domainname][type]"           string => "NON_EMPTY_STRING";
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
   vars:
-    redhat::
-      # Stuff these into an array on redhat style systems.  It's
-      # convenient because of the way redhat configs work
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      # general config array
       "config[HOSTNAME]"  string => "$(hostname)";
       "config[NISDOMAIN]" string => "$(domainname)";
 
+      # Stuff these into an array on gentoo style systems.  It's
+      # convenient because of the way gentoo configs work
+      "confdhostname[hostname]"  string => "$(hostname)";
+      "confdnet[dns_domain_lo]" string => "$(domainname)";
+      "confdnet[nis_domain_lo]" string => "$(domainname)";
+
+    rehat::
       "sethost_command" string => "/bin/hostname";
       "setdomain_command" string => "/bin/domainname";
 
@@ -30,31 +34,37 @@ bundle agent set(canon_prefix, hostname, domainname)
       "setdomain_command" string => "/bin/domainname";
 
     gentoo::
-      # Stuff these into an array on gentoo style systems.  It's
-      # convenient because of the way gentoo configs work
-      "confdhostname[hostname]"  string => "$(hostname)";
-      "confdnet[dns_domain_lo]" string => "$(domainname)";
-      "confdnet[nis_domain_lo]" string => "$(domainname)";
-
       "sethost_command" string => "/bin/hostname";
       "setdomain_command" string => "/bin/domainname";
 
+    test::
+      "path_prefix" string => "/tmp", policy => "free";
+      "exe_prefix" string => "/bin/echo ", policy => "free";
+    !test::
+      "path_prefix" string => "", policy => "free";
+      "exe_prefix" string => "", policy => "free";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
   files:
     debian::
-      "/etc/hostname"
-      comment       => "Set domain-name, not FQDN in this file - in accordance with man 1 hostname",
+      "$(path_prefix)/etc/hostname"
+      comment       => "Set host-name, not FQDN in this file - in accordance with man 1 hostname",
       create        => "true",
       edit_defaults => default:empty,
       edit_line     => default:insert_lines("$(config[HOSTNAME])"),
       perms         => default:mog("644", "root", "root"),
-      classes       => default:if_repaired("$(canon_prefix)_update");
+      classes       => default:if_repaired("set_hostname_update");
 
     redhat::
-      "/etc/sysconfig/network"
+      "$(path_prefix)/etc/sysconfig/network"
       create    => "true",
       perms     => default:mog("644", "root", "root"),
       edit_line => default:set_variable_values("cfdc_hostname:set.config"),
-      classes   => default:if_repaired("$(canon_prefix)update"),
+      classes   => default:if_repaired("set_hostname_update"),
       comment   => "While the official redhat docs state that you
 should set HOSTNAME to the fqdn, it is apparently
 incorrect. If you do this the hostname command
@@ -64,44 +74,56 @@ I have been doing it wrong for years, and it only
 recently bit me.";
 
     darwin::
-      "/etc/defaultdomain"
+      "$(path_prefix)/etc/defaultdomain"
       create    => "true",
       edit_defaults => default:empty,
       perms     => default:mog("644", "root", "root"),
       edit_line => default:insert_lines("$(domainname)"),
-      classes   => default:if_repaired("$(canon_prefix)updatedomain");
+      classes   => default:if_repaired("set_hostname_updatedomain");
 
     gentoo::
-      "/etc/conf.d/hostname"
+      "$(path_prefix)/etc/conf.d/hostname"
       create	=> "true",
       perms	=> default:mog("644", "root", "root"),
       edit_line	=> default:set_variable_values("cfdc_hostname:set.confdhostname"),
-      classes	=> default:if_repaired("$(canon_prefix)updatehostname");
+      classes	=> default:if_repaired("set_hostname_updatehostname");
 
-      "/etc/conf.d/net"
+      "$(path_prefix)/etc/conf.d/net"
       create	=> "true",
       perms	=> default:mog("644", "root", "root"),
       edit_line	=> default:set_variable_values("cfdc_hostname:set.confdnet"),
-      classes	=> default:if_repaired("$(canon_prefix)updatedomain");
+      classes	=> default:if_repaired("set_hostname_updatedomain");
 
   commands:
     darwin::
-      "/usr/sbin/scutil --set HostName $(hostname)"
-      classes => default:if_repaired("$(canon_prefix)updatehostname");
+      "$(exe_prefix)/usr/sbin/scutil --set HostName $(hostname)"
+      classes => default:if_repaired("set_hostname_updatehostname");
 
     redhat||darwin||gentoo||debian::
-      "$(sethost_command) $(hostname)"
-      ifvarclass => "$(canon_prefix)update||$(canon_prefix)updatehostname",
+      "$(exe_prefix)$(sethost_command) $(hostname)"
+      ifvarclass => "set_hostname_update||set_hostname_updatehostname",
       comment => "Update the hostname on the running system so we
 dont have to wait for a reboot";
 
     redhat||darwin||gentoo::
-      "$(setdomain_command) $(domainname)"
-      ifvarclass => "$(canon_prefix)update||$(canon_prefix)updatedomain",
+      "$(exe_prefix)$(setdomain_command) $(domainname)"
+      ifvarclass => "set_hostname_update||set_hostname_updatedomain",
       comment => "Update the domainname on the running system so
 we dont have to reboot for it";
 
   reports:
+    any::
+      "$(hostname)" bundle_return_value_index => "hostname";
+      "$(domainname)" bundle_return_value_index => "domainname";
+
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    verbose::
+      "$(this.bundle): setting hostname=$(hostname), domainname=$(domainname)";
+
     !debian.!redhat.!darwin.!gentoo::
-      "Not on RedHat or Darwin or Gentoo or Debian, nothing was done!  Please add support for your system!";
+      "$(this.bundle): Not on RedHat or Darwin or Gentoo or Debian, nothing was done!  Please add support for your system!";
 }

@@ -1,8 +1,8 @@
 {
    "Utilities::ipverify":
    {
-       "usebundle": "this_bundle_will_not_run_for_you_unless_you_buy_my_router",
-       "ip": "192.168.2.1",
-       "maclist": [ "f4:6d:04:6d:34:65" ]
+       usebundle: "this_bundle_will_not_run_for_you_unless_you_buy_my_router",
+       ip: "192.168.2.1",
+       maclist: [ "f4:6d:04:6d:34:65" ]
    }
 }

@@ -1,43 +1,47 @@
-# Repository::apt::Maintain - Manage deb repositories in /etc/apt/sources.list.d/ files or /etc/apt/sources.list
+# Repository::apt::Maintain version 1
 
-## AUTHOR
-Jean Remond <cfengine@remond.re>
-Ted Zlatanov <tzz@lifelogs.com>
+License: MIT
+Tags: cfdc
+Authors: Jean Remond <cfengine@remond.re>, Ted Zlatanov <tzz@lifelogs.com>
 
-## PLATFORM
-linux
+## Description
+Manage deb repositories in /etc/apt/sources.list.d/ files or /etc/apt/sources.list
 
-## DESCRIPTION
-* aptrepos
-    - edit_line based
-    - optionally removes any files not specified 
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-If you choose to call it directly instead of through JSON parameters
-(see `params/*.json`), you need to set the following:
+## API
+### bundle: ensure
+* parameter _environment_ *runenv* (default: none, description: none)
 
-## ## PARAMETERS
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-The bundle definition is:
+* parameter _string_ *file* (default: `"/etc/apt/sources.list"`, description: none)
 
-    bundle agent aptrepos(class_prefix, repos, apt_file, apt_dir)
+* parameter _string_ *url* (default: none, description: none)
 
-* `class_prefix` is a unique prefix per bundle execution, used to create unique classes.
+* parameter _string_ *distribution* (default: none, description: none)
 
-* `repos` is the name of an array with entries for each repo.  See
-  `test.cf` or `params/repos.json` for all the keys it needs.
+* parameter _list_ *components* (default: none, description: none)
 
-* `apt_file` is the APT file to edit (if `apt_use_file`)
+* parameter _list_ *types* (default: none, description: none)
 
-* `apt_dir` is the APT directory where we edit files (if `apt_use_file`)
+* parameter _string_ *options* (default: `""`, description: none)
 
-* `$(class_prefix)wipe` is a context that defines whether the edited
-  files will be wiped.  Off by default.
+* returns _return_ *file* (default: none, description: none)
 
-* `$(class_prefix)apt_use_file` is a context that defines whether we
-  use `apt_file` or `apt_dir`.  Off by default.
+### bundle: wipe
+* parameter _environment_ *runenv* (default: none, description: none)
 
-## REQUIREMENTS
-standard library
+* parameter _metadata_ *metadata* (default: none, description: none)
+
+* parameter _boolean_ *wipe* (default: none, description: none)
+
+* parameter _string_ *file* (default: none, description: none)
+
+* returns _return_ *file* (default: none, description: none)
+
 
 ## SAMPLE USAGE
-See `test.cf`
+See `test.cf` or the example parameters provided
+

@@ -1,29 +1,22 @@
 {
    "Security::tcpwrappers":
    {
-       "allow_filename": { "bycontext": { "test": "/tmp/hosts.allow", "!test": "/etc/hosts.allow" } },
-       "deny_filename":  { "bycontext": { "test": "/tmp/hosts.deny",  "!test": "/etc/hosts.deny"  } },
-       "debug" : false,
-       "ensure_absent": false,
-       "empty_first" : false,
-
-       "allow":
+       allow:
        {
-           "sshd":
+           sshd:
            {
-               "daemons": [ "sshd", "sshd1" ],
-               "clients": [ "ALL"]
+               daemons: [ "sshd", "sshd1" ],
+               clients: [ "ALL"]
            }
        },
 
-       "deny":
+       deny:
        {
-           "default":
+           default:
            {
-               "daemons": [ "ALL" ],
-               "clients": [ "ALL" ]
+               daemons: [ "ALL" ],
+               clients: [ "ALL" ]
            }
        }
    }
 }
-

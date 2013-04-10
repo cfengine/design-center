@@ -1,0 +1,36 @@
+[
+    {
+        // ensure 1 cfworkers
+        "Cloud::Services::OpenStack":
+        {
+            count: 1,
+            class: "cfworker",
+            install_cfengine: true,
+	        hub: "$(sys.ipv4)",
+            options:
+            {
+                // line format:
+                // machine OpenStack username myuser password mypass key mykey
+                netrc: "/home/tzz/.netrc",
+                master: "cfmaster",
+                image: "5cebb13a-f783-4f8c-8058-c4182c724ccd",
+            },
+        }
+    },
+    {
+        // ensure 0 cfworkers
+        "Cloud::Services::OpenStack":
+        {
+            count: 0,
+            class: "cfworker",
+            install_cfengine: "ignored",
+	        hub: "ignored",
+            options:
+            {
+                netrc: "/home/tzz/.netrc",
+                master: "ignored",
+                image: "ignored",
+            },
+        }
+    },
+]

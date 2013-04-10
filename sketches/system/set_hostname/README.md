@@ -1,30 +1,30 @@
-# set_hostname - Set your machines hostname, or fix it
-## AUTHOR
-Nick Anderson <nick@cmdln.org>
-Ted Zlatanov <tzz@lifelogs.com>
+# System::set_hostname version 1.1
 
-## PLATFORM
-darwin
-redhat
-gentoo
-debian
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-It's easy to add more, please do!
+## Description
+Configure system hostname
 
-## DESCRIPTION
-* cfdc_set_hostname - Make sure the hostname and domainname of the system are set
-  properly. Different distributions do things differently, specifically this
-  is useful to correct hostname setting on redhat style machines. Contrary to
-  official redhat documentation HOSTNAME in /etc/sysconfig/network should not
-  be set to the fqdn, it causes the hostname utility to return the fqdn
-  instead of the shorthostname when run without arguments.
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-  For Debian or Ubuntu, the domain name is not stored across reboots
-  (patches welcome).
+## API
+### bundle: set
+* parameter _environment_ *runenv* (default: none, description: none)
 
-## REQUIREMENTS
-* CFEngine Community 3.4.0 or greater
-* Standard Library
+* parameter _metadata_ *metadata* (default: none, description: none)
+
+* parameter _string_ *hostname* (default: none, description: none)
+
+* parameter _string_ *domainname* (default: none, description: none)
+
+* returns _return_ *hostname* (default: none, description: none)
+
+* returns _return_ *domainname* (default: none, description: none)
+
 
 ## SAMPLE USAGE
-See `test.cf` and `params/example.json` for standalone and JSON-driven usage, respectively.
+See `test.cf` or the example parameters provided
+

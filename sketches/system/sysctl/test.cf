@@ -1,37 +1,70 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => {
-                  "../../libraries/copbl/cfengine_stdlib.cf",
-                  "./main.cf",
-                };
+      inputs => { @(cfsketch_g.inputs) };
 }
 
 
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
-      "test_sysctl_empty_first" expression => "!any";
-
   vars:
-    !test::
-      "test_sysctl_sysctl_file" string => "/etc/sysctl.conf";
-    test::
-      "test_sysctl_sysctl_file" string => "/tmp/sysctl.conf";
-    any::
-      "test_sysctl_class_prefix" string => "default:test_sysctl_";
-      "test_sysctl_canon_prefix" string => "test_sysctl_";
-      "test_sysctl_ensured_kv[net.ipv4.tcp_tw_reuse]" string => "1";
-      "test_sysctl_removed_kv[net.ipv4.tcp_tw_reuse]" string => "2";
-      "test_sysctl_removed_vars" slist => { "bad.entry" };
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+
+      # array 'metadata' from definition sketch metadata, activation __001_System_sysctl_set
+      "__001_System_sysctl_set_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_System_sysctl_set_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_System_sysctl_set_metadata[license]" string => "MIT";
+      "__001_System_sysctl_set_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/system/sysctl";
+      "__001_System_sysctl_set_metadata[manifest]" slist => { "README.md", "changelog", "example.cf", "main.cf", "params/example.json", "sketch.json", "test.cf" };
+      "__001_System_sysctl_set_metadata[manifest_cf]" slist => { "example.cf", "main.cf", "test.cf" };
+      "__001_System_sysctl_set_metadata[manifest_docs]" slist => { "README.md" };
+      "__001_System_sysctl_set_metadata[manifest_exe]" slist => { "cf_null" };
+      "__001_System_sysctl_set_metadata[manifest_extra]" slist => { "changelog", "params/example.json", "sketch.json" };
+      "__001_System_sysctl_set_metadata[name]" string => "System::sysctl";
+      "__001_System_sysctl_set_metadata[tags]" slist => { "cfdc" };
+      "__001_System_sysctl_set_metadata[version]" string => "1.5";
+
+      # array 'ensured_kv' from definition /home/tzz/source/design-center/tools/test/../../sketches/system/sysctl/params/example.json, activation __001_System_sysctl_set
+      "__001_System_sysctl_set_ensured_kv[net.ipv4.tcp_tw_reuse]" string => "1";
+
+      # array 'removed_kv' from definition /home/tzz/source/design-center/tools/test/../../sketches/system/sysctl/params/example.json, activation __001_System_sysctl_set
+      "__001_System_sysctl_set_removed_kv[net.ipv4.tcp_tw_reuse]" string => "2";
+
+      # list 'removed_vars' from definition /home/tzz/source/design-center/tools/test/../../sketches/system/sysctl/params/example.json, activation __001_System_sysctl_set
+      "__001_System_sysctl_set_removed_vars" slist => { "bad.entry" };
 }
 
 bundle agent cfsketch_run
 {
   methods:
-      "go" usebundle => cfdc_sysctl:set($(cfsketch_g.test_sysctl_class_prefix),
-                                        $(cfsketch_g.test_sysctl_canon_prefix),
-                                        $(cfsketch_g.test_sysctl_sysctl_file),
-                                        "default:cfsketch_g.test_sysctl_ensured_kv",
-                                        "default:cfsketch_g.test_sysctl_removed_kv",
-                                        @(cfsketch_g.test_sysctl_removed_vars));
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "__001_System_sysctl_set" usebundle => cfdc_sysctl:set("cf_sketch_testing", "default:cfsketch_g.__001_System_sysctl_set_metadata", "/etc/sysctl.conf", "", "default:cfsketch_g.__001_System_sysctl_set_ensured_kv", "default:cfsketch_g.__001_System_sysctl_set_removed_kv", @(cfsketch_g.__001_System_sysctl_set_removed_vars)), useresult => "return___001_System_sysctl_set";
+
+  reports:
+    cfengine::
+      "activation __001_System_sysctl_set returned sysctl_file = $(return___001_System_sysctl_set[sysctl_file])";
 }

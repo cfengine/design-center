@@ -1,23 +1,30 @@
-# etc_hosts - Manage your /etc/hosts files
-## AUTHOR
-Nick Anderson <nick@cmdln.org>
-Ted Zlatanov <tzz@lifelogs.com>
+# System::etc_hosts version 2.2
 
-## PLATFORM
-linux
-darwin
-windows
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
-* cfdc_etc_hosts:configure
-    - edit_line based
-    - optionally removes any entries not specified except localhost and comments
-    - Allows single definition of each entry allowing comments for 
-      knowledge management to be attached to each entry.
+## Description
+Manage /etc/hosts
 
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-## REQUIREMENTS
-standard library
+## API
+### bundle: configure
+* parameter _environment_ *runenv* (default: none, description: none)
+
+* parameter _metadata_ *metadata* (default: none, description: none)
+
+* parameter _string_ *hostfile* (default: `"/etc/hosts"`, description: none)
+
+* parameter _boolean_ *defined_only* (default: none, description: none)
+
+* parameter _array_ *hosts* (default: none, description: none)
+
+* returns _return_ *file* (default: none, description: none)
+
 
 ## SAMPLE USAGE
-See `test.cf` and `params/example.json` for standalone and JSON-driven usage, respectively.
+See `test.cf` or the example parameters provided
+

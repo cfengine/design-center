@@ -1,0 +1,170 @@
+body file control
+{
+  namespace => "cfdc_db_postgresql";
+}
+
+bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_extra_packages)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+      "server" expression => strcmp($(server), "1");
+      "purge" expression => strcmp($(purge), "1");
+      "use_only_extra_packages" expression => strcmp($(use_only_extra_packages), "1");
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+    debian||ubuntu::
+      "packages" slist =>
+      {
+        "postgresql",
+        "postgresql-common"
+      }, policy => "free";
+
+      "server_packages" slist =>
+      {
+        "postgresql-server",
+        "postgresql-server-core",
+        "libhtml-template-perl"
+      }, policy => "free";
+
+    redhat|centos|fedora|suse|SuSE::
+      "packages" slist =>
+      {
+        "postgresql-server"
+      }, policy => "free";
+
+      "server_packages" slist =>
+      {
+        "postgresql-server",
+        "perl-DBD-PostgreSQL"
+      }, policy => "free";
+
+    !(redhat|centos|fedora)::
+      "process_match" string => "[^ ]+postgres.*", policy => "free";
+
+    server.test::
+      "all_packages" slist => { "test-packages", "test-server-packages" }, policy => "free";
+      "type" string => "test-server", policy => "free";
+
+    !use_only_extra_packages.server.!test::
+      "all_packages" slist => { @(packages), @(server_packages), @(extra_packages) }, policy => "free";
+      "type" string => "server", policy => "free";
+
+    use_only_extra_packages.server.!test::
+      "all_packages" slist => { @(extra_packages) }, policy => "free";
+      "type" string => "server", policy => "free";
+
+    !server.test::
+      "all_packages" slist => { "test-packages" }, policy => "free";
+      "type" string => "test-client", policy => "free";
+
+    !use_only_extra_packages.!server.!test::
+      "all_packages" slist => { @(packages), @(extra_packages) }, policy => "free";
+      "type" string => "client", policy => "free";
+
+    use_only_extra_packages.!server.!test::
+      "all_packages" slist => { @(extra_packages) };
+      "type" string => "client", policy => "free";
+
+    purge.!test::
+      "mode" string => "purging", policy => "free";
+
+    !purge.!test::
+      "mode" string => "installing", policy => "free";
+
+    purge.test::
+      "mode" string => "test-purging", policy => "free";
+
+    !purge.test::
+      "mode" string => "test-installing", policy => "free";
+
+    any::
+      "start_command" string => "/etc/init.d/postgresql restart";
+      "canon[$(all_packages)]" string => canonify($(all_packages));
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  packages:
+    !purge::
+      "$(all_packages)"
+      comment => "Install PostgreSQL packages",
+      handle => "postgresql_install_packages_add",
+      package_policy => "add",
+      package_method => default:generic,
+      classes => cfdc_dclib_350:scoped_generic("bundle", "install"),
+      action => default:log_repaired("stdout","PostgreSQL $(type) was installed");
+
+    purge::
+      "$(all_packages)"
+      comment => "Remove PostgreSQL packages",
+      handle => "db_install_packages_remove",
+      package_policy => "delete",
+      package_method => default:generic,
+      classes => cfdc_dclib_350:scoped_generic("bundle", "remove"),
+      action => default:log_repaired("stdout","PostgreSQL $(type) was removed");
+
+  processes:
+    server.install_ok::
+      "$(process_match)"
+      comment => "Check for PostgreSQL process",
+      handle => "postgresql_processes_run",
+      restart_class => "start_postgresql";
+
+    purge.server::
+      "$(process_match)"
+      comment => "Teminate PostgreSQL process",
+      handle => "postgresql_processes_terminate",
+      classes => cfdc_dclib_350:scoped_generic("bundle", "terminate"),
+      signals => { "term","kill" };
+
+  commands:
+    start_postgresql::
+      "$(start_command)"
+      comment => "Start/Restart PostgreSQL",
+      classes => cfdc_dclib_350:scoped_generic("bundle", "start"),
+      handle => "postgresql_commands_run";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    start_ok::
+      "$(this.bundle): Server started OK";
+      "1" bundle_return_value_index => "running";
+
+    server.!start_ok::
+      "$(this.bundle): Server could not be started";
+    !start_ok::
+      "0" bundle_return_value_index => "running";
+
+    install_ok::
+      "1" bundle_return_value_index => "installed";
+
+    remove_ok::
+      "0" bundle_return_value_index => "installed";
+
+    !remove_ok.!install_ok::
+      "" bundle_return_value_index => "installed";
+
+    test::
+      "$(this.bundle): SIMULATE $(mode) of $(all_packages)";
+
+    verbose::
+      "$(this.bundle): PostgreSQL $(mode) in $(type) mode; packages $(all_packages)";
+    verbose.purge::
+      "$(this.bundle): Purge mode";
+    verbose.!purge::
+      "$(this.bundle): Install mode";
+    verbose.server::
+      "$(this.bundle): Server install mode";
+    verbose.!server::
+      "$(this.bundle): Client install mode";
+}

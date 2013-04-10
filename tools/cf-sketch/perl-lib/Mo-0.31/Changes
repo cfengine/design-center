@@ -1,0 +1,126 @@
+---
+version: 0.31
+date:    Thu Apr 19 10:59:34 PDT 2012
+changes:
+- dams++ and melo++ fix https://rt.cpan.org/Public/Bug/Display.html?id=76664 and https://rt.cpan.org/Public/Bug/Display.html?id=74487 
+---
+version: 0.30
+date:    Tue Oct 11 19:36:07 EDT 2011
+changes:
+- Don't run moose/mouse tests unless deps exist
+- Add Mo::importer
+---
+version: 0.29
+date:    Mon Oct 10 22:46:50 EDT 2011
+changes:
+- Mo::Mouse with help by gfx++
+---
+version: 0.28
+date:    Sun Oct  9 16:29:07 EDT 2011
+changes:
+- First module ever released during a Lightning Talk (PPW 2011)
+- Mo::Moose with help by doy++
+- Mo::option
+---
+version: 0.27
+date:    Thu Oct  6 10:33:29 EDT 2011
+changes:
+- forwardever++ added Mo::chain
+---
+version: 0.26
+date:    Mon Oct  3 18:03:21 BST 2011
+changes:
+- Added Mo::import and Mo::exporter.
+- Add Mo::xs
+- Make Mo::Inline better
+- More docs
+---
+version: 0.25
+date:    Sat Oct  1 15:46:19 BST 2011
+changes:
+- Add a Feature extension system.
+- This is a non-backward compat release as it no longer includes builder and
+  default automatically.
+- Add new feaures: coerce, is.
+---
+version: 0.24
+date:    Sun Sep 25 12:44:29 CEST 2011
+changes:
+- Ensure that Mo.pm ends with semicolon. Needed for inlining.
+- Released from Laurent++ and Emmanuelle++ Parisian porch over a delightful
+  breakfast with they and BooK.
+---
+version: 0.23
+date:    Wed Sep 21 23:53:13 CEST 2011
+changes:
+- Refactoring and more docs.
+- Released from Liz++ and Wendy++'s upstairs toilet room. (From the throne!)
+---
+version: 0.22
+date:    Mon Sep 12 17:18:29 CEST 2011
+changes:
+- mst++ changed default base class to Mo::O to avoid inheriting import() method
+---
+version: 0.21
+date:    Mon Sep 12 11:16:31 CEST 2011
+changes:
+- Add Mo::Design pod
+- Remove multiple inheritance
+- Released from Liz++ and Wendy++ kitchen
+---
+version: 0.20
+date:    Sun Sep 11 11:58:51 CEST 2011
+changes:
+- mv bin/compress to script/compress.pl
+---
+version: 0.19
+date:    Sun Sep 11 11:27:14 CEST 2011
+changes:
+- Squish!
+---
+version: 0.18
+date:    Sun Sep 11 09:52:30 CEST 2011
+changes:
+- Don't pollute namspace with _ (or anything)
+---
+version: 0.17
+date:    Sun Sep 11 03:24:17 CEST 2011
+changes:
+- Call BUILD sequence properly
+---
+version: 0.16
+date:    Sun Sep 11 01:31:30 CEST 2011
+changes:
+- extends can handle multiple parents
+---
+version: 0.15
+date:    Sat Sep 10 23:40:23 CEST 2011
+changes:
+- extends did load parent module. fixed.
+---
+version: 0.14
+date:    Sat Sep 10 22:25:40 CEST 2011
+changes:
+- Make default called on exists rather than undef
+- Add builder. Very cheap to do so.
+---
+version: 0.13
+date:    Fri Sep  9 19:15:05 CEST 2011
+changes:
+- dams++ adds 'default' for 'has'
+---
+version: 0.12
+date:    Fri Sep  9 07:52:13 CEST 2011
+changes:
+- dams++ golfing
+- Upgrade docs
+---
+version: 0.11
+date:    Thu Sep  8 15:36:35 CEST 2011
+changes:
+- Move doc from pm to pod
+---
+version: 0.10
+date:    Thu Sep  8 15:24:03 CEST 2011
+changes:
+- First Release

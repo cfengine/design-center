@@ -1,0 +1,1563 @@
+package DCAPI;
+
+use strict;
+use warnings;
+
+use JSON::PP;
+use File::Which;
+use File::Basename;
+use File::Temp qw/tempfile tempdir /;
+
+use DCAPI::Repo;
+use DCAPI::Activation;
+use DCAPI::Result;
+use DCAPI::Validation;
+
+use constant API_VERSION => '0.0.1';
+use constant CODER => JSON::PP->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
+use constant CAN_CODER => JSON::PP->new()->canonical()->utf8()->allow_nonref();
+
+use Mo qw/build default builder coerce is required/;
+
+# has name2 => ( builder => 'name_builder' );
+# has name4 => ( required => 1 );
+
+has version => ( is => 'ro', default => sub { API_VERSION } );
+
+has config => ( );
+
+has curl => ( is => 'ro', default => sub { which('curl') } );
+has cfagent => (
+                is => 'ro',
+                default => sub
+                {
+                    my $c = which('cf-agent');
+
+                    $c = '/var/cfengine/bin/cf-agent' unless $c;
+
+                    return $c if -x $c;
+
+                    return undef;
+                }
+               );
+
+has repos => ( is => 'ro', default => sub { [] } );
+has recognized_sources => ( is => 'ro', default => sub { [] } );
+has vardata => ( is => 'rw');
+has runfile => ( is => 'ro', default => sub { {} } );
+has compositions => ( is => 'rw', default => sub { {} });
+has definitions => ( is => 'rw', default => sub { {} });
+has activations => ( is => 'rw', default => sub { {} });
+has validations => ( is => 'rw', default => sub { {} });
+has environments => ( is => 'rw', default => sub { { default =>
+                                                     {
+                                                      test => 0,
+                                                      verbose => 0,
+                                                      activated => 1,
+                                                     }
+                                                 }
+                                               });
+
+has cfengine_min_version => ( is => 'ro', required => 1 );
+has cfengine_version => ( is => 'rw' );
+
+has coder =>
+(
+ is => 'ro',
+ default => sub { CODER },
+);
+
+has canonical_coder =>
+(
+ is => 'ro',
+ default => sub { CAN_CODER },
+);
+
+sub BUILD
+{
+    my $self = shift @_;
+    my $bin = $self->cfagent();
+    my $cfv = `$bin -V`;
+    if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
+    {
+        $self->cfengine_version($1);
+    }
+}
+
+sub set_config
+{
+    my $self = shift @_;
+    my $file = shift @_;
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    $self->config($self->load($file));
+
+    my $runfile = Util::hashref_search($self->config(), qw/runfile/);
+
+    if (ref $runfile ne 'HASH')
+    {
+        $result->add_error('syntax', "runfile is not a hash");
+    }
+    else
+    {
+        %{$self->runfile()} = %$runfile;
+        $result->add_error('runfile', "runfile has no location")
+         unless exists $self->runfile()->{location};
+
+        $result->add_error('runfile', "runfile has no standalone boolean")
+         unless exists $self->runfile()->{standalone};
+
+        $result->add_error('runfile', "runfile has no relocate_path parameter")
+         unless exists $self->runfile()->{relocate_path};
+    }
+
+    my @sources = @{(Util::hashref_search($self->config(), qw/recognized_sources/) || [])};
+    $self->log5("Adding recognized source $_") foreach @sources;
+    push @{$self->recognized_sources()}, @sources;
+
+    my @repos = @{(Util::hashref_search($self->config(), qw/repolist/) || [])};
+    $self->log5("Adding recognized repo $_") foreach @repos;
+    push @{$self->repos()}, @repos;
+
+    foreach my $location (@{$self->repos()}, @{$self->recognized_sources()})
+    {
+        next unless Util::is_resource_local($location);
+
+        eval
+        {
+            $self->load_repo($location);
+        };
+
+        if ($@)
+        {
+            $result->add_error($location, $@);
+        }
+    }
+
+    my $vardata_file = Util::hashref_search($self->config(), qw/vardata/);
+
+    if ($vardata_file)
+    {
+        $vardata_file = glob($vardata_file);
+        $self->log5("Loading vardata file $vardata_file");
+        $self->vardata($vardata_file);
+        if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file))
+        {
+            $self->log("Creating missing vardata file $vardata_file");
+            my ($ok, @save_warnings) = $self->save_vardata();
+
+            $result->add_error('vardata', @save_warnings)
+             unless $ok;
+        }
+
+        my ($v_data, @v_warnings) = $self->load($vardata_file);
+        $result->add_error('vardata', @v_warnings)
+         if scalar @v_warnings;
+
+        if (ref $v_data ne 'HASH')
+        {
+            $result->add_error($vardata_file, "vardata is not a hash");
+        }
+        elsif (!exists $v_data->{compositions})
+        {
+            $result->add_error($vardata_file, "vardata has no key 'compositions'");
+        }
+        elsif (!exists $v_data->{activations})
+        {
+            $result->add_error($vardata_file, "vardata has no key 'activations'");
+        }
+        elsif (!exists $v_data->{definitions})
+        {
+            $result->add_error($vardata_file, "vardata has no key 'definitions'");
+        }
+        elsif (!exists $v_data->{environments})
+        {
+            $result->add_error($vardata_file, "vardata has no key 'environments'");
+        }
+        elsif (!exists $v_data->{validations})
+        {
+            $result->add_error($vardata_file, "vardata has no key 'validations'");
+        }
+        else
+        {
+            $self->log3("Successfully loaded vardata file $vardata_file");
+            $self->compositions($v_data->{compositions});
+            $self->activations($v_data->{activations});
+            $self->definitions($v_data->{definitions});
+            $self->environments($v_data->{environments});
+            $self->validations($v_data->{validations});
+        }
+    }
+    else
+    {
+        $result->add_error('vardata', "No vardata file specified");
+    }
+
+    return $result;
+}
+
+sub save_vardata
+{
+    my $self = shift;
+
+    my $data = {
+                compositions => $self->compositions,
+                activations => $self->activations,
+                definitions => $self->definitions,
+                environments => $self->environments,
+                validations => $self->validations,
+               };
+    my $vardata_file = $self->vardata();
+
+    $self->log("Saving vardata file $vardata_file");
+
+    open my $fh, '>', $vardata_file
+     or return (0, "Vardata file $vardata_file could not be created: $!");
+
+    print $fh $self->cencode($data);
+    close $fh;
+
+    return 1;
+}
+
+sub save_runfile
+{
+    my $self = shift @_;
+    my $data = shift @_;
+
+    my $runfile = glob($self->runfile()->{location});
+
+    $self->log("Saving runfile $runfile");
+    open my $fh, '>', $runfile
+    or return "Run file $runfile could not be created: $!";
+
+    print $fh $data;
+    close $fh;
+
+    return 1;
+}
+
+sub is_ok_cfengine_version
+{
+    my $self = shift @_;
+    my $req = shift @_ || $self->cfengine_min_version();
+
+    return 0 unless defined $req;
+
+    return $req le $self->cfengine_version();
+}
+
+sub all_repos
+{
+    my $self = shift;
+    my $sources_first = shift;
+
+    if ($sources_first)
+    {
+        return ( @{$self->recognized_sources()}, @{$self->repos()} );
+    }
+
+    return ( @{$self->repos()}, @{$self->recognized_sources()} );
+}
+
+# note it's not "our" but "my"
+my %repos;
+sub load_repo
+{
+    my $self = shift;
+    my $repo = shift;
+
+    unless (exists $repos{$repo})
+    {
+        $repos{$repo} = DCAPI::Repo->new(api => $self,
+                                         location => glob($repo));
+    }
+
+    return $repos{$repo};
+}
+
+sub data_dump
+{
+    my $self = shift;
+    return
+    {
+     version => $self->version(),
+     config => $self->config(),
+     curl => $self->curl(),
+     repolist => $self->repos(),
+     recognized_sources => $self->recognized_sources(),
+     vardata => $self->vardata(),
+     runfile => $self->runfile(),
+     compositions => $self->compositions(),
+     definitions => $self->definitions(),
+     activations => $self->activations(),
+     environments => $self->environments(),
+     validations => $self->validations(),
+    };
+}
+
+sub search
+{
+    my $self = shift;
+    return DCAPI::Result->new(api => $self,
+                              status => 1,
+                              success => 1,
+                              data => { search => $self->list_int($self->recognized_sources(), @_) });
+}
+
+sub list
+{
+    my $self = shift;
+    return DCAPI::Result->new(api => $self,
+                              status => 1,
+                              success => 1,
+                              data => { list => $self->list_int($self->repos(), @_) });
+}
+
+sub list_int
+{
+    my $self = shift;
+    my $repos = shift;
+    my $term_data = shift;
+    my $options = shift || {};
+
+    my @full_list;
+    my %ret;
+    foreach my $location (@$repos)
+    {
+        $self->log("Searching location %s for terms %s",
+                   $location,
+                   $term_data);
+        my $repo = $self->load_repo($location);
+        my %list = map
+        {
+            if ($options->{describe} && $options->{describe} eq 'README')
+            {
+                $_->name() => [ $_->location(), $_->make_readme()];
+            }
+            elsif ($options->{describe})
+            {
+                $_->name() => $_->data_dump();
+            }
+            else
+            {
+                $_->name() => $_->name();
+            }
+        }
+        $repo->list($term_data);
+
+        $ret{$repo->location()} = \%list;
+        push @full_list, values %list;
+    }
+
+    return exists $options->{flatten} ? \@full_list : \%ret;
+}
+
+sub describe
+{
+    my $self = shift;
+
+    return DCAPI::Result->new(api => $self,
+                              status => 1,
+                              success => 1,
+                              data => { describe => $self->describe_int(@_) });
+}
+
+sub describe_int
+{
+    my $self = shift;
+    my $sketches_top = shift;
+    my $sources = shift;
+    my $firstfound = shift;
+
+    $sketches_top = { $sketches_top => undef } unless ref $sketches_top eq 'HASH';
+
+    my %ret;
+    my @repos = defined $sources ? (@$sources) : ($self->all_repos());
+    foreach my $location (@repos)
+    {
+        my %sketches = %$sketches_top;
+        my $repo = $self->load_repo($location);
+        my $found = $repo->describe(\%sketches, $firstfound);
+        $ret{$repo->location()} = $found;
+        return $found if ($found && $firstfound);
+    }
+
+    return \%ret;
+}
+
+sub install
+{
+    my $self = shift;
+    my $install = shift;
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    # we don't accept strings, the sketches to be installed must be in an array
+
+    if (ref $install eq 'HASH')
+    {
+        $install = [ $install ];
+    }
+
+    if (ref $install ne 'ARRAY')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid install command");
+    }
+
+    my @install_log;
+
+ INSTALLER:
+    foreach my $installer (@$install)
+    {
+        my %d;
+        foreach my $varname (qw/sketch source target/)
+        {
+            my $v = Util::hashref_search($installer, $varname);
+            unless (defined $v)
+            {
+                $result->add_error('syntax',
+                                   "Installer command was missing key '$varname'");
+                next INSTALLER;
+            }
+            $d{$varname} = $v;
+        }
+
+        # copy optional install criteria
+        foreach my $varname (qw/version force/)
+        {
+            my $v = Util::hashref_search($installer, $varname);
+            next unless defined $v;
+            $d{$varname} = $v;
+        }
+
+        my $location = $d{target};
+        my $drepo;
+        my $srepo;
+
+        eval
+        {
+            $drepo = $self->load_repo($d{target});
+            $srepo = $self->load_repo($d{source});
+        };
+
+        if ($@)
+        {
+            $result->add_error(defined $drepo ? 'install source' : 'install target',
+                               $@);
+        }
+
+        next INSTALLER unless defined $drepo;
+        next INSTALLER unless defined $srepo;
+
+        if ($drepo->find_sketch($d{sketch}))
+        {
+            $self->log3("Sketch $d{sketch} is already in target repo");
+            if ($d{force})
+            {
+                $self->log("With force=true, overwriting sketch $d{sketch} in $d{target};");
+            }
+            else
+            {
+                $result->add_log("already have $d{sketch}",
+                                 "Sketch $d{sketch} is already in target repo; you must uninstall it first");
+                next INSTALLER;
+            }
+        }
+
+        my $sketch = $srepo->find_sketch($d{sketch}, $d{version});
+
+        unless (defined $sketch)
+        {
+            $result->add_error($d{sketch},
+                               "Sketch $d{sketch} could not be found in source repo");
+            next INSTALLER;
+        }
+
+        my $depcheck = $sketch->resolve_dependencies(install => 1,
+                                                     force => $d{force},
+                                                     source => $d{source},
+                                                     target => $d{target});
+
+        return $depcheck unless $depcheck->success();
+
+        $self->log("Installing sketch $d{sketch} from $d{source} into $d{target}");
+
+        my $install_check = $drepo->install($srepo, $sketch);
+        $result->merge($install_check);
+        $result->add_data_key($d{sketch},
+                              ['install', $d{target}, $d{sketch}],
+                              1);
+    }
+
+    return $result;
+}
+
+sub uninstall
+{
+    my $self = shift;
+    my $uninstall = shift;
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    # we don't accept strings, the sketches to be installed must be in an array
+
+    if (ref $uninstall eq 'HASH')
+    {
+        $uninstall = [ $uninstall ];
+    }
+
+    if (ref $uninstall ne 'ARRAY')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid uninstall command");
+    }
+
+    my @uninstall_log;
+
+  UNINSTALLER:
+    foreach my $uninstaller (@$uninstall)
+    {
+        my %d;
+        foreach my $varname (qw/sketch target/)
+        {
+            my $v = Util::hashref_search($uninstaller, $varname);
+            unless (defined $v)
+            {
+                $result->add_error('syntax',
+                                   "Uninstaller command was missing key '$varname'");
+                next UNINSTALLER;
+            }
+            $d{$varname} = $v;
+        }
+
+        # copy optional install criteria
+        foreach my $varname (qw/version/)
+        {
+            my $v = Util::hashref_search($uninstaller, $varname);
+            next unless defined $v;
+            $d{$varname} = $v;
+        }
+
+        my $repo;
+
+        eval
+        {
+            $repo = $self->load_repo($d{target});
+        };
+
+        if ($@)
+        {
+            $result->add_error('uninstall target',
+                               $@);
+        }
+
+        next UNINSTALLER unless defined $repo;
+
+        my $sketch = $repo->find_sketch($d{sketch});
+
+        unless ($sketch)
+        {
+            $result->add_error('uninstall target',
+                               "Sketch $d{sketch} is not in target repo; you must install it first");
+            next UNINSTALLER;
+        }
+
+        $self->log("Uninstalling sketch $d{sketch} from " . $sketch->location());
+
+        $result->merge($repo->uninstall($sketch));
+
+        $result->add_data_key($d{sketch},
+                              ['uninstall', $d{target}, $d{sketch}],
+                              1);
+    }
+
+    return $result;
+}
+
+sub define
+{
+    my $self = shift;
+    my $define = shift;
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    if (ref $define ne 'HASH')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid define command");
+    }
+
+    foreach my $dkey (keys %$define)
+    {
+        $self->definitions()->{$dkey} = $define->{$dkey};
+        $result->add_data_key($dkey, ['define', $dkey], 1);
+    }
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub undefine
+{
+    my $self = shift;
+    my $undefine = shift;
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    if (ref $undefine ne 'ARRAY')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid undefine command");
+    }
+
+    foreach my $ukey (@$undefine)
+    {
+        $result->add_data_key($ukey,
+                              ['undefine', $ukey],
+                              !! delete $self->definitions()->{$ukey});
+    }
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub define_environment
+{
+    my $self = shift;
+    my $define_environment = shift;
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    if (ref $define_environment ne 'HASH')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid define_environment command");
+    }
+
+    return $result unless $result->success();
+
+    foreach my $dkey (keys %$define_environment)
+    {
+        return $result->add_error('environment name',
+                                  "Invalid environment name $dkey (must be a valid bundle name)")
+         if $dkey =~ m/\W/;
+
+        my $spec = $define_environment->{$dkey};
+
+        if (ref $spec ne 'HASH')
+        {
+            return $result->add_error('environment spec',
+                                      "Invalid environment spec under $dkey");
+        }
+
+        foreach my $required (qw/activated test verbose/)
+        {
+            return $result->add_error('environment spec required key',
+                                      "Invalid environment spec $dkey: missing key $required")
+             unless exists $spec->{$required};
+
+            $spec->{$required} = ! ! $spec->{$required}
+            if Util::is_json_boolean($spec->{$required});
+
+            # only scalars are acceptable
+            return $result->add_error('environment spec value',
+                                      "Invalid environment spec $dkey: non-scalar key $required")
+             if (ref $spec->{$required});
+        }
+
+        $self->environments()->{$dkey} = $spec;
+        $result->add_data_key($dkey, ['define_environment', $dkey], 1);
+    }
+
+    $self->save_vardata();
+    return $result;
+}
+
+sub undefine_environment
+{
+    my $self = shift;
+    my $undefine_environment = shift;
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    if (ref $undefine_environment ne 'ARRAY')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid undefine_environment command");
+    }
+
+    foreach my $ukey (@$undefine_environment)
+    {
+        $result->add_data_key($ukey,
+                              ['undefine_environment', $ukey],
+                              !! delete $self->environments()->{$ukey});
+    }
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub compose
+{
+    my $self = shift;
+    my $compose = shift || [];
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    if (ref $compose ne 'HASH')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid compose command");
+    }
+
+    $self->compositions()->{$_} = $compose->{$_} foreach keys %$compose;
+    $result->add_data_key('compose', 'compositions', $self->compositions());
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub decompose
+{
+    my $self = shift;
+    my $compose_key = shift || [];
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    # delete and return in one statement
+    $result->add_data_key('compose', 'compositions',
+                          delete $self->compositions()->{$compose_key});
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub define_validation
+{
+    my $self = shift;
+    my $define_validation = shift || [];
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    if (ref $define_validation ne 'HASH')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid define_validation command");
+    }
+
+    foreach my $vdef (keys %$define_validation)
+    {
+        my $result = DCAPI::Validation::make_validation($self, $vdef, $define_validation->{$vdef});
+        if (ref $result ne 'DCAPI::Result')
+        {
+            $self->validations()->{$vdef} = $define_validation->{$vdef};
+        }
+        else
+        {
+            return $result;
+        }
+    }
+
+    $result->add_data_key('define_validation', 'validations', $self->validations());
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub undefine_validation
+{
+    my $self = shift;
+    my $undefine_validation_key = shift || [];
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    # delete and return in one statement
+    $result->add_data_key('undefine_validation', 'validations',
+                          delete $self->validations()->{$undefine_validation_key});
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub validate
+{
+    my $self = shift;
+    my $validate = shift || [];
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    if (ref $validate ne 'HASH')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid validate command");
+    }
+
+    unless (exists $validate->{validation})
+    {
+        return $result->add_error('syntax',
+                                  "Invalid validate command: no validation key");
+    }
+
+    unless (exists $self->validations()->{$validate->{validation}})
+    {
+        return $result->add_error('syntax',
+                                  "Invalid validate command: unknown validation key");
+    }
+
+    unless (exists $validate->{data})
+    {
+        return $result->add_error('syntax',
+                                  "Invalid validate command: no data key");
+    }
+
+    my $validation = DCAPI::Validation::make_validation($self,
+                                                        $validate->{validation},
+                                                        $self->validations()->{$validate->{validation}});
+
+    if (ref $validation eq 'DCAPI::Validation') # it's a validation
+    {
+        return $validation->validate($validate->{data});
+    }
+
+    # else, there was an error
+    return $result;
+}
+
+sub activate
+{
+    my $self = shift;
+    my $activate = shift;
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    if (ref $activate ne 'HASH')
+    {
+        return $result->add_error('syntax',
+                                  "Invalid activate command");
+    }
+
+    # handle activation request in form
+    # sketch: { environment:"run environment", target:"/my/repo", params: [definition1, definition2, ... ] }
+    foreach my $sketch (keys %$activate)
+    {
+        my $spec = $activate->{$sketch};
+
+        my ($verify, @warnings) = DCAPI::Activation::make_activation($self, $sketch, $spec);
+
+        if ($verify)
+        {
+            $self->log("Activating sketch %s with spec %s", $sketch, $spec);
+            my $cspec = $self->cencode($spec);
+            if (exists $self->activations()->{$sketch})
+            {
+                foreach (@{$self->activations()->{$sketch}})
+                {
+                    if ($cspec eq $self->cencode($_))
+                    {
+                        return $result->add_log('activation',
+                                                "Activation is already in place");
+                    }
+                }
+            }
+
+            push @{$self->activations()->{$sketch}}, $spec;
+            $self->log("Activations for sketch %s are now %s",
+                       $sketch,
+                       $self->activations()->{$sketch});
+
+            $result->add_data_key($sketch,
+                                  ['activate', $sketch],
+                                  $spec);
+        }
+        else
+        {
+            $self->log("FAILED activation of sketch %s with spec %s: %s",
+                       $sketch,
+                       $spec,
+                       @warnings);
+            return $result->add_error('activation verification', @warnings);
+        }
+    }
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub regenerate
+{
+    my $self = shift;
+    my $regenerate = shift;
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    my $relocate = $self->runfile()->{relocate_path};
+
+    my @activations;                 # these are DCAPI::Activation objects
+    my $acts = $self->activations(); # these are data structures
+    foreach my $sketch (keys %$acts)
+    {
+        foreach my $spec (@{$acts->{$sketch}})
+        {
+            # this is how the data structure is turned into a DCAPI::Activation object
+            my ($activation, @warnings) = DCAPI::Activation::make_activation($self, $sketch, $spec);
+
+            if ($activation)
+            {
+                my $sketch_obj = $activation->sketch();
+                $self->log("Regenerate: adding activation of %s; spec %s", $sketch, $spec);
+                push @activations, $activation;
+            }
+            else
+            {
+                $self->log("Regenerate: verification warnings [@warnings]");
+                return $result->add_warning($sketch, @warnings);
+            }
+        }
+    }
+
+    # resolve each activation from the others
+    foreach my $a (@activations)
+    {
+        my ($resolved, @warnings) = $a->resolve_now(\@activations);
+
+        return $result->add_error($a->sketch()->name(), @warnings)
+         unless $resolved;
+    }
+
+    # 1. determine includes from sketches, their dependencies, and namespaces
+    my @inputs;
+    foreach my $a (@activations)
+    {
+        push @inputs, $a->sketch()->get_inputs($relocate, 5);
+        $self->log("Regenerate: adding inputs %s", \@inputs);
+    }
+
+    @inputs = Util::uniq(@inputs);
+    my $inputs = join "\n", Util::make_var_lines('inputs', \@inputs, '', 0, 0);
+
+    my $type_indent = ' ' x 2;
+    my $context_indent = ' ' x 4;
+    my $indent = ' ' x 6;
+
+    # 2. make cfsketch_g and environment bundles with data
+    my @data;
+    my %environments;
+    my $position = 1;
+
+    foreach my $a (@activations)
+    {
+        $self->log("Regenerate: generating activation %s", $a->id());
+
+        foreach my $p (@{$a->params()})
+        {
+            if ($p->{type} eq 'environment')
+            {
+                $self->log("Regenerate: adding environment %s", $p);
+                $environments{$p->{value}}++;
+            }
+            elsif ($a->ignored_type($p->{type}))
+            {
+                $self->log5("Regenerate: ignoring parameter %s", $p);
+            }
+            # we can't inline some types, so print them explicitly in the data bundle
+            elsif (!$a->can_inline($p->{type}))
+            {
+                $self->log("Regenerate: adding explicit data %s", $p);
+                my $line = join("\n",
+                                sprintf("%s# %s '%s' from definition %s, activation %s",
+                                        $indent,
+                                        $p->{type},
+                                        $p->{name},
+                                        $p->{set},
+                                        $a->id()),
+                                map { "$indent$_" } Util::make_var_lines($a->id() . '_' . $p->{name},
+                                                                         $p->{value},
+                                                                         '',
+                                                                         0,
+                                                                         0));
+                push @data, $line;
+            }
+        }
+    }
+
+    my $data_lines = join "\n\n", @data;
+
+    my $environment_calls = '';
+    my @environment_lines = ("# environment common bundles\n");
+    foreach my $e (keys %environments)
+    {
+        my @var_data;
+        my @class_data;
+        my $edata = $self->environments()->{$e};
+
+        # ensure there's an "activated" class
+        unless (exists $edata->{activated})
+        {
+            $edata->{activated} = 1;
+        }
+
+        my @ekeys = sort keys %$edata;
+        $edata->{env_vars} = \@ekeys;
+        foreach my $v (sort keys %$edata)
+        {
+            my $print_v = $v;
+            $print_v =~ s/\W/_/g;
+            my $d = $edata->{$v};
+            my $line = join("\n",
+                            map { "$indent$_" }
+                            Util::make_var_lines($print_v, $d, '', 0, 0));
+            push @var_data, $line;
+
+            # is it a scalar?
+            if (ref $d eq '')
+            {
+                my $d_expression = $d;
+                if ($d_expression eq '' || $d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no')
+                {
+                    $d_expression = '!any';
+                }
+                elsif ($d_expression eq '1' || $d_expression eq 'true' || $d_expression eq 'yes')
+                {
+                    $d_expression = 'any';
+                }
+
+                $d_expression =~ s/[^a-zA-Z0-9_!&\@\$|.()\[\]{}:]/_/g;
+
+                push @class_data, sprintf('%s"runenv_%s_%s" expression => "%s";',
+                                          $indent,
+                                          $e,
+                                          $print_v,
+                                          $d_expression);
+            }
+        }
+
+        push @environment_lines,
+        sprintf("# environment %s\nbundle common %s\n{\n%s\n}\n",
+                $e, $e, join("\n",
+                                   "${type_indent}vars:",
+                                   @var_data,
+                                   # don't insert classes: line if there's no classes
+                                   (scalar @class_data ? "${type_indent}classes:" : ''),
+                                   @class_data));
+
+        $environment_calls .= "$indent\"$e\" usebundle => \"$e\";\n";
+    }
+
+    my $environment_lines = join "\n", @environment_lines;
+
+    # 3. make cfsketch_run bundle with invocations
+    my @invocation_lines;
+    foreach my $a (@activations)
+    {
+        $self->log("Regenerate: generating activation call %s", $a->id());
+
+        if (exists $environments{$a->environment()})
+        {
+            push @invocation_lines, sprintf('%srunenv_%s_%s::',
+                                            $context_indent,
+                                            $a->environment(),
+                                            'activated');
+        }
+        else                            # if the bundle doesn't want an runenv
+        {
+            push @invocation_lines, sprintf('%sany::', $context_indent);
+        }
+
+        my $namespace = $a->sketch()->namespace();
+        my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
+
+        push @invocation_lines, sprintf('%s"%s" usebundle => %s%s(%s), useresult => "return_%s";',
+                                        $indent,
+                                        $a->id(),
+                                        $namespace_prefix,
+                                        $a->bundle(),
+                                        $a->make_bundle_params(),
+                                        $a->id());
+    }
+
+    # 4. print return value reports
+    my @report_lines;
+    foreach my $a (@activations)
+    {
+        foreach my $p (grep { $_->{type} eq 'return' } @{$a->params()})
+        {
+            push @report_lines,
+            sprintf('%s"activation %s returned %s = %s";',
+                    $indent,
+                    $a->id(),
+                    $p->{name},
+                    sprintf('$(return_%s[%s])', $a->id(), $p->{name}));
+        }
+    }
+
+    my $report_lines = join "\n",
+     "${context_indent}cfengine::",
+      @report_lines;
+
+    my $standalone_lines = <<EOHIPPUS;
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+EOHIPPUS
+
+    $standalone_lines = '' unless $self->runfile()->{standalone};
+
+    my $invocation_lines = join "\n", @invocation_lines;
+
+    my $runfile_data = <<EOHIPPUS;
+$standalone_lines
+
+$environment_lines
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      $inputs
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+$data_lines
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+$environment_calls
+$invocation_lines
+
+  reports:
+$report_lines
+}
+EOHIPPUS
+
+    my $save_result = $self->save_runfile($runfile_data);
+    return $result->add_warning('save runfile', $save_result) unless $save_result;
+
+    return $result;
+}
+
+sub deactivate
+{
+    my $self = shift;
+    my $deactivate = shift;
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    # deactivate = true means all;
+    if (Util::is_json_boolean($deactivate) && $deactivate)
+    {
+        $self->log("Deactivating all activations: %s", $self->activations());
+
+        $result->add_data_key('deactivate', ['deactivate', $_], 1)
+         foreach keys %{$self->activations()};
+
+        %{$self->activations()} = ();
+    }
+    # deactivate = sketch means all activations of the sketch;
+    elsif (ref $deactivate eq '')
+    {
+        my $d = delete $self->activations()->{$deactivate};
+
+        $result->add_data_key('deactivate', ['deactivate', $deactivate], 1);
+
+        $self->log("Deactivating all activations of $deactivate: %s", $d);
+    }
+    elsif (ref $deactivate eq 'HASH' &&
+           exists $deactivate->{sketch} &&
+           exists $self->activations()->{$deactivate->{sketch}})
+    {
+        if (exists $deactivate->{position})
+        {
+            my $d = delete $self->activations()->{$deactivate->{sketch}}->[$deactivate->{position}];
+            $result->add_data_key('deactivate', ['deactivate', $deactivate->{sketch}, $deactivate->{position}], 1);
+            $self->log("Deactivating activation %s of %s: %s",
+                       $deactivate->{position},
+                       $deactivate->{sketch},
+                       $d);
+        }
+    }
+
+    $self->save_vardata();
+
+    return $result;
+}
+
+sub run_cf
+{
+    my $self = shift @_;
+    my $data = shift @_;
+
+    my ($fh, $filename) = tempfile( "./cf-agent-run-XXXX", TMPDIR => 1 );
+    print $fh $data;
+    close $fh;
+    $self->log5("Running %s -KIf %s with data =\n%s",
+                $self->cfagent(),
+                $filename,
+                $data);
+    open my $pipe, '-|', $self->cfagent(), -KIf => $filename;
+    return unless $pipe;
+    while (<$pipe>)
+    {
+        chomp;
+        next if m/Running full policy integrity checks/;
+        $self->log3($_);
+    }
+    unlink $filename;
+
+    return $?;
+}
+
+sub run_cf_promises
+{
+    my $self = shift @_;
+    my $promises = shift @_;
+
+    my $policy_template = <<'EOHIPPUS';
+body common control
+{
+  bundlesequence => { "run" };
+}
+
+bundle agent run
+{
+%s
+}
+
+# from cfengine_stdlib
+body copy_from no_backup_cp(from)
+{
+    source      => "$(from)";
+    copy_backup => "false";
+}
+
+body perms m(mode)
+{
+    mode   => "$(mode)";
+}
+
+body delete tidy
+{
+    dirlinks => "delete";
+    rmdirs   => "true";
+}
+
+body depth_search recurse_sketch
+{
+    include_basedir => "true";
+    depth => "inf";
+    xdev  => "false";
+}
+
+body file_select all
+{
+    leaf_name => { ".*" };
+    file_result => "leaf_name";
+}
+
+EOHIPPUS
+
+    my $policy = sprintf($policy_template,
+                         join("\n",
+                              map { "$_:\n$promises->{$_}\n" }
+                              sort keys %$promises));
+    return $self->run_cf($policy);
+}
+
+sub log_mode
+{
+    my $self = shift @_;
+    return Util::hashref_search($self->config(), qw/log/) || 'STDERR';
+}
+
+sub log_level
+{
+    my $self = shift @_;
+    return 0+(Util::hashref_search($self->config(), qw/log_level/)||0);
+}
+
+sub log
+{
+    my $self = shift @_;
+    return $self->log_int(1, @_);
+}
+
+sub log2
+{
+    my $self = shift @_;
+    return $self->log_int(2, @_);
+}
+
+sub log3
+{
+    my $self = shift @_;
+    return $self->log_int(3, @_);
+}
+
+sub log4
+{
+    my $self = shift @_;
+    return $self->log_int(4, @_);
+}
+
+sub log5
+{
+    my $self = shift @_;
+    return $self->log_int(5, @_);
+}
+
+sub log_int
+{
+    my $self = shift @_;
+    my $log_level = shift @_;
+
+    return unless $self->log_level() >= $log_level;
+
+    my $close_out_fh = 1;
+    my $out_fh;
+    if ($self->log_mode() eq 'STDERR')
+    {
+        $close_out_fh = 0;
+        $out_fh = \*STDERR;
+    }
+    elsif ($self->log_mode() eq 'STDOUT')
+    {
+        $close_out_fh = 0;
+        $out_fh = \*STDOUT;
+    }
+    else
+    {
+        my $f = $self->log_mode();
+        open $out_fh, '>>', $f or warn "Could not append to log file $f: $!";
+    }
+
+    my $prefix;
+    foreach my $level (1..4)    # probe up to 4 levels to find the real caller
+    {
+        my ($package, $filename, $line, $subroutine, $hasargs, $wantarray,
+            $evaltext, $is_require, $hints, $bitmask, $hinthash) = caller($level);
+
+        $prefix = sprintf ('%s(%s:%s): ', $subroutine, basename($filename), $line);
+        last unless $subroutine eq '(eval)';
+    }
+
+    my @plist;
+    foreach (@_)
+    {
+        if (ref $_ eq 'ARRAY' || ref $_ eq 'HASH')
+        {
+            # we want to log it anyhow
+            eval { push @plist, $self->encode($_) };
+        }
+        else
+        {
+            push @plist, $_;
+        }
+    }
+
+    if ($out_fh)
+    {
+        print $out_fh $prefix;
+        printf $out_fh @plist;
+        print $out_fh "\n";
+
+        close $out_fh if $close_out_fh;
+    }
+}
+;
+
+sub decode { shift; CODER->decode(@_) };
+sub encode { shift; CODER->encode(@_) };
+sub cencode { shift; CAN_CODER->encode(@_) };
+
+sub dump_encode { shift; use Data::Dumper; return Dumper([@_]); }
+
+sub curl_GET { shift->curl('GET', @_) };
+
+sub curl
+{
+    my $self = shift @_;
+    my $mode = shift @_;
+    my $url = shift @_;
+
+    my $curl = $self->curl();
+
+    my $run = <<EOHIPPUS;
+$curl -s $mode $url |
+EOHIPPUS
+
+    $self->log("Running: $run\n");
+
+    open my $c, $run or return (undef, "Could not run command [$run]: $!");
+
+    return ([<$c>], undef);
+}
+;
+
+sub load_raw
+{
+    my $self = shift @_;
+    my $f    = shift @_;
+    return $self->load_int($f, 1);
+}
+
+sub load
+{
+    my $self = shift @_;
+    my $f    = shift @_;
+    return $self->load_int($f, 0);
+}
+
+sub load_int
+{
+    my $self = shift @_;
+    my $f    = shift @_;
+    my $raw  = shift @_;
+
+    return (undef, "Fatal: trying to load an undefined value") unless defined $f;
+    return (undef, "Fatal: bad JSON data or empty file") unless length $f;
+
+    my @j;
+
+    my $try_eval;
+    eval
+    {
+        $try_eval = $self->decode($f);
+    };
+
+    if ($try_eval)              # detect inline content, must be proper JSON
+    {
+        return ($try_eval);
+    }
+    elsif (Util::is_resource_local($f))
+    {
+        my $multiline = 1;
+        my $j;
+        if ($f eq '-')
+        {
+            $j = \*STDIN;
+            $multiline = 0;
+        }
+        else
+        {
+            unless (open($j, '<', $f) && $j)
+            {
+                return (undef, "Could not inspect $f: $!");
+            }
+        }
+
+        while (<$j>)
+        {
+            push @j, $_;
+            last unless $multiline;
+        }
+    }
+    else
+    {
+        my ($j, $error) = $self->curl_GET($f);
+
+        defined $error and return (undef, $error);
+        defined $j or return (undef, "Unable to retrieve $f");
+
+        @j = @$j;
+    }
+
+    if (scalar @j)
+    {
+        chomp @j;
+        s/\n//g foreach @j;
+        s/^\s*(#|\/\/).*//g foreach @j;
+
+        if ($raw)
+        {
+            return (\@j);
+        }
+        else
+        {
+            return ($self->decode(join '', @j));
+        }
+    }
+
+    return (undef, "No data was loaded from $f");
+}
+
+sub exit_error
+{
+    my $self = shift;
+    if (ref $_[0] eq 'DCAPI::Result')
+    {
+        shift->out();
+    }
+    else
+    {
+        DCAPI::Result->new(api => $self,
+                           status => 0,
+                           success => 0,
+                           errors => \@_)
+             ->out();
+    }
+    exit 0;
+}
+
+1;

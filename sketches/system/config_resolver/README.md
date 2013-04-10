@@ -1,43 +1,38 @@
-# config_resolver - Manage your resolv.conf
-## AUTHOR
-Nick Anderson <nick@cmdln.org>
-Jean Remond <cfengine@remond.re>
-Ted Zlatanov <tzz@lifelogs.com>
+# System::config_resolver version 1.1
 
-## PLATFORM
-linux
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Jean Remond <cfengine@remond.re>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
-This bundle will manage your resolv.conf file.
-By default it will only set defined options, any manual
-additons to the resolvers file will be left un-touched.
-There are some special contexts (classes):
+## Description
+Configure DNS resolver
 
-* `-Dtest` or defining `$(class_prefix)test`will operate on a test
-file (`/tmp/resolv.conf` in `test.cf` and in `params/example.json`)
-instead of the operating systems resolver.
-  
-* `-Ddebug` or defining `$(class_prefix)debug`will print extra
-debugging information.
-  
-* if the context `$(class_prefix)defined_only` is defined, the sketch
-will erase the lines which have definitions before setting
-configuration options, this removes any manual edits on the file and
-only defined options are set
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-* if the context `$(class_prefix)empty_first` is defined, the file
-will be emptied before setting configurations options
+## API
+### bundle: resolver
+* parameter _environment_ *runenv* (default: none, description: none)
 
-The rest are variables you pass to the `resolver` bundle:
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* `file`: the file to edit (this can be modified by `-Dtest` as explained above)
+* parameter _string_ *file* (default: `"/etc/resolv.conf"`, description: none)
 
-* `nameserver`, `search`, `options`, `sortlist`, `domain`: slists
-(lists of strings) you will see in the resolver configuration
-verbatim.
+* parameter _list_ *nameserver* (default: none, description: none)
 
-## REQUIREMENTS
+* parameter _list_ *search* (default: none, description: none)
+
+* parameter _list_ *domain* (default: none, description: none)
+
+* parameter _list_ *options* (default: none, description: none)
+
+* parameter _list_ *sortlist* (default: none, description: none)
+
+* parameter _list_ *extra* (default: none, description: none)
+
+* returns _return_ *resolv_conf* (default: none, description: none)
+
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf` or `params/example.json`.

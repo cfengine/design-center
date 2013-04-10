@@ -1,25 +1,46 @@
 {
-    "manifest":
+    manifest:
     {
-        "main.cf": { "desc": "main file" },
-        "test.cf": { "desc": "standalone test" },
-        "README.md": { "documentation": true },
-        "params/demo.json": { "comment": "simple demo of sketch" },
-        "scripts/sample.sh": { "perm": 755, "comment": "Sample script bundled with the sketch" },
-        "modules/mymodule": { "module": true, "perm": 755, "comment": "Sample module bundled with the sketch" }
+        "main.cf": { desc: "main file" },
+        "test.cf": { desc: "standalone test" },
+        "README.md": { documentation: true },
+        "params/demo.json": { comment: "simple demo of sketch" },
+        "scripts/sample.sh": { perm: 755, comment: "Sample script bundled with the sketch" },
+        "modules/mymodule": { module: true, perm: 755, comment: "Sample module bundled with the sketch" }
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "CFEngine::sketch_template",
-	"description": "Standard template for Design Center sketches",
-        "version": 1.00,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin" ] }
+        name: "CFEngine::sketch_template",
+	    description: "Standard template for Design Center sketches",
+        version: "1.01",
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }, os: [ "linux", "darwin" ] }
     },
 
-    "entry_point": "main.cf",
-    "interface": [ "main.cf" ]
+    api:
+    {
+        // this is the name of the bundle!
+        entry:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "prefix", default: "__PREFIX__" },
+
+            { type: "boolean", name: "myboolean", default: "1" }, //  true is OK too
+            { type: "string", name: "mytype", default: "fallback" },
+            { type: "string", name: "myip", description: "This is my IP address or whatever" },
+            { type: "list", name: "mylist", },
+            { type: "array", name: "myarray", },
+            // you can have any number of return variables
+            { type: "return", name: "myreturn" },
+            { type: "return", name: "myreturn2" },
+        ],
+    },
+
+    namespace: "cfdc_sketch_template",
+    
+    interface: [ "main.cf" ],
 }

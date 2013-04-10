@@ -1,0 +1,27 @@
+{
+
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+        "params/demo.json": { "comment": "simple demo of EC2, OpenStack, and VCLI integration" },
+        "params/demo_ec2only.json": { "comment": "simple EC2-only demo" },
+        "scripts/shim.pl": { "perm": 755, "comment": "EC2+OpenStack shim to start/stop service" },
+        "scripts/aws": { "perm": 755, "license": "GPL", "comment": "EC2 interface to start/stop service" },
+        "modules/vcli_decision": { "module": true, "perm": 755, "comment": "VMWare decision module" }
+    },
+
+    "metadata":
+    {
+        "name": "Cloud::Services",
+	"description": "Manage EC2 and VMware instances",
+        "version": 1.10,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin" ] }
+    },
+
+    
+    "interface": [ "main.cf" ]
+}

@@ -3,117 +3,56 @@ body file control
   namespace => "cfdc_resolver";
 }
 
-bundle agent resolver(class_prefix, file, nameserver, search, domain, options, sortlist)
+bundle agent resolver(runenv, metadata, file, nameserver, search, domain, options, sortlist, extra)
 {
-  meta:
-      "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
-      "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-      "vars[empty_first][type]"      string => "CONTEXT";
-      "vars[empty_first][default]"   string => "!any";
-
-      "vars[defined_only][type]"     string => "CONTEXT";
-      "vars[defined_only][default]"  string => "!any";
-
-      "vars[debug][type]"            string => "CONTEXT";
-      "vars[debug][default]"         string => "!any";
-
-      "vars[test][type]"             string => "CONTEXT";
-      "vars[test][default]"          string => "!any";
-
-      "vars[verbose][type]"          string => "CONTEXT";
-      "vars[verbose][default]"       string => "!any";
-
-      "vars[file][type]"             string => "PATH";
-      "vars[file][default]"          string => "/etc/resolv.conf";
-
-      "vars[nameserver][type]"       string => "LIST(NON_EMPTY_STRING)";
-      "vars[search][type]"           string => "LIST(NON_EMPTY_STRING)";
-      "vars[domain][type]"           string => "LIST(NON_EMPTY_STRING)";
-      "vars[options][type]"          string => "LIST(NON_EMPTY_STRING)";
-      "vars[sortlist][type]"         string => "LIST(NON_EMPTY_STRING)";
+    test::
+      "rfile" string => "/tmp/resolv.conf";
+    !test::
+      "rfile" string => $(file);
 
   classes:
-      "debug_resolver" or => { "$(class_prefix)debug", "debug" };
-      "only_allow_defined_entries" expression => "$(class_prefix)defined_only";
-      "empty_first" expression => "$(class_prefix)empty_first";
-
-  vars:
-    !empty_first::
-      "empty_file_before_editing" string => "false", policy => "free";
-    empty_first::
-      "empty_file_before_editing" string => "true",  policy => "free";
-
-  files:
-      "$(file)"
-      handle        => "cfdc_config_resolver_files_$(file)",
-      create        => "true",
-      edit_defaults => resolver_empty_if_ask($(empty_file_before_editing)),
-      comment       => "Empty resolver file : $(file)";
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
   methods:
-      "iterate" usebundle => cfdc_resolver:iterate($(class_prefix),
-                                                   $(file),
-                                                   "nameserver",
-                                                   "@(resolver.nameserver)");
-
-      "iterate" usebundle => cfdc_resolver:iterate($(class_prefix),
-                                                   $(file),
-                                                   "search",
-                                                   "@(resolver.search)");
-      "iterate" usebundle => cfdc_resolver:iterate($(class_prefix),
-                                                   $(file),
-                                                   "domain",
-                                                   "@(resolver.domain)");
-      "iterate" usebundle => cfdc_resolver:iterate($(class_prefix),
-                                                   $(file),
-                                                   "options",
-                                                   "@(resolver.options)");
-      "iterate" usebundle => cfdc_resolver:iterate($(class_prefix),
-                                                   $(file),
-                                                   "sortlist",
-                                                   "@(resolver.sortlist)");
-  reports:
-    debug_resolver::
-      "main  @@ editing file $(file)";
-}
-
-bundle agent iterate(class_prefix, file, var, list)
-{
-  classes:
-      "debug_resolver" or => { "$(class_prefix)debug", "debug" };
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   files:
-      "$(file)"
-      handle    => "cfdc_config_resolver_files_$(file)_$(var)",
-      edit_line => cfdc_resolver:resolver_append_if_no_lines($(class_prefix),
-                                                             $(var),
-                                                             @(iterate.list)),
-      comment   => "configure $(var) resolver settings in $(file)";
+      "$(rfile)"
+      handle        => "cfdc_config_resolver_file",
+      create        => "true",
+      edit_defaults => default:empty,
+      edit_line     => cfdc_resolver:resolver_edit(@(resolver.nameserver),
+                                                   @(resolver.search),
+                                                   @(resolver.domain),
+                                                   @(resolver.options),
+                                                   @(resolver.sortlist),
+                                                   @(resolver.extra)),
+      classes       => default:if_ok("resolver_edit_successful"),
+      comment       => "Empty and edit resolver file $(rfile)";
 
   reports:
-    debug_resolver::
-      "iterate  @@ $(var) = $(list)";
+    verbose::
+      "$(this.bundle) @@ editing file $(rfile)";
+
+    resolver_edit_successful::
+      "$(rfile)" bundle_return_value_index => "resolv_conf";
+    !resolver_edit_successful::
+      "" bundle_return_value_index => "resolv_conf";
 }
 
-body edit_defaults resolver_empty_if_ask(empty_file_before_editing)
+bundle edit_line resolver_edit(nameserver, search, domain, options, sortlist, extra)
 {
-      edit_backup => "false";
-      max_file_size => "300000";
-      empty_file_before_editing => "$(empty_file_before_editing)";
-}
-
-bundle edit_line resolver_append_if_no_lines(class_prefix, key, list)
-{
-  classes:
-      "only_allow_defined_entries" expression => "$(class_prefix)defined_only";
-
-  delete_lines:
-    only_allow_defined_entries::
-      "$(key).*",
-      comment => "Reset $(key) lines from resolver";
-
   insert_lines:
-      "$(key) $(list)"
-      comment => "Append lines to the file if they don't already exist";
+      "$(extra)";
+      "nameserver $(nameserver)";
+      "search $(search)";
+      "domain $(domain)";
+      "options $(options)";
+      "sortlist $(sortlist)";
 }

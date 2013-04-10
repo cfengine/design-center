@@ -1,12 +1,10 @@
-# Time-stamp: <2012-10-08 11:25:54 a10022>
+# Time-stamp: <2013-04-08 03:07:17 a10022>
 #
 # search command for searching through sketch list
 # Diego Zamboni, October 1st, 2012.
 # diego.zamboni@cfengine.com
 
 use Term::ANSIColor qw(:constants);
-
-use DesignCenter::Config;
 
 ######################################################################
 
@@ -22,25 +20,27 @@ use DesignCenter::Config;
 
 ######################################################################
 
-sub command_install {
-  my $sketchstr = shift;
-  my $sketches = [ split /[,\s]+/, $sketchstr ];
-  DesignCenter::Config->_repository->install($sketches)
-}
-
-# sub command_search {
-#   my $regex=shift;
-#   my $err = Util::check_regex($regex);
-#   if ($err) {
-#     Util::error($err);
-#   } else {
-#     @res = $Config{_repository}->list($regex eq 'all' ? "." : $regex);
-#     foreach my $found (@res) {
-#       print GREEN, $found->name, RESET, " ".$found->location."\n";
-#     }
-
-#   }
-# }
-
+sub command_install
+  {
+    my $sketchstr = shift;
+    my @sketches = split /[,\s]+/, $sketchstr;
+    my @todo = map
+      {
+        {
+          sketch => $_, force => $Config{force}, source => $Config{sourcedir},
+            target => $Config{repolist}->[0],
+          }
+      } @sketches;
+    my ($success, $result) = main::api_interaction({install => \@todo});
+    Util::print_api_messages($result);
+    my $installresult = Util::hashref_search($result, qw/data install/);
+    if (ref $installresult eq 'HASH') {
+      foreach my $repo (sort keys %$installresult) {
+        foreach my $sketch (sort keys %{$installresult->{$repo}}) {
+          Util::success("Sketch $sketch installed under $repo.\n");
+        }
+      }
+    }
+  }
 
 1;

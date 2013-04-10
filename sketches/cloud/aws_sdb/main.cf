@@ -1,0 +1,70 @@
+body file control
+{
+  namespace => "cfdc_aws_sdb";
+}
+
+bundle agent sync(runenv, metadata, datafile, domain, options)
+{
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "shim" string => "$(default:cloud_shim.shim) --netrc $($(options)[netrc]) sdb";
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+  methods:
+      "E.T." usebundle => default:cloud_shim,
+      classes => default:always("AWS_home_called");
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  commands:
+    AWS_home_called::
+      "$(shim) sync $(datafile) $(domain)";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+      "$(this.bundle): synchronizing $(datafile) with SDB domain $(domain)";
+      "$(this.bundle): synchronization command $(shim) sync $(datafile) $(domain)";
+}
+
+bundle agent clear(runenv, metadata, domain, options)
+{
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "shim" string => "$(default:cloud_shim.shim) --netrc $($(options)[netrc]) sdb";
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+  methods:
+      "E.T." usebundle => default:cloud_shim,
+      classes => default:always("AWS_home_called");
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  commands:
+    AWS_home_called::
+      "$(shim) clear $(domain)";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+      "$(this.bundle): clearing SDB domain $(domain)";
+      "$(this.bundle): clear command $(shim) clear $(domain)";
+}
