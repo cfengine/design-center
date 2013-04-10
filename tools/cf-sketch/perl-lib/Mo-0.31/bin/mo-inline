@@ -1,0 +1,4 @@
+#!/usr/bin/perl
+
+use Mo::Inline;
+exit Mo::Inline->new->run(@ARGV);

@@ -10,57 +10,9 @@ The following documentation is available in the
 - [Getting started with cf-sketch](https://github.com/cfengine/design-center/wiki/Getting-started-with-cf–sketch).
 - [cf-sketch manual](https://github.com/cfengine/design-center/wiki/cf–sketch-manual).
 - [How to write a new sketch](https://github.com/cfengine/design-center/wiki/How-to-write-a-new-sketch).
-
+- [Documentation for the new Design Center API](https://github.com/tzz/design-center/blob/feature/api/howto/dc_api.md).
+ 
 If you have any comments or feedback about this tool, please send us
 email to <design-center@cfengine.com>, or
 [file a new issue](https://github.com/cfengine/design-center/issues)
 in this repository.
-
-# TODO
-TODO: edit manual and getting started to reflect:
---deactivate is the old deactivaten and it also takes a regex matching sketch names
---deactivate-all
---fullpath (off by default)
---params is a hash now, and applies to all activations, and can only be k=v
---activate is a hash now: SKETCH=PFILE
---save-metarun MFILE.json (saves %options)
---metarun MFILE.json
---GrandRedesign (parameters, meta, --fullpath)
-
-MFILE.json format: { options => \%options }
-where %options is all the options except save-metarun
-
-example:
-
-{
-   "options" : {
-      "verbose" : 0,
-      "dry-run" : 0,
-      "configfile" : "/Users/tzz/.cf-sketch/cf-sketch.conf",
-      "activate" : {
-         "System::cron" : "/Users/tzz/.cfagent/inputs/sketches/System/cron/params/example.json"
-      },
-      "cfhome" : "/usr/local/bin",
-      "generate" : 1,
-      "help" : 0,
-      "quiet" : 0,
-      "runfile" : null,
-      "install" : [
-         "System::cron"
-      ],
-      "install-target" : "/Users/tzz/.cfagent/inputs/sketches",
-      "repolist" : [
-         "/Users/tzz/.cfagent/inputs/sketches"
-      ],
-      "install-source" : "/Users/tzz/source/design-center/sketches/cfsketches",
-      "force" : 1,
-      "params" : {
-         "a" : "b"
-      },
-      "make-package" : [],
-      "act-file" : "/Users/tzz/.cf-sketch/activations.conf",
-      "deactivate-all" : 1,
-      "standalone" : 1
-   }
-}
-

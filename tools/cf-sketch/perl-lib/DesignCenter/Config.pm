@@ -55,6 +55,7 @@ my %fields =
    repolist => [ File::Spec->catfile($inputs_root, 'sketches') ],
    color => $color,
    expert => 0,
+   dcapi => 0,
    # Internal fields
    _object => undef,
    _repository => undef,
@@ -122,6 +123,7 @@ my @options_desc =
    "installsource|is=s",       "Location (file path or URL) of a cfsketches catalog file that contains the list of sketches available for installation. Default: $fields{'installsource'}.|loc",
    "repolist|rl=s@",            "Comma-separated list of local directories to search for installed sketches for activation, deactivation, removal, or runfile generation. Default: ".join(', ', @{$fields{repolist}}).".|dirs",
    "expert!",                   "Enable expert mode. Default: ".($fields{expert}?"Enabled":"Disabled"),
+   "dcapi!",                    "Enable DC-API mode. Default: ".($fields{dcapi}?"Enabled":"Disabled"),
    # "make-package=s@",
    #  "test|t=s@",
    "---", "\nPlease see https://github.com/cfengine/design-center/wiki for the full cf-sketch documentation.",

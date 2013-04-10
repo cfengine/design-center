@@ -1,41 +1,46 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "./main.cf" };
+      #inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "./main.cf" };
+      inputs => { "../../libraries/dclib/library.cf", "/var/cfengine/share/CoreBase/libraries/cfengine_stdlib.cf", "./main.cf" };
+}
+
+bundle common cf_sketch_testing
+{
+  vars:
+      "test" string => "1";
+      "verbose" string => "1";
+      "inform" string => "1";
+
+      "env_vars" slist => { "test", "verbose", "inform" };
+  
+  classes:
+      "runenv_$(this.bundle)_test" expression => "any"; 
+      "runenv_$(this.bundle)_verbose" expression => "any"; 
+      "runenv_$(this.bundle)_inform" expression => "any"; 
 }
 
 bundle common cfsketch_g
 {
-  classes:
-      "yumrepo_test_debug" expression => "!any";
-      "yumrepo_test_test" expression => "!any";
-      "yumrepo_test_verbose" expression => "!any";
-
   vars:
-    !test::
-      "yumrepo_test_createrepo" string => "/usr/bin/createrepo";
-    test::
-      "yumrepo_test_createrepo" string => "/bin/echo";
-    any::
-      "yumrepo_test_class_prefix" string => "yumrepo_test_";
-      "yumrepo_test_refresh_interval" string => "60";
-      "yumrepo_test_repo[custom][path]" string => "/var/www/html/yumrepos/custom";
-      "yumrepo_test_repo[custom][perm_g]" string => "root";
-      "yumrepo_test_repo[custom][perm_m]" string => "755";
-      "yumrepo_test_repo[custom][perm_o]" string => "root";
-      "yumrepo_test_repo[updates][path]" string => "/var/www/html/yumrepos/updates";
-      "yumrepo_test_repo[updates][perm_g]" string => "root";
-      "yumrepo_test_repo[updates][perm_m]" string => "755";
-      "yumrepo_test_repo[updates][perm_o]" string => "root";
+    "path" string => "/srv/yum_repo";
+
 }
 
 bundle agent cfsketch_run
 {
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
-      "test" usebundle => cfdc_yumrepo:repo_yum_maintain($(cfsketch_g.yumrepo_test_class_prefix),
-                                                         $(cfsketch_g.yumrepo_test_createrepo),
-                                                         $(cfsketch_g.yumrepo_test_refresh_interval),
-                                                         "cfsketch_g.yumrepo_test_repo");
+      "test"
+        useresult => "my_return_value",
+        usebundle => cfdc_yumrepo_3_0:manage_metadata( "cf_sketch_testing",
+                                                       "metadata",
+                                                       "$(cfsketch_g.path)",
+                                                       "root",
+                                                       "root");
+
+  reports:
+    cfengine::
+      "returned $(my_return_value[return_code]):$(my_return_value[status])";
 
 }

@@ -1,0 +1,19 @@
+=encoding utf8
+
+=head1 Name
+
+Mo::default - Adds the default feature to Mo's has
+
+=head1 Synopsis
+
+    use Mo qw'default';
+    has name => ( default => sub { 'Joe' } );
+
+=head1 Description
+
+Adds the default parameter to has, which expects a code reference, returning
+a value to be used to set the attribute to if it hasn't been set yet.
+
+Currently this is always called lazily.
+
+=cut

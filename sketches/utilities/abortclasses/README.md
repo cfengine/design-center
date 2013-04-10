@@ -1,42 +1,32 @@
-# abortclasses - 
-## AUTHOR
-Ben Heilman <bheilman@enova.com>
-Nick Anderson <nick@cmdln.org>
-Ted Zlatanov <tzz@lifelogs.com>
+# Utilities::abortclasses version 1.7
 
-## PLATFORM
-linux
+License: MIT
+Tags: cfdc
+Authors: Ben Heilman <bheilman@enova.com>, Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
-Automation is great but sometimes you need to fix problem NOW.
+## Description
+Abort execution if a certain file exists, aka 'Cowboy mode'
 
-Rather than killing off CFEngine daemons, these bundles will halt cf-agent runs
-if a specified file exists. Optionally activate a bundle at the interval of the
-timeout specified. The action bundle will be activated during each execution of
-the agent that the mtime of the trigger file is older than the specified
-timeout. We update the timestamp of the trigger file, when the timeout is
-reached.  It is important to note, if CFEngine is unable to update the
-timestamp of the trigger file, the action bundle will be activated during each
-execution of the agent.
- 
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-The alert and abort bundles should be called as early in the
-bundlesequence as possible.
+## API
+### bundle: abortclasses_filebased
+* parameter _environment_ *runenv* (default: none, description: none)
 
-## REQUIREMENTS
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-Action bundles must take all of the following arguments in order.
+* parameter _string_ *abortclass* (default: none, description: none)
 
-    bundle agent timeout_action_bundle(file, years, months, days, hours, minutes, seconds)
+* parameter _string_ *trigger_file* (default: `"/COWBOY"`, description: none)
+
+* parameter _boolean_ *alert_only* (default: `false`, description: none)
+
+* parameter _string_ *trigger_context* (default: `"any"`, description: none)
+
+* parameter _array_ *timeout* (default: `{"hours":24,"years":0,"minutes":0,"action":"abortclasses_timeout_action_noop","months":0,"enabled":false,"days":0}`, description: none)
+
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-First, you must define an class to halt execution:
-
-    body agent control
-    {
-      ...
-      abortclasses => { "cowboy" };
-    }
-
-See `test.cf` and `params/example.json` for standalone and JSON-driven usage, respectively.

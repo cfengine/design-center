@@ -1,38 +1,125 @@
 body common control
 {
       bundlesequence => { "cfsketch_run" };
-      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "./main.cf" };
+      inputs => { @(cfsketch_g.inputs) };
 }
 
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
 bundle common cfsketch_g
 {
-  classes:
-      "yumclienttest_empty_section" expression => "any";
-      "yumclienttest_ensure_absent" expression => "!any";
-
   vars:
-    !test::
-      "yumclienttest_repos_dir" string => "/etc/yum.repos.d";
-    test::
-      "yumclienttest_repos_dir" string => "/tmp";
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 
-    any::
-      "yumclienttest_repos[baseline][baseurl]" string => "file:///var/www/html/yum_repos/myrepo";
-      "yumclienttest_repos[baseline][enabled]" string => "1";
-      "yumclienttest_repos[baseline][gpgcheck]" string => "no";
-      "yumclienttest_repos[baseline][name]" string => "myrepo";
+      # array 'metadata' from definition sketch metadata, activation __001_Repository_Yum_Client_remove_section
+      "__001_Repository_Yum_Client_remove_section_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_Repository_Yum_Client_remove_section_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_Repository_Yum_Client_remove_section_metadata[license]" string => "MIT";
+      "__001_Repository_Yum_Client_remove_section_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/package_management/yumclient";
+      "__001_Repository_Yum_Client_remove_section_metadata[manifest]" slist => { "README.md", "changelog", "main.cf", "params/demo.json", "test.cf" };
+      "__001_Repository_Yum_Client_remove_section_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__001_Repository_Yum_Client_remove_section_metadata[manifest_docs]" slist => { "README.md" };
+      "__001_Repository_Yum_Client_remove_section_metadata[manifest_exe]" slist => { "cf_null" };
+      "__001_Repository_Yum_Client_remove_section_metadata[manifest_extra]" slist => { "changelog", "params/demo.json" };
+      "__001_Repository_Yum_Client_remove_section_metadata[name]" string => "Repository::Yum::Client";
+      "__001_Repository_Yum_Client_remove_section_metadata[tags]" slist => { "cfdc" };
+      "__001_Repository_Yum_Client_remove_section_metadata[version]" string => "1.2";
 
-      "yumclienttest_repos[repo1][baseurl]" string => "file:///var/www/html/yum_repos/myrepo";
-      "yumclienttest_repos[repo1][enabled]" string => "1";
-      "yumclienttest_repos[repo1][gpgcheck]" string => "no";
-      "yumclienttest_repos[repo1][name]" string => "repo1";
+      # array 'metadata' from definition sketch metadata, activation __002_Repository_Yum_Client_remove_file
+      "__002_Repository_Yum_Client_remove_file_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__002_Repository_Yum_Client_remove_file_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__002_Repository_Yum_Client_remove_file_metadata[license]" string => "MIT";
+      "__002_Repository_Yum_Client_remove_file_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/package_management/yumclient";
+      "__002_Repository_Yum_Client_remove_file_metadata[manifest]" slist => { "README.md", "changelog", "main.cf", "params/demo.json", "test.cf" };
+      "__002_Repository_Yum_Client_remove_file_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__002_Repository_Yum_Client_remove_file_metadata[manifest_docs]" slist => { "README.md" };
+      "__002_Repository_Yum_Client_remove_file_metadata[manifest_exe]" slist => { "cf_null" };
+      "__002_Repository_Yum_Client_remove_file_metadata[manifest_extra]" slist => { "changelog", "params/demo.json" };
+      "__002_Repository_Yum_Client_remove_file_metadata[name]" string => "Repository::Yum::Client";
+      "__002_Repository_Yum_Client_remove_file_metadata[tags]" slist => { "cfdc" };
+      "__002_Repository_Yum_Client_remove_file_metadata[version]" string => "1.2";
 
+      # array 'metadata' from definition sketch metadata, activation __003_Repository_Yum_Client_ensure
+      "__003_Repository_Yum_Client_ensure_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__003_Repository_Yum_Client_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__003_Repository_Yum_Client_ensure_metadata[license]" string => "MIT";
+      "__003_Repository_Yum_Client_ensure_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/package_management/yumclient";
+      "__003_Repository_Yum_Client_ensure_metadata[manifest]" slist => { "README.md", "changelog", "main.cf", "params/demo.json", "test.cf" };
+      "__003_Repository_Yum_Client_ensure_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__003_Repository_Yum_Client_ensure_metadata[manifest_docs]" slist => { "README.md" };
+      "__003_Repository_Yum_Client_ensure_metadata[manifest_exe]" slist => { "cf_null" };
+      "__003_Repository_Yum_Client_ensure_metadata[manifest_extra]" slist => { "changelog", "params/demo.json" };
+      "__003_Repository_Yum_Client_ensure_metadata[name]" string => "Repository::Yum::Client";
+      "__003_Repository_Yum_Client_ensure_metadata[tags]" slist => { "cfdc" };
+      "__003_Repository_Yum_Client_ensure_metadata[version]" string => "1.2";
+
+      # array 'config' from definition /home/tzz/source/design-center/tools/test/../../sketches/package_management/yumclient/params/demo.json 3, activation __003_Repository_Yum_Client_ensure
+      "__003_Repository_Yum_Client_ensure_config[baseurl]" string => "file:///var/www/html/yum_repos/myrepo";
+      "__003_Repository_Yum_Client_ensure_config[enabled]" string => "1";
+      "__003_Repository_Yum_Client_ensure_config[gpgcheck]" string => "no";
+      "__003_Repository_Yum_Client_ensure_config[name]" string => "myrepo";
+
+      # array 'metadata' from definition sketch metadata, activation __004_Repository_Yum_Client_ensure
+      "__004_Repository_Yum_Client_ensure_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__004_Repository_Yum_Client_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__004_Repository_Yum_Client_ensure_metadata[license]" string => "MIT";
+      "__004_Repository_Yum_Client_ensure_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/package_management/yumclient";
+      "__004_Repository_Yum_Client_ensure_metadata[manifest]" slist => { "README.md", "changelog", "main.cf", "params/demo.json", "test.cf" };
+      "__004_Repository_Yum_Client_ensure_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__004_Repository_Yum_Client_ensure_metadata[manifest_docs]" slist => { "README.md" };
+      "__004_Repository_Yum_Client_ensure_metadata[manifest_exe]" slist => { "cf_null" };
+      "__004_Repository_Yum_Client_ensure_metadata[manifest_extra]" slist => { "changelog", "params/demo.json" };
+      "__004_Repository_Yum_Client_ensure_metadata[name]" string => "Repository::Yum::Client";
+      "__004_Repository_Yum_Client_ensure_metadata[tags]" slist => { "cfdc" };
+      "__004_Repository_Yum_Client_ensure_metadata[version]" string => "1.2";
+
+      # array 'config' from definition /home/tzz/source/design-center/tools/test/../../sketches/package_management/yumclient/params/demo.json 4, activation __004_Repository_Yum_Client_ensure
+      "__004_Repository_Yum_Client_ensure_config[baseurl]" string => "file:///var/www/html/yum_repos/myrepo";
+      "__004_Repository_Yum_Client_ensure_config[name]" string => "repo1";
 }
 
 bundle agent cfsketch_run
 {
   methods:
+    any::
       "cfsketch_g" usebundle => "cfsketch_g";
-      "test" usebundle => cfdc_yumclient:client("yumclienttest", $(cfsketch_g.yumclienttest_repos_dir), "default:cfsketch_g.yumclienttest_repos");
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
 
+    runenv_cf_sketch_testing_activated::
+      "__001_Repository_Yum_Client_remove_section" usebundle => cfdc_yumclient:remove_section("cf_sketch_testing", "default:cfsketch_g.__001_Repository_Yum_Client_remove_section_metadata", "/etc/yum.conf", "repo3"), useresult => "return___001_Repository_Yum_Client_remove_section";
+    runenv_cf_sketch_testing_activated::
+      "__002_Repository_Yum_Client_remove_file" usebundle => cfdc_yumclient:remove_file("cf_sketch_testing", "default:cfsketch_g.__002_Repository_Yum_Client_remove_file_metadata", "/etc/yum.repos.d/repo2.conf"), useresult => "return___002_Repository_Yum_Client_remove_file";
+    runenv_cf_sketch_testing_activated::
+      "__003_Repository_Yum_Client_ensure" usebundle => cfdc_yumclient:ensure("cf_sketch_testing", "default:cfsketch_g.__003_Repository_Yum_Client_ensure_metadata", "/etc/yum.repos.d/baseline.conf", "baseline", "default:cfsketch_g.__003_Repository_Yum_Client_ensure_config"), useresult => "return___003_Repository_Yum_Client_ensure";
+    runenv_cf_sketch_testing_activated::
+      "__004_Repository_Yum_Client_ensure" usebundle => cfdc_yumclient:ensure("cf_sketch_testing", "default:cfsketch_g.__004_Repository_Yum_Client_ensure_metadata", "/etc/yum.conf", "repo1", "default:cfsketch_g.__004_Repository_Yum_Client_ensure_config"), useresult => "return___004_Repository_Yum_Client_ensure";
+
+  reports:
+    cfengine::
+      "activation __001_Repository_Yum_Client_remove_section returned section = $(return___001_Repository_Yum_Client_remove_section[section])";
+      "activation __001_Repository_Yum_Client_remove_section returned file = $(return___001_Repository_Yum_Client_remove_section[file])";
+      "activation __002_Repository_Yum_Client_remove_file returned file = $(return___002_Repository_Yum_Client_remove_file[file])";
+      "activation __003_Repository_Yum_Client_ensure returned file = $(return___003_Repository_Yum_Client_ensure[file])";
+      "activation __003_Repository_Yum_Client_ensure returned section = $(return___003_Repository_Yum_Client_ensure[section])";
+      "activation __004_Repository_Yum_Client_ensure returned file = $(return___004_Repository_Yum_Client_ensure[file])";
+      "activation __004_Repository_Yum_Client_ensure returned section = $(return___004_Repository_Yum_Client_ensure[section])";
 }

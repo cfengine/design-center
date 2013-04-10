@@ -1,17 +1,38 @@
-# Security::tcpwrappers - Manage /etc/hosts.{allow,deny}
-## AUTHOR
-Nick Anderson <nick@cmdln.org>
-Ted Zlatanov <tzz@lifelogs.com>
+# Security::tcpwrappers version 1.2
 
-## PLATFORM
-linux
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
-Flexibly manage `/etc/hosts.allow` and `/etc/hosts.deny`.
-Support for full file content management with empty_first parameter.
-Support for managing rule presence or absense with ensure_present and
-ensure_absent file editing policies.
+## Description
+Manage /etc/hosts.{allow,deny}
+
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
+
+## API
+### bundle: set
+* parameter _environment_ *runenv* (default: none, description: none)
+
+* parameter _metadata_ *metadata* (default: none, description: none)
+
+* parameter _string_ *allow_filename* (default: `"/etc/hosts.allow"`, description: none)
+
+* parameter _string_ *deny_filename* (default: `"/etc/hosts.allow"`, description: none)
+
+* parameter _array_ *allow* (default: none, description: none)
+
+* parameter _array_ *deny* (default: none, description: none)
+
+* parameter _boolean_ *empty_first* (default: `true`, description: none)
+
+* parameter _boolean_ *ensure_absent* (default: `false`, description: none)
+
+* returns _return_ *allow_filename* (default: none, description: none)
+
+* returns _return_ *deny_filename* (default: none, description: none)
+
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf` or `params/params.json` for standalone and data-driven configuration, respectively.

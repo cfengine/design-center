@@ -1,0 +1,40 @@
+{
+    manifest:
+    {
+        "main.cf": { desc: "main file" },
+        "README.md": { documentation: true },
+        "params/demo.json": { comment: "simple demo of EC2 integration" },
+    },
+
+    metadata:
+    {
+        name: "Cloud::Services::AWS::EC2",
+	    description: "Manage AWS EC2 services",
+        version: 1.0,
+        license: "MIT",
+        tags: [ "cfdc", "cloud", "aws", "ec2" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "Cloud::Services::Common": {}, "CFEngine::stdlib": { version: 110 }, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
+    },
+    
+    api:
+    {
+        ensure:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "count", },
+            { type: "string", name: "ami", },
+            { type: "string", name: "region", default: "us-east-1" },
+            { type: "string", name: "type", default: "t1.micro"},
+            { type: "string", name: "class", description: "Logical class to assign to machines" },
+            { type: "boolean", name: "install_cfengine", },
+            { type: "string", name: "hub", description: "Hub from which the instances should bootstrap" },
+            { type: "array", name: "options", description: "Options: security_group, netrc, ssh_pub_key." },
+            { type: "return", name: "instance_count", },
+        ],
+    },
+
+    namespace: "cfdc_aws_ec2",
+    interface: [ "main.cf" ]
+}

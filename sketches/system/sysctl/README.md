@@ -1,14 +1,34 @@
-# System::sysctl - Manage sysctl values
-## AUTHOR
-Nick Anderson <nick@cmdln.org>
+# System::sysctl version 1.5
 
-## PLATFORM
-linux
+License: MIT
+Tags: cfdc
+Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
-## DESCRIPTION
-Flexibly manage sysctl values. Provides ability to ensure specific
-settings are present or removed, allow only defined values (full file
-management) or remove variables no matter what their setting.
+## Description
+Manage sysctl values
+
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
+
+## API
+### bundle: set
+* parameter _environment_ *runenv* (default: none, description: none)
+
+* parameter _metadata_ *metadata* (default: none, description: none)
+
+* parameter _string_ *sysctl_file* (default: `"/etc/sysctl.conf"`, description: none)
+
+* parameter _boolean_ *empty_first* (default: none, description: none)
+
+* parameter _array_ *ensured_kv* (default: none, description: none)
+
+* parameter _array_ *removed_kv* (default: none, description: none)
+
+* parameter _list_ *removed_vars* (default: none, description: none)
+
+* returns _return_ *sysctl_file* (default: none, description: none)
+
 
 ## SAMPLE USAGE
-See `test.cf` and `params/example.json` for standalone and JSON-driven usage, respectively.
+See `test.cf` or the example parameters provided
+

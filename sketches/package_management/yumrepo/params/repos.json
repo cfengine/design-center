@@ -1,13 +1,4 @@
-{
-    "Repository::Yum::Maintain":
-    {
-        "debug" : false,
-        "refresh_interval" : "60",
-        "createrepo" : { "bycontext": { "!test": "/usr/bin/createrepo", "test": "/bin/echo" } },
-        "repo": 
-        {
-            "updates": { "path": "/var/www/html/yumrepos/updates", "perm_m": "755", "perm_o": "root", "perm_g": "root" },
-            "custom":  { "path": "/var/www/html/yumrepos/custom",  "perm_m": "755", "perm_o": "root", "perm_g": "root" }
-        }
-    }
-}
+[
+    { "Repository::Yum::Maintain": { name: "updates", path: "/var/www/html/yumrepos/updates", perm: {m: "755", o: "root", g: "root" } } },
+    { "Repository::Yum::Maintain": { name: "custom", path: "/var/www/html/yumrepos/custom", perm: {m: "755", o: "root", g: "root" } } },
+]

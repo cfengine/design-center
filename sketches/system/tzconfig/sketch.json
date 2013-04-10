@@ -1,23 +1,36 @@
 {
 
-    "manifest":
+    manifest:
     {
-        "main.cf": { "desc": "main file", "version": 1.2 },
-        "README.md": { "documentation": true },
-        "params/US_Central.json": { "comment": "Sample parameters to set timezone to US Central" }
+        "main.cf": { desc: "main file", version: 1.2 },
+        "README.md": { documentation: true },
+        "params/US_Central.json": { comment: "Sample parameters to set timezone to US Central" }
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "System::tzconfig",
-	"description": "Manage system timezone configuration",
-        "version": 1.2,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+        name: "System::tzconfig",
+	    description: "Manage system timezone configuration",
+        version: 1.2,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
     },
 
-    "entry_point": "main.cf",
-    "interface": [ "main.cf" ]
+    api:
+    {
+        set:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "timezone" },
+            { type: "string", name: "zoneinfo" },
+            { type: "return", name: "timezone", },
+        ],
+    },
+
+    namespace: "cfdc_tzconfig",
+    
+    interface: [ "main.cf" ]
 }

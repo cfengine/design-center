@@ -1,0 +1,38 @@
+{
+    manifest:
+    {
+        "main.cf": {desc: "main file" },
+        "README.md": {documentation: true},
+        "test.cf": {comment: "Test Policy"},
+        "params/demo.json": {comment: "Demo of service control."}
+    },
+
+    metadata:
+    {
+        name: "Services::Generic",
+	    description: "Control services in a generic way",
+        version: 1.0,
+        license: "MIT",
+        tags: ["cfdc"],
+        authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: {"CFEngine::stdlib": {version: 109}, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, cfengine: {version: "3.4.0"}, os: ["linux"] }
+    },
+
+    api:
+    {
+        ensure:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "name" },
+            { type: "string", name: "start", description: "startcommand" },
+            { type: "string", name: "stop", description: "stopcommand" },
+            { type: "string", name: "pattern" },
+            { type: "string", name: "policy", default: "start", description: "Indicate desired service state: start, stop" },
+            { type: "return", name: "policy_implemented", },
+        ],
+    },
+
+    namespace: "cfdc_service_generic",
+    interface: ["main.cf"]
+}

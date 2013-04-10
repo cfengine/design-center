@@ -1,16 +1,14 @@
 {
     "Security::security_limits":
     {
-        "activated": true,
-        "debug": true,
-        "empty_first": false,
-        "filename": { "bycontext": { "test": "/tmp/limits.conf", "!test": "/etc/security/limits.conf" } },
-        "domains": 
+        empty_first: false,
+        filename: "/etc/security/limits.conf",
+        domains: 
         { 
             "*":
             { 
-                "soft": { "core": "1024" },
-                "-": { "maxlogins": "100" }
+                soft: { core: "1024" },
+                "-": { maxlogins: "100" }
             }
         }
     }

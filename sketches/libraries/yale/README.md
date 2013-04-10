@@ -1,4 +1,18 @@
-This is the Yale standard library from https://github.com/jlgreer/yale_cfengine3
+# Yale::stdlib version 1.0.0
 
-Included with permission (see https://github.com/cfengine/design-center/issues/82).
+License: MIT
+Tags: cfdc, yale
+Authors: Yale University
+
+## Description
+Yale standard library
+
+## Dependencies
+none
+
+## API
+none
+
+## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 

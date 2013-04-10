@@ -1,0 +1,69 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation __001_System_access_set
+      "__001_System_access_set_metadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "__001_System_access_set_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "__001_System_access_set_metadata[license]" string => "MIT";
+      "__001_System_access_set_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/security/access";
+      "__001_System_access_set_metadata[manifest]" slist => { "README.md", "main.cf", "params/example.json", "sketch.json", "test.cf" };
+      "__001_System_access_set_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "__001_System_access_set_metadata[manifest_docs]" slist => { "README.md" };
+      "__001_System_access_set_metadata[manifest_exe]" slist => { "cf_null" };
+      "__001_System_access_set_metadata[manifest_extra]" slist => { "params/example.json", "sketch.json" };
+      "__001_System_access_set_metadata[name]" string => "System::access";
+      "__001_System_access_set_metadata[tags]" slist => { "cfdc", "security", "access", "access.conf" };
+      "__001_System_access_set_metadata[version]" string => "1";
+
+      # list 'ensured_lines' from definition /home/tzz/source/design-center/tools/test/../../sketches/security/access/params/example.json, activation __001_System_access_set
+      "__001_System_access_set_ensured_lines" slist => { "+ : john foo : 2001:db8:0:101::1", "+ : john : 2001:db8:0:101::/64", "-:ALL EXCEPT (wheel) shutdown sync:LOCAL", "- : ALL : ALL" };
+
+      # list 'removed_patterns' from definition /home/tzz/source/design-center/tools/test/../../sketches/security/access/params/example.json, activation __001_System_access_set
+      "__001_System_access_set_removed_patterns" slist => { "bad.entry" };
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "__001_System_access_set" usebundle => cfdc_access:set("cf_sketch_testing", "default:cfsketch_run.__001_System_access_set_metadata", "/etc/security/access.conf", "", @(cfsketch_run.__001_System_access_set_ensured_lines), @(cfsketch_run.__001_System_access_set_removed_patterns)), useresult => "return___001_System_access_set";
+
+  reports:
+    cfengine::
+      "activation __001_System_access_set returned access_file = $(return___001_System_access_set[access_file])";
+}

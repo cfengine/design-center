@@ -1,39 +1,38 @@
-# sketch_template - Provide a workable sketch template
+# CFEngine::sketch_template version 1.01
 
-## AUTHORS
-Ted Zlatanov <tzz@lifelogs.com>
+License: MIT
+Tags: cfdc
+Authors: Ted Zlatanov <tzz@lifelogs.com>
 
-## PLATFORM
+## Description
+Standard template for Design Center sketches
 
-Platforms...
+## Dependencies
+CFEngine::dclib, CFEngine::stdlib
 
-## DESCRIPTION
+## API
+### bundle: entry
+* parameter _environment_ *runenv* (default: none, description: none)
 
-This sketch demonstrates the recommended layout of a Design Center
-sketch.
+* parameter _metadata_ *mymetadata* (default: none, description: none)
 
-## ## Classes
+* parameter _string_ *prefix* (default: `"__PREFIX__"`, description: none)
 
-List your classes here.
+* parameter _boolean_ *myboolean* (default: `"1"`, description: none)
 
-## ## Variables
+* parameter _string_ *mytype* (default: `"fallback"`, description: none)
 
-List your variables here.
+* parameter _string_ *myip* (default: none, description: This is my IP address or whatever)
 
-Please note that `params/demo.json` has all these parameters in one
-place, and it's much more convenient to use JSON data to set these
-parameters than manually passing them.
+* parameter _list_ *mylist* (default: none, description: none)
 
-We plan to auto-generate this documentation at some point, so don't go
-crazy filling it out.  Better to document in `test.cf` and
-`params/demo.json`.
+* parameter _array_ *myarray* (default: none, description: none)
 
-* `myarray`: an array with keys...
+* returns _return_ *myreturn* (default: none, description: none)
 
-## REQUIREMENTS
+* returns _return_ *myreturn2* (default: none, description: none)
 
-CFEngine::stdlib (the COPBL)
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf`.

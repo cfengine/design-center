@@ -89,7 +89,7 @@ sub search {
     my $local_dir = $self->_local;
     my $result = {};
 
-  SKETCH:
+ SKETCH:
     foreach my $sketch (sort keys %{$search->{known}}) {
         my $dir = $local_dir ? File::Spec->catdir($base_dir, $search->{known}->{$sketch}) : "$base_dir/$search->{known}->{$sketch}";
         foreach my $term (@terms) {

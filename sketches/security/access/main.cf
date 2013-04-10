@@ -1,0 +1,77 @@
+body file control
+{
+      namespace => "cfdc_access";
+}
+
+bundle agent set(runenv, metadata, given_access_file, empty_first, ensured_lines, removed_patterns)
+{
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+    !test::
+      "file_prefix" string => "", policy => "free";
+    test::
+      "file_prefix" string => "/tmp", policy => "free";
+
+    any::
+      "access_file" string => "$(file_prefix)$(given_access_file)",
+      policy => "free";
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+      "empty_first" expression => strcmp($(empty_first), "1");
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  files:
+    !empty_first::
+      "$(access_file)"
+      create => "true",
+      handle => "access_files_noempty",
+      edit_line => default:append_if_no_lines(@(this.ensured_lines)),
+      classes => default:classes_generic("_cfdc_access"),
+      comment => "Only ensure specific defined lines are present";
+
+    empty_first::
+      "$(access_file)"
+      create => "true",
+      handle => "access_files_empty_first",
+      edit_defaults => default:empty,
+      edit_line => default:append_if_no_lines(@(this.ensured_lines)),
+      classes => default:classes_generic("_cfdc_access"),
+      comment => "Empty file before ensuring specified lines are present,
+this effectively promises the full file content.";
+
+    _cfdc_access_reached::
+      "$(access_file)"
+      create => "true",
+      handle => "access_files_clean",
+      classes => default:classes_generic("_cfdc_access2"),
+      edit_line => default:delete_lines_matching(@(this.removed_patterns)),
+      comment => "Ensure the patterns given do not exist at all.";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    _cfdc_access2_ok::
+      "$(access_file)" bundle_return_value_index => "access_file";
+    !_cfdc_access2_ok::
+      "" bundle_return_value_index => "access_file";
+
+    empty_first.verbose::
+      "$(this.bundle): $(access_file) will be emptied before editing";
+
+    verbose::
+      "$(this.bundle): VERBOSE is turned on for access";
+
+      "$(this.bundle): Ensure access: $(ensured_lines)";
+      "$(this.bundle): Remove access: $(removed_patterns)";
+}

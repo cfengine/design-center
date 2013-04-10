@@ -3,133 +3,137 @@ body file control
   namespace => "cfdc_cron";
 }
 
-bundle agent cron(class_prefix, cron_path, tasks)
+bundle agent d(runenv, metadata, cron_path, file_task, runas, when, commands)
 {
-  meta:
-      "vars[class_prefix][type]"     string => "NON_EMPTY_STRING";
-      "vars[class_prefix][default]"  string => "__CLASS_PREFIX__";
-
-      "vars[nowipe][type]"           string => "CONTEXT";
-      "vars[nowipe][default]"        string => "!any";
-
-      "vars[cron_path][type]"        string => "PATH";
-      "vars[cron_path][default]"     string => "/usr/bin/crontab";
-
-      "vars[tasks][type]"            string => "KVARRAY(
-_key:NON_EMPTY_STRING
-runas:NON_EMPTY_STRING
-when:NON_EMPTY_STRING
-commands:LIST(NON_EMPTY_STRING)
-)";
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
   vars:
-      "task_names" slist => getindices("$(tasks)");
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-  classes:
-      "has_crond"    expression => isdir("$(cron_path)");
-      "has_crontab"  expression => isexecutable("$(cron_path)");
+      "lines" slist  => maplist("#managed by cfengine cron sketch$(const.endl)$(when) $(runas) $(this)", "commands");
+
+    !test::
+      "r_cron_path" string => $(cron_path), policy => "free";
+    test::
+      "r_cron_path" string => "/tmp", policy => "free";
+
+    any::
+      "toedit" string => "$(r_cron_path)/cron-sketch-$(file_task)",
+      policy => "free";
+
+      "class_toedit" string => canonify($(toedit)),
+      policy => "free";
 
   methods:
-    has_crond::
-      "crond"   usebundle => cfdc_cron:d($(class_prefix), $(cron_path), $(tasks), $(task_names));
-
-    has_crontab::
-      "crontab" usebundle => cfdc_cron:tab($(class_prefix), $(cron_path), $(tasks), $(task_names));
-
-  reports:
-    cfengine.default:debug::
-
-    has_crond.default:debug::
-      "We have crond in '$(cron_path)'";
-    has_crontab.default:debug::
-      "We have crontab in '$(cron_path)'";
-    !has_crond.!has_crontab::
-      "We have neither cron.d nor crontab, this can't go on!";
-
-}
-
-bundle agent d(class_prefix, cron_path, tasks, task)
-{
-  vars:
-      "tprefix"   string => "$(tasks)[$(task)]";
-      "runas"     string => "$($(tprefix)[runas])";
-      "when"      string => "$($(tprefix)[when])";
-      "commands"  slist  => { "@($(tprefix)[commands])" };
-
-      "lines"     slist  => maplist("#managed by cfengine cron sketch$(const.endl)$(when) $(runas) $(this)", "commands");
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   files:
-      "$(cron_path)/cron-sketch-$(task)"
+      "$(toedit)"
       edit_line => default:append_if_no_lines("$(lines)"),
       edit_defaults => default:empty,
-      create => "true";
+      create => "true",
+      classes => default:if_ok($(class_toedit));
 
   reports:
-    cfengine.default:debug::
-      "crond manage: Activating '$(cron_path)/cron-sketch-$(task)': run as $(runas) at times '$(when)', command '$(commands)'";
-      "lines to be inserted in '$(cron_path)/cron-sketch-$(task)' = $(lines)";
+    test::
+      "$(this.bundle): running in test mode";
+    verbose::
+      "$(this.bundle): running in verbose mode";
+
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+      "$(this.bundle): Activating '$(toedit)': run as $(runas) at times '$(when)', command '$(commands)'";
+      "$(this.bundle): lines to be inserted in '$(toedit)' = $(lines)";
+
+    any::
+      "$(file_task)" bundle_return_value_index => "tab";
+      "$(r_cron_path)" bundle_return_value_index => "path";
 }
 
-bundle agent tab(class_prefix, cron_path, tasks, task)
+bundle agent tab(runenv, metadata, cron_path, line_task, runas, when, commands)
 {
   classes:
-      "only_allow_defined_entries" or => { "!$(class_prefix)nowipe" };
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "need_user_specified" expression => strcmp("$(default:env.LOGNAME)",
+                                                 $(runas));
 
   vars:
-    any::
-      "tprefix"   string => "$(tasks)[$(task)]";
-      "runas"     string => "$($(tprefix)[runas])";
-      "when"      string => "$($(tprefix)[when])";
-      "commands"  slist  => { "@($(tprefix)[commands])" };
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-      "marker"    string => "MANAGED_BY_CFENGINE_CRON_SKETCH";
-      "lines"     slist  => maplist("$(when) $(marker)=1 $(this)", "commands");
+      "marker" string => "MANAGED_BY_CFENGINE_CRON_SKETCH='$(line_task)'";
+      "lines" slist  => maplist("$(when) $(marker) $(this)", "commands");
+      "lines_str" string  => join($(const.n), "lines");
+
+      "class_prefix" string => canonify("$(sys.date) $(cron_path)$(line_task)");
+      "toedit" string => "/tmp/$(class_prefix).cron";
+
+    need_user_specified::
+      "crontab_options" string => "-u $(runas)";
+    !need_user_specified::
+      "crontab_options" string => "";
+
+    !test::
+      "exec_prefix" string => "", policy => "free";
+    test::
+      "exec_prefix" string => "/bin/cat CRONTAB=", policy => "free";
+
+  methods:
+      "env" usebundle => default:env;
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   files:
-    only_allow_defined_entries::
-      "/tmp/$(class_prefix)$(task).cron"
-      edit_line      => default:append_if_no_lines("$(tab.lines[$(task)])"),
-      edit_defaults  => default:empty,
-      create         => "true",
-      classes        => if_ok_define_and_cancel("$(class_prefix)$(task)_if_lines_added", only_allow_defined_entries),
-      ifvarclass     => "$(class_prefix)$(task)_prepared";
-
-    !only_allow_defined_entries::
-      "/tmp/$(class_prefix)$(task).cron"
-      edit_line      => default:append_if_no_lines("$(tab.lines[$(task)])"),
+      # 2) edit the crontab
+      "$(toedit)"
+      edit_line      => default:converge($(marker), $(lines_str)),
       edit_defaults  => default:std_defs,
       create         => "true",
-      classes        => default:if_ok("$(class_prefix)$(task)_if_lines_added"),
-      ifvarclass     => "$(class_prefix)$(task)_prepared";
+      classes        => default:if_repaired("$(class_prefix)_edited"),
+      ifvarclass     => "$(class_prefix)_prepared";
 
-    any::
-      "/tmp/$(class_prefix)$(task).cron"
+      # 4) clean out the temp file
+      "$(toedit)"
       delete         => default:tidy,
-      ifvarclass     => "$(class_prefix)$(task)_if_crontab_changed|($(class_prefix)$(task)_prepared.!$(class_prefix)$(task)_if_lines_added)";
+      ifvarclass     => "$(class_prefix)_processed||$(class_prefix)_not_processed";
 
   commands:
-      "$(cron_path) -u $(runas) -l > /tmp/$(class_prefix)$(task).cron",
+      # 1) get the crontab
+      "$(cron_path) $(crontab_options) -l > $(toedit)",
       contain        => default:in_shell,
-      classes        => default:if_ok("$(class_prefix)$(task)_prepared");
+      classes        => default:if_ok("$(class_prefix)_prepared");
 
-      "$(cron_path) -u $(runas) /tmp/$(class_prefix)$(task).cron",
+      # 3) load the edited crontab from the temp file
+      "$(exec_prefix)$(cron_path) $(crontab_options) $(toedit)",
       contain        => default:in_shell,
-      classes        => default:if_ok("$(class_prefix)$(task)_if_crontab_changed"),
-      ifvarclass     => "$(class_prefix)$(task)_if_lines_added";
+      classes        => default:if_else("$(class_prefix)_processed",
+                                        "$(class_prefix)_not_processed"),
+      ifvarclass     => "$(class_prefix)_edited";
 
   reports:
-    default:debug::
-      "crontab manage: Activating '$(cron_path) $(class_prefix)$(task)' for task $(task) run as $(runas) at times '$(when)', command '$(commands)' @@ $(lines) @@ ";
-      "task prefix = $(tprefix)";
-      "lines to be inserted in '$(cron_path) $(class_prefix)$(task)' = $(lines)";
-    only_allow_defined_entries.default:debug::
-      "@@ Crontab may be emptied ! @@";
-}
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
 
-body classes if_ok_define_and_cancel(dcl,cl)
-{
-    promise_repaired => { "$(dcl)" };
-    promise_kept => { "$(dcl)" };
-    cancel_repaired => { "$(cl)" };
-    cancel_kept => { "$(cl)" };
+      "$(this.bundle): Activating '$(toedit)': run as $(runas) at times '$(when)', command '$(commands)'";
+      "$(this.bundle): lines to be inserted in '$(toedit)' = $(lines)";
+
+    any::
+      "$(line_task)" bundle_return_value_index => "tab",
+      ifvarclass => "$(class_prefix)_processed";
+
+      "" bundle_return_value_index => "tab",
+      ifvarclass => "$(class_prefix)_not_processed||!$(class_prefix)_processed";
+
+      "$(cron_path)" bundle_return_value_index => "path";
 }

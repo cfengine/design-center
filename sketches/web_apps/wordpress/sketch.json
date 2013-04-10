@@ -20,6 +20,6 @@
         "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.3.0" }, "os": [ "linux" ] }
     },
 
-    "entry_point": "wordpress.cf",
+    
     "interface": [ "wordpress.cf" ]
 }

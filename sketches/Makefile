@@ -1,2 +1,4 @@
-generate-cfsketches:
-	grep '"name":' `find . -name sketch.json`|sort|perl -p -e's,^\./,,; s,/sketch.json:\s+"name":\s+"([^"]+)".*, \1,' > cfsketches
+F:=./cfsketches.json
+generate:
+# clear the cfsketches file.
+	perl ./regenerate.pl | sort > $(F)

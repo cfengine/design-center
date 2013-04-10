@@ -1,27 +1,47 @@
 {
-    "manifest":
+    manifest:
     {
-        "main.cf": {"desc": "main file", "version": 1.2 },
-        "README.md": {"documentation": true},
-        "test.cf": {"comment": "Test Policy"},
-        "test-complex.cf": {"comment": "Complex Test Policy"},
-        "sketch.json": {"comment": "Sketch metadata"},
-        "changelog": {"comment": "changelog"},
-        "params/params.json": {"comment": "Example json parameters for cf-sketch"}
+        "main.cf": {desc: "main file", version: 1.2 },
+        "README.md": {documentation: true},
+        "test.cf": {comment: "Test Policy"},
+        "test-complex.cf": {comment: "Complex Test Policy"},
+        "sketch.json": {comment: "Sketch metadata"},
+        changelog: {comment: "changelog"},
+        "params/params.json": {comment: "Example json parameters for cf-sketch"}
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "Security::tcpwrappers",
-	"description": "Manage /etc/hosts.{allow,deny}",
-        "version": 1.2,
-        "license": "MIT",
-        "tags": ["cfdc"],
-        "authors": ["Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": {"CFEngine::stdlib": {"version": 105}, "cfengine": {"version": "3.4.0"}, "os": ["linux"] }
+        name: "Security::tcpwrappers",
+	    description: "Manage /etc/hosts.{allow,deny}",
+        version: 1.2,
+        license: "MIT",
+        tags: ["cfdc"],
+        authors: ["Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: {"CFEngine::stdlib": {version: 105}, "CFEngine::dclib": {}, cfengine: {version: "3.4.0"}, os: ["linux"] }
     },
 
-    "entry_point": "main.cf",
-    "interface": ["main.cf"]
+
+    api:
+    {
+        // the key is the name of the bundle!
+        set:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "allow_filename", default: "/etc/hosts.allow" },
+            { type: "string", name: "deny_filename", default: "/etc/hosts.allow" },
+            { type: "array", name: "allow" },
+            { type: "array", name: "deny" },
+            { type: "boolean", name: "empty_first", default: true, },
+            { type: "boolean", name: "ensure_absent", default: false, },
+            { type: "return", name: "allow_filename", },
+            { type: "return", name: "deny_filename", },
+        ],
+    },
+
+    namespace: "cfdc_tcpwrappers",
+    
+    interface: ["main.cf"]
 }
 

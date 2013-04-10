@@ -3,40 +3,11 @@ body file control
   namespace => "cfdc_tcpwrappers";
 }
 
-bundle agent set(class_prefix, allow_filename, deny_filename, allow, deny)
+bundle agent set(runenv, metadata, given_allow_filename, given_deny_filename, allow, deny, empty_first, ensure_absent)
 {
-  meta:
-      "vars[class_prefix][type]"       string => "NON_EMPTY_STRING";
-      "vars[class_prefix][default]"    string => "__CLASS_PREFIX__";
-
-      "vars[empty_first][type]"        string => "CONTEXT";
-      "vars[empty_first][default]"     string => "!any";
-
-      "vars[ensure_absent][type]"      string => "CONTEXT";
-      "vars[ensure_absent][default]"   string => "!any";
-
-      "vars[debug][type]"              string => "CONTEXT";
-      "vars[debug][default]"           string => "!any";
-
-      "vars[test][type]"               string => "CONTEXT";
-      "vars[test][default]"            string => "!any";
-
-      "vars[verbose][type]"            string => "CONTEXT";
-      "vars[verbose][default]"         string => "!any";
-
-      "vars[allow_filename][type]"     string => "PATH";
-      "vars[allow_filename][default]"  string => "/etc/hosts.allow";
-
-      "vars[deny_filename][type]"      string => "PATH";
-      "vars[deny_filename][default]"   string => "/etc/hosts.deny";
-
-      "vars[allow][type]"              string => "ARRAY()";
-
-      "vars[deny][type]"               string => "ARRAY()";
-
   vars:
-      "bundle" string => "tcpwrappers";
-
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
       # Get lists of allow and deny rules based on the label
       "allow_rules" slist => getindices("$(allow)");
       "deny_rules"  slist => getindices("$(deny)");
@@ -91,23 +62,22 @@ bundle agent set(class_prefix, allow_filename, deny_filename, allow, deny)
       "allow_rule_list" slist => getvalues("allow_rule");
       "deny_rule_list"  slist => getvalues("deny_rule");
 
-    test_tcpwrappers::
-      "owner" string => getenv("LOGNAME", 100);
-    !test_tcpwrappers::
-      "owner" string => "root";
-
-  classes:
-      "debug_tcpwrappers" or => { "$(class_prefix)debug" };
-      "test_tcpwrappers" or => { "$(class_prefix)test" };
-
-    default:debug::
-      "debug_tcpwrappers" or => { "any" };
-    default:test::
-      "test_tcpwrappers" or => { "any" };
+    test::
+      "owner" string => getenv("LOGNAME", 100), policy => "free";
+      "path_prefix" string => "/tmp", policy => "free";
+    !test::
+      "owner" string => "root", policy => "free";
+      "path_prefix" string => "", policy => "free";
 
     any::
-      "ensure_absent" expression => "$(class_prefix)ensure_absent";
-      "empty_first" expression => "$(class_prefix)empty_first";
+      "allow_filename" string => "$(path_prefix)$(given_allow_filename)", policy => "free";
+      "deny_filename" string => "$(path_prefix)$(given_deny_filename)", policy => "free";
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+    any::
+      "ensure_absent" expression => strcmp($(ensure_absent), "1");
+      "empty_first" expression => strcmp($(empty_first), "1");
 
       "allow_$(allow_rules)_has_options" expression => isvariable("$(allow)[$(allow_rules)][options]");
       "deny_$(deny_rules)_has_options"   expression => isvariable("$(deny)[$(deny_rules)][options]");
@@ -115,6 +85,11 @@ bundle agent set(class_prefix, allow_filename, deny_filename, allow, deny)
       # We need to know if we are on the second pass
       "second_class_pass" and => {"first_class_pass"};
       "first_class_pass" and => {"any"};
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 
   files:
       # This file edit must be done after the second pass of
@@ -175,6 +150,10 @@ unexpected behavior from stray admins.";
       edit_line => default:delete_lines_matching("^$(deny_rule_list)$");
 
   reports:
+    any::
+      "$(allow_filename)" bundle_return_value_index => "allow_filename";
+      "$(deny_filename)" bundle_return_value_index => "deny_filename";
+
     second_class_pass::
       # Report when files have been repaired
       "I repaired $(allow_filename)",
