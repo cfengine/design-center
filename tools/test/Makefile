@@ -116,6 +116,15 @@ api_validate:
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "IPv4_local", data: "10.0.0.1" } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "IPv4_local", data: "10.0.0.99" } } }' | $(CFAPI)
 
+	@echo ...try a list where a scalar should go
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "8BIT_NUMBER", data: [256] } } }' | $(CFAPI)
+
+	@echo ...now a list of numbers
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "LIST_OF_NUMBERS", data: {"hello":256} } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "LIST_OF_NUMBERS", data: 256 } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "LIST_OF_NUMBERS", data: [] } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "LIST_OF_NUMBERS", data: [256] } } }' | $(CFAPI)
+
 api_environments:
 	@echo ...show all environments
 	echo '{ dc_api_version: "0.0.1", request: {environments:true} }' | $(CFAPI)

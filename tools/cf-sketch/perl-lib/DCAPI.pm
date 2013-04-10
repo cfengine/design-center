@@ -843,6 +843,12 @@ sub validate
                                   "Invalid validate command: no validation key");
     }
 
+    unless (exists $self->validations()->{$validate->{validation}})
+    {
+        return $result->add_error('syntax',
+                                  "Invalid validate command: unknown validation key");
+    }
+
     unless (exists $validate->{data})
     {
         return $result->add_error('syntax',

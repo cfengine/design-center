@@ -66,6 +66,8 @@ sub validate
     my $self = shift @_;
     my $data = shift @_;
 
+    my $data_type = (ref $data)|| 'scalar_value';
+
     $self->api()->log4("Validating %s against data '%s'", $self->name(), $data);
     my $result = DCAPI::Result->new(api => $self->api(),
                                     status => 1,
@@ -89,6 +91,10 @@ sub validate
     my $choice = Util::hashref_search($d, qw/choice/);
     if (defined $choice)
     {
+        return $result->add_error([qw/choice validation/],
+                                  "The choice validation can't take a $data_type")
+         if ref $data ne '';
+
         if (ref $choice ne 'ARRAY')
         {
             return $result->add_error([qw/choice validation/],
@@ -106,6 +112,10 @@ sub validate
     my $minimum_value = Util::hashref_search($d, qw/minimum_value/);
     if (defined $minimum_value)
     {
+        return $result->add_error([qw/minimum_value validation/],
+                                  "The minimum_value validation can't take a $data_type")
+         if ref $data ne '';
+
         $self->api()->log4("Validating %s: checking minimum value %s",
                            $self->name,
                            $minimum_value);
@@ -117,6 +127,10 @@ sub validate
     my $maximum_value = Util::hashref_search($d, qw/maximum_value/);
     if (defined $maximum_value)
     {
+        return $result->add_error([qw/maximum_value validation/],
+                                  "The maximum_value validation can't take a $data_type")
+         if ref $data ne '';
+
         $self->api()->log4("Validating %s: checking maximum value %s",
                            $self->name,
                            $maximum_value);
@@ -128,6 +142,10 @@ sub validate
     my $invalid_regex = Util::hashref_search($d, qw/invalid_regex/);
     if (defined $invalid_regex)
     {
+        return $result->add_error([qw/invalid_regex validation/],
+                                  "The invalid_regex validation can't take a $data_type")
+         if ref $data ne '';
+
         $self->api()->log4("Validating %s: checking invalid_regex %s",
                            $self->name,
                            $invalid_regex);
@@ -139,6 +157,10 @@ sub validate
     my $valid_regex = Util::hashref_search($d, qw/valid_regex/);
     if (defined $valid_regex)
     {
+        return $result->add_error([qw/valid_regex validation/],
+                                  "The valid_regex validation can't take a $data_type")
+         if ref $data ne '';
+
         $self->api()->log4("Validating %s: checking valid_regex %s",
                            $self->name,
                            $valid_regex);
@@ -150,6 +172,10 @@ sub validate
     my $invalid_ipv4 = Util::hashref_search($d, qw/invalid_ipv4/);
     if (defined $invalid_ipv4)
     {
+        return $result->add_error([qw/invalid_ipv4 validation/],
+                                  "The invalid_ipv4 validation can't take a $data_type")
+         if ref $data ne '';
+
         $self->api()->log4("Validating %s: checking invalid_ipv4 %s",
                            $self->name,
                            $invalid_ipv4);
@@ -161,12 +187,53 @@ sub validate
     my $valid_ipv4 = Util::hashref_search($d, qw/valid_ipv4/);
     if (defined $valid_ipv4)
     {
+        return $result->add_error([qw/valid_ipv4 validation/],
+                                  "The valid_ipv4 validation can't take a $data_type")
+         if ref $data ne '';
+
         $self->api()->log4("Validating %s: checking valid_ipv4 %s",
                            $self->name,
                            $valid_ipv4);
         return $result->add_error([qw/valid_ipv4 validation/],
                                   "The IPv4 '$data' did not match '$valid_ipv4'")
          unless $self->ipmatch($data, $valid_ipv4);
+    }
+
+    my $list = Util::hashref_search($d, qw/list/);
+
+    if (defined $list)
+    {
+        return $result->add_error([qw/list validation/],
+                                  "The 'list' validation can't take a $data_type")
+         if ref $data ne 'ARRAY';
+
+        $self->api()->log4("Validating %s: checking 'list' is %s",
+                           $self->name,
+                           $list);
+
+        if (scalar @$data)
+        {
+            my $ok = 0;
+            foreach my $list_type (@$list)
+            {
+                next if $ok;
+
+                my $each_ok = 1;
+                foreach my $element (@$list)
+                {
+                    my $check = $self->api()->validate({ validation => $list_type,
+                                                         data => $element});
+                    $each_ok &&= $check->success();
+                }
+                $ok ||= $each_ok;
+            }
+
+            unless ($ok)
+            {
+                return $result->add_error([qw/list validation/],
+                                          "Could not validate any of the allowed list types [@$list]");
+            }
+        }
     }
 
     return $result;
