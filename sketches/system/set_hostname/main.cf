@@ -106,7 +106,7 @@ recently bit me.";
 dont have to wait for a reboot";
 
     redhat||darwin||gentoo::
-      "$(exe_prefix)$(setdomain_command) $(domain)"
+      "$(exe_prefix)$(setdomain_command) $(domainname)"
       ifvarclass => "set_hostname_update||set_hostname_updatedomain",
       comment => "Update the domainname on the running system so
 we dont have to reboot for it";

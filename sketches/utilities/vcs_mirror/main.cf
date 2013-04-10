@@ -210,7 +210,7 @@ bundle agent svn(vcs, path, origin, branch, options)
       {
         "$(vcs) cleanup",
         "$(vcs) up",
-        "$(vcs) revert",
+        "$(vcs) revert --recursive $(path)",
       };
 
     any::

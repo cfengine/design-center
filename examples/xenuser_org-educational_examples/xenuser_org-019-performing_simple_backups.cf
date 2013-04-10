@@ -1,0 +1,35 @@
+# Cfengine code snippet by Valentin Hoebel (valentin@xenuser.org)
+# Created on February 17th; Performing simple backups
+# You are free to use and share this code snippet in any way you want.
+
+# This Cfengine 3 code snippet backups a provided list of directories.
+# It can be enhanced by letting Cfengine 3 copy the backups to another server.
+# As an alternative you could let Cfengine 3 store the backups on a NFS share.
+# The backup will be created at each Cfengine 3 run; you can enhance this sample
+#   on your own by e.g. only performing it once a day
+
+body common control {
+        version         => "1.0";
+        inputs          => { "cfengine_stdlib.cf" };
+        bundlesequence  => { "simple_backup" };
+}
+
+body contain cd(dir)	{
+	chdir		=>	"${dir}";
+	useshell	=> 	"true";
+}
+
+bundle agent simple_backup {
+	vars:
+	  "backup_dir"		string	=> "/var/backups";
+	  "folder_list"		string	=> "/root /etc /usr/local/bin";
+	  "date"		string	=> execresult ("/bin/date +\"%k-%M_%m-%d-%y\"", "noshell");
+
+	files:
+	  "$(backup_dir)/."
+		create	=> "true";
+	
+	commands:
+	  "/bin/tar czvf automated_cfengine_backup-$(date).tar.gz $(folder_list)"
+		contain	=> cd($(backup_dir));
+}
