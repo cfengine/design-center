@@ -58,9 +58,6 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
-	echo '{ dc_api_version: "0.0.1", request: {deactivate: "VCS::vcs_mirror" } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "$(API_SKETCHDIR)", environment: "testing", params: [ "vcs_base", "git_mirror_core" ] } } } }' | $(CFAPI)
 
 api_validations:
 	@echo ...define a choice-of validation with choice and derived
@@ -70,12 +67,10 @@ api_validations:
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { IPv4_local: { valid_ipv4: "10.0.0/24", invalid_ipv4: "10.0.0.1" } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { IPv4: { valid_ipv4: "0.0.0.0/0" } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { NONEMPTY_STRING: { valid_regex: "." } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { OCTAL: { valid_regex: "^[0-7]+$" } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { DIGITS: { valid_regex: "^[0-9]+$" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { OCTAL: { valid_regex: "^[0-7]+$$" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { DIGITS: { valid_regex: "^[0-9]+$$" } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { NUMBER: { derived: [ "DIGITS" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { 8BIT_NUMBER: { minimum_value: 0, maximum_value: 255 } } } }' | $(CFAPI)
-	@echo TODO broken JSON here
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL: { valid_regex: "^((([A-Za-z]{3,9}:(?:\\/\\/)?)(?:[-;:&=\\+\\$,\\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\\+\\$,\\w]+@)[A-Za-z0-9.-]+)((?:\\/[\\+~%\\/.\\w-_]*)?\\??(?:[-\\+=&;%@.\\w_]*)#?(?:[\\w]*))?)$" } } } }' | $(CFAPI)
 	@echo ...define a derived validation
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL_HTTP_OR_FTP: { derived: [ "URL" ], valid_regex: "^(ftp|https?)://.+" } } } }' | $(CFAPI)
 	@echo ...define some compound types
@@ -87,6 +82,9 @@ api_validations:
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { UID: { derived: [ "NONEMPTY_STRING" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { GID: { derived: [ "NONEMPTY_STRING" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { MOG_SEQUENCE: { sequence: [ "OCTAL", "UID", "GID"  ] } } } }' | $(CFAPI)
+
+	@echo ...define complicated URL regex
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL: { valid_regex: "^[A-Za-z]{3,9}://.+" } } } }' | $(CFAPI)
 
 api_validate:
 	@echo ...now validate choices
@@ -124,6 +122,19 @@ api_validate:
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "LIST_OF_NUMBERS", data: 256 } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "LIST_OF_NUMBERS", data: [] } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "LIST_OF_NUMBERS", data: [256] } } }' | $(CFAPI)
+
+	@echo ...a sequence
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "MOG_SEQUENCE", data: {"hello":256} } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "MOG_SEQUENCE", data: 256 } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "MOG_SEQUENCE", data: [256] } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "MOG_SEQUENCE", data: [254, "you", "me"] } } }' | $(CFAPI)
+
+	@echo ...a key-value array
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: {"hello":256} } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: 256 } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: [256] } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "not a URL" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "http://this.that2" } } } }' | $(CFAPI)
 
 api_environments:
 	@echo ...show all environments

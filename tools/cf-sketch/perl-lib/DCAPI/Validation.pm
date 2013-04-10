@@ -41,14 +41,16 @@ sub make_validation
     foreach my $dk (keys %$definition)
     {
         my $dv = $definition->{$dk};
+
+        if (ref $dv ne 'ARRAY' &&
+            grep { $_ eq $dk } qw/derived list sequence array_v array_k/)
+        {
+            return $result->add_error("syntax",
+                                      "Validation definition $name has an invalid type: " . ref $dv);
+        }
+
         if ($dk eq 'derived')
         {
-            if (ref $dv ne 'ARRAY')
-            {
-                return $result->add_error("syntax",
-                                          "Validation definition $name is derived from an invalid thingie");
-            }
-
             foreach my $parent (@$dv)
             {
                 next if exists $api->validations()->{$parent};
@@ -232,6 +234,78 @@ sub validate
             {
                 return $result->add_error([qw/list validation/],
                                           "Could not validate any of the allowed list types [@$list]");
+            }
+        }
+    }
+
+    my $sequence = Util::hashref_search($d, qw/sequence/);
+
+    if (defined $sequence)
+    {
+        return $result->add_error([qw/sequence validation/],
+                                  "The 'sequence' validation can't take a $data_type")
+         if ref $data ne 'ARRAY';
+
+        $self->api()->log4("Validating %s: checking 'sequence' is %s",
+                           $self->name,
+                           $sequence);
+
+        if (scalar @$data ne scalar @$sequence)
+        {
+            return $result->add_error([qw/length_mismatch sequence validation/],
+                                      "The 'sequence' validation and the data have different lengths")
+        }
+
+        my @data = @$data;
+        foreach my $seq_type (@$sequence)
+        {
+            my $element = shift @data;
+
+            my $check = $self->api()->validate({ validation => $seq_type,
+                                                 data => $element});
+            return $result->add_error([qw/element sequence validation/],
+                                      "Sequence element $seq_type did not validate against the given data")
+             unless $check->success();
+        }
+    }
+
+    foreach my $atype (qw/array_k array_v/)
+    {
+        my $k = Util::hashref_search($d, $atype);
+
+        if (defined $k)
+        {
+            return $result->add_error([$atype, qw/validation/],
+                                      "The '$atype' validation can't take a $data_type")
+             if ref $data ne 'HASH';
+
+            $self->api()->log4("Validating %s: checking '$atype' is %s",
+                               $self->name,
+                               $k);
+
+            my @data = $atype eq 'array_k' ? keys %$data : values %$data;
+            if (scalar @data)
+            {
+                my $ok = 0;
+                foreach my $k_type (@$k)
+                {
+                    next if $ok;
+
+                    my $each_ok = 1;
+                    foreach my $element (@data)
+                    {
+                        my $check = $self->api()->validate({ validation => $k_type,
+                                                             data => $element});
+                        $each_ok &&= $check->success();
+                    }
+                    $ok ||= $each_ok;
+                }
+
+                unless ($ok)
+                {
+                    return $result->add_error([$atype, qw/validation/],
+                                              "Could not validate any of the allowed $atype types [@$k]");
+                }
             }
         }
     }
