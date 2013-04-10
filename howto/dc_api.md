@@ -1076,23 +1076,204 @@ of environment names.
 
 The `validations` command lists the data validations.
 
+The data validations are just strings that have a key-value array associated
+with them.  Specific keys trigger specific validation behavior in order, as
+follows.  Note that the examples below are not necessarily in your API
+installation already.
+
+```json
+// only the inside of the request is shown for brevity
+define_validation: { DIGITS: { valid_regex: "^[0-9]+$" } }
+define_validation: { NUMBER: { derived: [ "DIGITS" ] } }
+define_validation: { AB: { choice: [ "A", "B" ] } }
+define_validation: { 8BIT_NUMBER: { minimum_value: 0, maximum_value: 255 } }
+define_validation: { LIST_OF_NUMBERS: { list: [ "NUMBER" ] } }
+define_validation: { MOG_SEQUENCE: { sequence: [ "OCTAL", "UID", "GID"	 ] } }
+define_validation: { ARRAY_OF_NUMBERS_TO_URLS: { array_k: [ "NUMBER" ], array_v: [ "URL" ] } }
+```
+
+* `derived` defines a parent data validation.  So a _NUMBER_ validation requires
+  that _DIGITS_ and any other parent data validations be checked first.
+
+* `choice` defines a list of exact string matches.  So _AB_ must be given `A` or
+  `B` to pass validation.
+
+* `minimum_value` and then `maximum_value` are numeric checks.  So _8BIT_NUMBER_
+  has to be between 0 and 255.  Any invalid numbers, e.g. `hello`, will be
+  treated as 0.
+
+* `invalid_regex` and then `valid_regex` are regular expressions written as
+  strings.  They follow the Perl regex syntax right now.  So _DIGITS_ can only
+  contain the decimal digits 0 through 9 and will reject the empty string `` or
+  `hello`.
+
+* `invalid_ipv4` and `valid_ipv4` are TODO.
+
+* `list` ensures that the given data is a list of one of several data types.  So
+  in the example, _LIST_OF_NUMBERS_ will check that every element passes the
+  _NUMBER_ validation.
+
+* `sequence` is like a record: it ensures that the data is a sequence (list) of
+  the given data types.  So for example, _MOG_SEQUENCE_ has to have three
+  elements, of which the first one passes _OCTAL_ validation, the second passed
+  _UID_ validation, and the third passes _GID_ validation.
+  
+* `array_k` and `array_v` are almost exactly like `list` but they validate the
+  keys and values of a key-value array, respectively, against a list of several
+  data types.  So _ARRAY_OF_NUMBERS_TO_URLS_ requires that every key pass the
+  _NUMBER_ validation and every value pass the _URL_ validation.
+
 #### `define_validation`
 
-The `define_validation` command defines a data validation.
+The `define_validation` command defines a data validation.  In the return data
+you will find all the currently defined data validations.
+
+```json
+{ dc_api_version: "0.0.1", request: {define_validation: { NONEMPTY_STRING: { valid_regex: "." } } } }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "validations": {
+                "NONEMPTY_STRING": {
+                    "valid_regex": "."
+                },
+            }
+        },
+        "log": [],
+        "tags": {
+            "define_validation": 1
+        }
+    }
+}
+```
+
 
 #### `undefine_validation`
 
-The `undefine_validation` command removes a data validation.
+The `undefine_validation` command removes a data validation by name.
+
+```json
+{ dc_api_version: "0.0.1", request: {undefine_validation: "NONEMPTY_STRING" } }'
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "validations": {
+                "valid_regex": "."
+            }
+        },
+        "log": [],
+        "tags": {
+            "undefine_validation": 1
+        }
+    }
+}
+```
 
 #### `validate`
 
 The `validate` command validates data using a named data validation.
+
+```json
+{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "not a URL" } } } }
+```
+
+It's useful to look at the log output here.  This example failed:
+
+```
+DCAPI::log4(Validation.pm:73): Validating ARRAY_OF_NUMBERS_TO_URLS against data '{"30":"not a URL","20":"http://this.that"}'
+DCAPI::log4(Validation.pm:282): Validating ARRAY_OF_NUMBERS_TO_URLS: checking 'array_k' is ["NUMBER"]
+DCAPI::log4(Validation.pm:73): Validating NUMBER against data '30'
+DCAPI::log4(Validation.pm:73): Validating DIGITS against data '30'
+DCAPI::log4(Validation.pm:166): Validating DIGITS: checking valid_regex ^[0-9]+$
+DCAPI::log4(Validation.pm:85): Validating NUMBER: checking parent data type DIGITS
+DCAPI::log4(Validation.pm:73): Validating NUMBER against data '20'
+DCAPI::log4(Validation.pm:73): Validating DIGITS against data '20'
+DCAPI::log4(Validation.pm:166): Validating DIGITS: checking valid_regex ^[0-9]+$
+DCAPI::log4(Validation.pm:85): Validating NUMBER: checking parent data type DIGITS
+DCAPI::log4(Validation.pm:282): Validating ARRAY_OF_NUMBERS_TO_URLS: checking 'array_v' is ["URL"]
+DCAPI::log4(Validation.pm:73): Validating URL against data 'not a URL'
+DCAPI::log4(Validation.pm:166): Validating URL: checking valid_regex ^[A-Za-z]{3,9}://.+
+DCAPI::log4(Validation.pm:73): Validating URL against data 'http://this.that'
+DCAPI::log4(Validation.pm:166): Validating URL: checking valid_regex ^[A-Za-z]{3,9}://.+
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": false,
+        "errors": ["Could not validate any of the allowed array_v types [URL]"],
+        "error_tags": {
+            "array_v": 1,
+            "validation": 1
+        },
+        "data": {},
+        "log": [],
+        "tags": {}
+    }
+}
+```
+
+This example succeeded:
+
+```json
+{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "http://this.that2" } } } }
+```
+
+```
+DCAPI::log4(Validation.pm:73): Validating ARRAY_OF_NUMBERS_TO_URLS against data '{"30":"http://this.that2","20":"http://this.that"}'
+DCAPI::log4(Validation.pm:282): Validating ARRAY_OF_NUMBERS_TO_URLS: checking 'array_k' is ["NUMBER"]
+DCAPI::log4(Validation.pm:73): Validating NUMBER against data '30'
+DCAPI::log4(Validation.pm:73): Validating DIGITS against data '30'
+DCAPI::log4(Validation.pm:166): Validating DIGITS: checking valid_regex ^[0-9]+$
+DCAPI::log4(Validation.pm:85): Validating NUMBER: checking parent data type DIGITS
+DCAPI::log4(Validation.pm:73): Validating NUMBER against data '20'
+DCAPI::log4(Validation.pm:73): Validating DIGITS against data '20'
+DCAPI::log4(Validation.pm:166): Validating DIGITS: checking valid_regex ^[0-9]+$
+DCAPI::log4(Validation.pm:85): Validating NUMBER: checking parent data type DIGITS
+DCAPI::log4(Validation.pm:282): Validating ARRAY_OF_NUMBERS_TO_URLS: checking 'array_v' is ["URL"]
+DCAPI::log4(Validation.pm:73): Validating URL against data 'http://this.that2'
+DCAPI::log4(Validation.pm:166): Validating URL: checking valid_regex ^[A-Za-z]{3,9}://.+
+DCAPI::log4(Validation.pm:73): Validating URL against data 'http://this.that'
+DCAPI::log4(Validation.pm:166): Validating URL: checking valid_regex ^[A-Za-z]{3,9}://.+
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {},
+        "log": [],
+        "tags": {}
+    }
+}
+```
 
 #### `regenerate`
 
 The `regenerate` command writes the API runfile (as specified in the API
 configuration) from all the known activations, compositions, run environments,
 parameter definitions, and data validations.
+
+The command does not allow the user to change the runfile type (standalone or
+not) or location, as that is a possible security risk.
 
 ### API CLI Interface and config.json
 
