@@ -1,38 +1,36 @@
 {
-
-    manifest:
+    "manifest":
     {
-        "main.cf": { desc: "main file" },
-        "README.md": { documentation: true },
-        "params/example.json": { comment: "Example parameters" }
+        "main.cf": {"desc": "main file" },
+        "README.md": {"documentation":true },
+        "params/example.json": {"comment": "Example parameters" }
     },
 
-    metadata:
+    "metadata":
     {
-        name: "System::etc_hosts",
-	    description: "Manage /etc/hosts",
-        version: 2.2,
-        license: "MIT",
-        tags: [ "cfdc" ],
-        authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux", "darwin", "windows" ] }
+        "name": "System::etc_hosts",
+        "description": "Manage /etc/hosts",
+        "version":2.2,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": { "CFEngine::stdlib": {"version":105 }, "CFEngine::dclib": {}, "cfengine": {"version": "3.4.0" }, "os": [ "linux", "darwin", "windows" ] }
     },
 
-    api:
+    "api":
     {
-        // the key is the name of the bundle!
-        configure:
+        "configure":
         [
-            { type: "environment", name: "runenv", },
-            { type: "metadata", name: "metadata", },
-            { type: "string", name: "hostfile", default: "/etc/hosts" },
-            { type: "boolean", name: "defined_only" },
-            { type: "array", name: "hosts" },
-            { type: "return", name: "file", },
-        ],
+            {"type": "environment", "name": "runenv"},
+            {"type": "metadata", "name": "metadata"},
+            {"type": "string", "name": "hostfile", "default": "/etc/hosts" },
+            {"type": "boolean", "name": "defined_only" },
+            {"type": "array", "name": "hosts" },
+            {"type": "return", "name": "file"}
+	]
     },
 
-    namespace: "cfdc_etc_hosts",
-    
-    interface: [ "main.cf" ]
+    "namespace": "cfdc_etc_hosts",
+
+    "interface": [ "main.cf" ]
 }

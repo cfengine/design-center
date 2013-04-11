@@ -1,21 +1,21 @@
 {
-    manifest:
+    "manifest":
     {
-        "library.cf": { desc: "Design Center stdlib" },
-        "README.md": { documentation: true }
+        "library.cf": {"desc": "Design Center stdlib" },
+        "README.md": {"documentation":true }
     },
 
-    metadata:
+    "metadata":
     {
-        name: "CFEngine::dclib::3.5.0",
-	    description: "Design Center standard library for CFEngine 3.5.0 and higher",
-        version: "3.5.0",
-        license: "MIT",
-        tags: [ "cfdc", "stdlib" ],
-        authors: [ "CFEngine AS" ],
-        depends: { "cfengine": { "version": "3.5.0" } }
+        "name": "CFEngine::dclib::3.5.0",
+        "description": "Design Center standard library for CFEngine 3.5.0 and higher",
+        "version": "3.5.0",
+        "license": "MIT",
+        "tags": [ "cfdc", "stdlib" ],
+        "authors": [ "CFEngine AS" ],
+        "depends": { "cfengine": { "version": "3.5.0" } }
     },
 
-    namespace: "cfdc_dclib_350",
-    interface: [ "library.cf" ]
+    "namespace": "cfdc_dclib_350",
+    "interface": [ "library.cf" ]
 }

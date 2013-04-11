@@ -1,56 +1,53 @@
 {
-    manifest:
+    "manifest":
     {
-        "main.cf": {desc: "main file" },
-        "README.md": {documentation: true},
-        "test.cf": {comment: "Test Policy"},
-        "params/demo.json": {comment: "Demo of data-driven classes."}
+        "main.cf": {"desc": "main file" },
+        "README.md": {"documentation":true},
+        "test.cf": {"comment": "Test Policy"},
+        "params/demo.json": {"comment": "Demo of data-driven classes."}
     },
 
-    metadata:
+    "metadata":
     {
-        name: "Data::Classes",
-	    description: "Define classes from data",
-        version: 1.0,
-        license: "MIT",
-        tags: ["cfdc", "data", "classes" ],
-        authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: {"CFEngine::stdlib": {version: 109}, "CFEngine::dclib": {}, cfengine: {version: "3.4.0"}, os: ["linux"] }
+        "name": "Data::Classes",
+        "description": "Define classes from data",
+        "version":1.0,
+        "license": "MIT",
+        "tags": ["cfdc", "data", "classes" ],
+        "authors": ["Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": {"CFEngine::stdlib": {"version":109}, "CFEngine::dclib": {}, "cfengine": {"version": "3.4.0"}, "os": ["linux"] }
     },
 
-    api:
+    "api":
     {
-        byport:
+        "byport":
         [
-            { type: "string", name: "classname", description: "*Global* class to define if all the `ports` have listeners." },
-            { type: "list", name: "ports", description: "List of ports that must all have a listener for the `classname` to be defined" },
-            { type: "return", name: "defined", },
-        ],
-
-        byfile:
+            {"type": "string", "name": "classname", "description": "*Global* class to define if all the `ports` have listeners." },
+            {"type": "list", "name": "ports", "description": "List of ports that must all have a listener for the `classname` to be defined" },
+            {"type": "return", "name": "defined"}
+	],
+        "byfile":
         [
-            { type: "string", name: "classname", description: "*Global* class to define if all the `files` exist." },
-            { type: "list", name: "files", description: "List of files that must all exist for the `classname` to be defined" },
-            { type: "return", name: "defined", },
-        ],
-
-        byprocess:
+            {"type": "string", "name": "classname", "description": "*Global* class to define if all the `files` exist." },
+            {"type": "list", "name": "files", "description": "List of files that must all exist for the `classname` to be defined" },
+            {"type": "return", "name": "defined"}
+	],
+        "byprocess":
         [
-            { type: "string", name: "classname", description: "*Global* class to define if all the `process_patterns` are matched." },
-            { type: "list", name: "process_patterns", description: "List of process patterns that must all match in the process table for the `classname` to be defined" },
-            { type: "string", name: "owner", default: "", description: "If not empty, require this owner of the processes for the `classname` to be defined" },
-            { type: "string", name: "min_process_count", default: 1, description: "Required minimum count of processes for the `classname` to be defined" },
-            { type: "string", name: "max_process_count", default: 1000000, description: "Required maximum count of processes for the `classname` to be defined (default is very large)" },
-            { type: "return", name: "defined", },
-        ],
-
-        byshell:
+            {"type": "string", "name": "classname", "description": "*Global* class to define if all the `process_patterns` are matched." },
+            {"type": "list", "name": "process_patterns", "description": "List of process patterns that must all match in the process table for the `classname` to be defined" },
+            {"type": "string", "name": "owner", "default": "", "description": "If not empty, require this owner of the processes for the `classname` to be defined" },
+            {"type": "string", "name": "min_process_count", "default":1,"description": "Required minimum count of processes for the `classname` to be defined" },
+            {"type": "string", "name": "max_process_count", "default":1000000,"description": "Required maximum count of processes for the `classname` to be defined (default is very large)" },
+            {"type": "return", "name": "defined"}
+	],
+        "byshell":
         [
-            { type: "string", name: "classname", description: "*Global* class to define if all the `commands` run OK." },
-            { type: "list", name: "commands", description: "List of commands that must all run OK for the `classname` to be defined" },
-            { type: "return", name: "defined", },
-        ],
-    },
+            {"type": "string", "name": "classname", "description": "*Global* class to define if all the `commands` run OK." },
+            {"type": "list", "name": "commands", "description": "List of commands that must all run OK for the `classname` to be defined" },
+            {"type": "return", "name": "defined"}
+	]
+	},
 
-    interface: ["main.cf"]
+        "interface": ["main.cf"]
 }

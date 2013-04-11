@@ -1,15 +1,13 @@
 {
-
-    manifest:
+    "manifest":
     {
-        "main.cf": { desc: "main file", "version": "1.05.2" },
+        "main.cf": {"desc": "main file", "version": "1.05.2" },
         "README.md": { "documentation": true },
         "params/example.json": { "comment": "Sample parameters to set hostname to node1.example.com" },
         "test.cf": { "comment": "Standalone Test policy" },
         "changelog": { "comment": "changelog" }
     },
-
-    metadata:
+    "metadata":
     {
         "name": "System::set_hostname",
 	"description": "Configure system hostname",
@@ -20,21 +18,20 @@
         "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin" ] }
     },
 
-    api:
+    "api":
     {
-        // the key is the name of the bundle!
-        set:
+        "set":
         [
-            { type: "environment", name: "runenv", },
-            { type: "metadata", name: "metadata", },
-            { type: "string", name: "hostname" },
-            { type: "string", name: "domainname" },
-            { type: "return", name: "hostname", },
-            { type: "return", name: "domainname", },
-        ],
+            {"type": "environment", "name": "runenv"},
+            {"type": "metadata", "name": "metadata"},
+            {"type": "string", "name": "hostname" },
+            {"type": "string", "name": "domainname" },
+            {"type": "return", "name": "hostname"},
+            {"type": "return", "name": "domainname"}
+	]
     },
 
-    namespace: "cfdc_hostname",
-    
-    interface: [ "main.cf" ]
+    "namespace": "cfdc_hostname",
+
+    "interface": [ "main.cf" ]
 }
