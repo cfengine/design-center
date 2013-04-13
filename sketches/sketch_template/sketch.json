@@ -1,43 +1,104 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file" },
-        "test.cf": {"desc": "standalone test" },
-        "README.md": {"documentation":true },
-        "params/demo.json": {"comment": "simple demo of sketch" },
-        "scripts/sample.sh": {"perm":755,"comment": "Sample script bundled with the sketch" },
-        "modules/mymodule": {"module":true,"perm":755,"comment": "Sample module bundled with the sketch" }
-    },
-
-    "metadata":
-    {
-        "name": "CFEngine::sketch_template",
-        "description": "Standard template for Design Center sketches",
-        "version": "1.01",
-        "license": "MIT",
-        "tags": [ "cfdc" ],"authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": {"version":105 }, "CFEngine::dclib": {"version": "1.0.0" }, "cfengine": {"version": "3.4.0" }, "os": [ "linux", "darwin" ] }
-    },
-
-    "api":
-    {
-        "entry":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "mymetadata"},
-            {"type": "string", "name": "prefix", "default": "__PREFIX__" },
-
-            {"type": "boolean", "name": "myboolean", "default": "1" },
-            {"type": "string", "name": "mytype", "default": "fallback" },
-            {"type": "string", "name": "myip", "description": "This is my IP address or whatever" },
-            {"type": "list", "name": "mylist"},
-            {"type": "array", "name": "myarray"},
-            {"type": "return", "name": "myreturn" },
-            {"type": "return", "name": "myreturn2" }
-	]
-    },
-
-    "namespace": "cfdc_sketch_template",
-
-    "interface": [ "main.cf" ]
+   "api" : {
+      "entry" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "mymetadata",
+            "type" : "metadata"
+         },
+         {
+            "default" : "__PREFIX__",
+            "name" : "prefix",
+            "type" : "string"
+         },
+         {
+            "default" : "1",
+            "name" : "myboolean",
+            "type" : "boolean"
+         },
+         {
+            "default" : "fallback",
+            "name" : "mytype",
+            "type" : "string"
+         },
+         {
+            "description" : "This is my IP address or whatever",
+            "name" : "myip",
+            "type" : "string"
+         },
+         {
+            "name" : "mylist",
+            "type" : "list"
+         },
+         {
+            "name" : "myarray",
+            "type" : "array"
+         },
+         {
+            "name" : "myreturn",
+            "type" : "return"
+         },
+         {
+            "name" : "myreturn2",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      },
+      "modules/mymodule" : {
+         "comment" : "Sample module bundled with the sketch",
+         "module" : true,
+         "perm" : 755
+      },
+      "params/demo.json" : {
+         "comment" : "simple demo of sketch"
+      },
+      "scripts/sample.sh" : {
+         "comment" : "Sample script bundled with the sketch",
+         "perm" : 755
+      },
+      "test.cf" : {
+         "desc" : "standalone test"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {
+            "version" : "1.0.0"
+         },
+         "CFEngine::stdlib" : {
+            "version" : 105
+         },
+         "cfengine" : {
+            "version" : "3.4.0"
+         },
+         "os" : [
+            "linux",
+            "darwin"
+         ]
+      },
+      "description" : "Standard template for Design Center sketches",
+      "license" : "MIT",
+      "name" : "CFEngine::sketch_template",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : "1.01"
+   },
+   "namespace" : "cfdc_sketch_template"
 }

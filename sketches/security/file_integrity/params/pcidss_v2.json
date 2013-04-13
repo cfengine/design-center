@@ -1,26 +1,21 @@
 {
-    "Security::file_integrity":
-    {
-        // in -Dtest mode, just check a single directory, otherwise sweep the system
-        watch:
-        [
-            "/etc",
-            "/root/.ssh",
-            "/var/spool/cron",
-            "/boot",
-            "/bin",
-            "/usr/bin",
-            "/usr/sbin",
-            "/usr/local/bin",
-            "/usr/local/sbin",
-            "/sbin",
-            "/lib",
-            "/usr/lib",
-            "/usr/lib64"
-        ],
-        // if omitted, this is "sha256"
-        hash_algorithm: "sha256",
-        // if omitted, this is 1440
-        ifelapsed: 1440
-    }
+   "Security::file_integrity" : {
+      "hash_algorithm" : "sha256",
+      "ifelapsed" : 1440,
+      "watch" : [
+         "/etc",
+         "/root/.ssh",
+         "/var/spool/cron",
+         "/boot",
+         "/bin",
+         "/usr/bin",
+         "/usr/sbin",
+         "/usr/local/bin",
+         "/usr/local/sbin",
+         "/sbin",
+         "/lib",
+         "/usr/lib",
+         "/usr/lib64"
+      ]
+   }
 }

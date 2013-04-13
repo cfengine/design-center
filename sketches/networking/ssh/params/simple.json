@@ -1,11 +1,9 @@
 {
-    "Security::SSH":
-    {
-        params:
-        {
-            Protocol : "2",
-            X11Forwarding : "yes",
-            PermitRootLogin : "yes"
-        }
-    }
+   "Security::SSH" : {
+      "params" : {
+         "PermitRootLogin" : "yes",
+         "Protocol" : "2",
+         "X11Forwarding" : "yes"
+      }
+   }
 }

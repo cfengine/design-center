@@ -1,4 +1,24 @@
 [
-    { "Repository::Yum::Maintain": { name: "updates", path: "/var/www/html/yumrepos/updates", perm: {m: "755", o: "root", g: "root" } } },
-    { "Repository::Yum::Maintain": { name: "custom", path: "/var/www/html/yumrepos/custom", perm: {m: "755", o: "root", g: "root" } } },
+   {
+      "Repository::Yum::Maintain" : {
+         "name" : "updates",
+         "path" : "/var/www/html/yumrepos/updates",
+         "perm" : {
+            "g" : "root",
+            "m" : "755",
+            "o" : "root"
+         }
+      }
+   },
+   {
+      "Repository::Yum::Maintain" : {
+         "name" : "custom",
+         "path" : "/var/www/html/yumrepos/custom",
+         "perm" : {
+            "g" : "root",
+            "m" : "755",
+            "o" : "root"
+         }
+      }
+   }
 ]

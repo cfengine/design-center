@@ -1,13 +1,14 @@
 {
-    "System::access":
-    {
-        "ensured_lines" : [
-            "+ : john foo : 2001:db8:0:101::1",
-            "+ : john : 2001:db8:0:101::/64",
-            "-:ALL EXCEPT (wheel) shutdown sync:LOCAL",
-            "- : ALL : ALL",
-        ],
-        "removed_patterns" : [ "bad.entry" ],
-        "empty_first" : false
-    }
+   "System::access" : {
+      "empty_first" : false,
+      "ensured_lines" : [
+         "+ : john foo : 2001:db8:0:101::1",
+         "+ : john : 2001:db8:0:101::/64",
+         "-:ALL EXCEPT (wheel) shutdown sync:LOCAL",
+         "- : ALL : ALL"
+      ],
+      "removed_patterns" : [
+         "bad.entry"
+      ]
+   }
 }

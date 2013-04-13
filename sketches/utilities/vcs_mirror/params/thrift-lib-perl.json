@@ -1,9 +1,8 @@
 {
-    "VCS::vcs_mirror":
-    {
-        path: "/tmp/thrift-perl-lib",
-        origin:"http://svn.apache.org/repos/asf/thrift/attic/trunk/lib/perl",
-        vcs: "/usr/bin/svn",
-        branch: "",
-    }
+   "VCS::vcs_mirror" : {
+      "branch" : "",
+      "origin" : "http://svn.apache.org/repos/asf/thrift/attic/trunk/lib/perl",
+      "path" : "/tmp/thrift-perl-lib",
+      "vcs" : "/usr/bin/svn"
+   }
 }

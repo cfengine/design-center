@@ -1,9 +1,8 @@
 {
-    "VCS::vcs_mirror":
-    {
-        path: "/tmp/cfengine-copbl",
-        origin:"https://github.com/cfengine/copbl.git",
-        branch: "master",
-        vcs: "/usr/bin/git"
-    }
+   "VCS::vcs_mirror" : {
+      "branch" : "master",
+      "origin" : "https://github.com/cfengine/copbl.git",
+      "path" : "/tmp/cfengine-copbl",
+      "vcs" : "/usr/bin/git"
+   }
 }

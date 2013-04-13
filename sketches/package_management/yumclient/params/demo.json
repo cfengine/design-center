@@ -1,68 +1,57 @@
 [
-    // remove id=repo3 from /etc/yum.conf
-    { "Repository::Yum::Client": { remove_section: "repo3" } },
-
-    // remove /etc/yum.repos.d/repo2.conf, whatever it contains
-    { "Repository::Yum::Client": { remove_file: "/etc/yum.repos.d/repo2.conf" } },
-
-    // add section baseline to /etc/yum.repos.d/baseline.conf with the given contents
-    {
-        "Repository::Yum::Client":
-        { 
-            file: "/etc/yum.repos.d/baseline.conf",
-            section: "baseline",
-            config:
-            {
-                name: "myrepo",
-                baseurl: "file:///var/www/html/yum_repos/myrepo",
-                enabled: "1",
-                gpgcheck: "no"
-            }
-        }
-    },
-
-    // add section baseline2 to /etc/yum.repos.d/baseline2.conf with the given contents from the template
-    {
-        "Repository::Yum::Client":
-        { 
-            file: "/etc/yum.repos.d/baseline2.conf",
-            section: "baseline2",
-            template_config:
-            {
-                name: "myrepo",
-                baseurl: "file:///var/www/html/yum_repos/myrepo",
-                enabled: "1",
-                gpgcheck: "no"
-            }
-        }
-    },
-
-    // add section baseline3 to /etc/yum.repos.d/baseline3.conf (defaulted) with the given contents from the template
-    {
-        "Repository::Yum::Client":
-        { 
-            file: "",
-            section: "baseline3",
-            template_config:
-            {
-                name: "myrepo",
-                baseurl: "file:///var/www/html/yum_repos/myrepo",
-                enabled: "1",
-                gpgcheck: "no"
-            }
-        }
-    },
-
-    // add section repo1 to /etc/yum.conf with the given contents
-    {
-        "Repository::Yum::Client":
-        { 
-            section: "repo1",
-            config:
-            {
-                name: "repo1",
-                baseurl: "file:///var/www/html/yum_repos/myrepo",
-            }
-        }
-    },
+   {
+      "Repository::Yum::Client" : {
+         "remove_section" : "repo3"
+      }
+   },
+   {
+      "Repository::Yum::Client" : {
+         "remove_file" : "/etc/yum.repos.d/repo2.conf"
+      }
+   },
+   {
+      "Repository::Yum::Client" : {
+         "config" : {
+            "baseurl" : "file:///var/www/html/yum_repos/myrepo",
+            "enabled" : "1",
+            "gpgcheck" : "no",
+            "name" : "myrepo"
+         },
+         "file" : "/etc/yum.repos.d/baseline.conf",
+         "section" : "baseline"
+      }
+   },
+   {
+      "Repository::Yum::Client" : {
+         "file" : "/etc/yum.repos.d/baseline2.conf",
+         "section" : "baseline2",
+         "template_config" : {
+            "baseurl" : "file:///var/www/html/yum_repos/myrepo",
+            "enabled" : "1",
+            "gpgcheck" : "no",
+            "name" : "myrepo"
+         }
+      }
+   },
+   {
+      "Repository::Yum::Client" : {
+         "file" : "",
+         "section" : "baseline3",
+         "template_config" : {
+            "baseurl" : "file:///var/www/html/yum_repos/myrepo",
+            "enabled" : "1",
+            "gpgcheck" : "no",
+            "name" : "myrepo"
+         }
+      }
+   },
+   {
+      "Repository::Yum::Client" : {
+         "config" : {
+            "baseurl" : "file:///var/www/html/yum_repos/myrepo",
+            "name" : "repo1"
+         },
+         "section" : "repo1"
+      }
+   }
 ]

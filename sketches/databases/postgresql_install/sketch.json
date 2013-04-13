@@ -1,40 +1,85 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file"},
-        "README.md": {"documentation": "true"},
-
-        "params/demo_client.json": {"comment": "Install PostgreSQL client"},
-        "params/demo_server.json": {"comment": "Install PostgreSQL server"}
-    },
-
-    "metadata":
-    {
-        "name": "Database::Install::PostgreSQL",
-        "description": "Install and enable the PostgreSQL database engine",
-        "version": "1.10",
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": {"version": "105"}, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, "cfengine": {"version": "3.5.0"}, "os": [ "linux" ] }
-    },
-
-    "api":
-    {
-        "ensure":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "mymetadata"},
-            {"type": "boolean", "name": "server"},
-            {"type": "boolean", "name": "purge", "default": "false"},
-            {"type": "list", "name": "extra_packages", "default": [] },
-            {"type": "boolean", "name": "use_only_extra_packages", "default": "false"},
-            {"type": "return", "name": "installed"},
-            {"type": "return", "name": "running"}
-	]
-    },
-
-    "namespace": "cfdc_db_postgresql",
-
-    "interface": [ "main.cf" ]
+   "api" : {
+      "ensure" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "mymetadata",
+            "type" : "metadata"
+         },
+         {
+            "name" : "server",
+            "type" : "boolean"
+         },
+         {
+            "default" : "false",
+            "name" : "purge",
+            "type" : "boolean"
+         },
+         {
+            "default" : [],
+            "name" : "extra_packages",
+            "type" : "list"
+         },
+         {
+            "default" : "false",
+            "name" : "use_only_extra_packages",
+            "type" : "boolean"
+         },
+         {
+            "name" : "installed",
+            "type" : "return"
+         },
+         {
+            "name" : "running",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : "true"
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      },
+      "params/demo_client.json" : {
+         "comment" : "Install PostgreSQL client"
+      },
+      "params/demo_server.json" : {
+         "comment" : "Install PostgreSQL server"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>",
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {},
+         "CFEngine::dclib::3.5.0" : {},
+         "CFEngine::stdlib" : {
+            "version" : "105"
+         },
+         "cfengine" : {
+            "version" : "3.5.0"
+         },
+         "os" : [
+            "linux"
+         ]
+      },
+      "description" : "Install and enable the PostgreSQL database engine",
+      "license" : "MIT",
+      "name" : "Database::Install::PostgreSQL",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : "1.10"
+   },
+   "namespace" : "cfdc_db_postgresql"
 }

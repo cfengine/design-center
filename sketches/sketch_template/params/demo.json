@@ -1,11 +1,16 @@
 {
-    "CFEngine::sketch_template":
-    {
-        // use the __bundle__ parameter to signify that this parameter set only applies to a specific bundle
-        //__bundle__: "nonesuch",
-        myboolean: true,
-        myip: "10.0.1.0",
-        mylist: [ 1, 2, 3 ],
-        myarray: { a: 1, b: 3, c: 3 }
-    }
+   "CFEngine::sketch_template" : {
+      "myarray" : {
+         "a" : 1,
+         "b" : 3,
+         "c" : 3
+      },
+      "myboolean" : true,
+      "myip" : "10.0.1.0",
+      "mylist" : [
+         1,
+         2,
+         3
+      ]
+   }
 }

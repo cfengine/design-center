@@ -1,38 +1,82 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file", "version":1.2 },
-        "README.md": {"documentation":true },
-        "test.cf": {"comment": "Test policy" }, "changelog": {"comment": "changelog" },
-        "params/example.json": { }
-    },
-
-    "metadata":
-    {
-        "name": "Security::security_limits",
-        "description": "Configure /etc/security/limits.conf",
-        "version":1.2,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": {"version":105}, "CFEngine::dclib": {}, "cfengine": {"version": "3.4.0"}, "os": [ "linux" ] }
-    },
-
-    "api":
-    {
-        "limits":
-        [
-            {"type": "environment", "name": "runenv" },
-            {"type": "metadata", "name": "metadata" },
-            {"type": "string", "name": "filename", "default": "/etc/security/limits.conf" },
-            {"type": "array", "name": "domains" },
-            {"type": "boolean", "name": "empty_first", "default": true},
-            {"type": "boolean", "name": "ensure_absent", "default": false},
-            {"type": "return", "name": "filename"}
-	]
-    },
-
-    "namespace": "cfdc_security_limits",
-
-    "interface": [ "main.cf" ]
+   "api" : {
+      "limits" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "default" : "/etc/security/limits.conf",
+            "name" : "filename",
+            "type" : "string"
+         },
+         {
+            "name" : "domains",
+            "type" : "array"
+         },
+         {
+            "default" : true,
+            "name" : "empty_first",
+            "type" : "boolean"
+         },
+         {
+            "default" : false,
+            "name" : "ensure_absent",
+            "type" : "boolean"
+         },
+         {
+            "name" : "filename",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "changelog" : {
+         "comment" : "changelog"
+      },
+      "main.cf" : {
+         "desc" : "main file",
+         "version" : 1.2
+      },
+      "params/example.json" : {},
+      "test.cf" : {
+         "comment" : "Test policy"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Nick Anderson <nick@cmdln.org>",
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {},
+         "CFEngine::stdlib" : {
+            "version" : 105
+         },
+         "cfengine" : {
+            "version" : "3.4.0"
+         },
+         "os" : [
+            "linux"
+         ]
+      },
+      "description" : "Configure /etc/security/limits.conf",
+      "license" : "MIT",
+      "name" : "Security::security_limits",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : 1.2
+   },
+   "namespace" : "cfdc_security_limits"
 }

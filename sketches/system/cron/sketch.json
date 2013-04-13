@@ -1,52 +1,138 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file" },
-        "README.md": {"documentation":true },
-        "params/example.json": {"comment": "Example parameters" }
-    },
-
-    "metadata":
-    {
-        "name": "System::cron",
-        "description": "Manage crontab and /etc/cron.d contents",
-        "version":2.0,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Neil H Watson <neil@watson-wilson.ca>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": {"version":109 }, "CFEngine::dclib": {}, "cfengine": {"version": "3.4.0" }, "os": [ "linux", "solaris", "darwin" ] }
-    },
-
-    "api":
-    {
-        "d":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "metadata"},
-            {"type": "string", "name": "cron_path", "default": "/etc/cron.d" },
-            {"type": "string", "name": "file_task" },
-            {"type": "string", "name": "runas", "default": { "function": "getenv", "args": ["LOGNAME", "128"] }},
-            {"type": "string", "name": "when" },
-            {"type": "list", "name": "commands" },
-            {"type": "return", "name": "tab"},
-            {"type": "return", "name": "path"}
-	],
-
-        "tab":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "metadata"},
-            {"type": "string", "name": "cron_path", "default": "/usr/bin/crontab" },
-            {"type": "string", "name": "line_task" },
-            {"type": "string", "name": "runas", "default": { "function": "getenv", "args": ["LOGNAME", "128"] }},
-            {"type": "string", "name": "when" },
-            {"type": "list", "name": "commands" },
-            {"type": "return", "name": "tab"},
-            {"type": "return", "name": "path"}
-	]
-    },
-
-    "namespace": "cfdc_cron",
-
-    "interface": [ "main.cf" ]
+   "api" : {
+      "d" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "default" : "/etc/cron.d",
+            "name" : "cron_path",
+            "type" : "string"
+         },
+         {
+            "name" : "file_task",
+            "type" : "string"
+         },
+         {
+            "default" : {
+               "args" : [
+                  "LOGNAME",
+                  "128"
+               ],
+               "function" : "getenv"
+            },
+            "name" : "runas",
+            "type" : "string"
+         },
+         {
+            "name" : "when",
+            "type" : "string"
+         },
+         {
+            "name" : "commands",
+            "type" : "list"
+         },
+         {
+            "name" : "tab",
+            "type" : "return"
+         },
+         {
+            "name" : "path",
+            "type" : "return"
+         }
+      ],
+      "tab" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "default" : "/usr/bin/crontab",
+            "name" : "cron_path",
+            "type" : "string"
+         },
+         {
+            "name" : "line_task",
+            "type" : "string"
+         },
+         {
+            "default" : {
+               "args" : [
+                  "LOGNAME",
+                  "128"
+               ],
+               "function" : "getenv"
+            },
+            "name" : "runas",
+            "type" : "string"
+         },
+         {
+            "name" : "when",
+            "type" : "string"
+         },
+         {
+            "name" : "commands",
+            "type" : "list"
+         },
+         {
+            "name" : "tab",
+            "type" : "return"
+         },
+         {
+            "name" : "path",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      },
+      "params/example.json" : {
+         "comment" : "Example parameters"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Neil H Watson <neil@watson-wilson.ca>",
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {},
+         "CFEngine::stdlib" : {
+            "version" : 109
+         },
+         "cfengine" : {
+            "version" : "3.4.0"
+         },
+         "os" : [
+            "linux",
+            "solaris",
+            "darwin"
+         ]
+      },
+      "description" : "Manage crontab and /etc/cron.d contents",
+      "license" : "MIT",
+      "name" : "System::cron",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : 2
+   },
+   "namespace" : "cfdc_cron"
 }

@@ -1,7 +1,14 @@
 [
-   // this is the install client bundle call
-   { "Database::Install::MySQL": {server:false, purge: false} },
-
-   // this is the purge bundle call
-   { "Database::Install::MySQL": {server: false, purge:true} },
+   {
+      "Database::Install::MySQL" : {
+         "purge" : false,
+         "server" : false
+      }
+   },
+   {
+      "Database::Install::MySQL" : {
+         "purge" : true,
+         "server" : false
+      }
+   }
 ]

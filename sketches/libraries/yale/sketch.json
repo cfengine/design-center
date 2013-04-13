@@ -1,20 +1,31 @@
 {
-    "manifest":
-    {
-        "library.cf": {"desc": "Yale stdlib" },
-        "README.md": {"documentation":true }
-    },
-
-    "metadata":
-    {
-        "name": "Yale::stdlib",
-        "description": "Yale standard library",
-        "version": "1.0.0",
-        "license": "MIT",
-        "tags": [ "cfdc", "yale" ],
-        "authors": [ "Yale University" ],
-        "depends": { "cfengine": { "version": "3.3.0" } }
-    },
-
-    "interface": [ "library.cf" ]
+   "interface" : [
+      "library.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "library.cf" : {
+         "desc" : "Yale stdlib"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Yale University"
+      ],
+      "depends" : {
+         "cfengine" : {
+            "version" : "3.3.0"
+         }
+      },
+      "description" : "Yale standard library",
+      "license" : "MIT",
+      "name" : "Yale::stdlib",
+      "tags" : [
+         "cfdc",
+         "yale"
+      ],
+      "version" : "1.0.0"
+   }
 }

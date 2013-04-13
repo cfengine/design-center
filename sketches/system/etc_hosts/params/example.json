@@ -1,9 +1,9 @@
 {
-    "System::etc_hosts":
-    {
-        // on windows, specify
-        // hostfile: "$(sys.winsysdir)\\drivers\\etc\\hosts"
-        defined_only: false,
-        hosts: { "192.168.1.254": "gateway", "192.168.1.2": "printer" },
-    }
+   "System::etc_hosts" : {
+      "defined_only" : false,
+      "hosts" : {
+         "192.168.1.2" : "printer",
+         "192.168.1.254" : "gateway"
+      }
+   }
 }

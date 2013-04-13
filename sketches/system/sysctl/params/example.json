@@ -1,9 +1,14 @@
 {
-    "System::sysctl":
-    {
-        "ensured_kv" : { "net.ipv4.tcp_tw_reuse": 1 },
-        "removed_kv" : { "net.ipv4.tcp_tw_reuse": 2 },
-        "removed_vars" : [ "bad.entry" ],
-        "empty_first" : false
-    }
+   "System::sysctl" : {
+      "empty_first" : false,
+      "ensured_kv" : {
+         "net.ipv4.tcp_tw_reuse" : 1
+      },
+      "removed_kv" : {
+         "net.ipv4.tcp_tw_reuse" : 2
+      },
+      "removed_vars" : [
+         "bad.entry"
+      ]
+   }
 }

@@ -1,52 +1,63 @@
 [
-    {
-        "Repository::apt::Maintain":
-        {
-            wipe: true,
-            file: "/etc/apt/sources.list.d/contrib-debian-wheezy.list",
-        },
-    },
-
-    {
-        "Repository::apt::Maintain":
-        {
-            url: "http://http.us.debian.org/debian/",
-            distribution: "main",
-            components: ["wheezy"],
-            types: ["deb", "deb-src"],
-        },
-    },
-
-    {
-        "Repository::apt::Maintain":
-        {
-            url: "http://bogus-repository/bogus-path",
-            distribution: "main",
-            components: ["comp1", "comp2"],
-            options: "[ arch=amd64 trusted=no ]",
-            types: ["deb", "deb-src"],
-        },
-    },
-
-    {
-        "Repository::apt::Maintain":
-        {
-            file: "/etc/apt/sources.list.d/contrib-debian-wheezy.list",
-            distribution: "contrib",
-            url: "http://ftp.fr.debian.org/debian/",
-            components: ["wheezy"],
-            types: ["deb"],
-        },
-    },
-
-    {
-        "Repository::apt::Maintain":
-        {
-            file: "/etc/apt/sources.list.d/universe-ubuntu-precise.list",
-            distribution: "universe",
-            url: "http://us.archive.ubuntu.com/ubuntu/",
-            components: ["precise"],
-            types: ["deb", "deb-src"],
-        }
-    },
+   {
+      "Repository::apt::Maintain" : {
+         "file" : "/etc/apt/sources.list.d/contrib-debian-wheezy.list",
+         "wipe" : true
+      }
+   },
+   {
+      "Repository::apt::Maintain" : {
+         "components" : [
+            "wheezy"
+         ],
+         "distribution" : "main",
+         "types" : [
+            "deb",
+            "deb-src"
+         ],
+         "url" : "http://http.us.debian.org/debian/"
+      }
+   },
+   {
+      "Repository::apt::Maintain" : {
+         "components" : [
+            "comp1",
+            "comp2"
+         ],
+         "distribution" : "main",
+         "options" : "[ arch=amd64 trusted=no ]",
+         "types" : [
+            "deb",
+            "deb-src"
+         ],
+         "url" : "http://bogus-repository/bogus-path"
+      }
+   },
+   {
+      "Repository::apt::Maintain" : {
+         "components" : [
+            "wheezy"
+         ],
+         "distribution" : "contrib",
+         "file" : "/etc/apt/sources.list.d/contrib-debian-wheezy.list",
+         "types" : [
+            "deb"
+         ],
+         "url" : "http://ftp.fr.debian.org/debian/"
+      }
+   },
+   {
+      "Repository::apt::Maintain" : {
+         "components" : [
+            "precise"
+         ],
+         "distribution" : "universe",
+         "file" : "/etc/apt/sources.list.d/universe-ubuntu-precise.list",
+         "types" : [
+            "deb",
+            "deb-src"
+         ],
+         "url" : "http://us.archive.ubuntu.com/ubuntu/"
+      }
+   }
 ]

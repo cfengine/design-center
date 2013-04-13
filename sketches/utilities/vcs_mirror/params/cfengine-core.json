@@ -1,19 +1,28 @@
 {
-    "VCS::vcs_mirror":
-    {
-        path: "/tmp/cfengine-core",
-        origin:"https://github.com/cfengine/core.git",
-        branch: "master",
-        vcs: "/usr/bin/git",
-        options:
-        {
-            parent_dir:
-            {
-                ensure: true,
-                owner: { function: "getenv", args: ["LOGNAME", "128"] },
-                group: { function: "getenv", args: ["LOGNAME", "128"] },
-                perms: "755"
-            }
-        }
-    }
+   "VCS::vcs_mirror" : {
+      "branch" : "master",
+      "options" : {
+         "parent_dir" : {
+            "ensure" : true,
+            "group" : {
+               "args" : [
+                  "LOGNAME",
+                  "128"
+               ],
+               "function" : "getenv"
+            },
+            "owner" : {
+               "args" : [
+                  "LOGNAME",
+                  "128"
+               ],
+               "function" : "getenv"
+            },
+            "perms" : "755"
+         }
+      },
+      "origin" : "https://github.com/cfengine/core.git",
+      "path" : "/tmp/cfengine-core",
+      "vcs" : "/usr/bin/git"
+   }
 }

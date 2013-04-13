@@ -1,41 +1,87 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file", "version":1.12 },
-        "README.md": {"documentation":true },
-        "params/cfengine-core.json": {"comment": "Sample parameters to use Git to check out the CFEngine core into /tmp/cfengine-core" },
-        "params/cfengine-core-runas-tzz.json": {"comment": "Same as cfengine-core.json, but runs as user 'tzz'" },
-        "params/cfengine-copbl.json": {"comment": "Sample parameters to use Git to check out the CFEngine standard library (COPBL) into /tmp/cfengine-copbl" },
-        "params/thrift-lib-perl.json": {"comment": "Sample parameters to use Subversion to check out the Thrift Perl libraries into /tmp/thrift-lib-perl" }
-    },
-
-    "metadata":
-    {
-        "name": "VCS::vcs_mirror",
-        "description": "Check out and update a VCS repository.",
-        "version":1.12,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": {"version":105 }, "CFEngine::dclib": {"version": "1.0.0" }, "cfengine": {"version": "3.5.0" } }
-    },
-
-    "api":
-    {
-        "mirror":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "metadata"},
-            {"type": "string", "name": "vcs" },
-            {"type": "string", "name": "path" },
-            {"type": "string", "name": "origin" },
-            {"type": "string", "name": "branch" },
-            {"type": "array", "name": "options"},
-            {"type": "return", "name": "deploy_path"}
-	]
-	},
-
-        "namespace": "cfdc_vcs",
-
-        "interface": [ "main.cf" ]
+   "api" : {
+      "mirror" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "name" : "vcs",
+            "type" : "string"
+         },
+         {
+            "name" : "path",
+            "type" : "string"
+         },
+         {
+            "name" : "origin",
+            "type" : "string"
+         },
+         {
+            "name" : "branch",
+            "type" : "string"
+         },
+         {
+            "name" : "options",
+            "type" : "array"
+         },
+         {
+            "name" : "deploy_path",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "main.cf" : {
+         "desc" : "main file",
+         "version" : 1.12
+      },
+      "params/cfengine-copbl.json" : {
+         "comment" : "Sample parameters to use Git to check out the CFEngine standard library (COPBL) into /tmp/cfengine-copbl"
+      },
+      "params/cfengine-core-runas-tzz.json" : {
+         "comment" : "Same as cfengine-core.json, but runs as user 'tzz'"
+      },
+      "params/cfengine-core.json" : {
+         "comment" : "Sample parameters to use Git to check out the CFEngine core into /tmp/cfengine-core"
+      },
+      "params/thrift-lib-perl.json" : {
+         "comment" : "Sample parameters to use Subversion to check out the Thrift Perl libraries into /tmp/thrift-lib-perl"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Nick Anderson <nick@cmdln.org>",
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {
+            "version" : "1.0.0"
+         },
+         "CFEngine::stdlib" : {
+            "version" : 105
+         },
+         "cfengine" : {
+            "version" : "3.5.0"
+         }
+      },
+      "description" : "Check out and update a VCS repository.",
+      "license" : "MIT",
+      "name" : "VCS::vcs_mirror",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : 1.12
+   },
+   "namespace" : "cfdc_vcs"
 }

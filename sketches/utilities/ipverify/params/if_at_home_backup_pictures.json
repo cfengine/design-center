@@ -1,8 +1,9 @@
 {
-   "Utilities::ipverify":
-   {
-       "usebundle": "backup_family_pictures",
-       "ip": "192.168.1.254",
-       "maclist": ["98:2c:be:27:e8:c9"]
+   "Utilities::ipverify" : {
+      "ip" : "192.168.1.254",
+      "maclist" : [
+         "98:2c:be:27:e8:c9"
+      ],
+      "usebundle" : "backup_family_pictures"
    }
 }

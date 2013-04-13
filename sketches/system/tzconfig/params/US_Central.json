@@ -1,7 +1,6 @@
 {
-    "System::tzconfig":
-    {
-        "timezone": "America/Chicago",
-        "zoneinfo": "/usr/share/zoneinfo",
-    }
+   "System::tzconfig" : {
+      "timezone" : "America/Chicago",
+      "zoneinfo" : "/usr/share/zoneinfo"
+   }
 }

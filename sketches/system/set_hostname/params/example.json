@@ -1,7 +1,6 @@
 {
-    "System::set_hostname":
-    {
-        "hostname": "node1",
-        "domainname": "example.com",
-    }
+   "System::set_hostname" : {
+      "domainname" : "example.com",
+      "hostname" : "node1"
+   }
 }

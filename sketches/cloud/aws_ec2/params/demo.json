@@ -1,37 +1,30 @@
 [
-    {
-        // ensure 1 cfworkers
-        "Cloud::Services::AWS::EC2":
-        {
-            count: 1,
-            ami: "ami-a29943cb",
-            class: "cfworker",
-            install_cfengine: true,
-	        hub: "$(sys.ipv4)",
-            options:
-            {
-                // security_group: "cf",
-                security_group: "default",
-                netrc: "/home/tzz/.netrc",
-                ssh_pub_key: "/root/.ssh/id_rsa.pub"
-            },
-        }
-    },
-    {
-        // ensure 0 cfworkers
-        "Cloud::Services::AWS::EC2":
-        {
-            count: 0,
-            ami: "ignored",
-            class: "cfworker",
-            install_cfengine: "ignored",
-	        hub: "ignored",
-            options:
-            {
-                security_group: "ignored",
-                netrc: "/home/tzz/.netrc",
-                ssh_pub_key: "ignored"
-            },
-        }
-    },
+   {
+      "Cloud::Services::AWS::EC2" : {
+         "ami" : "ami-a29943cb",
+         "class" : "cfworker",
+         "count" : 1,
+         "hub" : "$(sys.ipv4)",
+         "install_cfengine" : true,
+         "options" : {
+            "netrc" : "/home/tzz/.netrc",
+            "security_group" : "default",
+            "ssh_pub_key" : "/root/.ssh/id_rsa.pub"
+         }
+      }
+   },
+   {
+      "Cloud::Services::AWS::EC2" : {
+         "ami" : "ignored",
+         "class" : "cfworker",
+         "count" : 0,
+         "hub" : "ignored",
+         "install_cfengine" : "ignored",
+         "options" : {
+            "netrc" : "/home/tzz/.netrc",
+            "security_group" : "ignored",
+            "ssh_pub_key" : "ignored"
+         }
+      }
+   }
 ]

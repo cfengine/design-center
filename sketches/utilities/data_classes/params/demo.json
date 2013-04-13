@@ -1,17 +1,101 @@
 [
-   { "Data::Classes": { classname: "sshd_config_exists", files: ["/etc/ssh/sshd_config"] } },
-   { "Data::Classes": { classname: "sshd_processes_running", process_patterns: ["sshd"] } },
-   { "Data::Classes": { classname: "root_sshd_processes_running", process_patterns: ["sshd"], owner: "root" } },
-   { "Data::Classes": { classname: "sshd_ports_open", ports: [22] } },
-
-   { "Data::Classes": { classname: "httpd_init_exists", files: ["/etc/rc3.d/S85httpd"] } },
-   { "Data::Classes": { classname: "httpd_processes_running", process_patterns: ["httpd"], min_process_count: 10 } },
-   { "Data::Classes": { classname: "httpd_ports_open", ports: [80] } },
-
-   { "Data::Classes": { classname: "tomcat_init_exists", files: ["/etc/rc3.d/S85tomcat7"] } },
-   { "Data::Classes": { classname: "tomcat_processes_running", process_patterns: ["java"], owner: "tomcat" } },
-   { "Data::Classes": { classname: "tomcat_ports_open", ports: [8080] } },
-
-   { "Data::Classes": { classname: "raid_OK", commands: ["/bin/echo put your own commands here"] } },
-   { "Data::Classes": { classname: "broken_should_not_be_defined", commands: ["/bin/false"] } },
+   {
+      "Data::Classes" : {
+         "classname" : "sshd_config_exists",
+         "files" : [
+            "/etc/ssh/sshd_config"
+         ]
+      }
+   },
+   {
+      "Data::Classes" : {
+         "classname" : "sshd_processes_running",
+         "process_patterns" : [
+            "sshd"
+         ]
+      }
+   },
+   {
+      "Data::Classes" : {
+         "classname" : "root_sshd_processes_running",
+         "owner" : "root",
+         "process_patterns" : [
+            "sshd"
+         ]
+      }
+   },
+   {
+      "Data::Classes" : {
+         "classname" : "sshd_ports_open",
+         "ports" : [
+            22
+         ]
+      }
+   },
+   {
+      "Data::Classes" : {
+         "classname" : "httpd_init_exists",
+         "files" : [
+            "/etc/rc3.d/S85httpd"
+         ]
+      }
+   },
+   {
+      "Data::Classes" : {
+         "classname" : "httpd_processes_running",
+         "min_process_count" : 10,
+         "process_patterns" : [
+            "httpd"
+         ]
+      }
+   },
+   {
+      "Data::Classes" : {
+         "classname" : "httpd_ports_open",
+         "ports" : [
+            80
+         ]
+      }
+   },
+   {
+      "Data::Classes" : {
+         "classname" : "tomcat_init_exists",
+         "files" : [
+            "/etc/rc3.d/S85tomcat7"
+         ]
+      }
+   },
+   {
+      "Data::Classes" : {
+         "classname" : "tomcat_processes_running",
+         "owner" : "tomcat",
+         "process_patterns" : [
+            "java"
+         ]
+      }
+   },
+   {
+      "Data::Classes" : {
+         "classname" : "tomcat_ports_open",
+         "ports" : [
+            8080
+         ]
+      }
+   },
+   {
+      "Data::Classes" : {
+         "classname" : "raid_OK",
+         "commands" : [
+            "/bin/echo put your own commands here"
+         ]
+      }
+   },
+   {
+      "Data::Classes" : {
+         "classname" : "broken_should_not_be_defined",
+         "commands" : [
+            "/bin/false"
+         ]
+      }
+   }
 ]

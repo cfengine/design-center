@@ -1,4 +1,20 @@
 [
-   { "Services::Generic": { name: "www", start: "/etc/init.d/httpd start", stop: "/etc/init.d/httpd stop", pattern: ".*httpd.*", policy: "start", } },
-   { "Services::Generic": { name: "www", start: "/etc/init.d/httpd start", stop: "/etc/init.d/httpd stop", pattern: ".*httpd.*", policy: "stop", } },
+   {
+      "Services::Generic" : {
+         "name" : "www",
+         "pattern" : ".*httpd.*",
+         "policy" : "start",
+         "start" : "/etc/init.d/httpd start",
+         "stop" : "/etc/init.d/httpd stop"
+      }
+   },
+   {
+      "Services::Generic" : {
+         "name" : "www",
+         "pattern" : ".*httpd.*",
+         "policy" : "stop",
+         "start" : "/etc/init.d/httpd start",
+         "stop" : "/etc/init.d/httpd stop"
+      }
+   }
 ]

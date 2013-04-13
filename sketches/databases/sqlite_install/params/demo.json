@@ -1,7 +1,12 @@
 [
-   // this is the install client bundle call
-   { "Database::Install::SQLite": {purge: false} },
-
-   // this is the purge bundle call
-   { "Database::Install::SQLite": {purge:true} },
+   {
+      "Database::Install::SQLite" : {
+         "purge" : false
+      }
+   },
+   {
+      "Database::Install::SQLite" : {
+         "purge" : true
+      }
+   }
 ]

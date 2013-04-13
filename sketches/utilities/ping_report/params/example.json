@@ -1,8 +1,10 @@
 {
-   "Utilities::ping_report":
-   {
-       hosts: [ "localhost", "127.0.0.1", "boogie.woogie"],
-       count: 2,
+   "Utilities::ping_report" : {
+      "count" : 2,
+      "hosts" : [
+         "localhost",
+         "127.0.0.1",
+         "boogie.woogie"
+      ]
    }
 }
-

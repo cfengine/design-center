@@ -1,41 +1,91 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file" },
-        "README.md": {"documentation":true },
-        "test.cf": {"comment": "Test Policy"},
-        "example.cf": {"comment": "Example Policy"}, "changelog": {"comment": "changelog"},
-        "sketch.json": {"comment": "Sketch definition"},
-        "params/example.json": {"comment": "Example parameters for use with cf-sketch"}
-    },
-
-    "metadata":
-    {
-        "name": "System::sysctl",
-        "description": "Manage sysctl values",
-        "version":1.5,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": {"version":105 }, "CFEngine::dclib": {}, "cfengine": {"version": "3.4.0" }, "os": [ "linux" ] }
-    },
-
-    "api":
-    {
-        "set":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "metadata"},
-            {"type": "string", "name": "sysctl_file", "default": "/etc/sysctl.conf" },
-            {"type": "boolean", "name": "empty_first" },
-            {"type": "array", "name": "ensured_kv" },
-            {"type": "array", "name": "removed_kv" },
-            {"type": "list", "name": "removed_vars" },
-            {"type": "return", "name": "sysctl_file"}
-	]
-    },
-
-    "namespace": "cfdc_sysctl",
-
-    "interface": [ "main.cf" ]
+   "api" : {
+      "set" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "default" : "/etc/sysctl.conf",
+            "name" : "sysctl_file",
+            "type" : "string"
+         },
+         {
+            "name" : "empty_first",
+            "type" : "boolean"
+         },
+         {
+            "name" : "ensured_kv",
+            "type" : "array"
+         },
+         {
+            "name" : "removed_kv",
+            "type" : "array"
+         },
+         {
+            "name" : "removed_vars",
+            "type" : "list"
+         },
+         {
+            "name" : "sysctl_file",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "changelog" : {
+         "comment" : "changelog"
+      },
+      "example.cf" : {
+         "comment" : "Example Policy"
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      },
+      "params/example.json" : {
+         "comment" : "Example parameters for use with cf-sketch"
+      },
+      "sketch.json" : {
+         "comment" : "Sketch definition"
+      },
+      "test.cf" : {
+         "comment" : "Test Policy"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Nick Anderson <nick@cmdln.org>",
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {},
+         "CFEngine::stdlib" : {
+            "version" : 105
+         },
+         "cfengine" : {
+            "version" : "3.4.0"
+         },
+         "os" : [
+            "linux"
+         ]
+      },
+      "description" : "Manage sysctl values",
+      "license" : "MIT",
+      "name" : "System::sysctl",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : 1.5
+   },
+   "namespace" : "cfdc_sysctl"
 }

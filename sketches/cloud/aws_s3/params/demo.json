@@ -1,27 +1,21 @@
 [
-    {
-        // sync bucket from directory
-        "Cloud::Services::AWS::S3":
-        {
-            directory: "/tmp/uploadthis",
-            bucket: "cfsketch_cloud_uploads",
-            options:
-            {
-                acl: "public-read",
-                netrc: "/home/tzz/.netrc",
-            },
-        }
-    },
-    {
-        // clear bucket
-        "Cloud::Services::AWS::S3":
-        {
-            clear_bucket: "cfsketch_cloud_uploads",
-            options:
-            {
-                acl: "ignored",
-                netrc: "/home/tzz/.netrc",
-            },
-        }
-    },
+   {
+      "Cloud::Services::AWS::S3" : {
+         "bucket" : "cfsketch_cloud_uploads",
+         "directory" : "/tmp/uploadthis",
+         "options" : {
+            "acl" : "public-read",
+            "netrc" : "/home/tzz/.netrc"
+         }
+      }
+   },
+   {
+      "Cloud::Services::AWS::S3" : {
+         "clear_bucket" : "cfsketch_cloud_uploads",
+         "options" : {
+            "acl" : "ignored",
+            "netrc" : "/home/tzz/.netrc"
+         }
+      }
+   }
 ]

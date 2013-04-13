@@ -1,5 +1,5 @@
 {
-  "include": "check_dummy_parent.json",
-  "args": "0 Test ok",
-  "usebundle": "handler_"
+   "args" : "0 Test ok",
+   "include" : "check_dummy_parent.json",
+   "usebundle" : "handler_"
 }

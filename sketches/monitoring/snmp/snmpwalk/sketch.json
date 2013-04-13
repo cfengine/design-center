@@ -1,37 +1,83 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file"},
-        "README.md": {"documentation": "true"},
-
-        "params/demo.json": {"comment": "SNMP walk example with defaults"}
-    },
-
-    "metadata":
-    {
-        "name": "Monitoring::SNMP::Walk",
-        "description": "Do a SNMP walk and translate the results to CFEngine classes and variables",
-        "version": "1.00",
-        "license": "MIT",
-        "tags": [ "cfdc", "snmp" ],
-        "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": {"version": "109"}, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, "cfengine": {"version": "3.5.0"}, "os": [ "linux" ] }
-    },
-
-    "api":
-    {
-        "walk":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "mymetadata"},
-            {"type": "string", "name": "snmpwalk", "description": "Command line to execute 'snmpwalk' (with options).  Note that '-Oaqt' is required and '-m ALL' is highly recommended.", "default": "/usr/bin/snmpwalk -Oaqt -m ALL -v 2c -c public"},
-            {"type": "string", "name": "agent", "description": "Agent to target, e.g. a host name or IP address", "default": "localhost"},
-            {"type": "string", "name": "oid", "description": "OID to walk", "default": ""},
-            {"type": "return", "name": "walked", "description": "Was the tree walked?  Boolean."},
-            {"type": "return", "name": "module_array", "description": "Name of array defined by the 'walk' bundle"}
-	]
-    },
-
-    "namespace": "cfdc_snmp",
-    "interface": [ "main.cf" ]
+   "api" : {
+      "walk" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "mymetadata",
+            "type" : "metadata"
+         },
+         {
+            "default" : "/usr/bin/snmpwalk -Oaqt -m ALL -v 2c -c public",
+            "description" : "Command line to execute 'snmpwalk' (with options).  Note that '-Oaqt' is required and '-m ALL' is highly recommended.",
+            "name" : "snmpwalk",
+            "type" : "string"
+         },
+         {
+            "default" : "localhost",
+            "description" : "Agent to target, e.g. a host name or IP address",
+            "name" : "agent",
+            "type" : "string"
+         },
+         {
+            "default" : "",
+            "description" : "OID to walk",
+            "name" : "oid",
+            "type" : "string"
+         },
+         {
+            "description" : "Was the tree walked?  Boolean.",
+            "name" : "walked",
+            "type" : "return"
+         },
+         {
+            "description" : "Name of array defined by the 'walk' bundle",
+            "name" : "module_array",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : "true"
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      },
+      "params/demo.json" : {
+         "comment" : "SNMP walk example with defaults"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {},
+         "CFEngine::dclib::3.5.0" : {},
+         "CFEngine::stdlib" : {
+            "version" : "109"
+         },
+         "cfengine" : {
+            "version" : "3.5.0"
+         },
+         "os" : [
+            "linux"
+         ]
+      },
+      "description" : "Do a SNMP walk and translate the results to CFEngine classes and variables",
+      "license" : "MIT",
+      "name" : "Monitoring::SNMP::Walk",
+      "tags" : [
+         "cfdc",
+         "snmp"
+      ],
+      "version" : "1.00"
+   },
+   "namespace" : "cfdc_snmp"
 }

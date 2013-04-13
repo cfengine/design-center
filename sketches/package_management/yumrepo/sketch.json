@@ -1,40 +1,93 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file" },
-        "README.md": {"documentation":true }, "changelog": {"comment": "changelog" },
-        "test.cf": {"comment": "Example/Test policy" },
-        "params/repos.json": { }
-    },
-
-    "metadata":
-    {
-        "name": "Repository::Yum::Maintain",
-        "description": "Create and keep Yum repository metadata up to date",
-        "version":3.0,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "tested": [ "redhat_5", "centos_5" ],
-        "depends": { "CFEngine::stdlib": {"version":109 }, "CFEngine::dclib": { }, "cfengine": {"version": "3.4.0" }, "os": [ "linux" ]}
-    },
-
-    "api":
-    {
-        "manage_metadata":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "metadata"},
-            {"type": "string", "name": "name"},
-            {"type": "string", "name": "path"},
-            {"type": "array", "name": "perm"},
-            {"type": "string", "name": "refresh_interval", "default":60,"description": "Refresh interval for the Yum metadata" },
-            {"type": "string", "name": "createrepo", "default": "$(default:dc_paths.createrepo)", "description": "Command to create the repo" },
-
-            {"type": "return", "name": "status"},
-            {"type": "return", "name": "return_code"}
-	]
-    },
-
-    "interface": [ "main.cf" ]
+   "api" : {
+      "manage_metadata" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "name" : "name",
+            "type" : "string"
+         },
+         {
+            "name" : "path",
+            "type" : "string"
+         },
+         {
+            "name" : "perm",
+            "type" : "array"
+         },
+         {
+            "default" : 60,
+            "description" : "Refresh interval for the Yum metadata",
+            "name" : "refresh_interval",
+            "type" : "string"
+         },
+         {
+            "default" : "$(default:dc_paths.createrepo)",
+            "description" : "Command to create the repo",
+            "name" : "createrepo",
+            "type" : "string"
+         },
+         {
+            "name" : "status",
+            "type" : "return"
+         },
+         {
+            "name" : "return_code",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "changelog" : {
+         "comment" : "changelog"
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      },
+      "params/repos.json" : {},
+      "test.cf" : {
+         "comment" : "Example/Test policy"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Nick Anderson <nick@cmdln.org>",
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {},
+         "CFEngine::stdlib" : {
+            "version" : 109
+         },
+         "cfengine" : {
+            "version" : "3.4.0"
+         },
+         "os" : [
+            "linux"
+         ]
+      },
+      "description" : "Create and keep Yum repository metadata up to date",
+      "license" : "MIT",
+      "name" : "Repository::Yum::Maintain",
+      "tags" : [
+         "cfdc"
+      ],
+      "tested" : [
+         "redhat_5",
+         "centos_5"
+      ],
+      "version" : 3
+   }
 }

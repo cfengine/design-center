@@ -1,25 +1,43 @@
 {
-
-    "manifest":
-    {
-        "wordpress.cf": { "desc": "main file" },
-        "README.md": { "documentation": true },
-
-        "params/wordpress-base.json": { "comment": "Base configuration parameters for different platforms" },
-        "params/wordpress.json": { "comment": "Example configuration parameters" }
-    },
-
-    "metadata":
-    {
-        "name": "WebApps::wordpress_install",
-	"description": "Install and configure Wordpress",
-        "version": 1.00,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Aleksey Tsalolikhin <atsaloli.tech@gmail.com>", "Diego Zamboni <diego.zamboni@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.3.0" }, "os": [ "linux" ] }
-    },
-
-    
-    "interface": [ "wordpress.cf" ]
+   "interface" : [
+      "wordpress.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "params/wordpress-base.json" : {
+         "comment" : "Base configuration parameters for different platforms"
+      },
+      "params/wordpress.json" : {
+         "comment" : "Example configuration parameters"
+      },
+      "wordpress.cf" : {
+         "desc" : "main file"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Aleksey Tsalolikhin <atsaloli.tech@gmail.com>",
+         "Diego Zamboni <diego.zamboni@cfengine.com>"
+      ],
+      "depends" : {
+         "CFEngine::stdlib" : {
+            "version" : 105
+         },
+         "cfengine" : {
+            "version" : "3.3.0"
+         },
+         "os" : [
+            "linux"
+         ]
+      },
+      "description" : "Install and configure Wordpress",
+      "license" : "MIT",
+      "name" : "WebApps::wordpress_install",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : 1
+   }
 }

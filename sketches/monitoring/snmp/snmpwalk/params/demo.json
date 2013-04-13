@@ -1,6 +1,3 @@
 {
-    "Monitoring::SNMP::Walk":
-    {
-        // all the parameters have defaults, so this will work
-    }
+   "Monitoring::SNMP::Walk" : {}
 }

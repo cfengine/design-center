@@ -1,6 +1,8 @@
 {
-   "Packages::CPAN::cpanm":
-   {
-       "packages": [ "Every", "JSON::XS" ],
+   "Packages::CPAN::cpanm" : {
+      "packages" : [
+         "Every",
+         "JSON::XS"
+      ]
    }
 }

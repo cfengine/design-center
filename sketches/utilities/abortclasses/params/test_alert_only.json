@@ -1,19 +1,18 @@
 {
-    "Utilities::abortclasses":
-    {
-        trigger_file: "/tmp/COWBOY",
-        trigger_context: "any",
-        abortclass: "cowboy",
-        alert_only: true,
-        timeout: {
-                      enabled: 0,
-                      action: "abortclasses_pester_lester",
-                      years: 0,
-                      months: 0,
-                      days: 0,
-                      hours: 0,
-                      minutes: 0,
-                      seconds: 0
-                     }
-    }
+   "Utilities::abortclasses" : {
+      "abortclass" : "cowboy",
+      "alert_only" : true,
+      "timeout" : {
+         "action" : "abortclasses_pester_lester",
+         "days" : 0,
+         "enabled" : 0,
+         "hours" : 0,
+         "minutes" : 0,
+         "months" : 0,
+         "seconds" : 0,
+         "years" : 0
+      },
+      "trigger_context" : "any",
+      "trigger_file" : "/tmp/COWBOY"
+   }
 }

@@ -1,36 +1,73 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file" },
-        "README.md": {"documentation":true },
-        "params/demo.json": {"comment": "simple demo" }
-    },
-
-    "metadata":
-    {
-        "name": "Packages::CPAN::cpanm",
-        "description": "Install CPAN packages through App::cpanminus",
-        "version":1.10,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": {"version":105 }, "CFEngine::dclib": {"version": "1.0.0" }, "cfengine": {"version": "3.4.0" }, "os": [ "linux" ] }
-    },
-
-    "api":
-    {
-        "install":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "metadata"},
-            {"type": "string", "name": "cpanm_program", "default": "/usr/local/bin/cpanm" },
-            {"type": "string", "name": "extra_params", "default": "" },
-            {"type": "list", "name": "packages" },
-            {"type": "return", "name": "installed"}
-	]
-    },
-
-    "namespace": "cfdc_cpan",
-
-    "interface": [ "main.cf" ]
+   "api" : {
+      "install" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "default" : "/usr/local/bin/cpanm",
+            "name" : "cpanm_program",
+            "type" : "string"
+         },
+         {
+            "default" : "",
+            "name" : "extra_params",
+            "type" : "string"
+         },
+         {
+            "name" : "packages",
+            "type" : "list"
+         },
+         {
+            "name" : "installed",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      },
+      "params/demo.json" : {
+         "comment" : "simple demo"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {
+            "version" : "1.0.0"
+         },
+         "CFEngine::stdlib" : {
+            "version" : 105
+         },
+         "cfengine" : {
+            "version" : "3.4.0"
+         },
+         "os" : [
+            "linux"
+         ]
+      },
+      "description" : "Install CPAN packages through App::cpanminus",
+      "license" : "MIT",
+      "name" : "Packages::CPAN::cpanm",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : 1.1
+   },
+   "namespace" : "cfdc_cpan"
 }

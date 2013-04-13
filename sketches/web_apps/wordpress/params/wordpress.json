@@ -1,84 +1,71 @@
 {
-  "WebApps::wordpress_install":
-    {
-       "activated" : true,
-       "wp_dir" : { "bycontext": { "debian|ubuntu": "/var/www/blog", "redhat|centos": "/var/www/html/blog" } },
-       "wp_params" : {
+   "WebApps::wordpress_install" : {
+      "activated" : true,
+      "apache_srv" : {
+         "bycontext" : {
+            "debian|ubuntu" : "apache2",
+            "redhat|centos" : "httpd"
+         }
+      },
+      "htmlroot" : {
+         "bycontext" : {
+            "debian|ubuntu" : "/var/www",
+            "redhat|centos" : "/var/www/html"
+         }
+      },
+      "httpd_process" : {
+         "bycontext" : {
+            "centos" : "/usr/sbin/httpd",
+            "debian|ubuntu" : "/usr/sbin/apache2",
+            "redhat" : "^httpd"
+         }
+      },
+      "mysql_process" : {
+         "bycontext" : {
+            "centos" : "/usr/libexec/mysqld",
+            "debian|ubuntu" : "/usr/sbin/mysqld",
+            "redhat" : "^mysqld"
+         }
+      },
+      "mysql_srv" : {
+         "bycontext" : {
+            "debian|ubuntu" : "mysqld",
+            "redhat|centos" : "mysqld"
+         }
+      },
+      "packages" : {
+         "bycontext" : {
+            "debian|ubuntu" : [
+               "apache2",
+               "php5",
+               "php5-mysql",
+               "libapache2-mod-php5",
+               "mysql-server"
+            ],
+            "redhat|centos" : [
+               "httpd",
+               "php",
+               "php-mysql",
+               "mysql-server"
+            ]
+         }
+      },
+      "service_cmd" : {
+         "bycontext" : {
+            "debian|ubuntu" : "/usr/sbin/service",
+            "redhat|centos" : "/sbin/service"
+         }
+      },
+      "wp_dir" : {
+         "bycontext" : {
+            "debian|ubuntu" : "/var/www/blog",
+            "redhat|centos" : "/var/www/html/blog"
+         }
+      },
+      "wp_params" : {
          "DB_NAME" : "wordpress_db",
-         "DB_USER" : "wordpress_user",
-         "DB_PASSWORD" : "wordpress_pass"
-       },
-       "htmlroot":
-       {
-           "bycontext":
-           {
-               "debian|ubuntu": "/var/www",
-               "redhat|centos": "/var/www/html"
-           }
-       },
-       "packages":
-       {
-           "bycontext":
-           {
-               "debian|ubuntu":
-               [
-                   "apache2", 
-                   "php5",
-                   "php5-mysql",
-                   "libapache2-mod-php5",
-                   "mysql-server"
-               ],
-               "redhat|centos":
-               [
-                   "httpd",
-                   "php",
-                   "php-mysql",
-                   "mysql-server"
-               ]
-           }
-       },
-       "mysql_process":
-       {
-           "bycontext":
-           {
-               "debian|ubuntu": "/usr/sbin/mysqld",
-               "redhat": "^mysqld",
-               "centos": "/usr/libexec/mysqld"
-           }
-       },
-       "httpd_process":
-       {
-           "bycontext":
-           {
-               "debian|ubuntu": "/usr/sbin/apache2",
-               "redhat": "^httpd",
-               "centos": "/usr/sbin/httpd"
-           }
-       },
-       "service_cmd":
-       {
-           "bycontext":
-           {
-               "debian|ubuntu": "/usr/sbin/service",
-               "redhat|centos": "/sbin/service"
-           }
-       },
-       "apache_srv":
-       {
-           "bycontext":
-           {
-               "debian|ubuntu": "apache2",
-               "redhat|centos": "httpd"
-           }
-       },
-       "mysql_srv":
-       {
-           "bycontext":
-           {
-               "debian|ubuntu": "mysqld",
-               "redhat|centos": "mysqld"
-           }
-       },
-    }
+         "DB_PASSWORD" : "wordpress_pass",
+         "DB_USER" : "wordpress_user"
+      }
+   }
 }
-

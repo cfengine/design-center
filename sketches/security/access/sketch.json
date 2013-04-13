@@ -1,39 +1,83 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file" },
-        "README.md": {"documentation":true },
-        "test.cf": {"comment": "Test Policy"},
-        "sketch.json": {"comment": "Sketch definition"},
-        "params/example.json": {"comment": "Example parameters for use with cf-sketch"}
-    },
-
-    "metadata":
-    {
-        "name": "System::access",
-        "description": "Manage access.conf values",
-        "version":1.0,
-        "license": "MIT",
-        "tags": [ "cfdc", "security", "access", "access.conf" ],
-        "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": {"version":109 }, "CFEngine::dclib": {}, "cfengine": {"version": "3.4.0" }, "os": [ "linux" ] }
-    },
-
-    "api":
-    {
-        "set":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "metadata"},
-            {"type": "string", "name": "access_file", "default": "/etc/security/access.conf" },
-            {"type": "boolean", "name": "empty_first" },
-            {"type": "list", "name": "ensured_lines" },
-            {"type": "list", "name": "removed_patterns" },
-            {"type": "return", "name": "access_file"}
-	]
-    },
-
-    "namespace": "cfdc_access",
-
-    "interface": [ "main.cf" ]
+   "api" : {
+      "set" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "default" : "/etc/security/access.conf",
+            "name" : "access_file",
+            "type" : "string"
+         },
+         {
+            "name" : "empty_first",
+            "type" : "boolean"
+         },
+         {
+            "name" : "ensured_lines",
+            "type" : "list"
+         },
+         {
+            "name" : "removed_patterns",
+            "type" : "list"
+         },
+         {
+            "name" : "access_file",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      },
+      "params/example.json" : {
+         "comment" : "Example parameters for use with cf-sketch"
+      },
+      "sketch.json" : {
+         "comment" : "Sketch definition"
+      },
+      "test.cf" : {
+         "comment" : "Test Policy"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {},
+         "CFEngine::stdlib" : {
+            "version" : 109
+         },
+         "cfengine" : {
+            "version" : "3.4.0"
+         },
+         "os" : [
+            "linux"
+         ]
+      },
+      "description" : "Manage access.conf values",
+      "license" : "MIT",
+      "name" : "System::access",
+      "tags" : [
+         "cfdc",
+         "security",
+         "access",
+         "access.conf"
+      ],
+      "version" : 1
+   },
+   "namespace" : "cfdc_access"
 }

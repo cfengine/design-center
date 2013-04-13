@@ -1,16 +1,18 @@
 {
-    "Cloud::Services":
-    {
-        "sdb":
-        {
-            "aws_access_key": "",
-            "aws_secret_key": ""
-        },
-
-        "class": "cfclouddomain",
-        "stype": "sdb",
-        "count": "/var/cfengine/masterfiles/sample.sdb.lines.json",
-        "state": { "bycontext": { "sync": "start", "clear": "stop" } },
-	"activated": "am_policy_hub"
-    }
+   "Cloud::Services" : {
+      "activated" : "am_policy_hub",
+      "class" : "cfclouddomain",
+      "count" : "/var/cfengine/masterfiles/sample.sdb.lines.json",
+      "sdb" : {
+         "aws_access_key" : "",
+         "aws_secret_key" : ""
+      },
+      "state" : {
+         "bycontext" : {
+            "clear" : "stop",
+            "sync" : "start"
+         }
+      },
+      "stype" : "sdb"
+   }
 }

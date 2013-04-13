@@ -1,41 +1,33 @@
 {
- "activated" : true,
- "install_cfengine" : true,
- "ec2":
- {
-     "ami": "ami-b89842d1",
-     "instance_type": "m1.small",
-     "region": "us-east-1",
-     "security_group": "default",
-     "aws_access_key": "ACCESSKEY",
-     "aws_secret_key": "SECRETKEY",
-     "ssh_pub_key": "/home/user/.ssh/id_rsa.pub"
- },
-
- "bycontext":
- {
-  "start1_ec2":
-  {
-      "stype": "ec2",
-      "count": "1",
-      "class": "cfworker",
-      "state": "start"
-  },
-
-  "start5_ec2":
-  {
-      "stype": "ec2",
-      "count": "5",
-      "class": "cfworker",
-      "state": "start"
-  },
-
-  "stop_all_ec2":
-  {
-      "stype": "ec2",
-      "count": "0",
-      "class": "cfworker",
-      "state": "stop"
-  }
- }
+   "activated" : true,
+   "bycontext" : {
+      "start1_ec2" : {
+         "class" : "cfworker",
+         "count" : "1",
+         "state" : "start",
+         "stype" : "ec2"
+      },
+      "start5_ec2" : {
+         "class" : "cfworker",
+         "count" : "5",
+         "state" : "start",
+         "stype" : "ec2"
+      },
+      "stop_all_ec2" : {
+         "class" : "cfworker",
+         "count" : "0",
+         "state" : "stop",
+         "stype" : "ec2"
+      }
+   },
+   "ec2" : {
+      "ami" : "ami-b89842d1",
+      "aws_access_key" : "ACCESSKEY",
+      "aws_secret_key" : "SECRETKEY",
+      "instance_type" : "m1.small",
+      "region" : "us-east-1",
+      "security_group" : "default",
+      "ssh_pub_key" : "/home/user/.ssh/id_rsa.pub"
+   },
+   "install_cfengine" : true
 }

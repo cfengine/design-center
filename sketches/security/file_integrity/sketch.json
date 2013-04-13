@@ -1,40 +1,74 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file" },
-        "README.md": {"documentation":true },
-        "params/pcidss_v2.json": {"desc": "PCI parameters" }
-    },
-
-
-    "metadata":
-    {
-        "name": "Security::file_integrity",
-        "description": "File hashes will be generated at intervals specified by ifelapsed. On modification, you can update the hashes automatically. In either case, a local report will be generated and transferred to the CFEngine hub (CFEngine Enterprise only). Note that scanning the files requires a lot of disk and CPU cycles, so you should be careful when selecting the amount of files to check and the interval at which it happens (ifelapsed).",
-        "version":1.00,
-        "license": "MIT",
-        "tags": [ "cfdc", "pcidss", "pcidss_v2", "pcidss_v2_sec_11_5" ],
-        "authors": [ "Eystein Stenberg <eystein@cfengine.com>" ],
-        "depends":
-        {
-            "CFEngine::stdlib": {"version":105 },
-            "CFEngine::dclib": { }, "cfengine": {"version": "3.4.0" }}, "os": [ "any" ]
-	},
-
-    "api":
-    {
-        "watch":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "metadata"},
-            {"type": "list", "name": "watch" },
-            {"type": "string", "name": "hash_algorithm", "default": "sha256" },
-            {"type": "string", "name": "ifelapsed", "default": "1440" },
-            {"type": "return", "name": "paths"}
-	]
-    },
-
-    "namespace": "cfdc_file_integrity",
-
-    "interface": [ "main.cf" ]
+   "api" : {
+      "watch" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "name" : "watch",
+            "type" : "list"
+         },
+         {
+            "default" : "sha256",
+            "name" : "hash_algorithm",
+            "type" : "string"
+         },
+         {
+            "default" : "1440",
+            "name" : "ifelapsed",
+            "type" : "string"
+         },
+         {
+            "name" : "paths",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      },
+      "params/pcidss_v2.json" : {
+         "desc" : "PCI parameters"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Eystein Stenberg <eystein@cfengine.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {},
+         "CFEngine::stdlib" : {
+            "version" : 105
+         },
+         "cfengine" : {
+            "version" : "3.4.0"
+         }
+      },
+      "description" : "File hashes will be generated at intervals specified by ifelapsed. On modification, you can update the hashes automatically. In either case, a local report will be generated and transferred to the CFEngine hub (CFEngine Enterprise only). Note that scanning the files requires a lot of disk and CPU cycles, so you should be careful when selecting the amount of files to check and the interval at which it happens (ifelapsed).",
+      "license" : "MIT",
+      "name" : "Security::file_integrity",
+      "os" : [
+         "any"
+      ],
+      "tags" : [
+         "cfdc",
+         "pcidss",
+         "pcidss_v2",
+         "pcidss_v2_sec_11_5"
+      ],
+      "version" : 1
+   },
+   "namespace" : "cfdc_file_integrity"
 }

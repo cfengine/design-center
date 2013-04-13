@@ -1,18 +1,21 @@
 {
-    "VCS::vcs_mirror":
-    {
-        path: "/tmp/cfengine-core2",
-        origin:"https://github.com/cfengine/core.git",
-        branch: "master",
-        vcs: "/usr/bin/git",
-        options:
-        {
-            nowipe: true,
-            vcs:
-            {
-                runas: { "function": "getenv", "args": ["LOGNAME", "128"] },
-                umask: "000",
+   "VCS::vcs_mirror" : {
+      "branch" : "master",
+      "options" : {
+         "nowipe" : true,
+         "vcs" : {
+            "runas" : {
+               "args" : [
+                  "LOGNAME",
+                  "128"
+               ],
+               "function" : "getenv"
             },
-        }
-    }
+            "umask" : "000"
+         }
+      },
+      "origin" : "https://github.com/cfengine/core.git",
+      "path" : "/tmp/cfengine-core2",
+      "vcs" : "/usr/bin/git"
+   }
 }

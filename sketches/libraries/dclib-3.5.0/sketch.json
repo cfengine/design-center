@@ -1,21 +1,32 @@
 {
-    "manifest":
-    {
-        "library.cf": {"desc": "Design Center stdlib" },
-        "README.md": {"documentation":true }
-    },
-
-    "metadata":
-    {
-        "name": "CFEngine::dclib::3.5.0",
-        "description": "Design Center standard library for CFEngine 3.5.0 and higher",
-        "version": "3.5.0",
-        "license": "MIT",
-        "tags": [ "cfdc", "stdlib" ],
-        "authors": [ "CFEngine AS" ],
-        "depends": { "cfengine": { "version": "3.5.0" } }
-    },
-
-    "namespace": "cfdc_dclib_350",
-    "interface": [ "library.cf" ]
+   "interface" : [
+      "library.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "library.cf" : {
+         "desc" : "Design Center stdlib"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "CFEngine AS"
+      ],
+      "depends" : {
+         "cfengine" : {
+            "version" : "3.5.0"
+         }
+      },
+      "description" : "Design Center standard library for CFEngine 3.5.0 and higher",
+      "license" : "MIT",
+      "name" : "CFEngine::dclib::3.5.0",
+      "tags" : [
+         "cfdc",
+         "stdlib"
+      ],
+      "version" : "3.5.0"
+   },
+   "namespace" : "cfdc_dclib_350"
 }

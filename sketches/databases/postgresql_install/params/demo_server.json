@@ -1,7 +1,14 @@
 [
-   // this is the install server bundle call
-   { "Database::Install::PostgreSQL": {server:true, purge: false} },
-
-   // this is the purge bundle call
-   { "Database::Install::PostgreSQL": {server: true, purge:true} },
+   {
+      "Database::Install::PostgreSQL" : {
+         "purge" : false,
+         "server" : true
+      }
+   },
+   {
+      "Database::Install::PostgreSQL" : {
+         "purge" : true,
+         "server" : true
+      }
+   }
 ]

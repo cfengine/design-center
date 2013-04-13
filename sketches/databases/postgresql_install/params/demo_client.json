@@ -1,7 +1,14 @@
 [
-   // this is the install client bundle call
-   { "Database::Install::PostgreSQL": {server:false, purge: false} },
-
-   // this is the purge bundle call
-   { "Database::Install::PostgreSQL": {server: false, purge:true} },
+   {
+      "Database::Install::PostgreSQL" : {
+         "purge" : false,
+         "server" : false
+      }
+   },
+   {
+      "Database::Install::PostgreSQL" : {
+         "purge" : true,
+         "server" : false
+      }
+   }
 ]

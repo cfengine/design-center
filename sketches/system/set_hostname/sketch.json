@@ -1,37 +1,77 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file", "version": "1.05.2" },
-        "README.md": { "documentation": true },
-        "params/example.json": { "comment": "Sample parameters to set hostname to node1.example.com" },
-        "test.cf": { "comment": "Standalone Test policy" },
-        "changelog": { "comment": "changelog" }
-    },
-    "metadata":
-    {
-        "name": "System::set_hostname",
-	"description": "Configure system hostname",
-        "version": "1.05.2",
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin" ] }
-    },
-
-    "api":
-    {
-        "set":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "metadata"},
-            {"type": "string", "name": "hostname" },
-            {"type": "string", "name": "domainname" },
-            {"type": "return", "name": "hostname"},
-            {"type": "return", "name": "domainname"}
-	]
-    },
-
-    "namespace": "cfdc_hostname",
-
-    "interface": [ "main.cf" ]
+   "api" : {
+      "set" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "name" : "hostname",
+            "type" : "string"
+         },
+         {
+            "name" : "domainname",
+            "type" : "string"
+         },
+         {
+            "name" : "hostname",
+            "type" : "return"
+         },
+         {
+            "name" : "domainname",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "changelog" : {
+         "comment" : "changelog"
+      },
+      "main.cf" : {
+         "desc" : "main file",
+         "version" : "1.05.2"
+      },
+      "params/example.json" : {
+         "comment" : "Sample parameters to set hostname to node1.example.com"
+      },
+      "test.cf" : {
+         "comment" : "Standalone Test policy"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Nick Anderson <nick@cmdln.org>",
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::stdlib" : {
+            "version" : 105
+         },
+         "cfengine" : {
+            "version" : "3.4.0"
+         },
+         "os" : [
+            "linux",
+            "darwin"
+         ]
+      },
+      "description" : "Configure system hostname",
+      "license" : "MIT",
+      "name" : "System::set_hostname",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : "1.05.2"
+   },
+   "namespace" : "cfdc_hostname"
 }

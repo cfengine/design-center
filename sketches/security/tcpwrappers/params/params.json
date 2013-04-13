@@ -1,22 +1,25 @@
 {
-   "Security::tcpwrappers":
-   {
-       allow:
-       {
-           sshd:
-           {
-               daemons: [ "sshd", "sshd1" ],
-               clients: [ "ALL"]
-           }
-       },
-
-       deny:
-       {
-           default:
-           {
-               daemons: [ "ALL" ],
-               clients: [ "ALL" ]
-           }
-       }
+   "Security::tcpwrappers" : {
+      "allow" : {
+         "sshd" : {
+            "clients" : [
+               "ALL"
+            ],
+            "daemons" : [
+               "sshd",
+               "sshd1"
+            ]
+         }
+      },
+      "deny" : {
+         "default" : {
+            "clients" : [
+               "ALL"
+            ],
+            "daemons" : [
+               "ALL"
+            ]
+         }
+      }
    }
 }

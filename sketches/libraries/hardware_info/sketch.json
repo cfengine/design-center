@@ -1,22 +1,38 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "Main library", "version": "1.2" },
-        "README.md": {"documentation":true },
-        "example.cf": {"comment": "Example Policy"},
-        "sketch.json": {"comment": "metadata"}
-    },
-
-    "metadata":
-    {
-        "name": "Library::Hardware::Info",
-        "description": "Discover hardware information",
-        "version":1.2,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Trondham via cfengineers.org" ],
-        "depends": {"cfengine": {"version": "3.2.1" } }
-    },
-
-    "interface": [ "main.cf" ]
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "example.cf" : {
+         "comment" : "Example Policy"
+      },
+      "main.cf" : {
+         "desc" : "Main library",
+         "version" : "1.2"
+      },
+      "sketch.json" : {
+         "comment" : "metadata"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Nick Anderson <nick@cmdln.org>",
+         "Trondham via cfengineers.org"
+      ],
+      "depends" : {
+         "cfengine" : {
+            "version" : "3.2.1"
+         }
+      },
+      "description" : "Discover hardware information",
+      "license" : "MIT",
+      "name" : "Library::Hardware::Info",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : 1.2
+   }
 }

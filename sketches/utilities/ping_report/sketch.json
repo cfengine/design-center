@@ -1,36 +1,76 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file" },
-        "README.md": {"documentation":true},
-        "test.cf": {"comment": "Test Policy"}, "changelog": {"comment": "changelog"},
-        "params/example.json": {"comment": "Example parameters to report on a few hosts connectivity."}
-    },
-
-    "metadata":
-    {
-        "name": "Utilities::ping_report",
-        "description": "Report on pingability of hosts",
-        "version":1.2,
-        "license": "MIT",
-        "tags": ["cfdc"],
-        "authors": ["Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": {"CFEngine::stdlib": {"version":105}, "CFEngine::dclib": {}, "cfengine": {"version": "3.4.0"}, "os": ["linux"] }
-    },
-
-    "api":
-    {   "ping":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "metadata"},
-            {"type": "list", "name": "hosts" },
-            {"type": "string", "name": "count" },
-            {"type": "return", "name": "reached"},
-            {"type": "return", "name": "not_reached"}
-	]
-	},
-
-        "namespace": "cfdc_ping",
-
-        "interface": ["main.cf"]
+   "api" : {
+      "ping" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "name" : "hosts",
+            "type" : "list"
+         },
+         {
+            "name" : "count",
+            "type" : "string"
+         },
+         {
+            "name" : "reached",
+            "type" : "return"
+         },
+         {
+            "name" : "not_reached",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "changelog" : {
+         "comment" : "changelog"
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      },
+      "params/example.json" : {
+         "comment" : "Example parameters to report on a few hosts connectivity."
+      },
+      "test.cf" : {
+         "comment" : "Test Policy"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Nick Anderson <nick@cmdln.org>",
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {},
+         "CFEngine::stdlib" : {
+            "version" : 105
+         },
+         "cfengine" : {
+            "version" : "3.4.0"
+         },
+         "os" : [
+            "linux"
+         ]
+      },
+      "description" : "Report on pingability of hosts",
+      "license" : "MIT",
+      "name" : "Utilities::ping_report",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : 1.2
+   },
+   "namespace" : "cfdc_ping"
 }

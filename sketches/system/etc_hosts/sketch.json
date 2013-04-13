@@ -1,36 +1,73 @@
 {
-    "manifest":
-    {
-        "main.cf": {"desc": "main file" },
-        "README.md": {"documentation":true },
-        "params/example.json": {"comment": "Example parameters" }
-    },
-
-    "metadata":
-    {
-        "name": "System::etc_hosts",
-        "description": "Manage /etc/hosts",
-        "version":2.2,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": {"version":105 }, "CFEngine::dclib": {}, "cfengine": {"version": "3.4.0" }, "os": [ "linux", "darwin", "windows" ] }
-    },
-
-    "api":
-    {
-        "configure":
-        [
-            {"type": "environment", "name": "runenv"},
-            {"type": "metadata", "name": "metadata"},
-            {"type": "string", "name": "hostfile", "default": "/etc/hosts" },
-            {"type": "boolean", "name": "defined_only" },
-            {"type": "array", "name": "hosts" },
-            {"type": "return", "name": "file"}
-	]
-    },
-
-    "namespace": "cfdc_etc_hosts",
-
-    "interface": [ "main.cf" ]
+   "api" : {
+      "configure" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "default" : "/etc/hosts",
+            "name" : "hostfile",
+            "type" : "string"
+         },
+         {
+            "name" : "defined_only",
+            "type" : "boolean"
+         },
+         {
+            "name" : "hosts",
+            "type" : "array"
+         },
+         {
+            "name" : "file",
+            "type" : "return"
+         }
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      },
+      "params/example.json" : {
+         "comment" : "Example parameters"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Nick Anderson <nick@cmdln.org>",
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "depends" : {
+         "CFEngine::dclib" : {},
+         "CFEngine::stdlib" : {
+            "version" : 105
+         },
+         "cfengine" : {
+            "version" : "3.4.0"
+         },
+         "os" : [
+            "linux",
+            "darwin",
+            "windows"
+         ]
+      },
+      "description" : "Manage /etc/hosts",
+      "license" : "MIT",
+      "name" : "System::etc_hosts",
+      "tags" : [
+         "cfdc"
+      ],
+      "version" : 2.2
+   },
+   "namespace" : "cfdc_etc_hosts"
 }
