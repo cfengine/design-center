@@ -3,7 +3,7 @@ body file control
   namespace => "cfdc_openssl_gencert";
 }
 
-bundle agent openssl_gencert(cert_path,owner,group,valid_days,country,state,locality_name,organization,org_unit_name,common_name,email)
+bundle agent openssl_gencert(runenv,metadata,cert_path,owner,group,valid_days,country,state,locality_name,organization,org_unit_name,common_name,email)
 {
   files:
 	    "$(cert_path)/."

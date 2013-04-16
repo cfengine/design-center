@@ -17,6 +17,8 @@
     },
     "api" : {
 		   "openssl_gencert" : [
+          { "name" : "runenv", "type" : "environment" },
+					{ "name" : "metadata", "type" : "metadata" },
           { "name" : "cert_path", "type" : "string" },
 					{ "name" : "owner", "type" : "string", "default" : "root" },
 					{ "name" : "group", "type" : "string", "default" : "root" },
