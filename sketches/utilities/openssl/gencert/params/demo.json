@@ -1,0 +1,6 @@
+{
+    "Utilities::OpenSSL::GenCert":
+    {
+        "cert_path" : "/tmp/openssl",
+    }
+}
