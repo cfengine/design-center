@@ -1,0 +1,28 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "Security::IPTables::Filter",
+        "description": "This sketch manages simple iptables rules",
+        "version": "1.00",
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+    },
+
+    "api": {
+       "iptables_filter": [
+          { "name" : "chain_policies", "type" : "array" },
+          { "name" : "filter_rules", "type" : "array" }
+       ]
+    },
+
+    "namespace": "cfdc_iptables_filter",
+    "interface": [ "main.cf" ]
+}
