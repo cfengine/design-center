@@ -248,7 +248,7 @@ sub api_interaction
     my $ok_callback = shift @_;
 
     my $mydir = dirname($0);
-    my $api_bin = "$mydir/cf-dc-api.pl";
+    my $api_bin = "$mydir/cf-dc-api";
 
     my ($fh_config, $filename_config) = tempfile( "./cf-dc-api-run-XXXX", TMPDIR => 1 );
     my ($fh_data, $filename_data) = tempfile( "./cf-dc-api-run-XXXX", TMPDIR => 1 );
