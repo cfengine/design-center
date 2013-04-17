@@ -1,0 +1,35 @@
+{
+
+    manifest:
+    {
+        "main.cf": { desc: "main file", "version": "1.0.0" }
+    },
+
+    metadata:
+    {
+        "name": "Packages::installed",
+	"description": "Ensure certain packages are installed or not installed.",
+        "version": "1.0.0",
+        "license": "MIT",
+        "tags": [ "cfdc", "enterprise_compatible" ],
+        "authors": [ "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "debian" : "Debian family" } ] }
+    },
+
+    api:
+    {
+        // the key is the name of the bundle!
+        installed:
+        [
+            { type: "bundle_options", single_use: true },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "list", name: "pkgs_add", description: "Packages that should be installed", validation: "LIST_OF_STRING_NONEMPTY", example: "apache2" },
+            { type: "list", name: "pkgs_delete", description: "Packages that should not be installed", validation: "LIST_OF_STRING_NONEMPTY", example: "telnetd" }
+        ],
+    },
+
+    namespace: "cfdc_packages_installed",
+    
+    interface: [ "main.cf" ]
+}
