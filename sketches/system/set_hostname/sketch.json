@@ -12,12 +12,12 @@
     metadata:
     {
         "name": "System::set_hostname",
-	    "description": "Configure system hostname",
+	"description": "Set system hostname. Domain name is also set on Mac, Red Hat and and Gentoo derived distributions (but not Debian).",
         "version": "1.05.2",
         "license": "MIT",
-        "tags": [ "cfdc" ],
+        "tags": [ "cfdc", "enterprise_compatible" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "linux" : "Linux", "darwin" : "Mac OS X" }, "any" ], "os_descriptive": [ "Red Hat family", "Debian family", "Gentoo", "Mac OS (Darwin)" ] }
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "redhat" : "Red Hat famliy", "debian", : "Debian family", "gentoo" : "Gentoo", "darwin" : "Mac OS X" }, "any" ] }
     },
 
     api:
@@ -28,8 +28,8 @@
             { type: "bundle_options", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "string", name: "hostname" },
-            { type: "string", name: "domainname" },
+            { type: "string", name: "hostname", description: "Host name to set", validation: "HOSTNAME", example: "myhost" },
+            { type: "string", name: "domainname", description: "Domain name to set", validation: "HOSTNAME", example: "example.com" },
             { type: "return", name: "hostname", },
             { type: "return", name: "domainname", },
         ],
