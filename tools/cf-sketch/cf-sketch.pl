@@ -29,10 +29,10 @@ BEGIN
 
 use File::Basename;
 use FindBin;
-use lib "$FindBin::Bin/perl-lib",
- "$FindBin::Bin/perl-lib/File-Which-1.09/lib",
- "$FindBin::Bin/perl-lib/JSON-2.53/lib",
- "$FindBin::Bin/perl-lib/Mo-0.31/lib";
+use lib "$FindBin::Bin/../lib/cf-sketch",
+ "$FindBin::Bin/../lib/cf-sketch/File-Which-1.09/lib",
+ "$FindBin::Bin/../lib/cf-sketch/JSON-2.53/lib",
+ "$FindBin::Bin/../lib/cf-sketch/Mo-0.31/lib";
 
 use warnings;
 use strict;
@@ -248,7 +248,7 @@ sub api_interaction
     my $ok_callback = shift @_;
 
     my $mydir = dirname($0);
-    my $api_bin = "$mydir/cf-dc-api.pl";
+    my $api_bin = "$mydir/cf-dc-api";
 
     my ($fh_config, $filename_config) = tempfile( "./cf-dc-api-run-XXXX", TMPDIR => 1 );
     my ($fh_data, $filename_data) = tempfile( "./cf-dc-api-run-XXXX", TMPDIR => 1 );
