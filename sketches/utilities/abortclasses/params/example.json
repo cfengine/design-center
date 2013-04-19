@@ -1,7 +1,7 @@
 {
     "Utilities::abortclasses":
     {
-        trigger_file: "/COWBOY" },
+        trigger_file: "/COWBOY",
         trigger_context: "any",
         abortclass: "cowboy",
         alert_only: true,
