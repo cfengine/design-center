@@ -1,5 +1,5 @@
-Downloading example updates with git
-====================================
+Downloading example updates with git: installing git
+====================================================
 
 GitHub
 ------

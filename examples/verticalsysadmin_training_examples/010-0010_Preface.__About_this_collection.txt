@@ -1,9 +1,12 @@
 About this collection
 =====================
 
-This collection of over 300 working examples of using
-CFEngine 3 is intended to supplement the official
-documentation and aid in learning CFEngine 3.
+Vertical Sysasmin presents "CFEngine by Example",
+a collection of over 300 working examples of using
+CFEngine 3.
 
-Professional CFEngine training is available from
-Vertical Sysadmin (www.verticalsysadmin.com).
+This collection is intended to supplement the official
+documentation and to aid in learning CFEngine 3.
+
+Vertical Sysadmin provides professional CFEngine
+training and implementation consulting.
