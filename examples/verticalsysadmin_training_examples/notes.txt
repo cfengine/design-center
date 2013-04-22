@@ -1,7 +1,5 @@
 TO DO:
 
-- Provide a VM with vim installed, with GUI environment, and with vim syntax highlighter installed.
-
 -----------------------------------------------------------
 
 if you put a sequence of signals like
