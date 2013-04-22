@@ -1,11 +1,9 @@
 About this collection
----------------------
+=====================
 
-This is a collection of complete (working) and practical
-(more or less) examples of the CFEngine 3 language.
+This collection of over 300 working examples of using
+CFEngine 3 is intended to supplement the official
+documentation and aid in learning CFEngine 3.
 
-Aleksey Tsalolikhin collected or created these examples
-to learn and to teach CFEngine 3.
-
-This collection is intended to supplement the official
-documentation.
+Professional CFEngine training is available from
+Vertical Sysadmin (www.verticalsysadmin.com).

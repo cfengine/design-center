@@ -1,0 +1,23 @@
+Installing Neil Watson's CFEngine 3 syntax highlighter
+------------------------------------------------------
+
+1. Make sure your ~/.vimrc contains:
+
+    filetype plugin indent on
+    au BufRead,BufNewFile *.cf set ft=cf3
+
+
+2. Make sure you have a ~/.vim/ftplugin directory:
+
+    mkdir -p ~/.vim/ftplugin 
+
+
+3. Copy the syntax highlighter script to the above directory:
+
+    wget 'http://www.vim.org/scripts/download_script.php?src_id=13898' \
+      -O ~/.vim/ftplugin/cf3.vim
+
+4. Use it:   
+
+   vim 030-0018_Basic_Examples.__Files._Create_a_file.cf 
+
