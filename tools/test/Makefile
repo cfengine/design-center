@@ -540,3 +540,18 @@ access:
 data_classes:
 	$(CFSKETCH_DA) --install Data::Classes --activate Data::Classes=$(SOURCEDIR)/utilities/data_classes/params/demo.json
 	$(RUNNER)
+
+#
+
+iptables_filter:
+	$(CFSKETCH_DA) --install System::IPTables::Filter --activate System::IPTables::Filter=$(SOURCEDIR)/security/iptables/filter/params/demo.json
+	$(RUNNER)
+
+gencert:
+	$(CFSKETCH_DA) --install Utilities::OpenSSL::GenCert --activate Utilities::OpenSSL::GenCert=$(SOURCEDIR)/utilities/openssl/gencert/params/demo.json
+	$(RUNNER)
+
+ntp_client:
+	$(CFSKETCH_DA) --install Networking::NTP::Client --activate Networking::NTP::Client=$(SOURCEDIR)/networking/ntp/client/params/demo.json
+	$(RUNNER)
+

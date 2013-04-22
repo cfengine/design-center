@@ -5,6 +5,13 @@ body file control
 
 bundle agent openssl_gencert(runenv,metadata,cert_path,owner,group,valid_days,country,state,locality_name,organization,org_unit_name,common_name,email)
 {
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
   files:
 	    "$(cert_path)/."
        perms => default:mog("700","$(owner)","$(group)"),
@@ -40,6 +47,16 @@ bundle agent openssl_gencert(runenv,metadata,cert_path,owner,group,valid_days,co
       "/usr/bin/openssl x509 -req -days 365 -in $(cert_path)/$(common_name).csr -signkey $(cert_path)/$(common_name).key -out $(cert_path)/$(common_name).crt"
 			contain => default:silent,
       ifvarclass => not(fileexists("$(cert_path)/$(common_name).crt"));
+
+	reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      	ifvarclass => "$(vars)";
+		cfengine::
+			"$(cert_path)" bundle_return_value_index => "cert_path";
+			"$(common_name)" bundle_return_value_index => "common_name";
+
 }
 
 bundle edit_line openssl_gencert_editline(country,state,locality_name,organization,org_unit_name,common_name,email) {
