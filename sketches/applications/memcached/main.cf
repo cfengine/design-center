@@ -10,12 +10,14 @@ bundle agent applications_memcached(runenv,metadata,port,user,maxconn,cachesize,
 			"/etc/sysconfig/memcached"
 				create => "true",
 				edit_defaults => default:empty,
+				perms => default:m("644"),
 				classes => default:if_repaired("memcached_config_repaired"),
 				edit_line => application_memcached_redhat_insert_lines("$(port)","$(user)","$(maxconn)","$(cachesize)","$(listen)");
 		ubuntu|debian::
 			"/etc/memcached.conf"
 				create => "true",
 				edit_defaults => default:empty,
+				perms => default:m("644"),
 				classes => default:if_repaired("memcached_config_repaired"),
 				edit_line => application_memcached_debian_insert_lines("$(port)","$(user)","$(maxconn)","$(cachesize)","$(listen)");
 			"/etc/default/memcached"

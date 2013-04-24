@@ -6,7 +6,7 @@ body file control
 bundle agent iptables_filter(chain_policies,filter_rules)
 {
 	vars:
-		"_cache_dir" string => "/var/cfengine/cache/iptables";
+		"_cache_dir" string => "$(sys.workdir)/cache/security/iptables/filter";
 
 	methods:
 		any::

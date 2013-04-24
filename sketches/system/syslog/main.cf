@@ -1,0 +1,29 @@
+body file control
+{
+  namespace => "cfdc_system_syslog";
+}
+
+bundle agent system_syslog(runenv,metadata,conf_file,config)
+{
+	files:
+		"$(conf_file)"
+			create => "true",
+			edit_defaults => default:empty,
+			classes => default:if_repaired("syslog_config_repaired"),
+			edit_line => system_syslog_edit_config("$(config)");
+	
+	reports:
+		syslog_config_repaired::
+			"restart" bundle_return_value_index => "service_mode";
+		!syslog_config_repaired::
+			"start" bundle_return_value_index => "service_mode";
+}
+
+bundle edit_line system_syslog_edit_config(c) {
+	vars:
+		"selectors" slist => getindices("$(c)");
+
+	insert_lines:
+"# This file is managed by CFEngine. Local changes will be overwritten";
+"$(selectors)		$($(c)[$(selectors)][action])";
+}

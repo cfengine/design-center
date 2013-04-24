@@ -1,4 +1,4 @@
-PWD:=$(shell pwd)
+PpiWD:=$(shell pwd)
 SOURCEDIR:=$(PWD)/../../sketches
 
 CFPATH:=$(dirname $(which cf-agent))
@@ -554,4 +554,60 @@ gencert:
 ntp_client:
 	$(CFSKETCH_DA) --install Networking::NTP::Client --activate Networking::NTP::Client=$(SOURCEDIR)/networking/ntp/client/params/demo.json
 	$(RUNNER)
+
+zabbix_client:
+	$(CFSKETCH_DA) --install Applications::Zabbix::Client --activate Applications::Zabbix::Client=$(SOURCEDIR)/applications/zabbix/client/params/demo.json
+	$(RUNNER)
+
+memcached:
+	$(CFSKETCH_DA) --install Applications::Memcached --activate Applications::Memcached=$(SOURCEDIR)/applications/memcached/params/demo.json
+	$(RUNNER)
+
+redis:
+	$(CFSKETCH_DA) --install Applications::Redis --activate Applications::Redis=$(SOURCEDIR)/applications/redis/params/demo.json
+	$(RUNNER)
+
+sudoers:
+	$(CFSKETCH_DA) --install System::Sudoers --activate System::Sudoers=$(SOURCEDIR)/system/sudoers/params/demo.json
+	$(RUNNER)
+
+routes:
+	$(CFSKETCH_DA) --install System::Routes --activate System::Routes=$(SOURCEDIR)/system/routes/params/demo.json
+	$(RUNNER)
+
+syslog:
+	$(CFSKETCH_DA) --install System::Syslog --activate System::Syslog=$(SOURCEDIR)/system/syslog/params/solaris.json
+	$(RUNNER)
+
+memcached_composed:
+	@echo '--- a full test of configuring Applications::Memcached and reporting the directories it mirrors --'
+
+	@echo ...define testing run environment
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: true, test: true, verbose: true } } } }' | $(CFAPI)
+
+	@echo ...deactivate all activations
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+
+	@echo ...valid request to uninstall CFEngine::stdlib
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "$(API_SKETCHDIR)" } ] } }' | $(CFAPI)
+
+	@echo ...valid request to install CFEngine::sketch_template and VCS::vcs_mirror
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Services::Generic", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" }, { sketch: "Applications::Memcached", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
+
+	@echo ...define CFEngine::sketch_template incomplete_sketch parameters
+	echo '{ dc_api_version: "0.0.1", request: {define: { "incomplete_services": { "Services::Generic": { "name":"memcached", "start":"/etc/init.d/syslog start", "stop" : "/etc/init.d/syslog stop", "pattern" : "memcached" }}}}} ' | $(CFAPI)
+	@echo define VCS::vcs_mirror parameters
+	echo '{ dc_api_version: "0.0.1", request: {define: { "memcached_test": { "Applications::Memcached": { "port" : "11111" } } } } }' | $(CFAPI)
+
+	@echo ...activate VCS::vcs_mirror with testing run environment and vcs_base+git_mirror_core and vcs_base+svn_mirror_thrift parameters
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Applications::Memcached": { target: "$(API_SKETCHDIR)", environment: "testing", params: [ "memcached_test" ] } } } }' | $(CFAPI)
+
+	@echo ...compose some sketch values in other sketches: sketch composition
+	echo '{ dc_api_version: "0.0.1", request: {compose: { "test_compose": { "destination_sketch": "Services::Generic", "destination_scalar": "policy", "source_sketch": "Applications::Memcached", "source_scalar": "service_mode" } } } }' | $(CFAPI)
+
+	@echo ...activate CFEngine::sketch_template with testing run environment and incomplete_sketch parameters, with the previous compositions providing the glue
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Services::Generic": { "compositions": [ "test_compose" ], target: "$(API_SKETCHDIR)", environment: "testing", params: [ "incomplete_services" ] } } } }' | $(CFAPI)
+
+	@echo ...generate the runfile
+	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
