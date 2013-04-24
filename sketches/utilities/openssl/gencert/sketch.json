@@ -29,7 +29,9 @@
 					{ "name" : "organization", "type" : "string", "default" : "Example Inc." },
 					{ "name" : "org_unit_name", "type" : "string", "default" : "IT Department" },
 					{ "name" : "common_name", "type" : "string", "default" : "$(sys.fqhost)" },
-					{ "name" : "email", "type" : "string", "default" : "example@example.org" }
+					{ "name" : "email", "type" : "string", "default" : "example@example.org" },
+					{ "name" : "certificate_path", "type" : "return" },
+					{ "name" : "cn", "type" : "return" }
 			 ]
 		},
     "namespace": "cfdc_openssl_gencert",

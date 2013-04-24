@@ -1,0 +1,39 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "Applications::Zabbix::Client",
+        "description": "Sketch for configuring Zabbix clients",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+    },
+		"api" : {
+		    "applications_zabbix_client" : [
+            { "name" : "runenv", "type" : "environment" },
+						{ "name" : "metadata", "type" : "metadata" },
+						{ "name" : "conf_file", "type" : "string", "default" : "/etc/zabbix/zabbix_agentd.conf" },
+						{ "name" : "server", "type" : "string", "default" : "127.0.0.1" },
+						{ "name" : "server_port", "type" : "string", "default" : "10051" },
+						{ "name" : "host_name", "type" : "string", "default" : "$(sys.fqhost)" },
+						{ "name" : "listen_port", "type" : "string", "default" : "10050" },
+						{ "name" : "listen_ip", "type" : "string", "default" : "0.0.0.0" },
+						{ "name" : "start_agents", "type" : "string", "default" : "5" },
+						{ "name" : "debug_level", "type" : "string", "default" : "5" },
+						{ "name" : "pid_file", "type" : "string", "default" : "/var/run/zabbix/zabbix_agentd.pid" },
+						{ "name" : "log_file", "type" : "string", "default" : "/var/log/zabbix/zabbix_agentd.log" },
+						{ "name" : "timeout", "type" : "string", "default" : "3" },
+						{ "name" : "user_parameters", "type" : "array" },
+						{ "name" : "service_mode", "type" : "return" }
+				]
+		},
+    "namespace": "cfdc_applications_zabbix_client",
+    "interface": [ "main.cf" ]
+}

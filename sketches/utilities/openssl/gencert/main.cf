@@ -52,10 +52,11 @@ bundle agent openssl_gencert(runenv,metadata,cert_path,owner,group,valid_days,co
     verbose::
       "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
       "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
-      	ifvarclass => "$(vars)";
+     	ifvarclass => "$(vars)";
+
 		cfengine::
-			"$(cert_path)" bundle_return_value_index => "cert_path";
-			"$(common_name)" bundle_return_value_index => "common_name";
+			"$(cert_path)" bundle_return_value_index => "certificate_path";
+			"$(common_name)" bundle_return_value_index => "cn";
 
 }
 

@@ -3,32 +3,17 @@ body file control
   namespace => "cfdc_ntp_client";
 }
 
-bundle agent ntp_client(peers,servers,restrictions,driftfile,statsdir)
+bundle agent ntp_client(peers,servers,restrictions,driftfile,statsdir,conffile)
 {
- # meta:
-#		"vars[peers][type]" string => "LIST(NON_EMPTY_STRING)";
-#		"vars[peers][default]" string => "{}";
-#
-#		"vars[servers][type]" string => "LIST(NON_EMPTY_STRING)";
-#		"vars[servers][default]" string => "{}";
-#
-#		"vars[restrictions][type]" string => "LIST(NON_EMPTY_STRING)";
-#		"vars[restrictions][default]" string => "{}";
-#
-#		"vars[driftfile][type]" string => "NON_EMPTY_STRING";
-#		"vars[driftfile][default]" string => "/var/lib/ntp/drift";
-#
-#		"vars[statsdir][type]" string => "NON_EMPTY_STRING";
-#		"vars[statsdir][default]" string => "/var/log/ntpstats";
-
   files:
 		redhat|ubuntu|centos::
 			"$(statsdir)/."
 				create => "true",
 				perms => default:mog("755", "ntp", "ntp");
-			"/etc/ntp.conf"
+			"$(conffile)"
 				create => "true",
 				edit_defaults => default:empty,
+				classes => default:if_repaired("ntp_client_config_repaired"),
 				perms => default:mog("644","root","root"),
 				edit_line => ntp_client_editline(
 																				"@(ntp_client.peers)",
@@ -37,6 +22,11 @@ bundle agent ntp_client(peers,servers,restrictions,driftfile,statsdir)
 																				"$(driftfile)",
 																				"$(statsdir)"
 																			);
+	reports:
+		ntp_client_config_repaired::
+			"restart" bundle_return_value_index => "service_mode";
+		!ntp_client_config_repaired::
+			"start" bundle_return_value_index => "service_mode";
 }
 
 bundle edit_line ntp_client_editline(peers,servers,restrictions,driftfile,statsdir) {

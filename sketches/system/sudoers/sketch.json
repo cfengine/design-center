@@ -1,0 +1,34 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "System::Sudoers",
+        "description": "Sets defaults and user permissions in the sudoers file",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+    },
+    "api" : {
+		     "system_sudoers" : [
+				     { "name" : "runenv", "type" : "environment" },
+						 { "name" : "metadata", "type" : "metadata" },
+						 { "name" : "file_path", "type" : "string", "default" : "/etc/sudoers" },
+						 { "name" : "visudo_path", "type" : "string", "default" : "/usr/sbin/visudo" },
+						 { "name" : "defaults", "type" : "array" },
+						 { "name" : "user_alias", "type" : "array" },
+						 { "name" : "host_alias", "type" : "array" },
+						 { "name" : "cmnd_alias", "type" : "array" },
+						 { "name" : "runas_alias", "type" : "array" },
+						 { "name" : "user_permissions", "type" : "array" },
+				  ]
+		},
+    "namespace": "cfdc_system_sudoers",
+    "interface": [ "main.cf" ]
+}

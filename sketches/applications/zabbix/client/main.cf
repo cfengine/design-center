@@ -1,0 +1,135 @@
+body file control
+{
+  namespace => "cfdc_applications_zabbix_client";
+}
+
+bundle agent applications_zabbix_client(
+                                         runenv,
+																				 metadata,
+																				 conf_file,
+																				 server,
+																				 server_port,
+																				 host_name,
+																				 listen_port,
+																				 listen_ip,
+																				 start_agents,
+																				 debug_level,
+																				 pid_file,
+																				 log_file,
+																				 timeout,
+																				 user_parameters
+																			 )
+{
+	files:
+		"$(conf_file)"
+				create => "true",
+				edit_defaults => default:empty,
+				classes => default:if_repaired("zabbix_client_config_repaired"),
+				perms => default:m("644"),
+				edit_line => applications_zabbix_client_edit_conf( 
+																									 "$(server)", 
+																									 "$(server_port)", 
+																									 "$(host_name)", 
+																									 "$(listen_port)", 
+																									 "$(listen_ip)", 
+																									 "$(start_agents)", 
+																									 "$(debug_level)", 
+																									 "$(pid_file)", 
+																									 "$(log_file)", 
+																									 "$(timeout)", 
+																									 "$(user_parameters)"
+																									 );
+	reports:
+		zabbix_client_config_repaired::
+			"restart" bundle_return_value_index => "service_mode";
+		!zabbix_client_config_repaired::
+			"start" bundle_return_value_index => "service_mode";
+}
+
+bundle edit_line applications_zabbix_client_edit_conf(
+                                                   server,
+                                                   server_port,
+                                                   host_name,
+                                                   listen_port,
+                                                   listen_ip,
+                                                   start_agents,
+                                                   debug_level,
+                                                   pid_file,
+                                                   log_file,
+                                                   timeout,
+																									 up
+																								 )
+{
+
+	vars:
+		"up_keys" slist => getindices("$(up)");
+
+	insert_lines:
+"#
+# Configured by CFEngine. Local changes will be lost.
+#
+# This is config file for zabbix_agentd
+# To get more information about ZABBIX, go http://www.zabbix.com
+
+############ GENERAL PARAMETERS #################
+
+# List of comma delimited IP addresses (or hostnames) of ZABBIX servers. 
+# No spaces allowed. First entry is used for sending active checks.
+# Note that hostnames must resolve hostname->IP address and
+# IP address->hostname.
+Server=$(server)
+
+# Server port for sending active checks
+ServerPort=$(server_port)
+
+# Unique hostname. Required for active checks.
+Hostname=$(host_name)
+
+# Listen port. Default is 10050
+ListenPort=$(listen_port)
+
+# IP address to bind agent
+# If missing, bind to all available IPs
+ListenIP=$(listen_ip)
+
+# Number of pre-forked instances of zabbix_agentd.
+# Default value is 5
+# This parameter must be between 1 and 16
+StartAgents=$(start_agents)
+
+# How often refresh list of active checks. 2 minutes by default.
+#RefreshActiveChecks=120
+
+# Disable active checks. The agent will work in passive mode listening server.
+#DisableActive=1
+
+# Enable remote commands for ZABBIX agent. By default remote commands disabled.
+#EnableRemoteCommands=1
+
+# Specifies debug level
+# 0 - debug is not created
+# 1 - critical information
+# 2 - error information
+# 3 - warnings (default)
+# 4 - for debugging (produces lots of information)
+DebugLevel=$(debug_level)
+
+# Name of PID file
+PidFile=$(pid_file)
+
+# Name of log file.
+# If not set, syslog will be used
+LogFile=$(log_file)
+
+# Spend no more than Timeout seconds on processing
+# Must be between 1 and 30
+Timeout=$(timeout)";
+
+"####### USER-DEFINED MONITORED PARAMETERS #######
+# Format: UserParameter=<key>,<shell command>
+# Note that shell command must not return empty string or EOL only
+#UserParameter=system.test,who|wc -l
+### Set of parameter for monitoring MySQL server (v3.23.42 and later)
+### Change -u<username> and add -p<password> if required
+UserParameter=$(up_keys),$($(up)[$(up_keys)][command])";
+}

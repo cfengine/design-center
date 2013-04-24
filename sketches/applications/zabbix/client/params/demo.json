@@ -1,0 +1,13 @@
+{
+    "Applications::Zabbix::Client":
+    {
+			"server" : "10.10.10.10",
+			"timeout" : "10",
+
+			"user_parameters" : {
+			     "ping" : {
+					    "command" : "echo 1"
+					 }
+			}
+    }
+}
