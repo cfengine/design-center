@@ -1,45 +1,40 @@
 {
-    manifest:
+    "manifest":
     {
-        "main.cf": { desc: "main file" },
-        "README.md": { documentation: true },
-        "params/example.json": { comment: "Example parameters" },
-        "test.cf": { comment: "Standalone test policy" },
-        changelog: { comment: "changelog" }
+        "main.cf": {"desc": "main file" },
+        "README.md": {"documentation":true },
+        "params/example.json": {"comment": "Example parameters" },
+        "test.cf": {"comment": "Standalone test policy" }, "changelog": {"comment": "changelog" }
     },
 
-    metadata:
+    "metadata":
     {
-        name: "Utilities::abortclasses",
-	    description: "Abort execution if a certain file exists, aka 'Cowboy mode'",
-        version: 1.7,
-        license: "MIT",
-        tags: [ "cfdc" ],
-        authors: [ "Ben Heilman <bheilman@enova.com>", "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends:
-        {
-            cfengine: { version: "3.4.0" },
-            "CFEngine::stdlib":{ version: 105 },
-            "CFEngine::dclib": {},
-        },
+        "name": "Utilities::abortclasses",
+        "description": "Abort execution if a certain file exists, aka 'Cowboy mode'",
+        "version":1.7,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Ben Heilman <bheilman@enova.com>", "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": {"cfengine": {"version": "3.4.0" },
+            "CFEngine::stdlib": {"version":105 },
+            "CFEngine::dclib": {}}
     },
 
-    api:
+    "api":
     {
-        // the key is the name of the bundle!
-        abortclasses_filebased:
+        "abortclasses_filebased":
         [
-            { type: "environment", name: "runenv", },
-            { type: "metadata", name: "metadata", },
-            { type: "string", name: "abortclass" },
-            { type: "string", name: "trigger_file", default: "/COWBOY" },
-            { type: "boolean", name: "alert_only", default: false },
-            { type: "string", name: "trigger_context", default: "any" },
-            { type: "array", name: "timeout", default: { enabled: false, action: "abortclasses_timeout_action_noop", years: 0, months: 0, days: 0, hours: 24, minutes: 0 }, },
-        ],
-    },
+            {"type": "environment", "name": "runenv"},
+            {"type": "metadata", "name": "metadata"},
+            {"type": "string", "name": "abortclass" },
+            {"type": "string", "name": "trigger_file", "default": "/COWBOY" },
+            {"type": "boolean", "name": "alert_only", "default":false },
+            {"type": "string", "name": "trigger_context", "default": "any" },
+            {"type": "array", "name": "timeout", "default": {"enabled":false,"action": "abortclasses_timeout_action_noop", "years":0,"months":0,"days":0,"hours":24,"minutes":0 }}
+	]
+	},
 
-    namespace: null,
-    
-    interface: [ "main.cf" ]
+        "namespace":null,
+
+        "interface": [ "main.cf" ]
 }

@@ -1,43 +1,41 @@
 {
-    manifest:
+    "manifest":
     {
-        "main.cf": { desc: "main file", version: 1.12 },
-        "README.md": { documentation: true },
-        "params/cfengine-core.json": { comment: "Sample parameters to use Git to check out the CFEngine core into /tmp/cfengine-core" },
-        "params/cfengine-core-runas-tzz.json": { comment: "Same as cfengine-core.json, but runs as user 'tzz'" },
-        "params/cfengine-copbl.json": { comment: "Sample parameters to use Git to check out the CFEngine standard library (COPBL) into /tmp/cfengine-copbl" },
-        "params/thrift-lib-perl.json": { comment: "Sample parameters to use Subversion to check out the Thrift Perl libraries into /tmp/thrift-lib-perl" }
+        "main.cf": {"desc": "main file", "version":1.12 },
+        "README.md": {"documentation":true },
+        "params/cfengine-core.json": {"comment": "Sample parameters to use Git to check out the CFEngine core into /tmp/cfengine-core" },
+        "params/cfengine-core-runas-tzz.json": {"comment": "Same as cfengine-core.json, but runs as user 'tzz'" },
+        "params/cfengine-copbl.json": {"comment": "Sample parameters to use Git to check out the CFEngine standard library (COPBL) into /tmp/cfengine-copbl" },
+        "params/thrift-lib-perl.json": {"comment": "Sample parameters to use Subversion to check out the Thrift Perl libraries into /tmp/thrift-lib-perl" }
     },
 
-    metadata:
+    "metadata":
     {
-        name: "VCS::vcs_mirror",
-        description: "Check out and update a VCS repository.",
-        version: 1.12,
-        license: "MIT",
-        tags: [ "cfdc" ],
-        authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        // this sketch depends on 3.5.0 so it can use bundle-local classes
-        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.5.0" } }
+        "name": "VCS::vcs_mirror",
+        "description": "Check out and update a VCS repository.",
+        "version":1.12,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": { "CFEngine::stdlib": {"version":105 }, "CFEngine::dclib": {"version": "1.0.0" }, "cfengine": {"version": "3.5.0" } }
     },
 
-    api:
+    "api":
     {
-        // the key is the name of the bundle!
-        mirror:
+        "mirror":
         [
-            { type: "environment", name: "runenv", },
-            { type: "metadata", name: "metadata", },
-            { type: "string", name: "vcs" },
-            { type: "string", name: "path" },
-            { type: "string", name: "origin" },
-            { type: "string", name: "branch" },
-            { type: "array", name: "options", }, // all extra options go in here
-            { type: "return", name: "deploy_path", },
-        ],
-    },
+            {"type": "environment", "name": "runenv"},
+            {"type": "metadata", "name": "metadata"},
+            {"type": "string", "name": "vcs" },
+            {"type": "string", "name": "path" },
+            {"type": "string", "name": "origin" },
+            {"type": "string", "name": "branch" },
+            {"type": "array", "name": "options"},
+            {"type": "return", "name": "deploy_path"}
+	]
+	},
 
-    namespace: "cfdc_vcs",
-    
-    interface: [ "main.cf" ],
+        "namespace": "cfdc_vcs",
+
+        "interface": [ "main.cf" ]
 }

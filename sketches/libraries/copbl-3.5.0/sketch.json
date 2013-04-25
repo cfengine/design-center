@@ -1,27 +1,23 @@
 {
-
-    manifest:
+    "manifest":
     {
-        "stdlib-350.cf": { desc: "COPBL" },
-        "README.md": { documentation: true }
+        "stdlib-350.cf": {"desc": "COPBL"},
+        "README.md": {"documentation": "true"}
     },
 
-    metadata:
+    "metadata":
     {
-        name: "CFEngine::stdlib::3.5.0",
-	    description: "The portions of the CFEngine standard library (also known as COPBL) that are only compatible with 3.5.0 and higher",
-        version: 110,
-        license: "LGPL",
-        tags: [ "cfdc" ],
-        authors: [ "CFEngine AS" ],
-        depends: { cfengine: { version: "3.5.0" } }
+        "name": "CFEngine::stdlib::3.5.0",
+        "description": "The portions of the CFEngine standard library (also known as COPBL) that are only compatible with 3.5.0 and higher",
+        "version": "110",
+        "license": "LGPL",
+        "tags": [ "cfdc" ],
+        "authors": [ "CFEngine AS" ],
+        "depends": {"cfengine": {"version": "3.5.0"} }
     },
 
-    api:
-    {
-    },
+    "api": {},
 
-    namespace: null,
-    
-    interface: [ "stdlib-350.cf" ]
+    "namespace": "null",
+    "interface": [ "stdlib-350.cf" ]
 }

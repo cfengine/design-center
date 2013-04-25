@@ -1,36 +1,36 @@
 {
-    manifest:
+    "manifest":
     {
-        "main.cf": { desc: "main file" },
-        "README.md": { documentation: true },
+        "main.cf": {"desc": "main file"},
+        "README.md": {"documentation": "true"},
 
-        "params/demo.json": { comment: "Install SQLite" },
+        "params/demo.json": {"comment": "Install SQLite"}
     },
 
-    metadata:
+    "metadata":
     {
-        name: "Database::Install::SQLite",
-	    description: "Install and enable the SQLite database engine",
-        version: 1.10,
-        license: "MIT",
-        tags: [ "cfdc" ],
-        authors: [ "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, cfengine: { version: "3.5.0" }, os: [ "linux" ] }
+        "name": "Database::Install::SQLite",
+        "description": "Install and enable the SQLite database engine",
+        "version": "1.10",
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": { "CFEngine::stdlib": {"version": "105"}, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, "cfengine": {"version": "3.5.0"}, "os": [ "linux" ] }
     },
 
-    api:
+    "api":
     {
-        ensure:
+        "ensure":
         [
-            { type: "environment", name: "runenv", },
-            { type: "metadata", name: "mymetadata", },
-            { type: "boolean", name: "purge", default: false },
-            { type: "list", name: "extra_packages", default: [] },
-            { type: "boolean", name: "use_only_extra_packages", default: false },
-            { type: "return", name: "installed", },
-        ],
+            {"type": "environment", "name": "runenv"},
+            {"type": "metadata", "name": "mymetadata"},
+            {"type": "boolean", "name": "purge", "default": "false"},
+            {"type": "list", "name": "extra_packages", "default": [] },
+            {"type": "boolean", "name": "use_only_extra_packages", "default": "false"},
+            {"type": "return", "name": "installed"}
+	]
     },
 
-    namespace: "cfdc_db_sqlite",
-    interface: [ "main.cf" ]
+    "namespace": "cfdc_db_sqlite",
+    "interface": [ "main.cf" ]
 }

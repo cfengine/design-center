@@ -1,54 +1,52 @@
 {
-
-    manifest:
+    "manifest":
     {
-        "main.cf": { desc: "main file" },
-        "README.md": { documentation: true },
-        "params/example.json": { comment: "Example parameters" }
+        "main.cf": {"desc": "main file" },
+        "README.md": {"documentation":true },
+        "params/example.json": {"comment": "Example parameters" }
     },
 
-    metadata:
+    "metadata":
     {
-        name: "System::cron",
-	    description: "Manage crontab and /etc/cron.d contents",
-        version: 2.0,
-        license: "MIT",
-        tags: [ "cfdc" ],
-        authors: [ "Neil H Watson <neil@watson-wilson.ca>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 109 }, "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux", "solaris", "darwin" ] }
+        "name": "System::cron",
+        "description": "Manage crontab and /etc/cron.d contents",
+        "version":2.0,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Neil H Watson <neil@watson-wilson.ca>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": { "CFEngine::stdlib": {"version":109 }, "CFEngine::dclib": {}, "cfengine": {"version": "3.4.0" }, "os": [ "linux", "solaris", "darwin" ] }
     },
 
-    api:
+    "api":
     {
-        // the key is the name of the bundle!
-        d:
+        "d":
         [
-            { type: "environment", name: "runenv", },
-            { type: "metadata", name: "metadata", },
-            { type: "string", name: "cron_path", default: "/etc/cron.d" },
-            { type: "string", name: "file_task" },
-            { type: "string", name: "runas", default: { "function": "getenv", "args": ["LOGNAME", "128"] }, },
-            { type: "string", name: "when" },
-            { type: "list", name: "commands" },
-            { type: "return", name: "tab", },
-            { type: "return", name: "path", },
-        ],
+            {"type": "environment", "name": "runenv"},
+            {"type": "metadata", "name": "metadata"},
+            {"type": "string", "name": "cron_path", "default": "/etc/cron.d" },
+            {"type": "string", "name": "file_task" },
+            {"type": "string", "name": "runas", "default": { "function": "getenv", "args": ["LOGNAME", "128"] }},
+            {"type": "string", "name": "when" },
+            {"type": "list", "name": "commands" },
+            {"type": "return", "name": "tab"},
+            {"type": "return", "name": "path"}
+	],
 
-        tab:
+        "tab":
         [
-            { type: "environment", name: "runenv", },
-            { type: "metadata", name: "metadata", },
-            { type: "string", name: "cron_path", default: "/usr/bin/crontab" },
-            { type: "string", name: "line_task" },
-            { type: "string", name: "runas", default: { "function": "getenv", "args": ["LOGNAME", "128"] }, },
-            { type: "string", name: "when" },
-            { type: "list", name: "commands" },
-            { type: "return", name: "tab", },
-            { type: "return", name: "path", },
-        ],
+            {"type": "environment", "name": "runenv"},
+            {"type": "metadata", "name": "metadata"},
+            {"type": "string", "name": "cron_path", "default": "/usr/bin/crontab" },
+            {"type": "string", "name": "line_task" },
+            {"type": "string", "name": "runas", "default": { "function": "getenv", "args": ["LOGNAME", "128"] }},
+            {"type": "string", "name": "when" },
+            {"type": "list", "name": "commands" },
+            {"type": "return", "name": "tab"},
+            {"type": "return", "name": "path"}
+	]
     },
 
-    namespace: "cfdc_cron",
-    
-    interface: [ "main.cf" ]
+    "namespace": "cfdc_cron",
+
+    "interface": [ "main.cf" ]
 }
