@@ -58,7 +58,8 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { NONEMPTY_STRING: { valid_regex: "." } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::sketch_template", target: "$(API_SKETCHDIR)" } ] } }' | $(CFAPI)
 
 api_validations:
 	@echo ...define a choice-of validation with choice and derived

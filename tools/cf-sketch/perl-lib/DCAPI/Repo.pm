@@ -158,39 +158,83 @@ sub install
                                     success => 1,
                                     data => { });
 
-    # 1. copy the sketch files as in the manifest.  USE CFE
+    # copy the sketch files as in the manifest.
     my $abs_location = sprintf("%s/%s", $self->location(), $sketch->rel_location);
 
     my $manifest = $sketch->manifest();
 
-    my @todo;
     foreach my $file (sort keys %$manifest)
     {
         my $perms = Util::hashref_search($manifest->{$file}, qw/perm/);
-        $self->api()->log("Will copy sketch %s:%s from %s to %s",
-                          $sketch->name(),
-                          $file,
-                          $sketch->location(),
-                          $abs_location);
-        push @todo, sprintf('"%s/%s" copy_from => no_backup_cp("%s/%s") %s ;',
-                            $abs_location,
-                            $file,
-                            $sketch->location(),
-                            $file,
-                            defined $perms ? ", perms => m('$perms')" : '');
-    }
+        my $source = $sketch->location() . "/$file";
+        my $dest = "$abs_location/$file";
 
-    $self->api()->run_cf_promises({ files => join("\n", @todo) });
+        require File::Basename;
+        require File::Path;
+        require File::Copy;
+        $self->api()->log4("Installing sketch %s: copying %s to %s",
+                           $sketch->name(),
+                           $source,
+                           $dest);
 
-    foreach my $file (sort keys %$manifest)
-    {
-        my $full_file = "$abs_location/$file";
-        if (-f $full_file)
+        my $dest_dir = File::Basename::dirname($dest);
+        my $errors;
+        File::Path::make_path($dest_dir, {
+                                          error => $errors,
+                                         });
+
+        unless (-d $dest_dir)
         {
-            $result->add_data_key('installation', [$sketch->name(), $file], $full_file);
+            $result->add_error('installation', "could not create $abs_location");
+        }
+
+        if (-d $dest_dir && ! -w $dest_dir)
+        {
+            $result->add_error('installation', "created $abs_location but it's not writeable.  fix your umask.");
+        }
+
+        File::Copy::copy($source, $dest);
+        if (-f $dest)
+        {
+            $result->add_data_key('installation', ["install", $sketch->name(), $file], $dest);
+            if (defined $perms)
+            {
+                my $p = oct($perms);
+                if ($p > 0)
+                {
+                    $self->api()->log4("Installing sketch %s: setting %s permissions to %s",
+                                       $sketch->name(),
+                                       $dest,
+                                       $perms);
+                    chmod($p, $dest);
+                    my $mode = (stat($dest))[2];
+                    if ($p != ($mode & 07777))
+                    {
+                        $self->api()->log("Installing sketch %s: could not set %s permissions to %s",
+                                          $sketch->name(),
+                                          $dest,
+                                          $perms);
+                        $result->add_warning('installation',
+                                             sprintf("$file was installed in $abs_location but the permissions could not be set to '$perms' (now they are %o)",
+                                                     $mode & 07777));
+                    }
+                }
+                else
+                {
+                    $self->api()->log("Installing sketch %s: could not set %s permissions, given octal string '%s' was invalid",
+                                      $sketch->name(),
+                                      $dest,
+                                      $perms);
+                    $result->add_error('installation', "$file was installed in $abs_location but the permissions could not be set from the invalid octal string '$perms'");
+                }
+            }
         }
         else
         {
+        $self->api()->log("Installing sketch %s: failed to copy %s to %s",
+                          $sketch->name(),
+                          $source,
+                          $dest);
             $result->add_error('installation', "$file was not installed in $abs_location");
         }
     }
@@ -233,23 +277,47 @@ sub uninstall
                                     success => 1,
                                     data => { });
 
-    # 1. delete the sketch files as in the manifest.  USE CFE
+    # delete the sketch files as in the manifest
     my $abs_location = sprintf("%s/%s", $self->location(), $sketch->rel_location);
 
     my $manifest = $sketch->manifest();
 
-    # I know I can do this with File::Path's rmtree().  Shut up, conscience.
-    my @todo = (
-                sprintf('"%s" delete => tidy, file_select => all, depth_search => recurse_sketch;',
-                        $abs_location),
-               );
+    require File::Path;
 
-    $self->api()->run_cf_promises({ files => join("\n", @todo) });
+    my $results;
+    my $errors;
+    $self->api()->log4("Uninstalling sketch %s: removing directory tree %s",
+                       $sketch->name(),
+                       $abs_location);
+
+    File::Path::remove_tree($abs_location,
+                            {
+                             error => \$errors,
+                             result => \$results,
+                            });
 
     if (-d $abs_location)
     {
         return $result->add_error('uninstallation',
                                   "It seems that $abs_location could not be removed");
+    }
+
+    if (ref $errors eq 'ARRAY')
+    {
+        $result->add_warning('uninstallation',
+                             "error while removing $abs_location: $_")
+         foreach @$errors;
+    }
+
+    if (ref $results eq 'ARRAY')
+    {
+        $self->api()->log5("Uninstalling sketch %s: removing %s",
+                           $sketch->name(),
+                           $_)
+         foreach @$results;
+
+        $result->add_data_key('uninstallation', ["uninstall", $sketch->name(), $abs_location, $_], "$abs_location/$_")
+         foreach @$results;
     }
 
     my @sketches = grep { $_ != $sketch } @{$self->sketches()};
