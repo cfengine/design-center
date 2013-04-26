@@ -23,6 +23,7 @@ test: prep
 install:
 	/bin/mkdir -p $(LIB) $(BIN)
 	/usr/bin/install ./cf-sketch.pl $(BIN)/cf-sketch
+	/usr/bin/install ./cf-dc-api.pl $(BIN)/cf-dc-api.pl
 	/bin/cp -a ./perl-lib/* $(LIB)
 
 # Eliminate all signs of cf-sketch from the system. For testing purposes.
