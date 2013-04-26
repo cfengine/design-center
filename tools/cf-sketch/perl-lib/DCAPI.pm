@@ -679,12 +679,45 @@ sub define_environment
              unless exists $spec->{$required};
 
             $spec->{$required} = ! ! $spec->{$required}
-            if Util::is_json_boolean($spec->{$required});
+             if Util::is_json_boolean($spec->{$required});
 
-            # only scalars are acceptable
-            return $result->add_error('environment spec value',
-                                      "Invalid environment spec $dkey: non-scalar key $required")
-             if (ref $spec->{$required});
+            my $ref = ref $spec->{$required};
+            if (!$ref)
+            {
+                # we're OK: it's a scalar
+            }
+            elsif ($ref eq 'HASH')
+            {
+                my @condition;
+                if (exists $spec->{$required}->{include})
+                {
+                    return $result->add_error('environment spec has invalid include expression',
+                                      "Invalid environment spec $dkey: key $required specified invalid include")
+                     unless ref $spec->{$required}->{include} eq 'ARRAY';
+                    push @condition, @{$spec->{$required}->{include}};
+                }
+
+                # Ignore excludes for now.
+                # if (exists $spec->{$required}->{exclude})
+                # {
+                #     return $result->add_error('environment spec has invalid exclude expression',
+                #                       "Invalid environment spec $dkey: key $required specified invalid exclude")
+                #      unless ref $spec->{$required}->{exclude} eq 'ARRAY';
+                #     push @condition, map { "!$_" } @{$spec->{$required}->{exclude}};
+                # }
+
+                return $result->add_error('environment spec has no selectors',
+                                          "Invalid environment spec $dkey: key $required is a hash but had nothing to say")
+                 unless scalar @condition;
+
+                $spec->{$required} = { function => "classmatch", args => ['(' . (join "|", map { "($_)" } @condition) . ')'] };
+            }
+            else
+            {
+                # only scalars and hash refs are acceptable
+                return $result->add_error('environment spec value',
+                                          "Invalid environment spec $dkey: non-scalar and non-hashref key '$required'");
+            }
         }
 
         $self->environments()->{$dkey} = $spec;
@@ -1055,13 +1088,21 @@ sub regenerate
             my $print_v = $v;
             $print_v =~ s/\W/_/g;
             my $d = $edata->{$v};
+
+            my $class_function;
+            if (ref $d eq 'HASH')
+            {
+                $class_function = $d;
+                $d = "--'$print_v' value passed as a class function--";
+            }
+
             my $line = join("\n",
                             map { "$indent$_" }
                             Util::make_var_lines($print_v, $d, '', 0, 0));
             push @var_data, $line;
 
             # is it a scalar?
-            if (ref $d eq '')
+            if (ref $d eq '' && !defined $class_function)
             {
                 my $d_expression = $d;
                 if ($d_expression eq '' || $d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no')
@@ -1080,6 +1121,17 @@ sub regenerate
                                           $e,
                                           $print_v,
                                           $d_expression);
+            }
+            elsif (defined $class_function) # it's a class function call
+            {
+                my $line = join("\n",
+                                map { "$indent$_" }
+                                Util::make_var_lines(sprintf("runenv_%s_%s",
+                                                             $e,
+                                                             $print_v),
+                                                     $class_function, '', 0, 0, 0, 'expression'));
+
+                push @class_data, $line;
             }
         }
 

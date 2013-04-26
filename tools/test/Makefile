@@ -58,8 +58,17 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
+	@echo ...define testing run environment
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: [], test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: {}, test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: {include:"x"}, test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: {exclude:"x"}, test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: {include:["x", "y.*"], exclude: ["b", "c"]}, test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {environments:true} }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::sketch_template", target: "$(API_SKETCHDIR)" } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "$(API_SKETCHDIR)", environment: "testing", params: [ "simple_sketch" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
 api_validations:
 	@echo ...define a choice-of validation with choice and derived

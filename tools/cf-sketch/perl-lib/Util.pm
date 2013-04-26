@@ -428,6 +428,7 @@ sub recurse_print
     my $unquote_scalars = shift @_;
     my $simplify_arrays = shift @_;
     my $empty_false     = shift @_;
+    my $type_override   = shift @_;
 
     my @print;
 
@@ -438,7 +439,7 @@ sub recurse_print
         {
             push @print, {
                           path => $prefix,
-                          type => 'string',
+                          type => ($type_override || 'string'),
                           value => sprintf('%s(%s)',
                                            $ref->{function},
                                            join(', ', map { my @p = recurse_print($_); $p[0]->{value} } @{$ref->{args}}))
@@ -455,7 +456,9 @@ sub recurse_print
                                                ($prefix||''),
                                                $simplify_arrays ? "_${_}" : "[$_]"),
                                        $unquote_scalars,
-                                       0)
+                                       0,
+                                       $empty_false,
+                                       $type_override)
             foreach sort keys %$ref;
         }
     }
@@ -493,7 +496,7 @@ sub recurse_print
 
         push @print, {
                       path => $prefix,
-                      type => 'string',
+                      type => ($type_override||'string'),
                       value => $unquote_scalars ? $ref : "\"$ref\""
                      };
     }
@@ -508,10 +511,12 @@ sub make_var_lines
     my $prefix          = shift @_;
     my $unquote_scalars = shift @_;
     my $simplify_arrays = shift @_;
+    my $empty_false     = shift @_;
+    my $type_override   = shift @_;
 
     my @ret;
 
-    foreach my $p (recurse_print($ref, $prefix, $unquote_scalars, $simplify_arrays))
+    foreach my $p (recurse_print($ref, $prefix, $unquote_scalars, $simplify_arrays, $empty_false, $type_override))
     {
         push @ret, sprintf('"%s%s" %s => %s;',
                            $name, $p->{path}, $p->{type}, $p->{value});
