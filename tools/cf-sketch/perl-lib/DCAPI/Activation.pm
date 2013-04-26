@@ -246,6 +246,7 @@ sub fill_param
     my $ret;
     foreach my $pset (@filtered_param_sets)
     {
+        my $defaulted = 0;
         my ($pkey, $pval_ref) = @$pset;
         # Get the values locally so overwriting them with the default doesn't
         # set them for the future.  This was a fun bug to hunt.
@@ -254,6 +255,7 @@ sub fill_param
         {
             $extra->{default} =~ s/__PREFIX__/$extra->{id}/g;
             $pval{$name} = $extra->{default};
+            $defaulted = 1;
         }
 
         # TODO: add more parameter types and validate the value!!!
@@ -282,15 +284,18 @@ sub fill_param
         {
             $ret = {set=>$pkey, type => $type, name => $name, value => $pval{$name}};
         }
+
+        $ret->{defaulted} = $defaulted
+         if $ret;
     }
 
-    unless (defined $ret)
+    if (!defined $ret || $ret->{defaulted})
     {
         foreach my $compose_key (@compositions)
         {
             next unless exists $available_compositions{$compose_key};
             my $compose = $available_compositions{$compose_key};
-            next if $ret;
+            next if ($ret && !$ret->{defaulted});
 
             # { destination_sketch: "CFEngine::sketch_template",
             # destination_list: "mylist", source_sketch: "VCS::vcs_mirror",
@@ -313,14 +318,14 @@ sub fill_param
             {
                 $api->log4("Found a 'compose' match for list parameter %s in sketch %s, bundle %s: %s=%s",
                            $name, $d, $extra->{bundle}, $compose_key, $compose);
-                $ret = {set=>'compose', type => $type, name => $name, deferred_value => $compose, deferred_list => 0};
+                $ret = {set=>'compose', type => $type, name => $name, deferred_value => $compose, deferred_list => 0, defaulted => 0};
             }
             # TODO: maybe support other types
             elsif ($dscalar eq $name && $type eq 'string')
             {
                 $api->log4("Found a 'compose' match for scalar parameter %s in sketch %s, bundle %s: %s=%s",
                            $name, $d, $extra->{bundle}, $compose_key, $compose);
-                $ret = {set=>'compose', type => $type, name => $name, deferred_value => $compose, deferred_list => 0};
+                $ret = {set=>'compose', type => $type, name => $name, deferred_value => $compose, deferred_list => 0, defaulted => 0};
             }
             else
             {
