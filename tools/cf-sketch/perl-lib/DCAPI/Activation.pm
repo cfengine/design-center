@@ -12,7 +12,7 @@ has environment => ( is => 'ro', required => 1 );
 has bundle => ( is => 'ro', required => 1 );
 has params => ( is => 'ro', required => 1 );
 has metadata => ( is => 'ro', required => 1 );
-has prefix => ( is => 'ro', required => 1 );
+has prefix => ( is => 'ro', required => 0, default => '' );
 has compositions => ( is => 'ro', required => 1, default => [] );
 has id => ( is => 'ro', required => 1 );
 
