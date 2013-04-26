@@ -11,6 +11,7 @@ has sketch => ( is => 'ro', required => 1 );
 has environment => ( is => 'ro', required => 1 );
 has bundle => ( is => 'ro', required => 1 );
 has params => ( is => 'ro', required => 1 );
+has metadata => ( is => 'ro', required => 1 );
 has compositions => ( is => 'ro', required => 1, default => [] );
 has id => ( is => 'ro', required => 1 );
 
@@ -39,6 +40,13 @@ sub make_activation
     if (ref $compositions ne 'ARRAY')
     {
         return (undef, "Invalid compositions parameter");
+    }
+
+    my $metadata = $spec->{metadata} || {};
+
+    if (ref $metadata ne 'HASH')
+    {
+        return (undef, "Invalid metadata parameter");
     }
 
     my $found;
@@ -124,6 +132,7 @@ sub make_activation
                          bundle => $b,
                          id => $activation_id,
                          compositions => $compositions,
+                         metadata => $metadata,
                          available_compositions => $api->compositions(),
                         );
 
@@ -166,6 +175,7 @@ sub make_activation
                                   bundle => $bundle,
                                   id => $activation_id,
                                   compositions => $compositions,
+                                  metadata => $metadata,
                                   params => $bundle_params{$bundle});
 }
 
@@ -193,9 +203,11 @@ sub fill_param
 
     if ($type eq 'metadata')
     {
+        my $metadata = $extra->{sketch}->runfile_data_dump();
+        $metadata = Util::hashref_merge($metadata, { activation => $extra->{metadata} });
         return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
                  set=>'sketch metadata',
-                 type => 'array', name => $name, value => $extra->{sketch}->runfile_data_dump()};
+                 type => 'array', name => $name, value => $metadata };
     }
 
     my @compositions;
@@ -380,6 +392,8 @@ sub data_dump
             environment => $self->environment(),
             bundle => $self->bundle(),
             params => $self->params(),
+            compositions => $self->compositions(),
+            metadata => $self->metadata(),
             id => $self->id(),
            };
 }
