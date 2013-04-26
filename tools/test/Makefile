@@ -58,6 +58,8 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
+	echo '{ dc_api_version: "0.0.1", request: {search: [["tags", "matches", "stdlib|cloud"]] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {search: [["tags", "equals", "aws"]] } }' | $(CFAPI)
 
 api_activate:
 	@echo ...install CFEngine::sketch_template, deactivate all, activate just CFEngine::sketch_template with some metadata, then generate the runfile
@@ -67,7 +69,6 @@ api_activate:
 	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 	@echo ...deactivate my special identifier
 	echo '{ dc_api_version: "0.0.1", request: {deactivate: "my special identifier" } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
 api_validations:
 	@echo ...define a choice-of validation with choice and derived
@@ -194,6 +195,8 @@ api_search:
 	echo '{ dc_api_version: "0.0.1", request: {search: [["name", "matches", "(Cloud|CFEngine)"]] } }' | $(CFAPI)
 	@echo ...search available matching cloud or cfengine via data alternation
 	echo '{ dc_api_version: "0.0.1", request: {search: [["name", "matches", "Cloud"], ["name", "matches", "CFEngine"]] } }' | $(CFAPI)
+	@echo ...search available matching cloud in the tags
+	echo '{ dc_api_version: "0.0.1", request: {search: [["tags", "matches", "cloud"]] } }' | $(CFAPI)
 
 api:
 	@echo '--- a full test of configuring VCS::vcs_mirror and reporting the directories it mirrors --'
