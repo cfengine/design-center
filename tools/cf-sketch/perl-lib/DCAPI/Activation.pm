@@ -12,6 +12,7 @@ has environment => ( is => 'ro', required => 1 );
 has bundle => ( is => 'ro', required => 1 );
 has params => ( is => 'ro', required => 1 );
 has metadata => ( is => 'ro', required => 1 );
+has prefix => ( is => 'ro', required => 1 );
 has compositions => ( is => 'ro', required => 1, default => [] );
 has id => ( is => 'ro', required => 1 );
 
@@ -34,6 +35,8 @@ sub make_activation
     {
         return (undef, "Invalid activation environment '$env'");
     }
+
+    my $activation_prefix  = $spec->{identifier} || '';
 
     my $compositions = $spec->{compositions} || [];
 
@@ -112,7 +115,8 @@ sub make_activation
     foreach my $b (@bundles_to_check)
     {
         $bundle_params{$b} = [];
-        $activation_id = sprintf('__%03d %s %s',
+        $activation_id = sprintf('__%s_%03d %s %s',
+                                 $activation_prefix,
                                  $activation_position,
                                  $found->name(),
                                  $b);
@@ -170,6 +174,7 @@ sub make_activation
                $sketch, $bundle, $bundle_params{$bundle});
 
     return DCAPI::Activation->new(api => $api,
+                                  prefix => $activation_prefix,
                                   sketch => $found,
                                   environment => $env,
                                   bundle => $bundle,
@@ -393,6 +398,7 @@ sub data_dump
             bundle => $self->bundle(),
             params => $self->params(),
             compositions => $self->compositions(),
+            prefix => $self->prefix(),
             metadata => $self->metadata(),
             id => $self->id(),
            };

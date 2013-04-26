@@ -1272,9 +1272,31 @@ sub deactivate
     {
         my $d = delete $self->activations()->{$deactivate};
 
+        unless ($d)
+        {
+            $d = [];
+            foreach my $sketch (sort keys %{$self->activations()})
+            {
+                my @pushback;
+                foreach my $spec (@{$self->activations()->{$sketch}})
+                {
+                    my $spec_identifier = Util::hashref_search($spec, qw/identifier/);
+                    if (defined $spec_identifier && $spec_identifier eq $deactivate)
+                    {
+                        $self->log4("Deactivating activation %s that matched identifier '$deactivate'", $spec);
+                    }
+                    else
+                    {
+                        push @pushback, $spec;
+                    }
+                }
+                $self->activations()->{$sketch} = \@pushback;
+            }
+        }
+
         $result->add_data_key('deactivate', ['deactivate', $deactivate], 1);
 
-        $self->log("Deactivating all activations of $deactivate: %s", $d);
+        $self->log("Deactivating all activations that match $deactivate: %s", $d);
     }
     elsif (ref $deactivate eq 'HASH' &&
            exists $deactivate->{sketch} &&
