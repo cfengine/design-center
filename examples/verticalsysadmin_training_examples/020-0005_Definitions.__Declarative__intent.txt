@@ -1,0 +1,6 @@
+
+A declarative language allows us to express intent more clearly in the code
+---------------------------------------------------------------------------
+
+Let the intent shine through.
+

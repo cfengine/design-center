@@ -8,5 +8,3 @@ bundle agent example {
               comment => "Prevent non-root users from logging in so we can perform maintenance";
 
                      }
-
-# CFEngine uses the -> prefix to indicate changes it has made to the system
