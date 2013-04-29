@@ -58,8 +58,9 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
-	echo '{ dc_api_version: "0.0.1", request: {search: [["tags", "matches", "stdlib|cloud"]] } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {search: [["tags", "equals", "aws"]] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: {include:["x", "y.*"], exclude: ["b", "c"]}, test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "$(API_SKETCHDIR)", identifier: "my special identifier", metadata: { myvar: "myvalue" }, environment: "testing", params: [ "simple_sketch" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
 api_activate:
 	@echo ...install CFEngine::sketch_template, deactivate all, activate just CFEngine::sketch_template with some metadata, then generate the runfile

@@ -755,6 +755,13 @@ specify the bundle explicitly.
 }
 ```
 
+You can pass a `identifier` parameter to an `activate` command, which can then
+be used to `deactivate` an activation specifically, and which will show up in
+the classes and prefixes of that activation.
+
+You can pass a `metadata` parameter to an `activate` command, which will show up
+under the `activation` key in the metadata.
+
 ##### option: `compose`
 
 When the `activate` command has a `compose` key with a list of composition
@@ -1010,6 +1017,22 @@ The last thing to note is that any run environment variable can have values
 other than `true` and `false`.  If they are a string, then that string is a
 class expression.  So, for instance, if `activated` is `Monday` then the run
 environment will only be activated on Mondays.
+
+If `activated` is a key-value array with the key `include` pointing to an array
+of regular expressions, then every element of that array will be AND-ed in a
+classmatch.  So, if for the environment _testing_ you specify:
+
+```
+activated: { include: [ "x", "y", "regex.*" ] }
+```
+
+That will produce, in the runfile,
+
+```
+classes:
+  "runenv_testing_activated" and => { classmatch("x"), classmatch("y"), classmatch("regex.*") };
+```
+It's trivial to do an OR with alternation in the regular expression.
 
 #### `define_environment`
 

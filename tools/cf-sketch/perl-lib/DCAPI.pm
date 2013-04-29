@@ -710,7 +710,12 @@ sub define_environment
                                           "Invalid environment spec $dkey: key $required is a hash but had nothing to say")
                  unless scalar @condition;
 
-                $spec->{$required} = { function => "classmatch", args => ['(' . (join "|", map { "($_)" } @condition) . ')'] };
+                $spec->{$required}->{class_function} = [];
+                push @{$spec->{$required}->{class_function}}, {
+                                                               function => "classmatch",
+                                                               args => [$_]
+                                                              }
+                 foreach @condition;
             }
             else
             {
@@ -1090,9 +1095,9 @@ sub regenerate
             my $d = $edata->{$v};
 
             my $class_function;
-            if (ref $d eq 'HASH')
+            if (ref $d eq 'HASH' && exists $d->{class_function})
             {
-                $class_function = $d;
+                $class_function = $d->{class_function};
                 $d = "--'$print_v' value passed as a class function--";
             }
 
@@ -1124,12 +1129,13 @@ sub regenerate
             }
             elsif (defined $class_function) # it's a class function call
             {
+                my $and = ref $class_function eq 'ARRAY';
                 my $line = join("\n",
                                 map { "$indent$_" }
                                 Util::make_var_lines(sprintf("runenv_%s_%s",
                                                              $e,
                                                              $print_v),
-                                                     $class_function, '', 0, 0, 0, 'expression'));
+                                                     $class_function, '', 0, 0, 0, $and ? 'and' : 'expression'));
 
                 push @class_data, $line;
             }
