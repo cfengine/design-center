@@ -987,10 +987,7 @@ useshell => "true";
 body contain in_shell_bg
 {
 useshell => "true";
-<<<<<<< HEAD
 #background => "true";
-=======
->>>>>>> upstream/master
 }
 
 ##
@@ -3161,11 +3158,7 @@ processes:
 
   start::
 
-<<<<<<< HEAD
-    "$(pattern[$(service)])" ->  { "@(stakeholders[$(service)])" } 
-=======
     "$(pattern[$(service)])" ->  { "@(stakeholders[$(service)])" }
->>>>>>> upstream/master
 
              comment => "Verify that the service appears in the process table",
        restart_class => "start_$(service)";
@@ -3190,13 +3183,8 @@ commands:
 
             comment => "Execute command to restart the $(service) service";
 
-<<<<<<< HEAD
-   "$(startcommand[$(service)])" -> { "@(stakeholders[$(service)])" }
-=======
   reload::
     "$(reloadcommand[$(service)])" -> { "@(stakeholders[$(service)])" }
->>>>>>> upstream/master
-
             comment => "Execute command to reload the $(service) service";
 }
 
