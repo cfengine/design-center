@@ -5,12 +5,12 @@ bundle agent example {
       "/etc/motd"
 
               create  => "true",
-            edit_line => file_contains_proper_greetings;
+            edit_line => greet_users;
                      }
 
 ####################################################
 
-bundle edit_line  file_contains_proper_greetings {
+bundle edit_line  greet_users {
 
 delete_lines:
 
@@ -19,4 +19,4 @@ delete_lines:
 insert_lines:
 
     "Good morning!";
-                                                 }
+                              }

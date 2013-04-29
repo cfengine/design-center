@@ -1,5 +1,13 @@
 what are templates?  why would we use templates?
 
+Email:
+
+Hello __NAME__,
+
+  Please buy our product.
+
+Config file:
+
 MASTER_MAP_NAME="auto.master"
 TIMEOUT=300
 BROWSE_MODE="yes"

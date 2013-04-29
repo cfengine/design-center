@@ -4,10 +4,11 @@ files:
 
   "/etc/motd"
 
-    edit_line => ExpandMeFrom("/tmpl/motd.tmpl");
+    create => "true",
+    edit_line => ExpandFromTemplate("/var/cfengine/inputs/templates/motd.tmpl");
 }
 
-bundle edit_line ExpandMeFrom(source) {
+bundle edit_line ExpandFromTemplate(source) {
 
 delete_lines:
 
