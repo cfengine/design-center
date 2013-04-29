@@ -184,8 +184,8 @@ if (scalar keys %{$options{activate}})
     foreach my $sketch (keys %{$options{activate}})
     {
         my $file = $options{activate}->{$sketch};
-        my $load = $dcapi->load($file);
-        die "Could not load $file: $!" unless defined $load;
+        my ($load, @warnings) = $dcapi->load($file);
+        die "Could not load $file: @warnings" unless defined $load;
 
         if (ref $load eq 'ARRAY')
         {

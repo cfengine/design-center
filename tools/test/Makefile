@@ -580,3 +580,7 @@ access:
 data_classes:
 	$(CFSKETCH_DA) --install Data::Classes --activate Data::Classes=$(SOURCEDIR)/utilities/data_classes/params/demo.json
 	$(RUNNER)
+
+bad_input_file:
+	$(CFSKETCH_DA) --install Data::Classes --activate Data::Classes=/no/such/file
+	$(RUNNER)
