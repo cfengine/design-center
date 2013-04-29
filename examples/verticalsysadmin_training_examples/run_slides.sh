@@ -6,4 +6,4 @@
 # Note: there is a .vimrc in this directory. You have to
 # have "set exrc" enabled for vim to load it automatically.
 
-vim `ls -1`
+vim `ls -1 | grep -v .png$ | grep -v .pdf$ `
