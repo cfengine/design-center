@@ -202,7 +202,8 @@ EOHIPPUS
         push @p, "### bundle: $bundle";
         foreach my $param (@$spec)
         {
-            if ($param->{type} eq 'bundle_options')
+            my $return = DCAPI::Activation::return_type($param->{type});
+            if (DCAPI::Activation::options_type($param->{type}))
             {
                 my $options = $self->api_options($bundle);
                 foreach my $k (keys %$options)
@@ -213,7 +214,7 @@ EOHIPPUS
             else
             {
                 push @p, sprintf("* %s _%s_ *%s* (default: %s, description: %s)\n",
-                                 $param->{type} eq 'return' ? 'returns' : 'parameter',
+                                 $return ? 'returns' : 'parameter',
                                  $param->{type},
                                  $param->{name},
                                  (exists $param->{default} ? '`'.(defined $param->{default} ? $self->dcapi()->encode($param->{default}):'null').'`' : 'none'),

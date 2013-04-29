@@ -174,7 +174,10 @@ sub make_activation
                $sketch, $bundle, $bundle_params{$bundle});
 
     my $bundle_options = $found->api_options($bundle);
-    die Util::dump_ref($bundle_options);
+    if ($bundle_options->{single_use})
+    {
+        # define behavior for single-use sketches: Redmine #2534
+    }
 
     return DCAPI::Activation->new(api => $api,
                                   prefix => $activation_prefix,
@@ -202,7 +205,16 @@ sub fill_param
                  type => $type, name => $name, value => $extra->{environment}};
     }
 
-    if ($type eq 'return')
+    if (options_type($type))
+    {
+        return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
+                 set=>undef,
+                 type => $type, name => $name,
+                 value => $extra->{sketch}->api_options($extra->{bundle}),
+               };
+    }
+
+    if (return_type($type))
     {
         return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
                  set=>undef,
@@ -349,28 +361,32 @@ sub fill_param
 
 sub can_inline
 {
-    my $self = shift @_;
     my $type = shift @_;
 
-    return (!$self->ignored_type($type) &&
+    return (!ignored_type($type) &&
             ($type ne 'list' && $type ne 'array' &&
              $type ne 'metadata'));
 }
 
 sub ignored_type
 {
-    my $self = shift @_;
     my $type = shift @_;
 
-    return ($self->return_type($type) || $type eq 'bundle_options');
+    return return_type($type) || options_type($type);
+}
+
+sub options_type
+{
+    my $type = shift @_;
+
+    return $type eq 'bundle_options';
 }
 
 sub return_type
 {
-    my $self = shift @_;
     my $type = shift @_;
 
-    return ($type eq 'return');
+    return $type eq 'return';
 }
 
 sub make_bundle_params
@@ -380,11 +396,11 @@ sub make_bundle_params
     my @data;
     foreach my $p (@{$self->params()})
     {
-        if ($self->ignored_type($p->{type}))
+        if (ignored_type($p->{type}))
         {
             $self->api()->log5("Bundle parameters: ignoring parameter %s", $p);
         }
-        elsif ($self->can_inline($p->{type}))
+        elsif (can_inline($p->{type}))
         {
             foreach my $pr (Util::recurse_print($p->{value}, '', 0, 0, $p->{type} eq 'boolean'))
             {

@@ -1050,12 +1050,12 @@ sub regenerate
                 $self->log("Regenerate: adding environment %s", $p);
                 $environments{$p->{value}}++;
             }
-            elsif ($a->ignored_type($p->{type}))
+            elsif (DCAPI::Activation::ignored_type($p->{type}))
             {
                 $self->log5("Regenerate: ignoring parameter %s", $p);
             }
             # we can't inline some types, so print them explicitly in the data bundle
-            elsif (!$a->can_inline($p->{type}))
+            elsif (!DCAPI::Activation::can_inline($p->{type}))
             {
                 $self->log("Regenerate: adding explicit data %s", $p);
                 my $line = join("\n",
