@@ -53,13 +53,30 @@ ifeq ($(V),1)
   EXTRA:=--verbose
 endif
 
-CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH) $(EXTRA) --force --test
+ifeq ($(T),0)
+  EXTRA:= $(EXTRA) --test=$(T)
+else
+  EXTRA:= $(EXTRA) --test
+endif
+
+ifneq ($(A),)
+  EXTRA:= $(EXTRA) --activate=$(A)
+endif
+
+# change the default parameter set in cf-sketch so it's not confusing
+# ADD A INPUTS_FILTER TO config.json/runfile
+# ADD ACTIVATED PARAMETER TO CF-SKETCH
+
+CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH) $(EXTRA) --force
 CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE)
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
-	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: {include:["x", "y.*"], exclude: ["b", "c"]}, test: true, verbose: true } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "$(API_SKETCHDIR)", identifier: "my special identifier", metadata: { myvar: "myvalue" }, environment: "testing", params: [ "simple_sketch" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "production": { activated: true, test: false, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Utilities::abortclasses", force: true, target: "/var/cfengine/masterfiles/sketches", source: "/home/..." } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "abortclasses_params": {  } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Utilities::abortclasses": { environment: "production", params: [ "abortclasses_params" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
 api_activate:
