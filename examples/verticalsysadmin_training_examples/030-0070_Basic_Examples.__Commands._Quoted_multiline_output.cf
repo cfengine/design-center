@@ -1,3 +1,5 @@
+# demonstrate handling of multi-line output
+
 bundle agent example
 {
 
