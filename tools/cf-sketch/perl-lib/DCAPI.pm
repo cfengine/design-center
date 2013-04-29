@@ -22,6 +22,8 @@ use Mo qw/build default builder coerce is required/;
 # has name2 => ( builder => 'name_builder' );
 # has name4 => ( required => 1 );
 
+our @vardata_keys = qw/compositions activations definitions environments validations/;
+
 has version => ( is => 'ro', default => sub { API_VERSION } );
 
 has config => ( );
@@ -44,6 +46,7 @@ has cfagent => (
 has repos => ( is => 'ro', default => sub { [] } );
 has recognized_sources => ( is => 'ro', default => sub { [] } );
 has vardata => ( is => 'rw');
+has constdata => ( is => 'rw');
 has runfile => ( is => 'ro', default => sub { {} } );
 has compositions => ( is => 'rw', default => sub { {} });
 has definitions => ( is => 'rw', default => sub { {} });
@@ -138,6 +141,30 @@ sub set_config
         }
     }
 
+    my $constdata_file = Util::hashref_search($self->config(), qw/constdata/);
+
+    if ($constdata_file)
+    {
+        $constdata_file = glob($constdata_file);
+        $self->log5("Loading constdata file $constdata_file");
+        $self->constdata($constdata_file);
+        if (-f $constdata_file && -w $constdata_file && -r $constdata_file)
+        {
+            my ($v_data, @v_warnings) = $self->load($constdata_file);
+            $result->add_error('constdata', @v_warnings)
+             if scalar @v_warnings;
+
+            foreach my $key (@vardata_keys)
+            {
+                if (exists $v_data->{$key})
+                {
+                    $self->log5("Successfully loaded $key from constdata file $constdata_file");
+                    $self->$key(Util::hashref_merge($self->$key(), $v_data->{$key}));
+                }
+            }
+        }
+    }
+
     my $vardata_file = Util::hashref_search($self->config(), qw/vardata/);
 
     if ($vardata_file)
@@ -162,34 +189,21 @@ sub set_config
         {
             $result->add_error($vardata_file, "vardata is not a hash");
         }
-        elsif (!exists $v_data->{compositions})
-        {
-            $result->add_error($vardata_file, "vardata has no key 'compositions'");
-        }
-        elsif (!exists $v_data->{activations})
-        {
-            $result->add_error($vardata_file, "vardata has no key 'activations'");
-        }
-        elsif (!exists $v_data->{definitions})
-        {
-            $result->add_error($vardata_file, "vardata has no key 'definitions'");
-        }
-        elsif (!exists $v_data->{environments})
-        {
-            $result->add_error($vardata_file, "vardata has no key 'environments'");
-        }
-        elsif (!exists $v_data->{validations})
-        {
-            $result->add_error($vardata_file, "vardata has no key 'validations'");
-        }
         else
         {
             $self->log3("Successfully loaded vardata file $vardata_file");
-            $self->compositions($v_data->{compositions});
-            $self->activations($v_data->{activations});
-            $self->definitions($v_data->{definitions});
-            $self->environments($v_data->{environments});
-            $self->validations($v_data->{validations});
+
+            foreach my $key (@vardata_keys)
+            {
+                if (exists $v_data->{$key})
+                {
+                    $self->$key(Util::hashref_merge($self->$key(), $v_data->{$key}));
+                }
+                else
+                {
+                    $result->add_error($vardata_file, "vardata has no key '$key'");
+                }
+            }
         }
     }
     else
@@ -204,13 +218,8 @@ sub save_vardata
 {
     my $self = shift;
 
-    my $data = {
-                compositions => $self->compositions,
-                activations => $self->activations,
-                definitions => $self->definitions,
-                environments => $self->environments,
-                validations => $self->validations,
-               };
+    my $data = {};
+    $data->{$_} = $self->$_() foreach @vardata_keys;
     my $vardata_file = $self->vardata();
 
     $self->log("Saving vardata file $vardata_file");
@@ -292,11 +301,7 @@ sub data_dump
      recognized_sources => $self->recognized_sources(),
      vardata => $self->vardata(),
      runfile => $self->runfile(),
-     compositions => $self->compositions(),
-     definitions => $self->definitions(),
-     activations => $self->activations(),
-     environments => $self->environments(),
-     validations => $self->validations(),
+     map { $_ => $self->$_() } @vardata_keys,
     };
 }
 
