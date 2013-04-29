@@ -11,6 +11,8 @@ has sketch => ( is => 'ro', required => 1 );
 has environment => ( is => 'ro', required => 1 );
 has bundle => ( is => 'ro', required => 1 );
 has params => ( is => 'ro', required => 1 );
+has metadata => ( is => 'ro', required => 1 );
+has prefix => ( is => 'ro', required => 0, default => '' );
 has compositions => ( is => 'ro', required => 1, default => [] );
 has id => ( is => 'ro', required => 1 );
 
@@ -34,11 +36,20 @@ sub make_activation
         return (undef, "Invalid activation environment '$env'");
     }
 
+    my $activation_prefix  = $spec->{identifier} || '';
+
     my $compositions = $spec->{compositions} || [];
 
     if (ref $compositions ne 'ARRAY')
     {
         return (undef, "Invalid compositions parameter");
+    }
+
+    my $metadata = $spec->{metadata} || {};
+
+    if (ref $metadata ne 'HASH')
+    {
+        return (undef, "Invalid metadata parameter");
     }
 
     my $found;
@@ -104,7 +115,8 @@ sub make_activation
     foreach my $b (@bundles_to_check)
     {
         $bundle_params{$b} = [];
-        $activation_id = sprintf('__%03d %s %s',
+        $activation_id = sprintf('__%s_%03d %s %s',
+                                 $activation_prefix,
                                  $activation_position,
                                  $found->name(),
                                  $b);
@@ -124,6 +136,7 @@ sub make_activation
                          bundle => $b,
                          id => $activation_id,
                          compositions => $compositions,
+                         metadata => $metadata,
                          available_compositions => $api->compositions(),
                         );
 
@@ -161,11 +174,13 @@ sub make_activation
                $sketch, $bundle, $bundle_params{$bundle});
 
     return DCAPI::Activation->new(api => $api,
+                                  prefix => $activation_prefix,
                                   sketch => $found,
                                   environment => $env,
                                   bundle => $bundle,
                                   id => $activation_id,
                                   compositions => $compositions,
+                                  metadata => $metadata,
                                   params => $bundle_params{$bundle});
 }
 
@@ -193,9 +208,11 @@ sub fill_param
 
     if ($type eq 'metadata')
     {
+        my $metadata = $extra->{sketch}->runfile_data_dump();
+        $metadata = Util::hashref_merge($metadata, { activation => $extra->{metadata} });
         return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
                  set=>'sketch metadata',
-                 type => 'array', name => $name, value => $extra->{sketch}->runfile_data_dump()};
+                 type => 'array', name => $name, value => $metadata };
     }
 
     my @compositions;
@@ -229,6 +246,7 @@ sub fill_param
     my $ret;
     foreach my $pset (@filtered_param_sets)
     {
+        my $defaulted = 0;
         my ($pkey, $pval_ref) = @$pset;
         # Get the values locally so overwriting them with the default doesn't
         # set them for the future.  This was a fun bug to hunt.
@@ -237,6 +255,7 @@ sub fill_param
         {
             $extra->{default} =~ s/__PREFIX__/$extra->{id}/g;
             $pval{$name} = $extra->{default};
+            $defaulted = 1;
         }
 
         # TODO: add more parameter types and validate the value!!!
@@ -265,15 +284,18 @@ sub fill_param
         {
             $ret = {set=>$pkey, type => $type, name => $name, value => $pval{$name}};
         }
+
+        $ret->{defaulted} = $defaulted
+         if $ret;
     }
 
-    unless (defined $ret)
+    if (!defined $ret || $ret->{defaulted})
     {
         foreach my $compose_key (@compositions)
         {
             next unless exists $available_compositions{$compose_key};
             my $compose = $available_compositions{$compose_key};
-            next if $ret;
+            next if ($ret && !$ret->{defaulted});
 
             # { destination_sketch: "CFEngine::sketch_template",
             # destination_list: "mylist", source_sketch: "VCS::vcs_mirror",
@@ -296,14 +318,14 @@ sub fill_param
             {
                 $api->log4("Found a 'compose' match for list parameter %s in sketch %s, bundle %s: %s=%s",
                            $name, $d, $extra->{bundle}, $compose_key, $compose);
-                $ret = {set=>'compose', type => $type, name => $name, deferred_value => $compose, deferred_list => 0};
+                $ret = {set=>'compose', type => $type, name => $name, deferred_value => $compose, deferred_list => 0, defaulted => 0};
             }
             # TODO: maybe support other types
             elsif ($dscalar eq $name && $type eq 'string')
             {
                 $api->log4("Found a 'compose' match for scalar parameter %s in sketch %s, bundle %s: %s=%s",
                            $name, $d, $extra->{bundle}, $compose_key, $compose);
-                $ret = {set=>'compose', type => $type, name => $name, deferred_value => $compose, deferred_list => 0};
+                $ret = {set=>'compose', type => $type, name => $name, deferred_value => $compose, deferred_list => 0, defaulted => 0};
             }
             else
             {
@@ -380,6 +402,9 @@ sub data_dump
             environment => $self->environment(),
             bundle => $self->bundle(),
             params => $self->params(),
+            compositions => $self->compositions(),
+            prefix => $self->prefix(),
+            metadata => $self->metadata(),
             id => $self->id(),
            };
 }

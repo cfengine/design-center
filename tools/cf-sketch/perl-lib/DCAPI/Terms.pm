@@ -57,12 +57,30 @@ sub matches
 
                 if ($check eq 'matches' || $check eq 'equals')
                 {
-                    my $datum = Util::hashref_search($data, @$k);
-                    $self->api()->log5('Term %s checking against %s', $q, $datum);
-                    if ((!defined $datum && !defined $v) ||
-                        ($check eq 'matches' && defined $datum && defined $v && $datum =~ m/$v/i) ||
-                        ($check eq 'equals' && defined $datum && defined $v && $datum eq $v)) {
-                        push @$ok, [$k, $v] if $ok;
+                    my $data_locate = Util::hashref_search($data, @$k);
+                    if (ref $data_locate ne 'ARRAY')
+                    {
+                        $data_locate = [ $data_locate ];
+                    }
+
+                    $self->api()->log5('Term %s checking against %s', $q, $data_locate);
+
+                    my $this_ok = [];
+                    foreach my $datum (@$data_locate)
+                    {
+                        if ((!defined $datum && !defined $v) ||
+                            ($check eq 'matches' && defined $datum && defined $v && $datum =~ m/$v/i) ||
+                            ($check eq 'equals' && defined $datum && defined $v && $datum eq $v)) {
+                            push @$this_ok, [$k, $v] if $ok;
+                        }
+                        else
+                        {
+                        }
+                    }
+
+                    if (scalar @$this_ok)
+                    {
+                        push @$ok, @$this_ok;
                     }
                     else
                     {

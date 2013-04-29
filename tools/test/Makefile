@@ -58,7 +58,17 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { NONEMPTY_STRING: { valid_regex: "." } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {search: [["tags", "matches", "stdlib|cloud"]] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {search: [["tags", "equals", "aws"]] } }' | $(CFAPI)
+
+api_activate:
+	@echo ...install CFEngine::sketch_template, deactivate all, activate just CFEngine::sketch_template with some metadata, then generate the runfile
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "$(API_SKETCHDIR)", identifier: "my special identifier", metadata: { myvar: "myvalue" }, environment: "testing", params: [ "simple_sketch" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
+	@echo ...deactivate my special identifier
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: "my special identifier" } }' | $(CFAPI)
 
 api_validations:
 	@echo ...define a choice-of validation with choice and derived
@@ -144,6 +154,14 @@ api_environments:
 	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: true, test: true, verbose: true } } } }' | $(CFAPI)
 	@echo ...undefine testing run environment
 	echo '{ dc_api_version: "0.0.1", request: {undefine_environment: [ "testing" ] } }' | $(CFAPI)
+	@echo ...define testing run environment with include criteria... note that exclude criteria are ignored...
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: [], test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: {}, test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: {include:"x"}, test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: {exclude:"x"}, test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: {include:["x", "y.*"], exclude: ["b", "c"]}, test: true, verbose: true } } } }' | $(CFAPI)
+	@echo ...undefine testing run environment
+	echo '{ dc_api_version: "0.0.1", request: {undefine_environment: [ "testing" ] } }' | $(CFAPI)
 
 api_definitions:
 	@echo ...show all definiions
@@ -177,6 +195,8 @@ api_search:
 	echo '{ dc_api_version: "0.0.1", request: {search: [["name", "matches", "(Cloud|CFEngine)"]] } }' | $(CFAPI)
 	@echo ...search available matching cloud or cfengine via data alternation
 	echo '{ dc_api_version: "0.0.1", request: {search: [["name", "matches", "Cloud"], ["name", "matches", "CFEngine"]] } }' | $(CFAPI)
+	@echo ...search available matching cloud in the tags
+	echo '{ dc_api_version: "0.0.1", request: {search: [["tags", "matches", "cloud"]] } }' | $(CFAPI)
 
 api:
 	@echo '--- a full test of configuring VCS::vcs_mirror and reporting the directories it mirrors --'
