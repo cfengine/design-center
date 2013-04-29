@@ -173,6 +173,9 @@ sub make_activation
     $api->log3("Verified sketch %s, bundle %s: filled parameters are %s",
                $sketch, $bundle, $bundle_params{$bundle});
 
+    my $bundle_options = $found->api_options($bundle);
+    die Util::dump_ref($bundle_options);
+
     return DCAPI::Activation->new(api => $api,
                                   prefix => $activation_prefix,
                                   sketch => $found,
@@ -355,6 +358,14 @@ sub can_inline
 }
 
 sub ignored_type
+{
+    my $self = shift @_;
+    my $type = shift @_;
+
+    return ($self->return_type($type) || $type eq 'bundle_options');
+}
+
+sub return_type
 {
     my $self = shift @_;
     my $type = shift @_;

@@ -202,12 +202,23 @@ EOHIPPUS
         push @p, "### bundle: $bundle";
         foreach my $param (@$spec)
         {
-            push @p, sprintf("* %s _%s_ *%s* (default: %s, description: %s)\n",
-                             $param->{type} eq 'return' ? 'returns' : 'parameter',
-                             $param->{type},
-                             $param->{name},
-                             (exists $param->{default} ? '`'.(defined $param->{default} ? $self->dcapi()->encode($param->{default}):'null').'`' : 'none'),
-                             (defined $param->{description} ? $param->{description} : 'none'));
+            if ($param->{type} eq 'bundle_options')
+            {
+                my $options = $self->api_options($bundle);
+                foreach my $k (keys %$options)
+                {
+                    push @p, "* bundle option: $k = " . $options->{$k} . "\n";
+                }
+            }
+            else
+            {
+                push @p, sprintf("* %s _%s_ *%s* (default: %s, description: %s)\n",
+                                 $param->{type} eq 'return' ? 'returns' : 'parameter',
+                                 $param->{type},
+                                 $param->{name},
+                                 (exists $param->{default} ? '`'.(defined $param->{default} ? $self->dcapi()->encode($param->{default}):'null').'`' : 'none'),
+                                 (defined $param->{description} ? $param->{description} : 'none'));
+            }
         }
     }
 
@@ -220,6 +231,26 @@ EOHIPPUS
 
     $self->dcapi()->log4("Generated README:\n$readme\n");
     return $readme;
+}
+
+sub api_options
+{
+    my $self = shift;
+    my $bundle = shift;
+
+    my $bundle_api = Util::hashref_search($self->api(), $bundle);
+    return {} unless $bundle_api;
+
+    foreach my $param (@$bundle_api)
+    {
+        my $type = Util::hashref_search($param, 'type');
+        next unless ($type && $type eq 'bundle_options');
+        my %options = %$param;
+        delete $options{type};
+        return \%options;
+    }
+
+    return {};
 }
 
 sub matches
