@@ -1028,6 +1028,19 @@ sub regenerate
     }
 
     @inputs = Util::uniq(@inputs);
+
+    my $filter_inputs = $self->runfile()->{filter_inputs};
+    if (ref $filter_inputs eq 'ARRAY')
+    {
+        foreach my $filter (@$filter_inputs)
+        {
+            $self->log("Regenerate: filtering inputs to exclude %s", $filter);
+            @inputs = grep { $_ !~ m/$filter/ } @inputs;
+        }
+
+        $self->log("Regenerate: final inputs after filtering %s", \@inputs);
+    }
+
     my $inputs = join "\n", Util::make_var_lines('inputs', \@inputs, '', 0, 0);
 
     my $type_indent = ' ' x 2;

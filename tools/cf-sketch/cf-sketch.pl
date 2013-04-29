@@ -54,6 +54,7 @@ my %options = (
                activate => {},
                install => [],
                uninstall => [],
+               filter => [],
                force => 0,
                quiet => 0,
                verbose => 0,
@@ -76,12 +77,14 @@ GetOptions(\%options,
            "veryverbose|vv!",
            "generate!",
            "force|f!",
-           "test!",
+           "test:s",
+           "activated:s",
            "installsource|is=s",
            "cfpath=s",
            "list:s",
            "search:s",
            "make_readme:s",
+           "filter=s@",
            "install|i=s@",
            "uninstall=s@",
            "deactivate-all|da",
@@ -101,12 +104,19 @@ $options{sourcedir} = $sourcedir;
 
 die "Sorry, can't locate source directory" unless -d $sourcedir;
 
+$options{test} = 1 if (exists $options{test} && !$options{test});
+my $env_test = ($options{test} == 1) ? 1 : $options{test};
+
+$options{activated} = 1 if (exists $options{activated} && !$options{activated});
+my $env_activated = ($options{activated} == 1) ? 1 : $options{activated};
+
 api_interaction({
                  define_environment => {
                                         $options{environment} =>
                                         {
                                          activated => 1,
-                                         test => !!$options{test},
+                                         test => $env_test,
+                                         activated => $env_activated,
                                          verbose => !!$options{verbose}
                                         }
                                        }
@@ -182,7 +192,7 @@ if (scalar keys %{$options{activate}})
             my $i = 1;
             foreach (@$load)
             {
-                my $k = "$file $i";
+                my $k = "parameter definition from $file-$i";
                 $todefine{$k} = $_;
                 $i++;
                 push @{$todo{$sketch}},{
@@ -194,11 +204,12 @@ if (scalar keys %{$options{activate}})
         }
         else
         {
-            $todefine{$file} = $load;
+            my $k = "parameter definition from $file";
+            $todefine{$k} = $load;
             push @{$todo{$sketch}},{
                                     target => $options{repolist}->[0],
                                     environment => $options{environment},
-                                    params => [ $file ],
+                                    params => [ $k ],
                                    };
         }
     }
@@ -269,7 +280,8 @@ sub api_interaction
                                   {
                                    location => $options{runfile},
                                    standalone => 1,
-                                   relocate_path => "sketches"
+                                   relocate_path => "sketches",
+                                   filter_inputs => $options{filter},
                                   },
                                   vardata => "$inputs_root/cfsketch-vardata.conf",
                                  });

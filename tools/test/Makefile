@@ -53,19 +53,21 @@ ifeq ($(V),1)
   EXTRA:=--verbose
 endif
 
-ifeq ($(T),0)
+ifneq ($(T),)
   EXTRA:= $(EXTRA) --test=$(T)
 else
   EXTRA:= $(EXTRA) --test
 endif
 
 ifneq ($(A),)
-  EXTRA:= $(EXTRA) --activate=$(A)
+  EXTRA:= $(EXTRA) --activated=$(A)
+else
+  EXTRA:= $(EXTRA) --activated
 endif
 
-# change the default parameter set in cf-sketch so it's not confusing
-# ADD A INPUTS_FILTER TO config.json/runfile
-# ADD ACTIVATED PARAMETER TO CF-SKETCH
+ifneq ($(FILTER),)
+  EXTRA:= $(EXTRA) --filter=$(FILTER)
+endif
 
 CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH) $(EXTRA) --force
 CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE)
