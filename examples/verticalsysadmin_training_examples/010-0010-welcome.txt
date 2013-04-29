@@ -1,0 +1,20 @@
+CFEngine Training
+29 April - 2 May
+
+Wi-Fi
+  username: hrnb
+  password: 
+
+Expecting to get out of this training:
+
+- more advanced CFEngine capabilities
+
+- get rolling
+
+- coding
+
+- upgrade from Community to Enterprise version
+
+- cfengine architecture 
+
+- how to get a list of recent clients

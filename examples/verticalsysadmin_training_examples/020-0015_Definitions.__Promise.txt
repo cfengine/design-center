@@ -15,9 +15,9 @@ thought of as a promise to be kept by different resources in the system.
 
 CFEngine manages every intended system outcome as "promises" to be kept.
 
-Promises are always things that can be kept and repaired continuously,
-on a real time basis, not just once at install-time. 
+Promises are always things that can be kept and repaired
+continuously, on a real time basis, not just once at install-time. 
 
-Combining promises with patterns to describe where and when promises should
-apply is what CFEngine is all about.
+Combining promises with patterns to describe where and when
+promises should apply is what CFEngine is all about.
 
