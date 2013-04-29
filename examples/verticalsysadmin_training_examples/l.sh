@@ -4,7 +4,7 @@
 
 # l.sh depends on "remark" which is provided by "regex-markup" from nongnu.org.
 # let's check that "remark" is installed, and if it's not, then install it
-remark /dev/null /dev/null >/dev/null 2>/dev/null || (echo; echo; echo Installing regex-markup RPM; sh -x -c 'rpm -ihv http://download.savannah.gnu.org/releases/regex-markup/regex-markup-0.10.0-1.x86_64.rpm' ; echo press ENTER to continue; read A)
+remark /dev/null /dev/null >/dev/null 2>/dev/null || (echo; echo; echo Installing regex-markup RPM; sh -x -c 'wget http://download.savannah.gnu.org/releases/regex-markup/regex-markup-0.10.0-1.x86_64.rpm' && rpm -ihv ./regex-markup-0.10.0-1.x86_64.rpm; echo press ENTER to continue; read A)
 
 
 # display a colorized file list, in alphanumeric order
