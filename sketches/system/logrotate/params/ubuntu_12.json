@@ -1,0 +1,92 @@
+{
+    "System::Logrotate":
+    {
+
+		  "conf_dir" : "/tmp/etc",
+			"logrotate_purge" : 1,
+			"logrotate_globals" : {
+				 "schedule" : "weekly",
+				 "rotate" : "4",
+				 "create" : "",
+			},
+			"logrotate_descriptions" : {
+			   "wtmp" : {
+				    "path_description" : "/var/log/wtmp",
+						"missingok" : "missingok",
+						"schedule" : "monthly",
+						"create" : "0664 root utmp",
+						"rotate" : "1"
+				 },
+         "btmp" : {
+				    "path_description" : "/var/log/btmp",
+						"missingok" : "missingok",
+						"schedule" : "monthly",
+						"create" : "0660 root utmp",
+						"rotate" : "1"
+				 },
+				 "apt_term" : {
+				    "path_description" : "/var/log/apt/term.log",
+						"rotate" : "12",
+						"schedule" : "monthly",
+						"compress" : "compress",
+						"missingok" : "missingok",
+						"notifempty" : "notifempty"
+				 },
+				 "apt_history" : {
+				    "path_description" : "/var/log/apt/history.log",
+						"rotate" : "12",
+						"schedule" : "monthly",
+						"compress" : "compress",
+						"missingok" : "missingok",
+						"notifempty" : "notifempty"
+				 },
+				 "aptitude" : {
+				    "path_description" : "/var/log/aptitude",
+						"rotate" : "6",
+						"schedule" : "monthly",
+						"compress" : "compress",
+						"missingok" : "missingok",
+						"notifempty" : "notifempty"
+				 },
+				 "dpkg_log" : {
+				    "path_description" : "/var/log/dpkg.log",
+						"rotate" : "12",
+						"schedule" : "monthly",
+						"compress" : "compress",
+						"delaycompress" : "delaycompress",
+						"missingok" : "missingok",
+						"notifempty" : "notifempty",
+						"create" : "0644 root root"
+				 },
+				 "alternatives_log" : {
+				    "path_description" : "/var/log/alternatives.log",
+						"rotate" : "12",
+						"schedule" : "monthly",
+						"compress" : "compress",
+						"delaycompress" : "delaycompress",
+						"missingok" : "missingok",
+						"notifempty" : "notifempty",
+						"create" : "0644 root root"
+				 },
+				 "alternatives_log" : {
+				    "path_description" : "/var/log/alternatives.log",
+						"rotate" : "12",
+						"schedule" : "monthly",
+						"compress" : "compress",
+						"delaycompress" : "delaycompress",
+						"missingok" : "missingok",
+						"notifempty" : "notifempty",
+						"create" : "0644 root root"
+				 },
+				 "ppp" : {
+				    "path_description" : "/var/log/ppp-connect-errors",
+						"rotate" : "4",
+						"schedule" : "weekly",
+						"compress" : "compress",
+						"missingok" : "missingok",
+						"notifempty" : "notifempty",
+						"nocreate" : "nocreate"
+				 },
+			}
+		}
+}

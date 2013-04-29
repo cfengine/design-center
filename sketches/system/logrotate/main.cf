@@ -1,0 +1,88 @@
+body file control
+{
+  namespace => "cfdc_system_logrotate";
+}
+
+bundle agent system_logrotate(runenv,metadata,conf_dir,logrotate_globals,logrotate_descriptions,logrotate_purge)
+{
+	vars:
+		"current_files" slist => lsdir("$(conf_dir)/logrotate.d",".*\w+.*","false");
+		"file_names" slist => getindices("$(logrotate_descriptions)");
+	
+	files:
+		"$(conf_dir)/logrotate.conf"
+			create => "true",
+			perms => default:m("644"),
+			edit_defaults => default:empty,
+			edit_line => logrotate_global_insert_lines("$(conf_dir)","$(logrotate_globals)");
+		"$(conf_dir)/logrotate.d/$(file_names)"
+			create => "true",
+			perms => default:m("644"),
+			edit_defaults => default:empty,
+			edit_line => logrotate_insert_lines("$(logrotate_descriptions)","$(file_names)");
+		"$(conf_dir)/logrotate.d/$(current_files)"
+			delete => default:tidy,
+			ifvarclass => and(not(isvariable("$(logrotate_descriptions)[$(current_files)][path_description]")),strcmp("$(logrotate_purge)","1"));
+
+}
+
+bundle edit_line logrotate_global_insert_lines(conf_dir,ld) {
+	insert_lines:
+"$($(ld)[schedule])"                 ifvarclass => isvariable("$(ld)[schedule]");
+"$($(ld)[compress])"                 ifvarclass => isvariable("$(ld)[compress]");
+"$($(ld)[copy])"                     ifvarclass => isvariable("$(ld)[copy]");
+"$($(ld)[copytruncate])"             ifvarclass => isvariable("$(ld)[copytruncate]");
+"$($(ld)[dateext])"                  ifvarclass => isvariable("$(ld)[dateext]");
+"$($(ld)[delaycompress])"            ifvarclass => isvariable("$(ld)[delaycompress]");
+"$($(ld)[ifempty])"                  ifvarclass => isvariable("$(ld)[ifempty]");
+"$($(ld)[nomail])"                   ifvarclass => isvariable("$(ld)[nomail]");
+"$($(ld)[missingok])"                ifvarclass => isvariable("$(ld)[missingok]");
+"$($(ld)[shred])"                    ifvarclass => isvariable("$(ld)[shred]");
+"shredcycles $($(ld)[shred])"        ifvarclass => isvariable("$(ld)[shredcycles]");
+"create $($(ld)[create])"            ifvarclass => isvariable("$(ld)[create]");
+"dateformat $($(ld)[dateformat])"    ifvarclass => isvariable("$(ld)[dateformat]");
+"mail $($(ld)[mail])"                ifvarclass => isvariable("$(ld)[mail]");
+"maxage $($(ld)[maxage])"            ifvarclass => isvariable("$(ld)[maxage]");
+"minsize $($(ld)[minsize])"          ifvarclass => isvariable("$(ld)[minsize]");
+"rotate $($(ld)[rotate])"            ifvarclass => isvariable("$(ld)[rotate]");
+"start $($(ld)[start])"              ifvarclass => isvariable("$(ld)[start]");
+"include $(conf_dir)/logrotate.d";
+}
+
+bundle edit_line logrotate_insert_lines(ld,fn) {
+	
+	insert_lines:
+"$($(ld)[$(fn)][path_description]) {";
+"    $($(ld)[$(fn)][schedule])"                 ifvarclass => isvariable("$(ld)[$(fn)][schedule]");
+"    $($(ld)[$(fn)][compress])"                 ifvarclass => isvariable("$(ld)[$(fn)][compress]");
+"    $($(ld)[$(fn)][copy])"                     ifvarclass => isvariable("$(ld)[$(fn)][copy]");
+"    $($(ld)[$(fn)][copytruncate])"             ifvarclass => isvariable("$(ld)[$(fn)][copytruncate]");
+"    $($(ld)[$(fn)][dateext])"                  ifvarclass => isvariable("$(ld)[$(fn)][dateext]");
+"    $($(ld)[$(fn)][delaycompress])"            ifvarclass => isvariable("$(ld)[$(fn)][delaycompress]");
+"    $($(ld)[$(fn)][ifempty])"                  ifvarclass => isvariable("$(ld)[$(fn)][ifempty]");
+"    $($(ld)[$(fn)][nomail])"                   ifvarclass => isvariable("$(ld)[$(fn)][nomail]");
+"    $($(ld)[$(fn)][missingok])"                ifvarclass => isvariable("$(ld)[$(fn)][missingok]");
+"    $($(ld)[$(fn)][sharedscripts])"            ifvarclass => isvariable("$(ld)[$(fn)][sharedscripts]");
+"    $($(ld)[$(fn)][shred])"                    ifvarclass => isvariable("$(ld)[$(fn)][shred]");
+"    shredcycles $($(ld)[$(fn)][shred])"        ifvarclass => isvariable("$(ld)[$(fn)][shredcycles]");
+"    create $($(ld)[$(fn)][create])"            ifvarclass => isvariable("$(ld)[$(fn)][create]");
+"    dateformat $($(ld)[$(fn)][dateformat])"    ifvarclass => isvariable("$(ld)[$(fn)][dateformat]");
+"    mail $($(ld)[$(fn)][mail])"                ifvarclass => isvariable("$(ld)[$(fn)][mail]");
+"    maxage $($(ld)[$(fn)][maxage])"            ifvarclass => isvariable("$(ld)[$(fn)][maxage]");
+"    minsize $($(ld)[$(fn)][minsize])"          ifvarclass => isvariable("$(ld)[$(fn)][minsize]");
+"    rotate $($(ld)[$(fn)][rotate])"            ifvarclass => isvariable("$(ld)[$(fn)][rotate]");
+"    start $($(ld)[$(fn)][start])"              ifvarclass => isvariable("$(ld)[$(fn)][start]");
+"    prerotate
+         $($(ld)[$(fn)][prerotate])
+    endscript"                                 ifvarclass => isvariable("$(ld)[$(fn)][prerotate]");
+"    postrotate
+         $($(ld)[$(fn)][postrotate])
+    endscript"                                 ifvarclass => isvariable("$(ld)[$(fn)][postrotate]");
+"    firstaction
+         $($(ld)[$(fn)][firstaction])
+    endscript"                                 ifvarclass => isvariable("$(ld)[$(fn)][firstaction]");
+"    lastaction
+         $($(ld)[$(fn)][lastaction])
+    endscript"                                 ifvarclass => isvariable("$(ld)[$(fn)][lastaction]");
+"}";
+}

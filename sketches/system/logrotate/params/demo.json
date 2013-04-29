@@ -1,0 +1,70 @@
+{
+    "System::Logrotate":
+    {
+
+		  "conf_dir" : "/tmp/etc",
+			"logrotate_purge" : 1,
+			"logrotate_globals" : {
+				"compress" : "compress",
+				"schedule" : "weekly",
+				"rotate" : "4",
+				"create" : "",
+				"dateext" : "dateext",
+			},
+			"logrotate_descriptions" : {
+				"wtmp" : {
+					"path_description" : "/var/log/wtmp",
+					"schedule" : "monthly",
+					"create"   : "0664 root utmp",
+					"minsize"  : "1M",
+					"rotate"   : "1",
+				},
+				"btmp" : {
+					"path_description" : "/var/log/btmp",
+					"schedule"  : "monthly",
+					"create"    : "0600 root utmp",
+					"missingok" : "missingok",
+					"rotate"    : "1",
+				},
+				"up2date" : {
+					"path_description" : "/path/to/file/2/*.log",
+					"missingok" : "missingok",
+				},
+				"httpd" : {
+					"path_description" : "/var/log/httpd/*log",
+					"missingok"     : "missingok",
+					"ifempty"       : "notifempty",
+					"sharedscripts" : "sharedscripts",
+					"delaycompress" : "delaycompress",
+					"postrotate"    : "/sbin/service httpd reload > /dev/null 2>/dev/null || true",
+				},
+				"dracut" : {
+					"path_description" : "/var/log/dracut.log",
+					"schedule"  : "yearly",
+					"missingok" : "missingok",
+					"ifempty"   : "notifempty",
+					"size"      : "30k",
+					"create"    : "0600 root root",
+				},
+				"yum" : {
+					"path_description" : "/var/log/yum.log",
+					"schedule"  : "yearly",
+					"missingok" : "missingok",
+					"ifempty"   : "notifempty",
+					"size"      : "30k",
+					"create"    : "0600 root root",
+				},
+				"syslog" : {
+					"path_description" : "/var/log/cron /var/log/maillog /var/log/messages /var/log/secure /var/log/spooler",
+					"sharedscripts"    : "sharedscripts",
+					"postrotate"       : "/bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true",
+				},
+				"subscription-manager" : {
+					"path_description" : "/var/log/rhsm/*.log",
+					"missingok" : "missingok",
+					"ifempty"   : "notifempty",
+					"sharedscripts" : "sharedscripts",
+				},
+			}
+    }
+}
