@@ -60,6 +60,7 @@ my %options = (
                quiet => 0,
                verbose => 0,
                test => 0,
+               activated => 0,
                veryverbose => 0,
                runfile => "$inputs_root/api-runfile.cf",
                installsource => Util::local_cfsketches_source(File::Spec->curdir()) || undef,
@@ -105,11 +106,11 @@ $options{sourcedir} = $sourcedir;
 
 die "Sorry, can't locate source directory" unless -d $sourcedir;
 
-$options{test} = 1 if (exists $options{test} && !$options{test});
-my $env_test = ($options{test} == 1) ? 1 : $options{test};
+$options{test} = 1 if ($options{test} eq '');
+my $env_test = $options{test};
 
-$options{activated} = 1 if (exists $options{activated} && !$options{activated});
-my $env_activated = ($options{activated} == 1) ? 1 : $options{activated};
+$options{activated} = 1 if ($options{activated} eq '');
+my $env_activated = $options{activated};
 
 api_interaction({
                  define_environment => {
