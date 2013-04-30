@@ -53,11 +53,21 @@ sub make_activation
     }
 
     my $found;
-    my @repos = grep
+    my @repos;
+    my $target = glob($spec->{target});
+    foreach my $repo (map { $api->load_repo($_) } @{$api->repos()})
     {
-        my $target = glob($spec->{target});
-        $target ? $target eq $_->location() : 1
-    } map { $api->load_repo($_) } @{$api->repos()};
+        if ($target)
+        {
+            next if $target ne $repo->location();
+        }
+
+        push @repos, $repo;
+    }
+
+    $api->log4("Activation of sketch %s will be done against candidate repos %s",
+               $sketch,
+               \@repos);
 
     foreach my $repo (@repos)
     {
