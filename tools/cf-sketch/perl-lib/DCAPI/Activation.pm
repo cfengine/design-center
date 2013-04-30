@@ -67,7 +67,7 @@ sub make_activation
 
     $api->log4("Activation of sketch %s will be done against candidate repos %s",
                $sketch,
-               \@repos);
+               [@repos]);
 
     foreach my $repo (@repos)
     {
