@@ -1,0 +1,7 @@
+{
+    "System::motd":
+    {
+	"message": "Hello World!",
+    "static": 1
+    }
+}

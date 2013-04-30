@@ -581,6 +581,10 @@ data_classes:
 	$(CFSKETCH_DA) --install Data::Classes --activate Data::Classes=$(SOURCEDIR)/utilities/data_classes/params/demo.json
 	$(RUNNER)
 
+motd:
+	$(CFSKETCH_DA) --install System::motd --activate System::motd=$(SOURCEDIR)/system/motd/params/example.json
+	$(RUNNER)
+
 bad_input_file:
 	$(CFSKETCH_DA) --install Data::Classes --activate Data::Classes=/no/such/file
 	$(RUNNER)

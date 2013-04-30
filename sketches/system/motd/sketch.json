@@ -1,0 +1,37 @@
+{
+    manifest:
+    {
+        "main.cf": { desc: "main file" },
+        "test.cf": { desc: "standalone test" },
+        "README.md": { documentation: true },
+        "params/example.json": { comment: "example configuration" },
+    },
+
+    metadata:
+    {
+        name: "System::motd",
+	    description: "Configure the Message of the Day",
+        version: "1.00",
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Ben Heilman <bheilman@enova.com" ],
+        depends: { "CFEngine::stdlib": { version: 111 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }, os: [ "debian" ] }
+    },
+
+    api:
+    {
+        // this is the name of the bundle!
+        entry:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+
+	    { type: "string", name: "message", description: "Static message to print at login (aka MOTD)" },
+	    { type: "boolean", name: "static", default: "0", description: "Install a static motd" },
+        ],
+    },
+
+    namespace: "cfdc_motd",
+
+    interface: [ "main.cf" ],
+}
