@@ -38,7 +38,7 @@ bundle agent entry(runenv, metadata, message, static)
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    activated.test::
+    test::
       "message_owner"
       string => getenv("LOGNAME",100),
       depends_on => { "vars_motd_owner" },
@@ -50,7 +50,7 @@ bundle agent entry(runenv, metadata, message, static)
       handle => "vars_path_prefix",
       comment => "Prefix to file paths";
 
-    activated.!test::
+    !test::
       "message_owner"
       string => "$(cfdc_motd:define.motd_owner)",
       depends_on => { "vars_motd_owner" },
@@ -99,7 +99,7 @@ bundle agent entry(runenv, metadata, message, static)
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
       "static"
-      expression => strcmp("$(static)","1"),
+      expression => strcmp($(static),"1"),
       comment => "Install a static MOTD";
 
   files:
@@ -109,14 +109,14 @@ bundle agent entry(runenv, metadata, message, static)
       move_obstructions => "true",
       edit_defaults => default:empty,
       edit_line => default:insert_lines("$(message)"),
-      perms => default:mog("444","$(message_owner)","$(message_owner)"),
+      perms => default:mog("444",$(message_owner),$(message_owner)),
       depends_on => { "vars_message_owner", "vars_message_path" },
       handle => "files_message",
       comment => "Create and populate the static motd file";
 
       "$(link_path)"
       pathtype => "literal",
-      link_from => default:ln_s("$(target_path)"),
+      link_from => default:ln_s($(target_path)),
       move_obstructions => "true",
       depends_on => { "vars_link_path", "vars_target_path", "files_message" },
       handle => "files_symlink",
