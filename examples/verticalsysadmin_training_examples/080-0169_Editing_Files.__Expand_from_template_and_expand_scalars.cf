@@ -1,15 +1,11 @@
 bundle agent example {
 
-  vars:
-
-     "myname"  string =>  "Aleksey";
-
 
   files:
 
       "/etc/motd"
 
-            edit_line => ExpandMeFrom("/tmpl/motd.tmpl");
+            edit_line => ExpandMeFrom("/var/cfengine/inputs/templates/motd.tmpl");
                      }
 
 

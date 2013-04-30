@@ -20,17 +20,19 @@ ${R}bundle            agent|edit_line|server|monitor|common|...$N     ${B}my_exa
 ${R}files|processes|packages|commands|...${C}:${N} # Type of promise.  
 
         ${C}"${B}promiser${C}"${N}                     # What is the affected object?  (Promiser)
-                                       # Can be the name of or the pattern for names of
-                                       # system objects: files, processes, packages, commands,
-                                       # services, database objects, etc.
-                                       # Or can be a CFEngine internal object name, such as 
-                                       # a class or a report.
+                                       # Can be the name of or the pattern for
+				       # names of system objects: files, processes,
+				       # packages, commands, services, database
+				       # objects, etc.
+                                       # Or can be a CFEngine internal object name,
+				       # such as a class or a report.
 
                    ${R}comment${N} ${C}=> "${B}The intention: to illustrate CF3 syntax pattern.",
                     ${R}handle${N} ${C}=> "${B}syntax_pattern_example_1",
                 ${R}attribute1${N} ${C}=> "${B}literal_value1",
                 ${R}attribute2${N} ${C}=> "${B}\$(scalar_variable_name)",
-                ${R}attribute3${N} ${C}=> ${B}name_of_group_of_editline_promises${C},
+                ${R}attribute1${N} ${C}=> "${B}{ "literal_value1", "literal_value2" },
+                ${R}attribute3${N} ${C}=> ${B}group_of_promises${C},
                 ${R}attribute4${N} ${C}=> ${B}function${C}(${N}...${C});
 ${C}}${N}
 EOF

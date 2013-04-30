@@ -1,0 +1,12 @@
+On the server:
+
+  edit /var/cfengine/masterfiles/def.cf to set the "acl"
+
+On the server and on the client:
+
+  cf-agent --bootstrap -s 10.1.1.10  # .10 is the server
+
+On the client:
+
+  cf-agent -f ./update.cf -IK
+

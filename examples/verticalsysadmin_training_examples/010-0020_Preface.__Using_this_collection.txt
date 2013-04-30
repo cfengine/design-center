@@ -3,7 +3,10 @@ Using this collection
 
 The examples are arranged in order.
 
-List the examples with "ls -1" or with provided "l.sh" script
-to colorize the listing for readability.
-
 Study the examples in sequence.
+
+You can list the examples with "ls -1" or with provided
+"l.sh" script which attempts to make the listing more
+readable by colorizing the file names and inserting chapter
+breaks.
+

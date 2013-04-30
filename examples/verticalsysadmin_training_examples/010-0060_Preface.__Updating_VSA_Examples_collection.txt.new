@@ -1,6 +1,5 @@
-Downloading examples with git
-=============================
-
+Downloading examples
+====================
 
 1. Download Aleksey's fork of the CFEngine Design Center repo:
 
@@ -12,7 +11,9 @@ Downloading examples with git
     cd design-center/examples/verticalsysadmin_training_examples	
 
 
-Downloading example updates with git
-====================================
+Updating the examples
+=====================
+
+Pull in updates from Aleksey's master on github:
 
     git pull origin

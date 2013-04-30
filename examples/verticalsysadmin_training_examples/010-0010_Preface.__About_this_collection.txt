@@ -2,8 +2,8 @@ About this collection
 =====================
 
 Vertical Sysasmin presents "CFEngine by Example",
-a collection of over 300 working examples of using
-CFEngine 3.
+a collection of over 300 standalone working
+examples of using CFEngine 3.
 
 This collection is intended to supplement the official
 documentation and to aid in learning CFEngine 3.

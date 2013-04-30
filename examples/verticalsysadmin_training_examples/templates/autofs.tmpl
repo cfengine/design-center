@@ -1,13 +1,3 @@
-what are templates?  why would we use templates?
-
-Email:
-
-Hello __NAME__,
-
-  Please buy our product.
-
-Config file:
-
 MASTER_MAP_NAME="auto.master"
 TIMEOUT=300
 BROWSE_MODE="yes"
@@ -18,4 +8,4 @@ MAP_ATTRIBUTE="ou"
 ENTRY_ATTRIBUTE="cn"
 VALUE_ATTRIBUTE="automountInformation"
 USE_MISC_DEVICE="yes"
-SEARCH_BASE="ou=__SITE__,ou=Sites,dc=VerticalSysadmin,dc=com"
+SEARCH_BASE="ou=$(example.site),ou=Sites,dc=VerticalSysadmin,dc=com"

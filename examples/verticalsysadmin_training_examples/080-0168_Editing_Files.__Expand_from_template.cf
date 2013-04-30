@@ -4,10 +4,10 @@ files:
 
   "/etc/motd"
 
-    edit_line => ExpandMeFrom("/tmpl/motd.tmpl");
+    edit_line => InsertFile("/tmpl/motd.tmpl");
 }
 
-bundle edit_line ExpandMeFrom(source) {
+bundle edit_line InsertFile(source) {
 
 insert_lines:
 

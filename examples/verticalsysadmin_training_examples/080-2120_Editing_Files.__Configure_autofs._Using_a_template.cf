@@ -41,7 +41,7 @@ bundle edit_line expand_from_autofs_template(site) {
 
   insert_lines:
 
-      "/templates/autofs.tmpl"
+      "/var/cfengine/inputs/templates/autofs.tmpl"
           insert_type => "file",                # insert copy of template 
           expand_scalars => "true";             # expand scalars
 

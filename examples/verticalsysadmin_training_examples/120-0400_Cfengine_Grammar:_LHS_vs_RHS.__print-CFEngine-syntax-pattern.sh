@@ -34,8 +34,8 @@ ${R}files|processes|packages|commands|...${C}:${N} # Type of promise.  What part
                 ${R}attribute2${N} ${C}=> "${B}\$(scalar_variable_name)",
                 ${R}attribute3${N} ${C}=> { "${B}literal_value1${C}", "${B}literal_value2${C}", ${N}...${C} },
                 ${R}attribute4${N} ${C}=> ${C}{ @(${B}list_variable_name${C}) },
-                ${R}attribute5${N} ${C}=> ${B}name_of_group_of_editline_promises${C},
-                ${R}attribute6${N} ${C}=> ${B}name_of_group_of_promise_attributes${C},
+                ${R}attribute5${N} ${C}=> ${B}group_of_promises${C},
+                ${R}attribute6${N} ${C}=> ${B}group_of_promise_attributes${C},
                 ${R}attribute7${N} ${C}=> ${B}function${C}(${N}...${C});
 ${C}}${N}
 EOF

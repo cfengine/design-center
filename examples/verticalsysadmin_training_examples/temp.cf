@@ -1,0 +1,11 @@
+bundle agent example {
+
+files:
+
+   "/tmp/1"
+      edit_line => one;
+}
+
+bundle edit_line one {
+insert_lines: "one";
+}

@@ -9,7 +9,8 @@ bundle agent example {
 
   files:
       "/etc/sysconfig/autofs"
-            edit_line => configure("$(site)");
+            edit_line => configure("$(site)"),
+            create => "true";
                      }
 
 bundle edit_line configure(site) {

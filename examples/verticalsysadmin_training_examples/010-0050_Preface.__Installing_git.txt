@@ -1,5 +1,5 @@
-Downloading examples collection with git: installing git
-========================================================
+Installing git
+==============
 
 GitHub
 ------

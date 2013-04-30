@@ -4,28 +4,27 @@ Purpose: practice editing file content using a template
 containing scalar variables.
 
 
+1. Manually create a template containing:
 
-1. Create a template:
+Hello $(example.first_name),
 
+  Please buy our product.
 
-      mkdir /var/cfengine/inputs/templates
-      echo 'Hello, $(example.myname).  The time is $(sys.date).' > /templates/hello.tmpl
+Love,
+Company
+EOF
 
-2. Populate contents of /tmp/example.txt
-   using the template /templates/hello.tmpl. 
+2. Populate contents of /tmp/output.txt
+   using the above template and the variable
+   "myname" defined in a bundle "example".
 
-Notes:
+Gotchas:
 
-a) Make sure your bundle defines the variable embedded in the
-   template, and that your bundle name matches the bundle name
-   embedded in the template.
+- Make sure your bundle name matches the bundle name
+  in the variable in the template.
 
-b) Your policy should use an edit_lines bundle containing an
-   insert_lines promise with the following attributes:
-
-      insert_type => "file",
-      expand_scalars => "true";
-
+- Make sure your bundle defines the variable embedded
+  in the template.
 
 If you finish before rest of the group, finish studying 
 the CFEngine Reference Manual chapters 1 -4, and if you
