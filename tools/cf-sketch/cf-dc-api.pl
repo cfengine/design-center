@@ -2,6 +2,8 @@
 
 BEGIN
 {
+    $ENV{PERL_JSON_BACKEND} = 'JSON::backportPP';
+
     if (-l $0)
     {
         require FindBin;
