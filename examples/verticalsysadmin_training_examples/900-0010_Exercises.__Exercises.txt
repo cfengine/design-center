@@ -177,7 +177,20 @@ Add to your policy:
 
 
 
-EXERCISE 6.  File Editing - replace_patterns - uses COPBL
+EXERCISE 6a.
+
+Set a variable, and then display its value in a report.
+
+EXERCISE 6b.
+
+Report the current time using:
+
+     a) output from /bin/date (captured using execresult() function)
+
+     b) built-in special variable $(sys.date)
+
+
+EXERCISE 6c.  File Editing - replace_patterns - uses COPBL
 
 Create (manually) a data file:
 
@@ -192,22 +205,21 @@ Use cf-agent to replace "line 2" with "line two".
 
 EXERCISE 6b.  File Editing - replace_patterns - uses COPBL
 
-Write a policy where the template contains a placeholder tag
-of the form __TAGNAME__
-
-The template, /tmpl/motd.tmpl should contain:
+Manually create a template
+/var/cfengine/masterfiles/templates/motd.tmpl:
 
     This system is property of __ORGANIZATION__.
     Unauthorized use forbidden.  
-    CFEngine maintains this system and last ran on $(sys.date).
+    CFEngine maintains this system.
+    CFEngine last ran on $(sys.date).
 
 Write a CFEngine policy to generate /etc/motd from this
-template. 
+template as follows:
 
-Your policy should replace __ORGANIZATION__ with the
-name of your organization.
+  - Replace __ORGANIZATION__ with the
+    name of your organization.
 
-Your policy should expand the special variable $(sys.date).
+  - Expand the special variable $(sys.date).
 
 Use all of the following promise types:
 
@@ -215,22 +227,21 @@ delete_lines
 insert_lines
 replace_patterns
 
-If you finish before rest of the group, finish studying 
-the CFEngine Reference Manual chapters 1 -4, and if you
-finish that, then study the Special Topic guide on Editing
-File Content.
 
 
-EXERCISE 7. Integrate your motd policy into the default cfengine policy
+EXERCISE 7. Integrate your motd policy from exercise 6b
+into the default cfengine policy in masterfiles so 
+that it propagates to all servers.
 
 ===============================================================
-[For faster students]
+
 
 EXERCISE 8. Reporting when CFEngine makes a change to your system
 
-Read the Special Topics guide on Reporting.  Now write
-a policy that logs to /var/log/repairs.txt if a promise
-is repaired by CFEngine.
+Write a promise that logs when it is repaired 
+to /var/log/cfengine/repairs.log
+
+Reference: Special Topics guide on Reporting.
 
 ===============================================================
 
@@ -239,8 +250,10 @@ EXERCISE 11 - Precision File Editing
 
 Insert the following three lines (and you can keep them
 in order, as a single block, using
+insert_lines attribute
    insert_type => "preserve_block";
 ) into /etc/profile BEFORE the HOSTNAME=... line.
+(Hint: look at the "location" attribute of insert_lines)
 
 
 if [ -x /bin/custom ]
@@ -250,20 +263,14 @@ fi
 
 
 
-EXERCISE 15 - Classes
+EXERCISE 15 - Using Classes to time Command Execution
 
-Reminder:  make any changes to promises.cf in /var/cfengine/masterfiles.
-If you make them in /var/cfengine/inputs, they may get overwritten if/when
-failsafe.cf kicks in.
+Problem:  All practice machines should be shutdown
+at end of class at 17:00
 
-Problem:  All workstations should be shutdown at end of class at 15:40.
+Desired state:  The command "shutdown -h now" is running
+during 17:00-17:05.
 
-Desired state:  The command "shutdown -h now" is run during the 15:40 - 15:45
-window.
-
-Add to "bundle agent main" in promises.cf a promise to shutdown the
-workstation at 15:40.  Copy promises.cf from masterfiles to inputs.
-Make sure cf-execd is running.
 
 
 EXERCISE 16 - COPBL
@@ -273,7 +280,8 @@ Given a file /tmp/file.txt:
 apples
 oranges
 
-Use the COPBL to comment out "oranges" and append "bananas", resulting in:
+Use the COPBL to comment out "oranges" and append "bananas",
+resulting in:
 
 apples
 # oranges
@@ -290,13 +298,14 @@ Hint: use "body contain setuid".
 
 
 
-EXERCISE 18 - COPBL - linking promises together
+EXERCISE 18 - COPBL - linking promises
 
 Problem: Increase security by ensuring sshd is running with
 "PermitRootLogin no".
 
 How does the system look like in the correct configuration:
-1. Make sure /etc/ssh/sshd_config contains the line "PermitRootLogin no"
+1. Make sure /etc/ssh/sshd_config contains the line
+"PermitRootLogin no"
 2. Make sure sshd is running using this configuration
 
 How to code it in CFEngine:
@@ -308,33 +317,10 @@ to make sure 2 happens.
 
 
 EXERCISE 19 - Bonus Points - Restart sshd if the process start
-time of sshd predates the modification timestamp of /etc/ssh/sshd_config
+time of sshd predates the modification timestamp of
+/etc/ssh/sshd_config
 (Process selection is demonstrated in *Process_Selection* in
 verticalsysadmin_training_examples)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1. Set a variable, and then display its value in a report.
-
-2. Report the current time using:
-
-     a) output from /bin/date
-
-     b) built-in special variable $(sys.date)
 
 
