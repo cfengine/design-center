@@ -3,6 +3,9 @@ BIN:=$(PREFIX)/bin
 LIB:=$(PREFIX)/lib/cf-sketch
 I:=/usr/bin/install
 
+help:
+	@echo You should probably run '"make install"' unless you want to run cf-sketch.pl directly here.
+
 install:
 	$(I) -d $(LIB) $(BIN)
 	$(I) -m 755 ./cf-sketch.pl $(BIN)/cf-sketch
