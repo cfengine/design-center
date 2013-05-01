@@ -3,7 +3,7 @@ package DCAPI;
 use strict;
 use warnings;
 
-use JSON::PP;
+use JSON;
 use File::Which;
 use File::Basename;
 use File::Temp qw/tempfile tempdir /;
@@ -14,8 +14,8 @@ use DCAPI::Result;
 use DCAPI::Validation;
 
 use constant API_VERSION => '0.0.1';
-use constant CODER => JSON::PP->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
-use constant CAN_CODER => JSON::PP->new()->canonical()->utf8()->allow_nonref();
+use constant CODER => JSON->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
+use constant CAN_CODER => JSON->new()->canonical()->utf8()->allow_nonref();
 
 use Mo qw/build default builder coerce is required/;
 
