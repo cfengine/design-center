@@ -304,3 +304,7 @@ of /etc/ssh/sshd_config
 (Process selection is demonstrated in
 *Process_Selection* in
 verticalsysadmin_training_examples)
+
+EXERCISE 20 - Write a CFEngine policy to install and
+configure a Wiki web service.
+
