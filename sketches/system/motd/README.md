@@ -2,7 +2,7 @@
 
 License: MIT
 Tags: cfdc
-Authors: Ben Heilman <bheilman@enova.com
+Authors: Ben Heilman <bheilman@enova.com>
 
 ## Description
 Configure the Message of the Day
@@ -16,9 +16,15 @@ CFEngine::dclib, CFEngine::stdlib
 
 * parameter _metadata_ *metadata* (default: none, description: none)
 
-* parameter _string_ *message* (default: none, description: Static message to print at login (aka MOTD))
+* parameter _string_ *motd* (default: none, description: Message of the Day (aka motd))
 
-* parameter _boolean_ *static* (default: `"0"`, description: Install a static motd)
+* parameter _string_ *motd_path* (default: `"/etc/motd"`, description: Location of the primary, often only, MotD file)
+
+* parameter _string_ *prepend_command* (default: `"/bin/uname -snrvm"`, description: Command output to prepend to MotD)
+
+* parameter _string_ *dynamic_path* (default: `null`, description: Location of the dynamic part of the MotD file)
+
+* parameter _string_ *symlink_path* (default: `null`, description: Location of the symlink to the motd file)
 
 
 ## SAMPLE USAGE
