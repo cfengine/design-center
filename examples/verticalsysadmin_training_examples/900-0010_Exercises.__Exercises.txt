@@ -191,8 +191,8 @@ Manually create a template
     CFEngine maintains this system.
     CFEngine last ran on $(sys.date).
 
-Write a CFEngine policy to generate /etc/motd from this
-template as follows:
+Write a CFEngine policy to generate /etc/motd from 
+/var/cfengine/inputs/templates/motd.tmpl as follows:
 
   - Replace __ORGANIZATION__ with the
     name of your organization.
