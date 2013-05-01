@@ -15,7 +15,7 @@
         license: "MIT",
         tags: [ "cfdc" ],
         authors: [ "Neil H Watson <neil@watson-wilson.ca>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 109 }, "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux", "solaris", "darwin" ] }
+        depends: { "CFEngine::stdlib": { version: 109 }, "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux|solaris|darwin" ] }
     },
 
     api:

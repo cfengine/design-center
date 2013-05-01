@@ -341,9 +341,11 @@ sub resolve_dependencies
     foreach my $dep (sort keys %deps)
     {
         $self->dcapi()->log5("Checking sketch $name dependency %s", $dep);
-        if ($dep eq 'os')
+        if ($dep eq 'os' || $dep eq 'classes')
         {
-            $self->dcapi()->log2("Ignoring sketch $name OS dependency %s", $dep);
+            $self->dcapi()->log2("Ignoring sketch $name dependency %s: %s",
+                                 $dep,
+                                 $deps{$dep});
         }
         elsif ($dep eq 'cfengine')
         {
