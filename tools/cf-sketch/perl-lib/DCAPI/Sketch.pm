@@ -331,6 +331,7 @@ sub runtime_dependencies
     foreach my $runtime_name (qw/os classes/)
     {
         my $deps = $self->depends()->{$runtime_name} || [];
+        $deps = [keys %$deps] if ref $deps eq 'HASH';
         $deps = [$deps] if ref $deps ne 'ARRAY';
         $deps{$_}++ foreach @$deps;
     }
