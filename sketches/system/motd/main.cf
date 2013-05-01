@@ -78,7 +78,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       create => "true",
       move_obstructions => "true",
       edit_defaults => default:empty,
-      edit_line => default:insert_lines(@(main_lines)),
+      edit_line => default:insert_lines($(main_lines)),
       perms => default:mog("444",$(owner),$(owner)),
       handle => "files_main",
       classes => default:classes_generic("files_main"),
