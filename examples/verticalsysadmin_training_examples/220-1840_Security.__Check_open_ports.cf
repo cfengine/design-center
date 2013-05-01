@@ -4,7 +4,7 @@ body common control
 
 {
       bundlesequence  => { "check_listening_ports"  };
-              inputs  => { "/var/cfengine/inputs/cfengine_stdlib.cf"  };
+              inputs  => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf"  };
 }
 
 ####################################################

@@ -2,7 +2,7 @@
 
 body common control {
 
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 
                     }
 
