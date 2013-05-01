@@ -56,7 +56,7 @@ bundle agent cfsketch_run
 
     runenv_cf_sketch_testing_activated::
       "___001_System_motd_entry" usebundle => cfdc_motd:entry("cf_sketch_testing", "default:cfsketch_run.___001_System_motd_entry_metadata", "
-Hello World!
+$(sys.fqhost) - $(sys.flavor) $(sys.release)
 This system is under the control of CFEngine", "/etc/motd.static", "/bin/echo some output", "/etc/motd.dynamic", "/etc/motd"), useresult => "return____001_System_motd_entry";
 
   reports:
