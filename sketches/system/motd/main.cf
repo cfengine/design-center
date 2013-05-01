@@ -3,124 +3,119 @@ body file control
       namespace => "cfdc_motd";
 }
 
-bundle common define
-{
-  vars:
-      "motd_path"
-      string => "/etc/motd",
-      handle => "vars_motd_path",
-      comment => "Path of the MotD file read by login";
-
-      "motd_owner"
-      string => "root",
-      handle => "vars_motd_owner",
-      comment => "User/Group that owns the motd files";
-
-      "default_target"
-      string => "/var/run/motd",
-      handle => "vars_default_target",
-      comment => "Path to the Debian default, regenerated MotD file";
-
-      "tail_template"
-      string => "/etc/motd.tail",
-      handle => "vars_tail_template",
-      comment => "Path to the Debian MotD template";
-
-      "static_target"
-      string => "/etc/motd.static",
-      handle => "vars_static_target",
-      comment => "Path to a static MotD file to create";
-}
-
-bundle agent entry(runenv, metadata, message, static)
+bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_path, symlink_path)
 {
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    test::
-      "message_owner"
+    activated.test::
+      "owner"
       string => getenv("LOGNAME",100),
-      depends_on => { "vars_motd_owner" },
-      handle => "vars_message_owner",
       comment => "Owner of the MotD file";
 
       "path_prefix"
       string => "/tmp",
-      handle => "vars_path_prefix",
       comment => "Prefix to file paths";
 
-    !test::
-      "message_owner"
-      string => "$(cfdc_motd:define.motd_owner)",
-      depends_on => { "vars_motd_owner" },
-      handle => "vars_message_owner",
+    activated.!test::
+      "owner"
+      string => "root",
       comment => "Owner of the MotD files";
 
       "path_prefix"
       string => "",
-      handle => "vars_path_prefix",
       comment => "Prefix to file paths";
 
-    any::
-      "link_path"
-      string => "$(path_prefix)$(cfdc_motd:define.motd_path)",
-      depends_on => { "vars_path_prefix", "vars_motd_path" },
-      handle => "vars_link_path",
-      comment => "Path to the MotD link to promise";
+    activated::
+      "main_path"
+      string => "$(path_prefix)$(motd_path)",
+      comment => "Path of the main MotD (typical the only one)";
 
-    !static::
-      "target_path"
-      string => "$(path_prefix)$(cfdc_motd:define.default_target)",
-      depends_on => { "vars_path_prefix", "vars_define_target" },
-      handle => "vars_target_path",
-      comment => "Path to the Debian generated MotD file";
+    activated.split_content::
+      "output_path"
+      string => "$(path_prefix)$(dynamic_path)",
+      comment => "Path of the main MotD (typical the only one)";
 
-      "message_path"
-      string => "$(path_prefix)$(cfdc_motd:define.tail_template)",
-      depends_on => { "vars_path_prefix", "vars_tail_template" },
-      handle => "vars_message_path",
-      comment => "Path to the motd.tail template file";
+    activated.create_symlink::
+      "symlink_link"
+      string => "$(path_prefix)$(symlink_path)",
+      comment => "Path of the main MotD (typical the only one)";
 
-    static::
-      "target_path"
-      string => "$(path_prefix)$(cfdc_motd:define.static_target)",
-      depends_on => { "vars_path_prefix", "vars_static_target" },
-      handle => "vars_target_path",
-      comment => "Path to the static MotD file to create";
+    activated.!skip_prepend::
+      "output"
+      string => execresult("$(prepend_command)","noshell"),
+      comment => "Command output to prepend to MtoD";
 
-      "message_path"
-      string => "$(path_prefix)$(cfdc_motd:define.static_target)",
-      depends_on => { "vars_path_prefix", "vars_static_target" },
-      handle => "vars_message_path",
-      comment => "Path to the static MotD file to create";
+    activated.!(skip_prepend|split_content)::
+      "main_lines"
+      slist => { $(output), $(motd) },
+      comment => "Lines to print to the MotD";
+
+    activated.(skip_prepend|split_content)::
+      "main_lines"
+      slist => { $(motd) },
+      comment => "Lines to print to the MotD";
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
 
-      "static"
-      expression => strcmp($(static),"1"),
-      comment => "Install a static MOTD";
+      "skip_prepend"
+      expression => strcmp($(prepend_command),""),
+      comment => "Skip executing prepend command if it is not set";
+
+      "create_symlink"
+      not => strcmp($(symlink_path),""),
+      comment => "Create symlink if the target is specified";
+
+      "split_content"
+      not => strcmp($(dynamic_path),""),
+      comment => "Split MotD into dynamic and static portions";
 
   files:
-      "$(message_path)"
+      "$(main_path)"
       pathtype => "literal",
       create => "true",
       move_obstructions => "true",
       edit_defaults => default:empty,
-      edit_line => default:insert_lines("$(message)"),
-      perms => default:mog("444",$(message_owner),$(message_owner)),
-      depends_on => { "vars_message_owner", "vars_message_path" },
-      handle => "files_message",
+      edit_line => default:insert_lines($(main_lines)),
+      perms => default:mog("444",$(owner),$(owner)),
+      handle => "files_main",
+      classes => default:classes_generic("files_main"),
       comment => "Create and populate the static motd file";
 
-      "$(link_path)"
+    split_content.!skip_prepend::
+      "$(output_path)"
       pathtype => "literal",
-      link_from => default:ln_s($(target_path)),
+      create => "true",
       move_obstructions => "true",
-      depends_on => { "vars_link_path", "vars_target_path", "files_message" },
+      edit_defaults => default:empty,
+      edit_line => default:insert_lines($(output)),
+      perms => default:mog("444",$(owner),$(owner)),
+      handle => "files_dynamic_populated",
+      classes => default:classes_generic("files_dynamic"),
+      comment => "Create and populate the dynamic motd file";
+
+    split_content.skip_prepend::
+      "$(output_path)"
+      pathtype => "literal",
+      create => "true",
+      move_obstructions => "true",
+      edit_defaults => default:empty,
+      perms => default:mog("444",$(owner),$(owner)),
+      handle => "files_dynamic_empty",
+      classes => default:classes_generic("files_dynamic"),
+      comment => "create an empty dynamic motd file";
+
+    create_symlink::
+      "$(symlink_link)"
+      pathtype => "literal",
+      move_obstructions => "true",
+      link_from => default:ln_s($(main_path)),
+      depends_on => { "files_main" },
       handle => "files_symlink",
-      comment => "Create symlink to the static motd file";
+      classes => default:classes_generic("files_symlink"),
+      comment => "create a symlink to the motd file";
 
   methods:
     verbose::
@@ -136,9 +131,14 @@ bundle agent entry(runenv, metadata, message, static)
       # use the "verbose" context to show the sketch operation (for the user)
     verbose::
       "$(this.bundle): running in verbose mode";
+
       # use the "test" context to help debug the sketch (for the developer)
     test::
       "$(this.bundle): running in test mode";
-      "$(this.bundle): message_owner = $(message_owner)";
-      "$(this.bundle): message_path  = $(message_path)";
+      "$(this.bundle): owner = $(owner)";
+      "$(this.bundle): output = $(output)" ifvarclass => "!skip_prepend";
+      "$(this.bundle): main_path = $(main_path)";
+      "$(this.bundle): main_lines = $(main_lines)";
+      "$(this.bundle): output_path = $(output_path)" ifvarclass => "split_content";
+      "$(this.bundle): symlink_link = $(symlink_link)" ifvarclass => "create_symlink";
 }

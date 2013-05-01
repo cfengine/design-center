@@ -1,0 +1,64 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../../sketches/libraries/dclib/library.cf", "../../../sketches/libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation ___001_System_motd_entry
+      "___001_System_motd_entry_metadata[authors]" slist => { "Ben Heilman <bheilman@enova.com>" };
+      "___001_System_motd_entry_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "___001_System_motd_entry_metadata[license]" string => "MIT";
+      "___001_System_motd_entry_metadata[location]" string => "/home/bheilman/.cfagent/inputs/sketches/system/motd";
+      "___001_System_motd_entry_metadata[manifest]" slist => { "README.md", "main.cf", "params/debian_squeeze.json", "params/debian_wheezy.json", "params/example.json", "params/simple.json", "test.cf" };
+      "___001_System_motd_entry_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "___001_System_motd_entry_metadata[manifest_docs]" slist => { "README.md" };
+      "___001_System_motd_entry_metadata[manifest_exe]" slist => { "cf_null" };
+      "___001_System_motd_entry_metadata[manifest_extra]" slist => { "params/debian_squeeze.json", "params/debian_wheezy.json", "params/example.json", "params/simple.json" };
+      "___001_System_motd_entry_metadata[name]" string => "System::motd";
+      "___001_System_motd_entry_metadata[tags]" slist => { "cfdc" };
+      "___001_System_motd_entry_metadata[version]" string => "1.00";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "___001_System_motd_entry" usebundle => cfdc_motd:entry("cf_sketch_testing", "default:cfsketch_run.___001_System_motd_entry_metadata", "
+$(sys.fqhost) - $(sys.flavor) $(sys.release)
+This system is under the control of CFEngine", "/etc/motd.static", "/bin/echo some output", "/etc/motd.dynamic", "/etc/motd"), useresult => "return____001_System_motd_entry";
+
+  reports:
+    cfengine::
+}
