@@ -1,15 +1,9 @@
-EXERCISE - create shell script /tmp/example.sh (perms, ownership, content)
+EXERCISE - create executable shell script
 
-
-
-Write a CFEngine policy to ensure /tmp/example.sh exists,
-has permissions mode 0700, owner root, group root, and
-contains:  
+Write a CFEngine policy to ensure /usr/local/bin/helloworld
+exists, has permissions 0755, owner root, group root, and
+contents:  
 
 #!/bin/sh
 
 /bin/echo hello world
-
-
-If you finish before everybody else does, please study
-chapters 1-4 in the Reference Manual.

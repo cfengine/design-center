@@ -1,8 +1,6 @@
                        EXERCISES
 
 
-(If you finish early, please study the Reference
-Manual, chapters 1 - 4.)
 
 1. Write a policy to signal TERM and then KILL to any
 process matching "trn".
@@ -105,24 +103,6 @@ Test by changing your clock to Saturday and then back to a weekday.
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-===========================================================
-
 EXERCISE 6.  Running CFEngine Non-Interactively (as a Service)
 
 Demonstrating of CFEngine running in non-interactive
@@ -175,8 +155,6 @@ Add to your policy:
 
 
 
-
-
 EXERCISE 6a.
 
 Set a variable, and then display its value in a report.
@@ -203,7 +181,7 @@ Create (manually) a data file:
 Use cf-agent to replace "line 2" with "line two".
 
 
-EXERCISE 6b.  File Editing - replace_patterns - uses COPBL
+EXERCISE 6d.  File Editing - replace_patterns - uses COPBL
 
 Manually create a template
 /var/cfengine/masterfiles/templates/motd.tmpl:
@@ -233,7 +211,6 @@ EXERCISE 7. Integrate your motd policy from exercise 6b
 into the default cfengine policy in masterfiles so 
 that it propagates to all servers.
 
-===============================================================
 
 
 EXERCISE 8. Reporting when CFEngine makes a change to your system
@@ -243,7 +220,7 @@ to /var/log/cfengine/repairs.log
 
 Reference: Special Topics guide on Reporting.
 
-===============================================================
+
 
 EXERCISE 11 - Precision File Editing
 
@@ -304,23 +281,26 @@ Problem: Increase security by ensuring sshd is running with
 "PermitRootLogin no".
 
 How does the system look like in the correct configuration:
+
 1. Make sure /etc/ssh/sshd_config contains the line
 "PermitRootLogin no"
+
 2. Make sure sshd is running using this configuration
 
 How to code it in CFEngine:
+
 1. a files promise to edit sshd_config
-2. a commands promise to restart sshd to reload the new config
 
-Exercise:  use the "body classes if_repaired" to link 1 and 2
-to make sure 2 happens.
+2. a commands promise to restart sshd to reload the new
+   config
+
+Exercise:  use the "body classes if_repaired" to link
+1 and 2 above to make sure 2 happens.
 
 
-EXERCISE 19 - Bonus Points - Restart sshd if the process start
-time of sshd predates the modification timestamp of
-/etc/ssh/sshd_config
-(Process selection is demonstrated in *Process_Selection* in
+EXERCISE 19 - Bonus Points - Restart sshd if process
+start time of sshd predates the modification timestamp
+of /etc/ssh/sshd_config
+(Process selection is demonstrated in
+*Process_Selection* in
 verticalsysadmin_training_examples)
-
-
-
