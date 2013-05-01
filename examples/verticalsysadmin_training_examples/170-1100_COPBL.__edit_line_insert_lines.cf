@@ -6,7 +6,7 @@ body common control {
 bundle agent example {
 
   files:
-      "/etc/motd"
+      "/etc/profile"
            create => "true",
            edit_line => insert_lines("export ORGANIZATION=ACME");
 

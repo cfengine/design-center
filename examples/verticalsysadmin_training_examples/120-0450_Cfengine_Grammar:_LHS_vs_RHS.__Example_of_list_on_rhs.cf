@@ -2,18 +2,18 @@
 #
 #      cfengine_word => { list }    #  (directly and via variable)
 
-body common control {
-
-       bundlesequence => { "example1", "example2" };
-
-                    }
-
 
 
 bundle agent example2 {
 
       commands:  "/bin/echo Second things second";
                       }
+
+body common control {
+
+       bundlesequence => { "example1", "example2" };
+
+                    }
 
 
 bundle agent example1 {

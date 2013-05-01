@@ -2,7 +2,7 @@
 EXERCISES
 
 1. Create a list containing names of five files
-   to create (for example:
+   to create.  For example:
 
       /tmp/file1
       /tmp/file2
@@ -12,6 +12,9 @@ EXERCISES
 
    Then use a single "files" promise to ensure all
    five files exist.
+   
+   For advanced students, add a report if any of 
+   the files are over 10 bytes in size.
 
 
 2. Create a list containing names of processes that

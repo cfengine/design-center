@@ -4,10 +4,14 @@ bundle agent example {
 
       "fourty_two_kilobytes"             int     => "42k";  # 42 x 1000
       "fourty_two_kibibytes"             int     => "42K";  # 42 x 1024
+      "infinity"                         int     => "inf";  # infinity
+      "twenty_percent"                   int     => "20%"; 
 
 
   reports:
     cfengine_3:: 
       "42 x 1000 = $(fourty_two_kilobytes)";
       "42 x 1024 = $(fourty_two_kibibytes)";
+      "infinity = $(infinity)";
+      "twenty_percent = $(twenty_percent)";
                      }

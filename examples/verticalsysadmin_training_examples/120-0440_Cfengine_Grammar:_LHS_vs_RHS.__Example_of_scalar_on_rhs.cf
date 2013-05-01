@@ -16,7 +16,9 @@ bundle agent example
               string  => "$(variable_0)";       # a scalar variable
 
 
-  commands:
+  reports:
+
+     linux::
 
       "/bin/echo variable_0 contains: $(variable_0).  variable_1 contains: $(variable_1)";
 

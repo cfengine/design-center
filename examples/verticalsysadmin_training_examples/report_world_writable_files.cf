@@ -1,3 +1,8 @@
+body common control {
+
+  inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
+}
+
 
 ############################################
 
@@ -10,7 +15,8 @@ bundle agent example
       "/tmp/test_from/." 
 
           file_select => mode_777,
-          transformer => "/bin/gzip $(this.promiser)",
+          delete => tidy,
+          action => warn_only,
          depth_search => recurse("inf");
 
 }
@@ -25,10 +31,3 @@ body file_select mode_777
 }
 
 ############################################
-
-body depth_search recurse(d)
-
-{
-                depth => "$(d)";
-}
-

@@ -1,0 +1,5 @@
+             cfhub:/var/cfengine/masterfiles
+                /                    \
+               /                      \
+              /                        \
+cfhub:/var/cfengine/inputs      cfclient:/var/cfengine/inputs

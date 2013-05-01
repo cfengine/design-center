@@ -9,7 +9,9 @@ bundle agent example
 
 
   reports:
-    cfengine_3::
+
+   cfengine::
+
       "
 Scalar variable my_string: $(my_string)
 

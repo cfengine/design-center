@@ -1,11 +1,7 @@
 bundle agent example {
 
-files:
-
-   "/tmp/1"
-      edit_line => one;
+reports:
+  linux::
+    "$(sys.policy_hub)";
 }
 
-bundle edit_line one {
-insert_lines: "one";
-}

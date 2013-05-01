@@ -1,13 +1,12 @@
-
 bundle agent example {
 
   files:
 
-      "/tmp/testdir"
+    "/var/log/.*"
+      file_select => days_old("2"),
+      delete => tidy;
+}
 
-               delete => tidy;
-
-                     }
 
 #################################################
 
@@ -19,3 +18,8 @@ body delete tidy {
                  }
 
 
+body file_select days_old(days)
+{
+mtime       => irange(0,ago(0,0,"$(days)",0,0,0));
+file_result => "mtime";
+}

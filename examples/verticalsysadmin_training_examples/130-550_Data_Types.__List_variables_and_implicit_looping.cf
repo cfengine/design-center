@@ -13,8 +13,8 @@ bundle agent example {
 
       ############################################################
 
-  commands:
-
-      "/bin/echo $(shopping_list)";
+  reports:
+    linux::
+      "buy $(shopping_list)";
                      }
 

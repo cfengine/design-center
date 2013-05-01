@@ -1,4 +1,5 @@
-                       EXERCISE
+EXERCISE - create shell script /tmp/example.sh (perms, ownership, content)
+
 
 
 Write a CFEngine policy to ensure /tmp/example.sh exists,

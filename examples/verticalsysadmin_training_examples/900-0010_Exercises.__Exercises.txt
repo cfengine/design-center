@@ -93,13 +93,14 @@ Write a policy to create /etc/motd as follows:
 It should *always* say "Unauthorized use forbidden."
 
 EXERCISE 5b.  File Editing and Classes
+
 Write a policy to create /etc/motd as follows:
 It should *always* say "Unauthorized use forbidden."
 
 On weekends only it should have an extra line that says
 "go home, it's the weekend".
 
-
+Test by changing your clock to Saturday and then back to a weekday.
 
 
 
@@ -326,5 +327,14 @@ verticalsysadmin_training_examples)
 
 
 
+
+
+1. Set a variable, and then display its value in a report.
+
+2. Report the current time using:
+
+     a) output from /bin/date
+
+     b) built-in special variable $(sys.date)
 
 

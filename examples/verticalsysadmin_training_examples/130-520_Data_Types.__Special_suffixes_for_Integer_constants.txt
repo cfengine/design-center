@@ -1,5 +1,10 @@
 Integer constants may use suffixes to represent large numbers.
 
+Which is easier to read?
+
+200k
+200000
+
     'k' = value times 1000.
     'm' = value times 1000^2
     'g' = value times 1000^3
