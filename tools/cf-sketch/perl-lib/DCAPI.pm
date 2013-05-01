@@ -1227,7 +1227,7 @@ sub regenerate
     }
 
     my $report_lines = join "\n",
-     "${context_indent}cfengine::",
+     "${context_indent}inform_mode::",
       @report_lines;
 
     my $standalone_lines = <<EOHIPPUS;
