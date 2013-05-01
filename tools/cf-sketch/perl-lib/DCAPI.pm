@@ -1194,12 +1194,13 @@ sub regenerate
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
 
-        push @invocation_lines, sprintf('%s"%s" usebundle => %s%s(%s), useresult => "return_%s";',
+        push @invocation_lines, sprintf('%s"%s" usebundle => %s%s(%s), ifvarclass => "%s", useresult => "return_%s";',
                                         $indent,
                                         $a->id(),
                                         $namespace_prefix,
                                         $a->bundle(),
                                         $a->make_bundle_params(),
+                                        $a->sketch()->runtime_context(),
                                         $a->id());
     }
 
@@ -1207,7 +1208,7 @@ sub regenerate
     my @report_lines;
     foreach my $a (@activations)
     {
-        foreach my $p (grep { $_->{type} eq 'return' } @{$a->params()})
+        foreach my $p (grep { DCAPI::Activation::return_type($_->{type}) } @{$a->params()})
         {
             push @report_lines,
             sprintf('%s"activation %s returned %s = %s";',
@@ -1216,6 +1217,13 @@ sub regenerate
                     $p->{name},
                     sprintf('$(return_%s[%s])', $a->id(), $p->{name}));
         }
+
+        push @report_lines,
+         sprintf('%s"activation %s could not run because it requires classes %s" ifvarclass => "inform_mode.!(%s)";',
+                 $indent,
+                 $a->id(),
+                 $a->sketch()->runtime_context(),
+                 $a->sketch()->runtime_context());
     }
 
     my $report_lines = join "\n",

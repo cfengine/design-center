@@ -27,7 +27,7 @@ listed in the `manifest`, and the corresponding bundle as listed in the API.
             license: "MIT",
             tags: ["cfdc"],
             authors: ["Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-            depends: {"CFEngine::stdlib": {version: 105}, "CFEngine::dclib": {}, cfengine: {version: "3.4.0"}, os: ["linux"] }
+            depends: {"CFEngine::stdlib": {version: 105}, "CFEngine::dclib": {}, cfengine: {version: "3.4.0"}, classes: ["any"], os: ["linux"] }
         },
 
         api:
@@ -52,8 +52,13 @@ This definition says: the sketch has 3 files as listed (the minimum recommended
 set; `test.cf` in particular is very important to ensure the sketch is testable
 without JSON imports or any other wizardry).
 
-The `metadata` keys shown are all obvious and mandatory.  Under `depends` you can
-list OS and CFEngine version dependencies.
+The `metadata` keys shown are all obvious and mandatory.  Under `depends` you
+can list class, OS, sketch, and CFEngine version dependencies.  The `classes`
+and `os` keys are *optional* strings or lists of strings that are interpreted at
+runtime to see if the bundle should run.  So specifying `depends.os = 'linux',
+depends.classes = 'specialclass'` really says "install everywhere you like, but
+this can only run on Linux when _specialclass_ is set".  The CFEngine version
+and sketch dependencies, on the other hand, are checked at install time.
 
 The `namespace` key, if missing, is assumed to be `null` and thus any `api`
 bundles are in the `default` namespace.

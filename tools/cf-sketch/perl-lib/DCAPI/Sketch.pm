@@ -323,6 +323,30 @@ sub get_inputs
     return @inputs;
 }
 
+# these dependencies should be checked at runtime
+sub runtime_dependencies
+{
+    my $self = shift @_;
+    my %deps;
+    foreach my $runtime_name (qw/os classes/)
+    {
+        my $deps = $self->depends()->{$runtime_name} || [];
+        $deps = [$deps] if ref $deps ne 'ARRAY';
+        $deps{$_}++ foreach @$deps;
+    }
+
+    return [sort keys %deps];
+}
+
+sub runtime_context
+{
+    my $self = shift @_;
+
+    my $runtime_deps = $self->runtime_dependencies();
+    return (join('&', @$runtime_deps) || 'any');
+}
+
+# these dependencies should be checked at install time
 sub resolve_dependencies
 {
     my $self = shift @_;
@@ -343,7 +367,7 @@ sub resolve_dependencies
         $self->dcapi()->log5("Checking sketch $name dependency %s", $dep);
         if ($dep eq 'os' || $dep eq 'classes')
         {
-            $self->dcapi()->log2("Ignoring sketch $name dependency %s: %s",
+            $self->dcapi()->log2("At install time, ignoring sketch $name dependency %s: %s",
                                  $dep,
                                  $deps{$dep});
         }
