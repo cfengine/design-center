@@ -1,0 +1,27 @@
+bundle agent example {
+
+files:
+
+  "/tmp/temp.txt"
+
+     create => "true",
+     edit_line => mycontent("test one two three", "HOSTNAME=.*");
+}
+
+bundle edit_line mycontent(data,regex) {
+
+insert_lines:
+
+   "$(data)"
+
+        location => before ("$(regex)"),
+        insert_type => "preserve_block";
+        #handle => "insert_mytext_before_HOSTNAME";
+
+}
+
+body location before(str)
+{
+before_after => "before";
+select_line_matching => "$(str)";
+}

@@ -5,7 +5,7 @@ files:
   "/etc/motd"
 
     create => "true",
-    edit_line => ExpandFromTemplate("/var/cfengine/inputs/templates/motd.tmpl");
+    edit_line => ExpandFromTemplate("templates/motd.txt");
 }
 
 bundle edit_line ExpandFromTemplate(source) {

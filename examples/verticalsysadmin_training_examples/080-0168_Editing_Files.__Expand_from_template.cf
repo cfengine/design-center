@@ -4,7 +4,7 @@ files:
 
   "/etc/motd"
 
-    edit_line => InsertFile("/tmpl/motd.tmpl");
+    edit_line => InsertFile("templates/motd.txt");
 }
 
 bundle edit_line InsertFile(source) {

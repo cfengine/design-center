@@ -7,14 +7,16 @@ Wi-Fi
 
 Expecting to get out of this training:
 
+- how to distribute a partial policy set to very-secure-servers
+
 - more advanced CFEngine capabilities
 
 - get rolling
 
 - coding
 
-- upgrade from Community to Enterprise version
+[x] upgrade from Community to Enterprise version
 
-- cfengine architecture 
+[x] cfengine architecture 
 
-- how to get a list of recent clients
+[x] how to get a list of recent clients

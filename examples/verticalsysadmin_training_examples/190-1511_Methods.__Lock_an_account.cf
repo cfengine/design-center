@@ -38,4 +38,11 @@ bundle agent lock_user(user) {
       "/etc/passwd"
 
             edit_line => set_user_field("$(user)",7,"/bin/false");
+
+  files:
+
+      "/etc/sudoers"
+
+            edit_line => delete_lines_matching("^$(user)");
+
                              }

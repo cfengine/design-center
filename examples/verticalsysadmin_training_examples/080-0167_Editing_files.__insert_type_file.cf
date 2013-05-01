@@ -16,7 +16,7 @@ delete_lines:
 
 insert_lines:
 
-    "/tmpl/motd.tmpl"
+    "templates/motd.txt"
 
        insert_type => "file";
 }

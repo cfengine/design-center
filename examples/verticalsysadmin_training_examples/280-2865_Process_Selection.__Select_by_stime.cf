@@ -1,0 +1,25 @@
+bundle agent example
+
+{
+  processes:
+
+      ".*sleep.*"
+
+      process_select  => newborns,
+      signals => { "term" };
+
+
+
+}
+
+########################################################
+
+body process_select newborns
+
+{
+
+
+          stime_range => irange(ago(0,0,0,1,0,0), now); # Processes started between 1 hour and 1 second ago
+       process_result => "stime";
+}
+
