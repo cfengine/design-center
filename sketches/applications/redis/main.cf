@@ -5,10 +5,19 @@ body file control
 
 bundle agent applications_redis(runenv,metadata,pidfile,port,address,timeout,dbfilename,datadir,logfile,glueoutputbuf,shareobjectspoolsize,masterserver,masterport,saves)
 {
+
+	packages:
+		ubuntu|debian::
+			"redis-server"
+				package_policy => "add",
+				handle => "install_redis_server",
+				package_method => apt;
+
 	files:
 		"/etc/redis/redis.conf"
 			create => "true",
 			edit_defaults => default:empty,
+			depends_on => { "install_redis_server" },
 			classes => default:if_repaired("redis_config_repaired"),
 			edit_line => applications_redis_edit_config(
 			                                       "$(pidfile)",
@@ -24,6 +33,7 @@ bundle agent applications_redis(runenv,metadata,pidfile,port,address,timeout,dbf
 																						 "$(masterport)",
 																						 "@(applications_redis.saves)"
 																						);
+#	commands:
 
 	reports:
 		redis_config_repaired::
