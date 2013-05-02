@@ -98,10 +98,10 @@ this effectively promises the full file content.";
       "$(this.bundle): Remove sysctl var: $(removed_indices)=$(cfdc_sysctl:set.removed[$(removed_indices)])";
       # "Removed vars: $(removed_indices)";
 
-      "$(this.bundle): I repaired $(sysctl_file), sysctl needs to be reloaded",
+      "$(this.bundle): I repaired $(sysctl_file), sysctl needs to be reloaded"
       ifvarclass => "sysctl_reload";
 
-      "$(this.bundle): I successfully reloaded sysctl",
+      "$(this.bundle): I successfully reloaded sysctl"
       ifvarclass => "sysctl_reloaded";
 
 }
@@ -118,7 +118,7 @@ bundle edit_line del_variable_values(v)
 
   delete_lines:
 
-      "$(index)\s*=\s*$($(v)[$(index)])",
+      "$(index)\s*=\s*$($(v)[$(index)])"
       comment => "Delete a specific variable";
 
   reports:
