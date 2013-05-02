@@ -5,21 +5,49 @@ body file control
 
 bundle agent applications_redis(runenv,metadata,pidfile,port,address,timeout,dbfilename,datadir,logfile,glueoutputbuf,shareobjectspoolsize,masterserver,masterport,saves)
 {
+	methods:
+		"REDIS INSTALL $(runenv)" 
+			usebundle => applications_redis_install("$(runenv)","$(metadata)"),
+			useresult => "install_return";
+		"REDIS CONFIGURE $(runenv)"
+			usebundle => applications_redis_conf("$(runenv)","$(metadata)","$(install_return[package_status])","$(pidfile)","$(port)","$(address)","$(timeout)",
+                                           "$(dbfilename)","$(datadir)","$(logfile)","$(glueoutputbuf)","$(shareobjectspoolsize)","$(masterserver)",
+                                           "$(masterport)","@(applications_redis.saves)"),
+			useresult => "config_return";
+		"REDIS PROCESS $(runenv)"
+			usebundle => applications_redis_proc("$(config_return[service_mode])");
+}
 
+bundle agent applications_redis_install(runenv, metadata)
+{
 	packages:
 		ubuntu|debian::
 			"redis-server"
 				package_policy => "add",
-				handle => "install_redis_server",
-				package_method => apt;
+				classes => default:if_ok("applications_redis_installed"),
+				package_method => default:apt;
+
+	reports:
+		applications_redis_installed::
+			"installed" bundle_return_value_index => "package_status";
+		!applications_redis_installed::
+			"not_installed" bundle_return_value_index => "package_status";
+}
+
+bundle agent applications_redis_conf(runenv,metadata,pkg_status,pidfile,port,address,timeout,dbfilename,datadir,logfile,glueoutputbuf,shareobjectspoolsize,masterserver,masterport,saves)
+{
+	
+	classes:
+		"redis_installed" expression => strcmp("installed", "$(pkg_status)");
 
 	files:
-		"/etc/redis/redis.conf"
-			create => "true",
-			edit_defaults => default:empty,
-			depends_on => { "install_redis_server" },
-			classes => default:if_repaired("redis_config_repaired"),
-			edit_line => applications_redis_edit_config(
+		redis_installed.(ubuntu|debian)::
+			"/etc/redis/redis.conf"
+				create => "true",
+				edit_defaults => default:empty,
+				perms => default:mog("644","redis","redis"),
+				classes => default:if_repaired("applications_redis_config_repaired"),
+				edit_line => applications_redis_edit_config(
 			                                       "$(pidfile)",
 																						 "$(port)",
 																						 "$(address)",
@@ -31,16 +59,32 @@ bundle agent applications_redis(runenv,metadata,pidfile,port,address,timeout,dbf
 																						 "$(shareobjectspoolsize)",
 																						 "$(masterserver)",
 																						 "$(masterport)",
-																						 "@(applications_redis.saves)"
+																						 "@(applications_redis_conf.saves)"
 																						);
 #	commands:
 
 	reports:
-		redis_config_repaired::
+		applications_redis_config_repaired::
 			"restart" bundle_return_value_index => "service_mode";
-		!redis_config_repaired::
+		!applications_redis_config_repaired::
 			"start" bundle_return_value_index => "service_mode";
 }	
+
+bundle agent applications_redis_proc(service_mode) {
+	classes:
+		"applications_redis_conf_repaired" expression => strcmp("restart","$(service_mode)");
+	
+	processes:
+		!applications_redis_conf_repaired::
+			"redis"
+				restart_class => "applications_redis_proc_start";
+
+	commands:
+		applications_redis_conf_repaired::
+			"/etc/init.d/redis-server restart";
+		applications_redis_proc_start::
+			"/etc/init.d/redis-server start";
+}
 
 bundle edit_line applications_redis_edit_config(pidfile,port,address,timeout,dbfilename,datadir,logfile,glueoutputbuf,shareobjectspoolsize,masterserver,masterport,saves) {
 	insert_lines:

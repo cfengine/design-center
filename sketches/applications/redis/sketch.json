@@ -31,7 +31,6 @@
 			    { "name" : "masterserver", "type" : "string", "default" : "0.0.0.0" },
 			    { "name" : "masterport", "type" : "string", "default" : "0" },
 			    { "name" : "saves", "type" : "list" },
-					{ "name" : "service_mode", "type" : "return" }
 			 ]
 		},
     "namespace": "cfdc_applications_redis",
