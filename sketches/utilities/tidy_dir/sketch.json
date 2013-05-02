@@ -1,0 +1,37 @@
+{
+    manifest:
+    {
+        "main.cf": { desc: "main file" },
+        "test.cf": { desc: "standalone test" },
+        "README.md": { documentation: true },
+        "params/demo.json": { comment: "simple demo of sketch" },
+    },
+
+    metadata:
+    {
+        name: "Utilities::tidy_dir",
+            description: "Simple sketch to tidy a directory",
+        version: "0.01",
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Philip J Freeman <philip.freeman@gmail.com>" ],
+        depends: { "CFEngine::stdlib": { version: 111 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }}
+    },
+
+    api:
+    {
+        // this is the name of the bundle!
+        tidy_dir:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "dir", description: "The directory to clean up" },
+            { type: "string", name: "days_old", default: "", description: "Files/Dirs older than this will be deleted with reckless abandon ( set to null string to disable.)" },
+            { type: "boolean", name: "recurse", default: "", description: "recurse into subdirectories while searching for files." },
+        ],
+    },
+
+    namespace: "cfdc_utilities_tidy_dir",
+
+    interface: [ "main.cf" ],
+}

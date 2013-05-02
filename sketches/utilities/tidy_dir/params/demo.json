@@ -1,0 +1,8 @@
+{
+    "Utilities::tidy_dir":
+    {
+        dir: "/var/cfengine/outputs",
+        days_old: "3",
+        recurse: true,
+    }
+}
