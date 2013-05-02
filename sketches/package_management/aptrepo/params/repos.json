@@ -11,8 +11,8 @@
         "Repository::apt::Maintain":
         {
             url: "http://http.us.debian.org/debian/",
-            distribution: "main",
-            components: ["wheezy"],
+            distribution: "wheezy",
+            components: [ "main", "contrib", "non-free" ],
             types: ["deb", "deb-src"],
         },
     },
@@ -21,7 +21,7 @@
         "Repository::apt::Maintain":
         {
             url: "http://bogus-repository/bogus-path",
-            distribution: "main",
+            distribution: "stable",
             components: ["comp1", "comp2"],
             options: "[ arch=amd64 trusted=no ]",
             types: ["deb", "deb-src"],
@@ -32,9 +32,9 @@
         "Repository::apt::Maintain":
         {
             file: "/etc/apt/sources.list.d/contrib-debian-wheezy.list",
-            distribution: "contrib",
+            distribution: "wheezy",
             url: "http://ftp.fr.debian.org/debian/",
-            components: ["wheezy"],
+            components: ["contrib"],
             types: ["deb"],
         },
     },
@@ -43,9 +43,9 @@
         "Repository::apt::Maintain":
         {
             file: "/etc/apt/sources.list.d/universe-ubuntu-precise.list",
-            distribution: "universe",
+            distribution: "precise",
             url: "http://us.archive.ubuntu.com/ubuntu/",
-            components: ["precise"],
+            components: ["universe"],
             types: ["deb", "deb-src"],
         }
     },
