@@ -26,7 +26,7 @@
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "mymetadata", },
             { type: "string", name: "dir", description: "The directory to clean up" },
-            { type: "string", name: "days_old", default: "-1", description: "Files/Dirs older than this will be deleted with reckless abandon ( set to -1 to disable.)" },
+            { type: "string", name: "days_old", default: "", description: "Files/Dirs older than this will be deleted with reckless abandon ( set to null string to disable.)" },
             { type: "boolean", name: "recurse", default: "", description: "recurse into subdirectories while searching for files." },
         ],
     },

@@ -24,7 +24,7 @@ bundle agent tidy_dir(runenv, metadata, dir, days_old, recurse)
       "recurse"
         expression => strcmp( $(recurse), "1" );
       "disabled"
-        expression => strcmp( $(days_old), "-1" );
+        expression => strcmp( $(days_old), "" );
 
   files:
     !disabled::
@@ -41,7 +41,7 @@ bundle agent tidy_dir(runenv, metadata, dir, days_old, recurse)
 
   reports:
     disabled::
-      "$(this.bundle): disabled by days_old = -1";
+      "$(this.bundle): disabled by days_old = ''";
     verbose::
       "$(this.bundle): running in verbose mode";
       "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";

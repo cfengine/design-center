@@ -21,7 +21,7 @@ CFEngine::dclib, CFEngine::stdlib
 
 * parameter _string_ *dir* (default: `""`, description: The directory to clean up )
 
-* parameter _string_ *days_old* (default: none, description: Files/Dirs older than this will be deleted with reckless abandon ( set to -1 to disable.) )
+* parameter _string_ *days_old* (default: none, description: Files/Dirs older than this will be deleted with reckless abandon ( set to null string to disable.) )
 
 * parameter _boolean_ *recurse* ( default: false, description: Recurse into subdirectories while searching for files. )
 
