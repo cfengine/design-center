@@ -1,9 +1,9 @@
 body file control
 {
-  namespace => "cfdc_applications_zabbix_client";
+  namespace => "cfdc_applications_zabbix_agent";
 }
 
-bundle agent applications_zabbix_client(
+bundle agent applications_zabbix_agent(
                                          runenv,
 																				 metadata,
 																				 conf_file,
@@ -20,13 +20,66 @@ bundle agent applications_zabbix_client(
 																				 user_parameters
 																			 )
 {
+
+	methods:
+		"ZABBIX agent INSTALL $(runenv)"
+			usebundle => applications_zabbix_agent_install,
+			useresult => "install_return";
+		"ZABBIX agent CONFIGURE $(runenv)"
+			usebundle => applications_zabbix_agent_conf("$(runenv)","$(metadata)","$(install_return[package_status])","$(conf_file)","$(server)", 
+			                                             "$(server_port)","$(host_name)","$(listen_port)","$(listen_ip)","$(start_agents)","$(debug_level)",
+                                                   "$(pid_file)","$(log_file)","$(timeout)","$(user_parameters)"),
+			useresult => "config_return";
+		"ZABBIX agent PROCESS $(runenv)"
+			usebundle => applications_zabbix_agent_proc("$(config_return[service_mode])");
+			
+}
+
+bundle agent applications_zabbix_agent_install
+{
+	packages:
+		ubuntu|debian::
+			"zabbix-agent"
+				package_policy => "add",
+				classes => default:if_ok("applications_zabbix_agent_installed"),
+				package_method => default:apt;
+
+	reports:
+		applications_zabbix_agent_installed::
+			"installed" bundle_return_value_index => "package_status";
+		!applications_zabbix_agent_installed::
+			"not_installed" bundle_return_value_index => "package_status";
+}
+
+bundle agent applications_zabbix_agent_conf(
+                                         runenv,
+																				 metadata,
+																				 pkg_status,
+																				 conf_file,
+																				 server,
+																				 server_port,
+																				 host_name,
+																				 listen_port,
+																				 listen_ip,
+																				 start_agents,
+																				 debug_level,
+																				 pid_file,
+																				 log_file,
+																				 timeout,
+																				 user_parameters
+																			 )
+{
+	classes:
+		"zabbix_agent_installed" expression => strcmp("installed", "$(pkg_status)");
+
 	files:
-		"$(conf_file)"
+		zabbix_agent_installed.(ubuntu|debian)::
+			"$(conf_file)"
 				create => "true",
 				edit_defaults => default:empty,
-				classes => default:if_repaired("zabbix_client_config_repaired"),
+				classes => default:if_repaired("applications_zabbix_agent_config_repaired"),
 				perms => default:m("644"),
-				edit_line => applications_zabbix_client_edit_conf( 
+				edit_line => applications_zabbix_agent_edit_conf( 
 																									 "$(server)", 
 																									 "$(server_port)", 
 																									 "$(host_name)", 
@@ -40,13 +93,30 @@ bundle agent applications_zabbix_client(
 																									 "$(user_parameters)"
 																									 );
 	reports:
-		zabbix_client_config_repaired::
+		applications_zabbix_agent_config_repaired::
 			"restart" bundle_return_value_index => "service_mode";
-		!zabbix_client_config_repaired::
+		!applications_zabbix_agent_config_repaired::
 			"start" bundle_return_value_index => "service_mode";
 }
 
-bundle edit_line applications_zabbix_client_edit_conf(
+bundle agent applications_zabbix_agent_proc(service_mode)
+{
+	classes:
+		"applications_zabbix_agent_conf_repaired" expression => strcmp("restart","$(service_mode)");
+	
+	processes:
+		!applications_zabbix_agent_conf_repaired::
+			"zabbix_agentd"
+				restart_class => "applications_zabbix_agent_proc_start";
+
+	commands:
+		applications_zabbix_agent_conf_repaired::
+			"/etc/init.d/zabbix-agent restart";
+		applications_zabbix_agent_proc_start::
+			"/etc/init.d/zabbix-agent start";
+}
+
+bundle edit_line applications_zabbix_agent_edit_conf(
                                                    server,
                                                    server_port,
                                                    host_name,

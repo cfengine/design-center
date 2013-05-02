@@ -1,5 +1,5 @@
 {
-    "Applications::Zabbix::Client":
+    "Applications::Zabbix::Agent":
     {
 			"server" : "10.10.10.10",
 			"timeout" : "10",
