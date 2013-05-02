@@ -46,7 +46,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
       handle        => "repo_prepfile",
       edit_defaults => default:std_defs,
       edit_line     => default:prepend_if_no_line($(CFEnotice)),
-      classes       => default:generic("$(class_prefix)_prep"),
+      classes       => default:classes_generic("$(class_prefix)_prep"),
       comment       => "Create $(file) and note that the file is managed by CFEngine";
 
       # note that we need to edit the file AFTER it's been possibly
@@ -54,7 +54,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
       "$(file)"
       edit_defaults =>  default:std_defs,
       edit_line     =>  default:append_if_no_line("$(entries)"),
-      classes       => default:generic("$(class_prefix)_ensure"),
+      classes       => default:classes_generic("$(class_prefix)_ensure"),
       comment       =>  "Complete or fix $(file).";
 
   reports:
@@ -65,7 +65,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
 
       "$(this.bundle): file $(file); ensuring line $(entries)";
 
-    any::
+    cfengine3::
       "$(file)" bundle_return_value_index => "file",
       ifvarclass => canonify("$(class_prefix)_ensure_ok");
 
@@ -102,7 +102,7 @@ bundle agent wipe(runenv, metadata, wipe, given_file)
   files:
       "$(file)"
       edit_defaults => default:empty,
-      classes       => default:generic("$(class_prefix)_wipe"),
+      classes       => default:classes_generic("$(class_prefix)_wipe"),
       comment       => "Wipe $(file)";
 
   reports:
@@ -113,6 +113,6 @@ bundle agent wipe(runenv, metadata, wipe, given_file)
 
       "$(this.bundle): wiping file $(file)";
 
-    any::
+    cfengine::
       "$(file)" bundle_return_value_index => "file";
 }
