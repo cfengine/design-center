@@ -43,19 +43,10 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
   files:
       "$(file)"
       create        => "true",
-      handle        => "repo_prepfile",
-      edit_defaults => default:std_defs,
-      edit_line     => default:prepend_if_no_line($(CFEnotice)),
-      classes       => default:generic("$(class_prefix)_prep"),
+      edit_defaults => default:empty,
+      edit_line     => sources_list($(CFEnotice),@(ensure.entries)),
+      classes       => default:classes_generic("$(class_prefix)_prep"),
       comment       => "Create $(file) and note that the file is managed by CFEngine";
-
-      # note that we need to edit the file AFTER it's been possibly
-      # created with a notice
-      "$(file)"
-      edit_defaults =>  default:std_defs,
-      edit_line     =>  default:append_if_no_line("$(entries)"),
-      classes       => default:generic("$(class_prefix)_ensure"),
-      comment       =>  "Complete or fix $(file).";
 
   reports:
     verbose::
@@ -71,6 +62,15 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
 
       "" bundle_return_value_index => "file",
       ifvarclass => canonify("$(class_prefix)_ensure_not_ok");
+}
+
+bundle edit_line sources_list( header, lines )
+{
+  delete_lines:
+      ".*";
+  insert_lines:
+      "$(header)";
+      "$(lines)";
 }
 
 bundle agent wipe(runenv, metadata, wipe, given_file)
