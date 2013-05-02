@@ -6,19 +6,20 @@ body file control
 bundle agent applications_memcached(runenv,metadata,port,user,maxconn,cachesize,listen) {
 
 	methods:
-		"MEMCACHED INSTALL $(runenv)" usebundle => 
-				applications_memcached_install("$(runenv)","$(metadata)"),
-				useresult => "install_return";
+		"MEMCACHED INSTALL $(runenv)" 
+			usebundle => applications_memcached_install,
+			useresult => "install_return";
 
-		"MEMCACHED CONFIGURE $(runenv)" usebundle => 
-				applications_memcached_conf("$(runenv)","$(metadata)","$(install_return[package_status])","$(port)","$(user)","$(maxconn)","$(cachesize)","$(listen)"),
-				useresult => "config_return";
+		"MEMCACHED CONFIGURE $(runenv)"
+			usebundle => applications_memcached_conf("$(runenv)","$(metadata)","$(install_return[package_status])","$(port)","$(user)","$(maxconn)","$(cachesize)","$(listen)"),
+			useresult => "config_return";
 
-		"MEMCACHED PROCESS $(runenv)" usebundle => 
-				applications_memcached_proc("$(config_return[service_mode])");
+		"MEMCACHED PROCESS $(runenv)"
+			usebundle => applications_memcached_proc("$(config_return[service_mode])");
 }
 
-bundle agent applications_memcached_install(runenv,metadata) {
+bundle agent applications_memcached_install
+{
 	packages:
 		redhat|centos|fedora::
 			"memcached"
@@ -71,7 +72,8 @@ bundle agent applications_memcached_conf(runenv,metadata,pkg_status,port,user,ma
 			"start" bundle_return_value_index => "service_mode";
 }
 
-bundle agent applications_memcached_proc(service_mode) {
+bundle agent applications_memcached_proc(service_mode)
+{
 	classes:
 		"applications_memcached_conf_repaired" expression => strcmp("restart","$(service_mode)");
 	

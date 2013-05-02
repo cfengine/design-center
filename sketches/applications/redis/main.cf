@@ -7,7 +7,7 @@ bundle agent applications_redis(runenv,metadata,pidfile,port,address,timeout,dbf
 {
 	methods:
 		"REDIS INSTALL $(runenv)" 
-			usebundle => applications_redis_install("$(runenv)","$(metadata)"),
+			usebundle => applications_redis_install,
 			useresult => "install_return";
 		"REDIS CONFIGURE $(runenv)"
 			usebundle => applications_redis_conf("$(runenv)","$(metadata)","$(install_return[package_status])","$(pidfile)","$(port)","$(address)","$(timeout)",
@@ -18,7 +18,7 @@ bundle agent applications_redis(runenv,metadata,pidfile,port,address,timeout,dbf
 			usebundle => applications_redis_proc("$(config_return[service_mode])");
 }
 
-bundle agent applications_redis_install(runenv, metadata)
+bundle agent applications_redis_install
 {
 	packages:
 		ubuntu|debian::
