@@ -1,0 +1,10 @@
+{
+    "System::motd":
+    {
+        "motd": "\n$(sys.fqhost) - $(sys.flavor) $(sys.release)\nThis system is under the control of CFEngine",
+        "motd_path": "/etc/motd.static",
+        "prepend_command": "/bin/echo some output",
+        "dynamic_path": "/etc/motd.dynamic",
+        "symlink_path": "/etc/motd"
+    }
+}

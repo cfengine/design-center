@@ -1,4 +1,4 @@
-# CFEngine::stdlib version 110
+# CFEngine::stdlib version 111
 
 License: LGPL
 Tags: cfdc

@@ -2,6 +2,8 @@
 
 BEGIN
 {
+    $ENV{PERL_JSON_BACKEND} = 'JSON::backportPP';
+
     if (-l $0)
     {
         require FindBin;
@@ -29,10 +31,11 @@ BEGIN
 
 use File::Basename;
 use FindBin;
-use lib "$FindBin::Bin/perl-lib",
- "$FindBin::Bin/perl-lib/File-Which-1.09/lib",
- "$FindBin::Bin/perl-lib/JSON-2.53/lib",
- "$FindBin::Bin/perl-lib/Mo-0.31/lib";
+use lib map { $_,
+               "$_/File-Which-1.09/lib",
+               "$_/JSON-2.53/lib",
+               "$_/Mo-0.31/lib" }
+ ("$FindBin::Bin/perl-lib", "$FindBin::Bin/../lib/cf-sketch");
 
 use warnings;
 use strict;
@@ -54,10 +57,12 @@ my %options = (
                activate => {},
                install => [],
                uninstall => [],
+               filter => [],
                force => 0,
                quiet => 0,
                verbose => 0,
                test => 0,
+               activated => 0,
                veryverbose => 0,
                runfile => "$inputs_root/api-runfile.cf",
                installsource => Util::local_cfsketches_source(File::Spec->curdir()) || undef,
@@ -76,12 +81,14 @@ GetOptions(\%options,
            "veryverbose|vv!",
            "generate!",
            "force|f!",
-           "test!",
+           "test:s",
+           "activated:s",
            "installsource|is=s",
            "cfpath=s",
            "list:s",
            "search:s",
            "make_readme:s",
+           "filter=s@",
            "install|i=s@",
            "uninstall=s@",
            "deactivate-all|da",
@@ -101,12 +108,19 @@ $options{sourcedir} = $sourcedir;
 
 die "Sorry, can't locate source directory" unless -d $sourcedir;
 
+$options{test} = 1 if ($options{test} eq '');
+my $env_test = $options{test};
+
+$options{activated} = 1 if ($options{activated} eq '');
+my $env_activated = $options{activated};
+
 api_interaction({
                  define_environment => {
                                         $options{environment} =>
                                         {
                                          activated => 1,
-                                         test => !!$options{test},
+                                         test => $env_test,
+                                         activated => $env_activated,
                                          verbose => !!$options{verbose}
                                         }
                                        }
@@ -174,15 +188,15 @@ if (scalar keys %{$options{activate}})
     foreach my $sketch (keys %{$options{activate}})
     {
         my $file = $options{activate}->{$sketch};
-        my $load = $dcapi->load($file);
-        die "Could not load $file: $!" unless defined $load;
+        my ($load, @warnings) = $dcapi->load($file);
+        die "Could not load $file: @warnings" unless defined $load;
 
         if (ref $load eq 'ARRAY')
         {
             my $i = 1;
             foreach (@$load)
             {
-                my $k = "$file $i";
+                my $k = "parameter definition from $file-$i";
                 $todefine{$k} = $_;
                 $i++;
                 push @{$todo{$sketch}},{
@@ -194,11 +208,12 @@ if (scalar keys %{$options{activate}})
         }
         else
         {
-            $todefine{$file} = $load;
+            my $k = "parameter definition from $file";
+            $todefine{$k} = $load;
             push @{$todo{$sketch}},{
                                     target => $options{repolist}->[0],
                                     environment => $options{environment},
-                                    params => [ $file ],
+                                    params => [ $k ],
                                    };
         }
     }
@@ -269,7 +284,8 @@ sub api_interaction
                                   {
                                    location => $options{runfile},
                                    standalone => 1,
-                                   relocate_path => "sketches"
+                                   relocate_path => "sketches",
+                                   filter_inputs => $options{filter},
                                   },
                                   vardata => "$inputs_root/cfsketch-vardata.conf",
                                  });

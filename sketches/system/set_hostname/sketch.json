@@ -12,12 +12,12 @@
     metadata:
     {
         "name": "System::set_hostname",
-	"description": "Configure system hostname",
+	    "description": "Configure system hostname",
         "version": "1.05.2",
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux", "darwin" ] }
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ "linux|darwin" ] }
     },
 
     api:
@@ -25,6 +25,7 @@
         // the key is the name of the bundle!
         set:
         [
+            { type: "bundle_options", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
             { type: "string", name: "hostname" },

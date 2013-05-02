@@ -2,6 +2,8 @@
 
 BEGIN
 {
+    $ENV{PERL_JSON_BACKEND} = 'JSON::backportPP';
+
     if (-l $0)
     {
         require FindBin;
@@ -12,10 +14,11 @@ BEGIN
 
 use File::Basename;
 use FindBin;
-use lib "$FindBin::Bin/perl-lib",
-"$FindBin::Bin/perl-lib/File-Which-1.09/lib",
-"$FindBin::Bin/perl-lib/JSON-2.53/lib",
-"$FindBin::Bin/perl-lib/Mo-0.31/lib";
+use lib map { $_,
+               "$_/File-Which-1.09/lib",
+               "$_/JSON-2.53/lib",
+               "$_/Mo-0.31/lib" }
+ ("$FindBin::Bin/perl-lib", "$FindBin::Bin/../lib/cf-sketch");
 
 use warnings;
 use strict;

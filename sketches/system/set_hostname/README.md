@@ -1,4 +1,4 @@
-# System::set_hostname version 1.1
+# System::set_hostname version 1.05.2
 
 License: MIT
 Tags: cfdc
@@ -8,10 +8,12 @@ Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 Configure system hostname
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib
+CFEngine::stdlib
 
 ## API
 ### bundle: set
+* bundle option: single_use = 1
+
 * parameter _environment_ *runenv* (default: none, description: none)
 
 * parameter _metadata_ *metadata* (default: none, description: none)

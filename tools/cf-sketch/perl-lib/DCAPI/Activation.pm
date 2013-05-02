@@ -53,11 +53,21 @@ sub make_activation
     }
 
     my $found;
-    my @repos = grep
+    my @repos;
+    my $target = glob($spec->{target});
+    foreach my $repo (map { $api->load_repo($_) } @{$api->repos()})
     {
-        my $target = glob($spec->{target});
-        defined $target ? $target eq $_->location() : 1
-    } map { $api->load_repo($_) } @{$api->repos()};
+        if ($target)
+        {
+            next if $target ne $repo->location();
+        }
+
+        push @repos, $repo;
+    }
+
+    $api->log4("Activation of sketch %s will be done against candidate repos %s",
+               $sketch,
+               [@repos]);
 
     foreach my $repo (@repos)
     {
@@ -173,6 +183,12 @@ sub make_activation
     $api->log3("Verified sketch %s, bundle %s: filled parameters are %s",
                $sketch, $bundle, $bundle_params{$bundle});
 
+    my $bundle_options = $found->api_options($bundle);
+    if ($bundle_options->{single_use})
+    {
+        # define behavior for single-use sketches: Redmine #2534
+    }
+
     return DCAPI::Activation->new(api => $api,
                                   prefix => $activation_prefix,
                                   sketch => $found,
@@ -199,7 +215,16 @@ sub fill_param
                  type => $type, name => $name, value => $extra->{environment}};
     }
 
-    if ($type eq 'return')
+    if (options_type($type))
+    {
+        return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
+                 set=>undef,
+                 type => $type, name => $name,
+                 value => $extra->{sketch}->api_options($extra->{bundle}),
+               };
+    }
+
+    if (return_type($type))
     {
         return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
                  set=>undef,
@@ -209,7 +234,12 @@ sub fill_param
     if ($type eq 'metadata')
     {
         my $metadata = $extra->{sketch}->runfile_data_dump();
-        $metadata = Util::hashref_merge($metadata, { activation => $extra->{metadata} });
+        $metadata = Util::hashref_merge($metadata,
+                                        {
+                                         activation => $extra->{metadata},
+                                         bundle_options => $extra->{sketch}->api_options($extra->{bundle}),
+                                        });
+
         return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
                  set=>'sketch metadata',
                  type => 'array', name => $name, value => $metadata };
@@ -346,20 +376,32 @@ sub fill_param
 
 sub can_inline
 {
-    my $self = shift @_;
     my $type = shift @_;
 
-    return (!$self->ignored_type($type) &&
+    return (!ignored_type($type) &&
             ($type ne 'list' && $type ne 'array' &&
              $type ne 'metadata'));
 }
 
 sub ignored_type
 {
-    my $self = shift @_;
     my $type = shift @_;
 
-    return ($type eq 'return');
+    return return_type($type) || options_type($type);
+}
+
+sub options_type
+{
+    my $type = shift @_;
+
+    return $type eq 'bundle_options';
+}
+
+sub return_type
+{
+    my $type = shift @_;
+
+    return $type eq 'return';
 }
 
 sub make_bundle_params
@@ -369,11 +411,11 @@ sub make_bundle_params
     my @data;
     foreach my $p (@{$self->params()})
     {
-        if ($self->ignored_type($p->{type}))
+        if (ignored_type($p->{type}))
         {
             $self->api()->log5("Bundle parameters: ignoring parameter %s", $p);
         }
-        elsif ($self->can_inline($p->{type}))
+        elsif (can_inline($p->{type}))
         {
             foreach my $pr (Util::recurse_print($p->{value}, '', 0, 0, $p->{type} eq 'boolean'))
             {

@@ -468,9 +468,27 @@ sub recurse_print
 
         if (scalar @$ref)
         {
+            my @mapped;
+
+            foreach my $r (@$ref)
+            {
+                if (ref $r)
+                {
+                    foreach my $p (recurse_print($r, '', 0, 0, 0, $type_override))
+                    {
+                        push @mapped, $p->{value};
+                    }
+                }
+                else
+                {
+                    $r =~ s,\\,\\\\,g;
+                    $r =~ s,",\\",g;
+                    push @mapped, "\"$r\"";
+                }
+            }
+
             $joined = sprintf('{ %s }',
-                              join(", ",
-                                   map { s,\\,\\\\,g; s,",\\",g; "\"$_\"" } @$ref));
+                              join(", ", @mapped));
         }
         else
         {
@@ -479,7 +497,7 @@ sub recurse_print
 
         push @print, {
                       path => $prefix,
-                      type => 'slist',
+                      type => ($type_override || 'slist'),
                       value => $joined
                      };
     }

@@ -3,7 +3,7 @@ package DCAPI;
 use strict;
 use warnings;
 
-use JSON::PP;
+use JSON;
 use File::Which;
 use File::Basename;
 use File::Temp qw/tempfile tempdir /;
@@ -14,13 +14,15 @@ use DCAPI::Result;
 use DCAPI::Validation;
 
 use constant API_VERSION => '0.0.1';
-use constant CODER => JSON::PP->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
-use constant CAN_CODER => JSON::PP->new()->canonical()->utf8()->allow_nonref();
+use constant CODER => JSON->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
+use constant CAN_CODER => JSON->new()->canonical()->utf8()->allow_nonref();
 
 use Mo qw/build default builder coerce is required/;
 
 # has name2 => ( builder => 'name_builder' );
 # has name4 => ( required => 1 );
+
+our @vardata_keys = qw/compositions activations definitions environments validations/;
 
 has version => ( is => 'ro', default => sub { API_VERSION } );
 
@@ -44,6 +46,7 @@ has cfagent => (
 has repos => ( is => 'ro', default => sub { [] } );
 has recognized_sources => ( is => 'ro', default => sub { [] } );
 has vardata => ( is => 'rw');
+has constdata => ( is => 'rw');
 has runfile => ( is => 'ro', default => sub { {} } );
 has compositions => ( is => 'rw', default => sub { {} });
 has definitions => ( is => 'rw', default => sub { {} });
@@ -138,6 +141,30 @@ sub set_config
         }
     }
 
+    my $constdata_file = Util::hashref_search($self->config(), qw/constdata/);
+
+    if ($constdata_file)
+    {
+        $constdata_file = glob($constdata_file);
+        $self->log5("Loading constdata file $constdata_file");
+        $self->constdata($constdata_file);
+        if (-f $constdata_file && -w $constdata_file && -r $constdata_file)
+        {
+            my ($v_data, @v_warnings) = $self->load($constdata_file);
+            $result->add_error('constdata', @v_warnings)
+             if scalar @v_warnings;
+
+            foreach my $key (@vardata_keys)
+            {
+                if (exists $v_data->{$key})
+                {
+                    $self->log5("Successfully loaded $key from constdata file $constdata_file");
+                    $self->$key(Util::hashref_merge($self->$key(), $v_data->{$key}));
+                }
+            }
+        }
+    }
+
     my $vardata_file = Util::hashref_search($self->config(), qw/vardata/);
 
     if ($vardata_file)
@@ -162,34 +189,21 @@ sub set_config
         {
             $result->add_error($vardata_file, "vardata is not a hash");
         }
-        elsif (!exists $v_data->{compositions})
-        {
-            $result->add_error($vardata_file, "vardata has no key 'compositions'");
-        }
-        elsif (!exists $v_data->{activations})
-        {
-            $result->add_error($vardata_file, "vardata has no key 'activations'");
-        }
-        elsif (!exists $v_data->{definitions})
-        {
-            $result->add_error($vardata_file, "vardata has no key 'definitions'");
-        }
-        elsif (!exists $v_data->{environments})
-        {
-            $result->add_error($vardata_file, "vardata has no key 'environments'");
-        }
-        elsif (!exists $v_data->{validations})
-        {
-            $result->add_error($vardata_file, "vardata has no key 'validations'");
-        }
         else
         {
             $self->log3("Successfully loaded vardata file $vardata_file");
-            $self->compositions($v_data->{compositions});
-            $self->activations($v_data->{activations});
-            $self->definitions($v_data->{definitions});
-            $self->environments($v_data->{environments});
-            $self->validations($v_data->{validations});
+
+            foreach my $key (@vardata_keys)
+            {
+                if (exists $v_data->{$key})
+                {
+                    $self->$key(Util::hashref_merge($self->$key(), $v_data->{$key}));
+                }
+                else
+                {
+                    $result->add_error($vardata_file, "vardata has no key '$key'");
+                }
+            }
         }
     }
     else
@@ -204,13 +218,8 @@ sub save_vardata
 {
     my $self = shift;
 
-    my $data = {
-                compositions => $self->compositions,
-                activations => $self->activations,
-                definitions => $self->definitions,
-                environments => $self->environments,
-                validations => $self->validations,
-               };
+    my $data = {};
+    $data->{$_} = $self->$_() foreach @vardata_keys;
     my $vardata_file = $self->vardata();
 
     $self->log("Saving vardata file $vardata_file");
@@ -292,11 +301,7 @@ sub data_dump
      recognized_sources => $self->recognized_sources(),
      vardata => $self->vardata(),
      runfile => $self->runfile(),
-     compositions => $self->compositions(),
-     definitions => $self->definitions(),
-     activations => $self->activations(),
-     environments => $self->environments(),
-     validations => $self->validations(),
+     map { $_ => $self->$_() } @vardata_keys,
     };
 }
 
@@ -710,7 +715,12 @@ sub define_environment
                                           "Invalid environment spec $dkey: key $required is a hash but had nothing to say")
                  unless scalar @condition;
 
-                $spec->{$required} = { function => "classmatch", args => ['(' . (join "|", map { "($_)" } @condition) . ')'] };
+                $spec->{$required}->{class_function} = [];
+                push @{$spec->{$required}->{class_function}}, {
+                                                               function => "classmatch",
+                                                               args => [$_]
+                                                              }
+                 foreach @condition;
             }
             else
             {
@@ -1018,6 +1028,19 @@ sub regenerate
     }
 
     @inputs = Util::uniq(@inputs);
+
+    my $filter_inputs = $self->runfile()->{filter_inputs};
+    if (ref $filter_inputs eq 'ARRAY')
+    {
+        foreach my $filter (@$filter_inputs)
+        {
+            $self->log("Regenerate: filtering inputs to exclude %s", $filter);
+            @inputs = grep { $_ !~ m/$filter/ } @inputs;
+        }
+
+        $self->log("Regenerate: final inputs after filtering %s", \@inputs);
+    }
+
     my $inputs = join "\n", Util::make_var_lines('inputs', \@inputs, '', 0, 0);
 
     my $type_indent = ' ' x 2;
@@ -1040,12 +1063,12 @@ sub regenerate
                 $self->log("Regenerate: adding environment %s", $p);
                 $environments{$p->{value}}++;
             }
-            elsif ($a->ignored_type($p->{type}))
+            elsif (DCAPI::Activation::ignored_type($p->{type}))
             {
                 $self->log5("Regenerate: ignoring parameter %s", $p);
             }
             # we can't inline some types, so print them explicitly in the data bundle
-            elsif (!$a->can_inline($p->{type}))
+            elsif (!DCAPI::Activation::can_inline($p->{type}))
             {
                 $self->log("Regenerate: adding explicit data %s", $p);
                 my $line = join("\n",
@@ -1090,9 +1113,9 @@ sub regenerate
             my $d = $edata->{$v};
 
             my $class_function;
-            if (ref $d eq 'HASH')
+            if (ref $d eq 'HASH' && exists $d->{class_function})
             {
-                $class_function = $d;
+                $class_function = $d->{class_function};
                 $d = "--'$print_v' value passed as a class function--";
             }
 
@@ -1124,12 +1147,13 @@ sub regenerate
             }
             elsif (defined $class_function) # it's a class function call
             {
+                my $and = ref $class_function eq 'ARRAY';
                 my $line = join("\n",
                                 map { "$indent$_" }
                                 Util::make_var_lines(sprintf("runenv_%s_%s",
                                                              $e,
                                                              $print_v),
-                                                     $class_function, '', 0, 0, 0, 'expression'));
+                                                     $class_function, '', 0, 0, 0, $and ? 'and' : 'expression'));
 
                 push @class_data, $line;
             }
@@ -1170,12 +1194,13 @@ sub regenerate
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
 
-        push @invocation_lines, sprintf('%s"%s" usebundle => %s%s(%s), useresult => "return_%s";',
+        push @invocation_lines, sprintf('%s"%s" usebundle => %s%s(%s), ifvarclass => "%s", useresult => "return_%s";',
                                         $indent,
                                         $a->id(),
                                         $namespace_prefix,
                                         $a->bundle(),
                                         $a->make_bundle_params(),
+                                        $a->sketch()->runtime_context(),
                                         $a->id());
     }
 
@@ -1183,7 +1208,7 @@ sub regenerate
     my @report_lines;
     foreach my $a (@activations)
     {
-        foreach my $p (grep { $_->{type} eq 'return' } @{$a->params()})
+        foreach my $p (grep { DCAPI::Activation::return_type($_->{type}) } @{$a->params()})
         {
             push @report_lines,
             sprintf('%s"activation %s returned %s = %s";',
@@ -1192,10 +1217,17 @@ sub regenerate
                     $p->{name},
                     sprintf('$(return_%s[%s])', $a->id(), $p->{name}));
         }
+
+        push @report_lines,
+         sprintf('%s"activation %s could not run because it requires classes %s" ifvarclass => "inform_mode.!(%s)";',
+                 $indent,
+                 $a->id(),
+                 $a->sketch()->runtime_context(),
+                 $a->sketch()->runtime_context());
     }
 
     my $report_lines = join "\n",
-     "${context_indent}cfengine::",
+     "${context_indent}inform_mode::",
       @report_lines;
 
     my $standalone_lines = <<EOHIPPUS;

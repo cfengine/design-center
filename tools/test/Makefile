@@ -53,13 +53,33 @@ ifeq ($(V),1)
   EXTRA:=--verbose
 endif
 
-CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH) $(EXTRA) --force --test
+ifneq ($(T),)
+  EXTRA:= $(EXTRA) --test=$(T)
+else
+  EXTRA:= $(EXTRA) --test
+endif
+
+ifneq ($(A),)
+  EXTRA:= $(EXTRA) --activated=$(A)
+else
+  EXTRA:= $(EXTRA) --activated
+endif
+
+ifneq ($(FILTER),)
+  EXTRA:= $(EXTRA) --filter=$(FILTER)
+endif
+
+CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH) $(EXTRA) --force
 CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --runfile $(RUNFILE)
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
-	echo '{ dc_api_version: "0.0.1", request: {search: [["tags", "matches", "stdlib|cloud"]] } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {search: [["tags", "equals", "aws"]] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "production": { activated: true, test: false, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Utilities::abortclasses", force: true, target: "/var/cfengine/masterfiles/sketches", source: "/home/..." } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "abortclasses_params": {  } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Utilities::abortclasses": { environment: "production", params: [ "abortclasses_params" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
 api_activate:
 	@echo ...install CFEngine::sketch_template, deactivate all, activate just CFEngine::sketch_template with some metadata, then generate the runfile
@@ -561,6 +581,7 @@ data_classes:
 	$(CFSKETCH_DA) --install Data::Classes --activate Data::Classes=$(SOURCEDIR)/utilities/data_classes/params/demo.json
 	$(RUNNER)
 
+<<<<<<< HEAD
 #
 
 iptables_filter:
@@ -688,3 +709,12 @@ memcached_composed:
 	@echo ...generate the runfile
 	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
+=======
+motd:
+	$(CFSKETCH_DA) --install System::motd --activate System::motd=$(SOURCEDIR)/system/motd/params/example.json
+	$(RUNNER)
+
+bad_input_file:
+	$(CFSKETCH_DA) --install Data::Classes --activate Data::Classes=/no/such/file
+	$(RUNNER)
+>>>>>>> upstream/master

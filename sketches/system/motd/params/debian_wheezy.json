@@ -1,0 +1,7 @@
+{
+    "System::motd":
+    {
+        "motd": "\n ! System is under the control of CFEngine, local changes may by overwritten.\n",
+        "dynamic_path": "/run/motd.dynamic"
+    }
+}

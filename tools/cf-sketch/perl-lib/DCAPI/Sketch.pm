@@ -202,12 +202,24 @@ EOHIPPUS
         push @p, "### bundle: $bundle";
         foreach my $param (@$spec)
         {
-            push @p, sprintf("* %s _%s_ *%s* (default: %s, description: %s)\n",
-                             $param->{type} eq 'return' ? 'returns' : 'parameter',
-                             $param->{type},
-                             $param->{name},
-                             (exists $param->{default} ? '`'.(defined $param->{default} ? $self->dcapi()->encode($param->{default}):'null').'`' : 'none'),
-                             (defined $param->{description} ? $param->{description} : 'none'));
+            my $return = DCAPI::Activation::return_type($param->{type});
+            if (DCAPI::Activation::options_type($param->{type}))
+            {
+                my $options = $self->api_options($bundle);
+                foreach my $k (keys %$options)
+                {
+                    push @p, "* bundle option: $k = " . $options->{$k} . "\n";
+                }
+            }
+            else
+            {
+                push @p, sprintf("* %s _%s_ *%s* (default: %s, description: %s)\n",
+                                 $return ? 'returns' : 'parameter',
+                                 $param->{type},
+                                 $param->{name},
+                                 (exists $param->{default} ? '`'.(defined $param->{default} ? $self->dcapi()->encode($param->{default}):'null').'`' : 'none'),
+                                 (defined $param->{description} ? $param->{description} : 'none'));
+            }
         }
     }
 
@@ -220,6 +232,26 @@ EOHIPPUS
 
     $self->dcapi()->log4("Generated README:\n$readme\n");
     return $readme;
+}
+
+sub api_options
+{
+    my $self = shift;
+    my $bundle = shift;
+
+    my $bundle_api = Util::hashref_search($self->api(), $bundle);
+    return {} unless $bundle_api;
+
+    foreach my $param (@$bundle_api)
+    {
+        my $type = Util::hashref_search($param, 'type');
+        next unless ($type && $type eq 'bundle_options');
+        my %options = %$param;
+        delete $options{type};
+        return \%options;
+    }
+
+    return {};
 }
 
 sub matches
@@ -291,6 +323,31 @@ sub get_inputs
     return @inputs;
 }
 
+# these dependencies should be checked at runtime
+sub runtime_dependencies
+{
+    my $self = shift @_;
+    my %deps;
+    foreach my $runtime_name (qw/os classes/)
+    {
+        my $deps = $self->depends()->{$runtime_name} || [];
+        $deps = [keys %$deps] if ref $deps eq 'HASH';
+        $deps = [$deps] if ref $deps ne 'ARRAY';
+        $deps{$_}++ foreach @$deps;
+    }
+
+    return [sort keys %deps];
+}
+
+sub runtime_context
+{
+    my $self = shift @_;
+
+    my $runtime_deps = $self->runtime_dependencies();
+    return (join('&', @$runtime_deps) || 'any');
+}
+
+# these dependencies should be checked at install time
 sub resolve_dependencies
 {
     my $self = shift @_;
@@ -309,9 +366,11 @@ sub resolve_dependencies
     foreach my $dep (sort keys %deps)
     {
         $self->dcapi()->log5("Checking sketch $name dependency %s", $dep);
-        if ($dep eq 'os')
+        if ($dep eq 'os' || $dep eq 'classes')
         {
-            $self->dcapi()->log2("Ignoring sketch $name OS dependency %s", $dep);
+            $self->dcapi()->log2("At install time, ignoring sketch $name dependency %s: %s",
+                                 $dep,
+                                 $deps{$dep});
         }
         elsif ($dep eq 'cfengine')
         {
