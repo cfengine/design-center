@@ -1,0 +1,35 @@
+diff --git a/promises.cf b/promises.cf
+index 7728239..aacae82 100644
+--- a/promises.cf
++++ b/promises.cf
+@@ -35,7 +35,7 @@ body common control
+             "controls/cf_serverd.cf",
+ 
+          # COPBL/Custom libraries
+-            "libraries/cfengine_stdlib.cf",
++            #"libraries/cfengine_stdlib.cf",
+ 
+          # Design Center
+              # MARKER FOR CF-SKETCH INPUT INSERTION
+@@ -44,6 +44,8 @@ body common control
+          # User services from here
+             "services/init_msg.cf",
+ 
++         # dc
++            @{cfsketch_g.inputs},
+            };
+ 
+  version => "Community Promises.cf 3.4.0";
+diff --git a/update.cf b/update.cf
+index 3e3380f..ccd08d5 100644
+--- a/update.cf
++++ b/update.cf
+@@ -218,7 +218,7 @@ body file_select u_cf3_files
+ 
+ body file_select u_input_files
+ {
+- leaf_name => { ".*.cf",".*.dat",".*.txt" };
++ leaf_name => { ".*\.cf",".*\.dat",".*\.txt", ".*\.json" };
+  file_result => "leaf_name";
+ }
+ 
