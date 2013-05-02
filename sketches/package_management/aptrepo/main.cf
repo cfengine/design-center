@@ -56,7 +56,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
 
       "$(this.bundle): file $(file); ensuring line $(entries)";
 
-    any::
+    cfengine3::
       "$(file)" bundle_return_value_index => "file",
       ifvarclass => canonify("$(class_prefix)_ensure_ok");
 
@@ -113,6 +113,6 @@ bundle agent wipe(runenv, metadata, wipe, given_file)
 
       "$(this.bundle): wiping file $(file)";
 
-    any::
+    cfengine::
       "$(file)" bundle_return_value_index => "file";
 }
