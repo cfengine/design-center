@@ -101,9 +101,9 @@ bundle agent wipe(runenv, metadata, wipe, given_file)
 
   files:
       "$(file)"
-      edit_defaults => default:empty,
-      classes       => default:classes_generic("$(class_prefix)_wipe"),
-      comment       => "Wipe $(file)";
+      delete  => default:tidy,
+      classes => default:classes_generic("$(class_prefix)_wipe"),
+      comment => "Wipe $(file)";
 
   reports:
     verbose::
