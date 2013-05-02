@@ -17,8 +17,6 @@ CFEngine::dclib, CFEngine::stdlib
 
 * parameter _metadata_ *mymetadata* (default: none, description: none)
 
-* parameter _string_ *prefix* (default: `"__PREFIX__"`, description: none)
-
 * parameter _string_ *dir* (default: `""`, description: The directory to clean up )
 
 * parameter _string_ *days_old* (default: none, description: Files/Dirs older than this will be deleted with reckless abandon ( set to null string to disable.) )
