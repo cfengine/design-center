@@ -1,0 +1,56 @@
+body file control
+{
+  namespace => "cfdc_utilities_tidy_dir";
+}
+
+bundle agent tidy_dir(runenv, metadata, dir, days_old, recurse)
+{
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+    activated.test::
+      "action_policy" string => "warn";
+    activated.!test::
+      "action_policy" string => "fix";
+    activated.recurse::
+      "search_depth" string => "inf";
+    activated.!recurse::
+      "search_depth" string => "0";
+
+  classes:
+      "$(vars)"
+        expression => "default:runenv_$(runenv)_$(vars)";
+
+      "recurse"
+        expression => strcmp( $(recurse), "1" );
+      "disabled"
+        expression => strcmp( $(days_old), "" );
+
+  files:
+    !disabled::
+      "$(dir)/."
+        delete => default:tidy,
+        file_select => default:days_old($(days_old)),
+        depth_search => default:recurse($(search_depth)),
+        action => default:policy($(action_policy));
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  reports:
+    disabled::
+      "$(this.bundle): disabled by days_old = ''";
+    verbose::
+      "$(this.bundle): running in verbose mode";
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    test::
+      "$(this.bundle): running in test mode";
+      "$(this.bundle): got dir=$(dir)";
+      "$(this.bundle): got days_old=$(days_old)";
+      "$(this.bundle): got recurse=$(recurse)";
+}
