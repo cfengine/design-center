@@ -15,7 +15,7 @@ use DCAPI::Validation;
 
 use constant API_VERSION => '0.0.1';
 use constant CODER => JSON->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
-use constant CAN_CODER => JSON->new()->canonical()->utf8()->allow_nonref();
+use constant CAN_CODER => JSON->new()->pretty()->canonical()->utf8()->allow_nonref();
 
 use Mo qw/build default builder coerce is required/;
 
