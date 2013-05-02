@@ -11,11 +11,12 @@ bundle agent resolver(runenv, metadata, file, nameserver, search, domain, option
 
     test::
       "rfile" string => "/tmp/resolv.conf";
-    !test::
+    not_test::
       "rfile" string => $(file);
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   methods:
     verbose::

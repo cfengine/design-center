@@ -48,13 +48,14 @@ bundle agent configure(runenv, metadata, original_hostfile, defined_only, hosts)
 
       "class_prefix" string => canonify($(hostfile));
 
-    !test::
+    not_test::
       "hostfile" string => "$(original_hostfile)", policy => "free";
     test::
       "hostfile" string => "/tmp/hosts", policy => "free";
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
       "defined_only" expression => strcmp($(defined_only), "1");
 
   methods:
@@ -84,7 +85,7 @@ bundle agent configure(runenv, metadata, original_hostfile, defined_only, hosts)
       comment     =>  "Notice that the file is managed by CFEngine";
 
       # I have no idea what windows permissions should be for this file
-    !windows.!test::
+    !windows.not_test::
       "$(hostfile)"
       perms   => default:mog("644", "root", "root"),
       comment => "Set proper permissions so everyone can read it";

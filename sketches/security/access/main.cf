@@ -9,7 +9,7 @@ bundle agent set(runenv, metadata, given_access_file, empty_first, ensured_lines
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    !test::
+    not_test::
       "file_prefix" string => "", policy => "free";
     test::
       "file_prefix" string => "/tmp", policy => "free";
@@ -20,6 +20,7 @@ bundle agent set(runenv, metadata, given_access_file, empty_first, ensured_lines
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
       "empty_first" expression => strcmp($(empty_first), "1");
 

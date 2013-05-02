@@ -77,6 +77,7 @@ bundle agent sshd(runenv, metadata, params)
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   reports:
     verbose::

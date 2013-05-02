@@ -10,6 +10,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
@@ -21,7 +22,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
 
       "components_str" string => join(" ", "components");
 
-    !test::
+    not_test::
       "file_prefix" string => "", policy => "free";
     test::
       "file_prefix" string => "/tmp", policy => "free";
@@ -77,12 +78,13 @@ bundle agent wipe(runenv, metadata, wipe, given_file)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    !test::
+    not_test::
       "file_prefix" string => "", policy => "free";
     test::
       "file_prefix" string => "/tmp", policy => "free";

@@ -7,6 +7,7 @@ bundle agent ensure(runenv, metadata, count, class, install_cfengine, hub, optio
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
       "start"   expression => strcmp("start", "$(state)");
       "stop"    expression => strcmp("stop",  "$(state)");
@@ -26,7 +27,7 @@ bundle agent ensure(runenv, metadata, count, class, install_cfengine, hub, optio
 
     OpenStack_home_called.test::
       "current_count" string => execresult("$(shim) count $(class)", "useshell");
-    OpenStack_home_called.!test::
+    OpenStack_home_called.not_test::
       "current_count" string => execresult("$(shim) count $(class) 2>/dev/null", "useshell");
 
   methods:

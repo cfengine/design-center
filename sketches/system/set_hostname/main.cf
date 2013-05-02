@@ -7,6 +7,7 @@ bundle agent set(runenv, metadata, hostname, domainname)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
@@ -40,7 +41,7 @@ bundle agent set(runenv, metadata, hostname, domainname)
     test::
       "path_prefix" string => "/tmp", policy => "free";
       "exe_prefix" string => "/bin/echo ", policy => "free";
-    !test::
+    not_test::
       "path_prefix" string => "", policy => "free";
       "exe_prefix" string => "", policy => "free";
 

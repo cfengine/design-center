@@ -7,6 +7,7 @@ bundle agent ping(runenv, metadata, hosts, count)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
@@ -37,7 +38,7 @@ bundle agent ping(runenv, metadata, hosts, count)
       "reached_str" string => "reached_str should be generated but isn't; TODO: look into it";
       "not_reached_str" string => join(" ", "not_reached_hosts");
 
-    !test::
+    not_test::
       "exec_prefix" string => "", policy => "free";
     test::
       "exec_prefix" string => "/bin/echo ", policy => "free";

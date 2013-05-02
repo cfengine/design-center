@@ -20,7 +20,7 @@ bundle agent set(runenv, metadata, given_sysctl_file, empty_first, ensured_kv, r
     second_class_pass::
       "removed_indices" slist => { getindices("cfdc_sysctl:set.removed") };
 
-    !test::
+    not_test::
       "file_prefix" string => "", policy => "free";
       "exec_prefix" string => "", policy => "free";
     test::
@@ -37,6 +37,7 @@ bundle agent set(runenv, metadata, given_sysctl_file, empty_first, ensured_kv, r
       "first_class_pass" and => {"any"};
 
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
       "empty_first" expression => strcmp($(empty_first), "1");
 

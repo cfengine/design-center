@@ -15,13 +15,14 @@ bundle agent set(runenv, metadata, timezone, zoneinfo)
 
       "tz_file" string => "$(zoneinfo)/$(timezone)";
 
-    !test::
+    not_test::
       "relocate" string => "", policy => "free";
     test::
       "relocate" string => "/tmp", policy => "free";
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
       "timezone_exists" expression => fileexists("$(tz_file)");
 
   methods:
@@ -87,7 +88,7 @@ body copy_from copy_zoneinfo(source)
 
 body perms test_aware_mog(mode, user, group)
 {
-    !test::
+    not_test::
       owners => { "$(user)" };
       groups => { "$(group)" };
       mode   => "$(mode)";

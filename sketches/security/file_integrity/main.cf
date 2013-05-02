@@ -7,6 +7,7 @@ bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
@@ -14,7 +15,7 @@ bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
 
     test::
       "watch" slist => { "/tmp" }, policy => "free";
-    !test::
+    not_test::
       "watch" slist => { @(given_watch) }, policy => "free";
 
     any::

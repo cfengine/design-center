@@ -65,7 +65,7 @@ bundle agent set(runenv, metadata, given_allow_filename, given_deny_filename, al
     test::
       "owner" string => getenv("LOGNAME", 100), policy => "free";
       "path_prefix" string => "/tmp", policy => "free";
-    !test::
+    not_test::
       "owner" string => "root", policy => "free";
       "path_prefix" string => "", policy => "free";
 
@@ -75,6 +75,7 @@ bundle agent set(runenv, metadata, given_allow_filename, given_deny_filename, al
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
     any::
       "ensure_absent" expression => strcmp($(ensure_absent), "1");
       "empty_first" expression => strcmp($(empty_first), "1");

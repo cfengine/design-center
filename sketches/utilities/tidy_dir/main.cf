@@ -8,18 +8,21 @@ bundle agent tidy_dir(runenv, metadata, dir, days_old, recurse)
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
-    activated.test::
+    test::
       "action_policy" string => "warn";
-    activated.!test::
+    not_test::
       "action_policy" string => "fix";
-    activated.recurse::
+    recurse::
       "search_depth" string => "inf";
-    activated.!recurse::
+    !recurse::
       "search_depth" string => "0";
 
   classes:
       "$(vars)"
         expression => "default:runenv_$(runenv)_$(vars)";
+
+      "not_$(vars)"
+        expression => "!default:runenv_$(runenv)_$(vars)";
 
       "recurse"
         expression => strcmp( $(recurse), "1" );
