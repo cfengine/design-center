@@ -168,7 +168,7 @@ Report the current time using:
      b) built-in special variable $(sys.date)
 
 
-EXERCISE 6c.  File Editing - replace_patterns - uses COPBL
+EXERCISE 6c.  File Editing - replace_patterns - uses CFEngine Standard Library
 
 Create (manually) a data file:
 
@@ -181,7 +181,7 @@ Create (manually) a data file:
 Use cf-agent to replace "line 2" with "line two".
 
 
-EXERCISE 6d.  File Editing - replace_patterns - uses COPBL
+EXERCISE 6d.  File Editing - replace_patterns - uses CFEngine Standard Library
 
 Manually create a template
 /var/cfengine/masterfiles/templates/motd.tmpl:
@@ -245,29 +245,32 @@ EXERCISE 15 - Using Classes to time Command Execution
 Problem:  All practice machines should be shutdown
 at end of class at 17:00
 
-Desired state:  The command "shutdown -h now" is running
-during 17:00-17:05.
+Desired state:  The command "/sbin/shutdown -h now"
+is running when we are in the 17th hour of the day,
+so the system shuts down cleanly and on time.
 
 
 
-EXERCISE 16 - COPBL
+EXERCISE 16 - CFEngine Standard Library
 
 Given a file /tmp/file.txt:
 
 apples
 oranges
 
-Use the COPBL to comment out "oranges" and append "bananas",
-resulting in:
+Use the CFEngine Standard Library to comment out
+"oranges" and append "bananas", resulting in:
 
 apples
 # oranges
 bananas
 
-Hint: use "bundle edit_line insert_lines" and "bundle edit_line comment_lines_matching".
+Hint: use the following:
+ - bundle edit_line insert_lines 
+ - bundle edit_line comment_lines_matching
 
 
-EXERCISE 17 - COPBL - contain a command
+EXERCISE 17 - CFEngine Standard Library - run a command as a specific user
 
 Run the command /usr/bin/id as user "nobody".
 
@@ -275,10 +278,10 @@ Hint: use "body contain setuid".
 
 
 
-EXERCISE 18 - COPBL - linking promises
+EXERCISE 18 - CFEngine Standard Library - linking promises
 
-Problem: Increase security by ensuring sshd is running with
-"PermitRootLogin no".
+Problem: Increase security by ensuring sshd is
+running with "PermitRootLogin no".
 
 How does the system look like in the correct configuration:
 

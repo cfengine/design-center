@@ -1,6 +1,11 @@
 bundle agent example {
 
   reports:
+    cfengine::
+      "A report with a$(const.t)tab in it";
+      "one $(const.r)$(const.r) two";
+
+    !any::
 
       "The value of variable named $(const.dollar)(const.dollar) is $(const.dollar)";
 
@@ -12,6 +17,5 @@ bundle agent example {
 
       "A carriage return character is $(const.r)The carriage has returned!!! the king is back.";
 
-      "A report with a$(const.t)tab in it";
 
                      }

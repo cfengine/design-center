@@ -1,0 +1,8 @@
+EXERCISE
+
+Use CFEngine to make /tmp/mirror contain
+a copy of /usr/local/sbin
+
+(Hint: use a files promise with a copy_from attribute)
+
+

@@ -7,13 +7,13 @@ Wi-Fi
 
 Expecting to get out of this training:
 
-- how to distribute a partial policy set to very-secure-servers
+[x] how to target policies to servers
 
-- more advanced CFEngine capabilities
+[x] more advanced CFEngine capabilities
 
-- get rolling
+[x] get rolling
 
-- coding
+[x] coding
 
 [x] upgrade from Community to Enterprise version
 
