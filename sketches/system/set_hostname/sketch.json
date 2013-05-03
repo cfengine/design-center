@@ -17,7 +17,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "enterprise_compatible" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "redhat" : "Red Hat famliy", "debian", : "Debian family", "gentoo" : "Gentoo", "darwin" : "Mac OS X" }, "any" ] }
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "redhat" : "Red Hat famliy", "debian" : "Debian family", "gentoo" : "Gentoo", "darwin" : "Mac OS X" }, "any" ] }
     },
 
     api:
