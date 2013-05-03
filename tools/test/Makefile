@@ -222,7 +222,7 @@ api:
 	@echo '--- a full test of configuring VCS::vcs_mirror and reporting the directories it mirrors --'
 
 	@echo ...define testing run environment
-	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: true, test: true, verbose: true } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: true, test: null, verbose: true } } } }' | $(CFAPI)
 
 	@echo ...deactivate all activations
 	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)

@@ -389,7 +389,7 @@ sub resolve_dependencies
                 }
             }
         }
-        else                    # anything else is a sketch name...
+        elsif (ref $deps{$dep} eq 'HASH') # a HASH is a sketch dependency.
         {
             my %install_request = ( sketch => $dep, target => $options{target}, force => $options{force} );
             my @criteria = (["name", "equals", $dep]);
@@ -445,6 +445,10 @@ sub resolve_dependencies
                 # put the first dependency found in the return
                 $result->add_data_key('dependency', [$dep], $list->[0]);
             }
+        }
+        else
+        {
+            $self->dcapi()->log5("Ignoring sketch $name dependency $dep");
         }
     }
 
