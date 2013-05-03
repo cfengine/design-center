@@ -13,6 +13,7 @@ bundle agent sync(runenv, metadata, datafile, domain, options)
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   methods:
       "E.T." usebundle => default:cloud_shim,
@@ -46,6 +47,7 @@ bundle agent clear(runenv, metadata, domain, options)
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   methods:
       "E.T." usebundle => default:cloud_shim,

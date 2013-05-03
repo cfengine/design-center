@@ -20,6 +20,7 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   methods:
     verbose::

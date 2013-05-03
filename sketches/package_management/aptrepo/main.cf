@@ -10,6 +10,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
@@ -21,7 +22,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
 
       "components_str" string => join(" ", "components");
 
-    !test::
+    not_test::
       "file_prefix" string => "", policy => "free";
     test::
       "file_prefix" string => "/tmp", policy => "free";
@@ -43,19 +44,10 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
   files:
       "$(file)"
       create        => "true",
-      handle        => "repo_prepfile",
-      edit_defaults => default:std_defs,
-      edit_line     => default:prepend_if_no_line($(CFEnotice)),
-      classes       => default:generic("$(class_prefix)_prep"),
+      edit_defaults => default:empty,
+      edit_line     => sources_list($(CFEnotice),@(ensure.entries)),
+      classes       => default:classes_generic("$(class_prefix)_prep"),
       comment       => "Create $(file) and note that the file is managed by CFEngine";
-
-      # note that we need to edit the file AFTER it's been possibly
-      # created with a notice
-      "$(file)"
-      edit_defaults =>  default:std_defs,
-      edit_line     =>  default:append_if_no_line("$(entries)"),
-      classes       => default:generic("$(class_prefix)_ensure"),
-      comment       =>  "Complete or fix $(file).";
 
   reports:
     verbose::
@@ -65,7 +57,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
 
       "$(this.bundle): file $(file); ensuring line $(entries)";
 
-    any::
+    cfengine3::
       "$(file)" bundle_return_value_index => "file",
       ifvarclass => canonify("$(class_prefix)_ensure_ok");
 
@@ -73,16 +65,26 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
       ifvarclass => canonify("$(class_prefix)_ensure_not_ok");
 }
 
+bundle edit_line sources_list( header, lines )
+{
+  delete_lines:
+      ".*";
+  insert_lines:
+      "$(header)";
+      "$(lines)";
+}
+
 bundle agent wipe(runenv, metadata, wipe, given_file)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    !test::
+    not_test::
       "file_prefix" string => "", policy => "free";
     test::
       "file_prefix" string => "/tmp", policy => "free";
@@ -101,9 +103,9 @@ bundle agent wipe(runenv, metadata, wipe, given_file)
 
   files:
       "$(file)"
-      edit_defaults => default:empty,
-      classes       => default:generic("$(class_prefix)_wipe"),
-      comment       => "Wipe $(file)";
+      delete  => default:tidy,
+      classes => default:classes_generic("$(class_prefix)_wipe"),
+      comment => "Wipe $(file)";
 
   reports:
     verbose::
@@ -113,6 +115,6 @@ bundle agent wipe(runenv, metadata, wipe, given_file)
 
       "$(this.bundle): wiping file $(file)";
 
-    any::
+    cfengine::
       "$(file)" bundle_return_value_index => "file";
 }

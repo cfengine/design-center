@@ -9,7 +9,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    activated.test::
+    test::
       "owner"
       string => getenv("LOGNAME",100),
       comment => "Owner of the MotD file";
@@ -18,7 +18,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       string => "/tmp",
       comment => "Prefix to file paths";
 
-    activated.!test::
+    not_test::
       "owner"
       string => "root",
       comment => "Owner of the MotD files";
@@ -59,6 +59,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
       "skip_prepend"
       expression => strcmp($(prepend_command),""),

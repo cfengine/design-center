@@ -20,7 +20,7 @@
         depends: { "CFEngine::stdlib": { version: 110 },
                    "CFEngine::dclib": {},
                    cfengine: { version: "3.4.0" },
-                   os: [ "Linux" ]
+                   os: [ "linux" ]
                  },
     },
 

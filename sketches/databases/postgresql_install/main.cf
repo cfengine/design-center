@@ -7,6 +7,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
       "server" expression => strcmp($(server), "1");
       "purge" expression => strcmp($(purge), "1");
@@ -49,11 +50,11 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       "all_packages" slist => { "test-packages", "test-server-packages" }, policy => "free";
       "type" string => "test-server", policy => "free";
 
-    !use_only_extra_packages.server.!test::
+    !use_only_extra_packages.server.not_test::
       "all_packages" slist => { @(packages), @(server_packages), @(extra_packages) }, policy => "free";
       "type" string => "server", policy => "free";
 
-    use_only_extra_packages.server.!test::
+    use_only_extra_packages.server.not_test::
       "all_packages" slist => { @(extra_packages) }, policy => "free";
       "type" string => "server", policy => "free";
 
@@ -61,18 +62,18 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       "all_packages" slist => { "test-packages" }, policy => "free";
       "type" string => "test-client", policy => "free";
 
-    !use_only_extra_packages.!server.!test::
+    !use_only_extra_packages.!server.not_test::
       "all_packages" slist => { @(packages), @(extra_packages) }, policy => "free";
       "type" string => "client", policy => "free";
 
-    use_only_extra_packages.!server.!test::
+    use_only_extra_packages.!server.not_test::
       "all_packages" slist => { @(extra_packages) };
       "type" string => "client", policy => "free";
 
-    purge.!test::
+    purge.not_test::
       "mode" string => "purging", policy => "free";
 
-    !purge.!test::
+    !purge.not_test::
       "mode" string => "installing", policy => "free";
 
     purge.test::

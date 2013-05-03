@@ -227,7 +227,7 @@ sub save_vardata
     open my $fh, '>', $vardata_file
      or return (0, "Vardata file $vardata_file could not be created: $!");
 
-    print $fh $self->cencode($data);
+    print $fh $self->cencode_pretty($data);
     close $fh;
 
     return 1;
@@ -1536,6 +1536,7 @@ sub log_int
 sub decode { shift; CODER->decode(@_) };
 sub encode { shift; CODER->encode(@_) };
 sub cencode { shift; CAN_CODER->encode(@_) };
+sub cencode_pretty { shift; CAN_CODER->pretty->encode(@_) };
 
 sub dump_encode { shift; use Data::Dumper; return Dumper([@_]); }
 

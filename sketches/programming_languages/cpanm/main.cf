@@ -14,11 +14,12 @@ bundle agent install(runenv, metadata, cpanm_program, extra_params, packages)
 
     test::
       "program" string => "/bin/echo testing cpanm", policy => "free";
-    !test::
+    not_test::
       "program" string => $(cpanm_program), policy => "free";
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   methods:
     verbose::

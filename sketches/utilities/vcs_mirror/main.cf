@@ -40,6 +40,7 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
       "use_git" expression => strcmp($(vcs_type), "git");
       "use_svn" expression => strcmp($(vcs_type), "svn");
@@ -257,7 +258,7 @@ body contain test_aware_contain(user, dir, umask)
 {
       chdir => "$(dir)";
       umask => "$(umask)";
-    !test::
+    not_test::
       exec_owner => "$(user)";
     test::
       exec_owner => getenv("LOGNAME", 100);

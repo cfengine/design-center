@@ -7,12 +7,13 @@ bundle agent remove_file(runenv, metadata, remove_file)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    !test::
+    not_test::
       "file_prefix" string => "", policy => "free";
     test::
       "file_prefix" string => "/tmp", policy => "free";
@@ -52,6 +53,7 @@ bundle agent remove_section(runenv, metadata, given_file, remove_section)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
       "file_found" expression => fileexists($(file));
       "bundle_ok" or => { "!file_found", "$(class_prefix)_ok" };
@@ -60,7 +62,7 @@ bundle agent remove_section(runenv, metadata, given_file, remove_section)
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    !test::
+    not_test::
       "file_prefix" string => "", policy => "free";
     test::
       "file_prefix" string => "/tmp", policy => "free";
@@ -102,13 +104,14 @@ bundle agent ensure_template(runenv, metadata, given_file, section, template_con
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
       "empty_given_file" expression => strcmp($(given_file), "");
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    !test::
+    not_test::
       "file_prefix" string => "", policy => "free";
       "owner" string => "root", policy => "free";
     test::
@@ -167,12 +170,13 @@ bundle agent ensure(runenv, metadata, given_file, section, conf)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    !test::
+    not_test::
       "file_prefix" string => "", policy => "free";
       "owner" string => "root", policy => "free";
     test::

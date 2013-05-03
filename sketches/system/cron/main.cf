@@ -7,6 +7,7 @@ bundle agent d(runenv, metadata, cron_path, file_task, runas, when, commands)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
@@ -14,7 +15,7 @@ bundle agent d(runenv, metadata, cron_path, file_task, runas, when, commands)
 
       "lines" slist  => maplist("#managed by cfengine cron sketch$(const.endl)$(when) $(runas) $(this)", "commands");
 
-    !test::
+    not_test::
       "r_cron_path" string => $(cron_path), policy => "free";
     test::
       "r_cron_path" string => "/tmp", policy => "free";
@@ -61,6 +62,7 @@ bundle agent tab(runenv, metadata, cron_path, line_task, runas, when, commands)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
       "need_user_specified" expression => strcmp("$(default:env.LOGNAME)",
                                                  $(runas));
 
@@ -80,7 +82,7 @@ bundle agent tab(runenv, metadata, cron_path, line_task, runas, when, commands)
     !need_user_specified::
       "crontab_options" string => "";
 
-    !test::
+    not_test::
       "exec_prefix" string => "", policy => "free";
     test::
       "exec_prefix" string => "/bin/cat CRONTAB=", policy => "free";

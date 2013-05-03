@@ -1,0 +1,159 @@
+#
+# Promises for dealing with stanza-based configuration files commonly
+# used on AIX systems.
+#
+# The following are agent bundles for use in method calls:
+#
+#  create_stanza(configfile, stanza)
+#     - Adds a new empty stanza to the specified config file.
+#  set_stanza_attrib(configfile, stanza, attribute, value)
+#     - Ensures that given stanza and attribute are present in the
+#       file, and that the attribute is set to the given value.
+#  remove_stanza_attrib(configfile, stanza, attribute)
+#     - Ensures that no attribute of the specified name exists in
+#       the given stanza in the config file.
+#  delete_stanza(configfile, stanza)
+#     - Ensures that no stanza of the specified name exists in the
+#       config file. Deletes the stanza and all its attributes
+#       if necessary.
+#
+# The edit_line bundles can also be used directly if desired, by following
+# the syntax of the agent bundles.
+
+bundle agent create_stanza(config_file, stanza)
+{
+  files:
+      "$(config_file)"
+         edit_line => edit_add_stanza("$(config_file)", "$(stanza)");
+}
+
+bundle agent set_stanza_attrib(config_file, stanza, attrib, value)
+{
+  files:
+      "$(config_file)"
+         edit_line => edit_add_stanza("$(config_file)", "$(stanza)");
+
+      "$(config_file)"
+         edit_line => replace_or_add_stanza_attrib("$(config_file)", "$(stanza)", "$(attrib)", "$(value)");
+}
+
+bundle agent remove_stanza_attrib(config_file, stanza, attrib)
+{
+  files:
+      "$(config_file)"
+        edit_line => edit_delete_stanza_attrib("$(stanza)", "$(attrib)");
+}
+
+bundle agent delete_stanza(config_file, stanza)
+{
+  files:
+      "$(config_file)"
+         edit_line => edit_delete_stanza("$(config_file)", "$(stanza)");
+}
+
+#=========================
+# Stanza edit_line bundles
+#=========================
+
+bundle edit_line edit_add_stanza(file, stanza)
+# Ensures that the specified stanza is present in the target file.
+# If needed, creates an empty stanza with no attributes. Also adds a
+# newline above the new stanza to separate it from any previous
+# stanzas in the file.
+{
+  vars:
+      "estanza"       string => escape("$(stanza)");
+      "stanza_added"  string => canonify("stanza_added_$(file)_$(stanza)");
+      "newline_added" string => canonify("stanza_added_$(file)_$(stanza)_nl");
+
+  insert_lines:
+      "$(stanza):"
+         comment => "Add the stanza to the file",
+         classes => if_repaired("$(stanza_added)");
+
+      ""
+               comment => "Insert a blank line above the stanza we just added",
+            ifvarclass => "$(stanza_added).!$(newline_added)",
+         select_region => select_stanza("$(estanza)", "no"),
+              location => start,
+               classes => if_repaired("$(newline_added)");
+}
+
+bundle edit_line replace_or_add_stanza_attrib(file, stanza, attrib, value)
+# Ensures that an attribute in the specified stanza of the stanza-based
+# config file, such as /etc/filesystems on AIX, exists and is set to the
+# specified value. H/T to stdlib "replace_or_add."
+{
+  vars:
+    "estanza"      string => escape("$(stanza)");
+    "eattrib"      string => escape("$(attrib)");
+    "evalue"       string => escape("$(value)");
+    "replace_done" string => canonify("replaced_$(file)_$(stanza)_$(attrib)");
+    # The replace_done flag class will be global since it is defined by a
+    # promise outcome, so we need to include the file name in the class name
+    # because two different files might have the same stanza and attribute.
+  
+  replace_patterns:
+    "^(\h*)($(eattrib))(\h*)=\h*(?!$(evalue))\H*\h*$"
+       select_region => select_stanza("$(estanza)", "no"),
+        replace_with => replace_stanza_value("$(value)"),
+             classes => always("$(replace_done)");
+
+  insert_lines:
+    "    $(attrib) = $(value)"
+          ifvarclass => "$(replace_done)",
+       select_region => select_stanza("$(estanza)", "no");
+}
+
+body replace_with replace_stanza_value(value)
+{
+  replace_value => "$(match.1)$(match.2)$(match.3)= $(value)";
+  occurrences   => "all";
+}
+
+# Remove the given attribute from the given stanza
+bundle edit_line edit_delete_stanza_attrib(stanza, attrib)
+{
+  vars:
+      "eattrib" string => escape("$(attrib)");
+      "estanza" string => escape("$(stanza)");
+
+  delete_lines:
+      "^\h*$(eattrib)\h*=.*$"
+         select_region => select_stanza("$(estanza)", "no");
+}
+
+# Remove the entire stanza
+bundle edit_line edit_delete_stanza(file, stanza)
+{
+  vars:
+      "estanza" string => escape("$(stanza)");
+      "stanza_deleted"
+                string => canonify("stanza_deleted_$(file)_$(stanza)");
+      "tag"     string => "CFEngineDELETE";
+
+  replace_patterns:
+      "^($(estanza):).*$"
+         replace_with => value("$(tag)_$(match.1)"),
+              classes => if_repaired("$(stanza_deleted)_tagged");
+
+  delete_lines:
+      "^($(tag)_$(estanza):|.*=.*|\h*)$"
+            ifvarclass => "$(stanza_deleted)_tagged.!$(stanza_deleted)",
+               comment => "Delete the specified stanza, including a trailing newline if present.",
+         select_region => select_stanza("$(tag)_$(estanza)", "yes"),
+               classes => always("$(stanza_deleted)");
+}
+
+#=========================
+# Stanza region-select body
+#=========================
+
+body select_region select_stanza(stanza, include_end)
+{
+  select_start            => "^$(stanza):\h*$";
+  select_end              => "^(\h*|\H+:)$";
+  include_start_delimiter => "yes";
+  include_end_delimiter   => "$(include_end)";
+}
+

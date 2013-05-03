@@ -7,12 +7,13 @@ bundle agent maybe_usebundle(runenv, metadata, ip, maclist, usebundle, arp_comma
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    !test::
+    not_test::
       "exec_prefix" string => "", policy => "free";
     test::
       "exec_prefix" string => "/bin/echo ", policy => "free";

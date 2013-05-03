@@ -27,7 +27,7 @@ bundle agent manage_metadata(runenv, metadata, name, given_path, perm, refresh_i
       "vars"     slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    !test::
+    not_test::
       "file_prefix" string => "", policy => "free";
       "mode"  string => "$($(perm)[m])", policy => "free";
       "owner" string => "$($(perm)[o])", policy => "free";
@@ -49,6 +49,7 @@ bundle agent manage_metadata(runenv, metadata, name, given_path, perm, refresh_i
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
       "_$(vars)" expression => strcmp("1", "$($(vars))");
       "_inform" or => { "inform_mode"};
@@ -80,7 +81,7 @@ bundle agent manage_metadata(runenv, metadata, name, given_path, perm, refresh_i
         comment      => "If any changes are detected we need to signal to update the metadata";
 
   commands:
-    !test::
+    not_test::
       "$(default:dc_paths.createrepo)"
         args       => "$(path)",
         contain    => default:dc_setuid_gid_umask($(owner), $(group), "022"),
