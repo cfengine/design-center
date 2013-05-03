@@ -327,16 +327,14 @@ sub get_inputs
 sub runtime_dependencies
 {
     my $self = shift @_;
-    my %deps;
-    foreach my $runtime_name (qw/os classes/)
+    my @deps;
+    foreach (qw/os classes/)
     {
-        my $deps = $self->depends()->{$runtime_name} || [];
-        $deps = [keys %$deps] if ref $deps eq 'HASH';
-        $deps = [$deps] if ref $deps ne 'ARRAY';
-        $deps{$_}++ foreach @$deps;
+        next unless exists $self->depends()->{$_};
+        push @deps, $self->depends()->{$_};
     }
 
-    return [sort keys %deps];
+    return \@deps;
 }
 
 sub runtime_context
@@ -344,7 +342,24 @@ sub runtime_context
     my $self = shift @_;
 
     my $runtime_deps = $self->runtime_dependencies();
-    return (join('&', @$runtime_deps) || 'any');
+    return $self->recurse_context($runtime_deps) || 'any';
+}
+
+sub recurse_context
+{
+    my $self = shift @_;
+    my $data = shift @_;
+
+    if (ref $data eq 'ARRAY')
+    {
+        return join('&', map { $self->recurse_context($_) } @$data);
+    }
+    elsif (ref $data eq 'HASH')
+    {
+        return '(' . join('|', sort keys %$data) . ')';
+    }
+
+    return $data;
 }
 
 # these dependencies should be checked at install time
