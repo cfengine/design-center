@@ -198,6 +198,7 @@ EOHIPPUS
     my @p;
     foreach my $bundle (sort keys %{$data{api}})
     {
+        # TODO: use api_describe
         my $spec = $data{api}->{$bundle};
         push @p, "### bundle: $bundle";
         foreach my $param (@$spec)
@@ -252,6 +253,26 @@ sub api_options
     }
 
     return {};
+}
+
+sub api_describe
+{
+    my $self = shift;
+    my $bundle = shift;
+
+    my $bundle_api = Util::hashref_search($self->api(), $bundle);
+    return {} unless $bundle_api;
+
+    my %ret;
+    foreach my $param (@$bundle_api)
+    {
+        my $return = DCAPI::Activation::return_type($param->{type});
+        $ret{$param->{name}} = {
+                                type => $param->{type},
+                               };
+    }
+
+    return \%ret;
 }
 
 sub matches

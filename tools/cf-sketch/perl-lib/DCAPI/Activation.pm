@@ -238,6 +238,7 @@ sub fill_param
                                         {
                                          activation => $extra->{metadata},
                                          bundle_options => $extra->{sketch}->api_options($extra->{bundle}),
+                                         api => $extra->{sketch}->api_describe($extra->{bundle}),
                                         });
 
         return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
