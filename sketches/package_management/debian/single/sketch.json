@@ -15,7 +15,7 @@
         license: "MIT",
         tags: ["cfdc"],
         authors: ["Ben Heilman <bheilman@enova.com>" ],
-        depends: {"CFEngine::stdlib": {version: 109}, "CFEngine::dclib": { version: "1.0.0" }, cfengine: {version: "3.4.0"}, os: ["debian"] }
+        depends: {"CFEngine::stdlib": {version: 111}, "CFEngine::dclib": { version: "1.0.0" }, cfengine: {version: "3.5.0"}, os: ["debian"] }
     },
 
     api:
