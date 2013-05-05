@@ -1,0 +1,66 @@
+{
+    manifest:
+    {
+        "main.cf": {desc: "main file" },
+        "README.md": {documentation: true},
+        "test.cf": {comment: "Test Policy"},
+        "params/demo.json": {comment: "Demo of package control."}
+    },
+
+    metadata:
+    {
+        name: "Packages::Debian::single",
+            description: "Manage Debian Packages one at a time",
+        version: "1.0.0",
+        license: "MIT",
+        tags: ["cfdc"],
+        authors: ["Ben Heilman <bheilman@enova.com>" ],
+        depends: {"CFEngine::stdlib": {version: 111}, "CFEngine::dclib": { version: "1.0.0" }, cfengine: {version: "3.5.0"}, os: ["debian"] }
+    },
+
+    api:
+    {
+        install:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+
+            { type: "string", name: "prefix", default: "__PREFIX__" },
+
+            { type: "boolean", name: "install", description: "call package installation" },
+            { type: "string", name: "package", description: "package to install"},
+            { type: "string", name: "version", default: null, description: "optional, minimum version of the package required"},
+            { type: "string", name: "release", default: null, description: "optional, release to install from, see: apt-get --target-release"},
+
+            { type: "return", name: "package_installed", },
+        ],
+        verify:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+
+            { type: "string", name: "prefix", default: "__PREFIX__" },
+
+            { type: "boolean", name: "verify", description: "call package verification" },
+            { type: "string", name: "package", description: "package to verify"},
+            { type: "string", name: "version", default: null, description: "optional, minimum version of the package required"},
+
+            { type: "return", name: "package_verified", },
+        ],
+        remove:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+
+            { type: "string", name: "prefix", default: "__PREFIX__" },
+
+            { type: "boolean", name: "remove", description: "call package removal" },
+            { type: "string", name: "package", description: "package to remove"},
+
+            { type: "return", name: "package_removed", },
+        ],
+    },
+
+    namespace: "cfdc_packages_debian_single",
+    interface: ["main.cf"]
+}

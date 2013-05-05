@@ -1,0 +1,262 @@
+body file control
+{
+      namespace => "cfdc_packages_debian_single";
+}
+
+bundle agent install(runenv, metadata, prefix, install, package, version, release)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "api_$(api)_type_$($(metadata)[api][$(api)][type])" expression => "any";
+      "$(booleans)" not => strcmp("$($(booleans))","");
+      "not_$(booleans)" expression => strcmp("$($(booleans))","");
+      "$(strings)" not => strcmp("$($(strings))","");
+      "null_$(strings)" expression => strcmp("$($(strings))","");
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "api" slist => getindices("$(metadata)[api]");
+      "booleans[$(api)]" string => "1", ifvarclass => "api_$(api)_type_boolean";
+      "booleans" slist => getindices("booleans");
+      "strings[$(api)]" string => "1", ifvarclass => "api_$(api)_type_string";
+      "strings" slist => getindices("strings");
+
+  packages:
+
+    null_version.null_release::
+      "$(package)"
+      package_method => apt_get,
+      package_policy => "add",
+      classes => default:dc_generic("$(prefix)_install"),
+      comment => "Install package";
+
+    null_version.release::
+      "$(package)"
+      package_method => apt_get_release($(release)),
+      package_policy => "add",
+      classes => default:dc_generic("$(prefix)_install"),
+      comment => "Install package";
+
+    version.null_release::
+      "$(package)"
+      package_method => apt_get,
+      package_policy => "addupdate",
+      package_select => ">=",
+      package_version => $(version),
+      classes => default:dc_generic("$(prefix)_install"),
+      comment => "Install package";
+
+    version.release::
+      "$(package)"
+      package_method => apt_get_release($(release)),
+      package_policy => "addupdate",
+      package_select => ">=",
+      package_version => $(version),
+      classes => default:dc_generic("$(prefix)_install"),
+      comment => "Install package";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(prefix), $(metadata)),
+      inherit => "true";
+
+  reports:
+    cfengine::
+      "0" bundle_return_value_index => "package_installed",
+      ifvarclass => "$(prefix)_install_not_ok";
+
+      "1" bundle_return_value_index => "package_installed",
+      ifvarclass => "$(prefix)_install_ok";
+
+    verbose::
+      "$(prefix): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(prefix): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    test::
+      "$(prefix): $(booleans) defined" ifvarclass => "$(booleans)";
+      "$(prefix): $(booleans) not defined" ifvarclass => "not_$(booleans)";
+      "$(prefix): $(strings) = $($(strings))" ifvarclass => "$(strings)";
+      "$(prefix): $(strings) is null" ifvarclass => "null_$(strings)";
+      "$(prefix): result = ok" ifvarclass => "$(prefix)_install_ok";
+      "$(prefix): result = not_ok" ifvarclass => "$(prefix)_install_not_ok";
+}
+
+bundle agent remove(runenv, metadata, prefix, remove, package)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "api_$(api)_type_$($(metadata)[api][$(api)][type])" expression => "any";
+      "$(booleans)" not => strcmp("$($(booleans))","");
+      "not_$(booleans)" expression => strcmp("$($(booleans))","");
+      "$(strings)" not => strcmp("$($(strings))","");
+      "null_$(strings)" expression => strcmp("$($(strings))","");
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "api" slist => getindices("$(metadata)[api]");
+      "booleans[$(api)]" string => "1", ifvarclass => "api_$(api)_type_boolean";
+      "booleans" slist => getindices("booleans");
+      "strings[$(api)]" string => "1", ifvarclass => "api_$(api)_type_string";
+      "strings" slist => getindices("strings");
+
+  packages:
+      "$(package)"
+      package_method => apt_get,
+      package_policy => "delete",
+      classes => default:dc_generic("$(prefix)_remove"),
+      comment => "Remove package";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(prefix), $(metadata)),
+      inherit => "true";
+
+  reports:
+    cfengine::
+      "0" bundle_return_value_index => "package_removed",
+      ifvarclass => "$(prefix)_remove_not_ok";
+
+      "1" bundle_return_value_index => "package_removed",
+      ifvarclass => "$(prefix)_remove_ok";
+
+      # This is a bug work-around, see: https://cfengine.com/dev/issues/2569
+      "1" bundle_return_value_index => "package_removed",
+      ifvarclass => "!($(prefix)_remove_ok|$(prefix)_remove_not_ok)";
+
+    verbose::
+      "$(prefix): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(prefix): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    test::
+      "$(prefix): $(booleans) defined" ifvarclass => "$(booleans)";
+      "$(prefix): $(booleans) not defined" ifvarclass => "not_$(booleans)";
+      "$(prefix): $(strings) = $($(strings))" ifvarclass => "$(strings)";
+      "$(prefix): $(strings) is null" ifvarclass => "null_$(strings)";
+      "$(prefix): result = ok" ifvarclass => "$(prefix)_remove_ok";
+      "$(prefix): result = not_ok" ifvarclass => "$(prefix)_remove_not_ok";
+      "$(prefix): result = undefined" ifvarclass => "!($(prefix)_remove_ok|$(prefix)_remove_not_ok)";
+}
+
+bundle agent verify(runenv, metadata, prefix, verify, package, version)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "api_$(api)_type_$($(metadata)[api][$(api)][type])" expression => "any";
+      "$(booleans)" not => strcmp("$($(booleans))","");
+      "not_$(booleans)" expression => strcmp("$($(booleans))","");
+      "$(strings)" not => strcmp("$($(strings))","");
+      "null_$(strings)" expression => strcmp("$($(strings))","");
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "api" slist => getindices("$(metadata)[api]");
+      "booleans[$(api)]" string => "1", ifvarclass => "api_$(api)_type_boolean";
+      "booleans" slist => getindices("booleans");
+      "strings[$(api)]" string => "1", ifvarclass => "api_$(api)_type_string";
+      "strings" slist => getindices("strings");
+
+  packages:
+    null_version::
+      "$(package)"
+      package_method => apt_get,
+      package_policy => "verify",
+      classes => default:dc_generic("$(prefix)_verify"),
+      comment => "Verify package installation";
+
+    version::
+      "$(package)"
+      package_method => apt_get,
+      package_policy => "verify",
+      package_select => ">=",
+      package_version => $(version),
+      classes => default:dc_generic("$(prefix)_verify"),
+      comment => "Verify package installation";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(prefix), $(metadata)),
+      inherit => "true";
+
+  reports:
+    cfengine::
+      "0" bundle_return_value_index => "package_verified",
+      ifvarclass => "$(prefix)_verify_not_kept";
+
+      "1" bundle_return_value_index => "package_verified",
+      ifvarclass => "$(prefix)_verify_kept";
+
+    verbose::
+      "$(prefix): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(prefix): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    test::
+      "$(prefix): $(booleans) defined" ifvarclass => "$(booleans)";
+      "$(prefix): $(booleans) not defined" ifvarclass => "not_$(booleans)";
+      "$(prefix): $(strings) = $($(strings))" ifvarclass => "$(strings)";
+      "$(prefix): $(strings) is null" ifvarclass => "null_$(strings)";
+      "$(prefix): result = kept" ifvarclass => "$(prefix)_verify_kept";
+      "$(prefix): result = not_kept" ifvarclass => "$(prefix)_verify_not_kept";
+}
+
+# Remove package_methods once they are integrated into CFEngine::stdlib
+
+body package_method apt_get
+{
+      package_changes => "bulk";
+      package_list_command => "/usr/bin/dpkg -l";
+      package_list_name_regex    => ".i\s+([^\s]+).*";
+      package_list_version_regex => ".i\s+[^\s]+\s+([^\s]+).*";
+      package_installed_regex => ".i.*"; # packages that have been uninstalled may be listed
+      package_name_convention => "$(name)";
+      package_list_update_ifelapsed => "240";
+      package_add_command => "/usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes install";
+      package_list_update_command => "/usr/bin/apt-get update";
+      package_delete_command => "/usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes -q remove";
+      package_update_command =>  "/usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes install";
+      package_patch_command =>  "/usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes install";
+      package_verify_command => "/usr/bin/dpkg -s";
+      package_noverify_returncode => "1";
+      package_patch_list_command => "/usr/bin/apt-get --just-print dist-upgrade";
+      package_patch_name_regex => "^Inst\s+(\S+)\s+.*";
+      package_patch_version_regex => "^Inst\s+\S+\s+\[?\(?([^\],\s]+).*";
+      package_version_less_command => "/usr/bin/dpkg --compare-versions $(v1) lt $(v2)";
+      package_version_equal_command => "/usr/bin/dpkg --compare-versions $(v1) eq $(v2)";
+}
+
+body package_method apt_get_release(release)
+{
+      package_changes => "bulk";
+      package_list_command => "/usr/bin/dpkg -l";
+      package_list_name_regex    => ".i\s+([^\s]+).*";
+      package_list_version_regex => ".i\s+[^\s]+\s+([^\s]+).*";
+      package_installed_regex => ".i.*"; # packages that have been uninstalled may be listed
+      package_name_convention => "$(name)";
+      package_list_update_ifelapsed => "240";
+      package_add_command => "/usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes --target-release $(release) install";
+      package_list_update_command => "/usr/bin/apt-get update";
+      package_delete_command => "/usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes -q remove";
+      package_update_command =>  "/usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes --target-release $(release) install";
+      package_patch_command =>  "/usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes --target-release $(release) install";
+      package_verify_command => "/usr/bin/dpkg -s";
+      package_noverify_returncode => "1";
+      package_patch_list_command => "/usr/bin/apt-get --just-print dist-upgrade";
+      package_patch_name_regex => "^Inst\s+(\S+)\s+.*";
+      package_patch_version_regex => "^Inst\s+\S+\s+\[?\(?([^\],\s]+).*";
+      package_version_less_command => "/usr/bin/dpkg --compare-versions $(v1) lt $(v2)";
+      package_version_equal_command => "/usr/bin/dpkg --compare-versions $(v1) eq $(v2)";
+}
