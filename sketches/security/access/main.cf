@@ -9,8 +9,7 @@ bundle agent set(runenv, metadata, given_access_file, empty_first, ensured_lines
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-      "access_file" string => "$(default:eu.path_prefix)$(given_access_file)",
-      policy => "free";
+      "access_file" string => "$(default:eu.path_prefix)$(given_access_file)";
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
