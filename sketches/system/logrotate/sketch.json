@@ -1,0 +1,30 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "System::Logrotate",
+        "description": "Sets defaults and user permissions in the sudoers file",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+    },
+    "api" : {
+		    "system_logrotate" : [
+				     { "name" : "runenv", "type" : "environment" },
+						 { "name" : "metadata", "type" : "metadata" },
+						 { "name" : "conf_dir", "type" : "string" },
+						 { "name" : "logrotate_globals", "type" : "array" },
+						 { "name" : "logrotate_descriptions", "type" : "array" },
+						 { "name" : "logrotate_purge", "type" : "boolean" }
+				]
+		},
+		"namespace": "cfdc_system_logrotate",
+    "interface": [ "main.cf" ]
+}
