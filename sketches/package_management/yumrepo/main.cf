@@ -28,19 +28,17 @@ bundle agent manage_metadata(runenv, metadata, name, given_path, perm, refresh_i
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
     not_test::
-      "file_prefix" string => "", policy => "free";
       "mode"  string => "$($(perm)[m])", policy => "free";
       "owner" string => "$($(perm)[o])", policy => "free";
       "group" string => "$($(perm)[g])", policy => "free";
 
     test::
-      "file_prefix" string => "/tmp", policy => "free";
       "mode" string => "600", policy => "free";
       "owner" string => "$(default:env.LOGNAME)", policy => "free";
       "group" string => "$(owner)", policy => "free";
 
     any::
-      "path" string => "$(file_prefix)$(given_path)", policy => "free";
+      "path" string => "$(default:eu.path_prefix)$(given_path)";
 
       "class_prefix"
         string => canonify("$(this.bundle)_$(runenv)_$(path)"),
@@ -61,6 +59,8 @@ bundle agent manage_metadata(runenv, metadata, name, given_path, perm, refresh_i
         comment    => "Check if a repo exists yet";
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
@@ -97,13 +97,13 @@ bundle agent manage_metadata(runenv, metadata, name, given_path, perm, refresh_i
         comment    => "We need to update the metadata since a change was detected";
 
     test::
-      "$(default:dc_paths.createrepo)"
+      "$(default:eu.exec_prefix)$(default:dc_paths.createrepo)"
         args       => $(path),
         classes    => default:dc_generic("$(class_prefix)_create"),
         ifvarclass => not(canonify("$(class_prefix)_exists")),
         comment    => "Create repository if one does not exist";
 
-      "$(default:dc_paths.createrepo)"
+      "$(default:eu.exec_prefix)$(default:dc_paths.createrepo)"
         args       => "--update $(path)",
         classes    => default:dc_generic("$(class_prefix)_metadata_update"),
         ifvarclass => "$(class_prefix)_detected_change_repaired",
@@ -112,29 +112,29 @@ bundle agent manage_metadata(runenv, metadata, name, given_path, perm, refresh_i
 
   reports:
     _verbose::
-      "$(this.bundle): Repository metadata does not exist at $(path)",
+      "$(this.bundle): Repository metadata does not exist at $(path)"
         ifvarclass => not(canonify("$(class_prefix)_exists"));
 
-      "$(this.bundle): Detected changes in $(path)/",
+      "$(this.bundle): Detected changes in $(path)/"
         ifvarclass => "$(class_prefix)_detected_change_repaired";
 
     _inform::
-      "$(this.bundle): Initalized repository metadata at $(path)",
+      "$(this.bundle): Initalized repository metadata at $(path)"
         ifvarclass => "$(class_prefix)_create_ok";
 
-      "$(this.bundle): Repository metadata updated at $(path)",
+      "$(this.bundle): Repository metadata updated at $(path)"
         ifvarclass => "$(class_prefix)_metadata_update_repaired";
 
     any::
-      "Successfully created repository in $(path)"
+      "$(this.bundle): Successfully created repository in $(path)"
         bundle_return_value_index => "status",
         ifvarclass => "$(class_prefix)_create_not_ok";
 
-      "Successfully updated repository in $(path)"
+      "$(this.bundle): Successfully updated repository in $(path)"
         bundle_return_value_index => "status",
         ifvarclass => "$(class_prefix)_metadata_update_ok";
 
-      "Unable to create or update repository in $(path) using $(createrepo)"
+      "$(this.bundle): Unable to create or update repository in $(path) using $(createrepo)"
         bundle_return_value_index => "status",
         ifvarclass => "$(class_prefix)_create_not_ok|$(class_prefix)_metadata_update_not_ok";
 
