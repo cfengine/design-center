@@ -573,6 +573,10 @@ generic_services:
 	$(CFSKETCH_DA) --install Services::Generic --activate Services::Generic=$(SOURCEDIR)/utilities/generic_services/params/demo.json
 	$(RUNNER)
 
+packages_debian_single:
+	$(CFSKETCH_DA) --install Packages::Debian::single --activate Packages::Debian::single=$(SOURCEDIR)/package_management/debian/single/params/demo.json
+	$(RUNNER)
+
 access:
 	$(CFSKETCH_DA) --install System::access --activate System::access=$(SOURCEDIR)/security/access/params/example.json
 	$(RUNNER)

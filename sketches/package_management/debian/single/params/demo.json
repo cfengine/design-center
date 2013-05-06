@@ -1,0 +1,9 @@
+[
+    { "Packages::Debian::single": { install: true, package: "screen", version: "4.0.3-14", release: "squeeze-backports" } },
+    { "Packages::Debian::single": { install: true, package: "screen", version: "4.0.3-14" } },
+    { "Packages::Debian::single": { install: true, package: "screen" } },
+    { "Packages::Debian::single": { verify: true, package: "screen", version: "4.0.3-14" }, "identifier": "something" },
+    { "Packages::Debian::single": { verify: true, package: "screen" } },
+    { "Packages::Debian::single": { remove: true, package: "screen" } },
+    { "Packages::Debian::single": { remove: true, package: "screen" } },
+]
