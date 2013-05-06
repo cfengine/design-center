@@ -8,15 +8,15 @@
     "metadata":
     {
         "name": "Applications::Redis",
-        "description": "",
+        "description": "Install, configure, and start Redis.",
         "version": 1.00,
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.5.0" }, "os": [ "ubuntu|debian" ] }
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.5.0" }, "os": [ "ubuntu|debian" ] }
     },
 		"api" : {
-		   "applications_redis" : [
+		   "server" : [
 			    { "name" : "runenv", "type" : "environment" },
 			    { "name" : "metadata", "type" : "metadata" },
 			    { "name" : "pidfile", "type" : "string", "default" : "/var/run/redis.pid" },
@@ -33,6 +33,6 @@
 			    { "name" : "saves", "type" : "list" },
 			 ]
 		},
-    "namespace": "cfdc_applications_redis",
+    "namespace": "cfdc_redis",
     "interface": [ "main.cf" ]
 }

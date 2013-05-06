@@ -603,3 +603,7 @@ tidy_dir:
 memcached:
 	$(CFSKETCH_DA) --install Applications::Memcached --activate Applications::Memcached=$(SOURCEDIR)/applications/memcached/params/demo.json
 	$(RUNNER)
+
+redis:
+	$(CFSKETCH_DA) --install Applications::Redis --activate Applications::Redis=$(SOURCEDIR)/applications/redis/params/demo.json
+	$(RUNNER)

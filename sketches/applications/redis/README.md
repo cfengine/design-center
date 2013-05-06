@@ -5,13 +5,13 @@ Tags: cfdc
 Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
 ## Description
-
+Install, configure, and start Redis.
 
 ## Dependencies
 CFEngine::stdlib
 
 ## API
-### bundle: applications_redis
+### bundle: server
 * parameter _environment_ *runenv* (default: none, description: none)
 
 * parameter _metadata_ *metadata* (default: none, description: none)
