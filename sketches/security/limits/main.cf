@@ -45,7 +45,7 @@ bundle agent limits(runenv, metadata, given_filename, domains, empty_first, ensu
       "owner" string => "root", policy => "free";
 
     any::
-      "filename" string => "$(default:eu.path_prefix)$(given_filename)", policy => "free";
+      "filename" string => "$(default:eu.path_prefix)$(given_filename)";
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
