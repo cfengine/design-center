@@ -38,21 +38,16 @@ bundle agent set(runenv, metadata, hostname, domainname)
       "sethost_command" string => "/bin/hostname";
       "setdomain_command" string => "/bin/domainname";
 
-    test::
-      "path_prefix" string => "/tmp", policy => "free";
-      "exe_prefix" string => "/bin/echo ", policy => "free";
-    not_test::
-      "path_prefix" string => "", policy => "free";
-      "exe_prefix" string => "", policy => "free";
-
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
 
   files:
     debian::
-      "$(path_prefix)/etc/hostname"
+      "$(default:eu.path_prefix)/etc/hostname"
       comment       => "Set host-name, not FQDN in this file - in accordance with man 1 hostname",
       create        => "true",
       edit_defaults => default:empty,
@@ -61,7 +56,7 @@ bundle agent set(runenv, metadata, hostname, domainname)
       classes       => default:if_repaired("set_hostname_update");
 
     redhat::
-      "$(path_prefix)/etc/sysconfig/network"
+      "$(default:eu.path_prefix)/etc/sysconfig/network"
       create    => "true",
       perms     => default:mog("644", "root", "root"),
       edit_line => default:set_variable_values("cfdc_hostname:set.config"),
@@ -75,7 +70,7 @@ I have been doing it wrong for years, and it only
 recently bit me.";
 
     darwin::
-      "$(path_prefix)/etc/defaultdomain"
+      "$(default:eu.path_prefix)/etc/defaultdomain"
       create    => "true",
       edit_defaults => default:empty,
       perms     => default:mog("644", "root", "root"),
@@ -83,13 +78,13 @@ recently bit me.";
       classes   => default:if_repaired("set_hostname_updatedomain");
 
     gentoo::
-      "$(path_prefix)/etc/conf.d/hostname"
+      "$(default:eu.path_prefix)/etc/conf.d/hostname"
       create	=> "true",
       perms	=> default:mog("644", "root", "root"),
       edit_line	=> default:set_variable_values("cfdc_hostname:set.confdhostname"),
       classes	=> default:if_repaired("set_hostname_updatehostname");
 
-      "$(path_prefix)/etc/conf.d/net"
+      "$(default:eu.path_prefix)/etc/conf.d/net"
       create	=> "true",
       perms	=> default:mog("644", "root", "root"),
       edit_line	=> default:set_variable_values("cfdc_hostname:set.confdnet"),
@@ -97,17 +92,17 @@ recently bit me.";
 
   commands:
     darwin::
-      "$(exe_prefix)/usr/sbin/scutil --set HostName $(hostname)"
+      "$(default:eu.exec_prefix)/usr/sbin/scutil --set HostName $(hostname)"
       classes => default:if_repaired("set_hostname_updatehostname");
 
     redhat||darwin||gentoo||debian::
-      "$(exe_prefix)$(sethost_command) $(hostname)"
+      "$(default:eu.exec_prefix)$(sethost_command) $(hostname)"
       ifvarclass => "set_hostname_update||set_hostname_updatehostname",
       comment => "Update the hostname on the running system so we
 dont have to wait for a reboot";
 
     redhat||darwin||gentoo::
-      "$(exe_prefix)$(setdomain_command) $(domainname)"
+      "$(default:eu.exec_prefix)$(setdomain_command) $(domainname)"
       ifvarclass => "set_hostname_update||set_hostname_updatedomain",
       comment => "Update the domainname on the running system so
 we dont have to reboot for it";
