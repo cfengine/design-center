@@ -5,7 +5,7 @@ bundle agent example {
 
       "/etc/motd"
 
-            edit_line => ExpandMeFrom("templates/motd.txt");
+            edit_line => ExpandMeFrom("/var/cfengine/inputs/templates/motd.txt");
                      }
 
 

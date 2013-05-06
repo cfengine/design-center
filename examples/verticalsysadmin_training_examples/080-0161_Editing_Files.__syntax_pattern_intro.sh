@@ -27,11 +27,11 @@ ${R}files|processes|packages|commands|...${C}:${N} # Type of promise.
                                        # Or can be a CFEngine internal object name,
 				       # such as a class or a report.
 
-                   ${R}comment${N} ${C}=> "${B}The intention: to illustrate CF3 syntax pattern.",
-                    ${R}handle${N} ${C}=> "${B}syntax_pattern_example_1",
-                ${R}attribute1${N} ${C}=> "${B}literal_value1",
+                    ${R}handle${N} ${C}=> "${B}syntax_pattern",
+                   ${R}comment${N} ${C}=> "${B}Illustrate CF3 syntax pattern.",
+                ${R}attribute1${N} ${C}=> "${B}literal",
                 ${R}attribute2${N} ${C}=> "${B}\$(scalar_variable_name)",
-                ${R}attribute1${N} ${C}=> "${B}{ "literal_value1", "literal_value2" },
+                ${R}attribute1${N} ${C}=> "${B}{ "literal1", "literal" },
                 ${R}attribute3${N} ${C}=> ${B}group_of_promises${C},
                 ${R}attribute4${N} ${C}=> ${B}function${C}(${N}...${C});
 ${C}}${N}

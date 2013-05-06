@@ -4,11 +4,13 @@ files:
 
   "/etc/motd"
 
-    edit_line => expand_from_motd_template;
+    handle => "motd",
+    comment => "Generate /etc/motd from template",
+    edit_line => insert_stock_motd;
 }
 
 
-bundle edit_line expand_from_motd_template {
+bundle edit_line insert_stock_motd {
 
 delete_lines:
 
@@ -16,7 +18,9 @@ delete_lines:
 
 insert_lines:
 
-    "templates/motd.txt"
+    "/var/cfengine/inputs/templates/motd.txt"
 
+       handle => "insert_stock_motd",
+       comment => "insert stock MOTD from static template",
        insert_type => "file";
 }

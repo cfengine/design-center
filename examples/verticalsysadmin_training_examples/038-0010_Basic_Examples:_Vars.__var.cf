@@ -1,0 +1,19 @@
+bundle agent example {
+
+
+  vars:
+       "my_string"
+             handle => "declare_string_var",
+            comment => "Demonstrate declaring var type and value",
+             string  => "The answer is: ";
+
+         "my_int"  
+             handle => "declare_int_var",
+            comment => "Demonstrate declaring var type and value",
+            int     => "42";
+
+
+  commands:  
+
+      "/bin/echo $(my_string)  $(my_int)"; 
+                     }

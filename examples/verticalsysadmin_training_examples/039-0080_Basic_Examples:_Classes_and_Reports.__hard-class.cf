@@ -1,0 +1,11 @@
+bundle agent example{
+
+  reports:
+    linux::
+      "I love Linux"
+
+               handle => "report_Linux_love",
+               comment => "Check that we are on Linux to demonstrate classes and reports";
+
+                        }
+

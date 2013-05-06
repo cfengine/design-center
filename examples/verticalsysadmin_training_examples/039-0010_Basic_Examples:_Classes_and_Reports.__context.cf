@@ -1,0 +1,14 @@
+bundle agent example {
+
+  files:
+
+    Sunday&Hr02::
+
+      "/etc/nologin" 
+
+               handle => "touch_etc_nologin",
+              comment => "Quiesce the system for 2 - 4 A.M. Sunday maintenance",
+              create  => "true";
+
+                     }
+

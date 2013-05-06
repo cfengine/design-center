@@ -1,0 +1,15 @@
+bundle agent example {
+
+  vars:
+
+      "my_int"
+
+               handle => "shove_cfengine",
+              comment => "Try to assign a real number to an integer variable to see what happens",
+                  int => "1.5";
+
+  commands:
+
+      "/bin/echo my_int is $(my_int).";
+
+                     }
