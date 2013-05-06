@@ -64,14 +64,12 @@ bundle agent set(runenv, metadata, given_allow_filename, given_deny_filename, al
 
     test::
       "owner" string => getenv("LOGNAME", 100), policy => "free";
-      "path_prefix" string => "/tmp", policy => "free";
     not_test::
       "owner" string => "root", policy => "free";
-      "path_prefix" string => "", policy => "free";
 
     any::
-      "allow_filename" string => "$(path_prefix)$(given_allow_filename)", policy => "free";
-      "deny_filename" string => "$(path_prefix)$(given_deny_filename)", policy => "free";
+      "allow_filename" string => "$(default:eu.path_prefix)$(given_allow_filename)";
+      "deny_filename" string => "$(default:eu.path_prefix)$(given_deny_filename)";
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
@@ -88,6 +86,8 @@ bundle agent set(runenv, metadata, given_allow_filename, given_deny_filename, al
       "first_class_pass" and => {"any"};
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
@@ -157,32 +157,32 @@ unexpected behavior from stray admins.";
 
     second_class_pass::
       # Report when files have been repaired
-      "I repaired $(allow_filename)",
+      "I repaired $(allow_filename)"
       ifvarclass => "$(class_prefix)repaired_allow";
 
-      "I repaired $(deny_filename)",
+      "I repaired $(deny_filename)"
       ifvarclass => "$(class_prefix)repaired_deny";
 
     debug_tcpwrappers.second_class_pass::
       # Allow and Deny Rules
 
       # Report File management policy
-      "$(allow_filename) Should be emptied before editing.",
+      "$(allow_filename) Should be emptied before editing."
       ifvarclass => "empty_first";
 
-      "$(allow_filename) makes promises about specific rules being present",
+      "$(allow_filename) makes promises about specific rules being present"
       ifvarclass => "!ensure_absent";
 
-      "$(allow_filename) makes promises about specific rules being absent",
+      "$(allow_filename) makes promises about specific rules being absent"
       ifvarclass => "ensure_absent";
 
-      "$(deny_filename) should be emptied before editing.",
+      "$(deny_filename) should be emptied before editing."
       ifvarclass => "empty_first";
 
-      "$(deny_filename) makes promises about specific rules being present",
+      "$(deny_filename) makes promises about specific rules being present"
       ifvarclass => "!ensure_present";
 
-      "$(deny_filename) makes promises about specific rules being absent",
+      "$(deny_filename) makes promises about specific rules being absent"
       ifvarclass => "ensure_absent";
 
 
