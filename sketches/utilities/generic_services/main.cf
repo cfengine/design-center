@@ -35,7 +35,7 @@ bundle agent ensure(runenv, metadata, name, given_start, given_stop, pattern, po
 
   processes:
     policy_start::
-      "$(pattern)",
+      "$(pattern)"
       comment => "Verify that the service $(name) appears in the process table",
       restart_class => "restart_$(name)";
 
@@ -44,7 +44,7 @@ bundle agent ensure(runenv, metadata, name, given_start, given_stop, pattern, po
       restart_class => "policy_verify_fail";
 
     policy_stop::
-      "$(pattern)",
+      "$(pattern)"
       comment => "Verify that the service $(name) does not appear in the process",
       process_stop => $(stop),
       signals => { "term", "kill"};
@@ -54,7 +54,7 @@ bundle agent ensure(runenv, metadata, name, given_start, given_stop, pattern, po
       restart_class => "policy_verify_ok";
 
   commands:
-      "$(start)",
+      "$(start)"
       comment => "Execute command to restart service $(name)",
       ifvarclass => "restart_$(name)";
 
