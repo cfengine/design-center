@@ -994,7 +994,7 @@ sub regenerate
         foreach my $spec (@{$acts->{$sketch}})
         {
             # this is how the data structure is turned into a DCAPI::Activation object
-            my ($activation, @warnings) = DCAPI::Activation::make_activation($self, $sketch, $spec);
+            my ($activation, @errors) = DCAPI::Activation::make_activation($self, $sketch, $spec);
 
             if ($activation)
             {
@@ -1004,11 +1004,13 @@ sub regenerate
             }
             else
             {
-                $self->log("Regenerate: verification warnings [@warnings]");
-                return $result->add_warning($sketch, @warnings);
+                $self->log("Regenerate: verification errors [@errors]");
+                $result->add_error($sketch, @errors);
             }
         }
     }
+
+    return $result unless $result->success();
 
     # resolve each activation from the others
     foreach my $a (@activations)
