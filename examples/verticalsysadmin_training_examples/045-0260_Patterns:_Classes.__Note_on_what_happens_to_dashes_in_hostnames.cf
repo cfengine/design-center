@@ -1,3 +1,5 @@
+# set hostname to "my-hostname-has-dashes"
+
 bundle agent example {
 
   reports:

@@ -8,9 +8,6 @@ bundle agent example{
               comment => "Create a soft class that will be used by reports: promises.",
            expression => fileexists("/tmp/newfile");
 
-  reports: myclass:: "file /tmp/newfile exists";
-
-  reports: !myclass:: "file /tmp/newfile does not exist";
 
   files:
       "/tmp/newfile"
@@ -19,5 +16,12 @@ bundle agent example{
                comment => "Give CFEngine something to do to change system state.",
                create => "true";
 
+  reports:
+     myclass::
+         "file /tmp/newfile exists";
+
+  reports:
+     !myclass::
+         "file /tmp/newfile does not exist";
                         }
 
