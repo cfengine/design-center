@@ -95,7 +95,7 @@ sub save_inv_file
 
     open my $fh, '>', $self->inv_file();
 
-    unless ($fh)
+    unless (defined $fh)
     {
         $self->api()->log("Repo at %s could not save inventory file %s: $!",
                           $self->location(),
@@ -105,7 +105,7 @@ sub save_inv_file
     }
 
     print $fh "$_\n" foreach $self->sketches_dump();
-    close $fh or return 0;
+    close $fh;
 
     return 1;
 }
@@ -264,7 +264,7 @@ sub install
     my $inv_save = $self->save_inv_file();
     return $result->add_error('installation',
                               "Could not save the inventory file!")
-     if $inv_save;
+     if 0 == $inv_save;
 
     $result->add_data_key('installation', 'inventory_save', $inv_save);
 
@@ -335,7 +335,7 @@ sub uninstall
 
     return $result->add_error('uninstallation',
                               "Could not save the inventory file!")
-     if $inv_save;
+     if 0 == $inv_save;
 
     $result->add_data_key('uninstallation', 'inventory_save', $inv_save);
 
