@@ -1,0 +1,19 @@
+{
+    "System::Syslog":
+    {
+				"config" : {
+					"*.err;kern.notice;auth.notice" : {
+						"action" : "/dev/console",
+					},
+					"*.alert" : {
+						"action" : "root",
+					},
+					"*.emerg" : {
+						"action" : "*",
+					}, 
+					"*.debug" : {
+						"action" : "/var/adm/messages",
+					},
+				}
+    }
+}
