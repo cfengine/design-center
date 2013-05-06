@@ -13,19 +13,15 @@ bundle agent remove_file(runenv, metadata, remove_file)
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    not_test::
-      "file_prefix" string => "", policy => "free";
-    test::
-      "file_prefix" string => "/tmp", policy => "free";
-
-    any::
-      "file" string => "$(file_prefix)$(remove_file)",
+      "file" string => "$(default:eu.path_prefix)$(remove_file)",
       policy => "free";
 
       "class_prefix" string => canonify("$(this.bundle) $(file)"),
       policy => "free";
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
@@ -33,7 +29,7 @@ bundle agent remove_file(runenv, metadata, remove_file)
   files:
       "$(file)"
       delete => default:tidy,
-      classes => default:generic($(class_prefix));
+      classes => default:classes_generic($(class_prefix));
 
   reports:
     verbose::
@@ -62,19 +58,15 @@ bundle agent remove_section(runenv, metadata, given_file, remove_section)
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    not_test::
-      "file_prefix" string => "", policy => "free";
-    test::
-      "file_prefix" string => "/tmp", policy => "free";
-
-    any::
-      "file" string => "$(file_prefix)$(given_file)",
+      "file" string => "$(default:eu.path_prefix)$(given_file)",
       policy => "free";
 
       "class_prefix" string => canonify("$(this.bundle) $(file) $(remove_section)"),
       policy => "free";
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
@@ -83,7 +75,7 @@ bundle agent remove_section(runenv, metadata, given_file, remove_section)
     file_found::
       "$(file)"
       edit_line => edit_out_section($(remove_section)),
-      classes => default:generic($(class_prefix));
+      classes => default:classes_generic($(class_prefix));
 
   reports:
     verbose::
@@ -112,10 +104,8 @@ bundle agent ensure_template(runenv, metadata, given_file, section, template_con
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
     not_test::
-      "file_prefix" string => "", policy => "free";
       "owner" string => "root", policy => "free";
     test::
-      "file_prefix" string => "/tmp", policy => "free";
       "owner" string => "$(default:env.LOGNAME)", policy => "free";
 
     empty_given_file::
@@ -126,13 +116,15 @@ bundle agent ensure_template(runenv, metadata, given_file, section, template_con
       policy => "free";
 
     any::
-      "file" string => "$(file_prefix)$(checked_file)",
+      "file" string => "$(default:eu.path_prefix)$(checked_file)",
       policy => "free";
 
       "class_prefix" string => canonify("$(this.bundle) $(file) $(section) $(template_conf)"),
       policy => "free";
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
@@ -144,7 +136,7 @@ bundle agent ensure_template(runenv, metadata, given_file, section, template_con
       edit_defaults => default:empty,
       handle => "ensure_template_overwrite",
       edit_line => default:insert_ini_section($(section), $(template_conf)),
-      classes => default:generic("$(class_prefix)");
+      classes => default:classes_generic($(class_prefix));
 
   reports:
     verbose::
@@ -177,20 +169,20 @@ bundle agent ensure(runenv, metadata, given_file, section, conf)
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
     not_test::
-      "file_prefix" string => "", policy => "free";
       "owner" string => "root", policy => "free";
     test::
-      "file_prefix" string => "/tmp", policy => "free";
       "owner" string => "$(default:env.LOGNAME)", policy => "free";
 
     any::
-      "file" string => "$(file_prefix)$(given_file)",
+      "file" string => "$(default:eu.path_prefix)$(given_file)",
       policy => "free";
 
       "class_prefix" string => canonify("$(this.bundle) $(file) $(section) $(conf)"),
       policy => "free";
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
@@ -205,14 +197,14 @@ bundle agent ensure(runenv, metadata, given_file, section, conf)
       comment => "This is to work around an old bug that caused
 region selection to fail because EOF was not
 detected as end of region",
-      classes => default:generic("$(class_prefix)_prep");
+      classes => default:classes_generic("$(class_prefix)_prep");
 
       "$(file)"
       edit_defaults => default:no_backup,
       handle => "ensure_present",
       edit_line => cfdc_yumclient:manage_variable_values_ini($(conf),
                                                              $(section)),
-      classes => default:generic("$(class_prefix)"),
+      classes => default:classes_generic($(class_prefix)),
       depends_on => { "ensure_eof_present" };
 
   reports:
@@ -294,7 +286,7 @@ bundle edit_line manage_variable_values_ini(tab, section)
       comment => "Insert lines";
 
     section_exists::
-      "$(index)=$($(tab)[$(index)])",
+      "$(index)=$($(tab)[$(index)])"
       select_region => default:INI_section("$(section)"),
       ifvarclass => "!ini_not_$(cindex[$(index)]).!noedit_$(cindex[$(index)])";
 
