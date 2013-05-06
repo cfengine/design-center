@@ -3,21 +3,47 @@ Installing Neil Watson's CFEngine 3 syntax highlighter
 
 1. Make sure your ~/.vimrc contains:
 
-    filetype plugin indent on
-    au BufRead,BufNewFile *.cf set ft=cf3
+cat <<EOF >> ~/.vimrc
+
+filetype plugin on
+syntax enable
+au BufRead,BufNewFile *.cf set ft=cf3
+" Disable folding so it does not confuse students not familiar with it
+set nofoldenable 
+" disable abbreviations so we do not confuse students
+let g:DisableCFE3KeywordAbbreviations=0
+
+" functions Eatchar and Getchar
+fun! Getchar()
+  let c = getchar()
+  if c != 0
+    let c = nr2char(c)
+  endif
+  return c
+endfun
+
+fun! Eatchar(pat)
+  let c = Getchar()
+  return (c =~ a:pat) ? '' : c
+endfun
+
+EOF
 
 
-2. Make sure you have a ~/.vim/ftplugin directory:
+2. Make sure you have a ~/.vim/ftplugin and ~/.vim/syntax 
+   directories:
 
-    mkdir -p ~/.vim/ftplugin 
+    mkdir -p ~/.vim/ftplugin  ~/.vim/syntax
 
 
-3. Copy the syntax highlighter script to the above directory:
+3. Copy the syntax highlighter and editor plugins 
 
-    wget 'http://www.vim.org/scripts/download_script.php?src_id=13898' \
-      -O ~/.vim/ftplugin/cf3.vim
+wget -O ~/.vim/syntax/cf3.vim \
+  https://github.com/neilhwatson/vim_cf3/raw/master/syntax/cf3.vim
+
+wget -O ~/.vim/ftplugin/cf3.vim \
+  https://github.com/neilhwatson/vim_cf3/raw/master/ftplugin/cf3.vim
 
 4. Use it:   
 
    vim 030-0018_Basic_Examples.__Files._Create_a_file.cf 
-

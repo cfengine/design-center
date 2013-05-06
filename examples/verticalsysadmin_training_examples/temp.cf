@@ -1,3 +1,21 @@
+body common control
+{
+
+bundlesequence => {
+"main",
+};
+
+inputs => {
+"cfengine_stdlib.cf",
+};
+}
+
+bundle agent main
+{
+
+methods:
+
+
 bundle agent example {
 
 
@@ -13,3 +31,42 @@ bundle agent example {
       "/bin/echo hello world"
              ifvarclass => "Monday|Tuesday";
                      }
+
+bundle agent example {
+
+  vars:
+
+   "my_var_name" 
+
+         string 
+}
+
+bundle agent example {
+
+  vars: 
+
+   "my_var_name"
+
+     string => "blah";
+}
+
+
+bundle agent example {
+
+  vars: 
+
+   "my_var_name"
+      string =>> "blah";
+
+}
+
+
+bundle agent example {
+
+  vars:
+
+    "my_var_name"
+
+       string => "hello";
+
+}
