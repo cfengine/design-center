@@ -1,0 +1,99 @@
+body file control
+{
+  namespace => "cfdc_openssl_gencert";
+}
+
+bundle agent openssl_gencert(runenv,metadata,cert_path,owner,group,valid_days,country,state,locality_name,organization,org_unit_name,common_name,email)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  files:
+	    "$(cert_path)/."
+       perms => default:mog("700","$(owner)","$(group)"),
+       create => "true";
+			 
+      "$(cert_path)/openssl.cnf"
+      perms => default:mog("400","$(owner)","$(group)"),
+      create => "true",
+      edit_defaults => default:no_backup,
+      edit_line => openssl_gencert_editline("$(country)","$(state)","$(locality_name)","$(organization)","$(org_unit_name)","$(common_name)","$(email)");
+
+      "$(cert_path)/$(common_name).key"
+      perms => default:mog("400", "$(owner)", "$(group)"),
+      ifvarclass => and(fileexists("$(cert_path)/$(common_name).key"));
+
+      "$(cert_path)/$(common_name).crt"
+      perms => default:mog("444", "$(owner)", "$(group)"),
+      ifvarclass => and(fileexists("$(cert_path)/$(common_name).crt"));
+
+      "$(cert_path)/$(common_name).csr"
+      perms => default:mog("400", "$(owner)", "$(group)"),
+      ifvarclass => and(fileexists("$(cert_path)/$(common_name).csr"));
+
+  commands:
+      "/usr/bin/openssl genrsa -out $(cert_path)/$(common_name).key 2048"
+			contain => default:silent,
+      ifvarclass => not(fileexists("$(cert_path)/$(common_name).key"));
+			
+      "/usr/bin/openssl req -new -nodes -key $(cert_path)/$(common_name).key -out $(cert_path)/$(common_name).csr -config $(cert_path)/openssl.cnf -batch"
+			contain => default:silent,
+      ifvarclass => not(fileexists("$(cert_path)/$(common_name).csr"));
+
+      "/usr/bin/openssl x509 -req -days 365 -in $(cert_path)/$(common_name).csr -signkey $(cert_path)/$(common_name).key -out $(cert_path)/$(common_name).crt"
+			contain => default:silent,
+      ifvarclass => not(fileexists("$(cert_path)/$(common_name).crt"));
+
+	reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+     	ifvarclass => "$(vars)";
+
+		cfengine::
+			"$(cert_path)" bundle_return_value_index => "certificate_path";
+			"$(common_name)" bundle_return_value_index => "cn";
+
+}
+
+bundle edit_line openssl_gencert_editline(country,state,locality_name,organization,org_unit_name,common_name,email) {
+	# Generate the openssl answer file
+	insert_lines:
+"#-------------openssl.cnf----------------
+[ req ]
+default_bits = 1024 # Size of keys
+default_keyfile = key.pem # name of generated keys
+default_md = md5 # message digest algorithm
+string_mask = nombstr # permitted characters
+distinguished_name = req_distinguished_name
+
+[ req_distinguished_name ]
+# Variable name   Prompt string
+0.organizationName = Organization Name (company)
+organizationalUnitName = Organizational Unit Name (department, division)
+emailAddress = Email Address
+emailAddress_max = 40
+localityName = Locality Name (city, district)
+stateOrProvinceName = State or Province Name (full name)
+countryName = Country Name (2 letter code)
+countryName_min = 2
+countryName_max = 2
+commonName = Common Name (hostname, IP, or your name)
+commonName_max = 64
+
+
+#-------------------Edit this section------------------------------
+countryName_default             = $(country)
+stateOrProvinceName_default     = $(state)
+localityName_default            = $(locality_name)
+0.organizationName_default      = $(organization)
+organizationalUnitName_default  = $(org_unit_name)
+commonName_default              = $(common_name)
+emailAddress_default            = $(email)
+";
+}
+

@@ -1,0 +1,39 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "Utilities::OpenSSL::GenCert",
+        "description": "Sketch for generating self-signed certificates",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+    },
+    "api" : {
+		   "openssl_gencert" : [
+          { "name" : "runenv", "type" : "environment" },
+					{ "name" : "metadata", "type" : "metadata" },
+          { "name" : "cert_path", "type" : "string" },
+					{ "name" : "owner", "type" : "string", "default" : "root" },
+					{ "name" : "group", "type" : "string", "default" : "root" },
+					{ "name" : "valid_days", "type" : "string", "default" : "365" },
+					{ "name" : "country", "type" : "string", "default" : "US" },
+					{ "name" : "state", "type" : "string", "default" : "CA" },
+					{ "name" : "locality_name", "type" : "string", "default" : "Los Angeles" },
+					{ "name" : "organization", "type" : "string", "default" : "Example Inc." },
+					{ "name" : "org_unit_name", "type" : "string", "default" : "IT Department" },
+					{ "name" : "common_name", "type" : "string", "default" : "$(sys.fqhost)" },
+					{ "name" : "email", "type" : "string", "default" : "example@example.org" },
+					{ "name" : "certificate_path", "type" : "return" },
+					{ "name" : "cn", "type" : "return" }
+			 ]
+		},
+    "namespace": "cfdc_openssl_gencert",
+    "interface": [ "main.cf" ]
+}
