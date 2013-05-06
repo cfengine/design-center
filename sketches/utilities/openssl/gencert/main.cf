@@ -1,9 +1,9 @@
 body file control
 {
-  namespace => "cfdc_openssl_gencert";
+      namespace => "cfdc_openssl";
 }
 
-bundle agent openssl_gencert(runenv,metadata,cert_path,owner,group,valid_days,country,state,locality_name,organization,org_unit_name,common_name,email)
+bundle agent gencert(runenv,metadata,given_cert_path,owner,group,valid_days,country,state,locality_name,organization,org_unit_name,common_name,email)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
@@ -12,58 +12,67 @@ bundle agent openssl_gencert(runenv,metadata,cert_path,owner,group,valid_days,co
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
+      "cert_path" string => "$(default:eu.path_prefix)$(given_cert_path)";
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
   files:
-	    "$(cert_path)/."
-       perms => default:mog("700","$(owner)","$(group)"),
-       create => "true";
-			 
+      "$(cert_path)/."
+      perms => default:mog("700","$(owner)","$(group)"),
+      create => "true";
+
       "$(cert_path)/openssl.cnf"
       perms => default:mog("400","$(owner)","$(group)"),
       create => "true",
       edit_defaults => default:no_backup,
-      edit_line => openssl_gencert_editline("$(country)","$(state)","$(locality_name)","$(organization)","$(org_unit_name)","$(common_name)","$(email)");
+      edit_line => openssl_gencert_editline($(country),$(state),$(locality_name),$(organization),$(org_unit_name),$(common_name),$(email));
 
       "$(cert_path)/$(common_name).key"
-      perms => default:mog("400", "$(owner)", "$(group)"),
+      perms => default:mog("400", $(owner), $(group)),
       ifvarclass => and(fileexists("$(cert_path)/$(common_name).key"));
 
       "$(cert_path)/$(common_name).crt"
-      perms => default:mog("444", "$(owner)", "$(group)"),
+      perms => default:mog("444", $(owner), $(group)),
       ifvarclass => and(fileexists("$(cert_path)/$(common_name).crt"));
 
       "$(cert_path)/$(common_name).csr"
-      perms => default:mog("400", "$(owner)", "$(group)"),
+      perms => default:mog("400", $(owner), $(group)),
       ifvarclass => and(fileexists("$(cert_path)/$(common_name).csr"));
 
   commands:
       "/usr/bin/openssl genrsa -out $(cert_path)/$(common_name).key 2048"
-			contain => default:silent,
+      contain => default:silent,
       ifvarclass => not(fileexists("$(cert_path)/$(common_name).key"));
-			
+
       "/usr/bin/openssl req -new -nodes -key $(cert_path)/$(common_name).key -out $(cert_path)/$(common_name).csr -config $(cert_path)/openssl.cnf -batch"
-			contain => default:silent,
+      contain => default:silent,
       ifvarclass => not(fileexists("$(cert_path)/$(common_name).csr"));
 
       "/usr/bin/openssl x509 -req -days 365 -in $(cert_path)/$(common_name).csr -signkey $(cert_path)/$(common_name).key -out $(cert_path)/$(common_name).crt"
-			contain => default:silent,
+      contain => default:silent,
       ifvarclass => not(fileexists("$(cert_path)/$(common_name).crt"));
 
-	reports:
+  reports:
     verbose::
       "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
       "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
-     	ifvarclass => "$(vars)";
+      ifvarclass => "$(vars)";
 
-		cfengine::
-			"$(cert_path)" bundle_return_value_index => "certificate_path";
-			"$(common_name)" bundle_return_value_index => "cn";
+    cfengine::
+      "$(cert_path)" bundle_return_value_index => "certificate_path";
+      "$(common_name)" bundle_return_value_index => "cn";
 
 }
 
 bundle edit_line openssl_gencert_editline(country,state,locality_name,organization,org_unit_name,common_name,email) {
-	# Generate the openssl answer file
-	insert_lines:
-"#-------------openssl.cnf----------------
+      # Generate the openssl answer file
+  insert_lines:
+      "#-------------openssl.cnf----------------
 [ req ]
 default_bits = 1024 # Size of keys
 default_keyfile = key.pem # name of generated keys

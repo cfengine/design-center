@@ -1,0 +1,80 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../../libraries/dclib/library.cf", "../../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation ___001_Utilities_OpenSSL_GenCert_gencert
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][cert_path][type]" string => "string";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][certificate_path][type]" string => "return";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][cn][type]" string => "return";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][common_name][type]" string => "string";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][country][type]" string => "string";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][email][type]" string => "string";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][group][type]" string => "string";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][locality_name][type]" string => "string";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][metadata][type]" string => "metadata";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][org_unit_name][type]" string => "string";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][organization][type]" string => "string";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][owner][type]" string => "string";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][runenv][type]" string => "environment";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][state][type]" string => "string";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[api][valid_days][type]" string => "string";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[authors]" slist => { "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" };
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[license]" string => "MIT";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/utilities/openssl/gencert";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[manifest]" slist => { "README.md", "main.cf" };
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[manifest_cf]" slist => { "main.cf" };
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[manifest_docs]" slist => { "README.md" };
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[manifest_exe]" slist => { "cf_null" };
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[manifest_extra]" slist => { "cf_null" };
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[name]" string => "Utilities::OpenSSL::GenCert";
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[tags]" slist => { "cfdc" };
+      "___001_Utilities_OpenSSL_GenCert_gencert_metadata[version]" string => "1";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "___001_Utilities_OpenSSL_GenCert_gencert" usebundle => cfdc_openssl:gencert("cf_sketch_testing", "default:cfsketch_run.___001_Utilities_OpenSSL_GenCert_gencert_metadata", "/tmp/openssl", "root", "root", "365", "US", "CA", "Los Angeles", "Example Inc.", "IT Department", "$(sys.fqhost)", "example@example.org"), ifvarclass => "linux", useresult => "return____001_Utilities_OpenSSL_GenCert_gencert";
+
+  reports:
+    inform_mode::
+      "activation ___001_Utilities_OpenSSL_GenCert_gencert returned certificate_path = $(return____001_Utilities_OpenSSL_GenCert_gencert[certificate_path])";
+      "activation ___001_Utilities_OpenSSL_GenCert_gencert returned cn = $(return____001_Utilities_OpenSSL_GenCert_gencert[cn])";
+      "activation ___001_Utilities_OpenSSL_GenCert_gencert could not run because it requires classes linux" ifvarclass => "inform_mode.!(linux)";
+}

@@ -8,10 +8,10 @@ Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 Sketch for generating self-signed certificates
 
 ## Dependencies
-CFEngine::stdlib
+CFEngine::dclib, CFEngine::stdlib
 
 ## API
-### bundle: openssl_gencert
+### bundle: gencert
 * parameter _environment_ *runenv* (default: none, description: none)
 
 * parameter _metadata_ *metadata* (default: none, description: none)

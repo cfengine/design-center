@@ -8,7 +8,7 @@ Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 Install, configure, and start Redis.
 
 ## Dependencies
-CFEngine::stdlib
+CFEngine::dclib, CFEngine::stdlib
 
 ## API
 ### bundle: server

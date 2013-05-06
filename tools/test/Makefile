@@ -607,3 +607,7 @@ memcached:
 redis:
 	$(CFSKETCH_DA) --install Applications::Redis --activate Applications::Redis=$(SOURCEDIR)/applications/redis/params/demo.json
 	$(RUNNER)
+
+gencert:
+	$(CFSKETCH_DA) --install Utilities::OpenSSL::GenCert --activate Utilities::OpenSSL::GenCert=$(SOURCEDIR)/utilities/openssl/gencert/params/demo.json
+	$(RUNNER)
