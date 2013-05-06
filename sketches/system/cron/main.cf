@@ -15,10 +15,7 @@ bundle agent d(runenv, metadata, cron_path, file_task, runas, when, commands)
 
       "lines" slist  => maplist("#managed by cfengine cron sketch$(const.endl)$(when) $(runas) $(this)", "commands");
 
-    not_test::
-      "r_cron_path" string => $(cron_path), policy => "free";
-    test::
-      "r_cron_path" string => "/tmp", policy => "free";
+      "r_cron_path" string => "$(default:eu.path_prefix)$(cron_path)";
 
     any::
       "toedit" string => "$(r_cron_path)/cron-sketch-$(file_task)",
@@ -28,13 +25,15 @@ bundle agent d(runenv, metadata, cron_path, file_task, runas, when, commands)
       policy => "free";
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
 
   files:
       "$(toedit)"
-      edit_line => default:append_if_no_lines("$(lines)"),
+      edit_line => default:append_if_no_lines($(lines)),
       edit_defaults => default:empty,
       create => "true",
       classes => default:if_ok($(class_toedit));
@@ -110,12 +109,12 @@ bundle agent tab(runenv, metadata, cron_path, line_task, runas, when, commands)
 
   commands:
       # 1) get the crontab
-      "$(cron_path) $(crontab_options) -l > $(toedit)",
+      "$(cron_path) $(crontab_options) -l > $(toedit)"
       contain        => default:in_shell,
       classes        => default:if_ok("$(class_prefix)_prepared");
 
       # 3) load the edited crontab from the temp file
-      "$(exec_prefix)$(cron_path) $(crontab_options) $(toedit)",
+      "$(exec_prefix)$(cron_path) $(crontab_options) $(toedit)"
       contain        => default:in_shell,
       classes        => default:if_else("$(class_prefix)_processed",
                                         "$(class_prefix)_not_processed"),
