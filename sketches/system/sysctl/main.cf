@@ -20,16 +20,8 @@ bundle agent set(runenv, metadata, given_sysctl_file, empty_first, ensured_kv, r
     second_class_pass::
       "removed_indices" slist => { getindices("cfdc_sysctl:set.removed") };
 
-    not_test::
-      "file_prefix" string => "", policy => "free";
-      "exec_prefix" string => "", policy => "free";
-    test::
-      "file_prefix" string => "/tmp", policy => "free";
-      "exec_prefix" string => "/bin/echo ", policy => "free";
-
     any::
-      "sysctl_file" string => "$(file_prefix)$(given_sysctl_file)",
-      policy => "free";
+      "sysctl_file" string => "$(default:eu.path_prefix)$(given_sysctl_file)";
 
   classes:
       # We need to know if we are on the second pass
@@ -42,6 +34,8 @@ bundle agent set(runenv, metadata, given_sysctl_file, empty_first, ensured_kv, r
       "empty_first" expression => strcmp($(empty_first), "1");
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
@@ -74,7 +68,7 @@ this effectively promises the full file content.";
 
   commands:
     sysctl_reload::
-      "$(exec_prefix)/sbin/sysctl"
+      "$(default:eu.exec_prefix)/sbin/sysctl"
       args => "-p",
       classes => default:if_repaired("sysctl_reloaded"),
       comment => "Reload sysctl after repairing configuration";
