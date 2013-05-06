@@ -1,0 +1,36 @@
+{
+    "System::Sudoers":
+    {
+        "file_path": "/tmp/sudoers",
+        "defaults":{
+					"1":
+					{
+					  "default_desc" : "Defaults",
+						"default_value":"env_reset"
+					}
+				},
+				"user_permissions" :
+        {
+            "1":
+            {
+						    "host_spec": "ALL",
+                "runas_spec" : "ALL",
+								"cmnd_spec" : "ALL",
+								"password" : "PASSWD",
+                "user_spec": "jonhenrik"
+            },
+        },
+				"runas_alias": {
+				},
+				"cmnd_alias": {
+				},
+				"host_alias": {
+				},
+				"user_alias": {
+					"1": {
+						"alias_name":"TEST",
+						"user_list":"jonhenrik,bjornstad,er,kul"
+					}
+				}
+    }
+}
