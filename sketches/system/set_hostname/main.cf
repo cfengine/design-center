@@ -23,7 +23,7 @@ bundle agent set(runenv, metadata, hostname, domainname)
       "confdnet[dns_domain_lo]" string => "$(domainname)";
       "confdnet[nis_domain_lo]" string => "$(domainname)";
 
-    rehat::
+    redhat::
       "sethost_command" string => "/bin/hostname";
       "setdomain_command" string => "/bin/domainname";
 
