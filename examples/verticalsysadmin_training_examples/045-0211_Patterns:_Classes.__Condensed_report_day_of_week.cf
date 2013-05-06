@@ -3,10 +3,14 @@ bundle agent example {
   reports:
 
     Monday|Tuesday|Wednesday|Thursday|Friday::
-      "Yay!!! I get to work today!";
-
+      "Yay!!! I get to work today!"
+            handle => "report_a_weekday",
+           comment => "Identify work days";
+  
     Saturday|Sunday::
       
-      "Yay!!! I get to rest today.";
+      "Yay!!! I get to rest today."
+             handle => "report_a_rest_day",
+            comment => "Identify rest days";
 
                      }

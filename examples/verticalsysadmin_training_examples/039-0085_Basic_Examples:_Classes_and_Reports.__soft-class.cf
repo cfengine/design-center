@@ -1,7 +1,7 @@
 bundle agent example{
 # Demonstrate normal ordering and multiple passes through a bundle
   classes:
-      "myclass" 
+      "file_exists" 
                handle => "create_soft_class",
               comment => "Create a soft class that will be used by reports: promises.",
            expression => fileexists("/tmp/newfile");
@@ -12,15 +12,14 @@ bundle agent example{
                handle => "create_a_file",
                comment => "Give CFEngine something to do to change system state.",
                create => "true";
-
   reports:
-    myclass::
+    file_exists::
       "file /tmp/newfile exists"
                handle => "report_success",
               comment => "Report existence of /tmp/newfile";
 
   reports:
-    !myclass::
+    !file_exists::
       "file /tmp/newfile does not exist"
                handle => "report_failure",
               comment => "Report lack of existence of /tmp/newfile";

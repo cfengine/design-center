@@ -7,6 +7,7 @@ bundle agent example {
                handle => "poke_cfengine_with_a_stick",
               comment => "Try to assign a string to an integer variable to see what happens",
       	          int => "hello world";
+                
 
   commands:
 

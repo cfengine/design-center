@@ -8,13 +8,23 @@ bundle agent example
   files:
 
     "/tmp/testfile"
-               depends_on => {"run_command"},
+               depends_on => { "run_command", "promise2" },
+               handle => "create_file",
+               comment => "Demonstrate flow control with depends_on", 
                create => "true";
+
                
 
   commands:
 
-    "/bin/echo"
+    "/bin/echo" -> { "create_file", "Director of Security" }
 
                handle => "run_command";
+
+  reports:
+
+    linux::
+
+       "Just a report"
+              handle => "promise2";
 }

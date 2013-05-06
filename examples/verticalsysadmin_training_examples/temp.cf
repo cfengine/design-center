@@ -1,0 +1,15 @@
+bundle agent example {
+
+
+  vars:
+
+       "my_string"
+             handle => "declare_string_var",
+             string  => "linux";
+
+
+  commands:  
+    Monday::
+      "/bin/echo hello world"
+             ifvarclass => "Monday|Tuesday";
+                     }

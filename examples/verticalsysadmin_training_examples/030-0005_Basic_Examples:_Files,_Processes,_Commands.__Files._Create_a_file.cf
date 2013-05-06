@@ -2,7 +2,7 @@ bundle agent example {
 
   files:
 
-      "/etc/nologin" 
+      "/tmp/nologin" 
 
                handle => "touch_etc_nologin",
               comment => "Quiesce the system for maintenance",

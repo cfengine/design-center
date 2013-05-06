@@ -1,0 +1,18 @@
+bundle agent example {
+
+  vars:
+
+    "my_var"
+
+        handle => "set_my_var",
+       comment => "Demonstrate use of Environmental Variables",
+       string => getenv("PATH", "99");
+
+  reports:
+
+    linux::
+
+      "$(my_var)"
+        handle => "display_path",
+       comment => "Display value of variable my_var";
+}

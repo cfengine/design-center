@@ -1,6 +1,5 @@
 # demonstrate three passes through a bundle by using verbose mode
 
-
 bundle agent example {
 
   files:

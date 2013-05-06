@@ -11,5 +11,5 @@ a NetNews client.)
     cf-agent  --file ... --bundle ...
 
 If you finish before everybody else, please study the
-Reference Manual, chapters 1 - 4.
-
+Vocabulary Primer and then chapter 1-4 in the Reference
+Manual.

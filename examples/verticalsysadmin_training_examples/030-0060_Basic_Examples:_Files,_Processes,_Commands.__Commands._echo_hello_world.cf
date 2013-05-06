@@ -3,7 +3,7 @@ bundle agent example
 
   commands:
 
-      "/bin/echo"
+      "/bin/echo"  -> "Class"
 
                  handle => "say_hello",
                  comment => "Demonstrate a command with arguments",

@@ -2,7 +2,7 @@ bundle agent example {
 
   reports:
 
-    (redhat&Thursday)|(windows&Wednesday)::
+    (redhat&Monday)|(windows&Wednesday)::
 
-      "This promise will execute on Redhat servers on Thursdays; or on Windows servers on Wednesdays";
+      "This promise will execute on Redhat servers on Mondays; or on Windows servers on Wednesdays";
                      }

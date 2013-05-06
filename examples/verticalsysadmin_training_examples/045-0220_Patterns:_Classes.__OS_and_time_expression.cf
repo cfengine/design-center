@@ -2,6 +2,7 @@ bundle agent example {
 
   reports:
 
+      linux.Hr08:: "Linux system AND we are in the 8th hour.";
       linux.Hr11:: "Linux system AND we are in the 11th hour.";
       linux.Hr12:: "Linux system AND we are in the 12th hour.";
 
