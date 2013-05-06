@@ -9,13 +9,7 @@ bundle agent set(runenv, metadata, given_access_file, empty_first, ensured_lines
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    not_test::
-      "file_prefix" string => "", policy => "free";
-    test::
-      "file_prefix" string => "/tmp", policy => "free";
-
-    any::
-      "access_file" string => "$(file_prefix)$(given_access_file)",
+      "access_file" string => "$(default:eu.path_prefix)$(given_access_file)",
       policy => "free";
 
   classes:
@@ -25,6 +19,8 @@ bundle agent set(runenv, metadata, given_access_file, empty_first, ensured_lines
       "empty_first" expression => strcmp($(empty_first), "1");
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
@@ -34,7 +30,7 @@ bundle agent set(runenv, metadata, given_access_file, empty_first, ensured_lines
       "$(access_file)"
       create => "true",
       handle => "access_files_noempty",
-      edit_line => default:append_if_no_lines(@(this.ensured_lines)),
+      edit_line => default:append_if_no_lines(@(cfdc_access:set.ensured_lines)),
       classes => default:classes_generic("_cfdc_access"),
       comment => "Only ensure specific defined lines are present";
 
@@ -43,7 +39,7 @@ bundle agent set(runenv, metadata, given_access_file, empty_first, ensured_lines
       create => "true",
       handle => "access_files_empty_first",
       edit_defaults => default:empty,
-      edit_line => default:append_if_no_lines(@(this.ensured_lines)),
+      edit_line => default:append_if_no_lines(@(cfdc_access:set.ensured_lines)),
       classes => default:classes_generic("_cfdc_access"),
       comment => "Empty file before ensuring specified lines are present,
 this effectively promises the full file content.";
@@ -53,7 +49,7 @@ this effectively promises the full file content.";
       create => "true",
       handle => "access_files_clean",
       classes => default:classes_generic("_cfdc_access2"),
-      edit_line => default:delete_lines_matching(@(this.removed_patterns)),
+      edit_line => default:delete_lines_matching(@(cfdc_access:set.removed_patterns)),
       comment => "Ensure the patterns given do not exist at all.";
 
   reports:
