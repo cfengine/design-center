@@ -24,7 +24,7 @@ CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 * parameter _string_ *pattern* (default: none, description: none)
 
-* parameter _string_ *policy* (default: `"start"`, description: Indicate desired service state: start, stop)
+* parameter _string_ *policy* (default: none, description: none)
 
 * returns _return_ *policy_implemented* (default: none, description: none)
 

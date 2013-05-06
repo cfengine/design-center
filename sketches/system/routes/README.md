@@ -1,39 +1,26 @@
-# networking/ntp/client - 
+# System::Routes version 1
 
-## AUTHORS
-Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
+License: MIT
+Tags: cfdc
+Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
-## PLATFORM
+## Description
+Sets defaults and user permissions in the sudoers file
 
-Platforms...
+## Dependencies
+CFEngine::stdlib
 
-## DESCRIPTION
+## API
+### bundle: system_routes
+* parameter _environment_ *runenv* (default: none, description: none)
 
-This sketch demonstrates the recommended layout of a Design Center
-sketch.
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-## ## Classes
+* parameter _array_ *static_routes* (default: none, description: none)
 
-List your classes here.
+* parameter _boolean_ *purge_routes* (default: none, description: none)
 
-## ## Variables
-
-List your variables here.
-
-Please note that `params/demo.json` has all these parameters in one
-place, and it's much more convenient to use JSON data to set these
-parameters than manually passing them.
-
-We plan to auto-generate this documentation at some point, so don't go
-crazy filling it out.  Better to document in `test.cf` and
-`params/demo.json`.
-
-* `myarray`: an array with keys...
-
-## REQUIREMENTS
-
-CFEngine::stdlib (the COPBL)
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf`.

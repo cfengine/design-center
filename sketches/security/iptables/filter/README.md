@@ -1,31 +1,22 @@
-# security/iptables/filter - 
+# Security::IPTables::Filter version 1.00
 
-## AUTHORS
-Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
+License: MIT
+Tags: cfdc
+Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
-## PLATFORM
+## Description
+This sketch manages simple iptables rules
 
-All Linux platforms that have the iptables-save and iptables-restore command
+## Dependencies
+CFEngine::stdlib
 
-## DESCRIPTION
+## API
+### bundle: iptables_filter
+* parameter _array_ *chain_policies* (default: none, description: none)
 
-This sketch manages simple iptables rules for the filter table. It does so by looking at the rules
-currently in use by the kernel and comparing them to what is defined in policy. If the two doesn't match,
-CFEngine will load in the correct rules and order overwriting the existing config. This sketch is in nature
-different to other iptables management utilities in that we are checking the currently employed rules. 
-Many other utilities only manage the start up load rules which doesn't have to be the same as currently
-employed at given time.
+* parameter _array_ *filter_rules* (default: none, description: none)
 
-## ## Classes
-
-Single rules can be activated for contexts/classes
-
-## ## Variables
-
-## REQUIREMENTS
-
-CFEngine::stdlib (the COPBL)
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf`.

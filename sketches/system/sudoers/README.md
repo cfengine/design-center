@@ -1,39 +1,38 @@
-# networking/ntp/client - 
+# System::Sudoers version 1
 
-## AUTHORS
-Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
+License: MIT
+Tags: cfdc
+Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
-## PLATFORM
+## Description
+Sets defaults and user permissions in the sudoers file
 
-Platforms...
+## Dependencies
+CFEngine::stdlib
 
-## DESCRIPTION
+## API
+### bundle: system_sudoers
+* parameter _environment_ *runenv* (default: none, description: none)
 
-This sketch demonstrates the recommended layout of a Design Center
-sketch.
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-## ## Classes
+* parameter _string_ *file_path* (default: `"/etc/sudoers"`, description: none)
 
-List your classes here.
+* parameter _string_ *visudo_path* (default: `"/usr/sbin/visudo"`, description: none)
 
-## ## Variables
+* parameter _array_ *defaults* (default: none, description: none)
 
-List your variables here.
+* parameter _array_ *user_alias* (default: none, description: none)
 
-Please note that `params/demo.json` has all these parameters in one
-place, and it's much more convenient to use JSON data to set these
-parameters than manually passing them.
+* parameter _array_ *host_alias* (default: none, description: none)
 
-We plan to auto-generate this documentation at some point, so don't go
-crazy filling it out.  Better to document in `test.cf` and
-`params/demo.json`.
+* parameter _array_ *cmnd_alias* (default: none, description: none)
 
-* `myarray`: an array with keys...
+* parameter _array_ *runas_alias* (default: none, description: none)
 
-## REQUIREMENTS
+* parameter _array_ *user_permissions* (default: none, description: none)
 
-CFEngine::stdlib (the COPBL)
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf`.

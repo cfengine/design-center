@@ -8,11 +8,11 @@ Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 Configure system hostname
 
 ## Dependencies
-CFEngine::stdlib
+CFEngine::dclib, CFEngine::stdlib
 
 ## API
 ### bundle: set
-* bundle option: single_use = 1
+* bundle option: single_use = true
 
 * parameter _environment_ *runenv* (default: none, description: none)
 

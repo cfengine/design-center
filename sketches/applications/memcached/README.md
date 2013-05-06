@@ -1,39 +1,32 @@
-# networking/ntp/client - 
+# Applications::Memcached version 1
 
-## AUTHORS
-Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
+License: MIT
+Tags: cfdc
+Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
-## PLATFORM
+## Description
+Sketch for configuring memcached
 
-Platforms...
+## Dependencies
+CFEngine::stdlib
 
-## DESCRIPTION
+## API
+### bundle: applications_memcached
+* parameter _environment_ *runenv* (default: none, description: none)
 
-This sketch demonstrates the recommended layout of a Design Center
-sketch.
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-## ## Classes
+* parameter _string_ *port* (default: `"11211"`, description: none)
 
-List your classes here.
+* parameter _string_ *user* (default: `"nobody"`, description: none)
 
-## ## Variables
+* parameter _string_ *maxconn* (default: `"1024"`, description: none)
 
-List your variables here.
+* parameter _string_ *cachesize* (default: `"64"`, description: none)
 
-Please note that `params/demo.json` has all these parameters in one
-place, and it's much more convenient to use JSON data to set these
-parameters than manually passing them.
+* parameter _string_ *listen* (default: `"0.0.0.0"`, description: none)
 
-We plan to auto-generate this documentation at some point, so don't go
-crazy filling it out.  Better to document in `test.cf` and
-`params/demo.json`.
-
-* `myarray`: an array with keys...
-
-## REQUIREMENTS
-
-CFEngine::stdlib (the COPBL)
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf`.

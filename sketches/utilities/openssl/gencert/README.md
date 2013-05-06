@@ -1,25 +1,48 @@
-# openssl/gencert - 
+# Utilities::OpenSSL::GenCert version 1
 
-## AUTHORS
-Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
+License: MIT
+Tags: cfdc
+Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
-## PLATFORM
+## Description
+Sketch for generating self-signed certificates
 
-All OSes with openssl installed under /usr/bin
+## Dependencies
+CFEngine::stdlib
 
-## DESCRIPTION
+## API
+### bundle: openssl_gencert
+* parameter _environment_ *runenv* (default: none, description: none)
 
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-## ## Classes
+* parameter _string_ *cert_path* (default: none, description: none)
 
+* parameter _string_ *owner* (default: `"root"`, description: none)
 
-## ## Variables
+* parameter _string_ *group* (default: `"root"`, description: none)
 
+* parameter _string_ *valid_days* (default: `"365"`, description: none)
 
-## REQUIREMENTS
+* parameter _string_ *country* (default: `"US"`, description: none)
 
-CFEngine::stdlib (the COPBL)
+* parameter _string_ *state* (default: `"CA"`, description: none)
+
+* parameter _string_ *locality_name* (default: `"Los Angeles"`, description: none)
+
+* parameter _string_ *organization* (default: `"Example Inc."`, description: none)
+
+* parameter _string_ *org_unit_name* (default: `"IT Department"`, description: none)
+
+* parameter _string_ *common_name* (default: `"$(sys.fqhost)"`, description: none)
+
+* parameter _string_ *email* (default: `"example@example.org"`, description: none)
+
+* returns _return_ *certificate_path* (default: none, description: none)
+
+* returns _return_ *cn* (default: none, description: none)
+
 
 ## SAMPLE USAGE
+See `test.cf` or the example parameters provided
 
-See `test.cf`.
