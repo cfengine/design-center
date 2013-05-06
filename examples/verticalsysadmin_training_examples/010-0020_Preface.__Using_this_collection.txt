@@ -3,10 +3,11 @@ Using this collection
 
 The examples are arranged in order.
 
-Study the examples in sequence.
+You can study them in sequence, or just look at the
+examples that interest you (or find examples of 
+particular functions/attributes with /bin/grep).
 
-You can list the examples with "ls -1" or with provided
-"l.sh" script which attempts to make the listing more
-readable by colorizing the file names and inserting chapter
-breaks.
-
+To study the examples in sequence, you can list
+them with "ls -1" or with provided "l.sh" script
+(which colorizes the file names and inserts chapter
+breaks to make the listing easier to read).

@@ -1,0 +1,16 @@
+# Indentation does not matter
+
+bundle agent example {
+
+files:
+
+   "/etc/nologin"
+ 
+            handle => "touch_etc_nologin",
+            comment => "Prepare for system maintenance",
+            create => "true";
+
+                     }
+
+
+bundle agent example2 { files: "/etc/nologin" handle => "touch_etc_nologin", comment => "Prepare for system maintenance", create => "true"; } 

@@ -1,0 +1,12 @@
+Declarative vs. Imperative Programming
+--------------------------------------
+
+(By Mike English)
+
+... a declarative programming style ... is often unfamiliar
+to newcomers, even if they are experienced programmers in
+other domains. Most commonly-used programming languages
+are examples of imperative programming, in which the
+programmer must describe a specific algorithm or process.
+Declarative programming instead focuses on describing
+the particular state or goal be be achieved. 

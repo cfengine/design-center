@@ -3,8 +3,10 @@ bundle agent example
 
   commands:
 
-      "echo Hello world!";
+      "echo"
+                handle => "insecure_promise",
+                comment => "This fails because path to commands must be fully specified for security",
+                args => "Hello world";
 
 }
 
-# This fails because path to commands must be fully specified for security

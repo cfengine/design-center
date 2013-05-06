@@ -4,7 +4,9 @@ bundle agent example {
 
       "cupsd" 
 
-         process_stop => "/etc/init.d/cups stop",
-              comment => "We don't want print services on our Web servers.";
+               handle => "shutdown_print_services",
+              comment => "Shutdown print services on machines that are not
+print servers",
+         process_stop => "/etc/init.d/cups stop";
 
                      }

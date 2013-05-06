@@ -1,0 +1,6 @@
+Updating your copy
+===================
+
+Pull in updates from Aleksey's master on github:
+
+    git pull origin

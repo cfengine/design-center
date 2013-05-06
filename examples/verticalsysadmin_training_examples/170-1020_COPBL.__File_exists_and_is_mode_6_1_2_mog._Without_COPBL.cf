@@ -20,7 +20,7 @@ bundle agent example {
 
 body perms mog(mode,owner,group)
 {
-               owners => { "$(owner)" };
+               owners => { "$(owner)", "john", "brian" };
                groups => { "$(group)" };
                mode   => "$(mode)";
 }

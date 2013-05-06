@@ -1,0 +1,13 @@
+# demonstrate handling of multi-line output
+
+bundle agent example
+{
+
+  commands:
+
+      "/bin/sh -c '/bin/mkdir  -p /usr/local/sbin/a/really/long/path/to; /bin/cp -p /usr/bin/printf /usr/local/sbin/a/really/long/path/to/printf >/dev/null; ls -l /usr/bin/printf /usr/local/sbin/a/really/long/path/to/printf'"
+           handle => "dig_a_deep_hole",
+          comment => "Create an executable with a long path name - we'll need
+it for the next example";
+
+}

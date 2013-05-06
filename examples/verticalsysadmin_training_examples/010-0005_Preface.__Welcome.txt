@@ -1,22 +1,7 @@
 CFEngine Training
-29 April - 2 May
+6 - 10 May 2013
 
-Wi-Fi
-  username: hrnb
-  password: 
+About the instructor
 
 Expecting to get out of this training:
 
-[x] how to target policies to servers
-
-[x] more advanced CFEngine capabilities
-
-[x] get rolling
-
-[x] coding
-
-[x] upgrade from Community to Enterprise version
-
-[x] cfengine architecture 
-
-[x] how to get a list of recent clients

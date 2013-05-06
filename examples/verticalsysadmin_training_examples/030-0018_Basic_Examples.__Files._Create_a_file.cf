@@ -4,7 +4,8 @@ bundle agent example {
 
       "/etc/nologin" 
 
-              create  => "true",
-              comment => "Prevent non-root users from logging in so we can perform maintenance";
+               handle => "touch_etc_nologin",
+              comment => "Quiesce the system for maintenance",
+              create  => "true";
 
                      }

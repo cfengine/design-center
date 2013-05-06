@@ -1,12 +1,14 @@
 About this collection
 =====================
 
-Vertical Sysasmin presents "CFEngine by Example",
-a collection of over 300 standalone working
-examples of using CFEngine 3.
+Vertical Sysadmin (a sysadmin training company,
+and an authorized CFEngine training partner)
+presents "CFEngine Essentials", a collection of
+over 300 standalone working examples of using
+CFEngine 3.
 
-This collection is intended to supplement the official
-documentation and to aid in learning CFEngine 3.
+This collection:
 
-Vertical Sysadmin provides professional CFEngine
-training and implementation consulting.
+a) supplements the official documentation, and
+
+b) aids sysadmins in learning CFEngine 3.

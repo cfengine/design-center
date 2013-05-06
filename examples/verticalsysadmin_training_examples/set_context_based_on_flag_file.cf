@@ -1,0 +1,17 @@
+bundle agent set_context_from_flag_file  {
+
+
+classes:
+  linux::
+   "webserver"
+
+        expression =>  fileexists("/etc/webserver");
+   
+
+reports:
+
+  webserver::
+
+     "I am a webserver.";
+
+}

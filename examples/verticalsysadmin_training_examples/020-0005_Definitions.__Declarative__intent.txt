@@ -1,4 +1,3 @@
-
 A declarative language allows us to express intent more clearly in the code
 ---------------------------------------------------------------------------
 

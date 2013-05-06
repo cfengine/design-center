@@ -8,7 +8,7 @@ a NetNews client.)
 
     cp /bin/sleep ~/trn
     ~/trn 1000 &
-    cf-agent -b ... -f ...
+    cf-agent  --file ... --bundle ...
 
 If you finish before everybody else, please study the
 Reference Manual, chapters 1 - 4.

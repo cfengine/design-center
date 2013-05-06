@@ -5,6 +5,8 @@ bundle agent example
 
       "/bin/echo"
 
+                 handle => "say_hello",
+                 comment => "Demonstrate a command with arguments",
                  args => "Hello world!";
 
 }

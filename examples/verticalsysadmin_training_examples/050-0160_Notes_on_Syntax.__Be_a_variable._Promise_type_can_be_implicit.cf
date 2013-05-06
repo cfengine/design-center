@@ -1,14 +1,8 @@
 bundle agent example {
 
-  vars:
+  files:
 
-      "my_string" string  => "The answers are: ";
-
-      "my_int" int     => "42";
-
-      "my_real" real    => "3.14159";
-
-  commands:
-      "/bin/echo $(my_string) $(my_int) $(my_real)";
+      "/tmp/one" create  => "true";
+      "/tmp/two"  create  => "true";
 
                      }
