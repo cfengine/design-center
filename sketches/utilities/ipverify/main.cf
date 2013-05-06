@@ -13,13 +13,7 @@ bundle agent maybe_usebundle(runenv, metadata, ip, maclist, usebundle, arp_comma
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    not_test::
-      "exec_prefix" string => "", policy => "free";
-    test::
-      "exec_prefix" string => "/bin/echo ", policy => "free";
-
-    any::
-      "pinger" string => "$(exec_prefix)$(default:paths.path[ping])", policy => "free";
+      "pinger" string => "$(default:eu.exec_prefix)$(default:paths.path[ping])";
       "ping_options" string => "-q -c 1";
 
     linux::
@@ -34,6 +28,8 @@ bundle agent maybe_usebundle(runenv, metadata, ip, maclist, usebundle, arp_comma
       "ip_has_known_mac" expression => regcmp(".*\s$(maclist)\s.*", "$(ip_mac_detected)");
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
