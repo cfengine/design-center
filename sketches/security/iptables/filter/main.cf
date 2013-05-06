@@ -1,0 +1,126 @@
+body file control
+{
+  namespace => "cfdc_iptables_filter";
+}
+
+bundle agent iptables_filter(chain_policies,filter_rules)
+{
+	vars:
+		"_cache_dir" string => "$(sys.workdir)/cache/security/iptables/filter";
+
+	methods:
+		any::
+			"DUMP CURRENT ACTIVE RULES"
+				usebundle => iptables_filter_dump, handle => "iptables_dump";
+
+			"CHECK IPTABLES RULES AND APPLY"
+				usebundle => iptables_filter_check("$(chain_policies)","$(filter_rules)");
+
+			"TIDY TEMP FILES" usebundle => iptables_filter_tidy, handle => "iptables_tidy";
+}
+
+bundle agent iptables_filter_check(chain_policies,filter_rules) {
+
+	files:
+		"$(cfdc_iptables_filter:iptables_filter._cache_dir)/cf.iptables.filter.policy"
+			create => "true",
+			edit_defaults => default:empty,
+			handle => "edit_iptables_filter",
+			edit_line => iptables_filter_write_policy("$(chain_policies)","$(filter_rules)");
+
+		"$(cfdc_iptables_filter:iptables_filter._cache_dir)/cf.iptables.filter.current"
+			copy_from => default:local_dcp("$(cfdc_iptables_filter:iptables_filter._cache_dir)/cf.iptables.filter.policy"),
+			classes => default:if_repaired("iptables_filter_repaired");
+			
+	commands:
+		"/sbin/iptables-restore < $(cfdc_iptables_filter:iptables_filter._cache_dir)/cf.iptables.filter.policy"
+			contain => default:in_shell,
+			ifvarclass => "iptables_filter_repaired";
+}
+
+bundle agent iptables_filter_dump {
+	commands:
+		"/sbin/iptables-save -t filter > $(cfdc_iptables_filter:iptables_filter._cache_dir)/cf.iptables.filter.current"
+			contain => default:in_shell,
+			handle => canonify("iptables_filter_save"),
+			depends_on => { "iptables_create_cache_dir" };
+	
+	files:
+		"$(cfdc_iptables_filter:iptables_filter._cache_dir)/."
+			create => "true",
+			handle => "iptables_create_cache_dir";
+
+		"$(cfdc_iptables_filter:iptables_filter._cache_dir)/cf.iptables.filter.current"
+			depends_on => { "iptables_filter_save" },
+			edit_defaults => default:no_backup,
+			edit_line => iptables_filter_clean_dump;
+}
+
+bundle agent iptables_filter_tidy {
+	files:
+		"$(cfdc_iptables_filter:iptables_filter._cache_dir)/cf.iptables.filter.*"
+			pathtype => "regex",
+			delete => default:tidy;
+}
+
+bundle edit_line iptables_filter_clean_dump {
+	delete_lines:
+		"^#.*";
+	replace_patterns:
+		"\s+\[\d+:\d+\]\s*$"
+			replace_with => default:value("");
+		"\s+$"
+			replace_with => default:value("");
+}
+
+bundle edit_line iptables_filter_write_policy(p,r) {
+	
+	vars:
+		"i_nosort" slist => getindices("$(r)");
+		"i_nosort_concat" string => join( " ", "i_nosort" );
+		"sorter" string => "/usr/bin/perl -le '$,=q{ };print sort { $a <=> $b } @ARGV'";
+		"i_sort_tmp" string => execresult( "$(sorter) $(i_nosort_concat)", "noshell" );
+		"i" slist => splitstring( "$(i_sort_tmp)", "\s+", "inf" );
+
+		#Format source IP strings
+		"cmnd[s_ip][$(i)]" string => "", policy => "free", ifvarclass => not(isvariable("$(r)[$(i)][source_ip]"));
+		"cmnd[s_ip][$(i)]" string => " -s $($(r)[$(i)][source_ip])", policy => "free", ifvarclass => and(isvariable("$(r)[$(i)][source_ip]"));
+
+		#Format destination IP strings
+		"cmnd[d_ip][$(i)]" string => "", policy => "free", ifvarclass => not(isvariable("$(r)[$(i)][destination_ip]"));
+		"cmnd[d_ip][$(i)]" string => " -d $($(r)[$(i)][destination_ip])", policy => "free", ifvarclass => and(isvariable("$(r)[$(i)][destination_ip]"));
+
+		# Format destination port strings
+		"cmnd[d_port][$(i)]" string => "", policy => "free", ifvarclass => not(isvariable("$(r)[$(i)][destination_port]"));
+		"cmnd[d_port][$(i)]" string => " --dport $($(r)[$(i)][destination_port])", policy => "free", ifvarclass => and(isvariable("$(r)[$(i)][destination_port]"));
+
+		# Format source port strings
+		"cmnd[s_port][$(i)]" string => "", policy => "free", ifvarclass => not(isvariable("$(r)[$(i)][source_port]"));
+		"cmnd[s_port][$(i)]" string => " --sport $($(r)[$(i)][source_port])", policy => "free", ifvarclass => and(isvariable("$(r)[$(i)][source_port]"));
+		
+		# Add default protocol if not defined
+		"cmnd[proto][$(i)]" string => "tcp", policy => "free", ifvarclass => not(isvariable("$(r)[$(i)][protocol]"));
+		"cmnd[proto][$(i)]" string => "$($(r)[$(i)][protocol])", policy => "free", ifvarclass => and(isvariable("$(r)[$(i)][protocol]"));
+
+		# Add default context if not defined
+		"cmnd[context][$(i)]" string => "any", policy => "free", ifvarclass => not(isvariable("$(r)[$(i)][context]"));
+		"cmnd[context][$(i)]" string => "$($(r)[$(i)][context])", policy => "free", ifvarclass => and(isvariable("$(r)[$(i)][context]"));
+
+		# Add default chain if not defined
+		"cmnd[chain][$(i)]" string => "INPUT", policy => "free", ifvarclass => not(isvariable("$(r)[$(i)][chain]"));
+		"cmnd[chain][$(i)]" string => "$($(r)[$(i)][chain])", policy => "free", ifvarclass => and(isvariable("$(r)[$(i)][chain]"));
+
+		# Add default target if not defined
+		"cmnd[target][$(i)]" string => "ACCEPT", policy => "free", ifvarclass => not(isvariable("$(r)[$(i)][target]"));
+		"cmnd[target][$(i)]" string => "$($(r)[$(i)][target])", policy => "free", ifvarclass => and(isvariable("$(r)[$(i)][target]"));
+
+	insert_lines:
+"*filter";
+":INPUT $($(p)[input])";
+":FORWARD $($(p)[forward])";
+":OUTPUT $($(p)[output])";
+"-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT";
+"-A $(cmnd[chain][$(i)])$(cmnd[s_ip][$(i)])$(cmnd[d_ip][$(i)]) -p $(cmnd[proto][$(i)]) -m $(cmnd[proto][$(i)])$(cmnd[s_port][$(i)])$(cmnd[d_port][$(i)]) -j $(cmnd[target][$(i)])"
+				ifvarclass => and("$(cmnd[context][$(i)])");
+"COMMIT";
+}

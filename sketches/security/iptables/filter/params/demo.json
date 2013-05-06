@@ -1,0 +1,34 @@
+{
+    "Security::IPTables::Filter":
+    {
+        "chain_policies": {
+            "input" : "ACCEPT",
+            "output" : "ACCEPT",
+            "forward" : "ACCEPT"
+        },
+        "filter_rules":
+        {
+            "1":
+            {
+                "chain": "INPUT",
+                "destination_port": "5555",
+                "target": "ACCEPT",
+            },
+            "2":
+            {
+                "chain": "INPUT",
+                "source_ip" : "10.10.10.10/32",
+                "destination_ip" : "20.20.20.20/32",
+                "source_port" : "400",
+                "destination_port": "5556",
+                "target": "ACCEPT",
+            },
+            "11":
+            {
+                "chain": "INPUT",
+                "destination_port": "5557",
+                "target": "ACCEPT",
+            },
+        }
+    }
+}
