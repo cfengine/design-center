@@ -171,7 +171,8 @@ logfile /var/log/memcached.log
 # -r";
 }
 
-bundle edit_line redhat_insert_lines(port, user, maxconn, cachesize, listen) {
+bundle edit_line redhat_insert_lines(port, user, maxconn, cachesize, listen)
+{
   insert_lines:
       "PORT=\"$(port)\"
 USER=\"$(user)\"

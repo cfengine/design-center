@@ -22,13 +22,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
 
       "components_str" string => join(" ", "components");
 
-    not_test::
-      "file_prefix" string => "", policy => "free";
-    test::
-      "file_prefix" string => "/tmp", policy => "free";
-
-    any::
-      "file" string => "$(file_prefix)$(given_file)",
+      "file" string => "$(default:eu.path_prefix)$(given_file)",
       policy => "free";
 
       "class_prefix" string => canonify($(file)),
@@ -37,15 +31,18 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
       "entries" slist => maplist("$(this) $(options) $(url) $(distribution) $(components_str)", "types");
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
 
   files:
+    activated::
       "$(file)"
       create        => "true",
       edit_defaults => default:empty,
-      edit_line     => sources_list($(CFEnotice),@(ensure.entries)),
+      edit_line     => sources_list($(CFEnotice), @(cfdc_aptrepo:ensure.entries)),
       classes       => default:classes_generic("$(class_prefix)_prep"),
       comment       => "Create $(file) and note that the file is managed by CFEngine";
 
@@ -84,19 +81,15 @@ bundle agent wipe(runenv, metadata, wipe, given_file)
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    not_test::
-      "file_prefix" string => "", policy => "free";
-    test::
-      "file_prefix" string => "/tmp", policy => "free";
-
-    any::
-      "file" string => "$(file_prefix)$(given_file)",
+      "file" string => "$(default:eu.path_prefix)$(given_file)",
       policy => "free";
 
       "class_prefix" string => canonify($(file)),
       policy => "free";
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
