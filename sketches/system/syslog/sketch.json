@@ -13,17 +13,17 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "solaris" ] }
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "solaris" ] }
     },
 
     "api" : {
-			  "system_syslog" : [
-             { "name" : "runenv", "type" : "environment" },
-						 { "name" : "metadata", "type" : "metadata" },
-						 { "name" : "conf_file", "type" : "string", "default" : "/etc/syslog.conf" },
-						 { "name" : "config", "type" : "array" }
+			  "ensure" : [
+                  { "name" : "runenv", "type" : "environment" },
+				  { "name" : "metadata", "type" : "metadata" },
+				  { "name" : "conf_file", "type" : "string", "default" : "/etc/syslog.conf" },
+				  { "name" : "config", "type" : "array" }
 				]
 		},
-    "namespace": "cfdc_system_syslog",
+    "namespace": "cfdc_syslog",
     "interface": [ "main.cf" ]
 }

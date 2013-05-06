@@ -611,3 +611,7 @@ redis:
 gencert:
 	$(CFSKETCH_DA) --install Utilities::OpenSSL::GenCert --activate Utilities::OpenSSL::GenCert=$(SOURCEDIR)/utilities/openssl/gencert/params/demo.json
 	$(RUNNER)
+
+syslog:
+	$(CFSKETCH_DA) --install System::Syslog --activate System::Syslog=$(SOURCEDIR)/system/syslog/params/demo.json
+	$(RUNNER)
