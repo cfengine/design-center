@@ -12,11 +12,21 @@ bundle agent system_syslog(runenv,metadata,conf_file,config)
 			classes => default:if_repaired("syslog_config_repaired"),
 			edit_line => system_syslog_edit_config("$(config)");
 	
-	reports:
-		syslog_config_repaired::
-			"restart" bundle_return_value_index => "service_mode";
+	processes:
 		!syslog_config_repaired::
-			"start" bundle_return_value_index => "service_mode";
+			".*/syslogd"
+				restart_class => "syslog_proc_start";
+
+	commands:
+		syslog_config_repaired.(sunos_5_8|sunos_5_9)::
+			"/etc/init.d/syslog stop && /etc/init.d/syslog start"
+				contain => default:in_shell;
+		syslog_config_repaired.(sunos_5_10|sunos_5_11)::
+			"/usr/sbin/svcadm restart svc:/network/ntp:default";
+		syslog_proc_start.(sunos_5_8|sunos_5_9)::
+			"/etc/init.d/syslog start";
+		syslog_proc_start.(sunos_5_10|sunos_5_11)::
+			"usr/sbin/svcadm enable svc:/network/ntp:default";
 }
 
 bundle edit_line system_syslog_edit_config(c) {

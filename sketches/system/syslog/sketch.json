@@ -13,7 +13,7 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "solaris" ] }
     },
 
     "api" : {
@@ -21,8 +21,7 @@
              { "name" : "runenv", "type" : "environment" },
 						 { "name" : "metadata", "type" : "metadata" },
 						 { "name" : "conf_file", "type" : "string", "default" : "/etc/syslog.conf" },
-						 { "name" : "config", "type" : "array" },
-						 { "name" : "service_mode", "type" : "return" }
+						 { "name" : "config", "type" : "array" }
 				]
 		},
     "namespace": "cfdc_system_syslog",
