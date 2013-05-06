@@ -13,13 +13,6 @@ bundle agent server(runenv, metadata, port, user, maxconn, cachesize, listen)
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    activated.not_test::
-      "path_prefix" string => "", policy => "free";
-      "exec_prefix" string => "", policy => "free";
-    activated.test::
-      "path_prefix" string => "/tmp", policy => "free";
-      "exec_prefix" string => "/bin/echo ", policy => "free";
-
   methods:
       "utils" usebundle => default:eu($(runenv));
 
@@ -71,7 +64,7 @@ bundle agent install
       "1" bundle_return_value_index => "package_status";
 }
 
-bundle agent conf(runenv,metadata,pkg_status,port,user,maxconn,cachesize,listen)
+bundle agent conf(runenv, metadata, pkg_status, port, user, maxconn, cachesize, listen)
 {
   classes:
       "memcached_installed" expression => strcmp("1", $(pkg_status));
@@ -123,7 +116,8 @@ bundle agent proc(service_mode)
       "$(default:eu.exec_prefix)/etc/init.d/memcached start";
 }
 
-bundle edit_line debian_insert_lines(port,user,maxconn,cachesize,listen) {
+bundle edit_line debian_insert_lines(port, user, maxconn, cachesize, listen)
+{
   insert_lines:
       "#
 # Configured by CFEngine. Local changes will be lost.
@@ -177,7 +171,7 @@ logfile /var/log/memcached.log
 # -r";
 }
 
-bundle edit_line redhat_insert_lines(port,user,maxconn,cachesize,listen) {
+bundle edit_line redhat_insert_lines(port, user, maxconn, cachesize, listen) {
   insert_lines:
       "PORT=\"$(port)\"
 USER=\"$(user)\"
