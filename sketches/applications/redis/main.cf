@@ -13,14 +13,9 @@ bundle agent server(runenv, metadata, pidfile, port, address, timeout, dbfilenam
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    activated.not_test::
-      "path_prefix" string => "", policy => "free";
-      "exec_prefix" string => "", policy => "free";
-    activated.test::
-      "path_prefix" string => "/tmp", policy => "free";
-      "exec_prefix" string => "/bin/echo ", policy => "free";
-
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
       "REDIS INSTALL $(runenv)"
       usebundle => install,
       inherit => "true",
@@ -73,7 +68,7 @@ bundle agent conf(runenv, metadata, pkg_status, pidfile, port, address, timeout,
 
   files:
     redis_installed.(ubuntu|debian)::
-      "$(cfdc_redis:server.path_prefix)/etc/redis/redis.conf"
+      "$(default:eu.path_prefix)/etc/redis/redis.conf"
       create => "true",
       edit_defaults => default:empty,
       perms => default:mog("644","redis","redis"),
@@ -112,9 +107,9 @@ bundle agent proc(service_mode) {
 
   commands:
     conf_repaired::
-      "$(cfdc_redis:server.exec_prefix)/etc/init.d/redis-server restart";
+      "$(default:eu.exec_prefix)/etc/init.d/redis-server restart";
     proc_start::
-      "$(cfdc_redis:server.exec_prefix)/etc/init.d/redis-server start";
+      "$(default:eu.exec_prefix)/etc/init.d/redis-server start";
 }
 
 bundle edit_line edit_config(pidfile, port, address, timeout, dbfilename, datadir, logfile, glueoutputbuf, shareobjectspoolsize, masterserver, masterport, saves)

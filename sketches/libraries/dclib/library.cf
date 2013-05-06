@@ -13,6 +13,25 @@ bundle agent report_metadata(bundlename, metadata)
       "$(bundlename): $($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
 }
 
+# environment utilities, shortened for convenience
+bundle agent eu(runenv)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+    activated.not_test::
+      "path_prefix" string => "", policy => "free";
+      "exec_prefix" string => "", policy => "free";
+    activated.test::
+      "path_prefix" string => "/tmp", policy => "free";
+      "exec_prefix" string => "/bin/echo ", policy => "free";
+}
+
 # an example of how a sketch can install itself
 # "install" usebundle => default:install_sketch(METADATA, "sourcedir", "destdir");
 # TODO: add permissions and owner/group
@@ -319,7 +338,7 @@ umask => "$(umask)";
 }
 
 body classes dc_generic(x)
-# 
+#
 # Define x prefixed/suffixed with promise outcome
 {
   promise_repaired => { "promise_repaired_$(x)", "$(x)_repaired", "$(x)_ok" };
