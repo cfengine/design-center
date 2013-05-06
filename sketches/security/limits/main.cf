@@ -41,13 +41,11 @@ bundle agent limits(runenv, metadata, given_filename, domains, empty_first, ensu
 
     test::
       "owner" string => getenv("LOGNAME", 100), policy => "free";
-      "path_prefix" string => "/tmp", policy => "free";
     not_test::
       "owner" string => "root", policy => "free";
-      "path_prefix" string => "", policy => "free";
 
     any::
-      "filename" string => "$(path_prefix)$(given_filename)", policy => "free";
+      "filename" string => "$(default:eu.path_prefix)$(given_filename)", policy => "free";
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
@@ -56,6 +54,8 @@ bundle agent limits(runenv, metadata, given_filename, domains, empty_first, ensu
       "ensure_absent" expression => strcmp($(ensure_absent), "1");
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
