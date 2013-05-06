@@ -19,16 +19,13 @@ bundle agent ensure(runenv, metadata, name, given_start, given_stop, pattern, po
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    not_test::
-      "exec_prefix" string => "", policy => "free";
-    test::
-      "exec_prefix" string => "/bin/echo ", policy => "free";
-
     any::
-      "start" string => "$(exec_prefix)$(given_start)", policy => "free";
-      "stop"  string => "$(exec_prefix)$(given_stop)",  policy => "free";
+      "start" string => "$(default:eu.exec_prefix)$(given_start)";
+      "stop"  string => "$(default:eu.exec_prefix)$(given_stop)";
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
