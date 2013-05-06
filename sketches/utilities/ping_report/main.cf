@@ -38,15 +38,11 @@ bundle agent ping(runenv, metadata, hosts, count)
       "reached_str" string => "reached_str should be generated but isn't; TODO: look into it";
       "not_reached_str" string => join(" ", "not_reached_hosts");
 
-    not_test::
-      "exec_prefix" string => "", policy => "free";
-    test::
-      "exec_prefix" string => "/bin/echo ", policy => "free";
-
-    any::
-      "pinger" string => "$(exec_prefix)$(default:paths.path[ping])", policy => "free";
+      "pinger" string => "$(default:eu.exec_prefix)$(default:paths.path[ping])";
 
   methods:
+      "utils" usebundle => default:eu($(runenv));
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
@@ -67,9 +63,9 @@ bundle agent ping(runenv, metadata, hosts, count)
       "$(reached_str)" bundle_return_value_index => "reached";
       "$(not_reached_str)" bundle_return_value_index => "not_reached";
 
-      "$(this.bundle): I am able to ping $(hosts)",
+      "$(this.bundle): I am able to ping $(hosts)"
       ifvarclass => canonify("$(hosts)_ok");
 
-      "$(this.bundle): I am unable to ping $(hosts)",
+      "$(this.bundle): I am unable to ping $(hosts)"
       ifvarclass => canonify("$(hosts)_not_ok");
 }
