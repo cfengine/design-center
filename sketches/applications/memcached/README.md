@@ -1,17 +1,17 @@
 # Applications::Memcached version 1
 
 License: MIT
-Tags: cfdc
+Tags: cfdc, memcached
 Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
 ## Description
-Sketch for configuring memcached
+Sketch for installing, configuring, and starting memcached.
 
 ## Dependencies
-CFEngine::stdlib
+CFEngine::dclib, CFEngine::stdlib
 
 ## API
-### bundle: applications_memcached
+### bundle: server
 * parameter _environment_ *runenv* (default: none, description: none)
 
 * parameter _metadata_ *metadata* (default: none, description: none)

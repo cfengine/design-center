@@ -1,97 +1,129 @@
 body file control
 {
-  namespace => "cfdc_applications_memcached";
+      namespace => "cfdc_memcached";
 }
 
-bundle agent applications_memcached(runenv,metadata,port,user,maxconn,cachesize,listen) {
-
-	methods:
-		"MEMCACHED INSTALL $(runenv)" 
-			usebundle => applications_memcached_install,
-			useresult => "install_return";
-
-		"MEMCACHED CONFIGURE $(runenv)"
-			usebundle => applications_memcached_conf("$(runenv)","$(metadata)","$(install_return[package_status])","$(port)","$(user)","$(maxconn)","$(cachesize)","$(listen)"),
-			useresult => "config_return";
-
-		"MEMCACHED PROCESS $(runenv)"
-			usebundle => applications_memcached_proc("$(config_return[service_mode])");
-}
-
-bundle agent applications_memcached_install
+bundle agent server(runenv, metadata, port, user, maxconn, cachesize, listen)
 {
-	packages:
-		redhat|centos|fedora::
-			"memcached"
-				package_policy => "add",
-				classes => default:if_ok("applications_memcached_installed"),
-				package_method => default:yum;
-		ubuntu|debian::
-			"memcached"
-				package_policy => "add",
-				classes => default:if_ok("applications_memcached_installed"),
-				package_method => default:apt;
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
-	reports:
-		applications_memcached_installed::
-			"installed" bundle_return_value_index => "package_status";
-		!applications_memcached_installed::
-			"not_installed" bundle_return_value_index => "package_status";
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+    activated.not_test::
+      "path_prefix" string => "", policy => "free";
+      "exec_prefix" string => "", policy => "free";
+    activated.test::
+      "path_prefix" string => "/tmp", policy => "free";
+      "exec_prefix" string => "/bin/echo ", policy => "free";
+
+  methods:
+      "MEMCACHED INSTALL $(runenv)"
+      usebundle => install,
+      inherit => "true",
+      useresult => "install_return";
+
+      "MEMCACHED CONFIGURE $(runenv)"
+      usebundle => conf($(runenv), $(metadata), "$(install_return[package_status])", $(port), $(user), $(maxconn), $(cachesize), $(listen)),
+      inherit => "true",
+      useresult => "config_return";
+
+      "MEMCACHED PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => proc("$(config_return[service_mode])");
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 }
 
-bundle agent applications_memcached_conf(runenv,metadata,pkg_status,port,user,maxconn,cachesize,listen)
+bundle agent install
 {
-	classes:
-		"memcached_installed" expression => strcmp("installed", "$(pkg_status)");
+  packages:
+    not_test.(redhat|centos|fedora)::
+      "memcached"
+      package_policy => "add",
+      classes => default:if_ok("installed"),
+      package_method => default:yum;
+    not_test.(ubuntu|debian)::
+      "memcached"
+      package_policy => "add",
+      classes => default:if_ok("installed"),
+      package_method => default:apt;
+
+  reports:
+    verbose.installed::
+      "$(this.bundle): Installed memcache successfully.";
+    verbose.not_test.!installed::
+      "$(this.bundle): Could not install memcache successfully.";
+
+    installed::
+      "1" bundle_return_value_index => "package_status";
+    not_test.!installed::
+      "0" bundle_return_value_index => "package_status";
+    test::
+      "$(this.bundle): Overriding bundle return status to success (1) in test mode";
+      "1" bundle_return_value_index => "package_status";
+}
+
+bundle agent conf(runenv,metadata,pkg_status,port,user,maxconn,cachesize,listen)
+{
+  classes:
+      "memcached_installed" expression => strcmp("1", $(pkg_status));
 
   files:
-		memcached_installed.(redhat|centos)::
-			"/etc/sysconfig/memcached"
-				create => "true",
-				edit_defaults => default:empty,
-				perms => default:m("644"),
-				classes => default:if_repaired("applications_memcached_config_repaired"),
-				edit_line => application_memcached_redhat_insert_lines("$(port)","$(user)","$(maxconn)","$(cachesize)","$(listen)");
-		memcached_installed.(ubuntu|debian)::
-			"/etc/memcached.conf"
-				create => "true",
-				edit_defaults => default:empty,
-				perms => default:m("644"),
-				classes => default:if_repaired("applications_memcached_config_repaired"),
-				edit_line => application_memcached_debian_insert_lines("$(port)","$(user)","$(maxconn)","$(cachesize)","$(listen)");
-			"/etc/default/memcached"
-				create => "true",
-				classes => default:if_repaired("applications_memcached_config_repaired"),
-				edit_defaults => default:empty,
-				edit_line => default:insert_lines("ENABLE_MEMCACHED=yes");
+    memcached_installed.(redhat|centos)::
+      "$(cfdc_memcached:server.path_prefix)/etc/sysconfig/memcached"
+      create => "true",
+      edit_defaults => default:empty,
+      perms => default:m("644"),
+      classes => default:if_repaired("config_repaired"),
+      edit_line => redhat_insert_lines($(port),$(user),$(maxconn),$(cachesize),$(listen));
 
-	reports:
-		applications_memcached_config_repaired::
-			"restart" bundle_return_value_index => "service_mode";
-		!applications_memcached_config_repaired::
-			"start" bundle_return_value_index => "service_mode";
+    memcached_installed.(ubuntu|debian)::
+      "$(cfdc_memcached:server.path_prefix)/etc/memcached.conf"
+      create => "true",
+      edit_defaults => default:empty,
+      perms => default:m("644"),
+      classes => default:if_repaired("config_repaired"),
+      edit_line => debian_insert_lines($(port),$(user),$(maxconn),$(cachesize),$(listen));
+
+      "$(cfdc_memcached:server.path_prefix)/etc/default/memcached"
+      create => "true",
+      classes => default:if_repaired("config_repaired"),
+      edit_defaults => default:empty,
+      edit_line => default:insert_lines("ENABLE_MEMCACHED=yes");
+
+  reports:
+    config_repaired::
+      "restart" bundle_return_value_index => "service_mode";
+    !config_repaired::
+      "start" bundle_return_value_index => "service_mode";
 }
 
-bundle agent applications_memcached_proc(service_mode)
+bundle agent proc(service_mode)
 {
-	classes:
-		"applications_memcached_conf_repaired" expression => strcmp("restart","$(service_mode)");
-	
-	processes:
-		!applications_memcached_conf_repaired::
-			"memcached"
-				restart_class => "applications_memcached_proc_start";
+  classes:
+      "conf_repaired" expression => strcmp("restart",$(service_mode));
 
-	commands:
-		applications_memcached_conf_repaired::
-			"/etc/init.d/memcached restart";
-		applications_memcached_proc_start::
-			"/etc/init.d/memcached start";
+  processes:
+    !conf_repaired::
+      "memcached"
+      restart_class => "proc_start";
+
+  commands:
+    conf_repaired::
+      "$(cfdc_memcached:server.exec_prefix)/etc/init.d/memcached restart";
+    proc_start::
+      "$(cfdc_memcached:server.exec_prefix)/etc/init.d/memcached start";
 }
 
-bundle edit_line application_memcached_debian_insert_lines(port,user,maxconn,cachesize,listen) {
-	insert_lines:
-"#
+bundle edit_line debian_insert_lines(port,user,maxconn,cachesize,listen) {
+  insert_lines:
+      "#
 # Configured by CFEngine. Local changes will be lost.
 #
 # memcached default config file
@@ -143,9 +175,9 @@ logfile /var/log/memcached.log
 # -r";
 }
 
-bundle edit_line application_memcached_redhat_insert_lines(port,user,maxconn,cachesize,listen) {
-	insert_lines:
-"PORT=\"$(port)\"
+bundle edit_line redhat_insert_lines(port,user,maxconn,cachesize,listen) {
+  insert_lines:
+      "PORT=\"$(port)\"
 USER=\"$(user)\"
 MAXCONN=\"$(maxconn)\"
 CACHESIZE=\"$(cachesize)\"

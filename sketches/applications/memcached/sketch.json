@@ -8,25 +8,25 @@
     "metadata":
     {
         "name": "Applications::Memcached",
-        "description": "Sketch for configuring memcached",
+        "description": "Sketch for installing, configuring, and starting memcached.",
         "version": 1.00,
         "license": "MIT",
-        "tags": [ "cfdc" ],
+        "tags": [ "cfdc", "memcached" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.5.0" }, "os": [ "debian|ubuntu|redhat|centos|fedora" ] }
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.5.0" }, "os": [ "debian|ubuntu|redhat|centos|fedora" ] }
     },
 
 		"api" : {
-		   "applications_memcached" : [
-          { "name" : "runenv", "type" : "environment" },
-					{ "name" : "metadata", "type" : "metadata" },
-					{ "name" : "port", "type" : "string", "default" : "11211" },
-					{ "name" : "user", "type" : "string", "default" : "nobody" },
-					{ "name" : "maxconn", "type" : "string", "default" : "1024" },
-					{ "name" : "cachesize", "type" : "string", "default" : "64" },
-					{ "name" : "listen", "type" : "string", "default" : "0.0.0.0" }
+		   "server" : [
+               { "name" : "runenv", "type" : "environment" },
+			   { "name" : "metadata", "type" : "metadata" },
+			   { "name" : "port", "type" : "string", "default" : "11211" },
+			   { "name" : "user", "type" : "string", "default" : "nobody" },
+			   { "name" : "maxconn", "type" : "string", "default" : "1024" },
+			   { "name" : "cachesize", "type" : "string", "default" : "64" },
+			   { "name" : "listen", "type" : "string", "default" : "0.0.0.0" }
 			 ],
 		},
-    "namespace": "cfdc_applications_memcached",
+    "namespace": "cfdc_memcached",
     "interface": [ "main.cf" ]
 }

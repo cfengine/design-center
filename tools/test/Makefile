@@ -593,8 +593,13 @@ motd:
 bad_input_file:
 	$(CFSKETCH_DA) --install Data::Classes --activate Data::Classes=/no/such/file
 	$(RUNNER)
+
 tidy_dir:
 	$(CFSKETCH_DA) --install Utilities::tidy_dir --activate Utilities::tidy_dir=$(SOURCEDIR)/utilities/tidy_dir/params/test_defaults.json
 	$(RUNNER)
 	$(CFSKETCH_DA) --install Utilities::tidy_dir --activate Utilities::tidy_dir=$(SOURCEDIR)/utilities/tidy_dir/params/demo.json
+	$(RUNNER)
+
+memcached:
+	$(CFSKETCH_DA) --install Applications::Memcached --activate Applications::Memcached=$(SOURCEDIR)/applications/memcached/params/demo.json
 	$(RUNNER)
