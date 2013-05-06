@@ -18,13 +18,14 @@
 
     "api" : {
 		    "ntp_client" : [
+				  { "name" : "runenv", "type" : "environment" },
+					{ "name" : "metadata", "type" : "metadata" },
 				  { "name" : "peers", "type" : "list" },
 					{ "name" : "servers", "type" : "list" },
 					{ "name" : "restrictions", "type" : "list" },
 					{ "name" : "driftfile", "type" : "string", "default" : "/var/lib/ntp/drift" },
 					{ "name" : "statsdir", "type" : "string", "default" : "/var/log/ntpstats" },
 					{ "name" : "conffile", "type" : "string", "default" : "/etc/ntp.conf" },
-					{ "name" : "ntp_service_mode", "type" : "return" }
 				],
 		},
     "namespace" : "cfdc_ntp_client",
