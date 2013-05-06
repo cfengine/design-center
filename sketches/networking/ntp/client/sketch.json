@@ -1,0 +1,33 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "Networking::NTP::Client",
+        "description": "Sketch for setting NTP client configuration",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "redhat|fedora|centos|ubuntu|debian" ] }
+    },
+
+    "api" : {
+		    "ntp_client" : [
+				  { "name" : "runenv", "type" : "environment" },
+					{ "name" : "metadata", "type" : "metadata" },
+				  { "name" : "peers", "type" : "list" },
+					{ "name" : "servers", "type" : "list" },
+					{ "name" : "restrictions", "type" : "list" },
+					{ "name" : "driftfile", "type" : "string", "default" : "/var/lib/ntp/drift" },
+					{ "name" : "statsdir", "type" : "string", "default" : "/var/log/ntpstats" },
+					{ "name" : "conffile", "type" : "string", "default" : "/etc/ntp.conf" },
+				],
+		},
+    "namespace" : "cfdc_ntp_client",
+    "interface": [ "main.cf" ]
+}
