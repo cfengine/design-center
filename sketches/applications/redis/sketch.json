@@ -1,0 +1,38 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "Applications::Redis",
+        "description": "",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.5.0" }, "os": [ "ubuntu|debian" ] }
+    },
+		"api" : {
+		   "applications_redis" : [
+			    { "name" : "runenv", "type" : "environment" },
+			    { "name" : "metadata", "type" : "metadata" },
+			    { "name" : "pidfile", "type" : "string", "default" : "/var/run/redis.pid" },
+			    { "name" : "port", "type" : "string", "default" : "6379" },
+			    { "name" : "address", "type" : "string", "default" : "0.0.0.0" },
+			    { "name" : "timeout", "type" : "string", "default" : "0" },
+			    { "name" : "dbfilename", "type" : "string", "default" : "dump.rdb" },
+			    { "name" : "datadir", "type" : "string", "default" : "/var/lib/redis" },
+			    { "name" : "logfile", "type" : "string", "default" : "/var/log/redis/redis.log" },
+			    { "name" : "glueoutputbuf", "type" : "string", "default" : "yes" },
+			    { "name" : "shareobjectspoolsize", "type" : "string", "default" : "disabled" },
+			    { "name" : "masterserver", "type" : "string", "default" : "0.0.0.0" },
+			    { "name" : "masterport", "type" : "string", "default" : "0" },
+			    { "name" : "saves", "type" : "list" },
+			 ]
+		},
+    "namespace": "cfdc_applications_redis",
+    "interface": [ "main.cf" ]
+}
