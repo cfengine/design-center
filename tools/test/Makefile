@@ -76,9 +76,10 @@ RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 do:
 	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "production": { activated: true, test: false, verbose: true } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Utilities::abortclasses", force: true, target: "/var/cfengine/masterfiles/sketches", source: "/home/..." } ] } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {define: { "abortclasses_params": {  } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Utilities::abortclasses": { environment: "production", params: [ "abortclasses_params" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Security::SSH", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" }, { sketch: "CFEngine::sketch_template", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" }, { sketch: "VCS::vcs_mirror", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "simple_sketch": { "CFEngine::sketch_template": { myboolean: true, myip: "10.0.1.0", mylist: [ 1, 2, 3 ], myarray: { a: 1, b: 3, c: 3 } } }, "simple_ssh": { "Security::SSH": { params: { Protocol : "2", X11Forwarding : "yes", PermitRootLogin : "yes" } } } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Security::SSH": { target: "$(API_SKETCHDIR)", environment: "production", params: [ "simple_ssh" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "$(API_SKETCHDIR)", environment: "production", params: [ "simple_sketch" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
 api_activate:
