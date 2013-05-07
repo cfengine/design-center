@@ -12,9 +12,11 @@ vars:
 packages:
   "$(pkgs_add)"
     package_policy => "add",
+    package_method => default:generic,
     handle => "$(activation_id)_packages_add";
 
   "$(pkgs_delete)"
     package_policy => "delete",
+    package_method => default:generic,
     handle => "$(activation_id)_pacakges_delete";
 }
