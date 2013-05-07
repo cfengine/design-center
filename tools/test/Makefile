@@ -639,3 +639,7 @@ iptables:
 zabbix:
 	$(CFSKETCH_DA) --install Applications::Zabbix::Agent --activate Applications::Zabbix::Agent=$(SOURCEDIR)/applications/zabbix/agent/params/demo.json
 	$(RUNNER)
+
+epel:
+	$(CFSKETCH_DA) --install Repository::EPEL --activate Repository::EPEL=$(SOURCEDIR)/package_management/epel/params/demo.json
+	$(RUNNER)

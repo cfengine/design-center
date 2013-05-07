@@ -1,0 +1,7 @@
+{
+    "Repository::EPEL":
+    {
+			"use_mirrorlist" : "0",
+			"proxy_url" : "http://10.100.180.50:3128"
+		}
+}
