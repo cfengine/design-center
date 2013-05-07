@@ -141,30 +141,6 @@ sub set_config
         }
     }
 
-    my $constdata_file = Util::hashref_search($self->config(), qw/constdata/);
-
-    if ($constdata_file)
-    {
-        $constdata_file = glob($constdata_file);
-        $self->log5("Loading constdata file $constdata_file");
-        $self->constdata($constdata_file);
-        if (-f $constdata_file && -w $constdata_file && -r $constdata_file)
-        {
-            my ($v_data, @v_warnings) = $self->load($constdata_file);
-            $result->add_error('constdata', @v_warnings)
-             if scalar @v_warnings;
-
-            foreach my $key (@vardata_keys)
-            {
-                if (exists $v_data->{$key})
-                {
-                    $self->log5("Successfully loaded $key from constdata file $constdata_file");
-                    $self->$key(Util::hashref_merge($self->$key(), $v_data->{$key}));
-                }
-            }
-        }
-    }
-
     my $vardata_file = Util::hashref_search($self->config(), qw/vardata/);
 
     if ($vardata_file)
@@ -209,6 +185,33 @@ sub set_config
     else
     {
         $result->add_error('vardata', "No vardata file specified");
+    }
+
+    my $constdata_file = Util::hashref_search($self->config(), qw/constdata/);
+
+    if ($constdata_file)
+    {
+        $constdata_file = glob($constdata_file);
+        $self->log5("Loading constdata file $constdata_file");
+        $self->constdata($constdata_file);
+        if (-f $constdata_file && -r $constdata_file)
+        {
+            my ($v_data, @v_warnings) = $self->load($constdata_file);
+            $result->add_error('constdata', @v_warnings)
+             if scalar @v_warnings;
+
+            foreach my $key (@vardata_keys)
+            {
+                if (exists $v_data->{$key} && ref $v_data->{$key} eq 'HASH' && ref $self->$key() eq 'HASH')
+                {
+                    foreach my $subkey (sort keys %{$v_data->{$key}})
+                    {
+                        $self->log5("Successfully loaded override $key/$subkey from constdata file $constdata_file");
+                        $self->$key()->{$subkey} = $v_data->{$key}->{$subkey};
+                    }
+                }
+            }
+        }
     }
 
     return $result;
