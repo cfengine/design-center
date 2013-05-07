@@ -139,12 +139,13 @@ sub runfile_data_dump
     $ret{manifest} = \@manifest;
     $ret{manifest_cf} = [ grep { $_ =~ m/\.cf$/ } @manifest ];
     $ret{manifest_docs} = [ grep { $self->manifest()->{$_}->{documentation} } @manifest ];
+    $ret{manifest_test} = [ grep { $self->manifest()->{$_}->{test} } @manifest ];
     $ret{manifest_exe} = [ grep {
         exists $self->manifest()->{$_}->{perm} &&
         (oct($self->manifest()->{$_}->{perm}) & 0111)
     } @manifest ];
 
-    my %known = map { $_ => 1 } (@{$ret{manifest_cf}}, @{$ret{manifest_exe}}, @{$ret{manifest_docs}});
+    my %known = map { $_ => 1 } (@{$ret{manifest_cf}}, @{$ret{manifest_exe}}, @{$ret{manifest_docs}}, @{$ret{manifest_test}});
     $ret{manifest_extra} = [ grep { !exists $known{$_} } @manifest ];
 
     return \%ret;
