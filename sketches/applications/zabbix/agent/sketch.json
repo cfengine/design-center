@@ -11,12 +11,12 @@
         "description": "Sketch for configuring Zabbix clients",
         "version": 1.00,
         "license": "MIT",
-        "tags": [ "cfdc" ],
+        "tags": [ "cfdc", "zabbix" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "ubuntu|debian" ] }
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "ubuntu|debian" ] }
     },
 		"api" : {
-		    "applications_zabbix_agent" : [
+		    "agent" : [
             { "name" : "runenv", "type" : "environment" },
 						{ "name" : "metadata", "type" : "metadata" },
 						{ "name" : "conf_file", "type" : "string", "default" : "/etc/zabbix/zabbix_agentd.conf" },
@@ -33,6 +33,6 @@
 						{ "name" : "user_parameters", "type" : "array" },
 				]
 		},
-    "namespace": "cfdc_applications_zabbix_agent",
+    "namespace": "cfdc_zabbix",
     "interface": [ "main.cf" ]
 }

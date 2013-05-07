@@ -1,141 +1,177 @@
 body file control
 {
-  namespace => "cfdc_applications_zabbix_agent";
+      namespace => "cfdc_zabbix";
 }
 
-bundle agent applications_zabbix_agent(
-                                         runenv,
-																				 metadata,
-																				 conf_file,
-																				 server,
-																				 server_port,
-																				 host_name,
-																				 listen_port,
-																				 listen_ip,
-																				 start_agents,
-																				 debug_level,
-																				 pid_file,
-																				 log_file,
-																				 timeout,
-																				 user_parameters
-																			 )
+bundle agent agent(
+      runenv,
+      metadata,
+      given_conf_file,
+      server,
+      server_port,
+      host_name,
+      listen_port,
+      listen_ip,
+      start_agents,
+      debug_level,
+      pid_file,
+      log_file,
+      timeout,
+      user_parameters)
 {
 
-	methods:
-		"ZABBIX agent INSTALL $(runenv)"
-			usebundle => applications_zabbix_agent_install,
-			useresult => "install_return";
-		"ZABBIX agent CONFIGURE $(runenv)"
-			usebundle => applications_zabbix_agent_conf("$(runenv)","$(metadata)","$(install_return[package_status])","$(conf_file)","$(server)", 
-			                                             "$(server_port)","$(host_name)","$(listen_port)","$(listen_ip)","$(start_agents)","$(debug_level)",
-                                                   "$(pid_file)","$(log_file)","$(timeout)","$(user_parameters)"),
-			useresult => "config_return";
-		"ZABBIX agent PROCESS $(runenv)"
-			usebundle => applications_zabbix_agent_proc("$(config_return[service_mode])");
-			
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "conf_file" string => "$(default:eu.path_prefix)$(given_conf_file)";
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+      "ZABBIX agent INSTALL $(runenv)"
+      usebundle => install,
+      inherit => "true",
+      useresult => "install_return";
+
+      "ZABBIX agent CONFIGURE $(runenv)"
+      inherit => "true",
+      usebundle => conf($(runenv),
+                        $(metadata),
+                        "$(install_return[package_status])",
+                        $(conf_file),
+                        $(server),
+                        $(server_port),
+                        $(host_name),
+                        $(listen_port),
+                        $(listen_ip),
+                        $(start_agents),
+                        $(debug_level),
+                        $(pid_file),
+                        $(log_file),
+                        $(timeout),
+                        $(user_parameters)),
+      useresult => "config_return";
+
+      "ZABBIX agent PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => proc("$(config_return[service_mode])");
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 }
 
-bundle agent applications_zabbix_agent_install
+bundle agent install
 {
-	packages:
-		ubuntu|debian::
-			"zabbix-agent"
-				package_policy => "add",
-				classes => default:if_ok("applications_zabbix_agent_installed"),
-				package_method => default:apt;
+  packages:
+    not_test.(ubuntu|debian)::
+      "zabbix-agent"
+      package_policy => "add",
+      classes => default:if_ok("applications_zabbix_agent_installed"),
+      package_method => default:apt;
 
-	reports:
-		applications_zabbix_agent_installed::
-			"installed" bundle_return_value_index => "package_status";
-		!applications_zabbix_agent_installed::
-			"not_installed" bundle_return_value_index => "package_status";
+  reports:
+    verbose.installed::
+      "$(this.bundle): Installed Zabbix agent successfully.";
+    verbose.not_test.!installed::
+      "$(this.bundle): Could not install Zabbix agent successfully.";
+
+    installed::
+      "1" bundle_return_value_index => "package_status";
+    not_test.!installed::
+      "0" bundle_return_value_index => "package_status";
+    test::
+      "$(this.bundle): Overriding bundle return status to success (1) in test mode";
+      "1" bundle_return_value_index => "package_status";
 }
 
-bundle agent applications_zabbix_agent_conf(
-                                         runenv,
-																				 metadata,
-																				 pkg_status,
-																				 conf_file,
-																				 server,
-																				 server_port,
-																				 host_name,
-																				 listen_port,
-																				 listen_ip,
-																				 start_agents,
-																				 debug_level,
-																				 pid_file,
-																				 log_file,
-																				 timeout,
-																				 user_parameters
-																			 )
+bundle agent conf(
+      runenv,
+      metadata,
+      pkg_status,
+      conf_file,
+      server,
+      server_port,
+      host_name,
+      listen_port,
+      listen_ip,
+      start_agents,
+      debug_level,
+      pid_file,
+      log_file,
+      timeout,
+      user_parameters
+)
 {
-	classes:
-		"zabbix_agent_installed" expression => strcmp("installed", "$(pkg_status)");
+  classes:
+      "zabbix_agent_installed" expression => strcmp("1", $(pkg_status));
 
-	files:
-		zabbix_agent_installed.(ubuntu|debian)::
-			"$(conf_file)"
-				create => "true",
-				edit_defaults => default:empty,
-				classes => default:if_repaired("applications_zabbix_agent_config_repaired"),
-				perms => default:m("644"),
-				edit_line => applications_zabbix_agent_edit_conf( 
-																									 "$(server)", 
-																									 "$(server_port)", 
-																									 "$(host_name)", 
-																									 "$(listen_port)", 
-																									 "$(listen_ip)", 
-																									 "$(start_agents)", 
-																									 "$(debug_level)", 
-																									 "$(pid_file)", 
-																									 "$(log_file)", 
-																									 "$(timeout)", 
-																									 "$(user_parameters)"
-																									 );
-	reports:
-		applications_zabbix_agent_config_repaired::
-			"restart" bundle_return_value_index => "service_mode";
-		!applications_zabbix_agent_config_repaired::
-			"start" bundle_return_value_index => "service_mode";
+  files:
+    zabbix_agent_installed.(ubuntu|debian)::
+      "$(default:eu.path_prefix)$(conf_file)"
+      create => "true",
+      edit_defaults => default:empty,
+      classes => default:if_repaired("applications_zabbix_agent_config_repaired"),
+      perms => default:m("644"),
+      edit_line => edit_conf($(server),
+                             $(server_port),
+                             $(host_name),
+                             $(listen_port),
+                             $(listen_ip),
+                             $(start_agents),
+                             $(debug_level),
+                             $(pid_file),
+                             $(log_file),
+                             $(timeout),
+                             $(user_parameters));
+
+  reports:
+    applications_zabbix_agent_config_repaired::
+      "restart" bundle_return_value_index => "service_mode";
+    !applications_zabbix_agent_config_repaired::
+      "start" bundle_return_value_index => "service_mode";
 }
 
-bundle agent applications_zabbix_agent_proc(service_mode)
+bundle agent proc(service_mode)
 {
-	classes:
-		"applications_zabbix_agent_conf_repaired" expression => strcmp("restart","$(service_mode)");
-	
-	processes:
-		!applications_zabbix_agent_conf_repaired::
-			"zabbix_agentd"
-				restart_class => "applications_zabbix_agent_proc_start";
+  classes:
+      "applications_zabbix_agent_conf_repaired" expression => strcmp("restart",$(service_mode));
 
-	commands:
-		applications_zabbix_agent_conf_repaired::
-			"/etc/init.d/zabbix-agent restart";
-		applications_zabbix_agent_proc_start::
-			"/etc/init.d/zabbix-agent start";
+  processes:
+    !applications_zabbix_agent_conf_repaired::
+      "zabbix_agentd"
+      restart_class => "applications_zabbix_agent_proc_start";
+
+  commands:
+    applications_zabbix_agent_conf_repaired::
+      "$(default:eu.exec_prefix)/etc/init.d/zabbix-agent restart";
+    applications_zabbix_agent_proc_start::
+      "$(default:eu.exec_prefix)/etc/init.d/zabbix-agent start";
 }
 
-bundle edit_line applications_zabbix_agent_edit_conf(
-                                                   server,
-                                                   server_port,
-                                                   host_name,
-                                                   listen_port,
-                                                   listen_ip,
-                                                   start_agents,
-                                                   debug_level,
-                                                   pid_file,
-                                                   log_file,
-                                                   timeout,
-																									 up
-																								 )
+bundle edit_line edit_conf(
+      server,
+      server_port,
+      host_name,
+      listen_port,
+      listen_ip,
+      start_agents,
+      debug_level,
+      pid_file,
+      log_file,
+      timeout,
+      up)
 {
 
-	vars:
-		"up_keys" slist => getindices("$(up)");
+  vars:
+      "up_keys" slist => getindices($(up));
 
-	insert_lines:
-"#
+  insert_lines:
+      "#
 # Configured by CFEngine. Local changes will be lost.
 #
 # This is config file for zabbix_agentd
@@ -195,7 +231,7 @@ LogFile=$(log_file)
 # Must be between 1 and 30
 Timeout=$(timeout)";
 
-"####### USER-DEFINED MONITORED PARAMETERS #######
+      "####### USER-DEFINED MONITORED PARAMETERS #######
 # Format: UserParameter=<key>,<shell command>
 # Note that shell command must not return empty string or EOL only
 #UserParameter=system.test,who|wc -l

@@ -1,17 +1,17 @@
 # Applications::Zabbix::Agent version 1
 
 License: MIT
-Tags: cfdc
+Tags: cfdc, zabbix
 Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
 ## Description
 Sketch for configuring Zabbix clients
 
 ## Dependencies
-CFEngine::stdlib
+CFEngine::dclib, CFEngine::stdlib
 
 ## API
-### bundle: applications_zabbix_agent
+### bundle: agent
 * parameter _environment_ *runenv* (default: none, description: none)
 
 * parameter _metadata_ *metadata* (default: none, description: none)

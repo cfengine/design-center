@@ -8,10 +8,14 @@ Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 This sketch manages simple iptables rules
 
 ## Dependencies
-CFEngine::stdlib
+CFEngine::dclib, CFEngine::stdlib
 
 ## API
-### bundle: iptables_filter
+### bundle: filter
+* parameter _environment_ *runenv* (default: none, description: none)
+
+* parameter _metadata_ *metadata* (default: none, description: none)
+
 * parameter _array_ *chain_policies* (default: none, description: none)
 
 * parameter _array_ *filter_rules* (default: none, description: none)

@@ -635,3 +635,7 @@ ntp:
 iptables:
 	$(CFSKETCH_DA) --install Security::IPTables::Filter --activate Security::IPTables::Filter=$(SOURCEDIR)/security/iptables/filter/params/demo.json
 	$(RUNNER)
+
+zabbix:
+	$(CFSKETCH_DA) --install Applications::Zabbix::Agent --activate Applications::Zabbix::Agent=$(SOURCEDIR)/applications/zabbix/agent/params/demo.json
+	$(RUNNER)
