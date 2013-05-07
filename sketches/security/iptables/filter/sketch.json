@@ -13,16 +13,18 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
     },
 
     "api": {
-       "iptables_filter": [
-          { "name" : "chain_policies", "type" : "array" },
-          { "name" : "filter_rules", "type" : "array" }
+       "filter": [
+           { "name" : "runenv", "type" : "environment" },
+		   { "name" : "metadata", "type" : "metadata" },
+           { "name" : "chain_policies", "type" : "array" },
+           { "name" : "filter_rules", "type" : "array" }
        ]
     },
 
-    "namespace": "cfdc_iptables_filter",
+    "namespace": "cfdc_iptables",
     "interface": [ "main.cf" ]
 }

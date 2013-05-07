@@ -1,0 +1,86 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../../libraries/dclib/library.cf", "../../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation ___001_Security_IPTables_Filter_filter
+      "___001_Security_IPTables_Filter_filter_metadata[api][chain_policies][type]" string => "array";
+      "___001_Security_IPTables_Filter_filter_metadata[api][filter_rules][type]" string => "array";
+      "___001_Security_IPTables_Filter_filter_metadata[api][metadata][type]" string => "metadata";
+      "___001_Security_IPTables_Filter_filter_metadata[api][runenv][type]" string => "environment";
+      "___001_Security_IPTables_Filter_filter_metadata[authors]" slist => { "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" };
+      "___001_Security_IPTables_Filter_filter_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "___001_Security_IPTables_Filter_filter_metadata[license]" string => "MIT";
+      "___001_Security_IPTables_Filter_filter_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/security/iptables/filter";
+      "___001_Security_IPTables_Filter_filter_metadata[manifest]" slist => { "README.md", "main.cf" };
+      "___001_Security_IPTables_Filter_filter_metadata[manifest_cf]" slist => { "main.cf" };
+      "___001_Security_IPTables_Filter_filter_metadata[manifest_docs]" slist => { "README.md" };
+      "___001_Security_IPTables_Filter_filter_metadata[manifest_exe]" slist => { "cf_null" };
+      "___001_Security_IPTables_Filter_filter_metadata[manifest_extra]" slist => { "cf_null" };
+      "___001_Security_IPTables_Filter_filter_metadata[name]" string => "Security::IPTables::Filter";
+      "___001_Security_IPTables_Filter_filter_metadata[tags]" slist => { "cfdc" };
+      "___001_Security_IPTables_Filter_filter_metadata[version]" string => "1.00";
+
+      # array 'chain_policies' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/security/iptables/filter/params/demo.json, activation ___001_Security_IPTables_Filter_filter
+      "___001_Security_IPTables_Filter_filter_chain_policies[forward]" string => "ACCEPT";
+      "___001_Security_IPTables_Filter_filter_chain_policies[input]" string => "ACCEPT";
+      "___001_Security_IPTables_Filter_filter_chain_policies[output]" string => "ACCEPT";
+
+      # array 'filter_rules' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/security/iptables/filter/params/demo.json, activation ___001_Security_IPTables_Filter_filter
+      "___001_Security_IPTables_Filter_filter_filter_rules[1][chain]" string => "INPUT";
+      "___001_Security_IPTables_Filter_filter_filter_rules[1][destination_port]" string => "5555";
+      "___001_Security_IPTables_Filter_filter_filter_rules[1][target]" string => "ACCEPT";
+      "___001_Security_IPTables_Filter_filter_filter_rules[11][chain]" string => "INPUT";
+      "___001_Security_IPTables_Filter_filter_filter_rules[11][destination_port]" string => "5557";
+      "___001_Security_IPTables_Filter_filter_filter_rules[11][target]" string => "ACCEPT";
+      "___001_Security_IPTables_Filter_filter_filter_rules[2][chain]" string => "INPUT";
+      "___001_Security_IPTables_Filter_filter_filter_rules[2][destination_ip]" string => "20.20.20.20/32";
+      "___001_Security_IPTables_Filter_filter_filter_rules[2][destination_port]" string => "5556";
+      "___001_Security_IPTables_Filter_filter_filter_rules[2][source_ip]" string => "10.10.10.10/32";
+      "___001_Security_IPTables_Filter_filter_filter_rules[2][source_port]" string => "400";
+      "___001_Security_IPTables_Filter_filter_filter_rules[2][target]" string => "ACCEPT";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "___001_Security_IPTables_Filter_filter" usebundle => cfdc_iptables:filter("cf_sketch_testing", "default:cfsketch_run.___001_Security_IPTables_Filter_filter_metadata", "default:cfsketch_run.___001_Security_IPTables_Filter_filter_chain_policies", "default:cfsketch_run.___001_Security_IPTables_Filter_filter_filter_rules"), ifvarclass => "linux", useresult => "return____001_Security_IPTables_Filter_filter";
+
+  reports:
+    inform_mode::
+      "activation ___001_Security_IPTables_Filter_filter could not run because it requires classes linux" ifvarclass => "inform_mode.!(linux)";
+}

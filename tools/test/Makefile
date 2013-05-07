@@ -631,3 +631,7 @@ logrotate:
 ntp:
 	$(CFSKETCH_DA) --install Networking::NTP::Client --activate Networking::NTP::Client=$(SOURCEDIR)/networking/ntp/client/params/demo.json
 	$(RUNNER)
+
+iptables:
+	$(CFSKETCH_DA) --install Security::IPTables::Filter --activate Security::IPTables::Filter=$(SOURCEDIR)/security/iptables/filter/params/demo.json
+	$(RUNNER)

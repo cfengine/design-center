@@ -27,9 +27,12 @@ bundle agent eu(runenv)
     activated.not_test::
       "path_prefix" string => "", policy => "free";
       "exec_prefix" string => "", policy => "free";
+      "show_prefix" string => "", policy => "free";
+
     activated.test::
       "path_prefix" string => "/tmp", policy => "free";
       "exec_prefix" string => "/bin/echo ", policy => "free";
+      "show_prefix" string => "/bin/grep . ", policy => "free";
 }
 
 # an example of how a sketch can install itself
