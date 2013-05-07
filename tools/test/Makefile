@@ -619,3 +619,7 @@ syslog:
 sudoers:
 	$(CFSKETCH_DA) --install System::Sudoers --activate System::Sudoers=$(SOURCEDIR)/system/sudoers/params/demo.json
 	$(RUNNER)
+
+routes:
+	$(CFSKETCH_DA) --install System::Routes --activate System::Routes=$(SOURCEDIR)/system/routes/params/demo.json
+	$(RUNNER)

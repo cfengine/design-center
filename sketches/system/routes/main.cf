@@ -1,75 +1,93 @@
 body file control
 {
-  namespace => "cfdc_system_routes";
+      namespace => "cfdc_routes";
 }
 
-bundle agent system_routes(runenv,metadata,static_routes,purge_routes)
+bundle agent ensure(runenv,metadata,static_routes,purge_routes)
 {
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
-	vars:
-		"_cache_dir" string => "$(sys.workdir)/cache/system/routes";
-	
-	files:
-		"$(_cache_dir)/."
-			create => "true",
-			handle => "cfengine_create_cache_dir";
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-		"$(_cache_dir)/cf.routes"
-			depends_on => { "cfengine_dump_current_routes" },
-			handle => "cfengine_routes_delete_lines",
-			ifvarclass => and(fileexists("$(_cache_dir)/cf.routes")),
-			edit_line => system_routes_delete_lines;
-			
+      "_cache_dir" string => "$(default:eu.path_prefix)$(sys.workdir)/cache/system/routes";
 
-	commands:
-		"/sbin/route -n > $(_cache_dir)/cf.routes"
-			contain => default:in_shell,
-			depends_on => { "cfengine_create_cache_dir" },
-			handle => "cfengine_dump_current_routes";
+  methods:
+      "utils" usebundle => default:eu($(runenv));
 
-	methods:
-		"SET STATIC ROUTES" usebundle => system_routes_check_and_change("$(_cache_dir)", "$(purge_routes)","$(static_routes)"), depends_on => { "cfengine_routes_delete_lines" };
+      "SET STATIC ROUTES" usebundle => system_routes_check_and_change($(_cache_dir), $(purge_routes),$(static_routes)), depends_on => { "cfengine_routes_delete_lines" };
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  files:
+      "$(_cache_dir)/."
+      create => "true",
+      handle => "cfengine_create_cache_dir";
+
+      "$(_cache_dir)/cf.routes"
+      depends_on => { "cfengine_dump_current_routes" },
+      handle => "cfengine_routes_delete_lines",
+      ifvarclass => and(fileexists("$(_cache_dir)/cf.routes")),
+      edit_line => system_routes_delete_lines;
+
+
+  commands:
+      "/sbin/route -n > $(_cache_dir)/cf.routes"
+      contain => default:in_shell,
+      depends_on => { "cfengine_create_cache_dir" },
+      handle => "cfengine_dump_current_routes";
 }
 
 bundle agent system_routes_check_and_change(c_dir,purge_routes,s_r) {
-	vars:
-		"routes" slist => getindices("$(s_r)");
-		"dim" int => readstringarray("existing_routes","$(cfdc_system_routes:system_routes._cache_dir)/cf.routes","#[^\n]*","\s+","1000000","1000000");
-		"e_routes" slist => getindices("existing_routes");
+  vars:
+      "routes" slist => getindices($(s_r));
+      "dim" int => readstringarray("existing_routes",
+                                   "$(c_dir)/cf.routes",
+                                   "#[^\n]*","\s+",
+                                   "1000000",
+                                   "1000000");
+      "e_routes" slist => getindices("existing_routes");
 
-	classes:
-		"do_purge_routes" expression => strcmp("$(purge_routes)", "1");
+  classes:
+      "do_purge_routes" expression => strcmp($(purge_routes), "1");
 
-	commands:
-		any::
-			# Delete network address if netmask or gateway differ from policy
-			"/sbin/route del -net $(routes) netmask $(existing_routes[$(routes)][2]) gw $(existing_routes[$(routes)][1])"
-				ifvarclass => and(
-													isvariable("existing_routes[$(routes)][1]"),
-													or(
-														not(strcmp("$(existing_routes[$(routes)][1])","$($(s_r)[$(routes)][gateway])")),
-														not(strcmp("$(existing_routes[$(routes)][2])","$($(s_r)[$(routes)][netmask])"))
-														)
-												);
-			# Add network address if netmask or gateway differ from policy
-			"/sbin/route add -net $(routes) netmask $($(s_r)[$(routes)][netmask]) gw $($(s_r)[$(routes)][gateway])"
-				ifvarclass => and(
-													isvariable("existing_routes[$(routes)][1]"),
-													or(
-														not(strcmp("$(existing_routes[$(routes)][1])","$($(s_r)[$(routes)][gateway])")),
-														not(strcmp("$(existing_routes[$(routes)][2])","$($(s_r)[$(routes)][netmask])"))
-														)
-												);
-			# Add network address if not exists
-			"/sbin/route add -net $(routes) netmask $($(s_r)[$(routes)][netmask]) gw $($(s_r)[$(routes)][gateway])"
-				ifvarclass => not(isvariable("existing_routes[$(routes)][1]"));
-		do_purge_routes::
-			"/sbin/route del -net $(e_routes) netmask $(existing_routes[$(e_routes)][2]) gw $(existing_routes[$(e_routes)][1])"
-				ifvarclass => not(isvariable("$(s_r)[$(e_routes)][netmask]"));
+  commands:
+    any::
+      # Delete network address if netmask or gateway differ from policy
+      "$(default:eu.exec_prefix)/sbin/route del -net $(routes) netmask $(existing_routes[$(routes)][2]) gw $(existing_routes[$(routes)][1])"
+      ifvarclass => and(
+                         isvariable("existing_routes[$(routes)][1]"),
+                         or(
+                             not(strcmp("$(existing_routes[$(routes)][1])","$($(s_r)[$(routes)][gateway])")),
+                             not(strcmp("$(existing_routes[$(routes)][2])","$($(s_r)[$(routes)][netmask])"))
+                         )
+      );
+      # Add network address if netmask or gateway differ from policy
+      "$(default:eu.exec_prefix)/sbin/route add -net $(routes) netmask $($(s_r)[$(routes)][netmask]) gw $($(s_r)[$(routes)][gateway])"
+      ifvarclass => and(
+                         isvariable("existing_routes[$(routes)][1]"),
+                         or(
+                             not(strcmp("$(existing_routes[$(routes)][1])","$($(s_r)[$(routes)][gateway])")),
+                             not(strcmp("$(existing_routes[$(routes)][2])","$($(s_r)[$(routes)][netmask])"))
+                         )
+      );
+
+      # Add network address if not exists
+      "$(default:eu.exec_prefix)/sbin/route add -net $(routes) netmask $($(s_r)[$(routes)][netmask]) gw $($(s_r)[$(routes)][gateway])"
+      ifvarclass => not(isvariable("existing_routes[$(routes)][1]"));
+
+    do_purge_routes::
+      "$(default:eu.exec_prefix)/sbin/route del -net $(e_routes) netmask $(existing_routes[$(e_routes)][2]) gw $(existing_routes[$(e_routes)][1])"
+      ifvarclass => not(isvariable("$(s_r)[$(e_routes)][netmask]"));
 }
 bundle edit_line system_routes_delete_lines {
-	delete_lines:
-		"^[^\d].*";
-		"^0\.0\.0\.0\s+.*"; # Default routes
-		"^\d+\.\d+\.\d+\.\d+\s+0\.0\.0\.0\s+.*"; # Local routes
+  delete_lines:
+      "^[^\d].*";
+      "^0\.0\.0\.0\s+.*"; # Default routes
+      "^\d+\.\d+\.\d+\.\d+\s+0\.0\.0\.0\s+.*"; # Local routes
 }

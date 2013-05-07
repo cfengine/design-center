@@ -1,17 +1,17 @@
 # System::Routes version 1
 
 License: MIT
-Tags: cfdc
+Tags: cfdc, routes, iptables
 Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
 ## Description
 Sets defaults and user permissions in the sudoers file
 
 ## Dependencies
-CFEngine::stdlib
+CFEngine::dclib, CFEngine::stdlib
 
 ## API
-### bundle: system_routes
+### bundle: ensure
 * parameter _environment_ *runenv* (default: none, description: none)
 
 * parameter _metadata_ *metadata* (default: none, description: none)
