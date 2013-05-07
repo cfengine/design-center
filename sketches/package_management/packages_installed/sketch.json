@@ -13,7 +13,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "enterprise_compatible" ],
         "authors": [ "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.5.0" }, "os": [ { "debian" : "Debian family" } ] }
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "debian" : "Debian family" } ] }
     },
 
     api:
