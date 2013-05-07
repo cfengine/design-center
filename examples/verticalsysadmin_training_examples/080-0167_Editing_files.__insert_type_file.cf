@@ -5,7 +5,7 @@ files:
   "/etc/motd"
 
     handle => "motd",
-    comment => "Generate /etc/motd from template",
+    comment => "Generate /etc/motd from static template (no expansion)",
     edit_line => insert_stock_motd;
 }
 
@@ -20,7 +20,7 @@ insert_lines:
 
     "/var/cfengine/inputs/templates/motd.txt"
 
-       handle => "insert_stock_motd",
+       handle => "motd_contents",
        comment => "insert stock MOTD from static template",
        insert_type => "file";
 }

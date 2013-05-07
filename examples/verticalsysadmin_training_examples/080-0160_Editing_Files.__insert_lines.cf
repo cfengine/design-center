@@ -16,7 +16,7 @@ bundle edit_line  greet_users {
 
   insert_lines:
 
-    "Good morning!"
+"Good morning!"
                handle => "greet_user",
               comment => "Happy users = less complaints. Greet the user
 politely.";

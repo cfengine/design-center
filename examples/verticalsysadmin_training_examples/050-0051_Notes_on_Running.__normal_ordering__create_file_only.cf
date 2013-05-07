@@ -7,6 +7,6 @@ bundle agent example {
   files:
       "/tmp/newfile"
                create => "true",
-              comment => "file created ";
+              comment => "file created";
 
                         }

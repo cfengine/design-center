@@ -5,6 +5,8 @@ bundle agent example {
 
       "/etc/motd"
 
+            handle => "expand_motd_from_template",
+            comment => "Demonstrate variable expansion on templated content",
             edit_line => ExpandMeFrom("/var/cfengine/inputs/templates/motd.txt");
                      }
 
@@ -13,12 +15,14 @@ bundle edit_line ExpandMeFrom(source) {
 
   delete_lines:
 
-      ".*";
+      ".*"
+              handle => "empty_entire_file";
 
   insert_lines:
 
       "$(source)"
 
+           handle     => "insert_file_from_template_with_var_expansion",
           insert_type => "file",
        expand_scalars => "true";
                                       }

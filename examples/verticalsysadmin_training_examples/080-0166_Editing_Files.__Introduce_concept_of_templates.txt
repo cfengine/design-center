@@ -25,3 +25,4 @@ ENTRY_ATTRIBUTE="cn"
 VALUE_ATTRIBUTE="automountInformation"
 USE_MISC_DEVICE="yes"
 SEARCH_BASE="ou=__SITE__,ou=Sites,dc=VerticalSysadmin,dc=com"
+

@@ -92,13 +92,27 @@ It should *always* say "Unauthorized use forbidden."
 
 EXERCISE 5b.  File Editing and Classes
 
-Write a policy to create /etc/motd as follows:
-It should *always* say "Unauthorized use forbidden."
+/etc/motd should *always* say "Unauthorized use forbidden."
 
-On weekends only it should have an extra line that says
-"go home, it's the weekend".
+On weekends, it should also say "Go home, it's the weekend".
 
-Test by changing your clock to Saturday and then back to a weekday.
+Test by defining "Saturday" class on the command line:
+
+  cf-agent -D Saturday  --file ... --bundle ...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
