@@ -151,6 +151,50 @@ sub runfile_data_dump
     return \%ret;
 }
 
+sub test
+{
+    my $self = shift;
+    my $options = shift;
+
+    my $tests;
+    eval
+    {
+        my @todo = @{$self->runfile_data_dump()->{manifest_test}};
+        @todo = map { sprintf("%s/%s", $self->location(), $_) } @todo;
+
+        $ENV{HARNESS_VERBOSE} = ! ! $options->{test};
+        $ENV{CFAGENT} = $self->dcapi()->cfagent();
+        $ENV{CFPROMISES} = $self->dcapi()->cfpromises();
+
+        require Test::Harness;
+
+        chdir $self->location();
+        my $output = '';
+        open(my $log_fh, ">", \$output);
+
+        my ($total, $failed) = Test::Harness::execute_tests(
+                                                            out => $log_fh,
+                                                            tests => \@todo,
+                                                           );
+
+        foreach my $ref ($total, $failed)
+        {
+            next unless ref $ref eq 'HASH' && exists $ref->{bench};
+            $ref->{bench} = $ref->{bench}->timestr();
+        }
+
+        $tests = {
+                  total => $total,
+                  failed => $failed,
+                  log => $output,
+                 };
+
+        # print Util::dump_ref($tests);
+    };
+
+    return $tests || { total => undef, ok => undef, failed => undef, log => [$@] };
+}
+
 sub make_readme
 {
     my $self = shift;
@@ -435,9 +479,9 @@ sub resolve_dependencies
                 push @criteria, ["version", ">=", $deps{$dep}->{version}];
             }
 
-            my $list = $self->dcapi()->list_int($self->dcapi()->repos(),
-                                                \@criteria,
-                                                { flatten => 1 });
+            my $list = $self->dcapi()->collect_int($self->dcapi()->repos(),
+                                                   \@criteria,
+                                                   { flatten => 1 });
             if (scalar @$list < 1 || $options{force})
             {
                 if ($options{install})

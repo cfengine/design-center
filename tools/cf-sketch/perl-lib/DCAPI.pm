@@ -19,9 +19,6 @@ use constant CAN_CODER => JSON->new()->canonical()->utf8()->allow_nonref();
 
 use Mo qw/build default builder coerce is required/;
 
-# has name2 => ( builder => 'name_builder' );
-# has name4 => ( required => 1 );
-
 our @vardata_keys = qw/compositions activations definitions environments validations/;
 
 has version => ( is => 'ro', default => sub { API_VERSION } );
@@ -42,6 +39,19 @@ has cfagent => (
                     return undef;
                 }
                );
+
+has cfpromises => (
+                   is => 'ro',
+                   default => sub
+                   {
+                       my $c = which('cf-promises');
+                       $c = '/var/cfengine/bin/cf-promises' unless $c;
+
+                       return $c if -x $c;
+
+                       return undef;
+                   }
+                  );
 
 has repos => ( is => 'ro', default => sub { [] } );
 has recognized_sources => ( is => 'ro', default => sub { [] } );
@@ -314,7 +324,7 @@ sub search
     return DCAPI::Result->new(api => $self,
                               status => 1,
                               success => 1,
-                              data => { search => $self->list_int($self->recognized_sources(), @_) });
+                              data => { search => $self->collect_int($self->recognized_sources(), @_) });
 }
 
 sub list
@@ -323,10 +333,19 @@ sub list
     return DCAPI::Result->new(api => $self,
                               status => 1,
                               success => 1,
-                              data => { list => $self->list_int($self->repos(), @_) });
+                              data => { list => $self->collect_int($self->repos(), @_) });
 }
 
-sub list_int
+sub test
+{
+    my $self = shift;
+    return DCAPI::Result->new(api => $self,
+                              status => 1,
+                              success => 1,
+                              data => { test => $self->collect_int($self->repos(), @_) });
+}
+
+sub collect_int
 {
     my $self = shift;
     my $repos = shift;
@@ -350,6 +369,10 @@ sub list_int
             elsif ($options->{describe})
             {
                 $_->name() => $_->data_dump();
+            }
+            elsif ($options->{test})
+            {
+                $_->name() => $_->test($options);
             }
             else
             {

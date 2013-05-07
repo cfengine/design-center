@@ -82,6 +82,10 @@ do:
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "CFEngine::sketch_template": { target: "$(API_SKETCHDIR)", environment: "production", params: [ "simple_sketch" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
+api_test:
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Applications::Memcached", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {test: ["Applications::Memcached"] } }' | $(CFAPI)
+
 api_activate:
 	@echo ...install CFEngine::sketch_template, deactivate all, activate just CFEngine::sketch_template with some metadata, then generate the runfile
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::sketch_template", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)

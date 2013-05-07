@@ -1298,6 +1298,91 @@ parameter definitions, and data validations.
 The command does not allow the user to change the runfile type (standalone or
 not) or location, as that is a possible security risk.
 
+#### `test`
+
+The `test` command tests *installed* sketches.  It always returns true if the
+test harness ran, even if the individual tests failed.  It's up to you to check
+the result of each sketch's test.
+
+Here are examples of two `test` commands.  The first one tests everything
+installed (shown when no sketches were installed for brevity; see below for a
+full test example).
+
+```json
+{ dc_api_version: "0.0.1", request: {test: true } }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "test": {}
+            }
+        },
+        "log": [],
+        "tags": {}
+    }
+}
+```
+
+The top-level key under `data` is the name of the repository, which is
+always a local directory.
+
+The next one takes *terms* and tests all the sketches whose name satisfies the
+*terms*.  The return format is the same: for each repository and each sketch
+tested, you'll get a key-value array with keys `log` (the text log of the
+output); `failed` (with tests that failed); and `total` (with all the tests).
+
+The format inside each test is according to the Perl module `Test::Harness`.
+For instance the `good` key will be `1` if all the planned tests succeeded.
+
+The `bench` key will give you some timings, but more precise timings may be
+added in the future.  Do not depend on the format of the `bench` value.
+    
+```json
+{ dc_api_version: "0.0.1", request: {test: ["Applications::Memcached"] } }
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "test": {
+                "/home/tzz/.cfagent/inputs/sketches": {
+                    "Applications::Memcached": {
+                        "log": "/home/tzz/.cfagent/inputs/sketches/applications/memcached/test.pl .. \n1..6\n# Running under perl version 5.014002 for linux\n# Current time local: Tue May  7 18:08:08 2013\n# Current time GMT:   Tue May  7 22:08:08 2013\n# Using Test.pm version 1.25_02\nok 1\nok 2\nok 3\nok 4\nok 5\nok 6\nok\n",
+                        "failed": {},
+                        "total": {
+                            "files": 1,
+                            "max": 6,
+                            "bonus": 0,
+                            "skipped": 0,
+                            "sub_skipped": 0,
+                            "ok": 6,
+                            "bad": 0,
+                            "good": 1,
+                            "tests": 1,
+                            "bench": " 1 wallclock secs ( 0.02 usr  0.00 sys +  0.45 cusr  0.01 csys =  0.48 CPU)",
+                            "todo": 0
+                        }
+                    }
+                }
+            }
+        },
+        "log": [],
+        "tags": {}
+    }
+}
+```
+
 ### API CLI Interface and config.json
 
 From the command line, you can run `cd tools/cf-sketch; ./cf-dc-api.pl

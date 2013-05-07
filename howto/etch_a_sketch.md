@@ -16,6 +16,7 @@ listed in the `manifest`, and the corresponding bundle as listed in the API.
         {
             "main.cf": {desc: "main file" },
             "test.cf": {comment: "Test Policy"},
+            "test.pl": {test:true},
             "params/example.json": {comment: "Example parameters to report on a few hosts connectivity."}
         },
 
@@ -197,3 +198,46 @@ name).
 
 In the example above, the bundle `ping` defined in the sketch API won't match
 `not_the_one_you_want` and you won't be able to use that parameter set.
+
+### test.cf and test.pl
+
+You can choose to provide a `test.cf` file that will let your sketch get tested locally.
+
+It should be runnable with simply `cf-agent -KI -f ./test.cf`.
+
+You may also choose to provide a `test.pl` script to test your sketch.  It
+should be runnable with the standard Perl `Test::Harness` module and *must* be
+given `test: true` key in the `sketch.json` manifest.  Here is a partial Perl
+example for the `Application::Memcached` sketch.  It plans 6 tests and does
+syntax validation, then runs `test.cf`, and finally looks at the output to
+verify that things actually ran correctly.
+
+```perl
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+use Test;
+
+BEGIN { plan tests => 6, todo => [] }
+
+ok(exists $ENV{CFPROMISES} && -x $ENV{CFPROMISES}, 1, "check for cf-promises");
+ok(exists $ENV{CFAGENT} && -x $ENV{CFAGENT}, 1, "check for cf-agent");
+
+ok(system($ENV{CFPROMISES}, -f => './test.cf'), 0, "syntax check test.cf");
+
+open my $run, '-|', "$ENV{CFAGENT} -KI -f ./test.cf";
+
+ok(defined $run, 1, "run status of test.cf");
+
+my $output = join '', <$run>;
+
+ok($output,
+   qr/R: cfdc_memcached:server: Applications::Memcached/,
+   "metadata check");
+
+ok($output,
+   qr/Overriding bundle return status to success/,
+   "test mode override of bundle install status");
+```
+

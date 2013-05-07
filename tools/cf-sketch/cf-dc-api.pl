@@ -68,6 +68,7 @@ my $debug = Util::hashref_search($data, qw/debug/);
 my $version = Util::hashref_search($data, qw/dc_api_version/);
 my $request = Util::hashref_search($data, qw/request/);
 
+my $test = Util::hashref_search($request, qw/test/);
 my $list = Util::hashref_search($request, qw/list/);
 my $search = Util::hashref_search($request, qw/search/);
 my $describe = Util::hashref_search($request, qw/describe/);
@@ -114,7 +115,11 @@ unless (defined $request)
 }
 
 my $result;
-if (defined $list)
+if (defined $test)
+{
+    $result = $api->test($test, { test => 1 });
+}
+elsif (defined $list)
 {
     $result = $api->list($list, { describe => $describe});
 }
