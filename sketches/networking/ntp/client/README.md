@@ -1,17 +1,17 @@
 # Networking::NTP::Client version 1
 
 License: MIT
-Tags: cfdc
+Tags: cfdc, ntp
 Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
 ## Description
 Sketch for setting NTP client configuration
 
 ## Dependencies
-CFEngine::stdlib
+CFEngine::dclib, CFEngine::stdlib
 
 ## API
-### bundle: ntp_client
+### bundle: client
 * parameter _environment_ *runenv* (default: none, description: none)
 
 * parameter _metadata_ *metadata* (default: none, description: none)

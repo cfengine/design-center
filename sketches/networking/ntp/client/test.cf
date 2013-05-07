@@ -1,0 +1,80 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../../libraries/dclib/library.cf", "../../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation ___001_Networking_NTP_Client_client
+      "___001_Networking_NTP_Client_client_metadata[api][conffile][type]" string => "string";
+      "___001_Networking_NTP_Client_client_metadata[api][driftfile][type]" string => "string";
+      "___001_Networking_NTP_Client_client_metadata[api][metadata][type]" string => "metadata";
+      "___001_Networking_NTP_Client_client_metadata[api][peers][type]" string => "list";
+      "___001_Networking_NTP_Client_client_metadata[api][restrictions][type]" string => "list";
+      "___001_Networking_NTP_Client_client_metadata[api][runenv][type]" string => "environment";
+      "___001_Networking_NTP_Client_client_metadata[api][servers][type]" string => "list";
+      "___001_Networking_NTP_Client_client_metadata[api][statsdir][type]" string => "string";
+      "___001_Networking_NTP_Client_client_metadata[authors]" slist => { "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" };
+      "___001_Networking_NTP_Client_client_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "___001_Networking_NTP_Client_client_metadata[license]" string => "MIT";
+      "___001_Networking_NTP_Client_client_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/networking/ntp/client";
+      "___001_Networking_NTP_Client_client_metadata[manifest]" slist => { "README.md", "main.cf" };
+      "___001_Networking_NTP_Client_client_metadata[manifest_cf]" slist => { "main.cf" };
+      "___001_Networking_NTP_Client_client_metadata[manifest_docs]" slist => { "README.md" };
+      "___001_Networking_NTP_Client_client_metadata[manifest_exe]" slist => { "cf_null" };
+      "___001_Networking_NTP_Client_client_metadata[manifest_extra]" slist => { "cf_null" };
+      "___001_Networking_NTP_Client_client_metadata[name]" string => "Networking::NTP::Client";
+      "___001_Networking_NTP_Client_client_metadata[tags]" slist => { "cfdc", "ntp" };
+      "___001_Networking_NTP_Client_client_metadata[version]" string => "1";
+
+      # list 'peers' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/networking/ntp/client/params/demo.json, activation ___001_Networking_NTP_Client_client
+      "___001_Networking_NTP_Client_client_peers" slist => { "cf_null" };
+
+      # list 'servers' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/networking/ntp/client/params/demo.json, activation ___001_Networking_NTP_Client_client
+      "___001_Networking_NTP_Client_client_servers" slist => { "10.10.170.4", "10.10.170.5" };
+
+      # list 'restrictions' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/networking/ntp/client/params/demo.json, activation ___001_Networking_NTP_Client_client
+      "___001_Networking_NTP_Client_client_restrictions" slist => { "cf_null" };
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "___001_Networking_NTP_Client_client" usebundle => cfdc_ntp:client("cf_sketch_testing", "default:cfsketch_run.___001_Networking_NTP_Client_client_metadata", @(cfsketch_run.___001_Networking_NTP_Client_client_peers), @(cfsketch_run.___001_Networking_NTP_Client_client_servers), @(cfsketch_run.___001_Networking_NTP_Client_client_restrictions), "/var/lib/ntp/drift", "/var/log/ntpstats", "/etc/ntp.conf"), ifvarclass => "redhat|fedora|centos|ubuntu|debian", useresult => "return____001_Networking_NTP_Client_client";
+
+  reports:
+    inform_mode::
+      "activation ___001_Networking_NTP_Client_client could not run because it requires classes redhat|fedora|centos|ubuntu|debian" ifvarclass => "inform_mode.!(redhat|fedora|centos|ubuntu|debian)";
+}

@@ -1,111 +1,150 @@
 body file control
 {
-  namespace => "cfdc_ntp_client";
+      namespace => "cfdc_ntp";
 }
 
-bundle agent ntp_client(runenv,metadata,peers,servers,restrictions,driftfile,statsdir,conffile)
+bundle agent client(runenv,metadata,peers,servers,restrictions,driftfile,given_statsdir,given_conffile)
 {
-	methods:
-		"NTP CLIENT INSTALL $(runenv)"
-			usebundle => ntp_client_install,
-			useresult => "install_return";
-		"NTP CLIENT CONFIGURE $(runenv)"
-			usebundle => ntp_client_conf("$(runenv)","$(metadata)","$(install_return[package_status])", "@(ntp_client.peers)", 
-			                             "@(ntp_client.servers)", "@(ntp_client.restrictions)","$(driftfile)","$(statsdir)", "$(conffile)"),
-			useresult => "config_return";
-		"NTP CLIENT PROCESS $(runenv)"
-			usebundle => ntp_client_proc("$(config_return[service_mode])");
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "conffile" string => "$(default:eu.path_prefix)$(given_conffile)";
+      "statsdir" string => "$(default:eu.path_prefix)$(given_statsdir)";
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+      "NTP CLIENT INSTALL $(runenv)"
+      usebundle => install,
+      inherit => "true",
+      useresult => "install_return";
+
+      "NTP CLIENT CONFIGURE $(runenv)"
+      usebundle => conf($(runenv),
+                        $(metadata),
+                        $(install_return[package_status]),
+                        @(cfdc_ntp:client.peers),
+                        @(cfdc_ntp:client.servers),
+                        @(cfdc_ntp:client.restrictions),
+                        $(driftfile),
+                        $(statsdir),
+                        $(conffile)),
+      inherit => "true",
+      useresult => "config_return";
+
+      "NTP CLIENT PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => proc("$(config_return[service_mode])");
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 }
 
-
-bundle agent ntp_client_install
+bundle agent install
 {
-	packages:
-		ubuntu|debian::
-			"ntp"
-				package_policy => "add",
-				classes => default:if_ok("ntp_client_installed"),
-				package_method => default:apt;
+  packages:
+    not_test.(ubuntu|debian)::
+      "ntp"
+      package_policy => "add",
+      classes => default:if_ok("ntp_client_installed"),
+      package_method => default:apt;
 
-	reports:
-		ntp_client_installed::
-			"installed" bundle_return_value_index => "package_status";
-		!ntp_client_installed::
-			"not_installed" bundle_return_value_index => "package_status";
+  reports:
+    verbose.installed::
+      "$(this.bundle): Installed NTP successfully.";
+    verbose.not_test.!installed::
+      "$(this.bundle): Could not install NTP successfully.";
+
+    installed::
+      "1" bundle_return_value_index => "package_status";
+    not_test.!installed::
+      "0" bundle_return_value_index => "package_status";
+    test::
+      "$(this.bundle): Overriding bundle return status to success (1) in test mode";
+      "1" bundle_return_value_index => "package_status";
 }
 
-bundle agent ntp_client_conf(runenv,metadata,pkg_status,peers,servers,restrictions,driftfile,statsdir,conffile)
+bundle agent conf(runenv,metadata,pkg_status,peers,servers,restrictions,driftfile,statsdir,conffile)
 {
-	classes:
-		"ntp_client_installed" expression => strcmp("installed", "$(pkg_status)");
+  classes:
+      "ntp_client_installed" expression => strcmp("1", $(pkg_status));
 
   files:
-		ntp_client_installed.(redhat|centos|fedora|debian|ubuntu)::
-			"$(statsdir)/."
-				create => "true",
-				perms => default:mog("755", "ntp", "ntp");
-			"$(conffile)"
-				create => "true",
-				edit_defaults => default:empty,
-				classes => default:if_repaired("ntp_client_config_repaired"),
-				perms => default:mog("644","root","root"),
-				edit_line => ntp_client_editline(
-																				"@(ntp_client.peers)",
-																				"@(ntp_client.servers)",
-																				"@(ntp_client.restrictions)",
-																				"$(driftfile)",
-																				"$(statsdir)"
-																			);
-	reports:
-		ntp_client_config_repaired::
-			"restart" bundle_return_value_index => "service_mode";
-		!ntp_client_config_repaired::
-			"start" bundle_return_value_index => "service_mode";
+    ntp_client_installed.(redhat|centos|fedora|debian|ubuntu)::
+      "$(statsdir)/."
+      create => "true",
+      perms => default:mog("755", "ntp", "ntp");
+
+      "$(conffile)"
+      create => "true",
+      edit_defaults => default:empty,
+      classes => default:if_repaired("ntp_client_config_repaired"),
+      perms => default:mog("644","root","root"),
+      edit_line => ntp_client_editline(
+                                        @(cfdc_ntp:client.peers),
+                                        @(cfdc_ntp:client.servers),
+                                        @(cfdc_ntp:client.restrictions),
+                                        $(driftfile),
+                                        $(statsdir)
+      );
+
+  reports:
+    ntp_client_config_repaired::
+      "restart" bundle_return_value_index => "service_mode";
+    !ntp_client_config_repaired::
+      "start" bundle_return_value_index => "service_mode";
 }
 
-bundle agent ntp_client_proc(service_mode) {
-	classes:
-		"ntp_client_conf_repaired" expression => strcmp("restart","$(service_mode)");
-	
-	processes:
-		!ntp_client_conf_repaired::
-			"ntpd"
-				restart_class => "ntp_client_proc_start";
+bundle agent proc(service_mode)
+{
+  classes:
+      "ntp_client_conf_repaired" expression => strcmp("restart",$(service_mode));
 
-	commands:
-		ntp_client_conf_repaired.(redhat|centos|fedora)::
-			"/etc/init.d/ntpd restart";
-		ntp_client_conf_repaired.(ubuntu|debian)::
-			"/etc/init.d/ntp restart";
-		ntp_client_proc_start.(redhat|centos|fedora)::
-			"/etc/init.d/ntpd start";
-		ntp_client_proc_start.(ubuntu|debian)::
-			"/etc/init.d/ntp start";
+  processes:
+    !ntp_client_conf_repaired::
+      "ntpd"
+      restart_class => "ntp_client_proc_start";
+
+  commands:
+    ntp_client_conf_repaired.(redhat|centos|fedora)::
+      "$(default:eu.exec_prefix)/etc/init.d/ntpd restart";
+    ntp_client_conf_repaired.(ubuntu|debian)::
+      "$(default:eu.exec_prefix)/etc/init.d/ntp restart";
+    ntp_client_proc_start.(redhat|centos|fedora)::
+      "$(default:eu.exec_prefix)/etc/init.d/ntpd start";
+    ntp_client_proc_start.(ubuntu|debian)::
+      "$(default:eu.exec_prefix)/etc/init.d/ntp start";
 }
 
-bundle edit_line ntp_client_editline(peers,servers,restrictions,driftfile,statsdir) {
-	# Contents of ntp.conf
-	insert_lines:
-"# Generated by CFEngine for $(sys.fqhost) 
+bundle edit_line ntp_client_editline(peers,servers,restrictions,driftfile,statsdir)
+{
+      # Contents of ntp.conf
+  insert_lines:
+      "# Generated by CFEngine for $(sys.fqhost)
 # Local modifications will be overwritten.";
-"peer $(peers) iburst
+      "peer $(peers) iburst
 restrict $(peers) nomodify";
 
-"server $(servers) iburst
+      "server $(servers) iburst
 restrict $(servers) nomodify notrap noquery";
 
-"restrict default kod notrap nomodify nopeer noquery
+      "restrict default kod notrap nomodify nopeer noquery
 restrict 127.0.0.1 nomodify
 restrict -6 default kod notrap nomodify nopeer noquery
 restrict -6 ::1 nomodify";
 
-"restrict $(restrictions)";
+      "restrict $(restrictions)";
 
-"server  127.127.1.0 # local clock
+      "server  127.127.1.0 # local clock
 fudge   127.127.1.0 stratum 10
 driftfile $(driftfile)
 statsdir $(statsdir)
-#leapfile $(leapfile)
 statistics loopstats peerstats clockstats
 filegen loopstats file loopstats type day enable
 filegen peerstats file peerstats type day enable

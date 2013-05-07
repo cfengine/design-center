@@ -1,8 +1,8 @@
 {
     "Networking::NTP::Client":
     {
-        "servers":[ "10.10.170.4","10.10.170.5"],
-				"peers":[],
-				"restrictions":[],
-		},
+        "servers": [ "10.10.170.4","10.10.170.5" ],
+		"peers": [],
+		"restrictions": [],
+	},
 }

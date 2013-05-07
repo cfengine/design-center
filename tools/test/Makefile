@@ -627,3 +627,7 @@ routes:
 logrotate:
 	$(CFSKETCH_DA) --install System::Logrotate --activate System::Logrotate=$(SOURCEDIR)/system/logrotate/params/demo.json
 	$(RUNNER)
+
+ntp:
+	$(CFSKETCH_DA) --install Networking::NTP::Client --activate Networking::NTP::Client=$(SOURCEDIR)/networking/ntp/client/params/demo.json
+	$(RUNNER)
