@@ -1,0 +1,132 @@
+body file control
+{
+  namespace => "cfdc_package_management_epel";
+}
+
+bundle agent package_management_epel(runenv,metadata,use_mirrorlist,proxy_url,proxy_user,proxy_password)
+{
+	vars:
+		redhat_5|centos_5::
+			"EL_VERSION" string => "5";
+		redhat_6|centos_6::
+			"EL_VERSION" string => "6";
+		any::
+			"epel_repos[epel][title]" string => "Extra Packages for Enterprise Linux $(EL_VERSION) - $basearch";
+			"epel_repos[epel][baseurl]" string => "http://download.fedoraproject.org/pub/epel/$(EL_VERSION)/$basearch";
+			"epel_repos[epel][mirrorlist]" string => "https://mirrors.fedoraproject.org/metalink?repo=epel-$(EL_VERSION)&arch=$basearch";
+
+			"epel_repos[epel-debuginfo][title]" string => "Extra Packages for Enterprise Linux $(EL_VERSION) - $basearch - Debug";
+			"epel_repos[epel-debuginfo][baseurl]" string => "http://download.fedoraproject.org/pub/epel/$(EL_VERSION)/$basearch/debug";
+			"epel_repos[epel-debuginfo][mirrorlist]" string => "https://mirrors.fedoraproject.org/metalink?repo=epel-debug-$(EL_VERSION)&arch=$basearch";
+
+			"epel_repos[epel-source][title]" string => "Extra Packages for Enterprise Linux $(EL_VERSION) - $basearch - Source";
+			"epel_repos[epel-source][baseurl]" string => "http://download.fedoraproject.org/pub/epel/$(EL_VERSION)/SRPMS";
+			"epel_repos[epel-source][mirrorlist]" string => "https://mirrors.fedoraproject.org/metalink?repo=epel-source-$(EL_VERSION)&arch=$basearch";
+
+			"epel_repos[epel-testing][title]" string => "Extra Packages for Enterprise Linux $(EL_VERSION) - Testing - $basearch";
+			"epel_repos[epel-testing][baseurl]" string => "http://download.fedoraproject.org/pub/epel/testing/$(EL_VERSION)/$basearch";
+			"epel_repos[epel-testing][mirrorlist]" string => "https://mirrors.fedoraproject.org/metalink?repo=testing-epel$(EL_VERSION)&arch=$basearch";
+
+			"epel_repos[epel-testing-debuginfo][title]" string => "Extra Packages for Enterprise Linux $(EL_VERSION) - Testing - $basearch - Debug";
+			"epel_repos[epel-testing-debuginfo][baseurl]" string => "http://download.fedoraproject.org/pub/epel/testing/$(EL_VERSION)/$basearch/debug";
+			"epel_repos[epel-testing-debuginfo][mirrorlist]" string => "https://mirrors.fedoraproject.org/metalink?repo=testing-debug-epel$(EL_VERSION)&arch=$basearch";
+
+			"epel_repos[epel-testing-source][title]" string => "Extra Packages for Enterprise Linux $(EL_VERSION) - Testing - $basearch - Source";
+			"epel_repos[epel-testing-source][baseurl]" string => "http://download.fedoraproject.org/pub/epel/testing/$(EL_VERSION)/SRPMS";
+			"epel_repos[epel-testing-source][mirrorlist]" string => "https://mirrors.fedoraproject.org/metalink?repo=testing-source-epel$(EL_VERSION)&arch=$basearch";
+
+			"repo_list" slist => getindices("epel_repos");
+
+	files:
+		"/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6"
+			create => "true",
+			classes => default:if_repaired("package_management_epel_repaired_gpg"),
+			perms => default:mog("644","root","root"),
+			edit_defaults => default:empty,
+			edit_line => package_management_epel_gpg_key;
+
+		"/etc/yum.repos.d/$(repo_list).repo"
+			create => "true",
+			classes => default:if_repaired("package_management_epel_repaired_repos"),
+			perms => default:mog("644","root","root"),
+			edit_defaults => default:empty,
+			edit_line => package_management_epel_repo("$(repo_list)", "$(epel_repos[epel][title])", "$(epel_repos[epel][baseurl])",
+			                                          "$(epel_repos[epel][mirrorlist])","$(use_mirrorlist)","$(proxy_url)","$(proxy_user)", "$(proxy_password)");
+		"/etc/rpm/macros.ghc-srpm"
+			create => "true",
+			perms => default:mog("644","root","root"),
+			edit_defaults => default:empty,
+			edit_line => package_management_epel_rpm_macro;
+
+	commands:
+		package_management_epel_repaired_gpg::
+			"/bin/rpm --import file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6";
+		package_management_epel_repaired_repos::
+			"/usr/bin/yum updateinfo";
+}
+
+bundle edit_line package_management_epel_repo(repo,title,baseurl,mirrorlist,use_mirrorlist,proxy_url,proxy_user,proxy_password) {
+	classes:
+		"use_mirror_list" expression => strcmp("$(use_mirrorlist)", "1");
+	insert_lines:
+any::
+"[$(repo)]
+name=$(title)";
+!use_mirror_list::
+"baseurl=$(baseurl)";
+use_mirror_list::
+"mirrorlist=$(mirrorlist)";
+any::
+"failovermethod=priority
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6";
+
+"proxy=$(proxy_url)" ifvarclass => not(strcmp("$(proxy_url)", ""));
+"proxy_username=$(proxy_user)" ifvarclass => not(strcmp("$(proxy_user)", ""));
+"proxy_password=$(proxy_password)" ifvarclass => not(strcmp("$(proxy_password)", ""));
+}
+
+
+bundle edit_line package_management_epel_rpm_macro
+{
+	insert_lines:
+"# macro defining the archs that ghc runs on in epel
+%ghc_arches %{ix86} x86_64 ppc64
+%ghc_arches_with_ghci %{ix86} x86_64";
+}
+
+bundle edit_line package_management_epel_gpg_key
+{
+	insert_lines:
+"-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+mQINBEvSKUIBEADLGnUj24ZVKW7liFN/JA5CgtzlNnKs7sBg7fVbNWryiE3URbn1
+JXvrdwHtkKyY96/ifZ1Ld3lE2gOF61bGZ2CWwJNee76Sp9Z+isP8RQXbG5jwj/4B
+M9HK7phktqFVJ8VbY2jfTjcfxRvGM8YBwXF8hx0CDZURAjvf1xRSQJ7iAo58qcHn
+XtxOAvQmAbR9z6Q/h/D+Y/PhoIJp1OV4VNHCbCs9M7HUVBpgC53PDcTUQuwcgeY6
+pQgo9eT1eLNSZVrJ5Bctivl1UcD6P6CIGkkeT2gNhqindRPngUXGXW7Qzoefe+fV
+QqJSm7Tq2q9oqVZ46J964waCRItRySpuW5dxZO34WM6wsw2BP2MlACbH4l3luqtp
+Xo3Bvfnk+HAFH3HcMuwdaulxv7zYKXCfNoSfgrpEfo2Ex4Im/I3WdtwME/Gbnwdq
+3VJzgAxLVFhczDHwNkjmIdPAlNJ9/ixRjip4dgZtW8VcBCrNoL+LhDrIfjvnLdRu
+vBHy9P3sCF7FZycaHlMWP6RiLtHnEMGcbZ8QpQHi2dReU1wyr9QgguGU+jqSXYar
+1yEcsdRGasppNIZ8+Qawbm/a4doT10TEtPArhSoHlwbvqTDYjtfV92lC/2iwgO6g
+YgG9XrO4V8dV39Ffm7oLFfvTbg5mv4Q/E6AWo/gkjmtxkculbyAvjFtYAQARAQAB
+tCFFUEVMICg2KSA8ZXBlbEBmZWRvcmFwcm9qZWN0Lm9yZz6JAjYEEwECACAFAkvS
+KUICGw8GCwkIBwMCBBUCCAMEFgIDAQIeAQIXgAAKCRA7Sd8qBgi4lR/GD/wLGPv9
+qO39eyb9NlrwfKdUEo1tHxKdrhNz+XYrO4yVDTBZRPSuvL2yaoeSIhQOKhNPfEgT
+9mdsbsgcfmoHxmGVcn+lbheWsSvcgrXuz0gLt8TGGKGGROAoLXpuUsb1HNtKEOwP
+Q4z1uQ2nOz5hLRyDOV0I2LwYV8BjGIjBKUMFEUxFTsL7XOZkrAg/WbTH2PW3hrfS
+WtcRA7EYonI3B80d39ffws7SmyKbS5PmZjqOPuTvV2F0tMhKIhncBwoojWZPExft
+HpKhzKVh8fdDO/3P1y1Fk3Cin8UbCO9MWMFNR27fVzCANlEPljsHA+3Ez4F7uboF
+p0OOEov4Yyi4BEbgqZnthTG4ub9nyiupIZ3ckPHr3nVcDUGcL6lQD/nkmNVIeLYP
+x1uHPOSlWfuojAYgzRH6LL7Idg4FHHBA0to7FW8dQXFIOyNiJFAOT2j8P5+tVdq8
+wB0PDSH8yRpn4HdJ9RYquau4OkjluxOWf0uRaS//SUcCZh+1/KBEOmcvBHYRZA5J
+l/nakCgxGb2paQOzqqpOcHKvlyLuzO5uybMXaipLExTGJXBlXrbbASfXa/yGYSAG
+iVrGz9CE6676dMlm8F+s3XXE13QZrXmjloc6jwOljnfAkjTGXjiB7OULESed96MR
+XtfLk0W5Ab9pd7tKDR6QHI7rgHXfCopRnZ2VVQ==
+=V/6I
+-----END PGP PUBLIC KEY BLOCK-----";
+}
+

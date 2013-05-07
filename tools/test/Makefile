@@ -623,6 +623,9 @@ logrotate:
 	$(CFSKETCH_DA) --install System::Logrotate --activate System::Logrotate=$(SOURCEDIR)/system/logrotate/params/ubuntu_12.json
 	$(RUNNER)
 
+epel:
+	$(CFSKETCH_DA) --install Repository::EPEL --activate Repository::EPEL=$(SOURCEDIR)/package_management/epel/params/demo.json
+	$(RUNNER)
 #
 #
 #

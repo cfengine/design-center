@@ -1,0 +1,31 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "Repository::EPEL",
+        "description": "Sketch for adding EPEL repos to clients",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.4.0" }, "os": [ "redhat|centos" ] }
+    },
+
+    "api" : {
+		    "package_management_epel" : [
+				  { "name" : "runenv", "type" : "environment" },
+					{ "name" : "metadata", "type" : "metadata" },
+					{ "name" : "use_mirrorlist", "type" : "boolean", "default" : "1" },
+					{ "name" : "proxy_url", "type" : "string", "default" : "" },
+					{ "name" : "proxy_user", "type" : "string", "default" : "" },
+					{ "name" : "proxy_password", "type" : "string", "default" : "" },
+				],
+		},
+    "namespace" : "cfdc_package_management_epel",
+    "interface": [ "main.cf" ]
+}
