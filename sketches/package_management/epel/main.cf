@@ -3,7 +3,7 @@ body file control
   namespace => "cfdc_package_management_epel";
 }
 
-bundle agent package_management_epel(runenv,metadata,use_mirrorlist,proxy_url,proxy_user,proxy_password)
+bundle agent package_management_epel(runenv,metadata,use_mirrorlist,update_cache,proxy_url,proxy_user,proxy_password)
 {
 	vars:
 		redhat_5|centos_5::
@@ -36,15 +36,18 @@ bundle agent package_management_epel(runenv,metadata,use_mirrorlist,proxy_url,pr
 			"epel_repos[epel-testing-source][mirrorlist]" string => "https://mirrors.fedoraproject.org/metalink?repo=testing-source-epel$(EL_VERSION)&arch=$basearch";
 
 			"repo_list" slist => getindices("epel_repos");
+	
+	classes:
+		"do_update_cache" expression => strcmp("$(update_cache)","1");
 
 	files:
-		"/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6"
+		"/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL"
 			create => "true",
 			classes => default:if_repaired("package_management_epel_repaired_gpg"),
 			perms => default:mog("644","root","root"),
 			edit_defaults => default:empty,
 			edit_line => package_management_epel_gpg_key;
-
+		
 		"/etc/yum.repos.d/$(repo_list).repo"
 			create => "true",
 			classes => default:if_repaired("package_management_epel_repaired_repos"),
@@ -60,9 +63,9 @@ bundle agent package_management_epel(runenv,metadata,use_mirrorlist,proxy_url,pr
 
 	commands:
 		package_management_epel_repaired_gpg::
-			"/bin/rpm --import file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6";
-		package_management_epel_repaired_repos::
-			"/usr/bin/yum updateinfo";
+			"/bin/rpm --import file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL";
+		package_management_epel_repaired_repos.do_update_cache::
+			"/usr/bin/yum makecache";
 }
 
 bundle edit_line package_management_epel_repo(repo,title,baseurl,mirrorlist,use_mirrorlist,proxy_url,proxy_user,proxy_password) {
@@ -80,7 +83,7 @@ any::
 "failovermethod=priority
 enabled=1
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6";
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL";
 
 "proxy=$(proxy_url)" ifvarclass => not(strcmp("$(proxy_url)", ""));
 "proxy_username=$(proxy_user)" ifvarclass => not(strcmp("$(proxy_user)", ""));
@@ -99,6 +102,7 @@ bundle edit_line package_management_epel_rpm_macro
 bundle edit_line package_management_epel_gpg_key
 {
 	insert_lines:
+redhat_6|centos_6::
 "-----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v1.4.5 (GNU/Linux)
 
@@ -127,6 +131,38 @@ l/nakCgxGb2paQOzqqpOcHKvlyLuzO5uybMXaipLExTGJXBlXrbbASfXa/yGYSAG
 iVrGz9CE6676dMlm8F+s3XXE13QZrXmjloc6jwOljnfAkjTGXjiB7OULESed96MR
 XtfLk0W5Ab9pd7tKDR6QHI7rgHXfCopRnZ2VVQ==
 =V/6I
+-----END PGP PUBLIC KEY BLOCK-----";
+
+redhat_5|centos_5::
+"-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+mQGiBEXopTIRBACZDBMOoFOakAjaxw1LXjeSvh/kmE35fU1rXfM7T0AV31NATCLF
+l5CQiNDA4oWreDThg2Bf6+LIVTsGQb1V+XXuLak4Em5yTYwMTVB//4/nMxQEbpl/
+QB2XwlJ7EQ0vW+kiPDz/7pHJz1p1jADzd9sQQicMtzysS4qT2i5A23j0VwCg1PB/
+lpYqo0ZhWTrevxKMa1n34FcD/REavj0hSLQFTaKNLHRotRTF8V0BajjSaTkUT4uk
+/RTaZ8Kr1mTosVtosqmdIAA2XHxi8ZLiVPPSezJjfElsSqOAxEKPL0djfpp2wrTm
+l/1iVnX+PZH5DRKCbjdCMLDJhYap7YUhcPsMGSeUKrwmBCBJUPc6DhjFvyhA9IMl
+1T0+A/9SKTv94ToP/JYoCTHTgnG5MoVNafisfe0wojP2mWU4gRk8X4dNGKMj6lic
+vM6gne3hESyjcqZSmr7yELPPGhI9MNauJ6Ob8cTR2T12Fmv9w03DD3MnBstR6vhP
+QcqZKhc5SJYYY7oVfxlSOfF4xfwcHQKoD5TOKwIAQ6T8jyFpKbQkRmVkb3JhIEVQ
+RUwgPGVwZWxAZmVkb3JhcHJvamVjdC5vcmc+iGQEExECACQFAkXopTICGwMFCRLM
+AwAGCwkIBwMCAxUCAwMWAgECHgECF4AACgkQEZzANiF1IfabmQCgzvE60MnHSOBa
+ZXXF7uU2Vzu8EOkAoKg9h+j0NuNom6WUYZyJQt4zc5seuQINBEXopTYQCADapnR/
+blrJ8FhlgNPl0X9S3JE/kygPbNXIqne4XBVYisVp0uzNCRUxNZq30MpY027JCs2J
+nL2fMpwvx33f0phU029vrIZKA3CmnnwVsjcWfMJOVPBmVN7m5bGU68F+PdRIcDsl
+PMOWRLkTBZOGolLgIbM4719fqA8etewILrX6uPvRDwywV7/sPCFpRcfNNBUY+Zx3
+5bf4fnkaCKxgXgQS3AT+hGYhlzIqQVTkGNveHTnt4SSzgAqR9sSwQwqvEfVtYNeS
+w5rDguLG41HQm1Hojv59HNYjH6F/S1rClZi21bLgZbKpCFX76qPt8CTw+iQLBPPd
+yoOGHfzyp7nsfhUrAAMFB/9/H9Gpk822ZpBexQW4y3LGFo9ZSnmu+ueOZPU3SqDA
+DW1ovZdYzGuJTGGM9oMl6bL8eZrcUBBOFaWge5wZczIE3hx2exEOkDdvq+MUDVD1
+axmN45q/7h1NYRp5GQL2ZsoV4g9U2gMdzHOFtZCER6PP9ErVlfJpgBUCdSL93V4H
+Sgpkk7znmTOklbCM6l/G/A6q4sCRqfzHwVSTiruyTBiU9lfROsAl8fjIq2OzWJ2T
+P9sadBe1llUYaow7txYSUxssW+89avct35gIyrBbof5M+CBXyAOUaSWmpM2eub24
+0qbqiSr/Y6Om0t6vSzR8gRk7g+1H6IE0Tt1IJCvCAMimiE8EGBECAA8FAkXopTYC
+GwwFCRLMAwAACgkQEZzANiF1IfZQYgCgiZHCv4xb+sTHCn/otc1Ovvi/OgMAnRXY
+bbsLFWOfmzAnNIGvFRWy+YHi
+=MMNL
 -----END PGP PUBLIC KEY BLOCK-----";
 }
 

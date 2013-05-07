@@ -21,6 +21,7 @@
 				  { "name" : "runenv", "type" : "environment" },
 					{ "name" : "metadata", "type" : "metadata" },
 					{ "name" : "use_mirrorlist", "type" : "boolean", "default" : "1" },
+					{ "name" : "update_cache", "type" : "boolean", "default" : "0" },
 					{ "name" : "proxy_url", "type" : "string", "default" : "" },
 					{ "name" : "proxy_user", "type" : "string", "default" : "" },
 					{ "name" : "proxy_password", "type" : "string", "default" : "" },
