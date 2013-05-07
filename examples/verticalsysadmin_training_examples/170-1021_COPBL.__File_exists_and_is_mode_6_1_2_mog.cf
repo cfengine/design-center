@@ -1,13 +1,6 @@
-body common control {
-       inputs         => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-                    }
-
-###########################################################
-
 bundle agent example {
 
   files:
-
 
       "/tmp/testfile" 
 
@@ -17,4 +10,9 @@ bundle agent example {
 
                      }
 
-# see cfengine_stdlib.cf for the promise body mog
+###########################################################
+
+body common control {
+       inputs         => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
+                    }
+

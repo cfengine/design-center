@@ -1,21 +1,28 @@
-bundle agent example
-{
+bundle agent example {
 
   vars:
 
-      "my_string"       string  => "String contents...";
-      "my_int"  int     => "42";
-      "my_real" real    => "3.14159";
+      "my_string"      
+              handle => "example_string_variable",
+             comment => "Demonstrate a string variable",
+             string  => "String contents...";
 
+      "my_int"
+              handle => "example_integer_variable",
+             comment => "Demonstrate an integer variable",
+                 int => "42";
+
+      "my_real"
+              handle => "example_realnumber_variable",
+             comment => "Demonstrate a real-number variable",
+             real    => "3.141592654";
 
   reports:
-
    cfengine::
-
       "
-Scalar variable my_string: $(my_string)
-
-Scalar variable my_int:    $(my_int)
-
-Scalar variable my_real:   $(my_real)";
+my_string: $(my_string) 
+my_int:    $(my_int)
+my_real:   $(my_real)"
+             handle => "display_vars",
+            comment => "Display how we use variables";
 }

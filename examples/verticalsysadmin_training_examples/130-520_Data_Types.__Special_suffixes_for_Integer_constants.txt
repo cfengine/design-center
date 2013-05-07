@@ -1,19 +1,9 @@
+Integer Suffixes
+----------------
+
 Integer constants may use suffixes to represent large numbers.
 
 Which is easier to read?
 
-200k
 200000
-
-    'k' = value times 1000.
-    'm' = value times 1000^2
-    'g' = value times 1000^3
-
-    'K' = value times 1024.
-    'M' = value times 1024^2
-    'G' = value times 1024^3
-
-    '%' meaning percent, in limited contexts
-
-    'inf' = a constant representing an unlimited value.
-
+200k

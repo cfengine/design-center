@@ -2,12 +2,14 @@ EXERCISE
 
 Make an array, student_grades.
 
-   Keys  Values
+Populate it with the following data:
 
-   Joe   A
-   Mary  A
-   Bob   B
-   Linda B
+   Key    Value
+   ---    -----
+   Joe    A
+   Mary   A
+   Bob    B
+   Linda  B
 
-Report the contents of the array.
+Display the contents of the array.
 

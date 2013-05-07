@@ -8,12 +8,6 @@ bundle agent example {
               create  => "true",  
               perms   => mog("612","aleksey","cfengine"); 
 
-  files:
-      "/tmp/file2"
-
-               create => "true",
-                perms => mog("700", "root", "root");
-
                      }
 
 ############################################################

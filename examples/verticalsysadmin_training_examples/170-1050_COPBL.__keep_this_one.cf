@@ -1,5 +1,5 @@
 # welcome.conf is part of the Apache RPM
-# to preserver package integrity, comment out this file's contents
+# to preserve package integrity, comment out this file's contents
 # instead of deleting the file
 
 body common control {

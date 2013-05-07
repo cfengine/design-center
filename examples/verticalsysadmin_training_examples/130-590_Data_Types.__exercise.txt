@@ -1,4 +1,3 @@
-
 EXERCISES
 
 1. Create a list containing names of five files
@@ -15,7 +14,6 @@ EXERCISES
    
    For advanced students, add a report if any of 
    the files are over 10 bytes in size.
-
 
 2. Create a list containing names of processes that
    should not be running: for example "trn" and "eggdrop"

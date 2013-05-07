@@ -1,6 +1,5 @@
 bundle agent example {
 
-
   files:
 
       "/etc/httpd/conf.d/maintenance.conf"

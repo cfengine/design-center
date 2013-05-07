@@ -1,5 +1,7 @@
 bundle agent example {
 
+# implicit looping over a slist in an array is broken right now.
+
   vars:
       "config[users]" slist => { "jim", "jane", "george" };
 
