@@ -4,6 +4,8 @@ bundle agent example {
 
       "php-mysql"
 
+       handle         => "remove_package",
+       comment        => "Demonstrate removing a package",
        package_policy => "delete", # Ensure a package is absent
        package_architectures => { "x86_64" }, 
        package_method => yum;

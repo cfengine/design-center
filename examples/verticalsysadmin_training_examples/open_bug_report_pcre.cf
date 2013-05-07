@@ -13,7 +13,25 @@ bundle edit_line transform_dogs_to_cats {
 
   replace_patterns:
 
-      "[Dd]og"
+      "(?idog)"  # does not work!! does not match DoGs
+
+pcregrep --color '(?i)dog' /tmp/data.txt
+/tmp/data.txt:
+lions
+tigers
+zebras cats
+cats
+bears
+fish
+snails
+cats
+Firecats
+Watercats cats
+collies cats
+cats
+DoGs
+DOGs
+cats DoGS
               
           handle       => "replace_dog_with_cat",
           comment      => "Demonstrate replace_patterns promise",

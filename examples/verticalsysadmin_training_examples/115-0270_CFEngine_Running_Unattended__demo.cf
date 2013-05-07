@@ -1,3 +1,19 @@
+# Bootstrap CFEngine on your machine to itself
+
+cf-agent --bootstrap -s 10.33.4.
+
+cf-agent
+
+
+
+
+
+
+
+
+
+
+
 # Demonstrating of CFEngine running in non-interactive
 # mode, using /var/cfengine/inputs/promises.cf as its
 # input:
@@ -22,7 +38,8 @@ bundle agent example {
 
     "/etc/motd"
 
-              create => "true",
-              comment => "Mortal users can't log in while system is in maintenance mode";
+              handle => "make_motd",
+              comment => "Mortal users can't log in while system is in maintenance mode",
+              create => "true";
 
                      }

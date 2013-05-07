@@ -5,23 +5,21 @@ files:
    "/tmp/bobsfile" 
 
 	create  => "true",
-	comment => "/tmp/testfile must not be world-wirtable", 
-	perms   => no_world_writable_files_allowed("bob");
+	comment => "Set mode, ownership and group on /tmp/bobsfile",
+	perms   => set_file_attributes("777", "bob", "mail");
 
    "/tmp/susansfile" 
 
 	create  => "true",
-	comment => "/tmp/testfile must not be world-wirtable", 
-	perms   => no_world_writable_files_allowed("susan");
-
-
+	comment => "Set mode, ownership and group on /tmp/susansfile",
+	perms   => set_file_attributes("000", "susan", "games");
 }
 
 #######################################################
 
-body perms no_world_writable_files_allowed(owner)
+body perms set_file_attributes(mode,owner,group)
 {
-mode    => "u+rwx,g+rx,o+r,o-w";
+mode    => "$(mode)";
 owners  =>  {"$(owner)"};
-groups  =>  {"cfengine"};
+groups  =>  {"$(group)"};
 }

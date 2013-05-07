@@ -4,6 +4,7 @@ Purpose: practice editing file content using a template
 containing scalar variables.
 
 
+
 1. Manually create a template containing:
 
 Hello $(example.first_name),
@@ -12,11 +13,11 @@ Hello $(example.first_name),
 
 Love,
 Company
-EOF
 
-2. Populate contents of /tmp/output.txt
+
+2. Populate contents of /tmp/letter.txt
    using the above template and the variable
-   "myname" defined in a bundle "example".
+   "first_name" defined in a bundle "example".
 
 Gotchas:
 

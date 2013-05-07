@@ -1,7 +1,26 @@
                    EXERCISE
 
+
+
 Running CFEngine Non-Interactive (as a Service)
 using /var/cfengine/inputs/promises.cf as input.
+
+Edit /var/cfengine/inputs/promises.cf:
+- Add your "motd" exercise file name to "inputs" list
+- Add your "motd" exercise bundle name to "bundlesequence" list
+
+Run "cf-agent".
+
+
+
+
+
+
+
+
+
+############################################################
+
 
 1. Specify a bundlesequence in your policy from exercise 5
 (that creates an /etc/motd file that always says Unauth.

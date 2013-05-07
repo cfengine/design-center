@@ -1,0 +1,29 @@
+bundle agent example {
+
+
+  files:
+
+      "/etc/httpd/conf.d/maintenance.conf"
+
+            handle    => "put_website_into_maintenance",
+            comment   => "Enable maintenance-mode config block",
+            edit_line => uncomment_everything;
+
+}
+
+bundle edit_line uncomment_everything {
+
+  replace_patterns:
+      
+      "^#(.*)"
+         replace_with => uncomment;
+                                        }
+
+
+body replace_with uncomment
+{
+replace_value => "$(match.1)";
+occurrences => "all";
+}
+
+

@@ -18,7 +18,7 @@ commands:
 
    handle  =>  "use_var_1",
   comment  =>  "Use variable declared in another bundle to demonstrate scope",
-     args  =>  "$(var1)";
-     #args  =>  "$(example.var1)";
+     #args  =>  "$(var1)";
+     args  =>  "$(example.var1)";
 
 }

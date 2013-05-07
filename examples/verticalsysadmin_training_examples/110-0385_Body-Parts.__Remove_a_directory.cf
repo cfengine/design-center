@@ -2,13 +2,20 @@ bundle agent example {
 
   files:
 
-    "/var/log/.*"
-      file_select => days_old("2"),
+    "/var/logexample/.*"
+      handle => "delete_old_logs",
+     comment => "Delete files older than specified threshold",
+ file_select => days_old("2"),
       delete => tidy;
 }
 
-
 #################################################
+
+body file_select days_old(days)
+{
+mtime       => irange(ago(0,0,"$(days)",0,0,0) , now);
+file_result => "!mtime";
+}
 
 body delete tidy {
 
@@ -16,10 +23,3 @@ body delete tidy {
              rmdirs   => "true";    # what to do with Empty Directories 
 
                  }
-
-
-body file_select days_old(days)
-{
-mtime       => irange(0,ago(0,0,"$(days)",0,0,0));
-file_result => "mtime";
-}

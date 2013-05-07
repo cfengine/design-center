@@ -28,8 +28,7 @@ ENTRY_OBJECT_CLASS=\"automount\"
 MAP_ATTRIBUTE=\"ou\"
 ENTRY_ATTRIBUTE=\"cn\"
 VALUE_ATTRIBUTE=\"automountInformation\"
-USE_MISC_DEVICE=\"yes\"";
-
-      "SEARCH_BASE=\"ou=$(site),ou=Sites,dc=VerticalSysadmin,dc=com\"";
+USE_MISC_DEVICE=\"yes\"
+SEARCH_BASE=\"ou=$(site),ou=Sites,dc=VerticalSysadmin,dc=com\"";
 
                                  }

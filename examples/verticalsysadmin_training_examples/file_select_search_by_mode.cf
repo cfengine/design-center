@@ -6,7 +6,7 @@ files:
 
        handle => "remove_world_writable_files",
       comment => "if you make a file world-writable, I WILL delete it",
-     file_select => compound_filter,
+     file_select => mode_777,
       depth_search => recurse("inf"),
       delete  => tidy;
 }
@@ -17,15 +17,9 @@ inputs => {"/var/cfengine/masterfiles/libraries/cfengine_stdlib.cf"};
 }
 
 
-
-body file_select compound_filter
+body file_select mode_777
 
 {
-
           search_mode => { "777" };
-            leaf_name => { ".*\.pdf" , ".*\.fdf" };  # leaf_name = regex to match
-
-
-          file_result => "leaf_name&mode";   # this is a class expression
+          file_result => "mode";
 }
-

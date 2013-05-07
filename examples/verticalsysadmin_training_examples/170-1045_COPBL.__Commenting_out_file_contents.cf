@@ -1,17 +1,12 @@
-body common control {
-
-               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-
-                    }
-
-
 bundle agent example {
 
 
   files:
 
-      "/tmp/example"
+      "/etc/httpd/conf.d/maintenance.conf"
 
+            handle    => "take_website_out_of_maintenance",
+            comment   => "Disable maintenance-mode config block",
             edit_line => comment_out_everything;
 
 }
@@ -19,10 +14,15 @@ bundle agent example {
 bundle edit_line comment_out_everything {
 
   replace_patterns:
-
+      #".*"
       "^([^#].*)"
-
          replace_with => comment("# ");
-
                                         }
+
+body replace_with comment(c)
+{
+replace_value => "$(c) $(match.1)";
+occurrences => "all";
+}
+
 
