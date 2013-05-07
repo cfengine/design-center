@@ -615,3 +615,7 @@ gencert:
 syslog:
 	$(CFSKETCH_DA) --install System::Syslog --activate System::Syslog=$(SOURCEDIR)/system/syslog/params/demo.json
 	$(RUNNER)
+
+sudoers:
+	$(CFSKETCH_DA) --install System::Sudoers --activate System::Sudoers=$(SOURCEDIR)/system/sudoers/params/demo.json
+	$(RUNNER)

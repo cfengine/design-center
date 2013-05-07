@@ -1,38 +1,55 @@
 body file control
 {
-  namespace => "cfdc_system_sudoers";
+      namespace => "cfdc_sudoers";
 }
 
-bundle agent system_sudoers(runenv,metadata,file_path,visudo_path,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_permissions)
+bundle agent ensure(runenv,metadata,file_path,visudo_path,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_permissions)
 {
-		files:
-			"$(file_path).cfsketch.tmp"
-				create => "true",
-				edit_defaults => default:empty,
-				perms => default:m("440"),
-				edit_line => sudoers_insert_lines("$(defaults)","$(user_alias)","$(host_alias)","$(cmnd_alias)","$(runas_alias)","$(user_permissions)");
-			"$(file_path)"
-				copy_from => default:local_dcp("$(file_path).cfsketch.tmp"),
-				perms => default:m("440"),
-				ifvarclass => and(returnszero("$(visudo_path) -c -f $(file_path).cfsketch.tmp > /dev/null 2>&1", "useshell"));
-			"$(file_path).cfsketch.tmp"
-				delete => default:tidy;
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  files:
+      "$(default:eu.path_prefix)$(file_path).cfsketch.tmp"
+      create => "true",
+      edit_defaults => default:empty,
+      perms => default:m("440"),
+      edit_line => sudoers_insert_lines($(defaults),$(user_alias),$(host_alias),$(cmnd_alias),$(runas_alias),$(user_permissions));
+
+      "$(default:eu.path_prefix)$(file_path)"
+      copy_from => default:local_dcp("$(default:eu.path_prefix)$(file_path).cfsketch.tmp"),
+      perms => default:m("440"),
+      ifvarclass => and(returnszero("$(default:eu.exec_prefix)$(visudo_path) -c -f $(default:eu.path_prefix)$(file_path).cfsketch.tmp > /dev/null 2>&1", "useshell"));
+
+      "$(default:eu.path_prefix)$(file_path).cfsketch.tmp"
+      delete => default:tidy;
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 }
 
 bundle edit_line sudoers_insert_lines(defaults,user_alias,host_alias,cmnd_alias,runas_alias,up) {
-	vars:
-		"d_i" slist => getindices("$(defaults)");
-		"u_i" slist => getindices("$(user_alias)");
-		"h_i" slist => getindices("$(host_alias)");
-		"c_i" slist => getindices("$(cmnd_alias)");
-		"r_i" slist => getindices("$(runas_alias)");
-		"up_i" slist => getindices("$(up)");
+  vars:
+      "d_i" slist => getindices($(defaults));
+      "u_i" slist => getindices($(user_alias));
+      "h_i" slist => getindices($(host_alias));
+      "c_i" slist => getindices($(cmnd_alias));
+      "r_i" slist => getindices($(runas_alias));
+      "up_i" slist => getindices($(up));
 
-	insert_lines:
-		"$($(defaults)[$(d_i)][default_desc]) $($(defaults)[$(d_i)][default_value])";
-		"User_Alias $($(user_alias)[$(u_i)][alias_name]) = $($(user_alias)[$(u_i)][user_list])";
-		"Runas_Alias $($(runas_alias)[$(r_i)[alias_name]) = $($(user_alias)[$(u_i)][runas_list])";
-		"Host_Alias $($(host_alias)[$(h_i)[alias_name]) = $($(host_alias)[$(h_i)][host_list])";
-		"Cmnd_Alias $($(cmnd_alias)[$(c_i)[alias_name]) = $($(cmnd_alias)[$(c_i)][cmnd_list])";
-		"$($(up)[$(up_i)][user_spec]) $($(up)[$(up_i)][host_spec]) = ($($(up)[$(up_i)][host_spec])) $($(up)[$(up_i)][password]): $($(up)[$(up_i)][cmnd_spec])";
+  insert_lines:
+      "$($(defaults)[$(d_i)][default_desc]) $($(defaults)[$(d_i)][default_value])";
+      "User_Alias $($(user_alias)[$(u_i)][alias_name]) = $($(user_alias)[$(u_i)][user_list])";
+      "Runas_Alias $($(runas_alias)[$(r_i)[alias_name]) = $($(user_alias)[$(u_i)][runas_list])";
+      "Host_Alias $($(host_alias)[$(h_i)[alias_name]) = $($(host_alias)[$(h_i)][host_list])";
+      "Cmnd_Alias $($(cmnd_alias)[$(c_i)[alias_name]) = $($(cmnd_alias)[$(c_i)][cmnd_list])";
+      "$($(up)[$(up_i)][user_spec]) $($(up)[$(up_i)][host_spec]) = ($($(up)[$(up_i)][host_spec])) $($(up)[$(up_i)][password]): $($(up)[$(up_i)][cmnd_spec])";
 }

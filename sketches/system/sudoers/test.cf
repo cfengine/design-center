@@ -1,0 +1,94 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation ___001_System_Sudoers_ensure
+      "___001_System_Sudoers_ensure_metadata[api][cmnd_alias][type]" string => "array";
+      "___001_System_Sudoers_ensure_metadata[api][defaults][type]" string => "array";
+      "___001_System_Sudoers_ensure_metadata[api][file_path][type]" string => "string";
+      "___001_System_Sudoers_ensure_metadata[api][host_alias][type]" string => "array";
+      "___001_System_Sudoers_ensure_metadata[api][metadata][type]" string => "metadata";
+      "___001_System_Sudoers_ensure_metadata[api][runas_alias][type]" string => "array";
+      "___001_System_Sudoers_ensure_metadata[api][runenv][type]" string => "environment";
+      "___001_System_Sudoers_ensure_metadata[api][user_alias][type]" string => "array";
+      "___001_System_Sudoers_ensure_metadata[api][user_permissions][type]" string => "array";
+      "___001_System_Sudoers_ensure_metadata[api][visudo_path][type]" string => "string";
+      "___001_System_Sudoers_ensure_metadata[authors]" slist => { "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" };
+      "___001_System_Sudoers_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "___001_System_Sudoers_ensure_metadata[license]" string => "MIT";
+      "___001_System_Sudoers_ensure_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/system/sudoers";
+      "___001_System_Sudoers_ensure_metadata[manifest]" slist => { "README.md", "main.cf" };
+      "___001_System_Sudoers_ensure_metadata[manifest_cf]" slist => { "main.cf" };
+      "___001_System_Sudoers_ensure_metadata[manifest_docs]" slist => { "README.md" };
+      "___001_System_Sudoers_ensure_metadata[manifest_exe]" slist => { "cf_null" };
+      "___001_System_Sudoers_ensure_metadata[manifest_extra]" slist => { "cf_null" };
+      "___001_System_Sudoers_ensure_metadata[name]" string => "System::Sudoers";
+      "___001_System_Sudoers_ensure_metadata[tags]" slist => { "cfdc" };
+      "___001_System_Sudoers_ensure_metadata[version]" string => "1";
+
+      # array 'defaults' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/system/sudoers/params/demo.json, activation ___001_System_Sudoers_ensure
+      "___001_System_Sudoers_ensure_defaults[1][default_desc]" string => "Defaults";
+      "___001_System_Sudoers_ensure_defaults[1][default_value]" string => "env_reset";
+
+      # array 'user_alias' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/system/sudoers/params/demo.json, activation ___001_System_Sudoers_ensure
+      "___001_System_Sudoers_ensure_user_alias[1][alias_name]" string => "TEST";
+      "___001_System_Sudoers_ensure_user_alias[1][user_list]" string => "jonhenrik,bjornstad,er,kul";
+
+      # array 'host_alias' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/system/sudoers/params/demo.json, activation ___001_System_Sudoers_ensure
+
+      # array 'cmnd_alias' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/system/sudoers/params/demo.json, activation ___001_System_Sudoers_ensure
+
+      # array 'runas_alias' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/system/sudoers/params/demo.json, activation ___001_System_Sudoers_ensure
+
+      # array 'user_permissions' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/system/sudoers/params/demo.json, activation ___001_System_Sudoers_ensure
+      "___001_System_Sudoers_ensure_user_permissions[1][cmnd_spec]" string => "ALL";
+      "___001_System_Sudoers_ensure_user_permissions[1][host_spec]" string => "ALL";
+      "___001_System_Sudoers_ensure_user_permissions[1][password]" string => "PASSWD";
+      "___001_System_Sudoers_ensure_user_permissions[1][runas_spec]" string => "ALL";
+      "___001_System_Sudoers_ensure_user_permissions[1][user_spec]" string => "jonhenrik";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "___001_System_Sudoers_ensure" usebundle => cfdc_sudoers:ensure("cf_sketch_testing", "default:cfsketch_run.___001_System_Sudoers_ensure_metadata", "/tmp/sudoers", "/usr/sbin/visudo", "default:cfsketch_run.___001_System_Sudoers_ensure_defaults", "default:cfsketch_run.___001_System_Sudoers_ensure_user_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_host_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_cmnd_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_runas_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_user_permissions"), ifvarclass => "linux", useresult => "return____001_System_Sudoers_ensure";
+
+  reports:
+    inform_mode::
+      "activation ___001_System_Sudoers_ensure could not run because it requires classes linux" ifvarclass => "inform_mode.!(linux)";
+}
