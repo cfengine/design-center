@@ -623,3 +623,7 @@ sudoers:
 routes:
 	$(CFSKETCH_DA) --install System::Routes --activate System::Routes=$(SOURCEDIR)/system/routes/params/demo.json
 	$(RUNNER)
+
+logrotate:
+	$(CFSKETCH_DA) --install System::Logrotate --activate System::Logrotate=$(SOURCEDIR)/system/logrotate/params/demo.json
+	$(RUNNER)
