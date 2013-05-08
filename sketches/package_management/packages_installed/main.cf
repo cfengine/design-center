@@ -5,10 +5,23 @@ body file control
 
 bundle agent installed(runenv, metadata, pkgs_add, pkgs_delete)
 {
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
   vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
       "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
 
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
   packages:
+    not_test::
       "$(pkgs_add)"
       package_policy => "add",
       package_method => default:generic,
@@ -18,4 +31,9 @@ bundle agent installed(runenv, metadata, pkgs_add, pkgs_delete)
       package_policy => "delete",
       package_method => default:generic,
       handle => "$(activation_id)_packages_delete";
+
+  reports:
+    test::
+      "$(this.bundle): In test mode, so simulating adding package $(pkgs_add)";
+      "$(this.bundle): In test mode, so simulating removing package $(pkgs_delete)";
 }
