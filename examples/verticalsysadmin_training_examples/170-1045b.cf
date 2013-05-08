@@ -15,6 +15,8 @@ bundle edit_line uncomment_everything {
   replace_patterns:
       
       "^#(.*)"
+         handle => "uncomment_everything_replace_pattern",
+         comment => "If it starts with a hash mark, grab everything after the hash mark, and uncomment it.",
          replace_with => uncomment;
 }
 

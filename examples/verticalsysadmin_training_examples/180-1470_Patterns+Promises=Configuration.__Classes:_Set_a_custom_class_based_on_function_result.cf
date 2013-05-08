@@ -1,19 +1,18 @@
 # - demonstrate setting a custom class using a function
 
-
 bundle agent example {
 
-
   classes:
-      "A_is_a_link"
-           expression => islink("/tmp/a");   # <-- a function
+      "islink"
+           handle => "class_islink",
+          comment => "Test if /tmp/a is a link",
+       expression => islink("/tmp/a");
 
-      
+
   reports:
-    A_is_a_link::
-      "'A_is_a_link' is true";
+    link::
+      "/tmp/a is a link";
 
-    !A_is_a_link::
-      "'A_is_a_link' is not defined (is false)";
-
+    !link::
+      "/tmp/a is not a link";
 }

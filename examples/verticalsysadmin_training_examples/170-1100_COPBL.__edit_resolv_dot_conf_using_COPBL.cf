@@ -1,17 +1,17 @@
 bundle agent example {
 
-
   vars:   
 
       "search_suffix"  string =>  "example.com example2.com";
 
-      "nameservers"    slist  =>  { "1.1.1.1", "8.8.8.8" };
-
+      "nameservers"    slist  =>  { "8.8.4.4", "8.8.8.8" };
 
   files: 
 
       "/tmp/resolv.conf"
 
+               handle =>  "edit_resolv_conf",
+              comment => "Setup up DNS resolver",
             edit_line =>  resolvconf("$(search_suffix)", "@(example.nameservers)" );
 }
 
@@ -19,5 +19,5 @@ bundle agent example {
 
 body common control {
 
-               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
+               inputs => { "libraries/cfengine_stdlib.cf" };
 }

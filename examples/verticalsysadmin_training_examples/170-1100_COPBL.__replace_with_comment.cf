@@ -1,9 +1,13 @@
+!! SKIP !!
+
 bundle agent example {
 
   files:
 
       "/tmp/file.txt"
 
+            handle => "no_dogs_allows",
+            comment => "Comment out lines containing 'dog'",
             edit_line => comment_out_dogs;
 
 }
@@ -12,7 +16,7 @@ bundle edit_line comment_out_dogs {
 
   replace_patterns:
 
-      "^.*(dog).*$"
+      "^[^#](.*dog.*)"
 
          replace_with => comment("#");
 

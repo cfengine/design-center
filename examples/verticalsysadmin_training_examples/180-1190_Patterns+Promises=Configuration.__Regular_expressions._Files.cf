@@ -1,16 +1,16 @@
-body common control
-{
-       bundlesequence => { "example" };
-               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-}
-
-
-bundle agent example
-{
+bundle agent example {
 
   files:
+
       "/etc/pass.*"
+
+               handle => "set_file_perms_on_regex_list_of_files",
               comment => "Files matching /etc/pass.* need to be owned by root and mode 644",
                 perms => mo("644","root");
 
+}
+
+
+body common control {
+               inputs => { "libraries/cfengine_stdlib.cf" };
 }

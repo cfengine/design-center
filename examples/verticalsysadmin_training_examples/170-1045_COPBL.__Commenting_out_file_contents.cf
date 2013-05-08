@@ -13,7 +13,7 @@ bundle agent example {
 bundle edit_line comment_out_everything {
 
   replace_patterns:
-      #".*"
+
       "^([^#].*)"
          replace_with => comment("# ");
 }

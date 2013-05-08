@@ -5,7 +5,7 @@
 body common control {
 
        bundlesequence => { "create_db_users" };
-               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
+               inputs => { "libraries/cfengine_stdlib.cf" };
 
 }
 

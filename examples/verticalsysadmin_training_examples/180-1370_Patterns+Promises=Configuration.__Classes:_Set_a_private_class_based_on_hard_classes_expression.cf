@@ -1,16 +1,15 @@
-bundle agent example
-{
+bundle agent example {
 
   classes:
-      "solaris_or_linux"
+      "good_technology"
+               handle => "good_technology_class",
               comment => "Set a custom class based on built-in classes",
            expression => "linux|solaris";
 
   reports:
-    solaris_or_linux::
-      "Yay!! I am on Solaris or Linux.";
-
-  reports:
-    solaris|linux::
-      "I love good technology";
+    good_technology::
+      "I love good technology"
+               handle => "show_respect",
+              comment => "Show respect for good technology";
+              
 }

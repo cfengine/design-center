@@ -1,23 +1,23 @@
-body common control {
-
-               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-
-}
-
-
 bundle agent example {
-
 
   files:
       "/tmp/file.txt"
+               handle => "persistent_class_demo",
+              comment => "Set a persistent class",
                create => "true",
             edit_line => insert_lines("hello world 1234"),
              classes  => state_repaired("persistent_class");
 
   reports:
     persistent_class::
-      "persistent class is set";
-
+      "Persistent class persistent_class set.  Now run in verbose mode to see its TTL"
+               handle => "report_success",
+              comment => "Report if our persistent class persistent_class has been set as expected.";
 }
 
 
+body common control {
+
+               inputs => { "libraries/cfengine_stdlib.cf" };
+
+}

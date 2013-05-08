@@ -2,7 +2,7 @@ bundle agent example {
 
   files:
 
-      "/tmp/cfengine_heartbeat" -> "Monitoring System" 
+      "/var/cfengine/i_am_alive" -> "Monitoring System" 
 
                handle => "update_heartbeat",
               comment => "Update heartbeat timestamp to confirm CFEngine is running",

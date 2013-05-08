@@ -1,3 +1,6 @@
+Setting up client-server
+------------------------
+
 Wipe the slate clean (on both client and server):
 
    rpm -e cfengine-community

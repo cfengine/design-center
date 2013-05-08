@@ -16,7 +16,7 @@
 body common control {
 
                inputs => {
-                           "/var/cfengine/inputs/libraries/cfengine_stdlib.cf",
+                           "libraries/cfengine_stdlib.cf",
                            "1870_More_Examples__Security__edit_sshd.cf"
                };
 

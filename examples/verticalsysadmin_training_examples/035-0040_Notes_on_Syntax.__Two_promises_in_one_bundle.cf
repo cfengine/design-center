@@ -4,6 +4,8 @@ bundle agent example {
 
       "/tmp/hello" 
 
+               handle => "make_file_1",
+              comment => "Demonstrate a bundle with multiple promises.",
               create  => "true";
 
 
@@ -11,6 +13,8 @@ bundle agent example {
 
       "/tmp/world" 
 
+               handle => "make_file_2",
+              comment => "Demonstrate a bundle with multiple promises.",
               create  => "true";
 
 }

@@ -1,22 +1,29 @@
-body common control {
-               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-}
-
-
 bundle agent example {
 
 
   files:
 
       "/tmp/etc/motd"
+               handle => "touch_file", 
+              comment => "Demonstrate body classes if_else",
                create => "true", 
               classes => if_else("correct_configuration","incorrect_configuration");
 
   reports:
-      correct_configuration::  "All systems nominal";
+      correct_configuration::
+           "All systems nominal"
+               handle => "report_OK";
 
   reports:
-      incorrect_configuration::  "WARNING!  System configuration does not match plan!";
+      incorrect_configuration::
+            "WARNING!  System configuration does not match plan!";
+               handle => "report_WARN";
 
 }
+
+
+body common control {
+               inputs => { "libraries/cfengine_stdlib.cf" };
+}
+
 

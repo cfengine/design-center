@@ -14,6 +14,7 @@ What output will you see and in what order?  Why?
 Now run your policy and check.
 
 
+
 EXERCISE 2
 
 Now parameterize the 2nd bundle -- have the
@@ -22,6 +23,11 @@ first bundle feed it an argument, and have the
 
 
 EXERCISE 3
+bundle2("State Farm", "IL")
+
+
+bundle2("$(org)")
+
 
 Sysadmin Problem:
 

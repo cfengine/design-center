@@ -19,7 +19,7 @@ bundle agent example {
   reports:
     linux::
       "buy $(shopping_list)"
-               handle => "shop_baby_shop",
-              comment => "Fire off the loop";
+               handle => "lets_go_shopping",
+              comment => "Fire off the (implicit) loop";
 }
 

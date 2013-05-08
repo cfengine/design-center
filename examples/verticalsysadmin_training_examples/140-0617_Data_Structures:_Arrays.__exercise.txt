@@ -9,7 +9,6 @@ Populate it with the following data:
    Joe    A
    Mary   A
    Bob    B
-   Linda  B
+   Sue    B
 
 Display the contents of the array.
-

@@ -1,15 +1,6 @@
-body common control {
-               inputs => {"/var/cfengine/inputs/libraries/cfengine_stdlib.cf"};
-}
+!! SKIP !!
 
-#######################################################
-#
 # Searching for permissions
-#
-#######################################################
-
-
-############################################
 
 bundle agent example
 
@@ -42,3 +33,8 @@ body file_select compound_filter
 
           file_result => "leaf_name|mode";   # this is a class expression
 }
+
+body common control {
+               inputs => {"libraries/cfengine_stdlib.cf"};
+}
+

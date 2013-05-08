@@ -1,21 +1,18 @@
-body common control {
-               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-}
-
 bundle agent example {
 
   files:
       "/etc/ssh/sshd_config"
                handle => "sshd_must_use_protocol_2_only",
-            edit_line => sshd_uses_protocol_2_only,
-              comment => "Make sure SSHD does not use protocols 1,2; make sure it only uses protocol 2, to increase security",
+              comment => "Make sure SSHD does not use protocol v1; make sure it only uses protocol v2, to increase security",
+            edit_line => permit_protocol_2_only,
               classes => if_repaired("sshd_config_file_was_repaired"),
                action => logme("promise $(this.handle)");
 
   commands:
     sshd_config_file_was_repaired::
       "/etc/init.d/sshd reload"
-               handle => "run_sshd_init_script_to_reload_sshd_to_pick_up_new_config",
+               handle => "reload_sshd",
+              comment => "run sshd init script to reload sshd to pick up new config",
                action => logme("promise $(this.handle)");
 
 }
@@ -25,15 +22,19 @@ body action logme(x)
 {
            log_string => "$(sys.date) $(x)";
 
-             log_kept => "/tmp/private_keptlog.log";
-         log_repaired => "/tmp/private_replog.log";
-           log_failed => "/tmp/private_faillog.log";
+             log_kept => "/var/log/cfengine_keptlog.log";
+         log_repaired => "/var/log/cfengine_replog.log";
+           log_failed => "/var/log/cfengine_faillog.log";
 
 }
 
 
 
-bundle edit_line sshd_uses_protocol_2_only {
-      delete_lines: "Protocol 1,2";
+bundle edit_line permit_protocol_2_only {
+      delete_lines: ".*Protocol.*1.*";
       insert_lines: "Protocol 2";
+}
+
+body common control {
+               inputs => { "libraries/cfengine_stdlib.cf" };
 }

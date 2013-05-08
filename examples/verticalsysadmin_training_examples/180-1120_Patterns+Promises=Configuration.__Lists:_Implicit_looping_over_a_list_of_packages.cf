@@ -1,16 +1,4 @@
-body common control
-{
-
-       bundlesequence => { "example" };
-               inputs =>         { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-
-}
-
-#############################################
-
-bundle agent example
-{
-
+bundle agent example {
 
       ######################################################
       # This is the data section, which describes the desired pattern
@@ -23,6 +11,8 @@ bundle agent example
 
       "desired_package"
 
+               handle => "good_packages",
+              comment => "list the packages we want",
                 slist => {
                            "httpd",
                            "php",
@@ -33,18 +23,21 @@ bundle agent example
 
       "unwanted_package"
 
+               handle => "bad_packages",
+              comment => "list the packages we do not want",
                 slist => {
                            "java",
                            "ruby",
                 };
 
       ######################################################
-      # Below here is convergent "stock-code", forget this...
+      # Below here is stock convergent code, forget this...
       ######################################################
 
   packages:
       "$(desired_package)"
-              comment => "Ensure a list of packages is installed",
+               handle => "add_package",
+              comment => "Ensure package is present",
        package_policy => "add",
 package_architectures => { "x86_64" },
        package_method => yum;
@@ -52,9 +45,14 @@ package_architectures => { "x86_64" },
 
   packages:
       "$(unwanted_package)"
-              comment => "Ensure a list of packages is absent",
+               handle => "remove_package",
+              comment => "Ensure package is absent",
        package_policy => "delete",
 package_architectures => { "x86_64" },
        package_method => yum;
 
+}
+
+body common control {
+               inputs =>         { "libraries/cfengine_stdlib.cf" };
 }

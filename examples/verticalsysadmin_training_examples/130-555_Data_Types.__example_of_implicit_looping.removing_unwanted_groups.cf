@@ -3,7 +3,7 @@ bundle agent example {
   vars:
 
       "unwanted_groups"
-               handle => "a_blacklist",
+               handle => "blacklist_demo",
               comment => "A practical example of looping over a list?",
                 slist => {
                            "games",

@@ -1,4 +1,5 @@
 Arrays are associative (hashes). 
+
 They may contain scalars
 or lists as their elements.
 

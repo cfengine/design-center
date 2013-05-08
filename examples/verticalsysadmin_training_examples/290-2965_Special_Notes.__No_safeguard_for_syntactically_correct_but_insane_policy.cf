@@ -1,7 +1,7 @@
 # a mutually exclusive configuration
 
 body common control {
-               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf",
+               inputs => { "libraries/cfengine_stdlib.cf",
                };
 
 }

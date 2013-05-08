@@ -1,45 +1,6 @@
 # Bootstrap CFEngine on your machine to itself
 
-cf-agent --bootstrap -s 10.33.4.
+cf-agent --bootstrap -s your.ip.address
 
 cf-agent
 
-
-
-
-
-
-
-
-
-
-
-# Demonstrating of CFEngine running in non-interactive
-# mode, using /var/cfengine/inputs/promises.cf as its
-# input:
-#
-# 1. Copy this file to /var/cfengine/inputs/promises.cf, and
-# 2. Copy this file to /var/cfengine/inputs/failsafe.cf.
-# 3. Make sure you don't have a /etc/motd file:  rm /etc/motd
-# 4. Check the syntax:  cf-promises
-# 5. Restart CFEngine service to reload the policy.
-# 6. Watch CFEngine create /etc/motd within 5 minutes:
-#      watch "ls /etc/motd 2>/dev/null" 
-
-
-
-body common control {
-       bundlesequence =>  {"example",};
-}
-
-bundle agent example {
-
-  files:
-
-      "/etc/motd"
-
-               handle => "make_motd",
-              comment => "Mortal users can't log in while system is in maintenance mode",
-               create => "true";
-
-}

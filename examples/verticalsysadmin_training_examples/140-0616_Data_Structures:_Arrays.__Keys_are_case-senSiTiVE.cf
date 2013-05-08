@@ -1,15 +1,6 @@
 bundle agent example {
 
   vars:
-      "cfengine_components[cf-monitord]"
-               handle => "describe_monitor",
-              comment => "Document the cf-monitord component",
-               string => "The monitor";
-
-      "cfengine_components[cf-serverd]"
-               handle => "describe_server",
-              comment => "Document the cf-serverd component",
-               string => "The server";
 
       "cfengine_components[cf-execd]"
                handle => "describe_executor",
