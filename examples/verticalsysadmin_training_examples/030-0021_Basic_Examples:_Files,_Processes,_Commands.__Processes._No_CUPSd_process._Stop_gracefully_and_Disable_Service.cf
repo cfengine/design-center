@@ -4,8 +4,8 @@ bundle agent example {
 
       "cupsd" 
 
-                  handle => "stop_cupsd",
-                 comment => "Turn off and disable print services",
-            process_stop => "/bin/sh -c '/etc/init.d/cups stop ; /sbin/chkconfig cups off'",
+               handle => "stop_cupsd",
+              comment => "Turn off and disable print services",
+         process_stop => "/bin/sh -c '/etc/init.d/cups stop ; /sbin/chkconfig cups off'",
 
-                     }
+}

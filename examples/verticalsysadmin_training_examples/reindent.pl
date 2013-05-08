@@ -42,7 +42,7 @@ foreach my $f (@ARGV)
                '-l' => 'cfengine-code-style.el',
                '-l' => 'cfengine.el',
                '--visit' => $f,
-               '--eval' => "(setq-default cfengine-parameters-indent (quote (promise arrow 12))) (setq-default indent-tabs-mode nil)   (defvar cfengine-indent 2)",
+               '--eval' => "(setq-default cfengine-parameters-indent (quote (promise arrow 16))) (setq-default indent-tabs-mode nil)   (defvar cfengine-indent 2)",
                '--eval' => "($handlers{$suffix})",
                @extra,
                '--eval' => '(indent-region (point-min) (point-max) nil)',

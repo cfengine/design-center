@@ -4,4 +4,4 @@ bundle agent example {
 
       "/tmp/hello" create  => "true";
       "/tmp/world" create  => "true";
-                     }
+}

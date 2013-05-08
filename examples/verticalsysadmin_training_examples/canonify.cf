@@ -1,22 +1,22 @@
 bundle agent example {
 
-vars:
+  vars:
 
-   "raw_hostname"
+      "raw_hostname"
 
-       string  =>  "mil-mail01";
-
-
-   "canonified_hostname" 
-
-       string  => canonify("$(raw_hostname)");
+              string  =>  "mil-mail01";
 
 
-reports:
+      "canonified_hostname" 
 
-  linux::
+              string  => canonify("$(raw_hostname)");
 
-    "raw: $(raw_hostname)
+
+  reports:
+
+    linux::
+
+      "raw: $(raw_hostname)
 canonified: $(canonified_hostname)";
 
 }

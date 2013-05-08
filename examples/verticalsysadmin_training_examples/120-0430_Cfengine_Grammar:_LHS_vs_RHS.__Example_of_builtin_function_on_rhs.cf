@@ -19,7 +19,7 @@ bundle agent example {
 
       "The HTTP reply was:$(const.t)$(http_reply)"
 
-           handle => "display_http_reply",
-           comment => "Demonstrate the HTTP reply.";
+               handle => "display_http_reply",
+              comment => "Demonstrate the HTTP reply.";
 
-                     }
+}

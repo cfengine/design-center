@@ -10,5 +10,5 @@ bundle agent example {
               comment => "Quiesce the system for 2 - 4 A.M. Sunday maintenance",
               create  => "true";
 
-                     }
+}
 

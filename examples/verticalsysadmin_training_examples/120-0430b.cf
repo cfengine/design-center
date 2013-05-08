@@ -33,4 +33,4 @@ bundle agent example {
 
       "/bin/echo $(http_reply)";
 
-                     }
+}

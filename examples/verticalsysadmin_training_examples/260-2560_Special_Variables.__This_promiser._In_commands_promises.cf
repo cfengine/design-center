@@ -8,4 +8,4 @@ bundle agent example {
 
       "/bin/echo $(this.promiser)";
 
-                     }
+}

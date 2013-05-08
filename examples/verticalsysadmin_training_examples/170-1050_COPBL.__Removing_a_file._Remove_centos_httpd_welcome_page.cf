@@ -7,11 +7,11 @@ bundle agent example {
                handle => "nuke_welcome_conf",
               comment => "Let's keep a low profile and not advertise what software we are running - remove the Welcome page that says we are running Apache on CentOS",
                delete => tidy;
-                     }
+}
 
 
 body common control {
 
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 
-                    }
+}

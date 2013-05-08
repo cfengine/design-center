@@ -5,7 +5,7 @@ bundle agent example{
       "I love Linux"
 
                handle => "report_Linux_love",
-               comment => "Check that we are on Linux to demonstrate classes and reports";
+              comment => "Check that we are on Linux to demonstrate classes and reports";
 
 
   reports:
@@ -13,7 +13,7 @@ bundle agent example{
       "I love Windows"
 
                handle => "report_Windows_love",
-               comment => "Demonstrate classes";
+              comment => "Demonstrate classes";
 
-                        }
+}
 

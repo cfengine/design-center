@@ -6,7 +6,7 @@ bundle agent example {
 
             edit_line => comment_out_dogs;
 
-                     }
+}
 
 bundle edit_line comment_out_dogs {
 
@@ -17,7 +17,7 @@ bundle edit_line comment_out_dogs {
          replace_with => comment("#");
 
       
-                                  }
+}
 
 body replace_with comment(c)
 {

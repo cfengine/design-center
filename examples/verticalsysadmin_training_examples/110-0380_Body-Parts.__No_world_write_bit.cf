@@ -7,7 +7,7 @@ bundle agent example {
               comment => "/tmp/testfile must not be world-writable", 
               perms   => not_world_writable;
 
-                     }
+}
 
 
 #######################################################

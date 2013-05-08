@@ -9,4 +9,4 @@ bundle agent example {
                create => "true",
               comment => "file created";
 
-                        }
+}

@@ -7,10 +7,10 @@ bundle agent example
 
       "my_new_class"
 
-                   or   => { "linux",
-                             "solaris",
-                             fileexists("/etc/fstab")
-                           };
+                 or   => { "linux",
+                           "solaris",
+                           fileexists("/etc/fstab")
+                 };
 
 
   reports:

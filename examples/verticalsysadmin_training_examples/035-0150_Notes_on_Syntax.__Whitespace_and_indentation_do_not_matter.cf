@@ -2,15 +2,15 @@
 
 bundle agent example {
 
-files:
+  files:
 
-   "/etc/nologin"
- 
-            handle => "touch_etc_nologin",
-            comment => "Prepare for system maintenance",
-            create => "true";
+      "/etc/nologin"
+      
+               handle => "touch_etc_nologin",
+              comment => "Prepare for system maintenance",
+               create => "true";
 
-                     }
+}
 
 
 bundle agent example2 { files: "/etc/nologin" handle => "touch_etc_nologin", comment => "Prepare for system maintenance", create => "true"; } 

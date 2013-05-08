@@ -2,7 +2,7 @@ body common control {
 
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 
-                    }
+}
 
 bundle agent example {
 
@@ -14,7 +14,7 @@ bundle agent example {
                             "charlie",
                             "diana",
                             "joe"
-                          };
+      };
 
       #####################################################
 
@@ -22,7 +22,7 @@ bundle agent example {
 
       "any" usebundle => lock_user("$(badusers)");
 
-                     }
+}
 
 ###########################################
 
@@ -45,4 +45,4 @@ bundle agent lock_user(user) {
 
             edit_line => delete_lines_matching("^$(user)");
 
-                             }
+}

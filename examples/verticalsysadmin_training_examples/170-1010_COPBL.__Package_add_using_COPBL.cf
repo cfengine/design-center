@@ -8,10 +8,10 @@ bundle agent example {
               comment => "Demonstrate installing a package",
        package_policy => "add",
        package_method => yum;
-                     }
+}
 
 #############################################
 
 body common control {
        inputs         => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-                    }
+}

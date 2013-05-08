@@ -2,96 +2,96 @@ bundle agent example {
 
   methods:
       
-      any::
+    any::
       
-          "Manage www service"
+      "Manage www service"
 
-              usebundle => standard_services ("www", "stop");
+            usebundle => standard_services ("www", "stop");
 
 }
 
 
 bundle agent standard_services(service,state)
 {
- # DATA, 
+      # DATA, 
 
-vars:
+  vars:
 
- linux::
+    linux::
 
-  "startcommand[varnish]" string => "/etc/init.d/varnish start";
-  "stopcommand[varnish]"  string => "/etc/init.d/varnish stop";
-  "pattern[varnish]"      string => ".*varnish.*";
+      "startcommand[varnish]" string => "/etc/init.d/varnish start";
+      "stopcommand[varnish]"  string => "/etc/init.d/varnish stop";
+      "pattern[varnish]"      string => ".*varnish.*";
 
- suse::
+    suse::
 
-  "startcommand[www]" string => "/etc/init.d/apache2 start";
-  "stopcommand[www]"  string => "/etc/init.d/apache2 stop";
-  "pattern[www]"      string => ".*httpd.*";
+      "startcommand[www]" string => "/etc/init.d/apache2 start";
+      "stopcommand[www]"  string => "/etc/init.d/apache2 stop";
+      "pattern[www]"      string => ".*httpd.*";
 
-  "startcommand[mysql]" string => "/etc/init.d/mysqld start";
-  "stopcommand[mysql]"  string => "/etc/init.d/mysqld stop";
-  "pattern[mysql]"      string => ".*mysqld.*";
+      "startcommand[mysql]" string => "/etc/init.d/mysqld start";
+      "stopcommand[mysql]"  string => "/etc/init.d/mysqld stop";
+      "pattern[mysql]"      string => ".*mysqld.*";
 
-  "startcommand[tomcat]" string => "/etc/init.d/tomcat5 start";
-  "stopcommand[tomcat]"  string => "/etc/init.d/tomcat5 stop";
-  "pattern[tomcat]"      string => ".*tomcat5.*";
+      "startcommand[tomcat]" string => "/etc/init.d/tomcat5 start";
+      "stopcommand[tomcat]"  string => "/etc/init.d/tomcat5 stop";
+      "pattern[tomcat]"      string => ".*tomcat5.*";
 
- redhat::
+    redhat::
 
-  "startcommand[www]"     string => "/etc/init.d/httpd start";
-  "stopcommand[www]"      string => "/etc/init.d/httpd stop";
-  "pattern[www]"          string => ".*httpd.*";
+      "startcommand[www]"     string => "/etc/init.d/httpd start";
+      "stopcommand[www]"      string => "/etc/init.d/httpd stop";
+      "pattern[www]"          string => ".*httpd.*";
 
- debian|ubuntu::
+    debian|ubuntu::
 
-  "startcommand[www]"     string => "/etc/init.d/httpd start";
-  "stopcommand[www]"      string => "/etc/init.d/httpd stop";
-  "pattern[www]"          string => ".*apache2.*";
+      "startcommand[www]"     string => "/etc/init.d/httpd start";
+      "stopcommand[www]"      string => "/etc/init.d/httpd stop";
+      "pattern[www]"          string => ".*apache2.*";
 
-  "startcommand[mysql]" string => "/etc/init.d/mysql start";
-  "stopcommand[mysql]"  string => "/etc/init.d/mysql stop";
-  "pattern[mysql]"      string => ".*mysqld.*";
+      "startcommand[mysql]" string => "/etc/init.d/mysql start";
+      "stopcommand[mysql]"  string => "/etc/init.d/mysql stop";
+      "pattern[mysql]"      string => ".*mysqld.*";
 
-  "startcommand[tomcat]" string => "/etc/init.d/tomcat6 start";
-  "stopcommand[tomcat]"  string => "/etc/init.d/tomcat6 stop";
-  "pattern[tomcat]"      string => ".*tomcat6.*";
+      "startcommand[tomcat]" string => "/etc/init.d/tomcat6 start";
+      "stopcommand[tomcat]"  string => "/etc/init.d/tomcat6 stop";
+      "pattern[tomcat]"      string => ".*tomcat6.*";
 
 
 
- # METHODS that implement these ............................................
+      # METHODS that implement these ............................................
 
-classes:
+  classes:
 
-  "start" expression => strcmp("start","$(state)"),
-             comment => "Check if to start a service";
-  "stop"  expression => strcmp("stop","$(state)"),
-             comment => "Check if to stop a service";
+      "start" expression => strcmp("start","$(state)"),
+              comment => "Check if to start a service";
+      "stop"  expression => strcmp("stop","$(state)"),
+              comment => "Check if to stop a service";
 
-# Do we want to include the packages here too?
+      # Do we want to include the packages here too?
 
-processes:
+  processes:
 
-  start::
+    start::
 
-    "$(pattern[$(service)])"
+      "$(pattern[$(service)])"
 
-             comment => "Verify that the service appears in the process table",
-       restart_class => "restart_$(service)";
+              comment => "Verify that the service appears in the process table",
+        restart_class => "restart_$(service)";
 
-  stop::
+    stop::
 
-    "$(pattern[$(service)])"
+      "$(pattern[$(service)])"
 
-            comment => "Verify that the service does not appear in the process",
-       process_stop => "$(stopcommand[$(service)])",
-            signals => { "term", "kill"};
+              comment => "Verify that the service does not appear in the process",
+         process_stop => "$(stopcommand[$(service)])",
+              signals => { "term", "kill"};
 
   commands:
 
-   "$(startcommand[$(service)])"
+      "$(startcommand[$(service)])"
 
-            comment => "Execute command to restart the $(service) service",
-         ifvarclass => "restart_$(service)";
+              comment => "Execute command to restart the $(service) service",
+           ifvarclass => "restart_$(service)";
 
 }

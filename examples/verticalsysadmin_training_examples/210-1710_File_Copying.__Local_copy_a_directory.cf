@@ -23,6 +23,6 @@ bundle agent example
          copy_from    => local_cp("$(master_location)"),
          depth_search => recurse("inf");
 
-#   /var/cfengine/masterfiles -------->  /var/cfengine/inputs
+      #   /var/cfengine/masterfiles -------->  /var/cfengine/inputs
 
 }

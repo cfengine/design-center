@@ -1,11 +1,11 @@
-                                                                     
-                                                                     
-                                                                     
-                                             
+
+
+
+
 body common control {
 
-    bundlesequence => { "create_db_users" };
-    inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
+       bundlesequence => { "create_db_users" };
+               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 
 }
 
@@ -14,17 +14,17 @@ body common control {
 
 bundle common db {
 
-vars:
+  vars:
 
-  "db_users"
+      "db_users"
 
-     slist   => splitstring(execresult ("/usr/bin/psql -AXqt -c 'select usename from pg_user' -U postgres", "noshell"), "\n", "100"),
-     comment => "List of DB users";
+              slist   => splitstring(execresult ("/usr/bin/psql -AXqt -c 'select usename from pg_user' -U postgres", "noshell"), "\n", "100"),
+              comment => "List of DB users";
 
 
-  "createuser_defaults"
-     string => " -U postgres  --no-createdb --no-createrole --no-superuser ",
-     comment => "Default arguments we'll use with /usr/bin/createuser to create regular unprivileged PostgreSQL accounts";
+      "createuser_defaults"
+               string => " -U postgres  --no-createdb --no-createrole --no-superuser ",
+              comment => "Default arguments we'll use with /usr/bin/createuser to create regular unprivileged PostgreSQL accounts";
 
 }
 
@@ -33,33 +33,33 @@ vars:
 
 bundle agent create_db_users {
 
-classes:
+  classes:
 
-"postgres_node"
+      "postgres_node"
 
-    expression => returnszero ("/usr/bin/pgrep postmaster >/dev/null", "useshell"),
-       comment => "Identify if this node is running postgres.";
+           expression => returnszero ("/usr/bin/pgrep postmaster >/dev/null", "useshell"),
+              comment => "Identify if this node is running postgres.";
 
 
-methods:
+  methods:
 
-  postgres_node::
+    postgres_node::
 
       "any"
             usebundle => create_pg_user("nagios", "$(db.createuser_defaults)"),
-            comment => "Every node that runs postgres should have pg user nagios for monitoring using check-postgres.pl plugin";
-    
-  specialcase1::
+              comment => "Every node that runs postgres should have pg user nagios for monitoring using check-postgres.pl plugin";
+      
+    specialcase1::
 
-    "any"
-          usebundle => create_pg_user("superuser1", " -U postgres --superuser "),
-          comment => "Create db superuser superuser1";
+      "any"
+            usebundle => create_pg_user("superuser1", " -U postgres --superuser "),
+              comment => "Create db superuser superuser1";
 
-  specialcase2::
+    specialcase2::
 
-    "any"
-          usebundle => create_pg_user("regularuser1", "$(db.createuser_defaults)"),
-          comment => "Application X requires regularuser1";
+      "any"
+            usebundle => create_pg_user("regularuser1", "$(db.createuser_defaults)"),
+              comment => "Application X requires regularuser1";
 
 
 }
@@ -70,21 +70,21 @@ methods:
 bundle agent create_pg_user(username,args) {
 
 
-classes:
+  classes:
 
-  "$(username)_exists"
+      "$(username)_exists"
 
-        expression => reglist("@(db.db_users)","$(username)"),
-        comment => "Check if username already exists in the database.";
-
-
-commands:
+           expression => reglist("@(db.db_users)","$(username)"),
+              comment => "Check if username already exists in the database.";
 
 
-           "/usr/bin/createuser $(args)  $(username)" 
-                 contain => in_shell_and_silent,
-                 ifvarclass => "!$(username)_exists",
-                 comment => "Create PostgreSQL user $(username) with createuser args $(args)";
+  commands:
+
+
+      "/usr/bin/createuser $(args)  $(username)" 
+              contain => in_shell_and_silent,
+           ifvarclass => "!$(username)_exists",
+              comment => "Create PostgreSQL user $(username) with createuser args $(args)";
 
 }
 

@@ -2,7 +2,7 @@ body common control {
 
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 
-                    }
+}
 
 
 bundle agent example {
@@ -18,4 +18,4 @@ bundle agent example {
   commands:
     complain_loudly_about_cups::
       "/bin/echo send up a flare about CUPS";
-                     }
+}

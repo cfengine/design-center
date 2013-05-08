@@ -2,15 +2,15 @@ bundle agent example {
 
   vars:
 
-      	"my_int1"
-     	 	
+      "my_int1"
+      
                handle => "poke_cfengine_with_a_stick",
               comment => "Try to assign a string to an integer variable to see what happens",
-      	          int => "hello world";
-                
+                  int => "hello world";
+      
 
   commands:
 
       "/bin/echo my int is $(my_int)";
 
-                     }
+}

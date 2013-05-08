@@ -2,24 +2,24 @@ bundle agent example {
 
   files:
 
-    "/var/logexample/.*"
-      handle => "delete_old_logs",
-     comment => "Delete files older than specified threshold",
- file_select => days_old("2"),
-      delete => tidy;
+      "/var/logexample/.*"
+               handle => "delete_old_logs",
+              comment => "Delete files older than specified threshold",
+          file_select => days_old("2"),
+               delete => tidy;
 }
 
 #################################################
 
 body file_select days_old(days)
 {
-mtime       => irange(ago(0,0,"$(days)",0,0,0) , now);
-file_result => "!mtime";
+          mtime       => irange(ago(0,0,"$(days)",0,0,0) , now);
+          file_result => "!mtime";
 }
 
 body delete tidy {
 
-             dirlinks => "delete";  # what to do with Symlinks To Directories	
+             dirlinks => "delete";  # what to do with Symlinks To Directories        
              rmdirs   => "true";    # what to do with Empty Directories 
 
-                 }
+}

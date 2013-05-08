@@ -2,7 +2,7 @@ body common control {
 
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 
-                    }
+}
 
 
 bundle agent example {
@@ -10,7 +10,7 @@ bundle agent example {
   files:
       "/bin/chown"
                rename => disable_for_good;
-                     }
+}
 
 
 body rename disable_for_good

@@ -14,7 +14,7 @@ bundle agent example {
                            "Wednesday",
                            "Thursday",
                            "Friday",
-                         };
+                };
 
 
   reports:
@@ -24,4 +24,4 @@ bundle agent example {
       # ifvarclass: variable classes ANDed
       # with any regular classes (converts variable to a class)
 
-                     }
+}

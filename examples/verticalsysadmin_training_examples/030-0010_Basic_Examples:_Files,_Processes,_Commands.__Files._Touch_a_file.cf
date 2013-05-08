@@ -8,4 +8,4 @@ bundle agent example {
               comment => "Update heartbeat timestamp to confirm CFEngine is running",
               create  => "true", 
               touch   => "true";
-                     }
+}

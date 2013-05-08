@@ -16,12 +16,12 @@ bundle agent example {
               string  => "$(variable_0)";       # a scalar variable
   reports:
 
-     linux::
+    linux::
 
       "
 variable_0: $(variable_0)
 variable_1: $(variable_1)
 "
-          handle => "display_var_values",
-          comment => "Display values of both variables";
-                       }
+               handle => "display_var_values",
+              comment => "Display values of both variables";
+}

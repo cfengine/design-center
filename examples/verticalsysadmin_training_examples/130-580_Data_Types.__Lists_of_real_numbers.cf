@@ -16,4 +16,4 @@ bundle agent example {
       "Iterating over the values in @(my_list):  $(my_list)"
                handle => "display_rlist",
               comment => "Demonstrate looping over an rlist";
-                     }
+}

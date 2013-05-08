@@ -18,7 +18,7 @@ body common control
 
        bundlesequence => {
                            "wordpress_install",
-                         };
+       };
 
 
                inputs =>          { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
@@ -71,14 +71,14 @@ bundle agent wp_web_front_end_packages_installed(params)
                                    "apache2", 
                                    "php5",
                                    "php5-mysql",
-                                 };
+      };
 
     redhat::
       "desired_package" slist => { 
                                    "httpd",
                                    "php",
                                    "php-mysql",
-                                 };
+      };
   packages:
       "$(desired_package)"
        package_policy => "add",
@@ -102,7 +102,7 @@ bundle agent wp_db_back_end_packages_installed(params)
 
       "desired_package" slist => { 
                                    "mysql-server",
-                                 };
+      };
 
   packages:
       "$(desired_package)"

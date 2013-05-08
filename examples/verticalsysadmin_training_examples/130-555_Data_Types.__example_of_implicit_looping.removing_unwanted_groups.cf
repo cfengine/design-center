@@ -3,21 +3,21 @@ bundle agent example {
   vars:
 
       "unwanted_groups"
-                handle => "a_blacklist",
-               comment => "A practical example of looping over a list?",
+               handle => "a_blacklist",
+              comment => "A practical example of looping over a list?",
                 slist => {
                            "games",
                            "mail",
-                         };
+                };
   files:
 
       "/etc/group"
 
             edit_line => delete_group("$(unwanted_groups)"),
-            handle => "purge_unwanted_groups",
-           comment => "Demonstrate parameterization of an edit_line bundle";
+               handle => "purge_unwanted_groups",
+              comment => "Demonstrate parameterization of an edit_line bundle";
 
-                     }
+}
 
 ####################################################################
 
@@ -25,7 +25,7 @@ bundle edit_line delete_group(unwanted_group) {
 
   delete_lines:
       "^$(unwanted_group):.*"
-           handle => "purge_a_single_unwanted_group",
-          comment => "Remove a specified group";
-                                     }
+               handle => "purge_a_single_unwanted_group",
+              comment => "Remove a specified group";
+}
 

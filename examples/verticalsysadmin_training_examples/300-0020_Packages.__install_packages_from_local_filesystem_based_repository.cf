@@ -1,6 +1,6 @@
 body common control {
                inputs => {"/var/cfengine/inputs/libraries/cfengine_stdlib.cf"};
-                    }
+}
 
 bundle agent example {
 
@@ -11,7 +11,7 @@ bundle agent example {
 package_architectures => { "noarch" },
        package_method => rpm_filebased("/repo/RPMs");
 
-                     }
+}
 
 
 body package_method rpm_filebased(path)

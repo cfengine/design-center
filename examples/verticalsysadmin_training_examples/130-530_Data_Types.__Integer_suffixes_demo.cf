@@ -14,4 +14,4 @@ bundle agent example {
       "42 x 1024 = $(fourty_two_kibibytes)";
       "infinity = $(infinity)";
       "twenty_percent = $(twenty_percent)";
-                     }
+}

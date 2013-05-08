@@ -1,6 +1,6 @@
 body common control {
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-                    }
+}
 
 
 bundle common global {
@@ -10,7 +10,7 @@ bundle common global {
       "stuff[location]" string => "palo_alto";
       "stuff[time]"     string => "october-2012";
       "stuff[students]"     string => "7";
-                     }
+}
 
 
 
@@ -21,6 +21,6 @@ bundle agent example {
       "/etc/example.conf"
                create => "true",
             edit_line => set_variable_values("global.stuff");
-                     }
+}
 
 

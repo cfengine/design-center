@@ -1,6 +1,6 @@
 body common control {
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-                    }
+}
 
 bundle agent example {
 
@@ -18,7 +18,7 @@ bundle agent example {
                handle => "run_sshd_init_script_to_reload_sshd_to_pick_up_new_config",
                action => logme("promise $(this.handle)");
 
-                     }
+}
 
 
 body action logme(x)
@@ -36,4 +36,4 @@ body action logme(x)
 bundle edit_line sshd_uses_protocol_2_only {
       delete_lines: "Protocol 1,2";
       insert_lines: "Protocol 2";
-                                           }
+}

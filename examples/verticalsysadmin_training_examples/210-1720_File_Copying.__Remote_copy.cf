@@ -38,10 +38,10 @@ body perms u_p(p)
 
 body copy_from u_remote_cp(from,server)
 {
-servers     => { "$(server)" };
-source      => "$(from)";
-compare     => "mtime";
-trustkey    => "true";  # trust the server's public key
+          servers     => { "$(server)" };
+          source      => "$(from)";
+          compare     => "mtime";
+          trustkey    => "true";  # trust the server's public key
 }
 
 #########################################################
@@ -49,15 +49,15 @@ trustkey    => "true";  # trust the server's public key
 body depth_search u_recurse(d)
 
 {
-depth => "$(d)";
-xdev  => "true";
+                depth => "$(d)";
+                xdev  => "true";
 }
 
 #########################################################
 
 body action u_immediate
 {
-ifelapsed => "0";
+            ifelapsed => "0";
 }
 
 

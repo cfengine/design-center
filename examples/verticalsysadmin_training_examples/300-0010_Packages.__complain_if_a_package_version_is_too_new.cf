@@ -2,7 +2,7 @@ body common control {
 
               inputs  =>  { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 
-                    }
+}
 
 
 
@@ -26,4 +26,4 @@ troduce a new feature that is not compatible with our in-house application.";
       "your lsof version is <= 4.78-2";
 
 
-                     }
+}

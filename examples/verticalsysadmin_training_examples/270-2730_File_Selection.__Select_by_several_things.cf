@@ -1,19 +1,19 @@
 bundle agent example {
 
-files:
+  files:
 
-   "/var/logexample/."
+      "/var/logexample/."
 
-       handle => "remove_world_writable_files",
-      comment => "if you make a file world-writable, I WILL delete it",
-     file_select => compound_filter,
-      depth_search => recurse("inf"),
-      delete  => tidy;
+               handle => "remove_world_writable_files",
+              comment => "if you make a file world-writable, I WILL delete it",
+          file_select => compound_filter,
+         depth_search => recurse("inf"),
+              delete  => tidy;
 }
 
 body common control {
 
-inputs => {"/var/cfengine/masterfiles/libraries/cfengine_stdlib.cf"};
+               inputs => {"/var/cfengine/masterfiles/libraries/cfengine_stdlib.cf"};
 }
 
 

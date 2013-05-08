@@ -3,26 +3,26 @@ bundle agent example {
   vars:
 
       "my_string"      
-              handle => "example_string_variable",
-             comment => "Demonstrate a string variable",
-             string  => "String contents...";
+               handle => "example_string_variable",
+              comment => "Demonstrate a string variable",
+              string  => "String contents...";
 
       "my_int"
-              handle => "example_integer_variable",
-             comment => "Demonstrate an integer variable",
-                 int => "42";
+               handle => "example_integer_variable",
+              comment => "Demonstrate an integer variable",
+                  int => "42";
 
       "my_real"
-              handle => "example_realnumber_variable",
-             comment => "Demonstrate a real-number variable",
-             real    => "3.141592654";
+               handle => "example_realnumber_variable",
+              comment => "Demonstrate a real-number variable",
+              real    => "3.141592654";
 
   reports:
-   cfengine::
+    cfengine::
       "
 my_string: $(my_string) 
 my_int:    $(my_int)
 my_real:   $(my_real)"
-             handle => "display_vars",
-            comment => "Display how we use variables";
+               handle => "display_vars",
+              comment => "Display how we use variables";
 }

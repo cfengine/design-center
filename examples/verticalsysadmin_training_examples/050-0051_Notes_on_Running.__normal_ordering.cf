@@ -13,15 +13,15 @@ bundle agent example{
       "/tmp/newfile"
 
                handle => "create_a_file",
-               comment => "Give CFEngine something to do to change system state.",
+              comment => "Give CFEngine something to do to change system state.",
                create => "true";
 
   reports:
-     myclass::
-         "file /tmp/newfile exists";
+    myclass::
+      "file /tmp/newfile exists";
 
   reports:
-     !myclass::
-         "file /tmp/newfile does not exist";
-                        }
+    !myclass::
+      "file /tmp/newfile does not exist";
+}
 

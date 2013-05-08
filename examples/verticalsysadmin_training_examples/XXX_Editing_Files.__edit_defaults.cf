@@ -1,6 +1,6 @@
 body common control {
                inputs => { "cfengine_stdlib.cf" };
-                    }
+}
 
 
 bundle agent example {
@@ -12,7 +12,7 @@ bundle agent example {
                create => "true",
             edit_line => insert_lines("$(sys.date)"),
         edit_defaults => timestamp;
-                     }
+}
 
 
 

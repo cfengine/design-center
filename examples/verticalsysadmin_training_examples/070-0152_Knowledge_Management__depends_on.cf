@@ -7,17 +7,17 @@ bundle agent example
 
   files:
 
-    "/tmp/testfile"
-               depends_on => { "run_command", "promise2" },
+      "/tmp/testfile"
+           depends_on => { "run_command", "promise2" },
                handle => "create_file",
-               comment => "Demonstrate flow control with depends_on", 
+              comment => "Demonstrate flow control with depends_on", 
                create => "true";
 
-               
+      
 
   commands:
 
-    "/bin/echo" -> { "create_file", "Director of Security" }
+      "/bin/echo" -> { "create_file", "Director of Security" }
 
                handle => "run_command";
 
@@ -25,6 +25,6 @@ bundle agent example
 
     linux::
 
-       "Just a report"
-              handle => "promise2";
+      "Just a report"
+               handle => "promise2";
 }

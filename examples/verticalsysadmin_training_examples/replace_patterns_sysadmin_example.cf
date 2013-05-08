@@ -1,32 +1,32 @@
 bundle agent example {
 
-files:
+  files:
 
-   "/tmp/ldap.conf"
-      handle => "configure_max_conn",
-      comment => "Make sure \"MaxConnections\" is always 300.  Demonstrate replace_patterns promise type.",
-      create => "true",
-      edit_line => set_max_conn("300");
+      "/tmp/ldap.conf"
+               handle => "configure_max_conn",
+              comment => "Make sure \"MaxConnections\" is always 300.  Demonstrate replace_patterns promise type.",
+               create => "true",
+            edit_line => set_max_conn("300");
 }
 
 bundle edit_line set_max_conn(limit) {
 
   insert_lines:
 
-     "Socket $(sys.ipv4) 636"
-              handle => "parameter_with_two_values";
+      "Socket $(sys.ipv4) 636"
+               handle => "parameter_with_two_values";
 
   replace_patterns:
 
-     "MaxConnections (?i)((?!300).)*$"
+      "MaxConnections (?i)((?!300).)*$"
 
-          handle => "reset_MaxConnections_to_300",
-    replace_with => value("MaxConnections 300");
+               handle => "reset_MaxConnections_to_300",
+         replace_with => value("MaxConnections 300");
 }
 
 body replace_with value(x) {
-    replace_value => "$(x)";
-    occurrences => "all";
+        replace_value => "$(x)";
+          occurrences => "all";
 }
 
 

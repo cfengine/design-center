@@ -37,4 +37,4 @@ bundle agent example {
     !Linux_and_Monday::
       "'Linux_and_Monday' is not defined (is false)";
 
-                     }
+}

@@ -11,5 +11,5 @@ bundle agent example {
 
            ifvarclass => "$(fruit)";
 
-                     }
+}
 

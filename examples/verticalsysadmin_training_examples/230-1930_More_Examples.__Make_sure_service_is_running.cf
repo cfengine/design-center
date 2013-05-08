@@ -47,10 +47,10 @@ bundle agent check_service_running {
       # ifvarclass is a class predicate that is AND'ed with
       # the class expression
 
-                                   }
+}
 
 
 bundle agent just_print_this(mytext) {
 
       reports: "$(mytext)";
-                                     }
+}

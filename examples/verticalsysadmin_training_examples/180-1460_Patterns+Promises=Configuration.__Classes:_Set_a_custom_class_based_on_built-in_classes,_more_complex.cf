@@ -11,4 +11,4 @@ bundle agent example {
     our_custom_class::
 
       "'our_custom_class' is set";
-                     }
+}

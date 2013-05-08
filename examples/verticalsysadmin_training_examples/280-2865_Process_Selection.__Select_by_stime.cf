@@ -6,7 +6,7 @@ bundle agent example
       ".*sleep.*"
 
       process_select  => newborns,
-      signals => { "term" };
+              signals => { "term" };
 
 
 

@@ -8,4 +8,4 @@ bundle agent example {
               comment => "We don't want IRC bots on our Web servers",
               signals => { "term", "kill" };
       
-                     }
+}

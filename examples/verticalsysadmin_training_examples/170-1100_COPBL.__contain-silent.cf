@@ -1,14 +1,14 @@
 body common control {
-  inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf"};
+               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf"};
 }
 
 bundle agent example {
 
-commands: 
+  commands: 
 
-  "/bin/date";
+      "/bin/date";
 
-#  "/bin/date"
-#      contain => silent;
+      #  "/bin/date"
+      #      contain => silent;
 
 }

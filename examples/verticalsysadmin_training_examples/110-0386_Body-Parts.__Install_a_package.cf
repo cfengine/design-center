@@ -8,7 +8,7 @@ bundle agent example {
        comment        => "Install a package",
        package_policy => "add", # Ensure that a package is present
        package_method => yum;
-                     }
+}
 
 ############################################################
 

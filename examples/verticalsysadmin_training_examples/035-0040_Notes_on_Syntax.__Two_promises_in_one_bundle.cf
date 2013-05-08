@@ -13,4 +13,4 @@ bundle agent example {
 
               create  => "true";
 
-                     }
+}

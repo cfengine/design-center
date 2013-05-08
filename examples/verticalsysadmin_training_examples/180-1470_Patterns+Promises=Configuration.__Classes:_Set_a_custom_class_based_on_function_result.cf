@@ -16,4 +16,4 @@ bundle agent example {
     !A_is_a_link::
       "'A_is_a_link' is not defined (is false)";
 
-                     }
+}

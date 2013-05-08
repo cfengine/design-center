@@ -1,5 +1,5 @@
 body common control {
-  inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
+               inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 }
 
 
@@ -7,17 +7,17 @@ bundle agent example {
 
   files:
       "/etc/motd"
-           create => "true",
-           classes => if_repaired("its_wed");
+               create => "true",
+              classes => if_repaired("its_wed");
 
-                     }
+}
 
 
 bundle agent example2 {
 
   reports:
-      its_wed::
-           "Yay!  I love Wednesdays!";
+    its_wed::
+      "Yay!  I love Wednesdays!";
 
 }
 

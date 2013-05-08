@@ -10,8 +10,8 @@ bundle agent example {
   files:
       "/etc/sysconfig/autofs"
             edit_line => configure("$(site)"),
-            create => "true";
-                     }
+               create => "true";
+}
 
 bundle edit_line configure(site) {
 
@@ -31,4 +31,4 @@ VALUE_ATTRIBUTE=\"automountInformation\"
 USE_MISC_DEVICE=\"yes\"
 SEARCH_BASE=\"ou=$(site),ou=Sites,dc=VerticalSysadmin,dc=com\"";
 
-                                 }
+}

@@ -9,4 +9,4 @@ bundle agent example {
       # this comment will show up in verbose or debug modes
 
               create  => "true";
-                     }
+}

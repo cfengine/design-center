@@ -13,7 +13,7 @@ bundle agent example {
                slist  => {
                            "String contents...",
                            "... are beauutifuuul this time of year"
-                         };
+               };
 
 
       "my_slist_1"
@@ -22,4 +22,4 @@ bundle agent example {
               comment => "Demonstrate a list variable on the RHS",
                slist  => { @(my_slist_0) };
 
-                      }
+}

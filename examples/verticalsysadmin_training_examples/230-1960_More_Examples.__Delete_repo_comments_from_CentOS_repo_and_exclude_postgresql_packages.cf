@@ -12,7 +12,7 @@ bundle agent example {
       "any" 
             usebundle => delete_repo_comments_from_CentOS_repo_and_exclude_postgresql_packages;
 
-                     }
+}
 
 
 bundle agent delete_repo_comments_from_CentOS_repo_and_exclude_postgresql_packages
@@ -41,7 +41,7 @@ bundle edit_line DeleteRepoComments {
       "#additional packages that may be useful";
       "#additional packages that extend functionality of existing packages";
       "#contrib - packages by Centos Users";
-                                    }
+}
 
 ########################################################
 
@@ -56,7 +56,7 @@ bundle edit_line AppendIfNoLine(parameter) {
       "$(parameter)"
         select_region => MyINISection("updates");
 
-                                           }
+}
 
 ########################################################
 

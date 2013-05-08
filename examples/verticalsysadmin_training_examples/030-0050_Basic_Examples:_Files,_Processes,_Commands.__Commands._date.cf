@@ -4,6 +4,6 @@ bundle agent example {
 
       "/bin/date"
 
-             handle => "run_date_cmd",
-            comment => "Demonstrating running an external command";
-                     }
+               handle => "run_date_cmd",
+              comment => "Demonstrating running an external command";
+}

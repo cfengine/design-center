@@ -8,9 +8,9 @@ bundle agent example {
 
   vars:
       "mycomment"
-            handle => "special_comment_tag",
-           comment => "Make a variable to hold our comment tag",
-            string => "Let's keep a low profile and not advertise what software we are running";
+               handle => "special_comment_tag",
+              comment => "Make a variable to hold our comment tag",
+               string => "Let's keep a low profile and not advertise what software we are running";
       
   files:
 
@@ -19,7 +19,7 @@ bundle agent example {
               comment => "$(mycomment)",
               comment => "$(mycomment)",
             edit_line => comment_out_everything;
-                     }
+}
 
 
 bundle edit_line comment_out_everything {
@@ -30,8 +30,8 @@ bundle edit_line comment_out_everything {
 
          replace_with => comment("#$(example.mycomment)# ");
 
-                                        }
+}
 
 body common control {
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-                    }
+}

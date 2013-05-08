@@ -14,12 +14,12 @@ bundle common global_classes {
 
           expression  =>  classmatch("web[0-9]+");
 
-                             }
+}
 
 
 
 bundle agent example {
-   methods:
+  methods:
       "any" usebundle => example1;
       "any" usebundle => example2;
 }

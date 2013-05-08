@@ -8,4 +8,4 @@ bundle agent example {
     start_httpd::
       "/etc/init.d/httpd start";
 
-                     }
+}

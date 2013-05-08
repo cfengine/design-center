@@ -6,7 +6,7 @@ body common control {
 
        bundlesequence => { "example1", "example2" };
 
-                    }
+}
 
 bundle agent example2 {
 
@@ -14,10 +14,10 @@ bundle agent example2 {
 
     linux::
 
-     "Second things second"
-           handle => "identify_2nd_bundle",
-          comment => "Identify the 2nd bundle to demonstrate bundlesequence";
-                      }
+      "Second things second"
+               handle => "identify_2nd_bundle",
+              comment => "Identify the 2nd bundle to demonstrate bundlesequence";
+}
 
 bundle agent example1 {
 
@@ -26,6 +26,6 @@ bundle agent example1 {
     linux::
 
       "First things first" 
-           handle => "identify_1st_bundle",
-          comment => "Identify the 1st bundle to demonstrate bundlesequence";
-                      }
+               handle => "identify_1st_bundle",
+              comment => "Identify the 1st bundle to demonstrate bundlesequence";
+}

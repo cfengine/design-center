@@ -4,16 +4,16 @@ bundle agent example {
 
       "/tmp/testfile" 
 
-              handle => "set_file_attributes",
+               handle => "set_file_attributes",
               comment => "/tmp/testfile must be mode 612 for application X to work; it must be owned by user aleksey and group cfengine",
               create  => "true",
               perms   => mog("612","aleksey","cfengine"); 
 
-                     }
+}
 
 ###########################################################
 
 body common control {
        inputs         => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-                    }
+}
 

@@ -16,12 +16,12 @@ bundle edit_line comment_out_everything {
       #".*"
       "^([^#].*)"
          replace_with => comment("# ");
-                                        }
+}
 
 body replace_with comment(c)
 {
-replace_value => "$(c) $(match.1)";
-occurrences => "all";
+        replace_value => "$(c) $(match.1)";
+          occurrences => "all";
 }
 
 

@@ -27,7 +27,7 @@ bundle agent example {
       "/etc/sysconfig/autofs"
             edit_line => expand_from_autofs_template("$(site)"),
                create => "true";
-                     }
+}
 
 
 #####################################################
@@ -43,8 +43,8 @@ bundle edit_line expand_from_autofs_template(site) {
 
       "/var/cfengine/inputs/templates/autofs.txt"
           insert_type => "file",                # insert copy of template 
-          expand_scalars => "true";             # expand scalars
+       expand_scalars => "true";             # expand scalars
 
-                                         }
+}
 
 #####################################################

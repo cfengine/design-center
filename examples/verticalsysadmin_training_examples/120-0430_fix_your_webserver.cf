@@ -13,12 +13,12 @@ bundle agent example {
                string => readtcp("localhost","80","GET / HTTP/1.0$(const.r)$(const.n)$(const.r)$(const.n)",500);
 
   classes:
-       "http_ok"
-           handle => "check_http_ok",
-          comment => "Check that the Web server is returning HTTP OK status code",
+      "http_ok"
+               handle => "check_http_ok",
+              comment => "Check that the Web server is returning HTTP OK status code",
            expression => regcmp(".*200 OK.*\n.*","$(http_reply)");
 
-  reports: http_ok:: "HTTP OK";
-  reports: !http_ok:: "!!! ATTNETION!!!  Fix your web server!!";
+      reports: http_ok:: "HTTP OK";
+      reports: !http_ok:: "!!! ATTNETION!!!  Fix your web server!!";
 
-                     }
+}

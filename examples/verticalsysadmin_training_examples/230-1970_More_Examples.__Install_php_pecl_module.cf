@@ -34,7 +34,7 @@ bundle agent php_pecl_http_extension_is_installed_and_integrated {
       "/usr/bin/yes ' ' | /usr/bin/pecl install pecl_http && /usr/bin/chcon -t textrel_shlib_t /usr/lib64/php/modules/http.so"  # force the install to be non-interactive - let the pecl install pecl_http use the default settings.  Then set SELinux label.
 
               contain => in_shell;  # so we can do a pipeline
-                                                                 } 
+} 
 
 
 ###############################################################
@@ -47,7 +47,7 @@ bundle edit_line tell_php_to_load_http_extension {
   insert_lines:
       "$(dynamically_load_http_module)"
              location => in_Dynamic_Extensions_section;
-                                                 }
+}
 
 
 ###############################################################

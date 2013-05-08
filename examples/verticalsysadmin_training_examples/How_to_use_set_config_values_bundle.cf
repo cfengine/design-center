@@ -1,22 +1,22 @@
 bundle agent example {
 
 
-vars:
+  vars:
 
-  "config[PermitRootLogin]"
-      string => "no";
+      "config[PermitRootLogin]"
+               string => "no";
 
 
   files:
 
-    "/tmp/sshd_config"
+      "/tmp/sshd_config"
 
-       edit_line  => set_config_values("example.config");
+           edit_line  => set_config_values("example.config");
 
-     
+      
 }
 
 body common control {
 
-  inputs => {"/var/cfengine/inputs/libraries/cfengine_stdlib.cf"};
+               inputs => {"/var/cfengine/inputs/libraries/cfengine_stdlib.cf"};
 }

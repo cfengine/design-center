@@ -3,7 +3,7 @@
 
 body common control {
 
-  inputs => {"/var/cfengine/inputs/libraries/cfengine_stdlib.cf"};
+               inputs => {"/var/cfengine/inputs/libraries/cfengine_stdlib.cf"};
 
 }
 
@@ -22,7 +22,7 @@ bundle agent example
 
   reports:
 
-   world_writable_files::
+    world_writable_files::
 
       "Warning!  World writable files found";
 

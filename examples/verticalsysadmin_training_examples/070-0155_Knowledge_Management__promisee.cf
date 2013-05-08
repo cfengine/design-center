@@ -6,4 +6,4 @@ bundle agent example {
       # document stakeholders
 
               create  => "true";
-                     }
+}

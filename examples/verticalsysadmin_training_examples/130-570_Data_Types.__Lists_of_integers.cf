@@ -12,7 +12,7 @@ bundle agent example {
     linux::
 
       "Iterating over the values in @(my_list):  $(my_list)"
-              handle => "demo_int_list",
-             comment => "Demonstrate implicit looping over an ilist";
-                     }
+               handle => "demo_int_list",
+              comment => "Demonstrate implicit looping over an ilist";
+}
 

@@ -16,7 +16,7 @@ bundle agent example
 
 body copy_from round_robin_cp(from,server1, server2)
 {
-  source => "$(from)";
+               source => "$(from)";
 
     flip_a_coin__heads::
               servers => { "$(server1)", "$(server2)" };

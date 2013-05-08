@@ -2,7 +2,7 @@ body common control {
 
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 
-                    }
+}
 
 
 bundle agent example {
@@ -12,7 +12,7 @@ bundle agent example {
       "/tmp/testfile"
 
             edit_line => comment_out_everything;
-                     }
+}
 
 
 bundle edit_line comment_out_everything {
@@ -23,5 +23,5 @@ bundle edit_line comment_out_everything {
 
          replace_with => comment("#");
 
-                                        }
+}
 

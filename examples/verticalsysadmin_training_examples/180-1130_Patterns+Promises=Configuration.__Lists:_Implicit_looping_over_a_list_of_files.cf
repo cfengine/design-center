@@ -2,7 +2,7 @@ body common control {
 
                inputs =>         { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 
-                    }
+}
 
 bundle agent example {
 
@@ -11,7 +11,7 @@ bundle agent example {
       "list_of_files" slist => {
                                  "/etc/passwd",
                                  "/etc/group",
-                               };
+      };
 
   files:
 
@@ -20,4 +20,4 @@ bundle agent example {
               comment => "Ensure a list of files is owned by root
 and mode 644",
                 perms => mo("644","root"); 
-                     }
+}

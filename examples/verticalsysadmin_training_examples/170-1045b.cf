@@ -16,13 +16,13 @@ bundle edit_line uncomment_everything {
       
       "^#(.*)"
          replace_with => uncomment;
-                                        }
+}
 
 
 body replace_with uncomment
 {
-replace_value => "$(match.1)";
-occurrences => "all";
+        replace_value => "$(match.1)";
+          occurrences => "all";
 }
 
 

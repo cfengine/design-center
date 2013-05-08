@@ -1,6 +1,6 @@
 body common control {
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-                    }
+}
 
 
 bundle agent example {
@@ -11,7 +11,7 @@ bundle agent example {
 
               create  => "true",
             edit_line => proper_greetings;
-                     }
+}
 
 
 ####################################################
@@ -25,4 +25,4 @@ bundle edit_line  proper_greetings {
       "Good Evening"
              location => after("Good Day");
 
-                                   }
+}

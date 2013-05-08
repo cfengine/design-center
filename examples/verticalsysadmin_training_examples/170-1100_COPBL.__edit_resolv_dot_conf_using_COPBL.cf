@@ -13,11 +13,11 @@ bundle agent example {
       "/tmp/resolv.conf"
 
             edit_line =>  resolvconf("$(search_suffix)", "@(example.nameservers)" );
-                     }
+}
 
 
 
 body common control {
 
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-                    }
+}

@@ -2,7 +2,7 @@ body common control {
 
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 
-                    }
+}
 
 
 bundle agent example {
@@ -18,6 +18,6 @@ bundle agent example {
     persistent_class::
       "persistent class is set";
 
-                     }
+}
 
 

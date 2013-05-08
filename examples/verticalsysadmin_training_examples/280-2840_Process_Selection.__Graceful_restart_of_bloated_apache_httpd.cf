@@ -19,7 +19,7 @@ bundle agent example {
       "/usr/sbin/httpd -k graceful";
       
 
-                     }
+}
 
 ########################################################
 
@@ -32,7 +32,7 @@ body process_select vsize_exceeds(process_owner, command, vsize_limit) {
                 vsize => irange("$(vsize_limit)","inf"); # vsize is over
       # $(vsize_limit)
        process_result => "process_owner&command&vsize";
-                                                                       }
+}
 
 ########################################################
 

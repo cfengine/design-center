@@ -44,7 +44,7 @@ bundle agent example
       regcmp (
                "$(listening_ports_and_processes)",
                "$(listening_ports_and_processes_ideal_scene)"
-             );  # check whether expected configuration matches actual.
+      );  # check whether expected configuration matches actual.
 
   reports:
     reality_does_not_match_ideal_scene::

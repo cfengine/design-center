@@ -10,7 +10,7 @@ bundle agent example1 {
              comment  => "Set appropriate file attributes everywhere",
               create  => "true", 
               perms   => set_mode_700_admin_group_and_specified_user("aleksey");
-                      }
+}
 
 
 #################################################
@@ -24,7 +24,7 @@ bundle agent example2 {
              comment  => "Set appropriate file attributes everywhere",
               create  => "true", 
               perms   => set_mode_700_admin_group_and_specified_user("rob");
-                      }
+}
 
 
 #################################################
@@ -40,4 +40,4 @@ body perms set_mode_700_admin_group_and_specified_user(xyz) {
       darwin:: groups => { "admin" };
       sunos::  groups => { "sys" };
 
-                                                                     }
+}

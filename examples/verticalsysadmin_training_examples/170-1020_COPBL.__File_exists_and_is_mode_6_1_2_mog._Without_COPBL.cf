@@ -9,7 +9,7 @@ bundle agent example {
               create  => "true",  
               perms   => mog("612","aleksey","cfengine"); 
 
-                     }
+}
 
 ############################################################
 

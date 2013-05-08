@@ -4,11 +4,11 @@ bundle agent example {
 
       "/etc/motd"
 
-              handle => "motd",
-             comment => "Create and populate motd",
-              create => "true",
+               handle => "motd",
+              comment => "Create and populate motd",
+               create => "true",
             edit_line => proper_greetings;
-                     }
+}
 
 
 bundle edit_line  proper_greetings {
@@ -17,14 +17,14 @@ bundle edit_line  proper_greetings {
   delete_lines:
 
       ".*"
-             handle => "empty_entire_file_please",
-             comment => "Let's start with a clean slate.";
+               handle => "empty_entire_file_please",
+              comment => "Let's start with a clean slate.";
 
   insert_lines:
 
-    "Good morning!"
-             handle => "greet_user",
-            comment => "Greet the user politely.";
+      "Good morning!"
+               handle => "greet_user",
+              comment => "Greet the user politely.";
 
-                                   }
+}
 

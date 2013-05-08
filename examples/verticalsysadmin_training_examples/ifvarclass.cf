@@ -6,12 +6,12 @@ bundle agent example {
 
 
 
- commands:
+  commands:
 
-    "/bin/echo hello world"
+      "/bin/echo hello world"
 
-         ifvarclass =>  "$(myos)"; 
-        
+           ifvarclass =>  "$(myos)"; 
+      
 
 
-                     }
+}

@@ -10,4 +10,4 @@ bundle agent example {
               comment => "Quiesce the system for maintenance",
               create  => "true";
 
-                     }
+}

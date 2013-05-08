@@ -5,4 +5,4 @@ bundle agent example {
     (redhat&Monday)|(windows&Wednesday)::
 
       "This promise will execute on Redhat servers on Mondays; or on Windows servers on Wednesdays";
-                     }
+}

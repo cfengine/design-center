@@ -8,11 +8,11 @@ bundle agent example {
       "Percent CPU0 utilization         ${mon.value_cpu0}";
 
   classes:
-    "CPUoverload"
-        expression =>  isgreaterthan("$(mon.value_cpu)","80");
+      "CPUoverload"
+           expression =>  isgreaterthan("$(mon.value_cpu)","80");
 
   reports:
-     CPUoverload::
-         "CPU utilization is over threshold!!!";
+    CPUoverload::
+      "CPU utilization is over threshold!!!";
 
-                     }
+}

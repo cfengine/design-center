@@ -1,26 +1,26 @@
 bundle agent example {
 
-vars:
+  vars:
 
-  "first_name"
-       string => "Ed";
+      "first_name"
+               string => "Ed";
 
-files:
+  files:
 
-   "/tmp/letter.txt"
+      "/tmp/letter.txt"
 
-        handle    => "write_letter",
-        create    => "true",
-        edit_line => create_from_template;
+            handle    => "write_letter",
+            create    => "true",
+            edit_line => create_from_template;
 }
 
 bundle edit_line create_from_template {
 
   insert_lines:
 
-   "/var/cfengine/inputs/templates/letter.txt"
+      "/var/cfengine/inputs/templates/letter.txt"
 
-         handle => "insert_expanded_template",
-         insert_type => "file",
-         expand_scalars => "true";
+               handle => "insert_expanded_template",
+          insert_type => "file",
+       expand_scalars => "true";
 }

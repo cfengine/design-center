@@ -17,7 +17,7 @@ bundle agent example {
     reload_httpd::
       "/etc/init.d/httpd reload";
 
-                     }
+}
 
 bundle edit_line comment_out_everything {
 
@@ -27,7 +27,7 @@ bundle edit_line comment_out_everything {
 
          replace_with => comment("#disabled-by-cfengine# ");
 
-                                        }
+}
 body common control {
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-                    }
+}

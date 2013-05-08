@@ -5,4 +5,4 @@ bundle agent example {
       "/tmp/one" create  => "true";
       "/tmp/two"  create  => "true";
 
-                     }
+}

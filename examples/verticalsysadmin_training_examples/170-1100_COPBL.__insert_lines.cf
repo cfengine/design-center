@@ -1,6 +1,6 @@
 body common control {
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf"};
-                    }
+}
 
 
 bundle agent example {
@@ -11,4 +11,4 @@ bundle agent example {
 
                create => "true",
             edit_line => insert_lines("hello world.$(const.n)this is line 2$(const.n)line 3 is great$(const.n)line 4 is awesome");
-                     }
+}

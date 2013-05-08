@@ -10,10 +10,10 @@ bundle agent example {
 
       # shell equivalent:  rm -r /tmp/testfile*
 
-                     }
+}
 
 
 body common control {
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-                    }
+}
 

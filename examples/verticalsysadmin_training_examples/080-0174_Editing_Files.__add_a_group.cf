@@ -7,11 +7,11 @@ bundle agent example {
 
       "/etc/group"
 
-            handle => "group_presence",
-           comment => "Ensure CFEngine group is present",
-         edit_line => cfengine_group_is_present;
+               handle => "group_presence",
+              comment => "Ensure CFEngine group is present",
+            edit_line => cfengine_group_is_present;
 
-                     }
+}
 
 
 bundle edit_line cfengine_group_is_present {
@@ -20,8 +20,8 @@ bundle edit_line cfengine_group_is_present {
 
       "cfengine:x:502:"
 
-        handle => "cfengine_group_entry",
-       comment => "Arbitrary group entry in /etc/group";
+               handle => "cfengine_group_entry",
+              comment => "Arbitrary group entry in /etc/group";
 
-                                           }
+}
 

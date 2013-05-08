@@ -2,7 +2,7 @@
 
 body common control {
 
-                    }
+}
 
 
 bundle agent remove_centos_httpd_welcome_page

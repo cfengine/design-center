@@ -16,4 +16,4 @@ bundle agent example {
 
          copy_from    => local_cp("templates/motd.txt");
 
-                     }
+}

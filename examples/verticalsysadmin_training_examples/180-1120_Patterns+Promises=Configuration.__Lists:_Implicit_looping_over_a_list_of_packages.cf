@@ -28,7 +28,7 @@ bundle agent example
                            "php",
                            "php-mysql",
                            "mysql-server",
-                         };
+                };
 
 
       "unwanted_package"
@@ -36,7 +36,7 @@ bundle agent example
                 slist => {
                            "java",
                            "ruby",
-                         };
+                };
 
       ######################################################
       # Below here is convergent "stock-code", forget this...

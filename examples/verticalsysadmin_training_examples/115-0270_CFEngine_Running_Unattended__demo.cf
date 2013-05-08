@@ -30,16 +30,16 @@ cf-agent
 
 body common control {
        bundlesequence =>  {"example",};
-                    }
+}
 
 bundle agent example {
 
   files:
 
-    "/etc/motd"
+      "/etc/motd"
 
-              handle => "make_motd",
+               handle => "make_motd",
               comment => "Mortal users can't log in while system is in maintenance mode",
-              create => "true";
+               create => "true";
 
-                     }
+}

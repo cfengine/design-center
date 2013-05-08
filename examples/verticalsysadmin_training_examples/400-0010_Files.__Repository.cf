@@ -1,6 +1,6 @@
 body common control {
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
-                    }
+}
 
 bundle agent example {
 
@@ -13,7 +13,7 @@ bundle agent example {
         edit_defaults => timestamp,
            repository => "/var/cfengine/repository",
               comment => "Save all history of edits to this important file.";
-                     }
+}
 
 body edit_defaults timestamp
 {

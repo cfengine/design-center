@@ -2,7 +2,7 @@ body common control {
 
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 
-                    }
+}
 
 ###########################################################
 
@@ -20,4 +20,4 @@ bundle agent example {
          copy_from    => remote_cp("$(master_location)/welcome.conf","205.186.147.195"),
          action       => immediate;
 
-                     }
+}

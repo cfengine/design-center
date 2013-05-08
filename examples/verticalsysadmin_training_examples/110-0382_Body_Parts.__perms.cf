@@ -1,25 +1,25 @@
 bundle agent example {
 
-files:
+  files:
 
-   "/tmp/bobsfile" 
+      "/tmp/bobsfile" 
 
-	create  => "true",
-	comment => "Set mode, ownership and group on /tmp/bobsfile",
-	perms   => set_file_attributes("777", "bob", "mail");
+              create  => "true",
+              comment => "Set mode, ownership and group on /tmp/bobsfile",
+              perms   => set_file_attributes("777", "bob", "mail");
 
-   "/tmp/susansfile" 
+      "/tmp/susansfile" 
 
-	create  => "true",
-	comment => "Set mode, ownership and group on /tmp/susansfile",
-	perms   => set_file_attributes("000", "susan", "games");
+              create  => "true",
+              comment => "Set mode, ownership and group on /tmp/susansfile",
+              perms   => set_file_attributes("000", "susan", "games");
 }
 
 #######################################################
 
 body perms set_file_attributes(mode,owner,group)
 {
-mode    => "$(mode)";
-owners  =>  {"$(owner)"};
-groups  =>  {"$(group)"};
+              mode    => "$(mode)";
+              owners  =>  {"$(owner)"};
+              groups  =>  {"$(group)"};
 }

@@ -1,19 +1,19 @@
 bundle agent example {
 
-classes:
+  classes:
 
-  "module_ok"
+      "module_ok"
 
-     expression => usemodule("example_module.pl",
-                             ""); 
-
-  reports:
-   module_ok::
-    "Module OK";
+           expression => usemodule("example_module.pl",
+                                   ""); 
 
   reports:
-     HelloWorld::
-       "Hello world!";
+    module_ok::
+      "Module OK";
+
+  reports:
+    HelloWorld::
+      "Hello world!";
 
 
 }

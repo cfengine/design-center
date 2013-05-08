@@ -35,8 +35,8 @@ body common control {
                                   # not really.  i just turn off the firewall.
                                   # be warned.
                                   "configure_kickstart_file",
-                                };
-                    }
+       };
+}
 
 bundle agent packages {
 
@@ -66,7 +66,7 @@ bundle agent packages {
        package_policy => "add";
 
 
-                      }
+}
 
 bundle agent enable_services {
 
@@ -78,7 +78,7 @@ bundle agent enable_services {
       "/sbin/chkconfig httpd on";
       "/sbin/chkconfig dhcpd on";
 
-                             }
+}
 
 
 
@@ -88,7 +88,7 @@ bundle agent configure_dhcpd_config_file {
       "/etc/dhcpd.conf"
                create => "true",
             edit_line => my_dhcpd_config;
-                                         }
+}
 
 bundle edit_line my_dhcpd_config {
 
@@ -103,11 +103,11 @@ ddns-update-style ad-hoc;
 
 subnet 192.168.0.0 netmask 255.255.0.0 {
 range 192.168.1.2 192.168.1.254;
-                                       }
+}
 "
           insert_type => "preserve_block";
 
-                                 }
+}
 
 
 bundle agent start_services {
@@ -118,13 +118,13 @@ bundle agent start_services {
       "/etc/init.d/httpd start";
       "/etc/init.d/xinetd start";
       "/etc/init.d/dhcpd start";
-                            }
+}
 
 bundle agent configure_firewall_to_allow_bootp_and_tftp {
       # this bundle should edit iptables to allow UDP 67 and 69
   commands:
       "/etc/init.d/iptables stop";  # quick and dirty, not safe
-                                                        }
+}
 
 
 bundle agent configure_kickstart_file {
@@ -134,7 +134,7 @@ bundle agent configure_kickstart_file {
 
                create => "true",
             edit_line => my_kickstart_file;
-                                      }
+}
 
 bundle edit_line my_kickstart_file {
 
@@ -199,7 +199,7 @@ echo Running CFEngine for the first time
 /usr/local/sbin/cf-agent -I
 "
           insert_type => "preserve_block";
-                                   }
+}
 
 bundle agent run_pxe_commands_to_setup_pxeboot {
 
@@ -215,4 +215,4 @@ bundle agent run_pxe_commands_to_setup_pxeboot {
       "/usr/sbin/pxeos -a -i centos-5.7-i386 -p HTTP -D 0 -s 192.168.1.1 -L /centos-5.7-i386 -K 'http://192.168.1.1/centos-5.7-i386.ks' centos-5.7-i386";
       "/usr/sbin/pxeboot -a -O centos-5.7-i386  -K 'http://192.168.1.1/centos-5.7-i386.ks' -r 1000 192.168";
 
-                                               }
+}

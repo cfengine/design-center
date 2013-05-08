@@ -1,5 +1,5 @@
 bundle agent example{
-# Demonstrate normal ordering and multiple passes through a bundle
+      # Demonstrate normal ordering and multiple passes through a bundle
   classes:
       "file_exists" 
                handle => "create_soft_class",
@@ -10,7 +10,7 @@ bundle agent example{
       "/tmp/newfile"
 
                handle => "create_a_file",
-               comment => "Give CFEngine something to do to change system state.",
+              comment => "Give CFEngine something to do to change system state.",
                create => "true";
   reports:
     file_exists::
@@ -23,5 +23,5 @@ bundle agent example{
       "file /tmp/newfile does not exist"
                handle => "report_failure",
               comment => "Report lack of existence of /tmp/newfile";
-                        }
+}
 

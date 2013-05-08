@@ -5,14 +5,14 @@ bundle common example {
       "myclass"
            expression => "any";
 
-                     }
+}
 
 
 bundle agent example2 {
 
   reports:
-      myclass::
-           "Yay!  I love Any!";
+    myclass::
+      "Yay!  I love Any!";
 
 }
 

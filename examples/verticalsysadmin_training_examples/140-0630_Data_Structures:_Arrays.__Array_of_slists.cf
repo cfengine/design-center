@@ -1,10 +1,10 @@
 bundle agent example {
 
-# implicit looping over a slist in an array is broken right now.
+      # implicit looping over a slist in an array is broken right now.
 
-#######################################################################
-# Configuration section
-#######################################################################
+      #######################################################################
+      # Configuration section
+      #######################################################################
 
   vars:
       "config[users]"
@@ -17,7 +17,7 @@ bundle agent example {
               comment => "Demonstrate how an array value can hold a list",
                 slist => { "httpd", "php" };
 
-#######################################################################
+      #######################################################################
 
       "keys"
                handle => "config_array_keys",
@@ -31,4 +31,4 @@ bundle agent example {
 
       "The value for key $(keys) is: $(config[$(keys)])";
 
-                     }
+}
