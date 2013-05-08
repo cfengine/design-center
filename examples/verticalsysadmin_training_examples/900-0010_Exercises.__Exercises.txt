@@ -30,7 +30,7 @@ your name in it.
 EXERCISE 3
 
 Manually create a template:
-echo 'Hello, $(mybundle.myname).  The time is $(sys.date).' > /tmp/file.tmpl
+echo 'Hello, $(mybundle.myname).  The time is $(sys.date).' > /tmp/file.dat
 
 
 Note: a fully qualified variable consists of the bundle 
@@ -43,7 +43,7 @@ The fully qualified variable name is $(mybundle.myvar).
 
 
 Now write a policy to populate contents of /tmp/file.txt
-using this template file, /tmp/file.tmpl. 
+using this template file, /tmp/file.dat. 
 
 Make sure your bundle defines the variable embedded in the
 template, and that your bundle name matches the bundle name
@@ -198,7 +198,7 @@ Use cf-agent to replace "line 2" with "line two".
 EXERCISE 6d.  File Editing - replace_patterns - uses CFEngine Standard Library
 
 Manually create a template
-/var/cfengine/masterfiles/templates/motd.tmpl:
+/var/cfengine/masterfiles/templates/motd.dat:
 
     This system is property of __ORGANIZATION__.
     Unauthorized use forbidden.  
@@ -206,7 +206,7 @@ Manually create a template
     CFEngine last ran on $(sys.date).
 
 Write a CFEngine policy to generate /etc/motd from 
-/var/cfengine/inputs/templates/motd.tmpl as follows:
+/var/cfengine/inputs/templates/motd.dat as follows:
 
   - Replace __ORGANIZATION__ with the
     name of your organization.

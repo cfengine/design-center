@@ -1,14 +1,14 @@
 # Make sure /etc/group contains a "cfengine" group
 
-
 bundle agent example {
 
   methods:
 
       "any"  
 
+            handle => "group_exists",
+            comment => "make sure the specified group is always present",
             usebundle => groupadd("cfengine");
-
 
 }
 

@@ -6,7 +6,9 @@ bundle agent example {
 
   commands: 
 
-      "/bin/date";
+      "/bin/date"
+          handle => "run_date",
+         comment => "Demonstrate 'body contain silent'";
 
       #  "/bin/date"
       #      contain => silent;

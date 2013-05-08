@@ -1,4 +1,4 @@
-EXERCISE
+EXERCISE 1
 
 Practice using "methods" type promises
 
@@ -14,14 +14,14 @@ What output will you see and in what order?  Why?
 Now run your policy and check.
 
 
-EXERCISE
+EXERCISE 2
 
 Now parameterize the 2nd bundle -- have the
 first bundle feed it an argument, and have the
 2nd bundle display that argument.
 
 
-EXERCISE 
+EXERCISE 3
 
 Sysadmin Problem:
 

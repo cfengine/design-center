@@ -18,7 +18,6 @@ bundle agent example {
 
 bundle agent add_group(groupname) {
 
-
   vars:
 
     any::
