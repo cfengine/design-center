@@ -1705,7 +1705,7 @@ sub exit_error
                            errors => \@_)
              ->out();
     }
-    exit 0;
+    exit $ENV{NOIGNORE} ? 1 : 0;
 }
 
 1;
