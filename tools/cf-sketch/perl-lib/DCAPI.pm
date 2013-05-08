@@ -339,10 +339,23 @@ sub list
 sub test
 {
     my $self = shift;
+
+    my $tests = $self->collect_int($self->repos(), @_);
+
+    my $good = 1;
+    foreach my $repo (keys %$tests)
+    {
+        foreach my $sketch (keys %{$tests->{$repo}})
+        {
+            my $test = $tests->{$repo}->{$sketch};
+            $good = 0 unless $test->{success};
+        }
+    }
+
     return DCAPI::Result->new(api => $self,
                               status => 1,
-                              success => 1,
-                              data => { test => $self->collect_int($self->repos(), @_) });
+                              success => $good,
+                              data => { test => $tests });
 }
 
 sub collect_int

@@ -231,4 +231,12 @@ else
 }
 
 $result->out();
-exit 0;
+
+if (Util::hashref_search($api->config(), qw/noignore/) || $ENV{DCAPI_NOIGNORE})
+{
+    exit ! $result->success();
+}
+else
+{
+    exit 0;
+}

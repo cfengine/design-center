@@ -432,6 +432,17 @@ search:
 regenerate_readme:
 	$(CFSKETCH) --make_readme
 
+test:
+	$(CFSKETCH) --install $(SKETCH) --apitest $(SKETCH) --noignore -v
+
+testinstalled:
+	$(CFSKETCH) --apitest $(SKETCH) --noignore -v
+
+testallinstalled:
+	$(CFSKETCH) --apitest 1 --noignore -v
+
+# individual sketch tests follow
+
 ssh:
 	$(CFSKETCH_DA) --install Security::SSH --activate Security::SSH=$(SOURCEDIR)/networking/ssh/params/simple.json
 	$(RUNNER)

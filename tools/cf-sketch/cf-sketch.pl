@@ -56,12 +56,14 @@ my %options = (
                repolist => [ "$inputs_root/sketches" ],
                activate => {},
                install => [],
+               apitest => [],
                uninstall => [],
                filter => [],
                force => 0,
                quiet => 0,
                verbose => 0,
                test => 0,
+               ignore => 1,
                activated => 0,
                veryverbose => 0,
                runfile => "$inputs_root/api-runfile.cf",
@@ -77,6 +79,7 @@ Getopt::Long::Configure("bundling");
 GetOptions(\%options,
            "expert!",
            "quiet|q!",
+           "ignore!",
            "verbose|v!",
            "veryverbose|vv!",
            "generate!",
@@ -90,6 +93,7 @@ GetOptions(\%options,
            "make_readme:s",
            "filter=s@",
            "install|i=s@",
+           "apitest=s@",
            "uninstall=s@",
            "deactivate-all|da",
            "activate|a=s%",
@@ -160,14 +164,31 @@ if ($options{'deactivate-all'})
 
 if (scalar @{$options{install}})
 {
+    my @todo;
+    foreach (@{$options{install}})
+    {
+        push @todo, split ',', $_;
+    }
+
     my @todo = map
     {
         {
             sketch => $_, force => $options{force}, source => $sourcedir,
              target => $options{repolist}->[0],
          }
-    } @{$options{install}};
+    } @todo;
     api_interaction({install => \@todo});
+}
+
+if (scalar @{$options{apitest}})
+{
+    my @todo;
+    foreach (@{$options{apitest}})
+    {
+        push @todo, join('|', split ',', $_);
+    }
+
+    api_interaction({test => \@todo});
 }
 
 if (scalar @{$options{uninstall}})
@@ -256,11 +277,10 @@ unless ($options{'expert'}) {
     exit(0);
 }
 
-
 sub api_interaction
 {
     my $request = shift @_;
-    my $ok_callback = shift @_;
+    my $callback = shift @_;
 
     my $mydir = dirname($0);
     my $api_bin = "$mydir/cf-dc-api.pl";
@@ -331,7 +351,21 @@ sub api_interaction
             Util::print_api_messages($result);
         }
 
-        $ok_callback->($success, $result) if defined $ok_callback;
+        unless (defined $callback)
+        {
+            $callback = sub
+            {
+                my $success = shift @_;
+                my $result = shift @_;
+                if (!$success && !$options{ignore})
+                {
+                    exit 1;
+                }
+            };
+        }
+
+        $callback->($success, $result) if defined $callback;
+
         return ($success, $result);
     }
 
