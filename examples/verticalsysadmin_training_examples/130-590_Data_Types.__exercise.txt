@@ -1,6 +1,6 @@
 EXERCISES
 
-1. Create a list containing names of five files
+1. Create a list variable containing names of five files
    to create.  For example:
 
       /tmp/file1
@@ -12,8 +12,8 @@ EXERCISES
    Then use a single "files" promise to ensure all
    five files exist.
    
-   For advanced students, add a report if any of 
-   the files are over 10 bytes in size.
+1b. For advanced students, add a report if any of 
+    the files are over 10 bytes in size.
 
 2. Create a list containing names of processes that
    should not be running: for example "trn" and "eggdrop"
@@ -22,4 +22,4 @@ EXERCISES
    processes are not running.
 
 If you finish before the rest of the class, please
-study chapters 1 - 4 in the Reference Manual.
+study your red CFEngine book.

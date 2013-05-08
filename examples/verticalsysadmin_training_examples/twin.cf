@@ -1,0 +1,15 @@
+bundle agent example {
+reports:
+
+linux::
+
+"
+sys.cf_twin: $(sys.cf_twin)
+sys.workdir: $(sys.workdir)
+sys.cf_agent: $(sys.cf_agent)
+"
+
+  handle => "show_system_variables";
+
+}
+

@@ -1,15 +1,17 @@
-
 bundle agent example {
 
   files:
 
       "/tmp/testfile.*"
 
+               handle => "demo_removing_files",
+              comment => "Demonstrate removing files using body delete tidy",
                delete => tidy;
 
       # shell equivalent:  rm -r /tmp/testfile*
 
                      }
+
 
 body common control {
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };

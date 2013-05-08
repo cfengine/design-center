@@ -1,5 +1,4 @@
 bundle agent example {
-
   vars:
       "cfengine_components[cf-monitord]"
            handle => "describe_monitor",
@@ -15,17 +14,14 @@ bundle agent example {
            handle => "describe_executor",
           comment => "Document the cf-execd component",
            string => "The executor";
-
-
+##
       "component_names"
            handle => "list_of_hash_keys",
           comment => "Extract the keys from cfengine_components array",
             slist => getindices("cfengine_components");
 
   reports:
-
     linux::
-  
           "$(component_names)$(const.t)$(cfengine_components[$(component_names)])"
           handle => "dump_array",
          comment => "Display the array keys and values";

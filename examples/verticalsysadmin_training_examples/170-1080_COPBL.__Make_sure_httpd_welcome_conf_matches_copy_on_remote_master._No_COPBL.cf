@@ -10,6 +10,9 @@ bundle agent example {
 
   vars:
       "master_location"
+               handle => "masterfiles_location_var",
+              comment => "Not everybody keeps their policy definition point in
+/var/cfengine/masterfiles.  Make it variable",
                string => "/var/cfengine/masterfiles";
 
 
@@ -17,6 +20,7 @@ bundle agent example {
     centos::
       "/etc/httpd/conf.d/welcome.conf"
 
+         handle       => "copy_welcome_conf_file_from_master",
          comment      => "make sure welcome.conf matches master copy",
          perms        => m("744"),
          copy_from    => mycopy("$(master_location)/welcome.conf","205.186.147.195"),

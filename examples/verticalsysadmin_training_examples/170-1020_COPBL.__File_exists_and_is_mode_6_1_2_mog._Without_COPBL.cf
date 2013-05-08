@@ -4,7 +4,8 @@ bundle agent example {
 
       "/tmp/testfile" 
 
-              comment => "/tmp/testfile must be mode 612 for application X to work; it must be owned by user aleksey and group cfengine", 
+              handle  => "set_file_attributes", 
+              comment => "Demonstrate_setting_file_attributes", 
               create  => "true",  
               perms   => mog("612","aleksey","cfengine"); 
 

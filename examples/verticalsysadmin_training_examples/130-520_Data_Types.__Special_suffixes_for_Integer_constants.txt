@@ -1,7 +1,7 @@
 Integer Suffixes
 ----------------
 
-Integer constants may use suffixes to represent large numbers.
+Integer values may use suffixes to represent large numbers.
 
 Which is easier to read?
 

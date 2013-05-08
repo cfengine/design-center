@@ -1,3 +1,19 @@
+bundle agent example {
+
+  files:
+
+    centos::
+
+      "/etc/httpd/conf.d/welcome.conf"
+
+          handle      => "copy_welcome_file_from_template",
+         comment      => "make sure welcome.conf matches our master welcome.conf",
+         perms        => m("744"),
+         copy_from    => local_cp("/var/cfengine/masterfiles/templates/welcome.conf.dat");
+                     }
+
+
+
 body common control {
 
                inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
@@ -5,21 +21,3 @@ body common control {
                     }
 
 
-bundle agent example {
-
-  files:             # <-- promise type
-    rhel::            # <-- class
-      "/etc/httpd/conf.d/welcome.conf"   # <-- promiser
-              comment => "Let's keep a low profile and not advertise what software we are running - remove the Welcome page",
-               delete => tidy;
-
-
-  files:
-    centos::
-
-      "/etc/httpd/conf.d/welcome.conf"
-
-         comment      => "make sure welcome.conf matches master welcome.conf",
-         perms        => m("744"),
-         copy_from    => local_cp("/var/cfengine/masterfiles/welcome.conf");
-                     }

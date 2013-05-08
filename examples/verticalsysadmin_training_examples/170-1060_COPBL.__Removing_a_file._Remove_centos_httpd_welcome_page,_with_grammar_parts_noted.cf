@@ -1,6 +1,6 @@
-body common control {
+!! SKIP !!
 
-       bundlesequence => { "remove_centos_httpd_welcome_page" };
+body common control {
 
                     }
 
