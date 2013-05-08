@@ -1,0 +1,76 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation ___001_Packages_installed_installed
+      "___001_Packages_installed_installed_metadata[api][][type]" string => "bundle_options";
+      "___001_Packages_installed_installed_metadata[api][metadata][type]" string => "metadata";
+      "___001_Packages_installed_installed_metadata[api][pkgs_add][type]" string => "list";
+      "___001_Packages_installed_installed_metadata[api][pkgs_delete][type]" string => "list";
+      "___001_Packages_installed_installed_metadata[api][runenv][type]" string => "environment";
+      "___001_Packages_installed_installed_metadata[authors]" slist => { "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" };
+      "___001_Packages_installed_installed_metadata[bundle_options][single_use]" string => "1";
+      "___001_Packages_installed_installed_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "___001_Packages_installed_installed_metadata[license]" string => "MIT";
+      "___001_Packages_installed_installed_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/package_management/packages_installed";
+      "___001_Packages_installed_installed_metadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json", "test.cf" };
+      "___001_Packages_installed_installed_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "___001_Packages_installed_installed_metadata[manifest_docs]" slist => { "README.md" };
+      "___001_Packages_installed_installed_metadata[manifest_exe]" slist => { "cf_null" };
+      "___001_Packages_installed_installed_metadata[manifest_extra]" slist => { "params/demo.json" };
+      "___001_Packages_installed_installed_metadata[manifest_test]" slist => { "cf_null" };
+      "___001_Packages_installed_installed_metadata[name]" string => "Packages::installed";
+      "___001_Packages_installed_installed_metadata[tags]" slist => { "cfdc", "packages", "enterprise_compatible" };
+      "___001_Packages_installed_installed_metadata[version]" string => "1.0.0";
+
+      # list 'pkgs_add' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/package_management/packages_installed/params/demo.json, activation ___001_Packages_installed_installed
+      "___001_Packages_installed_installed_pkgs_add" slist => { "screen" };
+
+      # list 'pkgs_delete' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/package_management/packages_installed/params/demo.json, activation ___001_Packages_installed_installed
+      "___001_Packages_installed_installed_pkgs_delete" slist => { "nosuchpackage" };
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "___001_Packages_installed_installed" usebundle => cfdc_packages:installed("cf_sketch_testing", "default:cfsketch_run.___001_Packages_installed_installed_metadata", @(cfsketch_run.___001_Packages_installed_installed_pkgs_add), @(cfsketch_run.___001_Packages_installed_installed_pkgs_delete)), ifvarclass => "(debian)", useresult => "return____001_Packages_installed_installed";
+
+  reports:
+    inform_mode::
+      "activation ___001_Packages_installed_installed could not run because it requires classes (debian)" ifvarclass => "inform_mode.!((debian))";
+}

@@ -5,18 +5,17 @@ body file control
 
 bundle agent installed(runenv, metadata, pkgs_add, pkgs_delete)
 {
-vars:
-  "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
-  
+  vars:
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
 
-packages:
-  "$(pkgs_add)"
-    package_policy => "add",
-    package_method => default:generic,
-    handle => "$(activation_id)_packages_add";
+  packages:
+      "$(pkgs_add)"
+      package_policy => "add",
+      package_method => default:generic,
+      handle => "$(activation_id)_packages_add";
 
-  "$(pkgs_delete)"
-    package_policy => "delete",
-    package_method => default:generic,
-    handle => "$(activation_id)_pacakges_delete";
+      "$(pkgs_delete)"
+      package_policy => "delete",
+      package_method => default:generic,
+      handle => "$(activation_id)_packages_delete";
 }

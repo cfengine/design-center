@@ -2,16 +2,19 @@
 
     manifest:
     {
-        "main.cf": { desc: "main file", "version": "1.0.0" }
+        "main.cf": { desc: "main file", "version": "1.0.0" },
+        "params/demo.json": { desc: "example parameters" },
+        "test.cf": { desc: "example policy" },
+        "README.md": { documentation: true },
     },
 
     metadata:
     {
         "name": "Packages::installed",
-	"description": "Ensure certain packages are installed or not installed.",
+	    "description": "Ensure certain packages are installed or not installed.",
         "version": "1.0.0",
         "license": "MIT",
-        "tags": [ "cfdc", "enterprise_compatible" ],
+        "tags": [ "cfdc", "packages", "enterprise_compatible" ],
         "authors": [ "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "debian" : "Debian family" } ] }
     },
@@ -29,7 +32,7 @@
         ],
     },
 
-    namespace: "cfdc_packages_installed",
+    namespace: "cfdc_packages",
     
     interface: [ "main.cf" ]
 }
