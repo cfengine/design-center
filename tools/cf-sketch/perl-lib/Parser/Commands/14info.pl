@@ -1,7 +1,7 @@
 #
 # info: obtain information about a sketch
 #
-# CFEngine AS, October 2012
+# CFEngine AS, May 2013
 
 use Term::ANSIColor qw(:constants);
 
