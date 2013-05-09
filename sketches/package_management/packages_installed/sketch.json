@@ -28,8 +28,8 @@
             { type: "bundle_options", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "list", name: "pkgs_add", description: "Packages that should be installed", validation: "LIST_OF_STRING_NONEMPTY", example: "apache2" },
-            { type: "list", name: "pkgs_delete", description: "Packages that should not be installed", validation: "LIST_OF_STRING_NONEMPTY", example: "telnetd" }
+            { type: "list", name: "pkgs_add", description: "Packages that should be installed", validation: "LIST_OF_PACKAGE_NAME", example: "apache2" },
+            { type: "list", name: "pkgs_delete", description: "Packages that should not be installed", validation: "LIST_OF_PACKAGE_NAME", example: "telnetd" }
         ],
     },
 
