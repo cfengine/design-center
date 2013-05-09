@@ -10,25 +10,23 @@ bundle agent example {
 
   methods:
       "any" 
-            usebundle => delete_repo_comments_from_CentOS_repo_and_exclude_postgresql_packages;
+            usebundle => exclude_postgresql_from_CentOS_repo;
 
 }
 
 
-bundle agent delete_repo_comments_from_CentOS_repo_and_exclude_postgresql_packages
-
-{
+bundle agent exclude_postgresql_from_CentOS_repo {
 
   files:
       "/etc/yum.repos.d/CentOS-Base.repo"
             edit_line => DeleteRepoComments,
+               handle => "files__CentOS_Base_repo__strip_repo_comments",
               comment => "Remove CentOS remarks about the repos, they mess up section editing because they are placed outside the section they comment about.";
       
-
   files:
       "/etc/yum.repos.d/CentOS-Base.repo"
-            edit_line => AppendIfNoLine("exclude=postgresql*$(const.n)#We should get Postgres packages from PGDG, not CentOS.  --Aleksey.$(const.n) "),
-              comment => "Exclude postgresql packages in CentOS [base] and [update] repos; we intend to get them from Postgres Global Development Group repo.";
+            edit_line => AppendIfNoLine("exclude=postgresql*$(const.n)# Get Postgres packages from PGDG, not CentOS.$(const.n)"),
+              comment => "Exclude postgresql packages in CentOS [base] and [update] repos; we'll get them from Postgres Global Development Group.";
 
 }
 

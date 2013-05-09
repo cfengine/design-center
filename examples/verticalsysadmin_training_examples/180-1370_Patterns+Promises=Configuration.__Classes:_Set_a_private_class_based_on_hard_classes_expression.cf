@@ -1,6 +1,8 @@
 bundle agent example {
 
+
   classes:
+
       "good_technology"
                handle => "good_technology_class",
               comment => "Set a custom class based on built-in classes",

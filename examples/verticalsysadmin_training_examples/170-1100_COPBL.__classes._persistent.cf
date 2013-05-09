@@ -5,19 +5,19 @@ bundle agent example {
                handle => "persistent_class_demo",
               comment => "Set a persistent class",
                create => "true",
-            edit_line => insert_lines("hello world 1234"),
-             classes  => state_repaired("persistent_class");
+             classes  => state_repaired("file_fixed");
 
   reports:
-    persistent_class::
-      "Persistent class persistent_class set.  Now run in verbose mode to see its TTL"
+    file_fixed::
+      "Persistent class set.  Run in verbose mode to see TTL"
                handle => "report_success",
               comment => "Report if our persistent class persistent_class has been set as expected.";
 }
 
-
-body common control {
-
-               inputs => { "libraries/cfengine_stdlib.cf" };
-
+body classes state_repaired(x)
+{
+promise_repaired => { "$(x)" };
+persist_time => "10";
 }
+
+

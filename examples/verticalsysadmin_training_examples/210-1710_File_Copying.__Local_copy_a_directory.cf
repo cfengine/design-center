@@ -17,7 +17,7 @@ bundle agent example
 
   files:
 
-      "/var/cfengine/inputs"
+      "/var/cfengine/inputs/."
 
          comment      => "Update the policy files from the master",
          copy_from    => local_cp("$(master_location)"),

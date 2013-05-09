@@ -1,3 +1,5 @@
+CamelCase
+
 # - demonstrate setting a custom class using a function
 
 bundle agent example {
@@ -5,14 +7,14 @@ bundle agent example {
   classes:
       "islink"
            handle => "class_islink",
-          comment => "Test if /tmp/a is a link",
+          comment => "Test if /tmp/a is a symbolic link",
        expression => islink("/tmp/a");
 
 
   reports:
-    link::
+    islink::
       "/tmp/a is a link";
 
-    !link::
+    !islink::
       "/tmp/a is not a link";
 }

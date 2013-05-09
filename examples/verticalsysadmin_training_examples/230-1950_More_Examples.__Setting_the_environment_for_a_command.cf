@@ -9,5 +9,7 @@ bundle agent example
 {
   commands:
 
-      "/usr/bin/env";
+      "/usr/bin/env"
+             handle => "env_cmd",
+            comment => "Demonstrate setting up the environment for a command";
 }

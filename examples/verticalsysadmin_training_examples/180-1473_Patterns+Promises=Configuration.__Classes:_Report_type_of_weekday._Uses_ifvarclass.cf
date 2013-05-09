@@ -21,8 +21,8 @@ bundle agent example {
     linux::
       "Hello world!  I love $(days)s!"
                handle => "report_the_day",
-             comment => "Report what day of the week it is",
+             comment => "Report what day of the week it is";
            ifvarclass => "$(days)"; 
-      # ifvarclass: variable classes ANDed
-      # with any regular classes (converts variable to a class)
+
+
 }

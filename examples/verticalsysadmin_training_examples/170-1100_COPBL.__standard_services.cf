@@ -7,6 +7,7 @@ bundle agent example {
       "Manage www service"
 
             usebundle => standard_services ("www", "stop");
+
 }
 
 bundle agent standard_services(service,state)
@@ -69,3 +70,20 @@ processes:
             comment => "Execute command to restart the $(service) service",
          ifvarclass => "restart_$(service)";
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

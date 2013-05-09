@@ -4,8 +4,8 @@ bundle agent example {
 
       "/bin/date"
           handle => "run_date_cmd",
-         comment => "Demonstrate 'body contain silent'";
-      #      contain => silent;
+         comment => "Demonstrate 'body contain silent'",
+         contain => silent;
 
 
 }

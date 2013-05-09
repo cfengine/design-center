@@ -4,7 +4,7 @@ bundle agent example {
       "/tmp/scratch"
             handle => "selective_commenting",
            comment => "Remove specific lines",
-         edit_line => comment_lines_matching("hello world","#");
+         edit_line => comment_lines_matching("hello world", "#");
 
 }
 
@@ -13,4 +13,3 @@ body common control {
 
                inputs => { "libraries/cfengine_stdlib.cf" };
 }
-

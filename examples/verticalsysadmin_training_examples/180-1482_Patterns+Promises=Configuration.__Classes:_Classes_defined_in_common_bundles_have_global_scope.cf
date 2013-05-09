@@ -1,5 +1,4 @@
-
-bundle common example {
+bundle common global_definitions {
 
   classes:
       "myclass"
@@ -8,11 +7,11 @@ bundle common example {
 }
 
 
-bundle agent example2 {
+bundle agent example {
 
   reports:
     myclass::
-      "Yay!  I love Any!";
+      "Yay!  myclass is set";
 
 }
 

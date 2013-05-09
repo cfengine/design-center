@@ -1,3 +1,5 @@
+!! SKIP !!
+
 # Make sure ntpd and portmap are running
 
 bundle agent example {

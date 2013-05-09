@@ -15,9 +15,10 @@ bundle agent example {
 
   commands:
     reload_httpd::
-      "/etc/init.d/httpd reload"
+      "/etc/init.d/httpd"
               handle => "cmd_reload_httpd",
-              comment => "Reload httpd configuration";
+              comment => "Reload httpd configuration",
+                  args => "reload";
 
 }
 

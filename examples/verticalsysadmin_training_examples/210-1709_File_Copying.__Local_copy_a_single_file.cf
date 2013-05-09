@@ -14,6 +14,6 @@ bundle agent example {
 
       "/etc/motd"
 
-         copy_from    => local_cp("templates/motd.txt");
+         copy_from    => local_cp("/var/cfengine/inputs/templates/motd.txt");
 
 }

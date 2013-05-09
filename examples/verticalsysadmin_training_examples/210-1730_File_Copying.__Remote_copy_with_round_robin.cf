@@ -4,7 +4,9 @@ bundle agent example
 {
 
   classes:
-      "flip_a_coin__heads"
+      "heads"
+           handle => "flip_a_coin_class",
+           comment => "Generate a class with a 50% probability",
            expression => isgreaterthan(randomint(1,100), 50);
 
 
@@ -18,10 +20,10 @@ body copy_from round_robin_cp(from,server1, server2)
 {
                source => "$(from)";
 
-    flip_a_coin__heads::
+    heads::
               servers => { "$(server1)", "$(server2)" };
 
-    !flip_a_coin__heads::
+    !heads::
               servers => { "$(server2)", "$(server1)" };
 
 }
