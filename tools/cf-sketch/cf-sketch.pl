@@ -170,7 +170,7 @@ if (scalar @{$options{install}})
         push @todo, split ',', $_;
     }
 
-    my @todo = map
+    @todo = map
     {
         {
             sketch => $_, force => $options{force}, source => $sourcedir,
