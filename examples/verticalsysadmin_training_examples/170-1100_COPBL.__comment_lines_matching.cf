@@ -2,9 +2,9 @@ bundle agent example {
 
   files:
       "/tmp/scratch"
-            handle => "selective_commenting",
-           comment => "Remove specific lines",
-         edit_line => comment_lines_matching("hello world", "#");
+               handle => "selective_commenting",
+              comment => "Remove specific lines",
+            edit_line => comment_lines_matching("hello world", "#");
 
 }
 

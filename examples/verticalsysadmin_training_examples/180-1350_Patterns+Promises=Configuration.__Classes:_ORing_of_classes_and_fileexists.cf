@@ -7,11 +7,11 @@ bundle agent example
 
       "my_new_class"
 
-                 handle => "or_list",
-                comment => "Demonstrate list form of class expression useful for including functions",
-                   or   => { "linux",
-                             "solaris",
-                             fileexists("/etc/fstab")
+               handle => "or_list",
+              comment => "Demonstrate list form of class expression useful for including functions",
+                 or   => { "linux",
+                           "solaris",
+                           fileexists("/etc/fstab")
                  };
 
 

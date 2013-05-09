@@ -12,63 +12,63 @@ bundle agent example {
 
 bundle agent standard_services(service,state)
 {
- # DATA, 
+      # DATA, 
 
-vars:
+  vars:
 
- any::
+    any::
 
-  "stakeholders[www]" slist => { "www_in", "wwws_in", "www_alt_in" };
-
-
- SuSE|suse|debian::
-
-  "startcommand[www]" string => "/etc/init.d/apache2 start";
-  "stopcommand[www]"  string => "/etc/init.d/apache2 stop";
-  "pattern[www]"      string => ".*apache2.*";
+      "stakeholders[www]" slist => { "www_in", "wwws_in", "www_alt_in" };
 
 
- redhat::
+    SuSE|suse|debian::
 
-  "startcommand[www]" string => "/etc/init.d/httpd start";
-  "stopcommand[www]"  string => "/etc/init.d/httpd stop";
-  "pattern[www]"      string => ".*httpd.*";
-
-
-
- # METHODS that implement these ............................................
-
-classes:
-
-  "start" expression => strcmp("start","$(state)"),
-             comment => "Check if to start a service";
-  "stop"  expression => strcmp("stop","$(state)"),
-             comment => "Check if to stop a service";
+      "startcommand[www]" string => "/etc/init.d/apache2 start";
+      "stopcommand[www]"  string => "/etc/init.d/apache2 stop";
+      "pattern[www]"      string => ".*apache2.*";
 
 
-processes:
+    redhat::
 
-  start::
+      "startcommand[www]" string => "/etc/init.d/httpd start";
+      "stopcommand[www]"  string => "/etc/init.d/httpd stop";
+      "pattern[www]"      string => ".*httpd.*";
 
-    "$(pattern[$(service)])" ->  { "@(stakeholders[$(service)])" } ,
 
-             comment => "Verify that the service appears in the process table",
-       restart_class => "restart_$(service)";
 
-  stop::
+      # METHODS that implement these ............................................
 
-    "$(pattern[$(service)])" -> { "@(stakeholders[$(service)])" },
+  classes:
 
-            comment => "Verify that the service does not appear in the process",
-       process_stop => "$(stopcommand[$(service)])",
-            signals => { "term", "kill"};
+      "start" expression => strcmp("start","$(state)"),
+              comment => "Check if to start a service";
+      "stop"  expression => strcmp("stop","$(state)"),
+              comment => "Check if to stop a service";
+
+
+  processes:
+
+    start::
+
+      "$(pattern[$(service)])" ->  { "@(stakeholders[$(service)])" } ,
+
+              comment => "Verify that the service appears in the process table",
+        restart_class => "restart_$(service)";
+
+    stop::
+
+      "$(pattern[$(service)])" -> { "@(stakeholders[$(service)])" },
+
+              comment => "Verify that the service does not appear in the process",
+         process_stop => "$(stopcommand[$(service)])",
+              signals => { "term", "kill"};
 
   commands:
 
-   "$(startcommand[$(service)])" -> { "@(stakeholders[$(service)])" },
+      "$(startcommand[$(service)])" -> { "@(stakeholders[$(service)])" },
 
-            comment => "Execute command to restart the $(service) service",
-         ifvarclass => "restart_$(service)";
+              comment => "Execute command to restart the $(service) service",
+           ifvarclass => "restart_$(service)";
 }
 
 

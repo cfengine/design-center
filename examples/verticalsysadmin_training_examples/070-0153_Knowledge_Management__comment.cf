@@ -7,7 +7,7 @@ bundle agent example {
       "/tmp/testfile" 
 
 
-              handle => "mk_file",
+               handle => "mk_file",
               comment => "Create a vital file, needed for XYZ.",
               create  => "true";
 }

@@ -3,9 +3,9 @@ bundle agent example {
   commands: 
 
       "/bin/date"
-          handle => "run_date_cmd",
-         comment => "Demonstrate 'body contain silent'",
-         contain => silent;
+               handle => "run_date_cmd",
+              comment => "Demonstrate 'body contain silent'",
+              contain => silent;
 
 
 }

@@ -15,6 +15,6 @@ bundle agent example {
 
 body common control {
 
-inputs => { "libraries/cfengine_stdlib.cf"};
+               inputs => { "libraries/cfengine_stdlib.cf"};
 
 }

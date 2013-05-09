@@ -7,12 +7,12 @@ bundle agent example {
   vars:
 
       "list_of_files"
-                handle => "file_list",
-               comment => "Just a file list",
-                 slist => {
-                                 "/etc/passwd",
-                                 "/etc/group",
-                          };
+               handle => "file_list",
+              comment => "Just a file list",
+                slist => {
+                           "/etc/passwd",
+                           "/etc/group",
+                };
 
   files:
 

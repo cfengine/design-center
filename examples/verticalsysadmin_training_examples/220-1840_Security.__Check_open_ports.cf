@@ -13,11 +13,11 @@ bundle agent example
 
 
   vars:
-   centos_5::
+    centos_5::
       "listening_ports_and_processes"
-                handle => "actual_tcp_profile",
-               comment => "Our actual network profile",
-                string =>
+               handle => "actual_tcp_profile",
+              comment => "Our actual network profile",
+               string =>
       execresult("/usr/sbin/lsof -i -n -P | \
 /bin/grep LISTEN | \
 /bin/sed -e 's#*:##' | \
@@ -32,11 +32,11 @@ bundle agent example
       # we tell CFEngine to use a shell with "useshell"
       # to do a pipeline.
 
-   centos_6::
+    centos_6::
       "listening_ports_and_processes"
-                handle => "actual_tcp_profile",
-               comment => "Our actual network profile",
-                string =>
+               handle => "actual_tcp_profile",
+              comment => "Our actual network profile",
+               string =>
       execresult("/usr/sbin/lsof -i -n -P | \
 /bin/grep LISTEN | \
 /bin/sed -e 's#*:##' | \
@@ -50,12 +50,12 @@ bundle agent example
 
   classes:
       "reality_does_not_match_ideal_scene"
-                handle => "check_profile",
-               comment => "Compare desired and actual configuration",
-                not => regcmp (
-                       "$(listening_ports_and_processes)",
-                       "$(listening_ports_and_processes_ideal_scene)"
-                       );  # check whether expected configuration matches actual.
+               handle => "check_profile",
+              comment => "Compare desired and actual configuration",
+                  not => regcmp (
+                                  "$(listening_ports_and_processes)",
+                                  "$(listening_ports_and_processes_ideal_scene)"
+                  );  # check whether expected configuration matches actual.
 
   reports:
     reality_does_not_match_ideal_scene::

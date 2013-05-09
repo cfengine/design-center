@@ -20,7 +20,7 @@ body classes kept_repaired_failed(kept, repaired, failed) {
 
 
 body changes detect_all_change_noupdate {
-# This is fierce, and will cost disk cycles
+      # This is fierce, and will cost disk cycles
        hash           => "best";
        report_changes => "all";
        update_hashes  => "no";

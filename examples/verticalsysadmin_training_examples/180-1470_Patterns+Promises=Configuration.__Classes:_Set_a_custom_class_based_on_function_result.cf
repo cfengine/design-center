@@ -6,9 +6,9 @@ bundle agent example {
 
   classes:
       "islink"
-           handle => "class_islink",
-          comment => "Test if /tmp/a is a symbolic link",
-       expression => islink("/tmp/a");
+               handle => "class_islink",
+              comment => "Test if /tmp/a is a symbolic link",
+           expression => islink("/tmp/a");
 
 
   reports:

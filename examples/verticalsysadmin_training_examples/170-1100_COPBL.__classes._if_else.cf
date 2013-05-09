@@ -10,13 +10,13 @@ bundle agent example {
               classes => if_else("file_exists","file_missing");
 
   reports:
-      file_exists::
-           "All OK"
+    file_exists::
+      "All OK"
                handle => "report_OK";
 
   reports:
-      file_missing::
-            "WARNING! Unable to create vital file!"
+    file_missing::
+      "WARNING! Unable to create vital file!"
                handle => "report_WARN";
 
 }

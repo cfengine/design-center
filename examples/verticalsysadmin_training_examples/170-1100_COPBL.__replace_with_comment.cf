@@ -10,8 +10,8 @@ bundle agent example {
 
       "/tmp/file.txt"
 
-            handle => "no_dogs_allows",
-            comment => "Comment out lines containing 'dog'",
+               handle => "no_dogs_allows",
+              comment => "Comment out lines containing 'dog'",
             edit_line => comment_out_dogs;
 
 }

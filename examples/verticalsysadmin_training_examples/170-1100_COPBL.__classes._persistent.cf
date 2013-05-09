@@ -16,8 +16,8 @@ bundle agent example {
 
 body classes state_repaired(x)
 {
-promise_repaired => { "$(x)" };
-persist_time => "10";
+     promise_repaired => { "$(x)" };
+         persist_time => "10";
 }
 
 

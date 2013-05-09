@@ -14,10 +14,10 @@
 
 bundle agent example {
 
-methods:
+  methods:
 
-  "Install WordPress"
-          usebundle => wordpress_install;
+      "Install WordPress"
+            usebundle => wordpress_install;
 
 }
 
@@ -35,17 +35,17 @@ bundle agent wordpress_install
 
   methods:
 
-     "Infrastructure"
+      "Infrastructure"
 
-                handle => "wp_infrastructure",
-               comment => "httpd, PHP, MySQL and everything in-between",
-             usebundle => wp_infrastructure;
+               handle => "wp_infrastructure",
+              comment => "httpd, PHP, MySQL and everything in-between",
+            usebundle => wp_infrastructure;
 
-     "Application"
+      "Application"
 
-                handle => "wp_application",
-               comment => "Install and Configure WordPress PHP app",
-             usebundle => wp_application;
+               handle => "wp_application",
+              comment => "Install and Configure WordPress PHP app",
+            usebundle => wp_application;
 
 }
 
@@ -88,8 +88,8 @@ bundle agent wp_packages_installed(params)
       };
   packages:
       "$(desired_package)"
-       handle => "install_packages",
-       comment => "Install needed packages",
+               handle => "install_packages",
+              comment => "Install needed packages",
        package_policy => "add",
 package_architectures => { "x86_64" },
        package_method => generic,
@@ -138,9 +138,9 @@ bundle agent wp_tarball_is_present(params)
 
   classes:
       "wordpress_tarball_is_present"
-                 handle => "check_for_WP_tarball",
-                 comment => "check if we already have the WP tarball",
-                 expression => fileexists("$($(params)[tarfile])");
+               handle => "check_for_WP_tarball",
+              comment => "check if we already have the WP tarball",
+           expression => fileexists("$($(params)[tarfile])");
 
   commands:
     !wordpress_tarball_is_present::
@@ -177,8 +177,8 @@ TO '$($(params)[DB_USER])'@localhost
 IDENTIFIED BY '$($(params)[DB_PASSWORD])';
 FLUSH PRIVILEGES;\"
 "
-    handle => "setup_db",
-   comment => "Create DB, DB user, and access credentials";
+               handle => "setup_db",
+              comment => "Create DB, DB user, and access credentials";
 
 }
 
@@ -189,17 +189,17 @@ bundle agent wp_config_exists(params)
 
   classes:
       "wordpress_config_file_exists" 
-           handle => "check_WP_config_file_there",
-          comment => "Check if WP config file is present",
+               handle => "check_WP_config_file_there",
+              comment => "Check if WP config file is present",
            expression => fileexists("$($(params)[wp_config])");
 
   files:
     !wordpress_config_file_exists::
       "$($(params)[wp_config])"
-                  handle => "copy_WP_config_file",
-                 comment => "Copy WP config file from config sample file",
-                  copy_from => local_cp("$($(params)[wp_cfgsample])"),
-                     perms => m("a+r");
+               handle => "copy_WP_config_file",
+              comment => "Copy WP config file from config sample file",
+            copy_from => local_cp("$($(params)[wp_cfgsample])"),
+                perms => m("a+r");
 }
 
 #############################################
@@ -211,8 +211,8 @@ bundle agent wp_is_properly_configured(params)
 
   files:
       "$($(params)[wp_config])"
-            handle => "configure_wordpress",
-           comment => "Make sure wp-config.php is properly configured",
+               handle => "configure_wordpress",
+              comment => "Make sure wp-config.php is properly configured",
             edit_line => replace_or_add("define\('$(wpparams)', *'(?!$($(params)[$(wpparams)])).*",
                                         "define('$(wpparams)', '$($(params)[$(wpparams)])');");
 }

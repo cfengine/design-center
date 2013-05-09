@@ -13,5 +13,5 @@ bundle agent example {
       "I love good technology"
                handle => "show_respect",
               comment => "Show respect for good technology";
-              
+      
 }

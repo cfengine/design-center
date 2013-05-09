@@ -6,8 +6,8 @@ bundle agent example {
 
       "any"  
 
-            handle => "group_exists",
-            comment => "make sure the specified group is always present",
+               handle => "group_exists",
+              comment => "make sure the specified group is always present",
             usebundle => groupadd("cfengine");
 
 }
