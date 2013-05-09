@@ -288,7 +288,7 @@ sub api_interaction
     my ($fh_config, $filename_config) = tempfile( "./cf-dc-api-run-XXXX", TMPDIR => 1 );
     my ($fh_data, $filename_data) = tempfile( "./cf-dc-api-run-XXXX", TMPDIR => 1 );
 
-    my $log_level = 1;
+    my $log_level = 0;
     $log_level = 4 if $options{verbose};
     $log_level = 5 if $options{veryverbose};
 
