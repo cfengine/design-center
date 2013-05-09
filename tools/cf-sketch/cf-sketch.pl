@@ -293,7 +293,7 @@ sub api_interaction
     $log_level = 5 if $options{veryverbose};
 
     my $config = $dcapi->cencode({
-                                  log => "STDERR",
+                                  log => "pretty",
                                   log_level => $log_level,
                                   repolist => $options{repolist},
                                   recognized_sources =>
