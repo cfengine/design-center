@@ -41,23 +41,23 @@ bundle agent install
     not_test.(redhat|centos|fedora)::
       "memcached"
       package_policy => "add",
-      classes => default:if_ok("installed"),
+      classes => default:if_ok("memcached_installed"),
       package_method => default:yum;
     not_test.(ubuntu|debian)::
       "memcached"
       package_policy => "add",
-      classes => default:if_ok("installed"),
+      classes => default:if_ok("memcached_installed"),
       package_method => default:apt;
 
   reports:
-    verbose.installed::
+    verbose.memcached_installed::
       "$(this.bundle): Installed memcache successfully.";
-    verbose.not_test.!installed::
+    verbose.not_test.!memcached_installed::
       "$(this.bundle): Could not install memcache successfully.";
 
-    installed::
+    memcached_installed::
       "1" bundle_return_value_index => "package_status";
-    not_test.!installed::
+    not_test.!memcached_installed::
       "0" bundle_return_value_index => "package_status";
     test::
       "$(this.bundle): Overriding bundle return status to success (1) in test mode";

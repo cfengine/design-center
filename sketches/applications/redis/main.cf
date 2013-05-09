@@ -43,18 +43,18 @@ bundle agent install
     not_test.(ubuntu|debian)::
       "redis-server"
       package_policy => "add",
-      classes => default:if_ok("installed"),
+      classes => default:if_ok("redis_installed"),
       package_method => default:apt;
 
   reports:
-    verbose.installed::
+    verbose.redis_installed::
       "$(this.bundle): Installed Redis successfully.";
-    verbose.not_test.!installed::
+    verbose.not_test.!redis_installed::
       "$(this.bundle): Could not install Redis successfully.";
 
-    installed::
+    redis_installed::
       "1" bundle_return_value_index => "package_status";
-    not_test.!installed::
+    not_test.!redis_installed::
       "0" bundle_return_value_index => "package_status";
     test::
       "$(this.bundle): Overriding bundle return status to success (1) in test mode";
