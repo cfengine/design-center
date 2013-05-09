@@ -175,20 +175,21 @@ sub foutput {
     }
 }
 
+# Colored output
 sub warning {
-    print STDERR YELLOW @_, RESET;
+    print STDERR YELLOW sprintf(shift, @_), RESET;
 }
 
 sub error {
-    print STDERR RED @_, RESET;
+    print STDERR RED sprintf(shift, @_), RESET;
 }
 
 sub success {
-    print STDERR GREEN @_, RESET;
+    print STDERR GREEN sprintf(shift, @_), RESET;
 }
 
 sub message {
-    print STDERR BLUE @_, RESET;
+    print STDERR BLUE sprintf(shift, @_), RESET;
 }
 
 # Generate an error message, nicely formatted.

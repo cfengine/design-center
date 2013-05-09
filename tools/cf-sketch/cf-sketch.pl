@@ -170,7 +170,7 @@ if (scalar @{$options{install}})
         push @todo, split ',', $_;
     }
 
-    my @todo = map
+    @todo = map
     {
         {
             sketch => $_, force => $options{force}, source => $sourcedir,
@@ -288,12 +288,12 @@ sub api_interaction
     my ($fh_config, $filename_config) = tempfile( "./cf-dc-api-run-XXXX", TMPDIR => 1 );
     my ($fh_data, $filename_data) = tempfile( "./cf-dc-api-run-XXXX", TMPDIR => 1 );
 
-    my $log_level = 1;
+    my $log_level = 0;
     $log_level = 4 if $options{verbose};
     $log_level = 5 if $options{veryverbose};
 
     my $config = $dcapi->cencode({
-                                  log => "STDERR",
+                                  log => "pretty",
                                   log_level => $log_level,
                                   repolist => $options{repolist},
                                   recognized_sources =>
