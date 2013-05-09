@@ -5,6 +5,7 @@
         "main.cf": { desc: "main file", "version": "1.0.0" },
         "params/demo.json": { desc: "example parameters" },
         "test.cf": { desc: "example policy" },
+        "test.pl": { test:true },
         "README.md": { documentation: true },
     },
 
