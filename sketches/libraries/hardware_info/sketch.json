@@ -2,6 +2,7 @@
     manifest:
     {
         "main.cf": { desc: "Main library", version: "1.2" },
+        "test.pl": { test:true },
         "README.md": { documentation: true },
         "example.cf": {comment: "Example Policy"},
         "sketch.json": {comment: "metadata"}

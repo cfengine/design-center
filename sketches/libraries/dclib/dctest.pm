@@ -14,6 +14,9 @@ sub setup
 
     Test::ok(system($ENV{CFPROMISES}, -f => $torun), 0, "syntax check test.cf");
 
+    # when negative tests are expected, there's no point in running.  It's a library.
+    return if $count < 0;
+
     open my $run, '-|', "$ENV{CFAGENT} -KI -f $torun";
 
     Test::ok(defined $run, 1, "run status of $torun");
@@ -21,6 +24,11 @@ sub setup
     my $output = join '', <$run>;
 
     return $output;
+}
+
+sub library_setup
+{
+    return setup(shift, -1);
 }
 
 sub matchall
