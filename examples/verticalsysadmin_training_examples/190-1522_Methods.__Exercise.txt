@@ -78,4 +78,24 @@ installed and process is running if its argument is "on":
 
 Then, make sure httpd is not running if its argument is "off".
 
-Hint:  The CFEngine function strcmp() can compare two strings.
+Hints:
+- The CFEngine function strcmp() can compare two strings.
+
+Reference:
+039-0085_Basic_Examples:_Classes_and_Reports.__soft-class.cf
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,3 +1,6 @@
+!! Out of date !!    See "Learning CFEngine 3" book or
+cfengine.com/cfengine-code-editors for latest version.
+
 Using the Emacs syntax highlighter
 ----------------------------------
 

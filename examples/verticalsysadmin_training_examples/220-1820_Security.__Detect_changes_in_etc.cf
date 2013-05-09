@@ -14,6 +14,8 @@ bundle agent example
 
       "/etc"
 
+         handle       => "etc_tripwire",
+         comment      => "Report changes on files in /etc",
          changes      => detect_all_change,
          depth_search => recurse("inf");
 }
