@@ -1533,6 +1533,11 @@ sub log_int
         $close_out_fh = 0;
         $out_fh = \*STDOUT;
     }
+    elsif ($self->log_mode() eq 'pretty')
+    {
+        $close_out_fh = 0;
+        $out_fh = \*STDERR;
+    }
     else
     {
         my $f = $self->log_mode();
@@ -1565,8 +1570,17 @@ sub log_int
 
     if ($out_fh)
     {
-        print $out_fh $prefix;
-        printf $out_fh @plist;
+        if ($self->log_mode() eq 'pretty')
+        {
+            # In 'pretty' mode, don't print the suffix and color the output
+            Util::message($prefix);
+            Util::message(@plist);
+        }
+        else
+        {
+            print $out_fh $prefix;
+            printf $out_fh @plist;
+        }
         print $out_fh "\n";
 
         close $out_fh if $close_out_fh;
