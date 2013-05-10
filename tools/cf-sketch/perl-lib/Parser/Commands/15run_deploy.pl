@@ -11,14 +11,14 @@ use Util;
 
 %COMMANDS =
   (
-   # 'run' =>
-   # [
-   #  [
-   #   'run [ARGUMENTS]',
-   #   'Execute the currently-activated sketches immediately using cf-agent. If any arguments are given, they are passed as-is to cf-agent. Remember to use -K if you want all promises to be evaluated (i.e. when testing in quick sequence).)',
-   #   '(.+)?',
-   #  ],
-   # ],
+   'run' =>
+   [
+    [
+     'run [ARGUMENTS]',
+     'Execute the currently-activated sketches immediately using cf-agent. If any arguments are given, they are passed as-is to cf-agent. Remember to use -K if you want all promises to be evaluated (i.e. when testing in quick sequence).)',
+     '(.+)?',
+    ],
+   ],
    'deploy' =>
    [
     [
@@ -41,18 +41,30 @@ use Util;
 ######################################################################
 
 
-# sub command_run {
-#   my $opts=shift || "";
-#   my $file = DesignCenter::Config->_system->generate_runfile;
-#   my $command = CFSketch::cfengine_binary('cf-agent') . " $opts -f $file";
-#   Util::output(GREEN."\nNow executing the runfile with: $command\n\n".RESET);
-#   system($command);
-# }
+sub command_run {
+  my $opts=shift || "";
+  my $file = $Config{standalonerunfile};
+  my ($success, $result) = main::api_interaction(
+    {regenerate => 1},
+    undef,
+    { 'runfile' => {
+                    location => $file,
+                    standalone => 1,
+                    relocate_path => "sketches",
+                    filter_inputs => $Config{filter},
+                   }
+    });
+  return unless $success;
+  Util::success("Runfile $file successfully generated.");
+  my $command = $Config{dcapi}->cfagent() . " $opts -f $file";
+  Util::output(GREEN."\nNow executing the runfile with: $command\n\n".RESET);
+  system($command);
+}
 
 sub command_generate {
     my ($success, $result) = main::api_interaction({regenerate => 1});
     return unless $success;
-    Util::success("Runfile successfully generated.");
+    Util::success("Runfile $Config{runfile} successfully generated.");
 }
 
 sub command_deploy {
