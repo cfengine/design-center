@@ -15,3 +15,6 @@ Select files in /tmp/test that meet the following criteria:
 - ends in ".txt"
 - is more than 2 days old
 - is owned by user "nobody"
+
+Delete those files!!
+
