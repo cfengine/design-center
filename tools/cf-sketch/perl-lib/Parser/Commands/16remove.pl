@@ -23,9 +23,18 @@ use DesignCenter::Config;
   'deactivate' =>
   [
    [
-    'deactivate SKETCH | ACTIVATION_ID ...',
-    'Remove the given activations. If the sketch name is specified, all its activations are removed. If an activation ID is specified, only that activation is removed.',
+    'deactivate SKETCH|ACTIVATION_ID|all ...',
+    'Remove the given activations. If the sketch name is specified, all its activations are removed. If an activation ID is specified, only that activation is removed. If "all" is given, all activations are removed.',
     '(.+)?',
+   ],
+  ],
+  'remove' =>
+  [
+   [
+    'remove params PARAMSET|all ...',
+    'Undefine the given parameter sets. Use "all" to remove all of them.',
+    'param\S*\s+(.*)',
+    'remove_params',
    ],
   ],
  );
@@ -74,9 +83,30 @@ sub command_deactivate {
     my @activs = split ' ', $activs;
     foreach my $s (@activs)
     {
-        main::api_interaction({deactivate => $s});
+        main::api_interaction({deactivate => ($s eq 'all') ? 1 : $s});
         Util::success("Deactivated $s.\n");
     }
+}
+
+sub command_remove_params {
+    my $params = shift;
+    my $defs = main::get_definitions;
+    my $todo;
+    if ($params eq 'all')
+    {
+        $todo = [ '.' ];
+    }
+    else
+    {
+        my @params = split ' ', $params;
+        foreach (@params)
+        {
+            Util::error("Param set '$_' does not exist.\n")
+               unless exists($defs->{$_});
+        }
+        $todo = \@params;
+    }
+    my ($success, $result) = main::api_interaction({ undefine => $todo });
 }
 
 1;
