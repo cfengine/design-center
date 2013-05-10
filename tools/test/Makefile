@@ -647,3 +647,7 @@ zabbix:
 epel:
 	$(CFSKETCH_DA) --install Repository::EPEL --activate Repository::EPEL=$(SOURCEDIR)/package_management/epel/params/demo.json
 	$(RUNNER)
+
+nrpe:
+	$(CFSKETCH_DA) --install Applications::Nagios::NRPE --activate Applications::Nagios::NRPE=$(SOURCEDIR)/applications/nagios/nrpe/params/demo.json
+	$(RUNNER)
