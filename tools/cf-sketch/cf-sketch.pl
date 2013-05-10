@@ -425,6 +425,29 @@ sub make_list_printer
 
 # Common API actions
 
+sub get_all_sketches {
+  my ($success, $result) = main::api_interaction({
+                                                  describe => 1,
+                                                  search => ".",
+                                                 });
+  my $list = Util::hashref_search($result, 'data', 'search');
+  my $res = undef;
+  if (ref $list eq 'HASH')
+  {
+    $res = {};
+    foreach my $repo (keys %$list) {
+      foreach my $sketch (keys %{$list->{$repo}}) {
+        $res->{$sketch} = $list->{$repo}->{$sketch};
+      }
+    }
+  }
+  else
+  {
+    Util::error("Internal error: The API 'search' command returned an unknown data structure.");
+  }
+  return $res;
+}
+
 sub get_installed {
     my ($success, $result) = main::api_interaction({
                                                  describe => 0,
@@ -434,7 +457,7 @@ sub get_installed {
     my $installed = {};
     if (ref $list eq 'HASH')
     {
-        foreach my $repo (sort keys %$list)
+        foreach my $repo (keys %$list)
         {
             foreach my $sketch (keys %{$list->{$repo}})
             {
@@ -449,6 +472,13 @@ sub get_installed {
     return $installed;
 }
 
+sub is_sketch_installed
+{
+  my $sketch = shift;
+  my $installed = get_installed;
+  return exists($installed->{$sketch});
+}
+
 sub get_activations {
     my ($success, $result) = main::api_interaction({ activations => 1 });
     my $activs = Util::hashref_search($result, 'data', 'activations');
@@ -459,6 +489,27 @@ sub get_activations {
     else
     {
         Util::error("Internal error: The API 'activations' command returned an unknown data structure.");
-        return {};
+        return undef;
     }
+}
+
+sub get_definitions {
+  my ($success, $result) = main::api_interaction({ definitions => 1 });
+  return unless $success;
+  my $defs = Util::hashref_search($result, 'data', 'definitions');
+  if (ref $defs eq 'HASH') {
+    return $defs;
+  }
+  else {
+    Util::error("Internal error: The API 'definitions' command returned an unknown data structure.");
+    return undef;
+  }
+}
+
+sub get_environments {
+  my ($success, $result) = main::api_interaction({ environments => 1 });
+  return unless $success;
+  my $envs = Util::hashref_search($result, 'data', 'environments');
+  $envs = {} unless (ref $envs eq 'HASH');
+  return $envs;
 }
