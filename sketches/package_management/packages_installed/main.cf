@@ -27,6 +27,11 @@ bundle agent installed(runenv, metadata, pkgs_add, pkgs_delete)
       package_method => default:generic,
       handle => "$(activation_id)_packages_add";
 
+      "$(pkgs_add)"
+      package_policy => "verify",
+      package_method => default:generic,
+      handle => "$(activation_id)_packages_verify_installed";
+
       "$(pkgs_delete)"
       package_policy => "delete",
       package_method => default:generic,
