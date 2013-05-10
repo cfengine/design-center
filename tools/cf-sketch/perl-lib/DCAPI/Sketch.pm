@@ -189,6 +189,8 @@ sub test
                   log => $output,
                  };
 
+        $tests->{success} = ! (ref $failed eq 'HASH' && scalar keys %{$failed});
+
         # print Util::dump_ref($tests);
     };
 

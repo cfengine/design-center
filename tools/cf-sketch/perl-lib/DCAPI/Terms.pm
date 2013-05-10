@@ -29,7 +29,7 @@ sub matches
 
     my $ok = [];
 
-    if (ref $terms eq '')               # string at top
+    if (ref $terms eq '')               # scalar at top
     {
         $terms = [ [ 'name', 'matches', $terms ] ];
     }

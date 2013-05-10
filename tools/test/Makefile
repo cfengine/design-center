@@ -28,18 +28,22 @@ ifeq ($(LOGNAME),root)
   API_DIR:=/var/cfengine/inputs
 endif
 
-JSINDENT:=$(shell perl -MJavaScript::Beautifier=js_beautify -e"print 1")
-ifeq ($(JSINDENT),1)
-  CFAPI:=$(CFAPI) | perl -MJavaScript::Beautifier=js_beautify -e'print js_beautify(join "", <> )'
-else
-# You should install the Perl JavaScript::Beautifier module (libjavascript-beautifier-perl in Debian)
-endif
+ifneq ($(NOIGNORE),1)
 
-PYGMENTIZE:=$(shell which pygmentize)
-ifneq ($(PYGMENTIZE),)
-  CFAPI:=$(CFAPI) | $(PYGMENTIZE) -l js
-else
+	JSINDENT:=$(shell perl -MJavaScript::Beautifier=js_beautify -e"print 1")
+	ifeq ($(JSINDENT),1)
+	  CFAPI:=$(CFAPI) | perl -MJavaScript::Beautifier=js_beautify -e'print js_beautify(join "", <> )'
+	else
+# You should install the Perl JavaScript::Beautifier module (libjavascript-beautifier-perl in Debian)
+	endif
+
+	PYGMENTIZE:=$(shell which pygmentize)
+	ifneq ($(PYGMENTIZE),)
+	  CFAPI:=$(CFAPI) | $(PYGMENTIZE) -l js
+	else
 # You should install pygmentize, it rocks
+	endif
+
 endif
 
 API_RUNFILE:=$(API_DIR)/api-runfile.cf
@@ -432,6 +436,17 @@ search:
 regenerate_readme:
 	$(CFSKETCH) --make_readme
 
+test:
+	$(CFSKETCH) --install $(SKETCH) --apitest $(SKETCH) --noignore -v
+
+testinstalled:
+	$(CFSKETCH) --apitest $(SKETCH) --noignore -v
+
+testallinstalled:
+	$(CFSKETCH) --apitest 1 --noignore -v
+
+# individual sketch tests follow
+
 ssh:
 	$(CFSKETCH_DA) --install Security::SSH --activate Security::SSH=$(SOURCEDIR)/networking/ssh/params/simple.json
 	$(RUNNER)
@@ -650,4 +665,6 @@ epel:
 
 nrpe:
 	$(CFSKETCH_DA) --install Applications::Nagios::NRPE --activate Applications::Nagios::NRPE=$(SOURCEDIR)/applications/nagios/nrpe/params/demo.json
+packages_installed:
+	$(CFSKETCH_DA) --install Packages::installed --activate Packages::installed=$(SOURCEDIR)/package_management/packages_installed/params/demo.json
 	$(RUNNER)

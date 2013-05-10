@@ -2,6 +2,8 @@
     "manifest":
     {
         "main.cf": { "desc": "main file" },
+        "test.pl": { test:true },
+        "test.cf": { desc: "example policy" },
         "README.md": { "documentation": true },
     },
 

@@ -3,6 +3,7 @@
     manifest:
     {
         "cfengine_stdlib.cf": { desc: "COPBL" },
+        "test.pl": { test:true },
         "README.md": { documentation: true }
     },
 

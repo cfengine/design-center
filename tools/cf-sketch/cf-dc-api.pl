@@ -231,4 +231,12 @@ else
 }
 
 $result->out();
-exit 0;
+
+if ($ENV{NOIGNORE})
+{
+    exit ! $result->success();
+}
+else
+{
+    exit 0;
+}

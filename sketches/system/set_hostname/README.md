@@ -1,11 +1,11 @@
 # System::set_hostname version 1.05.2
 
 License: MIT
-Tags: cfdc
+Tags: cfdc, enterprise_compatible
 Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
-Configure system hostname
+Set system hostname. Domain name is also set on Mac, Red Hat and and Gentoo derived distributions (but not Debian).
 
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
@@ -18,9 +18,9 @@ CFEngine::dclib, CFEngine::stdlib
 
 * parameter _metadata_ *metadata* (default: none, description: none)
 
-* parameter _string_ *hostname* (default: none, description: none)
+* parameter _string_ *hostname* (default: none, description: Host name to set)
 
-* parameter _string_ *domainname* (default: none, description: none)
+* parameter _string_ *domainname* (default: none, description: Domain name to set)
 
 * returns _return_ *hostname* (default: none, description: none)
 

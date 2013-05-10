@@ -339,10 +339,23 @@ sub list
 sub test
 {
     my $self = shift;
+
+    my $tests = $self->collect_int($self->repos(), @_);
+
+    my $good = 1;
+    foreach my $repo (keys %$tests)
+    {
+        foreach my $sketch (keys %{$tests->{$repo}})
+        {
+            my $test = $tests->{$repo}->{$sketch};
+            $good = 0 unless $test->{success};
+        }
+    }
+
     return DCAPI::Result->new(api => $self,
                               status => 1,
-                              success => 1,
-                              data => { test => $self->collect_int($self->repos(), @_) });
+                              success => $good,
+                              data => { test => $tests });
 }
 
 sub collect_int
@@ -1520,6 +1533,11 @@ sub log_int
         $close_out_fh = 0;
         $out_fh = \*STDOUT;
     }
+    elsif ($self->log_mode() eq 'pretty')
+    {
+        $close_out_fh = 0;
+        $out_fh = \*STDERR;
+    }
     else
     {
         my $f = $self->log_mode();
@@ -1552,8 +1570,17 @@ sub log_int
 
     if ($out_fh)
     {
-        print $out_fh $prefix;
-        printf $out_fh @plist;
+        if ($self->log_mode() eq 'pretty')
+        {
+            # In 'pretty' mode, don't print the suffix and color the output
+            Util::message($prefix);
+            Util::message(@plist);
+        }
+        else
+        {
+            print $out_fh $prefix;
+            printf $out_fh @plist;
+        }
         print $out_fh "\n";
 
         close $out_fh if $close_out_fh;
@@ -1692,7 +1719,7 @@ sub exit_error
                            errors => \@_)
              ->out();
     }
-    exit 0;
+    exit $ENV{NOIGNORE} ? 1 : 0;
 }
 
 1;

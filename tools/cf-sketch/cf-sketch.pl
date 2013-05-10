@@ -56,15 +56,18 @@ my %options = (
                repolist => [ "$inputs_root/sketches" ],
                activate => {},
                install => [],
+               apitest => [],
                uninstall => [],
                filter => [],
                force => 0,
                quiet => 0,
                verbose => 0,
                test => 0,
+               ignore => 1,
                activated => 0,
                veryverbose => 0,
                runfile => "$inputs_root/api-runfile.cf",
+               standalonerunfile => "$inputs_root/api-runfile-standalone.cf",
                installsource => Util::local_cfsketches_source(File::Spec->curdir()) || undef,
                # These are hardcoded above, we put them here for convenience
                version => $VERSION,
@@ -77,6 +80,7 @@ Getopt::Long::Configure("bundling");
 GetOptions(\%options,
            "expert!",
            "quiet|q!",
+           "ignore!",
            "verbose|v!",
            "veryverbose|vv!",
            "generate!",
@@ -90,10 +94,12 @@ GetOptions(\%options,
            "make_readme:s",
            "filter=s@",
            "install|i=s@",
+           "apitest=s@",
            "uninstall=s@",
            "deactivate-all|da",
            "activate|a=s%",
            "runfile|rf=s",
+           "standalonerunfile|srf=s",
            "repolist|rl=s@",
           );
 
@@ -160,14 +166,31 @@ if ($options{'deactivate-all'})
 
 if (scalar @{$options{install}})
 {
-    my @todo = map
+    my @todo;
+    foreach (@{$options{install}})
+    {
+        push @todo, split ',', $_;
+    }
+
+    @todo = map
     {
         {
             sketch => $_, force => $options{force}, source => $sourcedir,
              target => $options{repolist}->[0],
          }
-    } @{$options{install}};
+    } @todo;
     api_interaction({install => \@todo});
+}
+
+if (scalar @{$options{apitest}})
+{
+    my @todo;
+    foreach (@{$options{apitest}})
+    {
+        push @todo, join('|', split ',', $_);
+    }
+
+    api_interaction({test => \@todo});
 }
 
 if (scalar @{$options{uninstall}})
@@ -256,11 +279,11 @@ unless ($options{'expert'}) {
     exit(0);
 }
 
-
 sub api_interaction
 {
     my $request = shift @_;
-    my $ok_callback = shift @_;
+    my $callback = shift @_;
+    my $mergeopts = shift @_;
 
     my $mydir = dirname($0);
     my $api_bin = "$mydir/cf-dc-api.pl";
@@ -268,27 +291,34 @@ sub api_interaction
     my ($fh_config, $filename_config) = tempfile( "./cf-dc-api-run-XXXX", TMPDIR => 1 );
     my ($fh_data, $filename_data) = tempfile( "./cf-dc-api-run-XXXX", TMPDIR => 1 );
 
-    my $log_level = 1;
+    my $log_level = 0;
     $log_level = 4 if $options{verbose};
     $log_level = 5 if $options{veryverbose};
 
-    my $config = $dcapi->cencode({
-                                  log => "STDERR",
-                                  log_level => $log_level,
-                                  repolist => $options{repolist},
-                                  recognized_sources =>
-                                  [
-                                   $sourcedir
-                                  ],
-                                  runfile =>
-                                  {
-                                   location => $options{runfile},
-                                   standalone => 1,
-                                   relocate_path => "sketches",
-                                   filter_inputs => $options{filter},
-                                  },
-                                  vardata => "$inputs_root/cfsketch-vardata.conf",
-                                 });
+    my $opts = {
+                log => "pretty",
+                log_level => $log_level,
+                repolist => $options{repolist},
+                recognized_sources =>
+                [
+                 $sourcedir
+                ],
+                runfile =>
+                {
+                 location => $options{runfile},
+                 standalone => 0,
+                 relocate_path => "sketches",
+                 filter_inputs => $options{filter},
+                },
+                vardata => "$inputs_root/cfsketch-vardata.conf",
+               };
+    # Merge passed options, if any
+    if ($mergeopts) {
+      for my $k (keys %$mergeopts) {
+        $opts->{$k} = $mergeopts->{$k};
+      }
+    }
+    my $config = $dcapi->cencode($opts);
     print ">> $config\n" if $options{verbose};
     print $fh_config "$config\n";
     close $fh_config;
@@ -323,6 +353,7 @@ sub api_interaction
         {
             Util::success("OK: Got successful result: ".$dcapi->encode($result)."\n")
              if $options{verbose};
+            Util::print_api_messages($result);
         }
         else
         {
@@ -331,7 +362,21 @@ sub api_interaction
             Util::print_api_messages($result);
         }
 
-        $ok_callback->($success, $result) if defined $ok_callback;
+        unless (defined $callback)
+        {
+            $callback = sub
+            {
+                my $success = shift @_;
+                my $result = shift @_;
+                if (!$success && !$options{ignore})
+                {
+                    exit 1;
+                }
+            };
+        }
+
+        $callback->($success, $result) if defined $callback;
+
         return ($success, $result);
     }
 
@@ -376,4 +421,95 @@ sub make_list_printer
             }
         }
     }
+}
+
+# Common API actions
+
+sub get_all_sketches {
+  my ($success, $result) = main::api_interaction({
+                                                  describe => 1,
+                                                  search => ".",
+                                                 });
+  my $list = Util::hashref_search($result, 'data', 'search');
+  my $res = undef;
+  if (ref $list eq 'HASH')
+  {
+    $res = {};
+    foreach my $repo (keys %$list) {
+      foreach my $sketch (keys %{$list->{$repo}}) {
+        $res->{$sketch} = $list->{$repo}->{$sketch};
+      }
+    }
+  }
+  else
+  {
+    Util::error("Internal error: The API 'search' command returned an unknown data structure.");
+  }
+  return $res;
+}
+
+sub get_installed {
+    my ($success, $result) = main::api_interaction({
+                                                 describe => 0,
+                                                 list => '.',
+                                                });
+    my $list = Util::hashref_search($result, 'data', 'list');
+    my $installed = {};
+    if (ref $list eq 'HASH')
+    {
+        foreach my $repo (keys %$list)
+        {
+            foreach my $sketch (keys %{$list->{$repo}})
+            {
+                $installed->{$sketch} = $repo;
+            }
+        }
+    }
+    else
+    {
+        Util::error("Internal error: The API 'list' command returned an unknown data structure.");
+    }
+    return $installed;
+}
+
+sub is_sketch_installed
+{
+  my $sketch = shift;
+  my $installed = get_installed;
+  return exists($installed->{$sketch});
+}
+
+sub get_activations {
+    my ($success, $result) = main::api_interaction({ activations => 1 });
+    my $activs = Util::hashref_search($result, 'data', 'activations');
+    if (ref $activs eq 'HASH')
+    {
+        return $activs;
+    }
+    else
+    {
+        Util::error("Internal error: The API 'activations' command returned an unknown data structure.");
+        return undef;
+    }
+}
+
+sub get_definitions {
+  my ($success, $result) = main::api_interaction({ definitions => 1 });
+  return unless $success;
+  my $defs = Util::hashref_search($result, 'data', 'definitions');
+  if (ref $defs eq 'HASH') {
+    return $defs;
+  }
+  else {
+    Util::error("Internal error: The API 'definitions' command returned an unknown data structure.");
+    return undef;
+  }
+}
+
+sub get_environments {
+  my ($success, $result) = main::api_interaction({ environments => 1 });
+  return unless $success;
+  my $envs = Util::hashref_search($result, 'data', 'environments');
+  $envs = {} unless (ref $envs eq 'HASH');
+  return $envs;
 }
