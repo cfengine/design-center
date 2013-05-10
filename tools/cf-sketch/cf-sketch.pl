@@ -411,3 +411,43 @@ sub make_list_printer
         }
     }
 }
+
+# Common API actions
+
+sub get_installed {
+    my ($success, $result) = main::api_interaction({
+                                                 describe => 0,
+                                                 list => '.',
+                                                });
+    my $list = Util::hashref_search($result, 'data', 'list');
+    my $installed = {};
+    if (ref $list eq 'HASH')
+    {
+        foreach my $repo (sort keys %$list)
+        {
+            foreach my $sketch (keys %{$list->{$repo}})
+            {
+                $installed->{$sketch} = $repo;
+            }
+        }
+    }
+    else
+    {
+        Util::error("Internal error: The API 'list' command returned an unknown data structure.");
+    }
+    return $installed;
+}
+
+sub get_activations {
+    my ($success, $result) = main::api_interaction({ activations => 1 });
+    my $activs = Util::hashref_search($result, 'data', 'activations');
+    if (ref $activs eq 'HASH')
+    {
+        return $activs;
+    }
+    else
+    {
+        Util::error("Internal error: The API 'activations' command returned an unknown data structure.");
+        return {};
+    }
+}
