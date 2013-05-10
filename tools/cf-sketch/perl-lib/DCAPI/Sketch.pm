@@ -172,15 +172,33 @@ sub test
         my $output = '';
         open(my $log_fh, ">", \$output);
 
-        my ($total, $failed) = Test::Harness::execute_tests(
-                                                            out => $log_fh,
-                                                            tests => \@todo,
-                                                           );
+        my $total = {};
+        my $failed = {};
 
-        foreach my $ref ($total, $failed)
+        if (defined &Test::Harness::execute_tests)
         {
-            next unless ref $ref eq 'HASH' && exists $ref->{bench};
-            $ref->{bench} = $ref->{bench}->timestr();
+            ($total, $failed) = Test::Harness::execute_tests(
+                                                             out => $log_fh,
+                                                             tests => \@todo,
+                                                            );
+
+            foreach my $ref ($total, $failed)
+            {
+                next unless ref $ref eq 'HASH' && exists $ref->{bench};
+                $ref->{bench} = $ref->{bench}->timestr();
+            }
+        }
+        else
+        {
+            $total = { };
+            $failed->{$_} = 1 foreach @todo;
+            eval
+            {
+                Test::Harness::runtests(@todo);
+                $total = $failed;
+                $failed = {};
+            };
+            $output = $@;
         }
 
         $tests = {
