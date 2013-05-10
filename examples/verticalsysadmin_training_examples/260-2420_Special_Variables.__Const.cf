@@ -2,10 +2,13 @@ bundle agent example {
 
   reports:
     cfengine::
-      "A report with a$(const.t)tab in it";
-      "one $(const.r)$(const.r) two";
+      "
+one$(const.r)two
+";
 
-    !any::
+  !any::
+      "A carriage return character is $(const.r)The carriage has returned!!! the king is back.";
+      "A report with a$(const.t)tab in it";
 
       "The value of variable named $(const.dollar)(const.dollar) is $(const.dollar)";
 
@@ -15,7 +18,6 @@ bundle agent example {
       "A newline with either $(const.n) or with $(const.endl) is ok";
       "But a string with \n in it does not have a newline!";
 
-      "A carriage return character is $(const.r)The carriage has returned!!! the king is back.";
 
 
 }
