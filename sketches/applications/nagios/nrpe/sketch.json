@@ -1,0 +1,36 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "Applications::Nagios::NRPE",
+        "description": "Sketch for configuring Nagios NRPE",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc", "nagios", "nrpe" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "ubuntu|debian" ] }
+    },
+		"api" : {
+		    "agent" : [
+            { "name" : "runenv", "type" : "environment" },
+						{ "name" : "metadata", "type" : "metadata" },
+						{ "name" : "given_conf_file", "type" : "string", "default" : "/etc/nagios/nrpe.cfg" },
+						{ "name" : "given_local_conf_file", "type" : "string", "default" : "/etc/nagios/nrpe_local.cfg" },
+						{ "name" : "pidfile", "type" : "string", "default" : "/var/run/nagios/nrpe.pid" },
+						{ "name" : "server_port", "type" : "string", "default" : "5666" },
+						{ "name" : "user", "type" : "string", "default" : "nagios" },
+						{ "name" : "group", "type" : "string", "default" : "nagios" },
+						{ "name" : "dont_blame_nrpe", "type" : "string", "default" : "0" },
+						{ "name" : "command_timeout", "type" : "string", "default" : "60" },
+						{ "name" : "allowed_hosts", "type" : "string" },
+						{ "name" : "commands", "type" : "array", "default" : {} }
+				]
+		},
+    "namespace": "cfdc_nrpe",
+    "interface": [ "main.cf" ]
+}
