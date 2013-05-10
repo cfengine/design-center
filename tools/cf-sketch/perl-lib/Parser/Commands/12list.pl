@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2013-04-10 02:36:44 a10022>
+# Time-stamp: <2013-05-10 02:32:51 a10022>
 
 use Term::ANSIColor qw(:constants);
 use DesignCenter::JSON;
@@ -100,34 +100,26 @@ sub command_list_params
 
     return unless $regex = Util::validate_and_set_regex($regex);
 
-    my ($success, $result) = main::api_interaction({ definitions => 1 });
-    my $list = Util::hashref_search($result, 'data', 'definitions');
-    if (ref $list eq 'HASH')
+    my $list = main::get_definitions;
+    my %found = ();
+    foreach my $param (sort keys %$list)
     {
-        my %found = ();
-        foreach my $param (sort keys %$list)
+        my @sketches = sort keys %{$list->{$param}};
+        $found{$param} = [ @sketches ] if ($param =~ /$regex/i || grep(/$regex/i, @sketches));
+    }
+    if (keys %found)
+    {
+        Util::output("The following parameter sets".(($regex eq '.')?" are defined":" match your query").":\n\n");
+        foreach my $name (sort keys %found)
         {
-            my @sketches = sort keys %{$list->{$param}};
-            $found{$param} = [ @sketches ] if ($param =~ /$regex/i || grep(/$regex/i, @sketches));
-        }
-        if (keys %found)
-        {
-            Util::output("The following parameter sets".(($regex eq '.')?" are defined":" match your query").":\n\n");
-            foreach my $name (sort keys %found)
+            my @sketches = @{$found{$name}};
+            my $word = (scalar(@sketches)>1 ? "Sketches" : "Sketch");
+            print RESET, GREEN, $name, RESET, ": $word ".join(", ", @sketches)."\n";
+            if ($full)
             {
-                my @sketches = @{$found{$name}};
-                my $word = (scalar(@sketches)>1 ? "Sketches" : "Sketch");
-                print RESET, GREEN, $name, RESET, ": $word ".join(", ", @sketches)."\n";
-                if ($full)
-                {
-                    print DesignCenter::JSON::pretty_print_json($list->{$name})."\n";
-                }
+                print DesignCenter::JSON::pretty_print($list->{$name},"  ")."\n";
             }
         }
-    }
-    else
-    {
-        Util::error("Internal error: The API 'definitions' command returned an unknown data structure.");
     }
 }
 
@@ -138,34 +130,41 @@ sub command_list_activations
 
     return unless $regex = Util::validate_and_set_regex($regex);
 
-    my ($success, $result) = main::api_interaction({ activations => 1 });
-    my $activs = Util::hashref_search($result, 'data', 'activations');
-    if (ref $activs eq 'HASH')
+    my $activs = main::get_activations;
+    my $first = 1;
+    foreach my $sketch (keys %$activs)
     {
-        my $printed = undef;
-        foreach my $sketch (keys %$activs)
+        next unless $sketch =~ /$regex/i;
+        foreach my $a (@{$activs->{$sketch}})
         {
-            next unless $sketch =~ /$regex/i;
-            foreach my $a (@{$activs->{$sketch}})
+            if ($first)
             {
-                unless ($printed)
-                {
-                    Util::output("The following ".(($regex eq '.')?"activations are defined":"activations match your query").":\n\n");
-                }
-                $printed = 1;
-                print RESET, GREEN, $sketch, RESET, ": Parameter sets [ ".join(", ", @{$a->{params}})." ] on environment '".$a->{environment}."'\n";
-                if ($full)
-                {
-                    print DesignCenter::JSON::pretty_print_json($a)."\n";
-                }
+                Util::output("The following ".(($regex eq '.')?"activations are defined":"activations match your query").":\n\n");
+                $first = undef;
             }
+            my $id = $a->{identifier};
+            if ($id)
+            {
+                print RESET, BLUE, "Activation ID ", CYAN, "$id", RESET, "\n";
+                print BLUE, "  Sketch: ".RESET."$sketch\n";
+                print BLUE, "  Parameter sets: ".RESET."[ ".join(", ", @{$a->{params}})." ]\n";
+                print BLUE, "  Environment: ".RESET." '".$a->{environment}."'\n";
+            }
+            else
+            {
+                print RESET, BLUE, "Sketch ", CYAN, $sketch, RESET, "(no activation ID)\n";
+                print BLUE, "  Parameter sets: ".RESET."[ ".join(", ", @{$a->{params}})." ]\n";
+                print BLUE, "  Environment: ".RESET."'".$a->{environment}."'\n";
+            }
+            if ($full)
+            {
+                print BLUE, "  JSON definition of this activation:\n".RESET;
+                print DesignCenter::JSON::pretty_print_json($a, "    ");
+            }
+            print "\n";
         }
-        Util::warning("No activations ".(($regex eq '.')?"are defined.\n" : "match your query\n")) unless $printed;
     }
-    else
-    {
-        Util::error("Internal error: The API 'activations' command returned an unknown data structure.");
-    }
+    Util::warning("No activations ".(($regex eq '.')?"are defined.\n" : "match your query\n")) if $first;
 }
 
 sub command_list_envs
@@ -190,7 +189,7 @@ sub command_list_envs
             print RESET, GREEN, $env, RESET, "\n";
             if ($full)
             {
-                print DesignCenter::JSON::pretty_print_json($envs->{$env})."\n";
+                print DesignCenter::JSON::pretty_print($envs->{$env}, "  ")."\n";
             }
         }
         Util::warning("No environments ".(($regex eq '.')?"are defined.\n" : "match your query\n")) unless $printed;
