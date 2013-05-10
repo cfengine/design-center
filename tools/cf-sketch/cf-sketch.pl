@@ -343,6 +343,7 @@ sub api_interaction
         {
             Util::success("OK: Got successful result: ".$dcapi->encode($result)."\n")
              if $options{verbose};
+            Util::print_api_messages($result);
         }
         else
         {
