@@ -3,11 +3,12 @@
 #
 # CFEngine AS, October 2012
 #
-# Time-stamp: <2013-04-10 02:29:01 a10022>
+# Time-stamp: <2013-05-10 02:03:59 a10022>
 
 use Term::ANSIColor qw(:constants);
 
 use Util;
+use File::Basename;
 
 ######################################################################
 
@@ -16,41 +17,18 @@ use Util;
    'activate' =>
    [
     [
-     'activate SKETCH PARAMSETNAME|FILE[,...] [ENVIRONMENT|CLASSEXP]',
-     'Activate the given sketch using the named parameter sets and environment. If a FILE path is provided, it is read to create a new parameter set named after its path. If a existing named ENVIRONMENT is given, it is used to activate the sketch. If the ENVIRONMENT does not exist, it is considered to be a class expression and a new environment is created on the fly.',
-     '(\S+)\s+(\S+)(?:\s+(\S+))?',
+     'activate [-n ACTIVATION_ID] SKETCH PARAMSETNAME|FILE[,...] [ENVIRONMENT|CLASSEXP]',
+     'Activate the given sketch using the named parameter sets and environment. If a FILE path is provided, it is read to create a new parameter set named after its path. If a existing named ENVIRONMENT is given, it is used to activate the sketch. If the ENVIRONMENT does not exist, it is considered to be a class expression and a new environment is created on the fly. If -n is specified, the given ACTIVATION_ID is assigned to the new activation, otherwise an activation ID is automatically generated.',
+     '(?:-n\s*(\S+)\s+)?(\S+)\s+(\S+)(?:\s+(\S+))?',
      'activate'
     ],
-    # [
-    #  '-configure SKETCH[#n]',
-    #  'Configure the given sketch interactively. If #n is specified, the indicated instance is edited instead of creating a new one.',
-    #  '(\S+)',
-    #  'configure_interactive'
-    # ],
    ]
   );
 
 ######################################################################
 
-sub is_sketch_installed
-{
-  my $sketch = shift;
-  # Read installed sketches
-  my ($success, $result) = main::api_interaction({ list => "." });
-  my $list = Util::hashref_search($result, 'data', 'list');
-  unless (ref $list eq 'HASH')
-  {
-      Util::error("Error: invalid data returned in list of installed sketches: $list.\n");
-      return undef;
-  }
-  foreach my $r (keys %$list)
-  {
-      return 1 if (grep { $sketch eq $_ } keys %{$list->{$r}});
-  }
-  return undef;
-}
-
 sub command_activate {
+  my $id     = shift;
   my $sketch = shift;
   my $params = shift;
   my $env    = shift;
@@ -58,22 +36,38 @@ sub command_activate {
   my ($success, $result);
 
   # Read existing definitions
-  ($success, $result) = main::api_interaction({ definitions => 1 });
-  return unless $success;
-  my $defs = Util::hashref_search($result, 'data', 'definitions');
-  $defs = {} unless (ref $defs eq 'HASH');
+  my $defs = main::get_definitions;
   # Read existing environments
-  ($success, $result) = main::api_interaction({ environments => 1 });
-  return unless $success;
-  my $envs = Util::hashref_search($result, 'data', 'environments');
-  $envs = {} unless (ref $envs eq 'HASH');
+  my $envs = main::get_environments;
+
+  # Check or generate the activation ID
+  my $activs = main::get_activations;
+  if ($id)
+  {
+      if (activ_id_exists($activs, $id))
+      {
+          Util::error("You cannot use activation ID '$id', it already exists.\n");
+          return;
+      }
+      else
+      {
+          Util::message("Using provided activation ID '$id'.\n");
+      }
+  }
+  else
+  {
+      my $i=1;
+      $i++ while (activ_id_exists($activs, "$sketch-$i"));
+      $id="$sketch-$i";
+      Util::message("Using generated activation ID '$id'.\n");
+  }
 
   my %todefine=();
   my %todo=();
 
-  unless (is_sketch_installed($sketch))
+  unless (main::is_sketch_installed($sketch))
   {
-      Util::error("Sketch $sketch is not installed - please install it before configuring it.\n");
+      Util::error("Sketch $sketch is not installed - please install it before activating it.\n");
       return;
   }
 
@@ -86,28 +80,40 @@ sub command_activate {
       {
           # If it's an existing definition, just use it
           push @todoparams, $p;
+          Util::message("Using existing parameter definition '$p'.\n");
       }
       elsif (-f $p)
       {
-          # If it's an existing file, load and define it
-          my $load = $Config{dcapi}->load($p);
-          die "Could not load $p: $!" unless defined $load;
-
-          if (ref $load eq 'ARRAY')
+          # If it's a file, use its basename as the ID for the param definition
+          my $p_id = basename($p, '.json');
+          # If that ID already exists, use it
+          if (exists($defs->{$p_id}))
           {
-              my $i = 1;
-              foreach (@$load)
-              {
-                  my $k = "$p $i";
-                  $todefine{$k} = $_;
-                  $i++;
-                  push @todoparams, $k;
-              }
+              push @todoparams, $p_id;
+              Util::message("Using existing parameter definition '$p_id'.\n");
           }
           else
           {
-              $todefine{$p} = $load;
-              push @todoparams, $p;
+              # If it's an existing file, load and define it
+              my $load = $Config{dcapi}->load($p);
+              die "Could not load $p: $!" unless defined $load;
+
+              if (ref $load eq 'ARRAY')
+              {
+                  my $i = 1;
+                  foreach (@$load)
+                  {
+                      my $k = "$p_id-$i";
+                      $todefine{$k} = $_;
+                      $i++;
+                      push @todoparams, $k;
+                  }
+              }
+              else
+              {
+                  $todefine{$p_id} = $load;
+                  push @todoparams, $p_id;
+              }
           }
       }
       else
@@ -122,10 +128,12 @@ sub command_activate {
   if (!$env) {
     # Use the default if not provided
     $envname = $Config{environment};
+    Util::message("Using default environment '$envname'.\n");
   }
   elsif (exists($envs->{$env})) {
     # Use the named one if it already exists
     $envname = $env;
+    Util::message("Using existing environment '$envname'.\n");
   }
   else {
     # Define new environment, named after the given class expression
@@ -147,6 +155,7 @@ sub command_activate {
                           target => $Config{repolist}->[0],
                           environment => $envname,
                           params => [ @todoparams ],
+                          identifier => $id,
                          };
   if (keys %todefine) {
     Util::message("Defining parameter sets: ".join(", ", sort keys %todefine).".\n");
@@ -161,6 +170,19 @@ sub command_activate {
       return unless $success;
     }
   }
+}
+
+sub activ_id_exists {
+    my $activs = shift;
+    my $id = shift;
+    foreach my $sketch (keys %$activs)
+    {
+        foreach my $act (@{$activs->{$sketch}})
+        {
+            return 1 if exists($act->{identifier}) && $act->{identifier} eq '$id';
+        }
+    }
+    return undef;
 }
 
 1;
