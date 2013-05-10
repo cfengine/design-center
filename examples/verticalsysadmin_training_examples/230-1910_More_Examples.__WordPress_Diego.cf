@@ -144,9 +144,11 @@ bundle agent wp_tarball_is_present(params)
 
   commands:
     !wordpress_tarball_is_present::
-      "/usr/bin/wget -q -O $($(params)[tarfile]) http://wordpress.org/latest.tar.gz"
+      "/usr/bin/wget -q --timeout=10 -O $($(params)[tarfile]) http://wordpress.org/latest.tar.gz"
                handle => "download_WP_tarball",
-              comment => "Downloading latest version of WordPress.";
+              classes => if_repaired("we_have_WP_tarball"),
+              comment => "Downloading latest version of WordPress.",
+              action => logme("promise download_WP_tarball");
 }
 
 #############################################
@@ -158,9 +160,10 @@ bundle agent wp_tarball_is_unrolled(params)
       "wordpress_directory_is_present" expression => fileexists("$($(params)[htmlroot])/wordpress/");
 
   commands:
-    !wordpress_directory_is_present::
+    we_have_WP_tarball&(!wordpress_directory_is_present)::
       "/bin/tar -C $($(params)[htmlroot]) -xzf $($(params)[tarfile])"
                handle => "extract_tarball",
+              depends_on => { "download_WP_tarball" },
               comment => "Unroll wordpress tarball to HTML document root";
 }
 
@@ -233,3 +236,15 @@ body common control
                inputs =>          { "libraries/cfengine_stdlib.cf" };
 
 }
+
+
+body action logme(x)
+{
+           log_string => "$(sys.date) $(x)";
+
+             log_kept => "/var/log/cfengine_keptlog.log";
+         log_repaired => "/var/log/cfengine_replog.log";
+           log_failed => "/var/log/cfengine_faillog.log";
+
+}
+

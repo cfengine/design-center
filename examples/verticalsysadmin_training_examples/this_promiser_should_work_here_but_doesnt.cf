@@ -7,7 +7,7 @@ bundle agent example {
          comment      => "Keep screaming about changes in /etc",
          changes      => detect_all_change_noupdate,
          depth_search => recurse("inf"),
-         classes      => kept_repaired_failed("promise_kept", "promise_repaired", "promise_not_kept)");
+         classes      => kept_repaired_failed("promise_kept", "promise_repaired", "promise_not_kept_$(this.promiser)");
 
 reports:
 

@@ -1,6 +1,4 @@
-bundle agent example
-{
-
+bundle agent example {
 
   vars:
       "listening_ports_and_processes_ideal_scene"
@@ -9,8 +7,6 @@ bundle agent example
                string => "22 sshd 80 httpd 443 httpd 5308 cf-server";
 
       # end of our expected configuration
-
-
 
   vars:
     centos_5::
@@ -52,7 +48,7 @@ bundle agent example
       "reality_does_not_match_ideal_scene"
                handle => "check_profile",
               comment => "Compare desired and actual configuration",
-                  not => regcmp (
+                  not => strcmp (
                                   "$(listening_ports_and_processes)",
                                   "$(listening_ports_and_processes_ideal_scene)"
                   );  # check whether expected configuration matches actual.
