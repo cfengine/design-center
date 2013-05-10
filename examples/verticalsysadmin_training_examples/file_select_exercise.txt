@@ -1,0 +1,17 @@
+EXERCISE - file_select
+
+
+mkdir /tmp/test
+touch /tmp/test/a.txt
+touch /tmp/test/b.txt
+touch /tmp/test/c.dat
+touch /tmp/test/d.cf
+touch -t 05010900 /tmp/test/a.txt
+touch -t 05010900 /tmp/test/b.txt
+chown nobody /tmp/test/b.txt
+
+Select files in /tmp/test that meet the following criteria:
+
+- ends in ".txt"
+- is more than 2 days old
+- is owned by user "nobody"

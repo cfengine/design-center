@@ -3,6 +3,7 @@
 bundle agent example
 {
   reports:
+    linux::
 
       "$(this.promise_filename)";
 }
