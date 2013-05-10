@@ -8,7 +8,6 @@ use lib "$FindBin::Bin/perl-lib", "$FindBin::Bin/perl-lib/File-Which-1.09/lib", 
 
 use JSON::PP;
 use File::Basename;
-use File::Slurp;
 use File::Find;
 
 my @todo;
@@ -28,4 +27,11 @@ foreach my $f (@todo)
  my $out = JSON::PP->new()->allow_barekey()->relaxed()->utf8()->allow_nonref()->decode($j);
  $out->{api} = {} unless exists $out->{api};
  print JSON::PP->new()->utf8()->canonical()->encode($out), "\n";
+}
+
+sub read_file
+{
+    my $f = shift;
+    open my $fh, '<', $f or warn "Couldn't open $f: $!";
+    return join('', <$fh>);
 }
