@@ -4,7 +4,7 @@
 # DC-specific JSON stuff
 #
 # CFEngine AS, October 2012.
-# Time-stamp: <2012-10-09 23:30:56 a10022>
+# Time-stamp: <2013-05-09 23:57:00 a10022>
 
 package DesignCenter::JSON;
 
@@ -199,7 +199,11 @@ sub pretty_print {
 
 sub pretty_print_json
 {
- return $canonical_coder->pretty()->encode(shift);
+    my $json = shift;
+    my $indent = shift || "";
+    my $res = $canonical_coder->pretty()->encode($json);
+    $res =~ s/^/$indent/gm;
+    return $res;
 }
 
 sub hashref_search

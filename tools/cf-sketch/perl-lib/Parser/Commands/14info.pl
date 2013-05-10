@@ -23,44 +23,6 @@ use Util;
 
 ######################################################################
 
-sub get_installed {
-    ($success, $result) = main::api_interaction({
-                                                 describe => 0,
-                                                 list => '.',
-                                                });
-    my $list = Util::hashref_search($result, 'data', 'list');
-    my $installed = {};
-    if (ref $list eq 'HASH')
-    {
-        foreach my $repo (sort keys %$list)
-        {
-            foreach my $sketch (keys %{$list->{$repo}})
-            {
-                $installed->{$sketch} = $repo;
-            }
-        }
-    }
-    else
-    {
-        Util::error("Internal error: The API 'list' command returned an unknown data structure.");
-    }
-    return $installed;
-}
-
-sub get_activations {
-    my ($success, $result) = main::api_interaction({ activations => 1 });
-    my $activs = Util::hashref_search($result, 'data', 'activations');
-    if (ref $activs eq 'HASH')
-    {
-        return $activs;
-    }
-    else
-    {
-        Util::error("Internal error: The API 'activations' command returned an unknown data structure.");
-        return {};
-    }
-}
-
 sub command_info {
     my $full=shift;
     my $regex=shift;
@@ -82,8 +44,8 @@ sub command_info {
         if (ref $list eq 'HASH')
         {
             # Get list of installed and activated sketches
-            my $installed = get_installed;
-            my $activs = get_activations;
+            my $installed = main::get_installed;
+            my $activs = main::get_activations;
             # If we have multiple repos, include repo names in the results
             my $multiple_repos = (keys %$list > 1);
             foreach my $repo (sort keys %$list)
