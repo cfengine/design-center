@@ -1652,7 +1652,10 @@ sub load_int
     {
         return ($try_eval);
     }
-    elsif (Util::is_resource_local($f))
+
+    chomp $f;
+
+    if (Util::is_resource_local($f))
     {
         my $multiline = 1;
         my $j;
