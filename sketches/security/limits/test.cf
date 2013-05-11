@@ -57,7 +57,7 @@ bundle agent cfsketch_run
       "cf_sketch_testing" usebundle => "cf_sketch_testing";
 
     runenv_cf_sketch_testing_activated::
-      "__001_Security_security_limits_limits" usebundle => cfdc_security_limits:limits("cf_sketch_testing", "default:cfsketch_g.__001_Security_security_limits_limits_metadata", "/etc/security/limits.conf", "default:cfsketch_g.__001_Security_security_limits_limits_domains", "", ""), useresult => "return___001_Security_security_limits_limits";
+      "__001_Security_security_limits_limits" usebundle => cfdc_security:limits("cf_sketch_testing", "default:cfsketch_g.__001_Security_security_limits_limits_metadata", "/etc/security/limits.conf", "default:cfsketch_g.__001_Security_security_limits_limits_domains", "", ""), useresult => "return___001_Security_security_limits_limits";
 
   reports:
     cfengine::

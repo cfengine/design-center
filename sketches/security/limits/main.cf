@@ -1,6 +1,6 @@
 body file control
 {
-      namespace => "cfdc_security_limits";
+      namespace => "cfdc_security";
 }
 
 bundle agent limits(runenv, metadata, given_filename, domains, empty_first, ensure_absent)
@@ -50,6 +50,7 @@ bundle agent limits(runenv, metadata, given_filename, domains, empty_first, ensu
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
       "empty_first" expression => strcmp($(empty_first), "1");
       "ensure_absent" expression => strcmp($(ensure_absent), "1");
 
@@ -65,12 +66,12 @@ bundle agent limits(runenv, metadata, given_filename, domains, empty_first, ensu
       "$(filename)"
       create => "true",
       handle => "security_limits_files_limits_conf_ensure_present",
-      edit_line => cfdc_security_limits:selective("add",
-                                                  $(domains),
-                                                  "cfdc_security_limits:limits.escaped",
-                                                  @(limits.items),
-                                                  @(limits.types),
-                                                  @(limits.domain_keys)),
+      edit_line => cfdc_security:selective("add",
+                                           $(domains),
+                                           "cfdc_security:limits.escaped",
+                                           @(limits.items),
+                                           @(limits.types),
+                                           @(limits.domain_keys)),
       perms => default:mog("644", "$(owner)", "$(owner)"),
       classes => default:if_repaired("security_limits_repaired"),
       comment => "Ensure the specified lines are present, we dont care about other lines";
@@ -79,11 +80,11 @@ bundle agent limits(runenv, metadata, given_filename, domains, empty_first, ensu
       "$(filename)"
       create => "true",
       handle => "security_limits_files_limits_conf_empty_first_ensure_present",
-      edit_line => cfdc_security_limits:selective("add",
-                                                  $(domains),
-                                                  @(limits.items),
-                                                  @(limits.types),
-                                                  @(limits.domain_keys)),
+      edit_line => cfdc_security:selective("add",
+                                           $(domains),
+                                           @(limits.items),
+                                           @(limits.types),
+                                           @(limits.domain_keys)),
       edit_defaults => default:empty,
       perms => default:mog("644", "$(owner)", "$(owner)"),
       classes => default:if_repaired("security_limits_repaired"),
@@ -93,11 +94,11 @@ bundle agent limits(runenv, metadata, given_filename, domains, empty_first, ensu
       "$(filename)"
       create => "true",
       handle => "security_limits_files_limits_conf_ensure_absent",
-      edit_line => cfdc_security_limits:selective("remove",
-                                                  $(domains),
-                                                  @(limits.items),
-                                                  @(limits.types),
-                                                  @(limits.domain_keys)),
+      edit_line => cfdc_security:selective("remove",
+                                           $(domains),
+                                           @(limits.items),
+                                           @(limits.types),
+                                           @(limits.domain_keys)),
       perms => default:mog("644", "$(owner)", "$(owner)"),
       classes => default:if_repaired("security_limits_repaired"),
       comment    => "Ensure the specified lines do not exist.";
@@ -126,31 +127,31 @@ bundle agent limits(runenv, metadata, given_filename, domains, empty_first, ensu
 
 }
 
-bundle edit_line selective(mode, dref, escaped_dref, items, types, domains)
+bundle edit_line selective(mode, dref, escaped_dref, items, types, dkeys)
 {
   vars:
       "myitems" slist => { @(items) };
       "mytypes" slist => { @(types) };
-      "mydomains" slist => { @(domains) };
+      "mydkeys" slist => { @(dkeys) };
 
-      "canonified[replace_done_$(edit.filename)_$(mydomains)_$(mytypes)_$(myitems)]" string => canonify("replace_done_$(edit.filename)_$(mydomains)_$(mytypes)_$(myitems)");
-      "canonified[$(mydomains)_$(mytypes)_$(myitems)_defined]" string => canonify("$(mydomains)_$(mytypes)_$(myitems)_defined");
+      "canonified[replace_done_$(edit.filename)_$(mydkeys)_$(mytypes)_$(myitems)]" string => canonify("replace_done_$(edit.filename)_$(mydkeys)_$(mytypes)_$(myitems)");
+      "canonified[$(mydkeys)_$(mytypes)_$(myitems)_defined]" string => canonify("$(mydkeys)_$(mytypes)_$(myitems)_defined");
 
   classes:
       "removal" expression => strcmp("$(mode)", "remove");
 
-      "$(canonified[$(mydomains)_$(mytypes)_$(myitems)_defined])" expression => isvariable("$(dref)[$(mydomains)][$(mytypes)][$(myitems)]");
+      "$(canonified[$(mydkeys)_$(mytypes)_$(myitems)_defined])" expression => isvariable("$(dref)[$(mydkeys)][$(mytypes)][$(myitems)]");
 
   delete_lines:
-      "^\s*$($(escaped_dref)[$(mydomains)])\s+$($(escaped_dref)[$(mytypes)])\s+$(myitems).*$"
-      ifvarclass => "$(canonified[$(mydomains)_$(mytypes)_$(myitems)_defined])";
+      "^\s*$($(escaped_dref)[$(mydkeys)])\s+$($(escaped_dref)[$(mytypes)])\s+$(myitems).*$"
+      ifvarclass => "$(canonified[$(mydkeys)_$(mytypes)_$(myitems)_defined])";
 
   insert_lines:
       "# This file is managed by CFEngine, manual edits may be reverted";
 
     !removal::
-      "$(mydomains) $(mytypes) $(myitems) $($(dref)[$(mydomains)][$(mytypes)][$(myitems)])"
-      ifvarclass => "$(canonified[$(mydomains)_$(mytypes)_$(myitems)_defined])";
+      "$(mydkeys) $(mytypes) $(myitems) $($(dref)[$(mydkeys)][$(mytypes)][$(myitems)])"
+      ifvarclass => "$(canonified[$(mydkeys)_$(mytypes)_$(myitems)_defined])";
 
   reports:
     verbose.!removal::
@@ -161,6 +162,6 @@ bundle edit_line selective(mode, dref, escaped_dref, items, types, domains)
 
     verbose::
 
-      "$(this.bundle): For setting '$(mydomains) $(mytypes) $(myitems) = $($(dref)[$(mydomains)][$(mytypes)][$(myitems)])', selectively managing line '^\s*$($(escaped_dref)[$(mydomains)])\s+$($(escaped_dref)[$(mytypes)])\s+$(myitems).*$'"
-      ifvarclass => "$(canonified[$(mydomains)_$(mytypes)_$(myitems)_defined])";
+      "$(this.bundle): For setting '$(mydkeys) $(mytypes) $(myitems) = $($(dref)[$(mydkeys)][$(mytypes)][$(myitems)])', selectively managing line '^\s*$($(escaped_dref)[$(mydkeys)])\s+$($(escaped_dref)[$(mytypes)])\s+$(myitems).*$'"
+      ifvarclass => "$(canonified[$(mydkeys)_$(mytypes)_$(myitems)_defined])";
 }
