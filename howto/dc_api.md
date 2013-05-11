@@ -1320,7 +1320,9 @@ full test example).
         "errors": [],
         "error_tags": {},
         "data": {
-            "test": {}
+            "coverage": 0,
+            "test": {},
+            "total": 0
             }
         },
         "log": [],
@@ -1329,7 +1331,12 @@ full test example).
 }
 ```
 
-The top-level key under `data` is the name of the repository, which is
+Under `data` you will find a `coverage` and a `total` key, which respectively
+represent the number of covered sketches and the total number of sketches
+inspected.  So if you asked to test 10 sketches but only one had any test
+scripts, your coverage would be 1/10.
+
+The top-level key under `data.test` is the name of the repository, which is
 always a local directory.
 
 The next one takes *terms* and tests all the sketches whose name satisfies the
@@ -1382,6 +1389,39 @@ added in the future.  Do not depend on the format of the `bench` value.
     }
 }
 ```
+
+You can skip the actual testing and just get the coverage if you give the `test`
+command the `coverage` parameter.  Here's how you can inspect the coverage of
+every single installed sketch:
+
+```json
+{"dc_api_version":"0.0.1","request":{"coverage":1,"test":["1"]}}
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "coverage": 7,
+            "test": {
+                "/home/tzz/.cfagent/inputs/sketches": {
+                    "System::Syslog": 0,
+                    "Networking::NTP::Client": 0,
+// ...
+                    "Packages::installed": 1,
+                    "CFEngine::dclib::3.5.0": 1,
+                }
+            },
+            "total": 32
+        },
+        "log": [],
+        "tags": {}
+    }
+}```
 
 ### API CLI Interface and config.json
 

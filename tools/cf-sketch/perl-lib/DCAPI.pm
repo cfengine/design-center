@@ -342,20 +342,31 @@ sub test
 
     my $tests = $self->collect_int($self->repos(), @_);
 
+    my $total = 0;
+    my $coverage = 0;
     my $good = 1;
     foreach my $repo (keys %$tests)
     {
         foreach my $sketch (keys %{$tests->{$repo}})
         {
+            $total++;
             my $test = $tests->{$repo}->{$sketch};
-            $good = 0 unless $test->{success};
+            if (ref $test eq 'HASH')
+            {
+                $good = 0 unless $test->{success};
+                $coverage += !! scalar keys %{$test->{total}};
+            }
+            else                        # coverage mode
+            {
+                $coverage += !! $test;
+            }
         }
     }
 
     return DCAPI::Result->new(api => $self,
                               status => 1,
                               success => $good,
-                              data => { test => $tests });
+                              data => { test => $tests, total => $total, coverage => $coverage });
 }
 
 sub collect_int

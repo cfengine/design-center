@@ -57,6 +57,7 @@ my %options = (
                activate => {},
                install => [],
                apitest => [],
+               coverage => 0,
                uninstall => [],
                filter => [],
                force => 0,
@@ -81,6 +82,7 @@ GetOptions(\%options,
            "expert!",
            "quiet|q!",
            "ignore!",
+           "coverage!",
            "verbose|v!",
            "veryverbose|vv!",
            "generate!",
@@ -190,7 +192,7 @@ if (scalar @{$options{apitest}})
         push @todo, join('|', split ',', $_);
     }
 
-    api_interaction({test => \@todo});
+    api_interaction({test => \@todo, coverage => $options{coverage}});
 }
 
 if (scalar @{$options{uninstall}})

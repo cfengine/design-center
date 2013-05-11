@@ -445,6 +445,9 @@ testinstalled:
 testallinstalled:
 	$(CFSKETCH) --apitest 1 --noignore -v
 
+testcoverage:
+	$(CFSKETCH) --apitest 1 --coverage --noignore -v
+
 # individual sketch tests follow
 
 ssh:

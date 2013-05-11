@@ -154,12 +154,19 @@ sub runfile_data_dump
 sub test
 {
     my $self = shift;
-    my $options = shift;
+    my $options = shift || {};
 
     my $tests;
     eval
     {
         my @todo = @{$self->runfile_data_dump()->{manifest_test}};
+
+        if ($options->{coverage})
+        {
+            $tests = scalar @todo;
+            return;
+        }
+
         @todo = map { sprintf("%s/%s", $self->location(), $_) } @todo;
 
         $ENV{HARNESS_VERBOSE} = ! ! $options->{test};
@@ -212,7 +219,7 @@ sub test
         # print Util::dump_ref($tests);
     };
 
-    return $tests || { total => undef, ok => undef, failed => undef, log => [$@] };
+    return defined $tests ? $tests : { total => undef, ok => undef, failed => undef, log => [$@] };
 }
 
 sub make_readme
