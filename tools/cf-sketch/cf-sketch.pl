@@ -67,6 +67,7 @@ my %options = (
                ignore => 1,
                activated => 0,
                veryverbose => 0,
+               standalone => 0,
                runfile => "$inputs_root/api-runfile.cf",
                standalonerunfile => "$inputs_root/api-runfile-standalone.cf",
                installsource => Util::local_cfsketches_source(File::Spec->curdir()) || undef,
@@ -100,6 +101,8 @@ GetOptions(\%options,
            "uninstall=s@",
            "deactivate-all|da",
            "activate|a=s%",
+
+           "standalone!",
            "runfile|rf=s",
            "standalonerunfile|srf=s",
            "repolist|rl=s@",
@@ -307,8 +310,8 @@ sub api_interaction
                 ],
                 runfile =>
                 {
-                 location => $options{runfile},
-                 standalone => 0,
+                 location => $options{standalone} ? $options{standalonerunfile} : $options{runfile},
+                 standalone => $options{standalone},
                  relocate_path => "sketches",
                  filter_inputs => $options{filter},
                 },
