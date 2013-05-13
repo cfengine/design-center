@@ -674,3 +674,7 @@ packages_installed:
 postfix:
 	$(CFSKETCH_DA) --install Applications::Postfix::Client --activate Applications::Postfix::Client=$(SOURCEDIR)/applications/postfix/client/params/demo.json
 	$(RUNNER)
+
+php_fpm:
+	$(CFSKETCH_DA) --install Applications::PHP_FPM --activate Applications::PHP_FPM=$(SOURCEDIR)/applications/php_fpm/params/demo.json
+	$(RUNNER)
