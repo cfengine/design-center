@@ -1,0 +1,32 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "Applications::Postfix::Client",
+        "description": "Sketch for configuring Postfix Client",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc", "postfix" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "ubuntu|debian|centos|fedora|redhat" ] }
+    },
+		"api" : {
+		    "client" : [
+            { "name" : "runenv", "type" : "environment" },
+						{ "name" : "metadata", "type" : "metadata" },
+						{ "name" : "given_conf_file", "type" : "string", "default" : "/etc/postfix/main.cf" },
+						{ "name" : "myhostname", "type" : "string", "default" : "$(sys.fqhost)" },
+						{ "name" : "mydomain", "type" : "string", "default" : "$(sys.domain)" },
+						{ "name" : "myorigin", "type" : "string", "default" : "$(sys.fqhost)" },
+						{ "name" : "relayhost", "type" : "string" },
+						{ "name" : "mynetworks", "type" : "string", "default" : "127.0.0.0/8" }
+				]
+		},
+    "namespace": "cfdc_postfix_client",
+    "interface": [ "main.cf" ]
+}
