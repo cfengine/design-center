@@ -4,7 +4,9 @@
     {
         "main.cf": { desc: "main file" },
         "README.md": { documentation: true },
-        "params/example.json": { comment: "Example parameters" }
+        "params/example.json": { comment: "Example parameters" },
+        "test.pl": { test: true },
+        "test.cf": { }
     },
 
     metadata:
