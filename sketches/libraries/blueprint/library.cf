@@ -1,0 +1,62 @@
+body file control
+{
+      namespace => "cfdc_blueprint";
+}
+
+bundle agent files(runenv1, dir, prefix, file, aref)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv1)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv1)_$(vars)";
+
+      "second_pass" expression => "any";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv1).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv1).$(vars))";
+
+      "owner" string => "$($(aref)[owner])";
+      "group" string => "$($(aref)[group])";
+      "perms" string => "$($(aref)[perms])";
+      "source" string => concat($(dir), $(file));
+
+  files:
+    second_pass::
+      "$(prefix)$(file)"
+      perms => default:mog($(perms), $(owner), $(group)),
+      copy_from => default:local_cp($(source));
+
+  reports:
+    second_pass.verbose::
+      "$(this.bundle): Files reference = $(file), source $(dir); owner $(owner) group $(group) perms $(perms)";
+}
+
+bundle agent packages(runenv, manager, packages)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  reports:
+    verbose::
+      "$(this.bundle): Package request: $(manager) -> $(packages)";
+}
+
+bundle agent sources(runenv, dir, source)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  reports:
+    verbose::
+      "$(this.bundle): Source request: $(source)";
+}
