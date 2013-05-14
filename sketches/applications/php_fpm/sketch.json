@@ -1,0 +1,32 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "README.md": { "documentation": true }
+    },
+
+    "metadata":
+    {
+        "name": "Applications::PHP_FPM",
+        "description": "Sketch for installing, configuring, and starting memcached.",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc", "php_fpm", "php", "fpm" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.5.0" }, "os": [ "debian|ubuntu" ] }
+    },
+
+		"api" : {
+		   "server" : [
+         { "name" : "runenv", "type" : "environment" },
+			   { "name" : "metadata", "type" : "metadata" },
+			   { "name" : "given_conf_file", "type" : "string", "default" : "/etc/php5/fpm/php-fpm.conf" },
+			   { "name" : "given_pool_dir", "type" : "string", "default" : "/etc/php5/fpm/pool.d" },
+			   { "name" : "pidfile", "type" : "string", "default" : "/var/run/php5-fpm.pid" },
+			   { "name" : "pidfile", "type" : "string", "default" : "/var/log/php5-fpm.log" },
+			   { "name" : "pools", "type" : "array", "default" : {} }
+			 ],
+		},
+    "namespace": "cfdc_php_fpm",
+    "interface": [ "main.cf" ]
+}
