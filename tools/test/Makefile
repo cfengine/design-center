@@ -674,3 +674,10 @@ epel:
 packages_installed:
 	$(CFSKETCH_DA) --install Packages::installed --activate Packages::installed=$(SOURCEDIR)/package_management/packages_installed/params/demo.json
 	$(RUNNER)
+
+# this is for a Blueprint called 'first' ("blueprint create first; blueprint show --cfengine3 first")
+first:
+	$(CFSKETCH_DA) --install CFEngine::Blueprint
+	$(CFSKETCH_DA) --uninstall first
+	$(CFSKETCH_DA) --noforce --installsource=/home/tzz/source/blueprint/cfsketches.json --verbose --install first --activate first=/tmp/empty.json
+	$(RUNNER)
