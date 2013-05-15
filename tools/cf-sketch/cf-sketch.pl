@@ -98,6 +98,7 @@ GetOptions(\%options,
            "filter=s@",
            "install|i=s@",
            "apitest=s@",
+           "apiconfig=s",
            "uninstall=s@",
            "deactivate-all|da",
            "activate|a=s%",
@@ -317,6 +318,15 @@ sub api_interaction
                 },
                 vardata => "$inputs_root/cfsketch-vardata.conf",
                };
+
+    if (exists $options{apiconfig})
+    {
+        my $error;
+        print ">> OVERRIDING CONFIG FROM $options{apiconfig}\n" if $options{verbose};
+        ($opts, $error) = $dcapi->load($options{apiconfig});
+        die $error if defined $error;
+    }
+
     # Merge passed options, if any
     if ($mergeopts) {
       for my $k (keys %$mergeopts) {
