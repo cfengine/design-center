@@ -1,0 +1,89 @@
+body file control
+{
+      namespace => "cfdc_blueprint";
+}
+
+bundle agent files(runenv1, dir, prefix, file, aref)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv1)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv1)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv1).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv1).$(vars))";
+
+      "owner" string => "$($(aref)[owner])";
+      "group" string => "$($(aref)[group])";
+      "perms" string => "$($(aref)[perms])";
+      "source" string => concat($(dir), $(file));
+
+  files:
+      "$(prefix)$(file)"
+      perms => default:mog($(perms), $(owner), $(group)),
+      copy_from => default:local_cp($(source));
+
+  reports:
+    verbose::
+      "$(this.bundle): Files reference = $(file), source $(dir); owner $(owner) group $(group) perms $(perms)";
+}
+
+bundle agent packages(runenv, manager, package, version)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "known_manager" expression => some($(manager), "managers");
+      "requested_$(manager)" expression => "any";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "managers" slist => { "yum", "apt", "rpm" };
+
+  packages:
+    not_test.known_manager.requested_apt::
+      "$(package)"
+      package_policy => "add",
+      package_method => default:apt,
+      package_select => "==",
+      package_version => $(version);
+
+    not_test.known_manager.requested_yum::
+      "$(package)"
+      package_policy => "add",
+      package_method => default:yum,
+      package_select => "==",
+      package_version => $(version);
+
+  commands:
+    default:_stdlib_path_exists_rpm.not_test.known_manager.requested_rpm::
+      "$(default:paths.path[rpm]) -i $(package)";
+
+  reports:
+    !default:_stdlib_path_exists_rpm.requested_rpm::
+      "$(this.bundle): The RPM manager was requested but the executable $(default:paths.path[rpm]) doesn't exist.";
+    test.known_manager::
+      "$(this.bundle): In test mode, simulating package add: $(manager) -> $(package)/$(version)";
+    verbose.not_test.known_manager::
+      "$(this.bundle): Package request: $(manager) -> $(package)/$(version)";
+    !known_manager::
+      "$(this.bundle): Unhandled package manager $(manager)";
+}
+
+bundle agent sources(runenv, dir, source)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  reports:
+    verbose::
+      "$(this.bundle): Source request: $(source)";
+}

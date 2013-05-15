@@ -1,0 +1,21 @@
+{
+    manifest:
+    {
+        "library.cf": { desc: "Blueprint to Design Center glue library" },
+        "test.pl": { test:true },
+        "README.md": { documentation: true }
+    },
+
+    metadata:
+    {
+        name: "CFEngine::Blueprint",
+	    description: "Library to connect Blueprint sketches with Design Center",
+        version: "1.0.0",
+        license: "MIT",
+        tags: [ "cfdc", "blueprint" ],
+        authors: [ "CFEngine AS" ],
+        depends: { "cfengine": { "version": "3.5.0" } }
+    },
+
+    interface: [ "library.cf" ]
+}
