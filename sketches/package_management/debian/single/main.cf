@@ -9,21 +9,23 @@ bundle agent install(runenv, metadata, prefix, install, package, version, releas
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
-      "api_$(api)_type_$($(metadata)[api][$(api)][type])" expression => "any";
       "$(booleans)" not => strcmp("$($(booleans))","");
       "not_$(booleans)" expression => strcmp("$($(booleans))","");
       "$(strings)" not => strcmp("$($(strings))","");
       "null_$(strings)" expression => strcmp("$($(strings))","");
+      "$(lists)" expression => isgreaterthan(length($(lists)),0);
+      "empty_$(lists)" not => isgreaterthan(length($(lists)),0);
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
       "api" slist => getindices("$(metadata)[api]");
-      "booleans[$(api)]" string => "1", ifvarclass => "api_$(api)_type_boolean";
-      "booleans" slist => getindices("booleans");
-      "strings[$(api)]" string => "1", ifvarclass => "api_$(api)_type_string";
-      "strings" slist => getindices("strings");
+      "type[$($(metadata)[api][$(api)][type])][$(api)]" string => "$($(metadata)[api][$(api)][type])";
+      "booleans" slist => getindices("type[boolean]");
+      "strings" slist => getindices("type[string]");
+      "lists" slist => getindices("type[list]");
+      "join[$(lists)]" string => join(", ", $(lists));
 
   packages:
 
@@ -78,10 +80,12 @@ bundle agent install(runenv, metadata, prefix, install, package, version, releas
       ifvarclass => "$(vars)";
 
     test::
-      "$(prefix): $(booleans) defined" ifvarclass => "$(booleans)";
-      "$(prefix): $(booleans) not defined" ifvarclass => "not_$(booleans)";
-      "$(prefix): $(strings) = $($(strings))" ifvarclass => "$(strings)";
-      "$(prefix): $(strings) is null" ifvarclass => "null_$(strings)";
+      "$(prefix): parameter $(booleans) defined" ifvarclass => "$(booleans)";
+      "$(prefix): parameter $(booleans) not defined" ifvarclass => "not_$(booleans)";
+      "$(prefix): parameter $(strings) = $($(strings))" ifvarclass => "$(strings)";
+      "$(prefix): parameter $(strings) is null" ifvarclass => "null_$(strings)";
+      "$(prefix): parameter $(lists) = $(join[$(lists)])" ifvarclass => "$(lists)";
+      "$(prefix): parameter $(lists) is empty" ifvarclass => "empty_$(lists)";
       "$(prefix): result = ok" ifvarclass => "$(prefix)_install_ok";
       "$(prefix): result = not_ok" ifvarclass => "$(prefix)_install_not_ok";
 }
@@ -92,21 +96,23 @@ bundle agent remove(runenv, metadata, prefix, remove, package)
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
-      "api_$(api)_type_$($(metadata)[api][$(api)][type])" expression => "any";
       "$(booleans)" not => strcmp("$($(booleans))","");
       "not_$(booleans)" expression => strcmp("$($(booleans))","");
       "$(strings)" not => strcmp("$($(strings))","");
       "null_$(strings)" expression => strcmp("$($(strings))","");
+      "$(lists)" expression => isgreaterthan(length($(lists)),0);
+      "empty_$(lists)" not => isgreaterthan(length($(lists)),0);
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
       "api" slist => getindices("$(metadata)[api]");
-      "booleans[$(api)]" string => "1", ifvarclass => "api_$(api)_type_boolean";
-      "booleans" slist => getindices("booleans");
-      "strings[$(api)]" string => "1", ifvarclass => "api_$(api)_type_string";
-      "strings" slist => getindices("strings");
+      "type[$($(metadata)[api][$(api)][type])][$(api)]" string => "$($(metadata)[api][$(api)][type])";
+      "booleans" slist => getindices("type[boolean]");
+      "strings" slist => getindices("type[string]");
+      "lists" slist => getindices("type[list]");
+      "join[$(lists)]" string => join(", ", $(lists));
 
   packages:
       "$(package)"
@@ -138,10 +144,12 @@ bundle agent remove(runenv, metadata, prefix, remove, package)
       ifvarclass => "$(vars)";
 
     test::
-      "$(prefix): $(booleans) defined" ifvarclass => "$(booleans)";
-      "$(prefix): $(booleans) not defined" ifvarclass => "not_$(booleans)";
-      "$(prefix): $(strings) = $($(strings))" ifvarclass => "$(strings)";
-      "$(prefix): $(strings) is null" ifvarclass => "null_$(strings)";
+      "$(prefix): parameter $(booleans) defined" ifvarclass => "$(booleans)";
+      "$(prefix): parameter $(booleans) not defined" ifvarclass => "not_$(booleans)";
+      "$(prefix): parameter $(strings) = $($(strings))" ifvarclass => "$(strings)";
+      "$(prefix): parameter $(strings) is null" ifvarclass => "null_$(strings)";
+      "$(prefix): parameter $(lists) = $(join[$(lists)])" ifvarclass => "$(lists)";
+      "$(prefix): parameter $(lists) is empty" ifvarclass => "empty_$(lists)";
       "$(prefix): result = ok" ifvarclass => "$(prefix)_remove_ok";
       "$(prefix): result = not_ok" ifvarclass => "$(prefix)_remove_not_ok";
       "$(prefix): result = undefined" ifvarclass => "!($(prefix)_remove_ok|$(prefix)_remove_not_ok)";
@@ -153,21 +161,23 @@ bundle agent verify(runenv, metadata, prefix, verify, package, version)
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
-      "api_$(api)_type_$($(metadata)[api][$(api)][type])" expression => "any";
       "$(booleans)" not => strcmp("$($(booleans))","");
       "not_$(booleans)" expression => strcmp("$($(booleans))","");
       "$(strings)" not => strcmp("$($(strings))","");
       "null_$(strings)" expression => strcmp("$($(strings))","");
+      "$(lists)" expression => isgreaterthan(length($(lists)),0);
+      "empty_$(lists)" not => isgreaterthan(length($(lists)),0);
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
       "api" slist => getindices("$(metadata)[api]");
-      "booleans[$(api)]" string => "1", ifvarclass => "api_$(api)_type_boolean";
-      "booleans" slist => getindices("booleans");
-      "strings[$(api)]" string => "1", ifvarclass => "api_$(api)_type_string";
-      "strings" slist => getindices("strings");
+      "type[$($(metadata)[api][$(api)][type])][$(api)]" string => "$($(metadata)[api][$(api)][type])";
+      "booleans" slist => getindices("type[boolean]");
+      "strings" slist => getindices("type[string]");
+      "lists" slist => getindices("type[list]");
+      "join[$(lists)]" string => join(", ", $(lists));
 
   packages:
     null_version::
@@ -205,10 +215,12 @@ bundle agent verify(runenv, metadata, prefix, verify, package, version)
       ifvarclass => "$(vars)";
 
     test::
-      "$(prefix): $(booleans) defined" ifvarclass => "$(booleans)";
-      "$(prefix): $(booleans) not defined" ifvarclass => "not_$(booleans)";
-      "$(prefix): $(strings) = $($(strings))" ifvarclass => "$(strings)";
-      "$(prefix): $(strings) is null" ifvarclass => "null_$(strings)";
+      "$(prefix): parameter $(booleans) defined" ifvarclass => "$(booleans)";
+      "$(prefix): parameter $(booleans) not defined" ifvarclass => "not_$(booleans)";
+      "$(prefix): parameter $(strings) = $($(strings))" ifvarclass => "$(strings)";
+      "$(prefix): parameter $(strings) is null" ifvarclass => "null_$(strings)";
+      "$(prefix): parameter $(lists) = $(join[$(lists)])" ifvarclass => "$(lists)";
+      "$(prefix): parameter $(lists) is empty" ifvarclass => "empty_$(lists)";
       "$(prefix): result = kept" ifvarclass => "$(prefix)_verify_kept";
       "$(prefix): result = not_kept" ifvarclass => "$(prefix)_verify_not_kept";
 }
