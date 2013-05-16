@@ -698,4 +698,7 @@ splunk:
 
 autobalance:
 	$(CFSKETCH_DA) --install Cloud::Autobalance --activate Cloud::Autobalance=$(SOURCEDIR)/cloud/autobalance/params/demo.json
+
+users:
+	$(CFSKETCH_DA) --install Users::Local --activate Users::Local=$(SOURCEDIR)/system/users_local/params/demo.json
 	$(RUNNER)

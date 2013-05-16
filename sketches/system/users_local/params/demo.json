@@ -1,0 +1,7 @@
+{
+    "Users::Local":
+    {
+        users: { tzz: [ "Ted Zlatanov", 10000, 20000, "/home/tzz", "/bin/bash", "mypass" ] },
+        options: { groupname: "mygroup" },
+    }
+}
