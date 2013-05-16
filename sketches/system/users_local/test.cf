@@ -1,0 +1,74 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/copbl-3.5.0/stdlib-350.cf", "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation ___001_Users_Local_local
+      "___001_Users_Local_local_metadata[api][metadata][type]" string => "metadata";
+      "___001_Users_Local_local_metadata[api][options][type]" string => "array";
+      "___001_Users_Local_local_metadata[api][runenv][type]" string => "environment";
+      "___001_Users_Local_local_metadata[api][users][type]" string => "array";
+      "___001_Users_Local_local_metadata[authors]" slist => { "Nick Anderson <nick@cmdln.org>" };
+      "___001_Users_Local_local_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib", "CFEngine::stdlib::3.5.0" };
+      "___001_Users_Local_local_metadata[license]" string => "MIT";
+      "___001_Users_Local_local_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/system/users_local";
+      "___001_Users_Local_local_metadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json", "test.cf", "test.pl" };
+      "___001_Users_Local_local_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "___001_Users_Local_local_metadata[manifest_docs]" slist => { "README.md" };
+      "___001_Users_Local_local_metadata[manifest_exe]" slist => { "cf_null" };
+      "___001_Users_Local_local_metadata[manifest_extra]" slist => { "params/demo.json" };
+      "___001_Users_Local_local_metadata[manifest_test]" slist => { "test.pl" };
+      "___001_Users_Local_local_metadata[name]" string => "Users::Local";
+      "___001_Users_Local_local_metadata[tags]" slist => { "cfdc", "users" };
+      "___001_Users_Local_local_metadata[version]" string => "1";
+
+      # array 'users' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/system/users_local/params/demo.json, activation ___001_Users_Local_local
+      "___001_Users_Local_local_users[tzz]" slist => { "Ted Zlatanov", "10000", "20000", "/home/tzz", "/bin/bash", "mypass" };
+
+      # array 'options' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/system/users_local/params/demo.json, activation ___001_Users_Local_local
+      "___001_Users_Local_local_options[groupname]" string => "mygroup";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "___001_Users_Local_local" usebundle => cfdc_users:local("cf_sketch_testing", "default:cfsketch_run.___001_Users_Local_local_metadata", "default:cfsketch_run.___001_Users_Local_local_users", "default:cfsketch_run.___001_Users_Local_local_options"), ifvarclass => "redhat|centos|ubuntu|debian", useresult => "return____001_Users_Local_local";
+
+  reports:
+    inform_mode::
+      "activation ___001_Users_Local_local could not run because it requires classes redhat|centos|ubuntu|debian" ifvarclass => "inform_mode.!(redhat|centos|ubuntu|debian)";
+}

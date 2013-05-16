@@ -1,0 +1,61 @@
+body file control
+{
+      namespace => "cfdc_users";
+}
+
+bundle agent local(runenv, metadata, users, options)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "todo" slist => getindices($(users));
+      "data[$(todo)]" slist => { "@($(users)[$(todo)])" };
+
+      "skel"       string => "/etc/skel/";
+      "pwfile"     string => "$(default:eu.path_prefix)/etc/passwd";
+      "shadowfile" string => "$(default:eu.path_prefix)/etc/shadow";
+      "groupfile"  string => "$(default:eu.path_prefix)/etc/group";
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+      # ensure each user is present
+      "ensure" usebundle => ensure($(todo), "cfdc_users:local.data[$(todo)]", $(options)),
+      inherit => "true";
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+}
+
+bundle agent ensure(user, dataref, optref)
+{
+  vars:
+      "data" slist => { "@($(dataref))" };
+      "gecos" string => escape(nth("data", 0));
+      "uid" string => escape(nth("data", 1));
+      "gid" string => escape(nth("data", 2));
+      "homedir" string => escape(nth("data", 3));
+      "shell" string => escape(nth("data", 4));
+      "phash" string => escape(nth("data", 5));
+
+      "groupname" string => "$($(optref)[groupname])";
+
+      "pwentry" string => "$(user):x:$(uid):$(gid):$(gecos):$(homedir):$(shell)";
+      "groupentry"   string => "$(groupname):x:$(gid):";
+
+      "days_since_epoch" int => now();
+      "shadowentry" string => "$(user):$(phash):$(days_since_epoch):0:99999:7:::";
+
+  reports:
+    verbose::
+      "$(this.bundle): Requested user $(user) with GECOS '$(gecos)' and UID/GID '$(uid)/$(gid)', living in '$(homedir)' with shell '$(shell)' and password hash '$(phash)'.  The group name is $(groupname).";
+      "$(this.bundle): pwentry for $(user) is '$(pwentry)";
+      "$(this.bundle): groupentry for $(user) is '$(groupentry)";
+      "$(this.bundle): shadowentry for $(user) is '$(shadowentry)";
+}
