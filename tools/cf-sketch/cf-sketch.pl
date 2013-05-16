@@ -113,7 +113,7 @@ GetOptions(\%options,
 
 die "$0: --installsource DIR must be specified" unless $options{installsource};
 
-$options{repolist} = [ "$inputs_root/sketches" ] if ( $#{$options{repolist}} == -1 );
+$options{repolist} = [ "$inputs_root/sketches" ] unless scalar @{$options{repolist}};
 $options{verbose} = 1 if $options{veryverbose};
 
 my $sourcedir = dirname($options{installsource});
