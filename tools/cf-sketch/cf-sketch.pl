@@ -53,7 +53,7 @@ use Getopt::Long;
 
 my %options = (
                environment => 'cf_sketch_testing',
-               repolist => [ "$inputs_root/sketches" ],
+               repolist => [],
                activate => {},
                install => [],
                apitest => [],
@@ -112,6 +112,7 @@ GetOptions(\%options,
 
 die "$0: --installsource DIR must be specified" unless $options{installsource};
 
+$options{repolist} = [ "$inputs_root/sketches" ] unless scalar @{$options{repolist}};
 $options{verbose} = 1 if $options{veryverbose};
 
 my $sourcedir = dirname($options{installsource});
