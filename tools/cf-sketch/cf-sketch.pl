@@ -182,11 +182,10 @@ if (scalar @{$options{install}})
     @todo = map
     {
         {
-            sketch => $_, force => $options{force}, source => $sourcedir,
-             target => $options{repolist}->[0],
-         }
+            sketch => $_, force => $options{force}, source => undef, target => undef
+        }
     } @todo;
-    api_interaction({install => \@todo});
+    api_interaction({install => \@todo}, undef, undef, [qw/source target/]);
 }
 
 if (scalar @{$options{apitest}})
@@ -205,10 +204,10 @@ if (scalar @{$options{uninstall}})
     my @todo = map
     {
         {
-            sketch => $_, target => $options{repolist}->[0],
+            sketch => $_, target => undef,
          }
     } @{$options{uninstall}};
-    api_interaction({uninstall => \@todo});
+    api_interaction({uninstall => \@todo}, undef, undef, [qw/target/]);
 }
 
 if (scalar keys %{$options{activate}})
@@ -230,9 +229,9 @@ if (scalar keys %{$options{activate}})
                 $todefine{$k} = $_;
                 $i++;
                 push @{$todo{$sketch}},{
-                                        target => $options{repolist}->[0],
                                         environment => $options{environment},
                                         params => [ $k ],
+                                        target => undef,
                                        };
             }
         }
@@ -241,9 +240,9 @@ if (scalar keys %{$options{activate}})
             my $k = "parameter definition from $file";
             $todefine{$k} = $load;
             push @{$todo{$sketch}},{
-                                    target => $options{repolist}->[0],
                                     environment => $options{environment},
                                     params => [ $k ],
+                                    target => undef,
                                    };
         }
     }
@@ -254,7 +253,7 @@ if (scalar keys %{$options{activate}})
     {
         foreach my $activation (@{$todo{$sketch}})
         {
-            api_interaction({activate => { $sketch => $activation }});
+            api_interaction({activate => { $sketch => $activation }}, undef, undef, [qw/target/]);
         }
     }
 }
@@ -291,6 +290,7 @@ sub api_interaction
     my $request = shift @_;
     my $callback = shift @_;
     my $mergeopts = shift @_;
+    my $request_fill = shift @_;
 
     my $mydir = dirname($0);
     my $api_bin = "$mydir/cf-dc-api.pl";
@@ -338,6 +338,29 @@ sub api_interaction
     print ">> $config\n" if $options{verbose};
     print $fh_config "$config\n";
     close $fh_config;
+
+    if (defined $request_fill)
+    {
+        foreach my $fill (@$request_fill)
+        {
+            my $data;
+            if ($fill eq 'source')
+            {
+                $data = $sourcedir;
+            }
+            elsif ($fill eq 'target')
+            {
+                $data = $options{repolist}->[0];
+            }
+            else
+            {
+                warn "Unknown request fill $fill!";
+                next;
+            }
+
+            replace_attribute($request, $fill, $data);
+        }
+    }
 
     my $data = $dcapi->cencode({
                                 dc_api_version => "0.0.1",
@@ -399,6 +422,30 @@ sub api_interaction
     Util::error("API fatal error: Got bad result: ".$dcapi->encode($result)."\n");
     exit 1;
     # return (0, $result);
+}
+
+sub replace_attribute
+{
+     my $container = shift @_;
+     my $fill = shift @_;
+     my $data = shift @_;
+
+     return unless defined $container;
+
+     if (ref $container eq 'HASH')
+     {
+         if (exists $container->{$fill})
+         {
+             $container->{$fill} = $data;
+             return;
+         }
+
+         replace_attribute($_, $fill, $data) foreach values %$container;
+     }
+     elsif (ref $container eq 'ARRAY')
+     {
+         replace_attribute($_, $fill, $data) foreach values @$container;
+     }
 }
 
 sub make_list_printer
