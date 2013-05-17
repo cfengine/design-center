@@ -1,9 +1,5 @@
-
-
 body common control {
-
                inputs => { "libraries/cfengine_stdlib.cf" };
-
 }
 
 
@@ -15,10 +11,10 @@ bundle agent example {
 
             edit_line => cf_execd_entry_is_present,
                create => "true",
-              classes => if_repaired("signal_class");
+              classes => if_repaired("restart_crond");
 
   processes:
-    signal_class::
+    restart_crond::
       "crond"
               signals => { "hup" };
 

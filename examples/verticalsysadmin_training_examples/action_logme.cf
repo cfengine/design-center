@@ -8,13 +8,14 @@ files:
        comment => "quiesce system for maintenance",
 
         create => "true",
-        action => logme("stdout", "bundle=example type=files promiser=/tmp/etc/nologin handle=disable_nonroot_logins $(this.promise_filename) $(this.promise_linenumber)");
+        action => logme("bundle=example type=files promiser=/tmp/etc/nologin handle=disable_nonroot_logins $(this.promise_filename) $(this.promise_linenumber)");
 
 }
          
-body action logme(log,message)
+body action logme(message)
 {
 log_string => "At $(sys.date), on $(sys.host): $(message)";
+
 log_repaired => "/var/log/cfengine/repair.log";
 log_kept => "/var/log/cfengine/kept.log";
 log_failed => "/var/log/cfengine/notkept.log";
