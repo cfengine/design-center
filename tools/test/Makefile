@@ -681,3 +681,7 @@ first:
 	$(CFSKETCH_DA) --uninstall first
 	$(CFSKETCH_DA) --noforce --installsource=/home/tzz/source/blueprint/cfsketches.json --verbose --install first --activate first=/tmp/empty.json
 	$(RUNNER)
+
+stitch:
+	$(CFSKETCH_DA) --install Data::Stitch --activate Data::Stitch=$(SOURCEDIR)/utilities/data_stitch/params/demo.json
+	$(RUNNER)

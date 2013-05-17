@@ -313,6 +313,20 @@ sub fill_param
                 $ret = {set=>$pkey, type => $type, name => $name, value => $pval{$name}};
             }
         }
+        elsif ($type eq 'array' && exists $pval{$name} && ref $pval{$name} eq 'ARRAY')
+        {
+            my %mapped = map { sprintf('%06d', $_) => $pval{$name}->[$_] } 0 .. scalar @{$pval{$name}};
+            if (defined $ret)           # merge arrays
+            {
+                my $oldval = $ret->{value};
+                my $newval = \%mapped;
+                $ret = {set=>$pkey, type => $type, name => $name, value => Util::hashref_merge($oldval, $newval)};
+            }
+            else
+            {
+                $ret = {set=>$pkey, type => $type, name => $name, value => \%mapped};
+            }
+        }
         elsif ($type eq 'string' && exists $pval{$name} && Util::is_scalar($pval{$name}))
         {
             my $choice = Util::hashref_search($extra, qw/pdef choice/);
