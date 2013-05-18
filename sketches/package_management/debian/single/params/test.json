@@ -1,0 +1,9 @@
+[
+    { "Packages::Debian::single": { install: true, package: "install_package_1", version: "version_1", release: "release_1" } },
+    { "Packages::Debian::single": { install: true, package: "install_package_2", version: "version_2" } },
+    { "Packages::Debian::single": { install: true, package: "install_package_3", release: "release_3" } },
+    { "Packages::Debian::single": { install: true, package: "install_package_4" } },
+    { "Packages::Debian::single": { verify: true, package: "verify_package_1", version: "version_1" } },
+    { "Packages::Debian::single": { verify: true, package: "verify_package_2" } },
+    { "Packages::Debian::single": { remove: true, package: "remove_package_1" } },
+]
