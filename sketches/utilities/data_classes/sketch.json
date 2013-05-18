@@ -15,28 +15,28 @@
         license: "MIT",
         tags: ["cfdc", "data", "classes" ],
         authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: {"CFEngine::stdlib": {version: 109}, "CFEngine::dclib": {}, cfengine: {version: "3.4.0"}, os: ["linux"] }
+        depends: {"CFEngine::stdlib": {version: 109}, "CFEngine::dclib::3.5.0": {}, "CFEngine::dclib": {}, cfengine: {version: "3.5.0"}, os: ["linux"] }
     },
 
     api:
     {
         byport:
         [
-            { type: "string", name: "classname", description: "*Global* class to define if all the `ports` have listeners." },
+            { type: "string", name: "classname", description: "*Global* class to define if all the `ports` have listeners.", validation: "CLASSNAME" },
             { type: "list", name: "ports", description: "List of ports that must all have a listener for the `classname` to be defined" },
             { type: "return", name: "defined", },
         ],
 
         byfile:
         [
-            { type: "string", name: "classname", description: "*Global* class to define if all the `files` exist." },
+            { type: "string", name: "classname", description: "*Global* class to define if all the `files` exist.", validation: "CLASSNAME" },
             { type: "list", name: "files", description: "List of files that must all exist for the `classname` to be defined" },
             { type: "return", name: "defined", },
         ],
 
         byprocess:
         [
-            { type: "string", name: "classname", description: "*Global* class to define if all the `process_patterns` are matched." },
+            { type: "string", name: "classname", description: "*Global* class to define if all the `process_patterns` are matched.", validation: "CLASSNAME" },
             { type: "list", name: "process_patterns", description: "List of process patterns that must all match in the process table for the `classname` to be defined" },
             { type: "string", name: "owner", default: "", description: "If not empty, require this owner of the processes for the `classname` to be defined" },
             { type: "string", name: "min_process_count", default: 1, description: "Required minimum count of processes for the `classname` to be defined" },
@@ -46,8 +46,17 @@
 
         byshell:
         [
-            { type: "string", name: "classname", description: "*Global* class to define if all the `commands` run OK." },
+            { type: "string", name: "classname", description: "*Global* class to define if all the `commands` run OK.", validation: "CLASSNAME" },
             { type: "list", name: "commands", description: "List of commands that must all run OK for the `classname` to be defined" },
+            { type: "return", name: "defined", },
+        ],
+
+        bynet:
+        [
+            { type: "string", name: "classname", description: "*Global* class to define if the `url_retriever` called with the `url` matches the `regex`", validation: "CLASSNAME" },
+            { type: "string", name: "url_retriever", default: "/usr/bin/curl -s", description: "Command to run, will be given the `url` and expected to send the output to STDOUT", validation: "COMMAND_PATH" },
+            { type: "string", name: "url", description: "The URL to retrieve.", validation: "URL" },
+            { type: "string", name: "regex", description: "A regular expression that must be matched by the URL content.  Can't contain single quotes.", validation: "COMMAND_LINE_REGEX" },
             { type: "return", name: "defined", },
         ],
     },

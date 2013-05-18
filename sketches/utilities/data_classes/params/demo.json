@@ -14,4 +14,7 @@
 
    { "Data::Classes": { classname: "raid_OK", commands: ["/bin/echo put your own commands here"] } },
    { "Data::Classes": { classname: "broken_should_not_be_defined", commands: ["/bin/false"] } },
+
+   { "Data::Classes": { classname: "cfengine_com_up", url: "http://cfengine.com", regex: ".+_setDomainName.+cfengine.com.+" } },
+   { "Data::Classes": { classname: "broken_should_not_be_defined", url: "broken-url", regex: "does not matter" } },
 ]
