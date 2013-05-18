@@ -1,0 +1,39 @@
+bundle agent cfdc_stitch(filename, pieces)
+{
+  classes:
+      "second_pass" expression => "any";
+
+      "have_$(keys)" expression => regextract("([^:]+)::(.+)",
+                                              "$($(pieces)[$(keys)])",
+                                              "parsed_$(keys)");
+
+  vars:
+      # we want to sort the keys so the pieces are inserted in order
+      "unsorted_keys" slist => getindices($(pieces));
+      "keys" slist => sort("unsorted_keys", "lex");
+
+      # if arg1 then arg2 else arg3
+      "data[$(keys)]" string => ifelse("$(parsed_$(keys)[1])", "$(parsed_$(keys)[2])", "");
+      "values" slist => getvalues("data");
+
+      # TODO: pass the values list, not the concatenated version!
+      "values_str" string => join($(const.n), "values");
+
+  files:
+      "$(filename)"
+      create => "true",
+      edit_defaults => empty,
+      edit_line => insert_lines($(values_str)),
+      classes => cfdc_dclib_350:scoped_generic("bundle", "edit");
+
+  reports:
+      "$(filename)" bundle_return_value_index => "built",
+      ifvarclass => "edit_ok";
+
+      "" bundle_return_value_index => "built",
+      ifvarclass => "edit_not_ok";
+
+    inform_mode::
+      "$(this.bundle): Checking if '$(parsed_$(keys)[1])' is true to include '$(parsed_$(keys)[2])'";
+      "$(this.bundle): Data to insert in $(filename): '$(values)'";
+}

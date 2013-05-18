@@ -1,0 +1,16 @@
+[
+   {
+       "Data::Stitch":
+       {
+           filename: "badfilesname",
+           pieces: [ "any::everywhere line", "linux::linux line", "!linux::no linux line" ],
+       }
+   },
+   {
+       "Data::Stitch":
+       {
+           filename: "/tmp/stitched.txt",
+           pieces: [ "??? invalid context::nowhere line", "any::everywhere line\nanother line for everywhere::I mean everywhere!", "linux::linux line", ],
+       }
+   }
+]
