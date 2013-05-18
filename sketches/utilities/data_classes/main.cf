@@ -2,7 +2,10 @@ bundle agent byport(classname, ports)
 {
   classes:
       "$(classname)_port_$(netstat.ports)" expression => "any";
-      "$(classname)" expression => "$(classname)_port_$(ports)";
+
+      "$(classname)"
+      expression => "$(classname)_port_$(ports)",
+      scope => "namespace";
 
   commands:
       "$(paths.netstat) -ln | $(paths.grep) LISTEN | /usr/bin/perl -n -e'next unless m/:(\d+)\s+.+\s+LISTEN/; push @v, \"\\\"$1\\\"\"; END { $\"=\",\"; print \"\\@ports={@v}\\n\" };'"
@@ -34,7 +37,10 @@ bundle agent byfile(classname, files)
 {
   classes:
       "$(classname)_exists_$(canon[$(files)])" expression => fileexists($(files));
-      "$(classname)" expression => "$(classname)_exists_$(canon[$(files)])";
+
+      "$(classname)"
+      expression => "$(classname)_exists_$(canon[$(files)])",
+      scope => "namespace";
 
   vars:
       "canon[$(files)]" string => canonify($(files));
@@ -60,7 +66,9 @@ bundle agent byfile(classname, files)
 bundle agent byshell(classname, commands)
 {
   classes:
-      "$(classname)" expression => "$(classname)_ran_$(canon[$(commands)])";
+      "$(classname)"
+      expression => "$(classname)_ran_$(canon[$(commands)])",
+      scope => "namespace";
 
   vars:
       "canon[$(commands)]" string => canonify($(commands));
@@ -91,7 +99,10 @@ bundle agent byshell(classname, commands)
 bundle agent byprocess(classname, process_patterns, owner, min, max)
 {
   classes:
-      "$(classname)" expression => "$(classname)_found_$(canon[$(process_patterns)])";
+      "$(classname)"
+      expression => "$(classname)_found_$(canon[$(process_patterns)])",
+      scope => "namespace";
+
       "owner_not_given" expression => strcmp($(owner), "");
 
   vars:
@@ -143,4 +154,37 @@ body process_select process_owner(owner)
 {
       process_owner => { $(owner) };
       process_result => "process_owner";
- }
+}
+
+bundle agent bynet(classname, given_url_retriever, url, regex)
+{
+  classes:
+      "$(classname)" expression => "retrieve_ok", scope => "namespace";
+
+  vars:
+      # note we don't use regcmp() to avoid the 8K limit of CFE variables
+      "url_retriever" string => "$(given_url_retriever) $(url) | grep -s -E '$(regex)'";
+
+  commands:
+      "$(url_retriever)"
+      contain => in_shell,
+      classes => cfdc_dclib_350:scoped_generic("bundle", "retrieve");
+
+  reports:
+    retrieve_reached::
+      "" bundle_return_value_index => "defined",
+      ifvarclass => "!$(classname)";
+
+      "$(classname)" bundle_return_value_index => "defined",
+      ifvarclass => "$(classname)";
+
+    verbose||inform_mode::
+      "$(this.bundle): Defined class $(classname)"
+      ifvarclass => "$(classname)";
+
+      "$(this.bundle): Defined class $(classname) because command '$(url_retriever)' returned data that matched '$(regex)'"
+      ifvarclass => "$(classname)";
+
+      "$(this.bundle): Did NOT define class $(classname) because command '$(url_retriever)' did NOT return data that matched '$(regex)'"
+      ifvarclass => "retrieve_reached.!$(classname)";
+}

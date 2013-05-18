@@ -8,13 +8,24 @@ Authors: Ted Zlatanov <tzz@lifelogs.com>
 Define classes from data
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib
+CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 ## API
 ### bundle: byfile
 * parameter _string_ *classname* (default: none, description: *Global* class to define if all the `files` exist.)
 
 * parameter _list_ *files* (default: none, description: List of files that must all exist for the `classname` to be defined)
+
+* returns _return_ *defined* (default: none, description: none)
+
+### bundle: bynet
+* parameter _string_ *classname* (default: none, description: *Global* class to define if the `url_retriever` called with the `url` matches the `regex`)
+
+* parameter _string_ *url_retriever* (default: `"/usr/bin/curl -s"`, description: Command to run, will be given the `url` and expected to send the output to STDOUT)
+
+* parameter _string_ *url* (default: none, description: The URL to retrieve.)
+
+* parameter _string_ *regex* (default: none, description: A regular expression that must be matched by the URL content.  Can't contain single quotes.)
 
 * returns _return_ *defined* (default: none, description: none)
 
