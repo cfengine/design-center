@@ -29,21 +29,21 @@ bundle agent install(runenv, metadata, prefix, install, package, version, releas
 
   packages:
 
-    null_version.null_release::
+    not_test.null_version.null_release::
       "$(package)"
       package_method => apt_get,
       package_policy => "add",
       classes => default:dc_generic("$(prefix)_install"),
       comment => "Install package";
 
-    null_version.release::
+    not_test.null_version.release::
       "$(package)"
       package_method => apt_get_release($(release)),
       package_policy => "add",
       classes => default:dc_generic("$(prefix)_install"),
       comment => "Install package";
 
-    version.null_release::
+    not_test.version.null_release::
       "$(package)"
       package_method => apt_get,
       package_policy => "addupdate",
@@ -52,7 +52,7 @@ bundle agent install(runenv, metadata, prefix, install, package, version, releas
       classes => default:dc_generic("$(prefix)_install"),
       comment => "Install package";
 
-    version.release::
+    not_test.version.release::
       "$(package)"
       package_method => apt_get_release($(release)),
       package_policy => "addupdate",
@@ -72,14 +72,13 @@ bundle agent install(runenv, metadata, prefix, install, package, version, releas
       ifvarclass => "$(prefix)_install_not_ok";
 
       "1" bundle_return_value_index => "package_installed",
-      ifvarclass => "$(prefix)_install_ok";
+      ifvarclass => "$(prefix)_install_ok|test";
 
     verbose::
       "$(prefix): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
       "$(prefix): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
       ifvarclass => "$(vars)";
 
-    test::
       "$(prefix): parameter $(booleans) defined" ifvarclass => "$(booleans)";
       "$(prefix): parameter $(booleans) not defined" ifvarclass => "not_$(booleans)";
       "$(prefix): parameter $(strings) = $($(strings))" ifvarclass => "$(strings)";
@@ -88,6 +87,12 @@ bundle agent install(runenv, metadata, prefix, install, package, version, releas
       "$(prefix): parameter $(lists) is empty" ifvarclass => "empty_$(lists)";
       "$(prefix): result = ok" ifvarclass => "$(prefix)_install_ok";
       "$(prefix): result = not_ok" ifvarclass => "$(prefix)_install_not_ok";
+
+    test::
+      "$(prefix): would install package $(package)" ifvarclass => "package.null_version.null_release";
+      "$(prefix): would install package $(package), version $(version)" ifvarclass => "package.version.null_release";
+      "$(prefix): would install package $(package), release $(release)" ifvarclass => "package.null_version.release";
+      "$(prefix): would install package $(package), version $(version), release $(release)" ifvarclass => "package.version.release";
 }
 
 bundle agent remove(runenv, metadata, prefix, remove, package)
@@ -115,6 +120,7 @@ bundle agent remove(runenv, metadata, prefix, remove, package)
       "join[$(lists)]" string => join(", ", $(lists));
 
   packages:
+    not_test::
       "$(package)"
       package_method => apt_get,
       package_policy => "delete",
@@ -132,18 +138,17 @@ bundle agent remove(runenv, metadata, prefix, remove, package)
       ifvarclass => "$(prefix)_remove_not_ok";
 
       "1" bundle_return_value_index => "package_removed",
-      ifvarclass => "$(prefix)_remove_ok";
+      ifvarclass => "$(prefix)_remove_ok|test";
 
       # This is a bug work-around, see: https://cfengine.com/dev/issues/2569
       "1" bundle_return_value_index => "package_removed",
-      ifvarclass => "!($(prefix)_remove_ok|$(prefix)_remove_not_ok)";
+      ifvarclass => "!($(prefix)_remove_ok|$(prefix)_remove_not_ok).not_test";
 
     verbose::
       "$(prefix): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
       "$(prefix): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
       ifvarclass => "$(vars)";
 
-    test::
       "$(prefix): parameter $(booleans) defined" ifvarclass => "$(booleans)";
       "$(prefix): parameter $(booleans) not defined" ifvarclass => "not_$(booleans)";
       "$(prefix): parameter $(strings) = $($(strings))" ifvarclass => "$(strings)";
@@ -153,6 +158,10 @@ bundle agent remove(runenv, metadata, prefix, remove, package)
       "$(prefix): result = ok" ifvarclass => "$(prefix)_remove_ok";
       "$(prefix): result = not_ok" ifvarclass => "$(prefix)_remove_not_ok";
       "$(prefix): result = undefined" ifvarclass => "!($(prefix)_remove_ok|$(prefix)_remove_not_ok)";
+
+    test::
+      "$(prefix): would remove package $(package)" ifvarclass => "package";
+
 }
 
 bundle agent verify(runenv, metadata, prefix, verify, package, version)
@@ -180,14 +189,14 @@ bundle agent verify(runenv, metadata, prefix, verify, package, version)
       "join[$(lists)]" string => join(", ", $(lists));
 
   packages:
-    null_version::
+    not_test.null_version::
       "$(package)"
       package_method => apt_get,
       package_policy => "verify",
       classes => default:dc_generic("$(prefix)_verify"),
       comment => "Verify package installation";
 
-    version::
+    not_test.version::
       "$(package)"
       package_method => apt_get,
       package_policy => "verify",
@@ -207,14 +216,13 @@ bundle agent verify(runenv, metadata, prefix, verify, package, version)
       ifvarclass => "$(prefix)_verify_not_kept";
 
       "1" bundle_return_value_index => "package_verified",
-      ifvarclass => "$(prefix)_verify_kept";
+      ifvarclass => "$(prefix)_verify_kept|test";
 
     verbose::
       "$(prefix): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
       "$(prefix): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
       ifvarclass => "$(vars)";
 
-    test::
       "$(prefix): parameter $(booleans) defined" ifvarclass => "$(booleans)";
       "$(prefix): parameter $(booleans) not defined" ifvarclass => "not_$(booleans)";
       "$(prefix): parameter $(strings) = $($(strings))" ifvarclass => "$(strings)";
@@ -223,6 +231,10 @@ bundle agent verify(runenv, metadata, prefix, verify, package, version)
       "$(prefix): parameter $(lists) is empty" ifvarclass => "empty_$(lists)";
       "$(prefix): result = kept" ifvarclass => "$(prefix)_verify_kept";
       "$(prefix): result = not_kept" ifvarclass => "$(prefix)_verify_not_kept";
+
+    test::
+      "$(prefix): would verify package $(package), version $(version)" ifvarclass => "package.version";
+      "$(prefix): would verify package $(package)" ifvarclass => "package.null_version";
 }
 
 # Remove package_methods once they are integrated into CFEngine::stdlib

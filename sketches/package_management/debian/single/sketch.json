@@ -4,6 +4,8 @@
         "main.cf": {desc: "main file" },
         "README.md": {documentation: true},
         "test.cf": {comment: "Test Policy"},
+        "test.pl": { test: true},
+        "params/test.json": {comment: "Testing parameter set"},
         "params/demo.json": {comment: "Demo of package control."}
     },
 
