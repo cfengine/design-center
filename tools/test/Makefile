@@ -602,7 +602,8 @@ generic_services:
 	$(RUNNER)
 
 packages_debian_single:
-	$(CFSKETCH_DA) --install Packages::Debian::single --activate Packages::Debian::single=$(SOURCEDIR)/package_management/debian/single/params/demo.json
+	$(CFSKETCH_DA) --install Packages::Debian::single --activate Packages::Debian::single=$(SOURCEDIR)/package_management/debian/single/params/test.json
+	(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --apitest Packages::Debian::single
 	$(RUNNER)
 
 access:
