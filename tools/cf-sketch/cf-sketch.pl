@@ -49,6 +49,14 @@ $| = 1;                                 # autoflush
 # for encode/decode, not to use it directly!!!
 my $dcapi = DCAPI->new(cfengine_min_version => 1);
 
+# Find constdata.conf
+my $constdata=undef;
+foreach ($FindBin::Bin, "$FindBin::Bin/perl-lib", "$FindBin::Bin/../lib/cf-sketch", "/var/cfengine/constdata.conf") {
+  if (-f "$_/constdata.conf") {
+    $constdata = "$_/constdata.conf";
+  }
+}
+
 use Getopt::Long;
 
 my %options = (
@@ -71,6 +79,7 @@ my %options = (
                runfile => "$inputs_root/api-runfile.cf",
                standalonerunfile => "$inputs_root/api-runfile-standalone.cf",
                installsource => Util::local_cfsketches_source(File::Spec->curdir()) || undef,
+               constdata => $constdata,
                # These are hardcoded above, we put them here for convenience
                version => $VERSION,
                date => $DATE,
@@ -102,6 +111,7 @@ GetOptions(\%options,
            "uninstall=s@",
            "deactivate-all|da",
            "activate|a=s%",
+           "constdata=s",
 
            "standalone!",
            "runfile|rf=s",
@@ -127,6 +137,8 @@ my $env_test = $options{test};
 
 $options{activated} = 1 if ($options{activated} eq '');
 my $env_activated = $options{activated};
+
+die "Sorry, can't locate constdata file '$options{constdata}'" unless (!$options{constdata} || -f $options{constdata});
 
 api_interaction({
                  define_environment => {
@@ -319,6 +331,7 @@ sub api_interaction
                  filter_inputs => $options{filter},
                 },
                 vardata => "$inputs_root/cfsketch-vardata.conf",
+                constdata => $options{constdata},
                };
 
     if (exists $options{apiconfig})
