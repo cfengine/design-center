@@ -97,6 +97,8 @@ api_activate:
 	echo '{ dc_api_version: "0.0.1", request: {deactivate: "my special identifier" } }' | $(CFAPI)
 
 api_validations:
+	@echo ...list validations
+	echo '{ dc_api_version: "0.0.1", request: {validations: 1 } }' | $(CFAPI)
 	@echo ...define a choice-of validation with choice and derived
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { AB: { choice: [ "A", "B" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { C: { choice: [ "C" ] } } } }' | $(CFAPI)
@@ -172,6 +174,9 @@ api_validate:
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: [256] } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "not a URL" } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "http://this.that2" } } } }' | $(CFAPI)
+
+	@echo ...a non-existing validation
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "FOOBAR_BAZ", data: {"hello":256} } } }' | $(CFAPI)
 
 api_environments:
 	@echo ...show all environments
