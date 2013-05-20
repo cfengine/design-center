@@ -274,7 +274,7 @@ unless ($options{'expert'}) {
 
     # Load commands and do other parser initialization
     Parser::init('cf-sketch', \%options, @ARGV);
-    Parser::set_welcome_message("[default]\nCFEngine AS, 2012.");
+    Parser::set_welcome_message("[default]\nCFEngine AS, 2013.");
 
     # Run the main command loop
     Parser::parse_commands();
