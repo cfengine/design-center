@@ -10,6 +10,7 @@ install:
 	$(I) -d $(LIB) $(BIN)
 	$(I) -m 755 ./cf-sketch.pl $(BIN)/cf-sketch
 	/usr/bin/rsync -a --delete ./perl-lib/ $(LIB)/
+	$(I) -m 644 ./constdata.conf $(LIB)/
 	/bin/chmod -R a+rX $(LIB)/
 	/bin/ln -fs `pwd`/cf-dc-api.pl $(BIN)/cf-dc-api.pl
 
