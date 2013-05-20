@@ -81,14 +81,28 @@ sub command_info {
                     }
                     if ($full && scalar(keys %$api))
                     {
+                        my %returns=();
                         print BLUE."Parameters:\n".RESET;
                         foreach my $bundle (sort keys %$api)
                         {
                             print "  For bundle ".CYAN.$bundle.RESET."\n";
                             foreach my $p (@{$api->{$bundle}})
                             {
-                                print YELLOW."    ".$p->{name}.RESET.": ".$p->{type}."\n"
-                                 unless $p->{type} =~ /^(metadata|environment)$/;
+                                print YELLOW."    ".$p->{name}.RESET.": ".$p->{type}.($p->{validation}? " (validation: $p->{validation})" : "")."\n"
+                                 unless $p->{type} =~ /^(metadata|environment|bundle_options|return)$/;
+                                if ($p->{type} eq 'return')
+                                {
+                                    $returns{$bundle} = [] unless exists($returns{$bundle});
+                                    push @{$returns{$bundle}}, $p->{name};
+                                }
+                            }
+                        }
+                        if (scalar(%returns))
+                        {
+                            print BLUE."Return values:\n".RESET;
+                            foreach my $bundle (sort keys %returns)
+                            {
+                                print "  Bundle ".CYAN.$bundle.RESET.": [ ".join(", ", @{$returns{$bundle}})." ]\n";
                             }
                         }
                     }
