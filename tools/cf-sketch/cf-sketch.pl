@@ -444,7 +444,7 @@ sub replace_attribute
      }
      elsif (ref $container eq 'ARRAY')
      {
-         replace_attribute($_, $fill, $data) foreach values @$container;
+         replace_attribute($_, $fill, $data) foreach @$container;
      }
 }
 
