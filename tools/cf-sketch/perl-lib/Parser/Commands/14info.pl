@@ -73,9 +73,9 @@ sub command_info {
                      if $meta->{tags};
                     print BLUE."Installed: ".RESET.(exists($installed->{$sketch}) ? "Yes, under ".$installed->{$sketch} : "No")."\n";
                     print BLUE."Library: ".RESET."Yes\n" unless scalar(keys %$api);
-                    if (scalar(keys %$api))
+                    if ($installed->{$sketch} && scalar(keys %$api))
                     {
-                        my $num_act = scalar(@{$activs->{$sketch}});
+                        my $num_act = scalar(@{$activs->{$sketch}||[]});
                         my $word = $num_act > 1 ? "instances" : "instance";
                         print BLUE."Activated: ".RESET.($num_act ? "Yes, $num_act $word" : "No")."\n";
                     }
