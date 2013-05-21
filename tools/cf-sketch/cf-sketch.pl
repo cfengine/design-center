@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 BEGIN
 {
@@ -502,10 +502,12 @@ sub make_list_printer
 
 # Common API actions
 
+# Return details of sketches according to regex. Without args returns all sketches
 sub get_all_sketches {
+  my $regex = Util::validate_and_set_regex(shift);
   my ($success, $result) = main::api_interaction({
                                                   describe => 1,
-                                                  search => ".",
+                                                  search => $regex,
                                                  });
   my $list = Util::hashref_search($result, 'data', 'search');
   my $res = undef;
@@ -525,6 +527,12 @@ sub get_all_sketches {
   return $res;
 }
 
+# Alias for get_all_sketches
+sub get_sketch {
+  return get_all_sketches(shift);
+}
+
+# Return list of installed sketches and their repositories
 sub get_installed {
     my ($success, $result) = main::api_interaction({
                                                  describe => 0,
@@ -549,6 +557,7 @@ sub get_installed {
     return $installed;
 }
 
+# Return whether a sketch is installed
 sub is_sketch_installed
 {
   my $sketch = shift;
@@ -556,6 +565,7 @@ sub is_sketch_installed
   return exists($installed->{$sketch});
 }
 
+# Return all activations
 sub get_activations {
     my ($success, $result) = main::api_interaction({ activations => 1 });
     my $activs = Util::hashref_search($result, 'data', 'activations');
@@ -570,6 +580,7 @@ sub get_activations {
     }
 }
 
+# Return all parameter definitions
 sub get_definitions {
   my ($success, $result) = main::api_interaction({ definitions => 1 });
   return unless $success;
@@ -583,10 +594,20 @@ sub get_definitions {
   }
 }
 
+# Return all environment definitions
 sub get_environments {
   my ($success, $result) = main::api_interaction({ environments => 1 });
   return unless $success;
   my $envs = Util::hashref_search($result, 'data', 'environments');
   $envs = {} unless (ref $envs eq 'HASH');
   return $envs;
+}
+
+# Get all validations
+sub get_validations {
+  my ($success, $result) = main::api_interaction({ validations => 1 });
+  return unless $success;
+  my $vals = Util::hashref_search($result, 'data', 'validations');
+  $vals = {} unless (ref $vals eq 'HASH');
+  return $vals;
 }
