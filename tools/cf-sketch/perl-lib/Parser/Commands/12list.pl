@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2013-05-20 13:53:36 a10022>
+# Time-stamp: <2013-05-21 13:55:02 a10022>
 
 use Term::ANSIColor qw(:constants);
 use DesignCenter::JSON;
@@ -207,28 +207,25 @@ sub command_list_vals
     my $full = shift;
     my $regex = shift;
     return unless $regex = Util::validate_and_set_regex($regex);
+    my $msg = shift or "The following ".(($regex eq '.')?"validations are defined":"validations match your query").":";
 
-    my ($success, $result) = main::api_interaction({ validations => 1 });
-    my $vals = Util::hashref_search($result, 'data', 'validations');
-    if (ref $vals eq 'HASH')
+    my $vals = main::get_validations;
+    my $printed = undef;
+    foreach my $val (sort keys %$vals)
     {
-        my $printed = undef;
-        foreach my $val (keys %$vals)
+        next unless $val =~ /$regex/i;
+        unless ($printed)
         {
-            next unless $val =~ /$regex/i;
-            unless ($printed)
-            {
-                Util::output("The following ".(($regex eq '.')?"validations are defined":"validations match your query").":\n\n");
-            }
-            $printed = 1;
-            print RESET, GREEN, $val, RESET, "\n";
-            if ($full)
-            {
-                print DesignCenter::JSON::pretty_print($vals->{$val}, "  ")."\n";
-            }
+            Util::output("$msg\n\n");
         }
-        Util::warning("No validations ".(($regex eq '.')?"are defined.\n" : "match your query\n")) unless $printed;
+        $printed = 1;
+        print RESET, GREEN, $val, RESET, "\n";
+        if ($full)
+        {
+            print DesignCenter::JSON::pretty_print($vals->{$val}, "  ")."\n";
+        }
     }
+    Util::warning("No validations ".(($regex eq '.')?"are defined.\n" : "match your query\n")) unless $printed;
 }
 
 1;
