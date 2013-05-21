@@ -231,7 +231,7 @@ sub check_regex {
 sub validate_and_set_regex
 {
     my $regex = shift;
-    $regex = "." if ($regex eq 'all' or !$regex);
+    $regex = "." if (!$regex or $regex eq 'all');
     my $err = Util::check_regex($regex);
     if ($err)
     {
