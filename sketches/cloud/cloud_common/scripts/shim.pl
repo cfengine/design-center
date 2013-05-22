@@ -637,8 +637,7 @@ sub aws_ec2
                               $args[0],
                               $options{install_cfengine},
                               $options{ec2}->{ssh_pub_key});
-   my $dir = tempdir( CLEANUP => 1 );
-   my ($fh, $filename) = tempfile( DIR => $dir );
+   my ($fh, $filename) = tempfile( DIR => '/tmp' );
 
    print $fh $init;
    close $fh;
