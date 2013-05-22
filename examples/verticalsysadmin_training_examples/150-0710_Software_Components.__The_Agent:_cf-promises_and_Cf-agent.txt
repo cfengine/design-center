@@ -1,9 +1,7 @@
 Software Components
 
 
-CFEngine 3 consists of a number of components.
-
-The most important to learn first are:
+CFEngine 3 consists of a number of components:
 
 * cf-promises 
 

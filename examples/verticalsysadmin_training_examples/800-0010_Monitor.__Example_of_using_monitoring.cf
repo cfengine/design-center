@@ -11,9 +11,8 @@ bundle agent example {
       "CPU_load_high"
            expression => isgreaterthan("$(mon.value_cpu)","$(threshold)");
 
-
   reports:
     CPU_load_high::
       "!!!!! CPU LOAD IS OVER THRESHOLD OF $(threshold) percent !!!! ";
 
-                     }
+}

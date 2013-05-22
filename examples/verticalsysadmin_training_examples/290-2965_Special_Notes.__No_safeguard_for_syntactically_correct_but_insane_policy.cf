@@ -1,10 +1,10 @@
 # a mutually exclusive configuration
 
 body common control {
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf",
-                         };
+               inputs => { "libraries/cfengine_stdlib.cf",
+               };
 
-                    }
+}
 
 ############################################################
 
@@ -20,4 +20,4 @@ bundle agent example {
 
       "/tmp/plug"
                create => "true";
-                     }
+}

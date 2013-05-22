@@ -6,31 +6,26 @@ body common control {
 
        bundlesequence => { "example1", "example2" };
 
-                    }
-
-
+}
 
 bundle agent example2 {
 
-      commands:  "/bin/echo Second things second";
-                      }
+  reports:
 
+    linux::
+
+      "Second things second"
+               handle => "identify_2nd_bundle",
+              comment => "Identify the 2nd bundle to demonstrate bundlesequence";
+}
 
 bundle agent example1 {
 
-  vars:
+  reports:
 
-      "my_slist_0"
+    linux::
 
-               slist  => {
-                           "String contents...",
-                           "... are beauutifuuul this time of year"
-                         };
-
-
-      "my_slist_1"
-
-               slist  => { @(my_slist_0) };
-
-      commands:  "/bin/echo First things first";
-                      }
+      "First things first" 
+               handle => "identify_1st_bundle",
+              comment => "Identify the 1st bundle to demonstrate bundlesequence";
+}

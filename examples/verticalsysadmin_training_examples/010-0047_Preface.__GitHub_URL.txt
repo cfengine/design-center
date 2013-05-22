@@ -1,0 +1,8 @@
+GitHub
+------
+
+I keep these examples on GitHub and update them during
+each class. 
+
+You can run git at the start of each session to stay up
+to date with me.

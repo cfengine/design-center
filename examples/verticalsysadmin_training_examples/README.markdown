@@ -6,8 +6,13 @@ CFEngine 3 to automate system administration and
 manage knowledge about system configuration.
 
 To use this collection, please view the files in
-alphanumeric order, or run the provided run_slides.sh
-script.
+alphanumeric order (facilitated by l.sh script),
+or run the provided run_slides.sh script which
+will display the files, in order, using vi.
 
-If you have any feedback, we would love to hear
-from you, send us a message to <aleksey@verticalsysadmin.com>.
+I would love to hear from you, email me at
+aleksey at verticalsysadmin.com
+
+Aleksey Tsalolikhin
+20 April 2013
+Los Angeles, California

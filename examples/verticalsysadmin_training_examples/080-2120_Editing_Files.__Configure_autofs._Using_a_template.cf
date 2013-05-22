@@ -12,7 +12,7 @@
 # ENTRY_ATTRIBUTE="cn"
 # VALUE_ATTRIBUTE="automountInformation"
 # USE_MISC_DEVICE="yes"
-# SEARCH_BASE="ou=__SITE__,ou=Sites,dc=VerticalSysadmin,dc=com"
+# SEARCH_BASE="ou=$(site),ou=Sites,dc=VerticalSysadmin,dc=com"
 #
 # and /etc/site which contains, for example, lax 
 
@@ -27,7 +27,7 @@ bundle agent example {
       "/etc/sysconfig/autofs"
             edit_line => expand_from_autofs_template("$(site)"),
                create => "true";
-                     }
+}
 
 
 #####################################################
@@ -41,10 +41,10 @@ bundle edit_line expand_from_autofs_template(site) {
 
   insert_lines:
 
-      "/templates/autofs.tmpl"
+      "/var/cfengine/inputs/templates/autofs.txt"
           insert_type => "file",                # insert copy of template 
-          expand_scalars => "true";             # expand scalars
+       expand_scalars => "true";             # expand scalars
 
-                                         }
+}
 
 #####################################################

@@ -11,20 +11,20 @@
 
 body common control {
        bundlesequence =>  {"example", "motd"};
-       inputs =>  { "motd.cf", "cfengine_stdlib.cf" };
+               inputs =>  { "motd.cf", "cfengine_stdlib.cf" };
 
-                    }
+}
 
 bundle agent example {
 
   files:
 
-    "/etc/nologin"
+      "/etc/nologin"
 
-              create => "true",
+               create => "true",
               comment => "Mortal users can't log in while system is in maintenance mode";
 
-                     }
+}
 
 
 

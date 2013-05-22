@@ -8,4 +8,4 @@ bundle agent example {
     linux::
       "Variable is $(my_result)";
 
-                     }
+}

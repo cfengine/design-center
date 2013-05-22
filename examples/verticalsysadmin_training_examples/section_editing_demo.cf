@@ -1,0 +1,30 @@
+bundle agent example {
+
+files:
+
+  "/etc/example.conf"
+
+             handle => "demo_section_editing",
+            comment => "Demo section editing capability",
+            edit_line => high_security("bank");
+}
+
+########################################################
+
+bundle edit_line high_security(parameter) {
+
+  insert_lines:
+      "security=1"
+        select_region => MyINISection("$(parameter)");
+
+}
+
+########################################################
+
+body select_region MyINISection(x)
+
+{
+         select_start => "\[$(x)\]";
+           select_end => "\[.*\]";
+
+}

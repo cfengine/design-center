@@ -1,19 +1,16 @@
-body common control
+bundle agent example {
 
-{
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-       bundlesequence => { "example" };
-}
-
-#######################################
-
-bundle agent example
-
-{
   files:
 
       "/etc"
 
+         handle       => "etc_tripwire",
+         comment      => "Report changes on files in /etc",
          changes      => detect_all_change,
          depth_search => recurse("inf");
+}
+
+
+body common control {
+               inputs => { "libraries/cfengine_stdlib.cf" };
 }

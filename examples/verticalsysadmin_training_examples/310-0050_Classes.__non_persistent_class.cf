@@ -1,8 +1,8 @@
 body common control {
 
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "libraries/cfengine_stdlib.cf" };
 
-                    }
+}
 
 
 bundle agent example {
@@ -19,6 +19,6 @@ bundle agent example {
     promise_repaired::
       "soft class is set";
 
-                     }
+}
 
 

@@ -9,7 +9,7 @@ bundle common global {
 
       "stuff[Location]" string => "Chicago";
       "stuff[Time]"     string => "Monday, April 2nd";
-                     }
+}
 
 
 
@@ -20,7 +20,7 @@ bundle agent example {
       "/tmp/example"
                create => "true",
             edit_line => set_variable_values("global.stuff");
-                     }
+}
 
 
 bundle edit_line set_variable_values(v)
@@ -66,7 +66,7 @@ body edit_field col(split,col,newval,method)
 
 body replace_with value(x)
 {
-replace_value => "$(x)";
-occurrences => "all";
+        replace_value => "$(x)";
+          occurrences => "all";
 }
 

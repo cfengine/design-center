@@ -10,7 +10,7 @@ bundle agent example {
             usebundle => add_group("example");
 
 
-                     }
+}
 
 
 #####################################################################
@@ -18,22 +18,21 @@ bundle agent example {
 
 bundle agent add_group(groupname) {
 
-
   vars:
 
-      any::
+    any::
 
-              "groupadd_utility"  string =>  "/sbin/groupadd",
-                                  policy =>  "overridable";
+      "groupadd_utility"  string =>  "/sbin/groupadd",
+               policy =>  "overridable";
 
       linux:: "groupadd_utility"  string =>  "/usr/sbin/groupadd",
-                                  policy =>  "overridable";
+               policy =>  "overridable";
 
       hpux::  "groupadd_utility"  string =>  "/usr/sbin/addgroup",
-                                  policy =>  "overridable";
+               policy =>  "overridable";
 
       aix::   "groupadd_utility"  string =>  "/sbin/addgroup",
-                                  policy =>  "overridable";
+               policy =>  "overridable";
 
 
 
@@ -44,4 +43,4 @@ bundle agent add_group(groupname) {
                  args => "$(groupname)",
               comment => "Ensure specified group '$(groupname)' group is present.";
 
-                                 }
+}

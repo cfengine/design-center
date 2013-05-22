@@ -1,0 +1,21 @@
+bundle agent example {
+
+  reports:
+
+    linux::
+
+      "Yay Linux!";
+
+
+  reports:
+
+    !linux::
+
+      "I miss my Linux...";
+
+  reports:
+
+    !windows::
+
+      "Thank goodness it ain't Windows.";
+}

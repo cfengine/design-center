@@ -1,0 +1,12 @@
+bundle agent example
+{
+
+  commands:
+
+      "echo"
+               handle => "insecure_promise",
+              comment => "This fails because path to commands must be fully specified for security",
+                 args => "Hello world";
+
+}
+

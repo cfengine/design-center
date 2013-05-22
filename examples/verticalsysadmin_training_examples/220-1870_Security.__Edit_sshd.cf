@@ -1,3 +1,5 @@
+!! SKIP !!
+
 # Parameters are:
 #    file: file to edit
 #    params: an array indexed by parameter name, containing the corresponding values. For example:

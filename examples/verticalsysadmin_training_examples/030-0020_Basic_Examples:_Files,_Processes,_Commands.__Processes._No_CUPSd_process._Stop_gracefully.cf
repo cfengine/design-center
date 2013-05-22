@@ -1,0 +1,12 @@
+bundle agent example {
+
+  processes:
+
+      "cupsd" 
+
+               handle => "shutdown_print_services",
+              comment => "Shutdown print services on machines
+that are not print servers",
+         process_stop => "/etc/init.d/cups stop";
+
+}

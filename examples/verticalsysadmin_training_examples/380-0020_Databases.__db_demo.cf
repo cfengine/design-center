@@ -22,7 +22,7 @@ body common control {
 
    host_licenses_paid => "10";
 
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "libraries/cfengine_stdlib.cf" };
 
        bundlesequence =>        {
                                   "db_cluster_is_installed",
@@ -34,9 +34,9 @@ body common control {
                                   "database_exists",
 
                                   "schema_exists_and_is_correct",
-                                };
+       };
 
-                    }
+}
 
 ################################################
 
@@ -63,7 +63,7 @@ bundle agent db_cluster_is_installed {
       "/sbin/service postgresql start";
 
 
-                                     }
+}
 
 ################################################
 
@@ -87,7 +87,7 @@ bundle agent pg_hba_conf_trusts_local_users {
       "/sbin/service postgresql reload";
 
 
-                                            }
+}
 
 
 ################################################
@@ -109,7 +109,7 @@ bundle agent db_cluster_is_running {
 
       "/sbin/service postgresql start";
 
-                                   }
+}
 
 
 
@@ -123,7 +123,7 @@ bundle agent database_exists {
       "/usr/bin/createdb -U postgres conference >/dev/null 2>/dev/null"
               contain => in_shell;
 
-                             }
+}
 
 
 ################################################
@@ -147,7 +147,7 @@ bundle agent schema_exists_and_is_correct {
                            "speaker_name,varchar,50",
                            "speaker_bio,varchar,600",
                            "speaker_affiliation,varchar,50",
-                         },
+     },
       database_server => demo_postgres_server;
 
 
@@ -158,7 +158,7 @@ bundle agent schema_exists_and_is_correct {
      database_columns => { 
                            "room_name,varchar,256",
                            "room_number_of_seats,integer",
-                         },
+     },
       database_server => demo_postgres_server;
 
 
@@ -170,11 +170,11 @@ bundle agent schema_exists_and_is_correct {
                            "speaker_name,varchar,256",
                            "room_name,varchar,256",
                            "start_time,date",
-                         },
+     },
       database_server => demo_postgres_server;
 
 
-                                          }
+}
 
 
 ################################################
@@ -192,7 +192,7 @@ body database_server demo_postgres_server {
 
 db_server_connection_db => "postgres";
 
-                                          }
+}
 
 ################################################
 
@@ -208,4 +208,4 @@ bundle edit_line trust_local_users {
 local   all         all                               trust
 ";
 
-                                   }
+}

@@ -9,28 +9,28 @@
 
 bundle common global_vars {
 
-     vars:
-        "webservers"
-           slist => { "web01", "web02", "web03" };
- 
+  vars:
+      "webservers"
+                slist => { "web01", "web02", "web03" };
+      
 }
 
 
 bundle common global_classes {
 
-classes:
+  classes:
 
-  "webfarm"
-      expression => reglist("@(global_vars.webservers)", escape("$(sys.host)"));
+      "webfarm"
+           expression => reglist("@(global_vars.webservers)", escape("$(sys.host)"));
 
 }
 
 bundle agent example {
 
-reports:
+  reports:
 
-  webfarm::
+    webfarm::
 
-   "I am a web server";
+      "I am a web server";
 
 }

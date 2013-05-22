@@ -1,0 +1,38 @@
+# welcome.conf is part of the Apache RPM
+# to preserver package integrity, comment out this file's contents
+# instead of deleting the file
+
+body common control {
+
+               inputs => { "libraries/cfengine_stdlib.cf" };
+
+}
+
+
+bundle agent example {
+
+  vars:
+      "mycomment"
+               handle => "our_comment_out_mark",
+              comment => "Let sysadmins see when CFEngine comments out something",
+               string => "#disabled-by-cfengine ";
+      
+
+  files:
+
+      "/etc/httpd/conf.d/maintenance.conf"
+
+            edit_line => comment_out_everything;
+}
+
+
+bundle edit_line comment_out_everything {
+
+  replace_patterns:
+
+      "^([^#].*)"
+
+         replace_with => comment("$(example.mycomment) $(match.1)");
+
+}
+

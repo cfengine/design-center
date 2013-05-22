@@ -6,7 +6,7 @@ bundle agent example {
 
           file_select => world_writeable_but_not_a_symlink,
           transformer => "/bin/echo DETECTED WORLD WRITABLE NON-SYMLINK FILE $(this.promiser)";
-                     }
+}
 
 
 body file_select world_writeable_but_not_a_symlink

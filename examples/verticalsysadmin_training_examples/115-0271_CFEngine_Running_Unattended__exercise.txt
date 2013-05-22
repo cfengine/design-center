@@ -1,30 +1,29 @@
                    EXERCISE
 
 Running CFEngine Non-Interactive (as a Service)
-using /var/cfengine/inputs/promises.cf as input.
+using promises.cf as input.
 
-1. Specify a bundlesequence in your policy from exercise 5
-(that creates an /etc/motd file that always says Unauth.
-Use Forbidden, and "go home, it's the weekend" on the weekend.
-Add to this policy:
+1. Put your "motd" exercise file under
+   /var/cfengine/masterfiles/services/
 
-   body common control {
+2. Edit /var/cfengine/masterfiles/promises.cf:
+   - Add your "motd" exercise file name to "inputs" list
+   - Add your "motd" exercise bundle name to "bundlesequence" list
 
-        bundlesequence =>  { "..." };
+3. Now let's test it:
 
-                       }
+    > /etc/motd               # make a repair necessary
+    cf-agent -f update.cf -I  # update from "masterfiles" to "inputs"
+    cf-agent -I               # make sure /etc/motd is repaired
 
-2. Copy this modified exercise 5 to /var/cfengine/inputs/promises.cf
-3. Make your failsafe.cf identical to promises.cf:
-      cd /var/cfengine/inputs
-      ln -s promises.cf failsafe.cf
-4. Check the syntax of the default input file (promises.cf):
-      cf-promises
-5. Run CFengine from command line once to make sure it all works:
-      cf-agent
-6. Restart CFEngine service to reload the policy:
-      /etc/init.d/cfengine3 restart
-7. Make sure you don't have an /etc/motd file so CFEngine has something to fix: 
-     rm /etc/motd
-8. Watch CFEngine create /etc/motd within 5 minutes:
+
+4. Remove your /etc/motd and watch CFEngine create
+   /etc/motd within 5 minutes:
+
      watch ls -l /etc/motd 2>/dev/null
+------------------------------------------------------------------
+Change cf-execd schedule from 5 min to 1 min. 
+1. in /var/cfengine/masterfiles/controls/cf_execd.cf, set
+     schedule => { "any" }; 
+cf-agent -f update.cf -I
+/etc/init.d/cfengine3 restart

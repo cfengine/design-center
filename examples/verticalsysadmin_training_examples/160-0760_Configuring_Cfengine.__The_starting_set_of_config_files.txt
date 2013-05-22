@@ -1,3 +1,7 @@
+!! SKIP !!
+
+!! Warning!!  This is out of date.
+
 /var/cfengine/share/CoreBase/ contains your starting set of config files
 
 promises.cf           the default config file. 

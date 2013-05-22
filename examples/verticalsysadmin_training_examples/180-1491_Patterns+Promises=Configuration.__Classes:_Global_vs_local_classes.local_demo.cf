@@ -2,7 +2,7 @@ body common control {
 
        bundlesequence => { "example", "example2" };
 
-                    }
+}
 
 
 
@@ -22,7 +22,7 @@ bundle agent global_classes {
 
           expression  =>  classmatch("web[0-9]+");
 
-                            }
+}
 
 
 

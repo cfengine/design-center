@@ -1,0 +1,21 @@
+bundle agent example {
+
+
+files:
+
+     "/tmp/mirror"
+
+          handle => "local_mirror",
+          comment => "Maintain a local mirror of the repo",
+          copy_from => remote_dcp("/repo", "$(sys.policy_hub)"),
+          depth_search => recurse("inf"),
+          action => immediate;
+          
+}
+
+body common control {
+
+  inputs => {"/var/cfengine/inputs/libraries/cfengine_stdlib.cf"};
+
+}
+

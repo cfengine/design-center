@@ -1,0 +1,30 @@
+bundle agent example {
+
+  vars:
+
+      "files"
+
+               handle => "files_i_want",
+              comment => "A list of files that I want, to demonstrate how ifvarclass can be used",
+                slist =>  {"4", "5"};
+
+
+  files:
+
+      "/tmp/$(files)"
+
+               handle => "make_file",
+              comment => "make files",
+               create => "true",
+              classes => if_repaired("made_$(files)");
+
+  reports:
+
+      "Created file /tmp/$(files)"
+
+               handle => "report_repair_of_$(files)",
+              comment => "report a repair",
+           ifvarclass => "made_$(files)";
+
+}
+body common control { inputs => {"libraries/cfengine_stdlib.cf"}; }

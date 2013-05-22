@@ -8,7 +8,7 @@
 body common control {
        bundlesequence => { runme(@(g.myusers)) };  # note lack of 
       # " symbols
-                    }
+}
 
 bundle common g
 {

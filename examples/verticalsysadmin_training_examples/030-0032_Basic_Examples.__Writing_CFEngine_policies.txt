@@ -1,9 +1,0 @@
-How to write CFEngine policies
-------------------------------
-
-1. State the sysadmin problem
-
-2. Envision the desired end state
-
-3. Translate the desired end state into CFEngine Policy Language
-
