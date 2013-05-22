@@ -1,14 +1,21 @@
-body common control {
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf"};
-                    }
-
-
 bundle agent example {
 
   files:
 
       "/tmp/scratch"
 
+               handle => "files_multi_line_insert",
+              comment => "Insert multi-line content",
                create => "true",
-            edit_line => insert_lines("hello world.$(const.n)this is line 2$(const.n)line 3 is great$(const.n)line 4 is awesome");
-                     }
+            edit_line => insert_lines("
+hello world
+this is line 2
+line 3 is great
+line 4 is awesome
+");
+}
+
+
+body common control {
+               inputs => { "libraries/cfengine_stdlib.cf"};
+}

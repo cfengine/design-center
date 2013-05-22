@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# examine what is in the CFEngine package
+
+rpm -q --filesbypkg cfengine-community | less

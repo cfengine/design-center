@@ -1,26 +1,22 @@
-#######################################################
-#
-# Searching for permissions
-#
-#######################################################
+bundle agent example {
 
-
-############################################
-
-bundle agent example
-
-{
   files:
 
-      "/tmp/test_from" 
+      "/var/logexample/."
 
+               handle => "remove_world_writable_files",
+              comment => "if you make a file world-writable, I WILL delete it",
           file_select => compound_filter,
-          transformer => "/bin/echo DETECTED $(this.promiser) MATCHING COMPOUND FILTER",
-         depth_search => recurse("inf");
-
+         depth_search => recurse("inf"),
+              delete  => tidy;
 }
 
-############################################
+body common control {
+
+               inputs => {"/var/cfengine/masterfiles/libraries/cfengine_stdlib.cf"};
+}
+
+
 
 body file_select compound_filter
 
@@ -30,14 +26,6 @@ body file_select compound_filter
             leaf_name => { ".*\.pdf" , ".*\.fdf" };  # leaf_name = regex to match
 
 
-          file_result => "leaf_name|mode";   # this is a class expression
-}
-
-############################################
-
-body depth_search recurse(d)
-
-{
-                depth => "$(d)";
+          file_result => "leaf_name&mode";   # this is a class expression
 }
 

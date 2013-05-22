@@ -1,13 +1,16 @@
-# Two bundles sharing a body-part that automagically sets the correct group ownership based on OS
+# Two bundles sharing a body-part that automagically sets
+# the correct group ownership based on OS
 
 bundle agent example1 {
 
   files:
 
       "/tmp/testfile" 
+              handle  => "set_file_attributes_automagically", 
+             comment  => "Set appropriate file attributes everywhere",
               create  => "true", 
-              perms   => set_mode_700_administrative_group_and_specified_user("aleksey");
-                      }
+              perms   => set_mode_700_admin_group_and_specified_user("aleksey");
+}
 
 
 #################################################
@@ -17,15 +20,17 @@ bundle agent example2 {
   files:
 
       "/tmp/testfile2" 
+              handle  => "set_file_attributes_on_file2", 
+             comment  => "Set appropriate file attributes everywhere",
               create  => "true", 
-              perms   => set_mode_700_administrative_group_and_specified_user("rob");
-                      }
+              perms   => set_mode_700_admin_group_and_specified_user("rob");
+}
 
 
 #################################################
 
 
-body perms set_mode_700_administrative_group_and_specified_user(xyz) {
+body perms set_mode_700_admin_group_and_specified_user(xyz) {
 
                mode   => "0700";
 
@@ -35,4 +40,4 @@ body perms set_mode_700_administrative_group_and_specified_user(xyz) {
       darwin:: groups => { "admin" };
       sunos::  groups => { "sys" };
 
-                                                                     }
+}

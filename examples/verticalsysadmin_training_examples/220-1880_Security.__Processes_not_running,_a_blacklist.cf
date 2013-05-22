@@ -1,3 +1,5 @@
+!! SKIP !!
+
 body common control
 
 {
@@ -18,7 +20,7 @@ bundle agent processes_not_running {
                                           "ircd",
                                           "ping",
                                           "portmap",
-                                        };
+      };
 
 
 
@@ -26,4 +28,4 @@ bundle agent processes_not_running {
   processes:
       "$(bad_process)"  signals => { "term", "kill" };
 
-                                   }
+}

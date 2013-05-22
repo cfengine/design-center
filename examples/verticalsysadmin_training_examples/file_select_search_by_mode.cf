@@ -1,0 +1,25 @@
+bundle agent example {
+
+  files:
+
+      "/var/logexample/."
+
+               handle => "remove_world_writable_files",
+              comment => "if you make a file world-writable, I WILL delete it",
+          file_select => mode_777,
+         depth_search => recurse("inf"),
+              delete  => tidy;
+}
+
+body common control {
+
+               inputs => {"/var/cfengine/masterfiles/libraries/cfengine_stdlib.cf"};
+}
+
+
+body file_select mode_777
+
+{
+          search_mode => { "777" };
+          file_result => "mode";
+}

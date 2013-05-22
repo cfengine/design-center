@@ -1,0 +1,33 @@
+body common control {
+
+               inputs => { "libraries/cfengine_stdlib.cf" };
+}
+
+
+############################################
+
+bundle agent example
+
+{
+
+  files:
+
+      "/tmp/test_from/." 
+
+          file_select => mode_777,
+               delete => tidy,
+               action => warn_only,
+         depth_search => recurse("inf");
+
+}
+
+############################################
+
+body file_select mode_777
+
+{
+          search_mode => { "777" };
+          file_result => "mode";
+}
+
+############################################

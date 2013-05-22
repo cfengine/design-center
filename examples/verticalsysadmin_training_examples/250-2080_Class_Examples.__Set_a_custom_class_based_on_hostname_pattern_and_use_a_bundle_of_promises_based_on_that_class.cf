@@ -8,7 +8,7 @@ bundle common define_global_classes {
 
       classes: "germany" expression => classmatch("berl.*");
 
-                                    }
+}
 
 
 
@@ -23,7 +23,7 @@ bundle agent example {
       "any"
             usebundle => "$(country)",
            ifvarclass => "$(country)";
-                     }
+}
 
 
 bundle agent italy   { commands: "/bin/echo I love Milan";  }

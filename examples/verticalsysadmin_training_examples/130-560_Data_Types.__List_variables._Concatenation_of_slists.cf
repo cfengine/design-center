@@ -2,16 +2,25 @@ bundle agent example {
 
   vars:
       "preface"
+               handle => "a_string_var",
+              comment => "RHS is a static string",
                string => "Now hear this: ";
 
       "my_slist"
+               handle => "a_list_of_strings",
+              comment => "RHS is a list of static strings",
                 slist => { "String contents...", "...are great!" };
 
       "the_sum_of_all_parts"
+               handle => "a_longer_list_of_strings",
+              comment => "RHS is a list made up of a string var and a list
+var",
                 slist => { $(preface), @(my_slist) };
 
   reports:
     linux::
-      " Iterating over @(the_sum_of_all_parts): $(the_sum_of_all_parts)";
+      " Iterating over @(the_sum_of_all_parts): $(the_sum_of_all_parts)"
+               handle => "list_demo",
+              comment => "Demonstrate how list variables are handled";
 
-                     }
+}

@@ -1,0 +1,8 @@
+Notes on Syntax
+---------------
+Two promises in one bundle
+
+Two bundles in one file
+
+Whitespace does not matter
+

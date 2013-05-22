@@ -1,9 +1,3 @@
-body common control {
-
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-
-                    }
-
 bundle agent example {
 
   vars:
@@ -15,7 +9,7 @@ bundle agent example {
 
       "any" usebundle => remove_user("$(userlist)");
 
-                     }
+}
 
 ###########################################
 
@@ -26,4 +20,11 @@ bundle agent remove_user(user) {
       "/usr/sbin/userdel $(user)"
               contain => silent;
 
-                               }
+}
+
+
+body common control {
+
+               inputs => { "libraries/cfengine_stdlib.cf" };
+
+}

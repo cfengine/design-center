@@ -5,8 +5,8 @@ bundle common global_vars {
       vars: "desired_servers" slist => { 
                                          "web",
                                          "db",
-                                       };
-                          }
+      };
+}
 
 #############################################
 
@@ -19,10 +19,10 @@ body common control
                            servers_provisioned(@{global_vars.desired_servers}),
                            hosts_file_distributed_and_loaded(@{global_vars.desired_servers}),
                            wordpress_installer_distributed_and_run(@{global_vars.desired_servers}),
-                         };
+       };
 
 
-               inputs =>          { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs =>          { "libraries/cfengine_stdlib.cf" };
 
 }
 

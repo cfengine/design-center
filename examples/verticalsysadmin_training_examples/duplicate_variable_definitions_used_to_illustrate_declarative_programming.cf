@@ -1,0 +1,14 @@
+bundle agent example {
+
+  vars:
+      "preface"
+               handle => "a_string_var",
+              comment => "RHS is a static string",
+               string => "Now hear this: ";
+
+      "preface"
+               handle => "a_string_var",
+              comment => "RHS is a static string",
+               string => "String contents... ";
+
+}

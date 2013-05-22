@@ -1,15 +1,15 @@
 bundle agent example {
 
-commands:
+  commands:
 
-  "/bin/false"
+      "/bin/false"
 
-     classes => cmd_kept("1","ok");
+              classes => cmd_kept("1","ok");
 
-reports:
-  ok::
+  reports:
+    ok::
 
-    "Command completed successfully";
+      "Command completed successfully";
 
 }
 
@@ -18,8 +18,8 @@ reports:
 
 body classes cmd_kept(code,class)
 {
-repaired_returncodes => { "$(code)" };
-promise_repaired => { "$(class)" };
+ repaired_returncodes => { "$(code)" };
+     promise_repaired => { "$(class)" };
 }
 
 

@@ -1,17 +1,24 @@
 bundle agent example {
 
-  vars:
+files:
 
-      "myos" string => "WinXP";
+  "/tmp/example"
 
+       create => "true",
+       edit_line => showbug;
 
+}
 
- commands:
+bundle edit_line showbug {
 
-    "/bin/echo hello world"
+insert_lines::
 
-         ifvarclass =>  "$(myos)"; 
-        
+  "string";
 
+delete_lines::
+  "string2";
 
-                     }
+}
+
+# does not complain about lack of promise type
+
