@@ -1,7 +1,4 @@
-Remaining components:
-
-
-cf-monitord
+* cf-monitord
 
 Passive monitoring agent – responsible for collecting
 information about the status of your system (which can be
@@ -9,20 +6,18 @@ reported upon or used to enforce promises or influence when
 promises are enforced).
 
 
-cf-know
+* cf-report
+
+Self-knowledge extractor – takes data stored in cfengine's
+embedded databases and converts them to human readable form
+
+* cf-know
 
 Knowledge modelling agent – responsible for building and
 analysing a semantic knowledge network. (Enterprise edition
 only.)
 
-
-cf-report
-
-Self-knowledge extractor – takes data stored in cfengine's
-embedded databases and converts them to human readable form
-
-
-cf-hub
+* cf-hub
 
 A data aggregator used as part of the commercial product
 and not available in the community edition of CFEngine. 

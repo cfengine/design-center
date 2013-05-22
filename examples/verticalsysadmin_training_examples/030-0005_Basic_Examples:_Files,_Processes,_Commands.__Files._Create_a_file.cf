@@ -1,0 +1,11 @@
+bundle agent example {
+
+  files:
+
+      "/tmp/nologin" 
+
+               handle => "touch_etc_nologin",
+              comment => "Quiesce the system for maintenance",
+              create  => "true";
+
+}

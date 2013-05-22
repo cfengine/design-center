@@ -1,3 +1,5 @@
+!! SKIP !!
+
 # Make sure ntpd and portmap are running
 
 bundle agent example {
@@ -21,4 +23,4 @@ bundle agent example {
            ifvarclass => "restart_${service}";
       # ifvarclass is a class predicate that is AND'ed with
       # the class expression
-                     }
+}

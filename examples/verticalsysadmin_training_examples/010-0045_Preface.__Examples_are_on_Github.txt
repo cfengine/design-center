@@ -1,0 +1,9 @@
+GitHub
+------
+
+The examples are part of the CFEngine Design Center,
+which is a curated collection of policies and examples.
+
+    http://github.com/cfengine/design-center
+
+User contributions to the Design Center are welcome!

@@ -1,0 +1,27 @@
+# Demonstrate normal ordering 
+
+bundle agent example{
+
+  classes:
+      "myclass" 
+               handle => "create_soft_class",
+              comment => "Create a soft class that will be used by reports: promises.",
+           expression => fileexists("/tmp/newfile");
+
+
+  files:
+      "/tmp/newfile"
+
+               handle => "create_a_file",
+              comment => "Give CFEngine something to do to change system state.",
+               create => "true";
+
+  reports:
+    myclass::
+      "file /tmp/newfile exists";
+
+  reports:
+    !myclass::
+      "file /tmp/newfile does not exist";
+}
+

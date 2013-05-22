@@ -1,13 +1,16 @@
-body common control {
-  inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-}
-
+!! SKIP !!
 
 bundle agent example {
 
   files:
-      "/etc/motd"
-           create => "true",
-           edit_line => insert_lines("export ORGANIZATION=ACME");
+      "/etc/profile"
+               handle => "edit_etc_profile",
+               create => "true",
+            edit_line => insert_lines("export ORGANIZATION=ACME");
 
-                     }
+}
+
+
+body common control {
+               inputs => { "libraries/cfengine_stdlib.cf" };
+}

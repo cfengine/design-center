@@ -1,10 +1,11 @@
-bundle agent example
-
-{
+bundle agent example {
 
   vars:
 
-      "suspicious_process_names" slist =>
+      "suspicious_process_names"
+               handle => "process_blacklist",
+              comment => "Setup a list of known bad process names",
+                slist =>
       {
         "sniff",
         "eggdrop",
@@ -13,24 +14,9 @@ bundle agent example
         "john",
         "crack"
       };
-
-
-
   processes:
       "$(suspicious_process_names)"
+               handle => "kill_bad_procs",
+              comment => "Kill bad processes on sight",
               signals => { "term", "kill" };
-
-      
 }
-
-
-########################################################
-
-body process_select proc_finder(pattern)
-
-{
-              command => ".*$(pattern).*";
-
-       process_result => "command";
-}
-

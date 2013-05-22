@@ -1,25 +1,32 @@
-body common control {
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf"};
-                    }
-
+# Demonstrate how depends_on controls policy flow.
+# run in verbose mode.
 
 bundle agent example
 {
 
-  files: 
+  files:
 
-      "/bin/echo"
+      "/tmp/testfile"
+           depends_on => { "run_command", "print_report" },
+               handle => "create_file",
+              comment => "Demonstrate flow control with depends_on", 
+               create => "true";
 
-               handle => "echo_binary_is_executable",
-                perms => m("a+x");
+      
+}
 
+bundle agent example2 {
 
   commands:
 
-      "/bin/echo" 
-      
-               handle => "say_hello",
-           depends_on => { "echo_binary_is_executable" },
-                 args => "Hello world!";
+      "/adsfbin/echo" -> { "create_file", "Director of Security" }
 
+               handle => "run_command";
+
+  reports:
+
+    linux::
+
+      "Just a report"
+               handle => "print_report";
 }

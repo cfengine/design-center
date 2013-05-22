@@ -1,16 +1,16 @@
 # Make sure /etc/group contains a "cfengine" group
 
-
 bundle agent example {
 
   methods:
 
       "any"  
 
+               handle => "group_exists",
+              comment => "make sure the specified group is always present",
             usebundle => groupadd("cfengine");
 
-
-                     }
+}
 
 
 #####################################################################
@@ -24,7 +24,7 @@ bundle agent groupadd(groupname) {
       aix::   "/sbin/addgroup" args => "$(groupname)";
       hpux::  "/usr/sbin/addgroup" args => "$(groupname)";
 
-                                 }
+}
 
 
 bundle agent addgroup(groupname) {
@@ -43,4 +43,4 @@ bundle agent addgroup(groupname) {
                  args => "$(groupname)",
               comment => "Ensure specified group '$(groupname)' group is present.";
 
-                                 }
+}

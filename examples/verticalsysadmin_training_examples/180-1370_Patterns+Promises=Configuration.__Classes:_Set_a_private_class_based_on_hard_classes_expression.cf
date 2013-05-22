@@ -1,19 +1,17 @@
-bundle agent example
-{
-
-classes:
-    "solaris_or_linux"
-        comment => "Set a custom class based on built-in classes",
-        expression => "linux|solaris";
+bundle agent example {
 
 
-      # "cf-agent --verbose" shows: 
-      #
-      # cf3>      +  Private classes augmented: 
-      # cf3>      +       solinux
+  classes:
 
+      "good_technology"
+               handle => "good_technology_class",
+              comment => "Set a custom class based on built-in classes",
+           expression => "linux|solaris";
 
-reports:
-    solaris_or_linux::
-        "Yay!! I am on Solaris or Linux.";
+  reports:
+    good_technology::
+      "I love good technology"
+               handle => "show_respect",
+              comment => "Show respect for good technology";
+      
 }

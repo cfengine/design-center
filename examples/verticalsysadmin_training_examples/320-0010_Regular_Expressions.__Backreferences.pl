@@ -1,19 +1,14 @@
 #!/usr/bin/perl
 
 
-# match "jumped" and "dog."
 
+$record =
+"James Alexander Richard Smith";
 
-$_ = "The quick brown fox jumped over the lazy dog.";
+if ( $record =~ /^(.*?) (.*) (.*)$/ ) {
 
-if ( / (j.*d) .* (.*)$/ ) {
-
-  print "Found a match\n";
-
-  print "The line being examined was: $0\n";
-
-  print "The first capture buffer contains: $1\n";
-
-  print "The 2nd capture buffer contains: $2\n";
+  print "First name: $1\n";
+  print "Middle name(s): $2\n";
+  print "Last name: $3\n";
 }
 

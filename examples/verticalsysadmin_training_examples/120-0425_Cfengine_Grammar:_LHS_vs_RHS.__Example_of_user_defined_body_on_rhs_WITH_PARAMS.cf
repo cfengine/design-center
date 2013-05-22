@@ -2,15 +2,15 @@
 
 bundle agent example
 {
-      storage: "/" volume  => my_check_volume("30%"); 
-      storage: "/var" volume  => my_check_volume("20%"); 
+      storage: "/" volume  => my_check_volume("30%", "100K"); 
+      storage: "/var" volume  => my_check_volume("20%", "500K"); 
 }
 
 
 
-body volume my_check_volume(min_free_space)
+body volume my_check_volume(min_free_space,size)
 {
        freespace      => "$(min_free_space)";   # Min disk space that should be available
-       sensible_size  => "100K";        # Minimum size in bytes that should be used
+       sensible_size  => "$(size)";        # Minimum size in bytes that should be used
        sensible_count => "10";          # Minimum number of files/directories at top level
 }

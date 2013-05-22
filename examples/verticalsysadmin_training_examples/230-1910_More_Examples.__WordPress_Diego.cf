@@ -12,19 +12,14 @@
 #               2.4. Tweak wp-config.php to put in the data needed to establish database connection (db name, db username and password).
 #       
 
-body common control
-{
+bundle agent example {
 
-       bundlesequence => {
-                           "wordpress_install",
-                         };
+  methods:
 
-
-               inputs =>          { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+      "Install WordPress"
+            usebundle => wordpress_install;
 
 }
-
-
 
 bundle agent wordpress_install
 {
@@ -39,14 +34,37 @@ bundle agent wordpress_install
       "wp_config[wp_cfgsample]" string => "$(wp_config[wp_dir])/wp-config-sample.php";
 
   methods:
-      "any" usebundle => wp_packages_installed("wordpress_install.wp_config");
-      "any" usebundle => wp_services_up("wordpress_install.wp_config");
+
+      "Infrastructure"
+
+               handle => "wp_infrastructure",
+              comment => "httpd, PHP, MySQL and everything in-between",
+            usebundle => wp_infrastructure;
+
+      "Application"
+
+               handle => "wp_application",
+              comment => "Install and Configure WordPress PHP app",
+            usebundle => wp_application;
+
+}
+
+bundle agent wp_application {
+
+  methods:
       "any" usebundle => wp_tarball_is_present("wordpress_install.wp_config");
       "any" usebundle => wp_tarball_is_unrolled("wordpress_install.wp_config"); 
-      "any" usebundle => wp_mysql_configuration("wordpress_install.wp_config"); 
       "any" usebundle => wp_config_exists("wordpress_install.wp_config");
       "any" usebundle => wp_is_properly_configured("wordpress_install.wp_config");
-      #  "any" usebundle => wp_allow_http_inbound("wordpress_install.wp_config");
+}
+
+bundle agent wp_infrastructure {
+
+  methods:
+      "any" usebundle => wp_packages_installed("wordpress_install.wp_config");
+      "any" usebundle => wp_services_up("wordpress_install.wp_config");
+      "any" usebundle => wp_mysql_configuration("wordpress_install.wp_config"); 
+      #"any" usebundle => wp_allow_http_inbound("wordpress_install.wp_config");
 }
 
 #############################################
@@ -60,30 +78,32 @@ bundle agent wp_packages_installed(params)
                                    "php5",
                                    "php5-mysql",
                                    "mysql-server",
-                                 };
+      };
     redhat::
       "desired_package" slist => { 
                                    "httpd",
                                    "php",
                                    "php-mysql",
                                    "mysql-server",
-                                 };
+      };
   packages:
       "$(desired_package)"
+               handle => "install_packages",
+              comment => "Install needed packages",
        package_policy => "add",
- package_architecture => "x86_64",
+package_architectures => { "x86_64" },
        package_method => generic,
               classes => if_repaired("packages_added");
 
   commands: 
     packages_added.debian::
       "/usr/sbin/service httpd graceful" 
-              comment => "Restarting httpd so it can pick up new modules.";
+              comment => "Restarting httpd so it can pick up any new modules.";
 
   commands: 
     packages_added.redhat::
       "/sbin/service httpd graceful" 
-              comment => "Restarting httpd so it can pick up new modules.";
+              comment => "Restarting httpd so it can pick up any new modules.";
 }
 
 #############################################
@@ -92,14 +112,23 @@ bundle agent wp_services_up(params)
 {
   processes:
       "mysqld" restart_class => "start_mysqld";
+    redhat::
       "httpd"  restart_class => "start_httpd";
+    debian::
+      "apache2"  restart_class => "start_httpd";
 
   commands:
-    start_mysqld::
+    start_mysqld&debian::
+      "/usr/sbin/service mysqld start";
+
+    start_mysqld&redhat::
       "/sbin/service mysqld start";
 
-    start_httpd::
+    start_httpd&redhat::
       "/sbin/service httpd start";
+
+    start_httpd&debian::
+      "/usr/sbin/service httpd start";
 }
 
 #############################################
@@ -108,16 +137,18 @@ bundle agent wp_tarball_is_present(params)
 {
 
   classes:
-      "wordpress_tarball_is_present" expression => fileexists("$($(params)[tarfile])");
-
-  reports:
-    wordpress_tarball_is_present::
-      "WordPress tarball is on disk.";
+      "wordpress_tarball_is_present"
+               handle => "check_for_WP_tarball",
+              comment => "check if we already have the WP tarball",
+           expression => fileexists("$($(params)[tarfile])");
 
   commands:
     !wordpress_tarball_is_present::
-      "/usr/bin/wget -q -O $($(params)[tarfile]) http://wordpress.org/latest.tar.gz"
-              comment => "Downloading latest version of WordPress.";
+      "/usr/bin/wget -q --timeout=10 -O $($(params)[tarfile]) http://wordpress.org/latest.tar.gz"
+               handle => "download_WP_tarball",
+              classes => if_repaired("we_have_WP_tarball"),
+              comment => "Downloading latest version of WordPress.",
+              action => logme("promise download_WP_tarball");
 }
 
 #############################################
@@ -128,14 +159,12 @@ bundle agent wp_tarball_is_unrolled(params)
   classes:
       "wordpress_directory_is_present" expression => fileexists("$($(params)[htmlroot])/wordpress/");
 
-  reports:
-    wordpress_directory_is_present::
-      "WordPress directory is present.";
-
   commands:
-    !wordpress_directory_is_present::
+    we_have_WP_tarball&(!wordpress_directory_is_present)::
       "/bin/tar -C $($(params)[htmlroot]) -xzf $($(params)[tarfile])"
-              comment => "Unrolling wordpress tarball to $($(params)[htmlroot]).";
+               handle => "extract_tarball",
+              depends_on => { "download_WP_tarball" },
+              comment => "Unroll wordpress tarball to HTML document root";
 }
 
 #############################################
@@ -150,7 +179,9 @@ GRANT ALL PRIVILEGES ON $($(params)[DB_NAME]).*
 TO '$($(params)[DB_USER])'@localhost
 IDENTIFIED BY '$($(params)[DB_PASSWORD])';
 FLUSH PRIVILEGES;\"
-";
+"
+               handle => "setup_db",
+              comment => "Create DB, DB user, and access credentials";
 
 }
 
@@ -161,17 +192,17 @@ bundle agent wp_config_exists(params)
 
   classes:
       "wordpress_config_file_exists" 
+               handle => "check_WP_config_file_there",
+              comment => "Check if WP config file is present",
            expression => fileexists("$($(params)[wp_config])");
 
-  reports:
-    wordpress_config_file_exists::
-      "WordPress config file $($(params)[wp_config]) is present";
+  files:
     !wordpress_config_file_exists::
-      "WordPress config file $($(params)[wp_config]) is not present";
-
-  commands:
-    !wordpress_config_file_exists::
-      "/bin/cp -p $($(params)[wp_cfgsample]) $($(params)[wp_config])";
+      "$($(params)[wp_config])"
+               handle => "copy_WP_config_file",
+              comment => "Copy WP config file from config sample file",
+            copy_from => local_cp("$($(params)[wp_cfgsample])"),
+                perms => m("a+r");
 }
 
 #############################################
@@ -183,6 +214,8 @@ bundle agent wp_is_properly_configured(params)
 
   files:
       "$($(params)[wp_config])"
+               handle => "configure_wordpress",
+              comment => "Make sure wp-config.php is properly configured",
             edit_line => replace_or_add("define\('$(wpparams)', *'(?!$($(params)[$(wpparams)])).*",
                                         "define('$(wpparams)', '$($(params)[$(wpparams)])');");
 }
@@ -191,65 +224,27 @@ bundle agent wp_is_properly_configured(params)
 
 bundle agent wp_allow_http_inbound(params)
 {
-  files:
-    redhat:: # tested on RHEL only, file location may vary based on Linux distro or OS
-      "/etc/sysconfig/iptables"
-            edit_line => insert_HTTP_allow_rule_before_the_accept_established_tcp_conns_rule,
-              comment => "insert HTTP allow rule into /etc/sysconfig/iptables",
-              classes => if_repaired("iptables_edited");
 
   commands: 
     iptables_edited::
-      "/sbin/service iptables restart"
-              comment => "Restarting iptables to load new config";
+      "/sbin/service iptables stop"
+              comment => "Stopping iptables to allow inbound HTTP connections";
 }
 
-bundle edit_line insert_HTTP_allow_rule_before_the_accept_established_tcp_conns_rule(params)
+body common control
 {
-  vars:
-      "http_rule" string => "-A INPUT -p tcp -m tcp --dport 80 -j ACCEPT";
+               inputs =>          { "libraries/cfengine_stdlib.cf" };
 
-  insert_lines:
-      "$(http_rule)"
-             location => before_the_accept_established_tcp_conns_rule;
-}
-
-body location before_the_accept_established_tcp_conns_rule
-{
-         before_after => "before";
-           first_last => "first";
- select_line_matching => "^-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT.*";
-}
-
-bundle edit_line replace_or_add(pattern,line)
-# Diego's.  
-# Replace a pattern in a file with a single line.
-# If the pattern is not found, add the line to the file.
-# The pattern must match the whole line (it is automatically
-# anchored to the start and end of the line) to avoid
-# ambiguity.
-
-{
-  replace_patterns:
-      "^${pattern}$"
-         replace_with => value("${line}"),
-              classes => always("replace_done");
-
-  insert_lines:
-    replace_done::
-      "${line}";
 }
 
 
-body classes always(x)
-# Diego's.
-# Define a class no matter what the outcome of the promise is
-
+body action logme(x)
 {
-     promise_repaired => { "$(x)" };
-         promise_kept => { "$(x)" };
-        repair_failed => { "$(x)" };
-        repair_denied => { "$(x)" };
-       repair_timeout => { "$(x)" };
+           log_string => "$(sys.date) $(x)";
+
+             log_kept => "/var/log/cfengine_keptlog.log";
+         log_repaired => "/var/log/cfengine_replog.log";
+           log_failed => "/var/log/cfengine_faillog.log";
+
 }
 

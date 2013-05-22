@@ -3,7 +3,17 @@
 bundle agent example {
 
   reports:
-
+    linux::
       "Percent CPU utilization         ${mon.value_cpu}";
       "Percent CPU0 utilization         ${mon.value_cpu0}";
-                     }
+      "Percent CPU1 utilization         ${mon.value_cpu1}";
+
+  classes:
+      "CPUoverload"
+           expression =>  isgreaterthan("$(mon.value_cpu)","80");
+
+  reports:
+    CPUoverload::
+      "CPU utilization is over threshold!!!";
+
+}

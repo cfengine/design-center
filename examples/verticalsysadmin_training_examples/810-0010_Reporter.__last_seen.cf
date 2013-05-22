@@ -7,7 +7,7 @@ body reporter control
 
               reports => { 
                            "last_seen" 
-                         };
+              };
 
       build_directory => "$(sys.workdir)/reports";
       report_output   => "text";

@@ -1,13 +1,15 @@
-body common control {
-
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-                    }
-
 bundle agent example {
 
   files:
       "/tmp/scratch"
-            edit_line => comment_lines_matching("hello world","#");
+               handle => "selective_commenting",
+              comment => "Remove specific lines",
+            edit_line => comment_lines_matching("hello world", "#");
 
-                     }
+}
 
+
+body common control {
+
+               inputs => { "libraries/cfengine_stdlib.cf" };
+}

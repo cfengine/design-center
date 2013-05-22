@@ -2,17 +2,30 @@
 bundle agent example {
 
   classes:
+      "its_monday"
+           expression => "Monday";
+
+  classes:
       "its_wed"
            expression => "Wednesday";
-
-                     }
+  classes:
+      "its_thur"
+           expression => "Thursday";
+}
 
 
 bundle agent example2 {
 
   reports:
-      its_wed::
-           "Yay!  I love Wednesdays!";
+    its_monday::
+      "Yay!  I love Mondays!";
 
+  reports:
+    its_wed::
+      "Yay!  I love Wednesdays!";
+
+  reports:
+    its_thur::
+      "Yay!  I love Thursdays!";
 }
 

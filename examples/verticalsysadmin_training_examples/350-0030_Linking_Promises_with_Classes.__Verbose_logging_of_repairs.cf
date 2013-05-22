@@ -4,11 +4,11 @@ bundle agent example
 
   files:
 
-   "/tmp/newfile3"
+      "/tmp/newfile3"
 
-	handle => "newfile3_exists",
-	create => "true",
-	action => log("Created very important file $(this.promiser)");
+               handle => "newfile3_exists",
+               create => "true",
+               action => log("Created very important file $(this.promiser)");
 }
 
 body action log(message) 
@@ -22,4 +22,4 @@ body agent control {
 
                syslog => "true";
 
-                   }
+}
