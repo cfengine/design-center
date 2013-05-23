@@ -1,0 +1,81 @@
+body file control
+{
+  namespace => "cfdc_splunk";
+}
+
+bundle agent install_forwarder(runenv, metadata, installdir, server, password, comment_marker)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      # TODO: detect if the forwarder is enabled better
+      "splunkforwarder_boot_enabled" expression => fileexists("/etc/init.d/splunk");
+      "splunkforwarder_installed" expression => fileexists($(installdir));
+
+    splunkforwarder_installed::
+      "splunkforwarder_configured" expression => regline($(marker), "$(installdir)/etc/system/local/outputs.conf");
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "return" slist => { "installed", "enabled", "configured", "restarted" };
+
+      "splunkforwarder_control" string => "$(installdir)/bin/splunk";
+
+  processes:
+    any::
+      "splunkd" restart_class => "splunkforwarder_start";
+
+  files:
+    splunkforwarder_installed::
+      "$(default:eu.path_prefix)$(installdir)/etc/system/local/outputs.conf"
+      perms => default:mog("600", "root", "root"),
+      classes => default:if_repaired("splunkforwarder_repaired"),
+      edit_defaults => default:empty,
+      edit_line => default:expand_template("$($(metadata)[location])/templates/splunk-outputs.conf");
+
+      "$(default:eu.path_prefix)$(installdir)/etc/system/local/inputs.conf"
+      perms => default:mog("600", "root", "root"),
+      classes => default:if_repaired("splunkforwarder_repaired"),
+      edit_defaults => default:empty,
+      edit_line => default:expand_template("$($(metadata)[location])/templates/splunk-inputs.conf");
+
+  commands:
+    splunkforwarder_installed.!splunkforwarder_configured::
+      "$(default:eu.exec_prefix)$(splunkforwarder_control) edit user admin -password '$(password)' -role admin -auth admin:changeme"
+      classes => default:if_ok("splunkforwarder_configured");
+
+    splunkforwarder_installed.!splunkforwarder_boot_enabled::
+      "$(default:eu.exec_prefix)$(splunkforwarder_control) enable boot-start"
+      classes => default:if_ok("splunkforwarder_enabled");
+
+    splunkforwarder_installed.splunkforwarder_start::
+      "$(default:eu.exec_prefix)$(splunkforwarder_control) start --no-prompt --answer-yes --accept-license"
+      classes => default:if_ok("splunkforwarder_restarted");
+
+    splunkforwarder_repaired::
+      "$(default:eu.exec_prefix)$(splunkforwarder_control) restart --no-prompt --answer-yes --accept-license"
+      classes => default:if_ok("splunkforwarder_restarted");
+
+  methods:
+      "utils" usebundle => default:eu($(runenv)); # $(default:eu.path_prefix)
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  reports:
+      "$(this.bundle): Installing the Splunk Forwarder with parameters installdir='$(installdir)', server='$(server)', password='$(password)', comment_marker='$(comment_marker)'";
+
+    !splunkforwarder_installed::
+      "$(this.bundle): You should install the Splunk packages.";
+
+    any::
+      "1" bundle_return_value_index => "$(return)",
+      ifvarclass => "splunkforwarder_$(return)";
+
+      "" bundle_return_value_index => "$(return)",
+      ifvarclass => "!splunkforwarder_$(return)";
+}

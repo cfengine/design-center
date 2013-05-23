@@ -1,0 +1,7 @@
+{
+   "Applications::Splunk":
+   {
+       server: "myserver:21000",
+       password: "mypassword",
+   }
+}

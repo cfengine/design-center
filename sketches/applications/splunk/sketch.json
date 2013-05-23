@@ -1,0 +1,44 @@
+{
+    manifest:
+    {
+        "main.cf": { "desc": "main file" },
+        "test.pl": {test:true},
+        "test.cf": {comment: "Test Policy"},
+        "README.md": { "documentation": true },
+
+        "params/demo.json": { "comment": "Install Splunk: common parameters" },
+        "templates/splunk-inputs.conf": { "comment": "Splunk inputs.conf" },
+        "templates/splunk-outputs.conf": { "comment": "Splunk outputs.conf" },
+    },
+
+    metadata:
+    {
+        name: "Applications::Splunk",
+	    description: "Install and enable Splunk",
+        version: 1.0,
+        license: "MIT",
+        tags: ["cfdc", "install", "splunk" ],
+        authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: {"CFEngine::stdlib": {version: 109}, "CFEngine::dclib": {}, cfengine: {version: "3.4.2"}, os: ["linux"] }
+    },
+
+    api:
+    {
+        install_forwarder:
+        [
+			{ name : "runenv", type : "environment" },
+			{ name : "metadata", type : "metadata" },
+            { type: "string", name: "installdir", description: "Where will the Splunk forwarder be installed?", default: "/opt/splunkforwarder", validation: "PATH" },
+            { type: "string", name: "server", description: "Splunk collecting (remote!) name in server:port format", validation: "SERVER:PORT" },
+            { type: "string", name: "password", description: "Password for the Splunk forwarder" },
+            { type: "string", name: "comment_marker", description: "The comment marker in our Splunk forwarder templates", default: "# MANAGED BY CFENGINE" },
+            { type: "return", name: "installed", },
+            { type: "return", name: "enabled", },
+            { type: "return", name: "configured", },
+            { type: "return", name: "restarted", },
+        ],
+    },
+
+    namespace: "cfdc_splunk",
+    interface: [ "main.cf" ]
+}
