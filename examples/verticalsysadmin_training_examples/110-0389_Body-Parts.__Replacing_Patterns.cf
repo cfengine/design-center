@@ -3,17 +3,21 @@ bundle agent example {
   files:
 
       "/tmp/data.txt"
+            handle    => "turn_dogs_into_cats",
+            comment   => "Demonstrate search-and-replace in a file",
             edit_line => transform_dogs_to_cats;
 
-                     }
+}
 
 bundle edit_line transform_dogs_to_cats {
 
   replace_patterns:
 
       "[Dd]og"
-              
-          replace_with => value("cat");
+      
+         handle       => "replace_dog_with_cat",
+         comment      => "Demonstrate replace_patterns promise",
+         replace_with => value("cat");
 
 }
 

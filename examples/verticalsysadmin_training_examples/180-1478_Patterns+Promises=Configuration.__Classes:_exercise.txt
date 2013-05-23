@@ -1,3 +1,5 @@
+EXERCISE
+
 1. Set a custom class if the file /tmp/testme exists.
 
 2. Report the presence or absense of the file using

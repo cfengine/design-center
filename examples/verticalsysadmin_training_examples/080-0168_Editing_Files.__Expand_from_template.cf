@@ -1,17 +1,17 @@
 bundle agent example {
 
-files:
+  files:
 
-  "/etc/motd"
+      "/etc/motd"
 
-    edit_line => ExpandMeFrom("/tmpl/motd.tmpl");
+            edit_line => InsertFile("/var/cfengine/inputs/templates/motd.txt");
 }
 
-bundle edit_line ExpandMeFrom(source) {
+bundle edit_line InsertFile(source) {
 
-insert_lines:
+  insert_lines:
 
-    "$(source)"
+      "$(source)"
 
-       insert_type => "file";
+          insert_type => "file";
 }

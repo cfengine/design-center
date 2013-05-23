@@ -1,16 +1,4 @@
-#body common control {
-#
-#  inputs => {
-#               "/var/cfengine/inputs/cfengine_stdlib.cf",
-#            };
-#
-#}
-
-#########################################################
-
-
-bundle agent example
-{
+bundle agent example {
   vars:
 
       "sshd[Protocol]"                                string => "2";
@@ -22,9 +10,8 @@ bundle agent example
 }
 
 
+bundle agent edit_sshd(params) {
 
-bundle agent edit_sshd(params)
-{
   vars:
       "index" slist => getindices("$(params)");
 

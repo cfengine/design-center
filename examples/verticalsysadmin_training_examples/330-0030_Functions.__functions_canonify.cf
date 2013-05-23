@@ -12,5 +12,5 @@ bundle agent example {
 
       "$(canonified_text)";
 
-                     }
+}
 

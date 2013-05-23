@@ -45,13 +45,13 @@ bundle common g
       "ntpservers" slist => {
                               "ntp-sitex.our.org",
                               "ntp-sitey.our.org",
-                            };
+      };
 
     site_y::
       "ntpservers" slist => {
                               "ntp-sitey.our.org",
                               "ntp-sitex.our.org",
-                            };
+      };
 }
 
 bundle agent main
@@ -71,12 +71,12 @@ body common control
 {
        bundlesequence => {
                            "main"
-                         };
+       };
 
       # Building a per-site inputs list is beyond the scope of this
       # example.
                inputs => {
-                           "/var/cfengine/inputs/cfengine_stdlib.cf",
+                           "libraries/cfengine_stdlib.cf",
                            "ntp.cf"
-                         };
+               };
 }

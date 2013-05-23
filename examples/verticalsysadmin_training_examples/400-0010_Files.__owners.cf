@@ -8,7 +8,7 @@ bundle agent example {
               create  => "true",  
               perms   => proper_owner("aleksey"); 
 
-                     }
+}
 
 ############################################################
 

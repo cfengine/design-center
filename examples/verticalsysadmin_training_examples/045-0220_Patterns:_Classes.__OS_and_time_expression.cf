@@ -1,0 +1,17 @@
+bundle agent example {
+
+  reports:
+
+      linux.Hr08:: "Linux system AND we are in the 8th hour.";
+      linux.Hr11:: "Linux system AND we are in the 11th hour.";
+      linux.Hr12:: "Linux system AND we are in the 12th hour.";
+
+      linux.Hr13:: "Linux system AND we are in the 13th hour.";
+      linux.Hr16:: "Linux system AND we are in the 16th hour.";
+
+
+      linux&Hr22:: "Linux system AND we are in the 22nd hour.";
+
+      linux&Hr20:: "Linux system AND we are in the 20th hour.";
+}
+

@@ -1,0 +1,10 @@
+bundle agent example {
+
+  reports:
+
+      WinXP:: "Hello world! I am running on a Windows system.";
+
+      linux:: "Hello world! I am running on a Linux system.";
+
+      redhat:: "Hello world! I am running on a redhat Linux system.";
+}

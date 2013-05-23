@@ -53,7 +53,7 @@ sys.winsysdir: $(sys.winsysdir)
 sys.workdir: $(sys.workdir)
 ";
 
-                     }
+}
 
 
 # OUTPUT on my system, myhost.example.com

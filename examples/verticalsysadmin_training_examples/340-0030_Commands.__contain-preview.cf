@@ -9,10 +9,10 @@ bundle agent example {
 
               contain => preview;
 
-                     }
+}
 
 body contain preview {
 
               preview => "true";
 
-                     }
+}

@@ -1,3 +1,6 @@
+!! SKIP !!
+
+
 # an example of a methods bundle accessing an
 # array from the parent bundle.
 #
@@ -16,11 +19,11 @@
 body common control {
 
                inputs => {
-                           "/var/cfengine/inputs/cfengine_stdlib.cf",
+                           "libraries/cfengine_stdlib.cf",
                            "1870_More_Examples__Security__edit_sshd.cf"
-                         };
+               };
 
-                    }
+}
 
 #########################################################
 

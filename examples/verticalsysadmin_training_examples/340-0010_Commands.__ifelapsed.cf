@@ -9,7 +9,7 @@ bundle agent example {
       "/bin/echo /bin/cycle_shield_frequencies.sh"
 
                action => every_2_minutes;
-                     }
+}
 
 body action every_2_minutes
 {

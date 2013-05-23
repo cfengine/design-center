@@ -6,7 +6,7 @@ bundle agent example {
 
           file_select => world_writeable,
           transformer => "/bin/echo DETECTED WORLD WRITABLE FILE $(this.promiser)";
-                     }
+}
 
 
 body file_select world_writeable

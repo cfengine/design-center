@@ -1,0 +1,11 @@
+Class Operators
+---------------
+
+!        negate (not)
+
+.  &     and 
+
+| ||     or
+
+( )   groupers
+

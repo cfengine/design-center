@@ -1,0 +1,10 @@
+bundle agent example {
+      storage: "/" volume  => my_check_volume("99%"); 
+      storage: "/boot" volume  => my_check_volume("99%"); 
+}
+
+
+body volume my_check_volume(min_free_space)
+{
+ freespace      => "$(min_free_space)";  
+}

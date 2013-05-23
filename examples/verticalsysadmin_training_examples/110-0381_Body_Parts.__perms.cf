@@ -1,16 +1,16 @@
 bundle agent example {
 
-files:
+  files:
 
-  "/tmp/testfile"
+      "/tmp/testfile"
 
-     perms => not_world_writable_and_right_group;
+                perms => not_world_writable_and_right_group;
 
 }
 
 body perms not_world_writable_and_right_group {
 
-groups => {"root", "games", "mail" };
-mode   => "o-w";
+               groups => {"root", "games", "mail" };
+               mode   => "o-w";
 
 }

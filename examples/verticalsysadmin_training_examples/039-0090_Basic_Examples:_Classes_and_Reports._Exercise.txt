@@ -1,0 +1,6 @@
+EXERCISE
+
+Create two files.
+
+Make the existence of the 2nd file conditional on
+existence of the 1st file.

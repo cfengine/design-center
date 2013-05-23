@@ -1,0 +1,41 @@
+
+############################################
+
+body common control {
+
+               inputs => {"libraries/cfengine_stdlib.cf"};
+
+}
+
+bundle agent example
+
+{
+  files:
+
+      "/tmp/test_from" 
+
+          file_select => mode_777,
+               touch  => "true", 
+         depth_search => recurse("inf"),
+            classes   => if_repaired("world_writable_files");
+
+
+  reports:
+
+    world_writable_files::
+
+      "Warning!  World writable files found";
+
+
+}
+
+############################################
+
+body file_select mode_777
+
+{
+          search_mode => { "777" };
+          file_result => "mode";
+}
+
+############################################

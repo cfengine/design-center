@@ -1,0 +1,13 @@
+# demonstrate three passes through a bundle by using verbose mode
+
+bundle agent example {
+
+  files:
+
+      "/etc/nologin" 
+
+               handle => "touch_etc_nologin",
+              comment => "Quiesce the system for maintenance",
+              create  => "true";
+
+}

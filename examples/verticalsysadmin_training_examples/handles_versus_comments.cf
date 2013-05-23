@@ -1,0 +1,18 @@
+bundle agent example  {
+
+
+  files:
+
+      "/tmp/one"
+               create => "true",
+               handle => "make_file_one",
+              comment => "Make file one.  File one is very important.  It comes to us from the Web Engineering group.  Jim Schmidle is responsible for it.  It gets shipped to us by carrier pigeon.  Jim's phone number is 555-1212.  Call him if you have any problems with this file.";
+
+      "/tmp/two"
+               create => "true",
+               handle => "make_file_two";
+
+      "/tmp/three"
+               create => "true",
+               handle => "make_file_three";
+}

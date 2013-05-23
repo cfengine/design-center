@@ -1,0 +1,6 @@
+EXERCISE
+
+Declare a string variable and assign a value to it.
+
+Then use it in a reports or commands promise (display the value).
+
