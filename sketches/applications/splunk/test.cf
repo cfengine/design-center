@@ -1,0 +1,78 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation ___001_Applications_Splunk_install_forwarder
+      "___001_Applications_Splunk_install_forwarder_metadata[api][comment_marker][type]" string => "string";
+      "___001_Applications_Splunk_install_forwarder_metadata[api][configured][type]" string => "return";
+      "___001_Applications_Splunk_install_forwarder_metadata[api][enabled][type]" string => "return";
+      "___001_Applications_Splunk_install_forwarder_metadata[api][installdir][type]" string => "string";
+      "___001_Applications_Splunk_install_forwarder_metadata[api][installed][type]" string => "return";
+      "___001_Applications_Splunk_install_forwarder_metadata[api][metadata][type]" string => "metadata";
+      "___001_Applications_Splunk_install_forwarder_metadata[api][password][type]" string => "string";
+      "___001_Applications_Splunk_install_forwarder_metadata[api][restarted][type]" string => "return";
+      "___001_Applications_Splunk_install_forwarder_metadata[api][runenv][type]" string => "environment";
+      "___001_Applications_Splunk_install_forwarder_metadata[api][server][type]" string => "string";
+      "___001_Applications_Splunk_install_forwarder_metadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "___001_Applications_Splunk_install_forwarder_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "___001_Applications_Splunk_install_forwarder_metadata[license]" string => "MIT";
+      "___001_Applications_Splunk_install_forwarder_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/applications/splunk";
+      "___001_Applications_Splunk_install_forwarder_metadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json", "templates/splunk-inputs.conf", "templates/splunk-outputs.conf", "test.cf", "test.pl" };
+      "___001_Applications_Splunk_install_forwarder_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "___001_Applications_Splunk_install_forwarder_metadata[manifest_docs]" slist => { "README.md" };
+      "___001_Applications_Splunk_install_forwarder_metadata[manifest_exe]" slist => { "cf_null" };
+      "___001_Applications_Splunk_install_forwarder_metadata[manifest_extra]" slist => { "params/demo.json", "templates/splunk-inputs.conf", "templates/splunk-outputs.conf" };
+      "___001_Applications_Splunk_install_forwarder_metadata[manifest_test]" slist => { "test.pl" };
+      "___001_Applications_Splunk_install_forwarder_metadata[name]" string => "Applications::Splunk";
+      "___001_Applications_Splunk_install_forwarder_metadata[tags]" slist => { "cfdc", "install", "splunk" };
+      "___001_Applications_Splunk_install_forwarder_metadata[version]" string => "1";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "___001_Applications_Splunk_install_forwarder" usebundle => cfdc_splunk:install_forwarder("cf_sketch_testing", "default:cfsketch_run.___001_Applications_Splunk_install_forwarder_metadata", "/opt/splunkforwarder", "myserver:21000", "mypassword", "# MANAGED BY CFENGINE"), ifvarclass => "linux", useresult => "return____001_Applications_Splunk_install_forwarder";
+
+  reports:
+    inform_mode::
+      "activation ___001_Applications_Splunk_install_forwarder returned installed = $(return____001_Applications_Splunk_install_forwarder[installed])";
+      "activation ___001_Applications_Splunk_install_forwarder returned enabled = $(return____001_Applications_Splunk_install_forwarder[enabled])";
+      "activation ___001_Applications_Splunk_install_forwarder returned configured = $(return____001_Applications_Splunk_install_forwarder[configured])";
+      "activation ___001_Applications_Splunk_install_forwarder returned restarted = $(return____001_Applications_Splunk_install_forwarder[restarted])";
+      "activation ___001_Applications_Splunk_install_forwarder could not run because it requires classes linux" ifvarclass => "inform_mode.!(linux)";
+}

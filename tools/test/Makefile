@@ -681,3 +681,7 @@ first:
 stitch:
 	$(CFSKETCH_DA) --install Data::Stitch --activate Data::Stitch=$(SOURCEDIR)/utilities/data_stitch/params/demo.json
 	$(RUNNER)
+
+splunk:
+	$(CFSKETCH_DA) --install Applications::Splunk --activate Applications::Splunk=$(SOURCEDIR)/applications/splunk/params/demo.json
+	$(RUNNER)
