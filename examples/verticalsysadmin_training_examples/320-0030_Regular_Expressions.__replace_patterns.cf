@@ -1,6 +1,6 @@
 body common control {
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-                    }
+               inputs => { "libraries/cfengine_stdlib.cf" };
+}
 
 bundle agent example {
 
@@ -9,7 +9,7 @@ bundle agent example {
       "/tmp/data.txt"
             edit_line => change_dogs_to_cats;
 
-                     }
+}
 
 
 bundle edit_line change_dogs_to_cats {
@@ -20,4 +20,4 @@ bundle edit_line change_dogs_to_cats {
 
          replace_with => value("cat");
 
-                                     }
+}

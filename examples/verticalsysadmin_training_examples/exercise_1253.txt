@@ -1,0 +1,28 @@
+EXERCISE - Using information that cf-monitor provides
+
+Desired configuration:  percent disk free is over 95.
+
+Note: this can be accomplished by deleting old log files *as needed*.
+
+Assignment:
+
+Check disk utilization value as provided by cf-monitor
+via the special variable $(mon.value_diskfree).
+
+if percent disk free is under 95,
+then delete files from /var/log
+that are older than 2 days.
+
+-------------------------------------------
+How to change timestamp to May 1st:
+
+touch -t 05010000 /var/log/testme
+
+-------------------------------------------
+
+bundle agent example {
+
+reports:
+  linux::
+   "$(mon.value_diskfree)";
+}

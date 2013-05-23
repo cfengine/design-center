@@ -13,7 +13,7 @@ bundle agent example
 
   commands:
     linux::
-      "/bin/echo hello world, i love wednesdays and coffee";
+      "/bin/nosuchcommand hello world, i love wednesdays and coffee";
 }
 
 #comment

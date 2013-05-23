@@ -1,15 +1,17 @@
 CFEngine ships with a standard library of promise
-bodies dealing with common aspects of system
-administration.  
+bodies and bundles dealing with common aspects of
+system administration.  
 
-As of CFEngine 3.1.5, there are 88 promise bodies
-in cfengine_stdlib.cf.
 
-As of CFEngine 3.2.1, there are 99 promise bodies
-in cfengine_stdlib.cf (and 19 bundles)
+CFEngine    Promise    Promise 
+version     bodies     bundles
 
-As of CFEngine 3.3.5, there are 114 promise bodies
-in cfengine_stdlib.cf (and 29 bundles)
+3.1.5        88        ?
 
-As of CFEngine 3.3.8, there are 113 promise bodies
-in cfengine_stdlib.cf (and 26 bundles)
+3.2.1        99        19
+
+3.3.5       114        29
+
+3.3.8       113        26
+
+3.4.4       124        32

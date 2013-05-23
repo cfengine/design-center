@@ -26,7 +26,7 @@ bundle agent system_ntpclient_configure(servers)
       # SunOS5.10 (at least) does not support 'kod' or '-6' like Linux
       "restrictlines" slist => {
                                  "restrict default notrap nomodify nopeer noquery",
-                               };
+      };
 
     redhat|centos::
 
@@ -35,7 +35,7 @@ bundle agent system_ntpclient_configure(servers)
       "restrictlines" slist => {
                                  "restrict -4 default kod notrap nomodify nopeer noquery",
                                  "restrict -6 default kod notrap nomodify nopeer noquery",
-                               };
+      };
 
   files:
 

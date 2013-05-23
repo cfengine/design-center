@@ -1,6 +1,6 @@
 bundle agent example {
 
-# Demonstrate using regex to edit multiple files
+      # Demonstrate using regex to edit multiple files
 
   files:
 
@@ -10,11 +10,11 @@ bundle agent example {
              pathtype => "regex",
               comment => "Every *.conf file in /etc/ should have my name in it.";
 
-                     }
+}
 
 
 bundle edit_line has_my_name_in_it {
 
       insert_lines: "# This file belongs to by Aleksey Tsalolikhin.";
 
-                                   }
+}

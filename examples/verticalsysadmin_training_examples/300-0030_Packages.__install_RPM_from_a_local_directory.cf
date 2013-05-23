@@ -1,6 +1,6 @@
 body common control {
        bundlesequence => { "commands__install_PGDG_yum_repo_RPM" };
-                    }
+}
 
 
 bundle agent commands__install_PGDG_yum_repo_RPM {
@@ -12,7 +12,7 @@ bundle agent commands__install_PGDG_yum_repo_RPM {
        package_policy => "add",
        package_method => yum_filebased;
 
-                                                 }
+}
 
 
 body package_method yum_filebased

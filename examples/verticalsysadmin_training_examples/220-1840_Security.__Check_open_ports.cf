@@ -1,29 +1,19 @@
-# Aleksey Tsalolikhin, 1-Feb-2011
-
-body common control
-
-{
-      bundlesequence  => { "check_listening_ports"  };
-              inputs  => { "/var/cfengine/inputs/cfengine_stdlib.cf"  };
-}
-
-####################################################
-
-bundle agent example
-{
-
-      # this is our expected configuration
+bundle agent example {
 
   vars:
       "listening_ports_and_processes_ideal_scene"
+               handle => "expected_tcp_profile",
+              comment => "expected network profile (listenting ports)",
                string => "22 sshd 80 httpd 443 httpd 5308 cf-server";
 
       # end of our expected configuration
 
-
-
   vars:
-      "listening_ports_and_processes" string =>
+    centos_5::
+      "listening_ports_and_processes"
+               handle => "actual_tcp_profile",
+              comment => "Our actual network profile",
+               string =>
       execresult("/usr/sbin/lsof -i -n -P | \
 /bin/grep LISTEN | \
 /bin/sed -e 's#*:##' | \
@@ -38,13 +28,30 @@ bundle agent example
       # we tell CFEngine to use a shell with "useshell"
       # to do a pipeline.
 
+    centos_6::
+      "listening_ports_and_processes"
+               handle => "actual_tcp_profile",
+              comment => "Our actual network profile",
+               string =>
+      execresult("/usr/sbin/lsof -i -n -P | \
+/bin/grep LISTEN | \
+/bin/sed -e 's#*:##' | \
+/bin/grep -v 127.0.0.1 | \
+/bin/grep -v ::1 | \
+/bin/awk '{print $9,$1}' | \
+/bin/sort | \
+/usr/bin/uniq | \
+/bin/sort -n | \
+/usr/bin/xargs echo", "useshell");
 
   classes:
-      "reality_does_not_match_ideal_scene" not =>
-      regcmp (
-               "$(listening_ports_and_processes)",
-               "$(listening_ports_and_processes_ideal_scene)"
-             );  # check whether expected configuration matches actual.
+      "reality_does_not_match_ideal_scene"
+               handle => "check_profile",
+              comment => "Compare desired and actual configuration",
+                  not => strcmp (
+                                  "$(listening_ports_and_processes)",
+                                  "$(listening_ports_and_processes_ideal_scene)"
+                  );  # check whether expected configuration matches actual.
 
   reports:
     reality_does_not_match_ideal_scene::
@@ -62,4 +69,3 @@ DANGER!!!
       # to a sysadmin cell phone, or to feed
       # CRITICAL status to a monitoring system.
 }
-

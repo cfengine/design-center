@@ -1,0 +1,18 @@
+Definitions Review
+------------------
+
+* Promise
+
+* Promiser
+
+* Promisee
+
+* Promise body
+
+* Bundle
+
+* Body
+
+* Convergence
+
+* Three possible promise outcomes

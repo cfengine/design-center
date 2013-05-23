@@ -1,18 +1,17 @@
-
-bundle common example {
+bundle common global_definitions {
 
   classes:
       "myclass"
            expression => "any";
 
-                     }
+}
 
 
-bundle agent example2 {
+bundle agent example {
 
   reports:
-      myclass::
-           "Yay!  I love Any!";
+    myclass::
+      "Yay!  myclass is set";
 
 }
 

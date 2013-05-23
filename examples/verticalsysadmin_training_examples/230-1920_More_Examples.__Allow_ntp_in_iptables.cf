@@ -1,3 +1,5 @@
+!! SKIP !!
+
 # Author: Aleksey Tsalolikhin <aleksey.tsalolikhin@verticalsysadmin.com>
 # Date: 3 Dec 2010
 # Based on material by Mark Burgess.
@@ -29,7 +31,7 @@ body common control
 ####################################################################
 
 
-bundle agent files__iptables__allow_ntp_from_backend_servers
+bundle agent example
 {
   files:
     redhat::  # tested on RHEL only, file location may vary based on Linux distro or OS

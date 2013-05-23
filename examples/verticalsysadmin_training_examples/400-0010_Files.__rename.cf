@@ -1,8 +1,8 @@
 body common control {
 
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
+               inputs => { "libraries/cfengine_stdlib.cf" };
 
-                    }
+}
 
 
 bundle agent example {
@@ -10,5 +10,5 @@ bundle agent example {
   files:
       "/bin/chown"
                rename => to("/bin/CHOWN");
-                     }
+}
 

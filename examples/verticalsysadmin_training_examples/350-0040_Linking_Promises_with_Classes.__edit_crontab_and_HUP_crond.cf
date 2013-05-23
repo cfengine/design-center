@@ -1,10 +1,6 @@
-
-
 body common control {
-
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-
-                    }
+               inputs => { "libraries/cfengine_stdlib.cf" };
+}
 
 
 bundle agent example {
@@ -15,20 +11,20 @@ bundle agent example {
 
             edit_line => cf_execd_entry_is_present,
                create => "true",
-              classes => if_repaired("signal_class");
+              classes => if_repaired("restart_crond");
 
   processes:
-    signal_class::
+    restart_crond::
       "crond"
               signals => { "hup" };
 
 
-                     }
+}
 
 
 bundle edit_line cf_execd_entry_is_present {
 
   insert_lines:
       "5,10,15,20,25,30,35,40,45,50,55 * * * * /var/cfengine/bin/cf-execd -F";
-                                           }
+}
 

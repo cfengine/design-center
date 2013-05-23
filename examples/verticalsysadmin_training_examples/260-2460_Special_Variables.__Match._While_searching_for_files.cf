@@ -25,4 +25,4 @@ bundle edit_line report_match_variables(data) {
       # R: /tmp/cf2_test1 cf2 test1
       # R: /tmp/cf3_test2 cf3 test2
 
-                                              }
+}

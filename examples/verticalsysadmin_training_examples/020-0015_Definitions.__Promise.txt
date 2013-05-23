@@ -1,7 +1,23 @@
 Definition: Promise
 -------------------
 
-The CFEngine software manages every intended system outcome as "promises" to
-be kept. A CFEngine Promise corresponds roughly to a rule in other software
-products, but importantly promises are always things that can be kept and
-repaired continuously, on a real time basis, not just once at install-time. 
+A promise is a statement of intention.
+
+Trust is an economic time-saver. If you can't trust you
+have to verify, and that is expensive.
+
+To improve trust we make promises. A promise is the documentation of an
+intention to act or behave in some manner. This is what we need to learn to
+trust systems.
+
+CFEngine works on a simple notion of promises. Everything in CFEngine can be
+thought of as a promise to be kept by different resources in the system.
+
+CFEngine manages every intended system outcome as "promises" to be kept.
+
+Promises are always things that can be kept and repaired
+continuously, on a real time basis, not just once at install-time. 
+
+Combining promises with patterns to describe where and when
+promises should apply is what CFEngine is all about.
+

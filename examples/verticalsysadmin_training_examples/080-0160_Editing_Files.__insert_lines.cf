@@ -4,19 +4,20 @@ bundle agent example {
 
       "/etc/motd"
 
+              handle  => "files_motd",
+             comment  => "Create a nice motd",
               create  => "true",
-            edit_line => file_contains_proper_greetings;
-                     }
+            edit_line => greet_users;
+}
 
 ####################################################
 
-bundle edit_line  file_contains_proper_greetings {
+bundle edit_line  greet_users {
 
-delete_lines:
+  insert_lines:
 
-    ".*";
-
-insert_lines:
-
-    "Good morning!";
-                                                 }
+      "Good morning!"
+               handle => "greet_user",
+              comment => "Happy users = less complaints. Greet the user
+politely.";
+}

@@ -1,0 +1,24 @@
+bundle agent example {
+
+  vars:
+
+      "var1"
+
+              handle  =>  "declare_var1",
+              comment =>  "Declare string variable var1 to demonstrate variable scope",
+              string  =>  "Hello World";
+
+}
+
+bundle agent example2 {
+
+  commands:
+
+      "/bin/echo"
+
+              handle  =>  "use_var_1",
+             comment  =>  "Use variable declared in another bundle to demonstrate scope",
+      #args  =>  "$(var1)";
+                args  =>  "$(example.var1)";
+
+}

@@ -1,32 +1,33 @@
-body common control
-
-{
-               inputs => { "/var/cfengine/inputs/cfengine_stdlib.cf" };
-       bundlesequence => { "example" };
-}
-
-#######################################
-
-bundle agent example
-
-{
+bundle agent example {
   files:
 
       "/etc"
 
+         handle       => "safeguard_files_in_etc",
+         comment      => "Keep screaming about changes in /etc",
          changes      => detect_all_change_noupdate,
          depth_search => recurse("inf"),
-         classes      => kept_repaired_failed("promise_kept", "promise_repaired", "promise_not_kept");
+         classes      => kept_repaired_failed("promise_kept", "promise_repaired", "promise_not_kept)");
 
-  reports:
-      promise_kept:: "Promise kept";
-      promise_repaired:: "Promise repaired";
-      promise_not_kept:: "Promise not kept";
+reports:
+
+  promise_kept::
+
+        "Kept";
+
+  promise_repaired::
+       "Repaired";
+
+   promise_not_kept::
+
+        "not kept";
 
 }
 
-body classes kept_repaired_failed(kept, repaired, failed)
-{
+
+
+
+body classes kept_repaired_failed(kept, repaired, failed) {
      promise_kept     => { "$(kept)" };
      promise_repaired => { "$(repaired)" };
      repair_failed    => { "$(failed)" };
@@ -35,11 +36,8 @@ body classes kept_repaired_failed(kept, repaired, failed)
 }
 
 
-body changes detect_all_change_noupdate
-
-# This is fierce, and will cost disk cycles
-
-{
+body changes detect_all_change_noupdate {
+      # This is fierce, and will cost disk cycles
        hash           => "best";
        report_changes => "all";
        update_hashes  => "no";
@@ -47,3 +45,7 @@ body changes detect_all_change_noupdate
 
 ##
 
+body common control {
+               inputs => { "libraries/cfengine_stdlib.cf" };
+       bundlesequence => { "example" };
+}

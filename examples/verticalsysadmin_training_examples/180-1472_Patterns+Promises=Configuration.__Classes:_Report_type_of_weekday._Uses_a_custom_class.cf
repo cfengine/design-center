@@ -12,4 +12,4 @@ bundle agent example {
     weekday::
       "Today is a weekday.";
       
-                     }
+}
