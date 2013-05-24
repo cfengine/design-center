@@ -1,12 +1,15 @@
 bundle agent report_metadata(bundlename, metadata)
 {
+  classes:
+      "given" not => strcmp($(metadata), "");
+
   vars:
       # pretty-print the authors and dependencies
       "dependencies" string => join(", ", "$(metadata)[depends]");
       "authors" string => join(", ", "$(metadata)[authors]");
 
   reports:
-    cfengine::
+    given::
       "$(bundlename): $($(metadata)[name]) license = $($(metadata)[license])";
       "$(bundlename): $($(metadata)[name]) dependencies = $(dependencies)";
 
