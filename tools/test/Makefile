@@ -695,3 +695,7 @@ stitch:
 splunk:
 	$(CFSKETCH_DA) --install Applications::Splunk --activate Applications::Splunk=$(SOURCEDIR)/applications/splunk/params/demo.json
 	$(RUNNER)
+
+autobalance:
+	$(CFSKETCH_DA) --install Cloud::Autobalance --activate Cloud::Autobalance=$(SOURCEDIR)/cloud/autobalance/params/demo.json
+	$(RUNNER)
