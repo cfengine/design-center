@@ -100,14 +100,14 @@ sub validate
         if (ref $choice ne 'ARRAY')
         {
             return $result->add_error([qw/choice validation/],
-                                      "The choice was not an array ref");
+                                      "The choice is not an array ref");
         }
 
         $self->api()->log4("Validating %s: checking choice %s",
                            $self->name,
                            $choice);
         return $result->add_error([qw/choice validation/],
-                                  "The value '$data' was not in [@$choice]")
+                                  "The value '$data' is not in [@$choice]")
          unless grep { $_ eq $data } @$choice;
     }
 
@@ -118,11 +118,15 @@ sub validate
                                   "The minimum_value validation can't take a $data_type")
          if ref $data ne '';
 
+        return $result->add_error([qw/minimum_value validation/],
+                                  "The minimum_value validation can't take a non-numeric value")
+         if $data !~ m/^-?\d+$/;
+
         $self->api()->log4("Validating %s: checking minimum value %s",
                            $self->name,
                            $minimum_value);
         return $result->add_error([qw/minimum_value validation/],
-                                  "The value '$data' was above $minimum_value")
+                                  "The value '$data' is below $minimum_value")
          if $data < $minimum_value;
     }
 
@@ -133,11 +137,15 @@ sub validate
                                   "The maximum_value validation can't take a $data_type")
          if ref $data ne '';
 
+        return $result->add_error([qw/maximum_value validation/],
+                                  "The maximum_value validation can't take a non-numeric value")
+         if $data !~ m/^-?\d+$/;
+
         $self->api()->log4("Validating %s: checking maximum value %s",
                            $self->name,
                            $maximum_value);
         return $result->add_error([qw/maximum_value validation/],
-                                  "The value '$data' was above $maximum_value")
+                                  "The value '$data' is above $maximum_value")
          if $data > $maximum_value;
     }
 
@@ -152,7 +160,7 @@ sub validate
                            $self->name,
                            $invalid_regex);
         return $result->add_error([qw/invalid_regex validation/],
-                                  "The value '$data' matched forbidden '$invalid_regex'")
+                                  "The value '$data' matches forbidden pattern '$invalid_regex'")
          if $data =~ m/$invalid_regex/;
     }
 
@@ -167,7 +175,7 @@ sub validate
                            $self->name,
                            $valid_regex);
         return $result->add_error([qw/valid_regex validation/],
-                                  "The value '$data' did not match '$valid_regex'")
+                                  "The value '$data' does not match '$valid_regex'")
          if $data !~ m/$valid_regex/;
     }
 
@@ -182,7 +190,7 @@ sub validate
                            $self->name,
                            $invalid_ipv4);
         return $result->add_error([qw/invalid_ipv4 validation/],
-                                  "The IPv4 '$data' matched forbidden '$invalid_ipv4'")
+                                  "The IPv4 '$data' matches the forbidden pattern '$invalid_ipv4'")
          if $self->ipmatch($data, $invalid_ipv4);
     }
 
@@ -197,7 +205,7 @@ sub validate
                            $self->name,
                            $valid_ipv4);
         return $result->add_error([qw/valid_ipv4 validation/],
-                                  "The IPv4 '$data' did not match '$valid_ipv4'")
+                                  "The IPv4 '$data' does not match '$valid_ipv4'")
          unless $self->ipmatch($data, $valid_ipv4);
     }
 
@@ -264,7 +272,7 @@ sub validate
             my $check = $self->api()->validate({ validation => $seq_type,
                                                  data => $element});
             return $result->add_error([qw/element sequence validation/],
-                                      "Sequence element $seq_type did not validate against the given data")
+                                      "Sequence element $seq_type does not validate against the given data")
              unless $check->success();
         }
     }
