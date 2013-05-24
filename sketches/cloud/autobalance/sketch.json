@@ -1,0 +1,39 @@
+{
+    manifest:
+    {
+        "main.cf": { desc: "main file" },
+        "test.cf": {comment: "Test Policy"},
+        "test.pl": {test:true},
+        "README.md": { documentation: true },
+        "params/demo.json": { comment: "simple demo of Cloud::Autobalance" },
+    },
+
+    metadata:
+    {
+        name: "Cloud::Autobalance",
+	    description: "Autobalance load amongst cloud offerings based on Data::Classes results",
+        version: 1.0,
+        license: "MIT",
+        tags: [ "cfdc", "cloud", "balance", "ec2", "openstack" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "Cloud::Services::OpenStack": {}, "Cloud::Services::AWS::EC2": {}, "Data::Classes": { }, cfengine: { version: "3.5.0" } }
+    },
+    
+    api:
+    {
+        autobalance:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "url", description: "URL to check for threshold string", validation: "URL" },
+            { type: "string", name: "collector", description: "Program to collect the URL contents", default: "/usr/bin/curl -s" },
+            { type: "array", name: "thresholds", description: "Threshold definitions", validation: "ARRAY_OF_CLASS_NAMES_TO_CLOUD_ALLOCATION" },
+            { type: "list", name: "ec2_options", description: "EC2 options", validation: "SEQUENCE_EC2_OPTIONS" },
+            { type: "list", name: "openstack_options", description: "OpenStack options", validation: "SEQUENCE_OPENSTACK_OPTIONS" },
+            { type: "array", name: "common_options", description: "Common options for both sketches", validation: "ARRAY_OF_CLOUD_OPTIONS" },
+        ],
+    },
+
+    namespace: "cfdc_cloud",
+    interface: [ "main.cf" ]
+}

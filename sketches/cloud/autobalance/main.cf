@@ -1,0 +1,66 @@
+body file control
+{
+  namespace => "cfdc_cloud";
+}
+
+bundle agent autobalance(runenv, metadata, url, collector, thresholds, given_ec2_options, given_openstack_options, common_options)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "threshold_names" slist => getindices($(thresholds));
+      "types" slist => { "ec2", "openstack" };
+
+      "openstack_options" slist => { @(given_openstack_options) };
+      "ec2_options" slist => { @(given_ec2_options) };
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+    any::
+      "check load" usebundle => default:bynet("autobalance_$(threshold_names)",
+                                              $(collector),
+                                              $(url),
+                                              $(threshold_names));
+
+      "ensure EC2" usebundle => cfdc_aws_ec2:ensure($(runenv),
+                                                    "",
+                                                    "$($(thresholds)[$(threshold_names)][ec2])",
+                                                    nth("ec2_options", 0),
+                                                    nth("ec2_options", 1),
+                                                    nth("ec2_options", 2),
+                                                    nth("ec2_options", 3),
+                                                    nth("ec2_options", 4),
+                                                    nth("ec2_options", 5),
+                                                    $(common_options)),
+      ifvarclass => "default:autobalance_$(threshold_names)";
+
+      "ensure OpenStack" usebundle => cfdc_cloud_openstack:ensure($(runenv),
+                                                                  "",
+                                                                  "$($(thresholds)[$(threshold_names)][openstack])",
+                                                                  nth("openstack_options", 0),
+                                                                  nth("openstack_options", 1),
+                                                                  nth("openstack_options", 2),
+                                                                  $(common_options)),
+      ifvarclass => "default:autobalance_$(threshold_names)";
+
+  reports:
+    verbose::
+      "We want to ensure $($(thresholds)[$(threshold_names)][$(types)]) $(types) instances"
+      ifvarclass => "default:autobalance_$(threshold_names)";
+
+      "We know about thresholds $(threshold_names), requiring $($(thresholds)[$(threshold_names)][$(types)]) $(types) instances.";
+      "We have $(types) option $($(types)_options)";
+
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+}
