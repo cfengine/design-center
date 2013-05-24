@@ -30,6 +30,7 @@ bundle agent autobalance(runenv, metadata, url, collector, thresholds, given_ec2
                                               $(url),
                                               $(threshold_names));
 
+    not_test::
       "ensure EC2" usebundle => cfdc_aws_ec2:ensure($(runenv),
                                                     "",
                                                     "$($(thresholds)[$(threshold_names)][ec2])",
@@ -52,14 +53,20 @@ bundle agent autobalance(runenv, metadata, url, collector, thresholds, given_ec2
       ifvarclass => "default:autobalance_$(threshold_names)";
 
   reports:
-    verbose::
-      "We want to ensure $($(thresholds)[$(threshold_names)][$(types)]) $(types) instances"
+    test::
+      "$(this.bundle): In test mode, simulating ensure of $($(thresholds)[$(threshold_names)][ec2]) EC2 instances"
       ifvarclass => "default:autobalance_$(threshold_names)";
 
-      "We know about thresholds $(threshold_names), requiring $($(thresholds)[$(threshold_names)][$(types)]) $(types) instances.";
-      "We have $(types) option $($(types)_options)";
+      "$(this.bundle): In test mode, simulating ensure of $($(thresholds)[$(threshold_names)][openstack]) OpenStack instances"
+      ifvarclass => "default:autobalance_$(threshold_names)";
 
     verbose::
+      "$(this.bundle):We want to ensure $($(thresholds)[$(threshold_names)][$(types)]) $(types) instances"
+      ifvarclass => "default:autobalance_$(threshold_names)";
+
+      "$(this.bundle):We know about thresholds $(threshold_names), requiring $($(thresholds)[$(threshold_names)][$(types)]) $(types) instances.";
+      "We have $(types) option $($(types)_options)";
+
       "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
       "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
       ifvarclass => "$(vars)";
