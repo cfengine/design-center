@@ -1,0 +1,26 @@
+{
+    "Cloud::Autobalance":
+    {
+        url: "file:///tmp/status.txt",
+        thresholds:
+        {
+            critical: { ec2: 3, openstack: 3 },
+            high: { ec2: 2, openstack: 2 },
+            normal: { ec2: 1, openstack: 1 },
+            off: { ec2: 0, openstack: 0 },
+        },
+
+        ec2_options: ["ami-a29943cb", "us-east-1", "t1.micro", "cfworker", true, "$(sys.ipv4)"],
+        openstack_options: ["cfworker", true, "$(sys.ipv4)"],
+        common_options: 
+        {
+            netrc: "/home/tzz/.netrc",
+            // OpenStack options
+            master: "cfmaster",
+            image: "5cebb13a-f783-4f8c-8058-c4182c724ccd",
+            // EC2 options
+            security_group: "default",
+            ssh_pub_key: "/root/.ssh/id_rsa.pub",
+        },
+    }
+}
