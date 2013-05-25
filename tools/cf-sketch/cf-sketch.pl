@@ -32,6 +32,7 @@ BEGIN
 use File::Basename;
 use FindBin;
 use lib map { $_,
+               "$_/File-Path-2.09",
                "$_/File-Which-1.09/lib",
                "$_/JSON-2.53/lib",
                "$_/Mo-0.31/lib" }
