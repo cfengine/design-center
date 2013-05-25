@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2013-05-21 13:55:02 a10022>
+# Time-stamp: <2013-05-26 01:16:23 a10022>
 
 use Term::ANSIColor qw(:constants);
 use DesignCenter::JSON;
@@ -123,7 +123,7 @@ sub command_list_params
             print RESET, GREEN, $name, RESET, ": $word ".join(", ", @sketches)."\n";
             if ($full)
             {
-                print DesignCenter::JSON::pretty_print($list->{$name},"  ")."\n";
+                print DesignCenter::JSON::pretty_print($list->{$name},"  ", undef, undef)."\n";
             }
         }
     }
@@ -165,7 +165,7 @@ sub command_list_activations
             if ($full)
             {
                 print BLUE, "  JSON definition of this activation:\n".RESET;
-                print DesignCenter::JSON::pretty_print_json($a, "    ");
+                print DesignCenter::JSON::pretty_print_json($a, "    ", undef, undef);
             }
             print "\n";
         }
@@ -195,7 +195,7 @@ sub command_list_envs
             print RESET, GREEN, $env, RESET, "\n";
             if ($full)
             {
-                print DesignCenter::JSON::pretty_print($envs->{$env}, "  ")."\n";
+                print DesignCenter::JSON::pretty_print($envs->{$env}, "  ", undef, undef)."\n";
             }
         }
         Util::warning("No environments ".(($regex eq '.')?"are defined.\n" : "match your query\n")) unless $printed;
@@ -222,7 +222,7 @@ sub command_list_vals
         print RESET, GREEN, $val, RESET, "\n";
         if ($full)
         {
-            print DesignCenter::JSON::pretty_print($vals->{$val}, "  ")."\n";
+            print DesignCenter::JSON::pretty_print($vals->{$val}, "  ", undef, undef)."\n";
         }
     }
     Util::warning("No validations ".(($regex eq '.')?"are defined.\n" : "match your query\n")) unless $printed;
