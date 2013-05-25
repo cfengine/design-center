@@ -4,7 +4,7 @@
 # DC-specific JSON stuff
 #
 # CFEngine AS, October 2012.
-# Time-stamp: <2013-05-26 01:12:59 a10022>
+# Time-stamp: <2013-05-26 01:26:19 a10022>
 
 package DesignCenter::JSON;
 
@@ -202,7 +202,7 @@ sub pretty_print {
     my $name = $p->{path};
     $name =~ s/^_(.*)$/$1/;
     next if $exclude && $name =~ /$exclude/;
-    $result .= $indent.BLUE.$name.": ".RESET.$p->{value}."\n";
+    $result .= $indent.BLUE.$name.": ".RESET.($p->{value}||"")."\n";
   }
   return $result;
 }
