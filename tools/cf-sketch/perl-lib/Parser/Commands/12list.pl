@@ -2,7 +2,7 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2013-05-10 02:32:51 a10022>
+# Time-stamp: <2013-05-21 13:55:02 a10022>
 
 use Term::ANSIColor qw(:constants);
 use DesignCenter::JSON;
@@ -39,8 +39,14 @@ use Util;
     'list_envs',
    ],
    [
-    'list [-v] [sketches|params|activations|environments] [REGEX|all]',
-    'List defined sketches, parameter sets, activations or environments (sketches is the default). If REGEX is given, only list those that match it. Use -v to show detailed information.',
+    '-list [-v] validations [REGEX|all]',
+    'List defined validations. If REGEX is given, only list validations that match it. Use -v to show the full validation definition.',
+    '(?:(-v)\b\s*)?val\S*(?:\s+(.*))?',
+    'list_vals',
+   ],
+   [
+    'list [-v] [sketches|params|activations|environments|validations] [REGEX|all]',
+    'List defined sketches, parameter sets, activations, environments or validations (sketches is the default). If REGEX is given, only list those that match it. Use -v to show detailed information.',
     '(?:(-v)\b\s*)?(?:sketch\S*\b\s*)?(.*)',
     'list_sketches',
    ],
@@ -194,6 +200,32 @@ sub command_list_envs
         }
         Util::warning("No environments ".(($regex eq '.')?"are defined.\n" : "match your query\n")) unless $printed;
     }
+}
+
+sub command_list_vals
+{
+    my $full = shift;
+    my $regex = shift;
+    return unless $regex = Util::validate_and_set_regex($regex);
+    my $msg = shift || ("The following ".(($regex eq '.')?"validations are defined":"validations match your query").":");
+
+    my $vals = main::get_validations;
+    my $printed = undef;
+    foreach my $val (sort keys %$vals)
+    {
+        next unless $val =~ /$regex/i;
+        unless ($printed)
+        {
+            Util::output("$msg\n\n");
+        }
+        $printed = 1;
+        print RESET, GREEN, $val, RESET, "\n";
+        if ($full)
+        {
+            print DesignCenter::JSON::pretty_print($vals->{$val}, "  ")."\n";
+        }
+    }
+    Util::warning("No validations ".(($regex eq '.')?"are defined.\n" : "match your query\n")) unless $printed;
 }
 
 1;

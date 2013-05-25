@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 BEGIN
 {
@@ -49,6 +49,14 @@ $| = 1;                                 # autoflush
 # for encode/decode, not to use it directly!!!
 my $dcapi = DCAPI->new(cfengine_min_version => 1);
 
+# Find constdata.conf
+my $constdata=undef;
+foreach ($FindBin::Bin, "$FindBin::Bin/perl-lib", "$FindBin::Bin/../lib/cf-sketch", "/var/cfengine/constdata.conf") {
+  if (-f "$_/constdata.conf") {
+    $constdata = "$_/constdata.conf";
+  }
+}
+
 use Getopt::Long;
 
 my %options = (
@@ -71,6 +79,7 @@ my %options = (
                runfile => "$inputs_root/api-runfile.cf",
                standalonerunfile => "$inputs_root/api-runfile-standalone.cf",
                installsource => Util::local_cfsketches_source(File::Spec->curdir()) || undef,
+               constdata => $constdata,
                # These are hardcoded above, we put them here for convenience
                version => $VERSION,
                date => $DATE,
@@ -102,6 +111,7 @@ GetOptions(\%options,
            "uninstall=s@",
            "deactivate-all|da",
            "activate|a=s%",
+           "constdata=s",
 
            "standalone!",
            "runfile|rf=s",
@@ -126,6 +136,8 @@ my $env_test = $options{test};
 
 $options{activated} = 1 if ($options{activated} eq '');
 my $env_activated = $options{activated};
+
+die "Sorry, can't locate constdata file '$options{constdata}'" unless (!$options{constdata} || -f $options{constdata});
 
 api_interaction({
                  define_environment => {
@@ -274,7 +286,7 @@ unless ($options{'expert'}) {
 
     # Load commands and do other parser initialization
     Parser::init('cf-sketch', \%options, @ARGV);
-    Parser::set_welcome_message("[default]\nCFEngine AS, 2012.");
+    Parser::set_welcome_message("[default]\nCFEngine AS, 2013.");
 
     # Run the main command loop
     Parser::parse_commands();
@@ -318,6 +330,7 @@ sub api_interaction
                  filter_inputs => $options{filter},
                 },
                 vardata => "$inputs_root/cfsketch-vardata.conf",
+                constdata => $options{constdata},
                };
 
     if (exists $options{apiconfig})
@@ -418,8 +431,14 @@ sub api_interaction
 
         return ($success, $result);
     }
-
-    Util::error("API fatal error: Got bad result: ".$dcapi->encode($result)."\n");
+    elsif (my $errors = Util::hashref_search($result, qw/api_error errors/))
+    {
+        Util::error("API fatal error: @{[ join ';', @$errors ]}\n");
+    }
+    else
+    {
+        Util::error("API fatal error: Got bad result: ".$dcapi->encode($result)."\n");
+    }
     exit 1;
     # return (0, $result);
 }
@@ -488,10 +507,12 @@ sub make_list_printer
 
 # Common API actions
 
+# Return details of sketches according to regex. Without args returns all sketches
 sub get_all_sketches {
+  my $regex = Util::validate_and_set_regex(shift);
   my ($success, $result) = main::api_interaction({
                                                   describe => 1,
-                                                  search => ".",
+                                                  search => $regex,
                                                  });
   my $list = Util::hashref_search($result, 'data', 'search');
   my $res = undef;
@@ -511,6 +532,12 @@ sub get_all_sketches {
   return $res;
 }
 
+# Alias for get_all_sketches
+sub get_sketch {
+  return get_all_sketches(shift);
+}
+
+# Return list of installed sketches and their repositories
 sub get_installed {
     my ($success, $result) = main::api_interaction({
                                                  describe => 0,
@@ -535,6 +562,7 @@ sub get_installed {
     return $installed;
 }
 
+# Return whether a sketch is installed
 sub is_sketch_installed
 {
   my $sketch = shift;
@@ -542,6 +570,7 @@ sub is_sketch_installed
   return exists($installed->{$sketch});
 }
 
+# Return all activations
 sub get_activations {
     my ($success, $result) = main::api_interaction({ activations => 1 });
     my $activs = Util::hashref_search($result, 'data', 'activations');
@@ -556,6 +585,7 @@ sub get_activations {
     }
 }
 
+# Return all parameter definitions
 sub get_definitions {
   my ($success, $result) = main::api_interaction({ definitions => 1 });
   return unless $success;
@@ -569,10 +599,20 @@ sub get_definitions {
   }
 }
 
+# Return all environment definitions
 sub get_environments {
   my ($success, $result) = main::api_interaction({ environments => 1 });
   return unless $success;
   my $envs = Util::hashref_search($result, 'data', 'environments');
   $envs = {} unless (ref $envs eq 'HASH');
   return $envs;
+}
+
+# Get all validations
+sub get_validations {
+  my ($success, $result) = main::api_interaction({ validations => 1 });
+  return unless $success;
+  my $vals = Util::hashref_search($result, 'data', 'validations');
+  $vals = {} unless (ref $vals eq 'HASH');
+  return $vals;
 }
