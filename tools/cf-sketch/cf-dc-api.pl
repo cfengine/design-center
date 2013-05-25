@@ -35,17 +35,17 @@ my $api = DCAPI->new(cfengine_min_version => $required_version);
 
 unless ($api->curl())
 {
-    $api->exit_error("$base: could not locate `curl' executable in $ENV{PATH}");
+    $api->exit_error("$base: could not locate `curl' executable in $ENV{PATH}.  Install curl, please.");
 }
 
 unless ($api->cfagent())
 {
-    $api->exit_error("$base: could not locate `cf-agent' executable in $ENV{PATH} or /var/cfengine/bin");
+    $api->exit_error("$base: You probably need to install CFEngine!  I could not locate `cf-agent' executable in $ENV{PATH} or /var/cfengine/bin");
 }
 
 unless ($api->is_ok_cfengine_version())
 {
-    $api->exit_error("$base: the `cf-agent' executable version is before $required_version, sorry");
+    $api->exit_error("$base: the `cf-agent' executable version is before $required_version, sorry.  You need to upgrade CFEngine!");
 }
 
 my $config_file = shift @ARGV;
@@ -108,7 +108,7 @@ if ($debug)
 
 unless (defined $version && $version eq $api->version())
 {
-    $api->exit_error("Broken JSON, or DC API Version not provided or mismatch: " . $api->version() . " vs. " . ($version||'???') , @log);
+    $api->exit_error("Sorry, I can't handle broken JSON, or a missing or incorrect DC API Version: " . $api->version() . " vs. " . ($version||'???') , @log);
 }
 
 unless (defined $request)
