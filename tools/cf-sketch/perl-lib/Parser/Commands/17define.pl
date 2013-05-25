@@ -3,7 +3,7 @@
 #
 # CFEngine AS, October 2012
 #
-# Time-stamp: <2013-05-21 18:50:59 a10022>
+# Time-stamp: <2013-05-26 00:54:13 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -376,6 +376,7 @@ sub input_param {
             {
                 $elem = undef;
                 $data = [];
+                $valid = 1; # empty lists are valid
                 do
                 {
                     my $def_next = shift @olddata;
@@ -414,6 +415,7 @@ sub input_param {
             my @oldkeys = sort keys %olddata;
             $elem = undef;
             $data = {};
+            $valid = 1; # empty arrays are valid
             do
             {
                 my $def_next_k = shift @oldkeys;

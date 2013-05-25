@@ -4,7 +4,7 @@
 # DC-specific JSON stuff
 #
 # CFEngine AS, October 2012.
-# Time-stamp: <2013-05-09 23:57:00 a10022>
+# Time-stamp: <2013-05-26 01:26:19 a10022>
 
 package DesignCenter::JSON;
 
@@ -116,6 +116,7 @@ sub recurse_print
     my $prefix          = shift @_;
     my $unquote_scalars = shift @_;
     my $simplify_arrays = shift @_;
+    my $print_cf_null   = scalar(@_) ? shift @_ : 1;
 
     my @print;
 
@@ -129,7 +130,7 @@ sub recurse_print
                 type => 'string',
                 value => sprintf('%s(%s)',
                                  $ref->{function},
-                                 join(', ', map { my @p = recurse_print($_); $p[0]->{value} } @{$ref->{args}}))
+                                 join(', ', map { my @p = recurse_print($_, $prefix, $unquote_scalars, $simplify_arrays, $print_cf_null); $p[0]->{value} } @{$ref->{args}}))
             };
         }
         else
@@ -143,7 +144,8 @@ sub recurse_print
                                                ($prefix||''),
                                                $simplify_arrays ? "_${_}" : "[$_]"),
                                        $unquote_scalars,
-                                       0)
+                                       $simplify_arrays,
+                                       $print_cf_null)
                 foreach sort keys %$ref;
         }
     }
@@ -159,7 +161,14 @@ sub recurse_print
         }
         else
         {
-            $joined = '{ "cf_null" }';
+            if ($print_cf_null)
+            {
+                $joined = '{ "cf_null" }';
+            }
+            else
+            {
+                $joined = '{ }';
+            }
         }
 
         push @print, {
@@ -186,13 +195,14 @@ sub pretty_print {
   my $json = shift;
   my $indent = shift || "";
   my $exclude = shift || undef;
-  my @print = recurse_print($json, undef, 1, 1);
+  my $print_cf_null = scalar(@_) ? shift @_ : 1;
+  my @print = recurse_print($json, undef, 1, 1, $print_cf_null);
   my $result = "";
   foreach my $p (@print) {
     my $name = $p->{path};
     $name =~ s/^_(.*)$/$1/;
     next if $exclude && $name =~ /$exclude/;
-    $result .= $indent.BLUE.$name.": ".RESET.$p->{value}."\n";
+    $result .= $indent.BLUE.$name.": ".RESET.($p->{value}||"")."\n";
   }
   return $result;
 }
