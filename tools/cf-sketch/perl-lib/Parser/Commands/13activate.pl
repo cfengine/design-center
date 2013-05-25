@@ -3,7 +3,7 @@
 #
 # CFEngine AS, October 2012
 #
-# Time-stamp: <2013-05-10 02:03:59 a10022>
+# Time-stamp: <2013-05-26 01:35:21 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -179,7 +179,7 @@ sub activ_id_exists {
     {
         foreach my $act (@{$activs->{$sketch}})
         {
-            return 1 if exists($act->{identifier}) && $act->{identifier} eq '$id';
+            return 1 if exists($act->{identifier}) && $act->{identifier} eq $id;
         }
     }
     return undef;
