@@ -431,8 +431,14 @@ sub api_interaction
 
         return ($success, $result);
     }
-
-    Util::error("API fatal error: Got bad result: ".$dcapi->encode($result)."\n");
+    elsif (my $errors = Util::hashref_search($result, qw/api_error errors/))
+    {
+        Util::error("API fatal error: @{[ join ';', @$errors ]}\n");
+    }
+    else
+    {
+        Util::error("API fatal error: Got bad result: ".$dcapi->encode($result)."\n");
+    }
     exit 1;
     # return (0, $result);
 }
