@@ -73,22 +73,36 @@ sub command_info {
                      if $meta->{tags};
                     print BLUE."Installed: ".RESET.(exists($installed->{$sketch}) ? "Yes, under ".$installed->{$sketch} : "No")."\n";
                     print BLUE."Library: ".RESET."Yes\n" unless scalar(keys %$api);
-                    if (scalar(keys %$api))
+                    if ($installed->{$sketch} && scalar(keys %$api))
                     {
-                        my $num_act = scalar(@{$activs->{$sketch}});
+                        my $num_act = scalar(@{$activs->{$sketch}||[]});
                         my $word = $num_act > 1 ? "instances" : "instance";
                         print BLUE."Activated: ".RESET.($num_act ? "Yes, $num_act $word" : "No")."\n";
                     }
                     if ($full && scalar(keys %$api))
                     {
+                        my %returns=();
                         print BLUE."Parameters:\n".RESET;
                         foreach my $bundle (sort keys %$api)
                         {
                             print "  For bundle ".CYAN.$bundle.RESET."\n";
                             foreach my $p (@{$api->{$bundle}})
                             {
-                                print YELLOW."    ".$p->{name}.RESET.": ".$p->{type}."\n"
-                                 unless $p->{type} =~ /^(metadata|environment)$/;
+                                print YELLOW."    ".$p->{name}.RESET.": ".$p->{type}.($p->{validation}? " (validation: $p->{validation})" : "")."\n"
+                                 unless $p->{type} =~ /^(metadata|environment|bundle_options|return)$/;
+                                if ($p->{type} eq 'return')
+                                {
+                                    $returns{$bundle} = [] unless exists($returns{$bundle});
+                                    push @{$returns{$bundle}}, $p->{name};
+                                }
+                            }
+                        }
+                        if (scalar(%returns))
+                        {
+                            print BLUE."Return values:\n".RESET;
+                            foreach my $bundle (sort keys %returns)
+                            {
+                                print "  Bundle ".CYAN.$bundle.RESET.": [ ".join(", ", @{$returns{$bundle}})." ]\n";
                             }
                         }
                     }
