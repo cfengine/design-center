@@ -168,7 +168,7 @@ sub init {
 	%PREHOOKS=();
 	%POSTHOOKS=(); 
 	eval "require '$cmddir/$cmdfile'";
-	die "Error loading '$cmddir/$cmdfile': $!\n" if $@;
+	die "Error loading '$cmddir/$cmdfile': $@\n" if $@;
 	my ($k,$v);
 	# Incorporate commands
 	while (($k,$v)=each(%COMMANDS)) {
