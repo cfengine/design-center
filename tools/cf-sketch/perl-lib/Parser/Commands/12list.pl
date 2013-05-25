@@ -207,7 +207,7 @@ sub command_list_vals
     my $full = shift;
     my $regex = shift;
     return unless $regex = Util::validate_and_set_regex($regex);
-    my $msg = shift or "The following ".(($regex eq '.')?"validations are defined":"validations match your query").":";
+    my $msg = shift || ("The following ".(($regex eq '.')?"validations are defined":"validations match your query").":");
 
     my $vals = main::get_validations;
     my $printed = undef;
