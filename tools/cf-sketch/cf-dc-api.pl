@@ -16,6 +16,7 @@ use File::Basename;
 use FindBin;
 use lib map { $_,
                "$_/File-Which-1.09/lib",
+               "$_/File-Path-2.09",
                "$_/JSON-2.53/lib",
                "$_/Mo-0.31/lib" }
  ("$FindBin::Bin/perl-lib", "$FindBin::Bin/../lib/cf-sketch");
