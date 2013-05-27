@@ -26,6 +26,14 @@
 				{ "name" : "users", "type" : "array" },
 				{ "name" : "options", "type" : "array", default: { groupname: "defaultgroup" } },
 			],
+
+		    "runbased" : [
+				{ "name" : "runenv", "type" : "environment" },
+				{ "name" : "metadata", "type" : "metadata" },
+				{ "name" : "checker", description: "Command to run to check if a user exists.", "type" : "string", default: "/usr/bin/id" },
+				{ "name" : "users", "type" : "array" },
+				{ "name" : "options", "type" : "array", default: { groupname: "defaultgroup" } },
+			],
 		},
     "namespace" : "cfdc_users",
     "interface": [ "main.cf" ]
