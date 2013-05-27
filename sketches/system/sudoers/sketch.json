@@ -11,7 +11,7 @@
         "description": "Sets defaults and user permissions in the sudoers file",
         "version": 1.00,
         "license": "MIT",
-        "tags": [ "cfdc" ],
+        "tags": [ "cfdc", "sudoers" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
     },
@@ -20,7 +20,7 @@
 				 { "name" : "runenv", "type" : "environment" },
 				 { "name" : "metadata", "type" : "metadata" },
 				 { "name" : "file_path", "type" : "string", "default" : "/etc/sudoers" },
-				 { "name" : "visudo_path", "type" : "string", "default" : "/usr/sbin/visudo" },
+				 { "name" : "visudo_path", description: "Path to visudo command.  Use /bin/true to make it always succeed.", "type" : "string", "default" : "/usr/sbin/visudo" },
 				 { "name" : "defaults", "type" : "array" },
 				 { "name" : "user_alias", "type" : "array" },
 				 { "name" : "host_alias", "type" : "array" },

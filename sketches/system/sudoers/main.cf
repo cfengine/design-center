@@ -3,7 +3,7 @@ body file control
       namespace => "cfdc_sudoers";
 }
 
-bundle agent ensure(runenv,metadata,file_path,visudo_path,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_permissions)
+bundle agent ensure(runenv,metadata,given_file_path,visudo_path,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_permissions)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
@@ -13,19 +13,24 @@ bundle agent ensure(runenv,metadata,file_path,visudo_path,defaults,user_alias,ho
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
+      "file_path" string => "$(default:eu.path_prefix)$(given_file_path)";
+      "tmp_path" string => "$(file_path).cfsketch.tmp";
+
   files:
-      "$(default:eu.path_prefix)$(file_path).cfsketch.tmp"
+      "$(tmp_path)"
       create => "true",
       edit_defaults => default:empty,
       perms => default:m("440"),
       edit_line => sudoers_insert_lines($(defaults),$(user_alias),$(host_alias),$(cmnd_alias),$(runas_alias),$(user_permissions));
 
-      "$(default:eu.path_prefix)$(file_path)"
-      copy_from => default:local_dcp("$(default:eu.path_prefix)$(file_path).cfsketch.tmp"),
+      "$(file_path)"
+      copy_from => default:local_dcp("$(tmp_path)"),
       perms => default:m("440"),
-      ifvarclass => and(returnszero("$(default:eu.exec_prefix)$(visudo_path) -c -f $(default:eu.path_prefix)$(file_path).cfsketch.tmp > /dev/null 2>&1", "useshell"));
+      classes => default:always("cfdc_sudoers_verify_attempted"),
+      ifvarclass => and(returnszero("$(default:eu.exec_prefix)$(visudo_path) -c -f $(tmp_path) > /dev/null 2>&1", "useshell"));
 
-      "$(default:eu.path_prefix)$(file_path).cfsketch.tmp"
+    cfdc_sudoers_verify_attempted.not_test::
+      "$(tmp_path)"
       delete => default:tidy;
 
   methods:
@@ -34,6 +39,15 @@ bundle agent ensure(runenv,metadata,file_path,visudo_path,defaults,user_alias,ho
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
+
+  reports:
+    verbose.cfdc_sudoers_verify_attempted.test::
+      "$(this.bundle): Leaving $(tmp_path) in place in test mode; normally it would be deleted.";
+
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
 }
 
 bundle edit_line sudoers_insert_lines(defaults,user_alias,host_alias,cmnd_alias,runas_alias,up) {
