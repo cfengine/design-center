@@ -1,7 +1,19 @@
+[
 {
     "Users::Local":
     {
+        __bundle__: "local",
         users: { tzz: [ "Ted Zlatanov", 10000, 20000, "/home/tzz", "/bin/bash", "mypass" ] },
         options: { groupname: "mygroup" },
     }
+},
+{
+    "Users::Local":
+    {
+        __bundle__: "runbased",
+        users: { tzz: [ "Ted Zlatanov", 10000, 20000, "/home/tzz", "/bin/bash", "mypass" ],
+                 tzz2: [ "Ted Zlatanov 2", 10001, 20001, "/home/tzz2", "/bin/bash", "mypass2" ] },
+        options: { groupname: "mygroup" },
+    }
 }
+]
