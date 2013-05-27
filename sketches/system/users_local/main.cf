@@ -1,0 +1,130 @@
+body file control
+{
+      namespace => "cfdc_users";
+}
+
+bundle agent runbased(runenv, metadata, checker, users, options)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "todo" slist => getindices($(users));
+      "data[$(todo)]" slist => { "@($(users)[$(todo)])" };
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+      # ensure each user is present
+      "ensure" usebundle => ensure_runbased($(checker), $(todo), "cfdc_users:runbased.data[$(todo)]", $(options)),
+      inherit => "true";
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+}
+
+bundle agent local(runenv, metadata, users, options)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "todo" slist => getindices($(users));
+      "data[$(todo)]" slist => { "@($(users)[$(todo)])" };
+
+      "skel"       string => "/etc/skel/";
+      "pwfile"     string => "$(default:eu.path_prefix)/etc/passwd";
+      "shadowfile" string => "$(default:eu.path_prefix)/etc/shadow";
+      "groupfile"  string => "$(default:eu.path_prefix)/etc/group";
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+      # ensure each user is present
+      "ensure" usebundle => ensure_edit($(pwfile), $(shadowfile), $(groupfile), $(todo), "cfdc_users:local.data[$(todo)]", $(options)),
+      inherit => "true";
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+}
+
+bundle agent ensure_edit(pwfile, shadowfile, groupfile, user, dataref, optref)
+{
+  vars:
+      "data" slist => { "@($(dataref))" };
+      "gecos" string => nth("data", 0);
+      "uid" string => nth("data", 1);
+      "gid" string => nth("data", 2);
+      "homedir" string => nth("data", 3);
+      "shell" string => nth("data", 4);
+      "phash" string => nth("data", 5);
+
+      "groupname" string => "$($(optref)[groupname])";
+
+      "pwentry" string => "$(user):x:$(uid):$(gid):$(gecos):$(homedir):$(shell)";
+      "groupentry"   string => "$(groupname):x:$(gid):";
+
+      "days_since_epoch" int => now();
+      "shadowentry" string => "$(user):$(phash):$(days_since_epoch):0:99999:7:::";
+
+  files:
+      "$(pwfile)"
+      create => "true",
+      edit_line  => default:replace_or_add("$(user):.*", $(pwentry)),
+      comment    => "Add or fix the password file entry for the specified user";
+
+      "$(shadowfile)"
+      create => "true",
+      edit_line  => default:replace_or_add("$(user):.*", $(shadowentry)),
+      comment    => "Add or fix the shadow entry for the specified user";
+
+      "$(groupfile)"
+      create => "true",
+      edit_line  => default:replace_or_add("$(user):.*", $(groupentry)),
+      comment    => "Add or fix the group entry for the specified user";
+
+  reports:
+    verbose::
+      "$(this.bundle): Requested user $(user) with GECOS '$(gecos)' and UID/GID '$(uid)/$(gid)', living in '$(homedir)' with shell '$(shell)' and password hash '$(phash)'.  The group name is $(groupname).";
+      "$(this.bundle): pwentry for $(user) is '$(pwentry)";
+      "$(this.bundle): groupentry for $(user) is '$(groupentry)";
+      "$(this.bundle): shadowentry for $(user) is '$(shadowentry)";
+}
+
+bundle agent ensure_runbased(checker, user, dataref, optref)
+{
+  vars:
+      "data" slist => { "@($(dataref))" };
+      "gecos" string => nth("data", 0);
+      "uid" string => nth("data", 1);
+      "gid" string => nth("data", 2);
+      "homedir" string => nth("data", 3);
+      "shell" string => nth("data", 4);
+      "phash" string => nth("data", 5);
+
+      "groupname" string => "$($(optref)[groupname])";
+
+  classes:
+      "user_missing" not => returnszero("$(checker) $(user) > /dev/null 2>&1", "useshell");
+
+  commands:
+    user_missing::
+      "$(default:eu.exec_prefix)$(paths.path[groupadd]) -g $(gid) $(user)";
+      "$(default:eu.exec_prefix)$(paths.path[useradd]) -d $(homedir) -c '$(gecos)' -g $(gid) -m -p '$(phash)' -s $(shell) -u $(uid) $(user)";
+
+  reports:
+    verbose::
+      "$(this.bundle): Requested user $(user) with GECOS '$(gecos)' and UID/GID '$(uid)/$(gid)', living in '$(homedir)' with shell '$(shell)' and password hash '$(phash)'.  The group name is $(groupname).";
+    user_missing::
+      "$(this.bundle): $(user) was missing";
+}

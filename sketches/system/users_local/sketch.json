@@ -1,0 +1,40 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "test.pl": { test:true },
+        "test.cf": { desc: "example policy" },
+        "params/demo.json": { desc: "example parameters" },
+        "README.md": { "documentation": true },
+    },
+
+    "metadata":
+    {
+        "name": "Users::Local",
+        "description": "Sketch for managing local users",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc", "users" ],
+        "authors": [ "Nick Anderson <nick@cmdln.org>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::stdlib::3.5.0": { }, "CFEngine::dclib": {}, "cfengine": { "version": "3.5.0" }, "os": [ "redhat|centos|ubuntu|debian" ] }
+    },
+
+    "api" : {
+		    "local" : [
+				{ "name" : "runenv", "type" : "environment" },
+				{ "name" : "metadata", "type" : "metadata" },
+				{ "name" : "users", "type" : "array" },
+				{ "name" : "options", "type" : "array", default: { groupname: "defaultgroup" } },
+			],
+
+		    "runbased" : [
+				{ "name" : "runenv", "type" : "environment" },
+				{ "name" : "metadata", "type" : "metadata" },
+				{ "name" : "checker", description: "Command to run to check if a user exists.", "type" : "string", default: "/usr/bin/id" },
+				{ "name" : "users", "type" : "array" },
+				{ "name" : "options", "type" : "array", default: { groupname: "defaultgroup" } },
+			],
+		},
+    "namespace" : "cfdc_users",
+    "interface": [ "main.cf" ]
+}
