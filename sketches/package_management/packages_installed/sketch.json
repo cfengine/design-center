@@ -12,7 +12,7 @@
     metadata:
     {
         "name": "Packages::installed",
-	    "description": "Ensure certain packages are installed or not installed.",
+	    "description": "Ensure certain packages are installed or not installed. The networked package manager of the OS (e.g. yum or aptitude) is used to perform installations, so the packages to install need to be available in its package repository.",
         "version": "1.0.0",
         "license": "MIT",
         "tags": [ "cfdc", "packages", "enterprise_compatible" ],
