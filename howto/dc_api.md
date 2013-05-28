@@ -673,6 +673,8 @@ The `decompose` command undefines a composition by name.  It returns the same da
 }
 ```
 
+(Note that Monty Python has beaten us to this joke by decades with "The Decomposing Composers.")
+
 #### `activations`
 
 The `activations` command lists the defined activations.
@@ -761,6 +763,9 @@ the classes and prefixes of that activation.
 
 You can pass a `metadata` parameter to an `activate` command, which will show up
 under the `activation` key in the metadata.
+
+You can pass a `target` parameter to an `activate` command with an install location,
+which will only activate sketches that exist in that location.
 
 ##### option: `compose`
 
