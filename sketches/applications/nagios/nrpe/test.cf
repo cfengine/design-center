@@ -1,0 +1,78 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../../../sketches/libraries/dclib/library.cf", "../../../../sketches/libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation ___001_Applications_Nagios_NRPE_agent
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][allowed_hosts][type]" string => "string";
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][command_timeout][type]" string => "string";
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][commands][type]" string => "array";
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][dont_blame_nrpe][type]" string => "string";
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][given_conf_file][type]" string => "string";
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][given_local_conf_file][type]" string => "string";
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][group][type]" string => "string";
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][metadata][type]" string => "metadata";
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][pidfile][type]" string => "string";
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][runenv][type]" string => "environment";
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][server_port][type]" string => "string";
+      "___001_Applications_Nagios_NRPE_agent_metadata[api][user][type]" string => "string";
+      "___001_Applications_Nagios_NRPE_agent_metadata[authors]" slist => { "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" };
+      "___001_Applications_Nagios_NRPE_agent_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "___001_Applications_Nagios_NRPE_agent_metadata[license]" string => "MIT";
+      "___001_Applications_Nagios_NRPE_agent_metadata[location]" string => "/var/cfengine/inputs/sketches/applications/nagios/nrpe";
+      "___001_Applications_Nagios_NRPE_agent_metadata[manifest]" slist => { "README.md", "main.cf" };
+      "___001_Applications_Nagios_NRPE_agent_metadata[manifest_cf]" slist => { "main.cf" };
+      "___001_Applications_Nagios_NRPE_agent_metadata[manifest_docs]" slist => { "README.md" };
+      "___001_Applications_Nagios_NRPE_agent_metadata[manifest_exe]" slist => { "cf_null" };
+      "___001_Applications_Nagios_NRPE_agent_metadata[manifest_extra]" slist => { "cf_null" };
+      "___001_Applications_Nagios_NRPE_agent_metadata[manifest_test]" slist => { "cf_null" };
+      "___001_Applications_Nagios_NRPE_agent_metadata[name]" string => "Applications::Nagios::NRPE";
+      "___001_Applications_Nagios_NRPE_agent_metadata[tags]" slist => { "cfdc", "nagios", "nrpe" };
+      "___001_Applications_Nagios_NRPE_agent_metadata[version]" string => "1";
+
+      # array 'commands' from definition parameter definition from /root/design-center/tools/test/../../sketches/applications/nagios/nrpe/params/demo.json, activation ___001_Applications_Nagios_NRPE_agent
+      "___001_Applications_Nagios_NRPE_agent_commands[check_all_disks]" string => "/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -e";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "___001_Applications_Nagios_NRPE_agent" usebundle => cfdc_nrpe:agent("cf_sketch_testing", "default:cfsketch_run.___001_Applications_Nagios_NRPE_agent_metadata", "/etc/nagios/nrpe.cfg", "/etc/nagios/nrpe_local.cfg", "/var/run/nagios/nrpe.pid", "5666", "nagios", "nagios", "0", "60", "10.0.0.1", "default:cfsketch_run.___001_Applications_Nagios_NRPE_agent_commands"), ifvarclass => "centos|redhat|ubuntu|debian", useresult => "return____001_Applications_Nagios_NRPE_agent";
+
+  reports:
+    inform_mode::
+      "activation ___001_Applications_Nagios_NRPE_agent could not run because it requires classes centos|redhat|ubuntu|debian" ifvarclass => "inform_mode.!(centos|redhat|ubuntu|debian)";
+}

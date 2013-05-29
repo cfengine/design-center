@@ -709,3 +709,7 @@ users:
 postfix:
 	$(CFSKETCH_DA) --install Applications::Postfix::Client --activate Applications::Postfix::Client=$(SOURCEDIR)/applications/postfix/client/params/demo.json
 	$(RUNNER)
+
+nagios:
+	$(CFSKETCH_DA) --install Applications::Nagios::NRPE --activate Applications::Nagios::NRPE=$(SOURCEDIR)/applications/nagios/nrpe/params/demo.json
+	$(RUNNER)
