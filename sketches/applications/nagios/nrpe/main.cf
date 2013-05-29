@@ -1,0 +1,131 @@
+body file control
+{
+      namespace => "cfdc_nrpe";
+}
+
+bundle agent agent(runenv,metadata,given_conf_file,given_local_conf_file,pidfile,server_port,user,group,dont_blame_nrpe,command_timeout,allowed_hosts,commands)
+{
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "conf_file" string => "$(default:eu.path_prefix)$(given_conf_file)";
+      "local_conf_file" string => "$(default:eu.path_prefix)$(given_local_conf_file)";
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+      "NAGIOS NRPE server INSTALL $(runenv)"
+      usebundle => install,
+      inherit => "true",
+      useresult => "install_return";
+
+      "NAGIOS NRPE server CONFIGURE $(runenv)"
+      usebundle => conf($(install_return[package_status]),$(conf_file),$(local_conf_file),$(pidfile),$(server_port),$(user),$(group),$(dont_blame_nrpe),$(command_timeout),$(allowed_hosts),$(commands)),
+      inherit => "true",
+      useresult => "config_return";
+
+      "NAGIOS NRPE server PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => proc("$(config_return[service_mode])");
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+}
+
+bundle agent install
+{
+  packages:
+    not_test.(ubuntu|debian)::
+      "nagios-nrpe-server"
+      package_policy => "add",
+      classes => default:if_ok("applications_nagios_nrpe_installed"),
+      package_method => default:apt;
+
+  reports:
+    verbose.applications_nagios_nrpe_installed::
+      "$(this.bundle): Installed Nagios NRPE server successfully.";
+    verbose.not_test.!applications_nagios_nrpe_installed::
+      "$(this.bundle): Could not install Nagios NRPE server successfully.";
+
+    applications_nagios_nrpe_installed::
+      "1" bundle_return_value_index => "package_status";
+    not_test.!applications_nagios_nrpe_installed::
+      "0" bundle_return_value_index => "package_status";
+    test::
+      "$(this.bundle): Overriding bundle return status to success (1) in test mode";
+      "1" bundle_return_value_index => "package_status";
+}
+
+bundle agent conf(pkg_status,conf_file,local_conf_file,pidfile,server_port,user,group,dont_blame_nrpe,command_timeout,allowed_hosts,commands)
+{
+  classes:
+      "nagios_nrpe_installed" expression => strcmp("1", $(pkg_status));
+
+  files:
+    nagios_nrpe_installed.(ubuntu|debian)::
+      "$(default:eu.path_prefix)$(conf_file)"
+      create => "true",
+      edit_defaults => default:empty,
+      classes => default:if_repaired("applications_nagios_nrpe_config_repaired"),
+      perms => default:mog("644","root","root"),
+      edit_line => edit_conf($(pidfile),$(server_port),$(user),$(group),$(dont_blame_nrpe),$(command_timeout),$(allowed_hosts),$(local_conf_file));
+      "$(default:eu.path_prefix)$(local_conf_file)"
+      create => "true",
+      edit_defaults => default:empty,
+      classes => default:if_repaired("applications_nagios_nrpe_config_repaired"),
+      perms => default:mog("644","root","root"),
+      edit_line => edit_local_conf($(commands));
+
+  reports:
+    applications_nagios_nrpe_config_repaired::
+      "restart" bundle_return_value_index => "service_mode";
+    !applications_nagios_nrpe_config_repaired::
+      "start" bundle_return_value_index => "service_mode";
+}
+
+bundle agent proc(service_mode)
+{
+  classes:
+      "applications_nagios_nrpe_conf_repaired" expression => strcmp("restart",$(service_mode));
+
+  processes:
+    !applications_nagios_nrpe_conf_repaired::
+      "nrpe"
+      restart_class => "applications_nagios_nrpe_proc_start";
+
+  commands:
+    applications_nagios_nrpe_conf_repaired::
+      "$(default:eu.exec_prefix)/etc/init.d/nagios-nrpe-server restart";
+    applications_nagios_nrpe_proc_start::
+      "$(default:eu.exec_prefix)/etc/init.d/nagios-nrpe-server start";
+}
+
+bundle edit_line edit_conf(pidfile,server_port,user,group,dont_blame_nrpe,command_timeout,allowed_hosts,local_conf_file)
+{
+  insert_lines:
+      "pid_file=$(pidfile)
+server_port=$(server_port)
+nrpe_user=$(user)
+nrpe_group=$(group)
+dont_blame_nrpe=$(dont_blame_nrpe)
+debug=0
+command_timeout=$(command_timeout)
+allowed_hosts=$(allowed_hosts)
+include=$(local_conf_file)";
+}
+
+bundle edit_line edit_local_conf(commands)
+{
+  vars:
+      "c_keys" slist => getindices("$(commands)");
+
+  insert_lines:
+      "command[$(c_keys)]=$($(commands)[$(c_keys)])";
+}

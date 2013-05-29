@@ -669,6 +669,10 @@ epel:
 	$(CFSKETCH_DA) --install Repository::EPEL --activate Repository::EPEL=$(SOURCEDIR)/package_management/epel/params/demo.json
 	$(RUNNER)
 
+nrpe:
+	$(CFSKETCH_DA) --install Applications::Nagios::NRPE --activate Applications::Nagios::NRPE=$(SOURCEDIR)/applications/nagios/nrpe/params/demo.json
+	$(RUNNER)
+
 packages_installed:
 	$(CFSKETCH_DA) --install Packages::installed --activate Packages::installed=$(SOURCEDIR)/package_management/packages_installed/params/demo.json
 	$(RUNNER)
@@ -693,4 +697,15 @@ autobalance:
 
 users:
 	$(CFSKETCH_DA) --install Users::Local --activate Users::Local=$(SOURCEDIR)/system/users_local/params/demo.json
+
+postfix:
+	$(CFSKETCH_DA) --install Applications::Postfix::Client --activate Applications::Postfix::Client=$(SOURCEDIR)/applications/postfix/client/params/demo.json
+	$(RUNNER)
+
+nagios:
+	$(CFSKETCH_DA) --install Applications::Nagios::NRPE --activate Applications::Nagios::NRPE=$(SOURCEDIR)/applications/nagios/nrpe/params/demo.json
+	$(RUNNER)
+
+php_fpm:
+	$(CFSKETCH_DA) --install Applications::PHP_FPM --activate Applications::PHP_FPM=$(SOURCEDIR)/applications/php_fpm/params/demo.json
 	$(RUNNER)
