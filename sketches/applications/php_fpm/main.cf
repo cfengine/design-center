@@ -1,0 +1,140 @@
+body file control
+{
+      namespace => "cfdc_php_fpm";
+}
+
+bundle agent server(runenv,metadata,given_conf_file,given_pool_dir,pidfile,errorlog,pools)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "conf_file" string => "$(default:eu.path_prefix)$(given_conf_file)";
+			"pool_dir" string => "$(default:eu.path_prefix)$(given_pool_dir)";
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+      "PHP_FPM INSTALL $(runenv)"
+      usebundle => install,
+      inherit => "true",
+      useresult => "install_return";
+
+      "PHP_FPM CONFIGURE $(runenv)"
+      usebundle => conf($(runenv), $(metadata), $(install_return[package_status]),$(conf_file),$(pool_dir),$(pidfile),$(errorlog),$(pools)),
+      inherit => "true",
+      useresult => "config_return";
+
+      "PHP_FPM PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => proc($(config_return[service_mode]));
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+}
+
+bundle agent install
+{
+  packages:
+    not_test.(ubuntu|debian)::
+      "php5-fpm"
+      package_policy => "add",
+      classes => default:if_ok("php_fpm_installed"),
+      package_method => default:apt;
+
+  reports:
+    verbose.php_fpm_installed::
+      "$(this.bundle): Installed php5-fpm successfully.";
+    verbose.not_test.!php_fpm_installed::
+      "$(this.bundle): Could not install php5-fpm successfully.";
+
+    php_fpm_installed::
+      "1" bundle_return_value_index => "package_status";
+    not_test.!php_fpm_installed::
+      "0" bundle_return_value_index => "package_status";
+    test::
+      "$(this.bundle): Overriding bundle return status to success (1) in test mode";
+      "1" bundle_return_value_index => "package_status";
+}
+
+bundle agent conf(runenv,metadata,pkg_status,conf_file,pool_dir,pidfile,errorlog,pools)
+{
+
+	vars:
+		"pool_names" slist => getindices("$(pools)");
+		"conf_files" slist => maplist("$(this).conf","pool_names");
+		"existing_pools" slist => lsdir("$(pool_dir)", ".*\.conf$", "false");
+
+  classes:
+      "applications_php_fpm_installed" expression => strcmp("1", $(pkg_status));
+
+  files:
+		applications_php_fpm_installed.(ubuntu|debian)::
+      "$(default:eu.path_prefix)$(conf_file)"
+			create => "true",
+			edit_defaults => default:empty,
+			classes => default:if_repaired("applications_php_fpm_config_repaired"),
+			edit_line => edit_conf($(pidfile),$(errorlog),$(pool_dir));
+
+		"$(pool_dir)/$(pool_names).conf"
+			create => "true",
+			edit_defaults => default:empty,
+			classes => default:if_repaired("applications_php_fpm_config_repaired"),
+			edit_line => edit_conf_pool("$(pool_names)", "$(pools)");
+
+		"$(pool_dir)/$(existing_pools)"
+			delete => default:tidy,
+			classes => default:if_repaired("applications_php_fpm_config_repaired"),
+			ifvarclass => not(reglist("@(conf_files)", "^$(existing_pools)$"));
+
+  reports:
+    applications_php_fpm_config_repaired::
+      "restart" bundle_return_value_index => "service_mode";
+    !applications_php_fpm_config_repaired::
+      "start" bundle_return_value_index => "service_mode";
+}
+
+bundle agent proc(service_mode)
+{
+  classes:
+      "applications_php_fpm_conf_repaired" expression => strcmp("restart",$(service_mode));
+
+  processes:
+    !applications_php_fpm_conf_repaired::
+      "php-fpm"
+      restart_class => "applications_php_fpm_proc_start";
+
+  commands:
+    applications_php_fpm_conf_repaired::
+      "$(default:eu.exec_prefix)/etc/init.d/php5-fpm restart";
+    applications_php_fpm_proc_start::
+      "$(default:eu.exec_prefix)/etc/init.d/php5-fpm start";
+}
+
+bundle edit_line edit_conf(pidfile,error_log,pool_dir)
+{
+	insert_lines:
+"[global]
+pid = $(pidfile)
+error_log = $(error_log)
+include=$(pool_dir)/*.conf";
+}
+
+bundle edit_line edit_conf_pool(p,c) {
+	insert_lines:
+"[$(p)]
+user = $($(c)[$(p)][user])
+group = $($(c)[$(p)][group])
+listen = $($(c)[$(p)][listen])
+pm = $($(c)[$(p)][pm])
+pm.max_children = $($(c)[$(p)][pm_max_children])
+pm.start_servers = $($(c)[$(p)][pm_start_servers])
+pm.min_spare_servers = $($(c)[$(p)][pm_min_spare_servers])
+pm.max_spare_servers = $($(c)[$(p)][pm_max_spare_servers])
+chdir = $($(c)[$(p)][chdir])";
+}

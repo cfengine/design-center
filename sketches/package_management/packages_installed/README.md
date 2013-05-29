@@ -5,7 +5,7 @@ Tags: cfdc, packages, enterprise_compatible
 Authors: Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>
 
 ## Description
-Ensure certain packages are installed or not installed.
+Ensure certain packages are installed or not installed. The networked package manager of the OS (e.g. yum or aptitude) is used to perform installations, so the packages to install need to be available in its package repository.
 
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib

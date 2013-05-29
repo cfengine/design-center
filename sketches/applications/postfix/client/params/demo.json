@@ -1,0 +1,6 @@
+{
+    "Applications::Postfix::Client":
+    {
+		  "relayhost" : "10.10.170.116"
+    }
+}
