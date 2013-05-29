@@ -1,0 +1,18 @@
+{
+    "Applications::PHP_FPM":
+    {
+				"pools" : {
+					"www" : {
+		        "user" : "www-data",
+						"group" : "www-data",
+						"listen" : "/tmp/default.sock",
+						"pm" : "dynamic",
+						"pm_max_children" : "10",
+						"pm_start_servers" : "4",
+						"pm_min_spare_servers" : "2",
+						"pm_max_spare_servers" : "6",
+						"chdir" : "/"
+					}
+				}
+    }
+}

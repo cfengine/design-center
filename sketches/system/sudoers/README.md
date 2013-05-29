@@ -1,7 +1,7 @@
 # System::Sudoers version 1
 
 License: MIT
-Tags: cfdc
+Tags: cfdc, sudoers
 Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
 ## Description
@@ -18,7 +18,7 @@ CFEngine::dclib, CFEngine::stdlib
 
 * parameter _string_ *file_path* (default: `"/etc/sudoers"`, description: none)
 
-* parameter _string_ *visudo_path* (default: `"/usr/sbin/visudo"`, description: none)
+* parameter _string_ *visudo_path* (default: `"/usr/sbin/visudo"`, description: Path to visudo command.  Use /bin/true to make it always succeed.)
 
 * parameter _array_ *defaults* (default: none, description: none)
 
