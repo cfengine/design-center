@@ -705,3 +705,7 @@ postfix:
 nagios:
 	$(CFSKETCH_DA) --install Applications::Nagios::NRPE --activate Applications::Nagios::NRPE=$(SOURCEDIR)/applications/nagios/nrpe/params/demo.json
 	$(RUNNER)
+
+php_fpm:
+	$(CFSKETCH_DA) --install Applications::PHP_FPM --activate Applications::PHP_FPM=$(SOURCEDIR)/applications/php_fpm/params/demo.json
+	$(RUNNER)
