@@ -122,7 +122,8 @@ GetOptions(\%options,
 
 #die "$0: cf-sketch can only be used in --expert mode" unless $options{expert};
 
-die "$0: --installsource DIR must be specified" unless $options{installsource};
+die "$0: --installsource FILE must be specified" unless $options{installsource};
+die "$0: $options{installsource} is not a file" unless (-f "$options{installsource}");
 
 $options{repolist} = [ "$inputs_root/sketches" ] unless scalar @{$options{repolist}};
 $options{verbose} = 1 if $options{veryverbose};
