@@ -9,18 +9,18 @@
     metadata:
     {
         name: "Security::file_integrity",
-        description: "File hashes will be generated at intervals specified by ifelapsed. On modification, you can update the hashes automatically. In either case, a local report will be generated and transferred to the CFEngine hub (CFEngine Enterprise only). Note that scanning the files requires a lot of disk and CPU cycles, so you should be careful when selecting the amount of files to check and the interval at which it happens (ifelapsed).",
+        description: "File hashes will be generated at intervals specified by ifelapsed. Reports on changes will be part of the FileChanges report table (CFEngine Enterprise only), or agent output in comminty. Hashing files requires a lot of disk and CPU cycles, so you should be careful when selecting the amount of files to check and the interval at which it happens (ifelapsed).",
         version: 1.00,
         license: "MIT",
-        tags: [ "cfdc", "pcidss", "pcidss_v2", "pcidss_v2_sec_11_5" ],
+        tags: [ "cfdc", "pcidss", "pcidss_v2", "pcidss_v2_sec_11_5", "enterprise_compatible" ],
         authors: [ "Eystein Stenberg <eystein@cfengine.com>" ],
         depends:
         {
             "CFEngine::stdlib": { version: 105 },
             "CFEngine::dclib": { },
-            cfengine: { version: "3.4.0" },
+            "cfengine": { version: "3.4.0" },
+            "os" : [ {"linux" : "All Linux distributions", "windows" : "All Windows versions"} ]
         },
-        os: [ "any" ],
     },
 
     api:
@@ -28,11 +28,11 @@
         // the key is the name of the bundle!
         watch:
         [
-            { type: "environment", name: "runenv", },
-            { type: "metadata", name: "metadata", },
-            { type: "list", name: "watch" },
-            { type: "string", name: "hash_algorithm", default: "sha256" },
-            { type: "string", name: "ifelapsed", default: "1440" },
+            { type: "environment", name: "runenv" },
+            { type: "metadata", name: "metadata" },
+            { type: "list", name: "watch", description: "Absolute path to files or directories to watch", validation: "LIST_OF_PATH_ABSOLUTE_UNIX_OR_WINDOWS", example: "/etc or /etc/passwd" },
+            { type: "string", name: "hash_algorithm", default: "sha256", description: "Hash algorithm", validation: "HASH_ALGORITHM", example: "sha256" },
+            { type: "string", name: "ifelapsed", default: "1440", description: "Time in minutes that should elapse before recheck", validation: "IFELAPSED", example: "1440" },
             { type: "return", name: "paths", },
         ],
     },
