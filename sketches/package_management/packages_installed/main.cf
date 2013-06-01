@@ -3,7 +3,7 @@ body file control
       namespace => "cfdc_packages";
 }
 
-bundle agent installed(runenv, metadata, pkgs_add, pkgs_delete)
+bundle agent installed(runenv, metadata, pkgs_add)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
@@ -32,13 +32,7 @@ bundle agent installed(runenv, metadata, pkgs_add, pkgs_delete)
       package_method => default:generic,
       handle => "$(activation_id)_packages_verify_installed";
 
-      "$(pkgs_delete)"
-      package_policy => "delete",
-      package_method => default:generic,
-      handle => "$(activation_id)_packages_delete";
-
   reports:
     test::
       "$(this.bundle): In test mode, so simulating adding package $(pkgs_add)";
-      "$(this.bundle): In test mode, so simulating removing package $(pkgs_delete)";
 }
