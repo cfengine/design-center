@@ -36,6 +36,12 @@ bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
       action       => default:if_elapsed("$(ifelapsed)"),
       handle       => "$(activation_id)_file_integrity_$(watch)";
 
+ # TODO: make file changes promise always give a status when file does not exist
+ #       we need at least one promise status to detect activation in Enterprise
+    "$(sys.workdir)/ppkeys/."
+      create       => "true",
+      handle       => "$(activation_id)_dummy_kept";
+
   reports:
     any::
       "$(watch_str)" bundle_return_value_index => "paths";
