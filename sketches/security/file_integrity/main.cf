@@ -13,6 +13,8 @@ bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
     test::
       "watch" slist => { "/tmp" }, policy => "free";
     not_test::
@@ -31,7 +33,8 @@ bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
       comment      => "Detect changes to files",
       changes      => changes_file_integrity("$(hash_algorithm)"),
       depth_search => default:recurse("inf"),
-      action       => default:if_elapsed("$(ifelapsed)");
+      action       => default:if_elapsed("$(ifelapsed)"),
+      handle       => "$(activation_id)_file_integrity_$(watch)";
 
   reports:
     any::
