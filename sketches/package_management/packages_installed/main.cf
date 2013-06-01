@@ -25,23 +25,23 @@ bundle agent installed(runenv, metadata, pkgs_add)
       "$(pkgs_add)"
       package_policy => "add",
       package_method => default:generic,
-      handle => "$(activation_id)_packages_add_redhat";
+      handle => "$(activation_id)_packages_add_redhat_$(pkgs_add)";
 
       "$(pkgs_add)"
       package_policy => "verify",
       package_method => yum_rpm_verify,
-      handle => "$(activation_id)_packages_verify_installed_redhat";
+      handle => "$(activation_id)_packages_verify_installed_redhat_$(pkgs_add)";
 
    not_test.!redhat::
       "$(pkgs_add)"
       package_policy => "add",
       package_method => default:generic,
-      handle => "$(activation_id)_packages_add";
+      handle => "$(activation_id)_packages_add_$(pkgs_add)";
 
       "$(pkgs_add)"
       package_policy => "verify",
       package_method => default:generic,
-      handle => "$(activation_id)_packages_verify_installed";
+      handle => "$(activation_id)_packages_verify_installed_$(pkgs_add)";
 
   reports:
     test::
