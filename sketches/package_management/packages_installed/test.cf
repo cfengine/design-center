@@ -39,7 +39,6 @@ bundle agent cfsketch_run
       "___001_Packages_installed_installed_metadata[api][][type]" string => "bundle_options";
       "___001_Packages_installed_installed_metadata[api][metadata][type]" string => "metadata";
       "___001_Packages_installed_installed_metadata[api][pkgs_add][type]" string => "list";
-      "___001_Packages_installed_installed_metadata[api][pkgs_delete][type]" string => "list";
       "___001_Packages_installed_installed_metadata[api][runenv][type]" string => "environment";
       "___001_Packages_installed_installed_metadata[authors]" slist => { "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" };
       "___001_Packages_installed_installed_metadata[bundle_options][single_use]" string => "1";
@@ -59,16 +58,13 @@ bundle agent cfsketch_run
       # list 'pkgs_add' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/package_management/packages_installed/params/demo.json, activation ___001_Packages_installed_installed
       "___001_Packages_installed_installed_pkgs_add" slist => { "screen" };
 
-      # list 'pkgs_delete' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/package_management/packages_installed/params/demo.json, activation ___001_Packages_installed_installed
-      "___001_Packages_installed_installed_pkgs_delete" slist => { "nosuchpackage" };
-
   methods:
     any::
       "cfsketch_g" usebundle => "cfsketch_g";
       "cf_sketch_testing" usebundle => "cf_sketch_testing";
 
     runenv_cf_sketch_testing_activated::
-      "___001_Packages_installed_installed" usebundle => cfdc_packages:installed("cf_sketch_testing", "default:cfsketch_run.___001_Packages_installed_installed_metadata", @(cfsketch_run.___001_Packages_installed_installed_pkgs_add), @(cfsketch_run.___001_Packages_installed_installed_pkgs_delete)), ifvarclass => "(debian)", useresult => "return____001_Packages_installed_installed";
+      "___001_Packages_installed_installed" usebundle => cfdc_packages:installed("cf_sketch_testing", "default:cfsketch_run.___001_Packages_installed_installed_metadata", @(cfsketch_run.___001_Packages_installed_installed_pkgs_add)), ifvarclass => "(debian)", useresult => "return____001_Packages_installed_installed";
 
   reports:
     inform_mode::
