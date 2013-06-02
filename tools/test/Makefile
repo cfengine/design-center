@@ -702,9 +702,11 @@ splunk:
 
 autobalance:
 	$(CFSKETCH_DA) --install Cloud::Autobalance --activate Cloud::Autobalance=$(SOURCEDIR)/cloud/autobalance/params/demo.json
+	$(RUNNER)
 
 users:
 	$(CFSKETCH_DA) --install Users::Local --activate Users::Local=$(SOURCEDIR)/system/users_local/params/demo.json
+	$(RUNNER)
 
 postfix:
 	$(CFSKETCH_DA) --install Applications::Postfix::Client --activate Applications::Postfix::Client=$(SOURCEDIR)/applications/postfix/client/params/demo.json
