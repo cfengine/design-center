@@ -23,19 +23,33 @@ bundle agent eu(runenv)
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
+      "have_path_prefix" expression => isvariable("default:$(runenv).path_prefix");
+      "no_path_prefix" not => isvariable("default:$(runenv).path_prefix");
+
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
     activated.not_test::
-      "path_prefix" string => "", policy => "free";
       "exec_prefix" string => "", policy => "free";
       "show_prefix" string => "", policy => "free";
 
     activated.test::
-      "path_prefix" string => "/tmp", policy => "free";
       "exec_prefix" string => "/bin/echo ", policy => "free";
       "show_prefix" string => "/bin/grep . ", policy => "free";
+
+    activated.have_path_prefix::
+      "path_prefix" string => "$(default:$(runenv).path_prefix)", policy => "free";
+    activated.no_path_prefix.not_test::
+      "path_prefix" string => "", policy => "free";
+    activated.no_path_prefix.test::
+      "path_prefix" string => "/tmp", policy => "free";
+
+  reports:
+    verbose::
+      "$(this.bundle): the path_prefix for runenv $(runenv) is '$(path_prefix)'";
+    veryverbose::
+      "$(this.bundle): the given path_prefix for runenv $(runenv) is '$(default:$(runenv).path_prefix)'";
 }
 
 # an example of how a sketch can install itself
