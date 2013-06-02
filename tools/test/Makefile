@@ -78,10 +78,15 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
-	echo '{ dc_api_version: "0.0.1", request: {define_validation: { 8BIT_NUMBER: { minimum_value: 0, maximum_value: 255 } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "8BIT_NUMBER", data: "A" } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "8BIT_NUMBER", data: "" } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "8BIT_NUMBER", data: "-1" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "path_override": { activated: true, test: true, verbose: true, qa: true, path_prefix: "/tmp/contain" } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "default": { activated: true, test: false, verbose: false } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::dclib", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Applications::Memcached", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define: { "memcached_11111": { "Applications::Memcached": { port: 11111 } } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Applications::Memcached": { environment: "path_override", params: [ "memcached_11111" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Applications::Memcached": { environment: "default", params: [ "memcached_11111" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
 api_test:
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Applications::Memcached", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)

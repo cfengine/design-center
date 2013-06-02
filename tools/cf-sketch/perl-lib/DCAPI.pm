@@ -62,14 +62,7 @@ has compositions => ( is => 'rw', default => sub { {} });
 has definitions => ( is => 'rw', default => sub { {} });
 has activations => ( is => 'rw', default => sub { {} });
 has validations => ( is => 'rw', default => sub { {} });
-has environments => ( is => 'rw', default => sub { { default =>
-                                                     {
-                                                      test => 0,
-                                                      verbose => 0,
-                                                      activated => 1,
-                                                     }
-                                                 }
-                                               });
+has environments => ( is => 'rw', default => sub { { } } );
 
 has cfengine_min_version => ( is => 'ro', required => 1 );
 has cfengine_version => ( is => 'rw' );
@@ -780,6 +773,24 @@ sub define_environment
             }
         }
 
+        foreach my $optional (qw/qa/)
+        {
+            $spec->{$optional} = ! ! $spec->{$optional}
+             if Util::is_json_boolean($spec->{$optional});
+
+            my $ref = ref $spec->{$optional};
+            if (!$ref)
+            {
+                # we're OK: it's a scalar
+            }
+            else
+            {
+                # only scalars and hash refs are acceptable
+                return $result->add_error('environment spec value',
+                                          "Invalid environment spec $dkey: non-scalar optional key '$optional'");
+            }
+        }
+
         $self->environments()->{$dkey} = $spec;
         $result->add_data_key($dkey, ['define_environment', $dkey], 1);
     }
@@ -1180,7 +1191,7 @@ sub regenerate
             if (ref $d eq '' && !defined $class_function)
             {
                 my $d_expression = $d;
-                if ($d_expression eq '' || $d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no')
+                if (!defined $d_expression || $d_expression eq '' || $d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no')
                 {
                     $d_expression = '!any';
                 }
