@@ -233,7 +233,13 @@ sub fill_param
 
     if ($type eq 'metadata')
     {
-        my $metadata = $extra->{sketch}->runfile_data_dump();
+        my $metadata = Util::hashref_merge({ activation => {
+                                                            identifier => $extra->{id},
+                                                            timestamp => time,
+                                                           }
+                                           },
+                                           $extra->{sketch}->runfile_data_dump());
+
         $metadata = Util::hashref_merge($metadata,
                                         {
                                          activation => $extra->{metadata},
