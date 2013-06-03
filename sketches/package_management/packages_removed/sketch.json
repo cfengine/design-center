@@ -1,0 +1,36 @@
+{
+
+    manifest:
+    {
+        "main.cf": { desc: "main file", "version": "1.0.0" },
+        "params/demo.json": { desc: "example parameters" },
+        "README.md": { documentation: true },
+    },
+
+    metadata:
+    {
+        "name": "Packages::removed",
+        "description": "Ensure certain packages are removed (not installed). The package manager of the OS (e.g. rpm or aptitude) is used to check the status of a package and remove it, if neccessary.",
+        "version": "1.0.0",
+        "license": "MIT",
+        "tags": [ "cfdc", "packages", "enterprise_compatible" ],
+        "authors": [ "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
+    },
+
+    api:
+    {
+        // the key is the name of the bundle!
+        removed:
+        [
+            { type: "bundle_options", single_use: true },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "list", name: "pkgs_removed", description: "Packages that should not be installed", validation: "LIST_OF_PACKAGE_NAME", example: "telnetd" }
+        ],
+    },
+
+    namespace: "cfdc_packages",
+    
+    interface: [ "main.cf" ]
+}
