@@ -73,7 +73,7 @@ ifneq ($(FILTER),)
   EXTRA:= $(EXTRA) --filter=$(FILTER)
 endif
 
-CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches --cfpath=$(CFPATH) $(EXTRA) --force --standalone
+CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches.json --cfpath=$(CFPATH) $(EXTRA) --force --standalone
 CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --standalonerunfile $(RUNFILE)
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
@@ -589,6 +589,14 @@ postgresql_client:
 
 postgresql_server:
 	$(CFSKETCH_DA) --install Database::Install::PostgreSQL --activate Database::Install::PostgreSQL=$(SOURCEDIR)/databases/postgresql_install/params/demo_server.json
+	$(RUNNER)
+
+postgresql_direct_client:
+	$(CFSKETCH_DA) --install Database::Install::PostgreSQL --activate Database::Install::PostgreSQL=$(SOURCEDIR)/databases/postgresql_install/params/demo_direct_client.json
+	$(RUNNER)
+
+postgresql_direct_server:
+	$(CFSKETCH_DA) --install Database::Install::PostgreSQL --activate Database::Install::PostgreSQL=$(SOURCEDIR)/databases/postgresql_install/params/demo_direct_server.json
 	$(RUNNER)
 
 sqlite:
