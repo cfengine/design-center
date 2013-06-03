@@ -18,6 +18,7 @@ bundle agent removed(runenv, metadata, pkgs_removed)
 files:
  # TODO: make packages promise always give a status when package is already removed
  #       we need at least one promise status to detect activation in Enterprise
+ #       Can be removed when this bug is fixed: https://cfengine.com/dev/issues/2861
     "$(sys.workdir)/ppkeys/."
       create       => "true",
       handle       => "$(activation_id)_dummy_kept";
