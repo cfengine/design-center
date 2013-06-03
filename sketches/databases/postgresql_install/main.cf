@@ -89,6 +89,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
   methods:
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      handle => "ensure_report_metadata",
       inherit => "true";
 
   packages:
@@ -104,7 +105,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
     purge::
       "$(all_packages)"
       comment => "Remove PostgreSQL packages",
-      handle => "db_install_packages_remove",
+      handle => "postgresql_install_packages_remove",
       package_policy => "delete",
       package_method => default:generic,
       classes => cfdc_dclib_350:scoped_generic("bundle", "remove"),
@@ -168,4 +169,44 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       "$(this.bundle): Server install mode";
     verbose.!server::
       "$(this.bundle): Client install mode";
+}
+
+bundle agent client(runenv, metadata)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "none" slist => {};
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  methods:
+      "ensure" usebundle => cfdc_db_postgresql:ensure($(runenv), "", "0", "0", @(client.none), "0"),
+      inherit => "true";
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+}
+
+bundle agent server(runenv, metadata)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "none" slist => {};
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  methods:
+      "ensure" usebundle => cfdc_db_postgresql:ensure($(runenv), "", "1", "0", @(client.none), "0"),
+      inherit => "true";
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
 }

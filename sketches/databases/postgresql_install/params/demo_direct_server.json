@@ -1,0 +1,1 @@
+{ "Database::Install::PostgreSQL": { server_password: "best password EVER" } }
