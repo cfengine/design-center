@@ -43,7 +43,6 @@
         [
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "mymetadata", },
-            { type: "string", name: "server_password", },
             { type: "return", name: "installed", },
             { type: "return", name: "running", },
         ],
