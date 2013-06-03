@@ -773,7 +773,7 @@ sub define_environment
             }
         }
 
-        foreach my $optional (qw/qa/)
+        foreach my $optional (qw/qa rudder/)
         {
             $spec->{$optional} = ! ! $spec->{$optional}
              if Util::is_json_boolean($spec->{$optional});
