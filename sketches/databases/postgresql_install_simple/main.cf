@@ -1,0 +1,96 @@
+body file control
+{
+  namespace => "cfdc_db_postgresql";
+}
+
+bundle agent simple(runenv, metadata)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+    redhat_6::
+      "packages" slist =>
+      {
+        "postgresql-server",
+      }, policy => "free";
+
+    ubuntu_12_4::
+      "packages" slist =>
+      {
+        "postgresql",
+      }, policy => "free";
+
+    redhat_6::
+      "process_match" string => "[^ ]+postmaster.*", policy => "free";
+
+    ubuntu_12_4::
+      "process_match" string => "[^ ]+postgres.*", policy => "free";
+
+    test::
+      "packages" slist => { "test-packages" }, policy => "free";
+      "type" string => "test-server", policy => "free";
+
+    any::
+      "start_command" string => "/etc/init.d/postgresql restart";
+      "canon[$(packages)]" string => canonify($(packages));
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  packages:
+      "$(packages)"
+      comment => "Install PostgreSQL packages",
+      handle => "$(activation_id)_postgresql_install_packages_add",
+      package_policy => "add",
+      package_method => default:generic,
+      classes => cfdc_dclib_350:scoped_generic("bundle", "install"),
+      action => default:log_repaired("stdout","PostgreSQL $(type) was installed");
+
+  processes:
+    install_ok::
+      "$(process_match)"
+      comment => "Check for PostgreSQL process",
+      handle => "$(activation_id)_postgresql_processes_run",
+      restart_class => "start_postgresql";
+
+  commands:
+    redhat_6.start_postgresql::
+      "/etc/init.d/postgresql initdb"
+      ifvarclass => not( fileexists("/var/lib/pgsql/data/PG_VERSION") ),
+      comment => "Initialize database on first run",
+      handle => "$(activation_id)_postgresql_commands_initdb_redhat_6";   
+
+    start_postgresql::
+      "$(start_command)"
+      comment => "Start/Restart PostgreSQL",
+      classes => cfdc_dclib_350:scoped_generic("bundle", "start"),
+      handle => "$(activation_id)_postgresql_commands_run";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    start_ok::
+      "$(this.bundle): Server started OK";
+      "1" bundle_return_value_index => "running";
+
+    !start_ok::
+      "$(this.bundle): Server could not be started";
+
+    install_ok::
+      "1" bundle_return_value_index => "installed";
+
+    !install_ok::
+      "" bundle_return_value_index => "installed";
+}
