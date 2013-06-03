@@ -38,6 +38,7 @@ bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
 
  # TODO: make file changes promise always give a status when file does not exist
  #       we need at least one promise status to detect activation in Enterprise
+ #       Can be removed when this bux is fixed: https://cfengine.com/dev/issues/2820
     "$(sys.workdir)/ppkeys/."
       create       => "true",
       handle       => "$(activation_id)_dummy_kept";
