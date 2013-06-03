@@ -1,0 +1,35 @@
+{
+    manifest:
+    {
+        "main.cf": { desc: "main file" },
+        "README.md": { documentation: true },
+
+        "params/demo_client.json": { comment: "Install PostgreSQL client" },
+        "params/demo_server.json": { comment: "Install PostgreSQL server" },
+    },
+
+    metadata:
+    {
+        name: "Database::Install::PostgreSQL::Simple",
+	    description: "Install and enable the PostgreSQL database engine",
+        version: 1.10,
+        license: "MIT",
+        tags: [ "cfdc", "database", "postgresql", "enterprise_compatible" ],
+        authors: [ "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, cfengine: { version: "3.5.0" }, os: [ { "ubuntu_12_4" : "Ubuntu 12.4", "redhat_6" : "Red Hat 6" } ] }
+    },
+
+    api:
+    {
+        simple:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "return", name: "installed", },
+            { type: "return", name: "running", },
+        ],
+    },
+
+    namespace: "cfdc_db_postgresql",
+    interface: [ "main.cf" ]
+}
