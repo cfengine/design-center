@@ -3,7 +3,7 @@ body file control
   namespace => "cfdc_db_postgresql";
 }
 
-bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_extra_packages)
+bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_extra_packages, activation_id_override)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
@@ -16,6 +16,16 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+    !activation_override::
+      "activation_id_fallback" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+    activation_override::
+      "activation_id_fallback" string => "";
+
+    any::
+      "activation_id" string => ifelse("activation_override",
+                                       $(activation_id_override),
+                                       $(activation_id_fallback));
 
     debian||ubuntu::
       "packages" slist =>
@@ -89,14 +99,14 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
   methods:
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      handle => "ensure_report_metadata",
+      handle => "$(activation_id)_ensure_report_metadata",
       inherit => "true";
 
   packages:
     !purge::
       "$(all_packages)"
       comment => "Install PostgreSQL packages",
-      handle => "postgresql_install_packages_add",
+      handle => "$(activation_id)_postgresql_install_packages_add",
       package_policy => "add",
       package_method => default:generic,
       classes => cfdc_dclib_350:scoped_generic("bundle", "install"),
@@ -105,7 +115,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
     purge::
       "$(all_packages)"
       comment => "Remove PostgreSQL packages",
-      handle => "postgresql_install_packages_remove",
+      handle => "$(activation_id)_postgresql_install_packages_remove",
       package_policy => "delete",
       package_method => default:generic,
       classes => cfdc_dclib_350:scoped_generic("bundle", "remove"),
@@ -115,13 +125,13 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
     server.install_ok::
       "$(process_match)"
       comment => "Check for PostgreSQL process",
-      handle => "postgresql_processes_run",
+      handle => "$(activation_id)_postgresql_processes_run",
       restart_class => "start_postgresql";
 
     purge.server::
       "$(process_match)"
       comment => "Teminate PostgreSQL process",
-      handle => "postgresql_processes_terminate",
+      handle => "$(activation_id)_postgresql_processes_terminate",
       classes => cfdc_dclib_350:scoped_generic("bundle", "terminate"),
       signals => { "term","kill" };
 
@@ -130,7 +140,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
       "$(start_command)"
       comment => "Start/Restart PostgreSQL",
       classes => cfdc_dclib_350:scoped_generic("bundle", "start"),
-      handle => "postgresql_commands_run";
+      handle => "$(activation_id)_postgresql_commands_run";
 
   reports:
     verbose::
@@ -161,6 +171,9 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
 
     verbose::
       "$(this.bundle): PostgreSQL $(mode) in $(type) mode; packages $(all_packages)";
+      "$(this.bundle): activation_id = $(activation_id), override = $(activation_id_override), fallback = $(activation_id_fallback)";
+    verbose.activation_override::
+      "$(this.bundle): activation_id override detected from $(activation_id_override)";
     verbose.purge::
       "$(this.bundle): Purge mode";
     verbose.!purge::
@@ -177,18 +190,26 @@ bundle agent client(runenv, metadata)
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
+      "activation_override" expression => "any";
+
   vars:
       "none" slist => {};
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
+      "aid" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
   methods:
-      "ensure" usebundle => cfdc_db_postgresql:ensure($(runenv), "", "0", "0", @(client.none), "0"),
+      "ensure" usebundle => cfdc_db_postgresql:ensure($(runenv), "", "0", "0", @(client.none), "0", $(aid)),
       inherit => "true";
 
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
+
+  reports:
+    verbose::
+      "$(this.bundle): Activation ID = $(aid)";
 }
 
 bundle agent server(runenv, metadata)
@@ -197,16 +218,24 @@ bundle agent server(runenv, metadata)
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
+      "activation_override" expression => "any";
+
   vars:
       "none" slist => {};
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
+      "aid" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
   methods:
-      "ensure" usebundle => cfdc_db_postgresql:ensure($(runenv), "", "1", "0", @(client.none), "0"),
+      "ensure" usebundle => cfdc_db_postgresql:ensure($(runenv), "", "1", "0", @(client.none), "0", $(aid)),
       inherit => "true";
 
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
+
+  reports:
+    verbose::
+      "$(this.bundle): Activation ID = $(aid)";
 }
