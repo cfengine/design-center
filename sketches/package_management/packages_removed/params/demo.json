@@ -1,0 +1,6 @@
+{
+    "Packages::removed":
+    {
+        pkgs_removed: [ "telnetd" ],
+    }
+}
