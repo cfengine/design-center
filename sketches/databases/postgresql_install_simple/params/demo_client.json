@@ -1,0 +1,7 @@
+[
+   // this is the install client bundle call
+   { "Database::Install::PostgreSQL::Simple": {server:false} },
+
+   // this is the install server bundle call
+   { "Database::Install::PostgreSQL::Simple": {server: true} },
+]
