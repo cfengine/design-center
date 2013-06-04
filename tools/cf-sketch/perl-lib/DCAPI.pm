@@ -477,8 +477,8 @@ sub install
                 {
                     if ($varname eq 'source')
                     {
-                        $self->log3("No source specified, trying the first one from recognized_sources");
-                        $v = $self->recognized_sources()->[0];
+                        $self->log3("No source specified, trying each one from recognized_sources %s", $self->recognized_sources());
+                        $v = $self->recognized_sources();
                     }
                     elsif ($varname eq 'target')
                     {
@@ -505,24 +505,26 @@ sub install
             $d{$varname} = $v;
         }
 
+        if (ref $d{source} ne 'ARRAY')
+        {
+            $d{source} = [$d{source}];
+        }
+
         my $location = $d{target};
+
         my $drepo;
-        my $srepo;
 
         eval
         {
             $drepo = $self->load_repo($d{target});
-            $srepo = $self->load_repo($d{source});
         };
 
         if ($@)
         {
-            $result->add_error(defined $drepo ? 'install source' : 'install target',
-                               $@);
+            $result->add_error('install target', $@);
         }
 
         next INSTALLER unless defined $drepo;
-        next INSTALLER unless defined $srepo;
 
         if ($drepo->find_sketch($d{sketch}))
         {
@@ -539,7 +541,46 @@ sub install
             }
         }
 
-        my $sketch = $srepo->find_sketch($d{sketch}, $d{version});
+        my $sketch;
+    SOURCE_CANDIDATE:
+        foreach my $source_candidate (@{$d{source}})
+        {
+            my $srepo;
+
+            eval
+            {
+                $srepo = $self->load_repo($source_candidate);
+            };
+
+            if ($@)
+            {
+                $result->add_error('install source', $@);
+            }
+
+            next SOURCE_CANDIDATE unless defined $srepo;
+
+            $sketch = $srepo->find_sketch($d{sketch}, $d{version});
+
+            unless (defined $sketch)
+            {
+                next SOURCE_CANDIDATE;
+            }
+
+            my $depcheck = $sketch->resolve_dependencies(install => 1,
+                                                         force => $d{force},
+                                                         source => $d{source},
+                                                         target => $d{target});
+
+            return $depcheck unless $depcheck->success();
+
+            $self->log("Installing sketch: %s", \%d);
+
+            my $install_check = $drepo->install($srepo, $sketch);
+            $result->merge($install_check);
+            $result->add_data_key($d{sketch},
+                                  ['install', $d{target}, $d{sketch}],
+                                  1);
+        }
 
         unless (defined $sketch)
         {
@@ -548,20 +589,6 @@ sub install
             next INSTALLER;
         }
 
-        my $depcheck = $sketch->resolve_dependencies(install => 1,
-                                                     force => $d{force},
-                                                     source => $d{source},
-                                                     target => $d{target});
-
-        return $depcheck unless $depcheck->success();
-
-        $self->log("Installing sketch $d{sketch} from $d{source} into $d{target}");
-
-        my $install_check = $drepo->install($srepo, $sketch);
-        $result->merge($install_check);
-        $result->add_data_key($d{sketch},
-                              ['install', $d{target}, $d{sketch}],
-                              1);
     }
 
     return $result;
