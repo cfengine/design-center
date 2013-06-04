@@ -485,6 +485,24 @@ sub install
         foreach my $varname (qw/sketch source target/)
         {
             my $v = Util::hashref_search($installer, $varname);
+
+            unless (defined $v)
+            {
+                eval
+                {
+                    if ($varname eq 'source')
+                    {
+                        $self->log3("No source specified, trying the first one from recognized_sources");
+                        $v = $self->recognized_sources()->[0];
+                    }
+                    elsif ($varname eq 'target')
+                    {
+                        $self->log3("No target specified, trying the first one from repolist");
+                        $v = $self->repos()->[0];
+                    }
+                };
+            }
+
             unless (defined $v)
             {
                 $result->add_error('syntax',
