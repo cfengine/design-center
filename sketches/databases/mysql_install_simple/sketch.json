@@ -1,0 +1,36 @@
+{
+    manifest:
+    {
+        "main.cf": { desc: "main file" },
+        "README.md": { documentation: true },
+
+        "params/demo_client.json": { comment: "Install MySQL client" },
+        "params/demo_server.json": { comment: "Install MySQL server" },
+    },
+
+    metadata:
+    {
+        name: "Database::Install::MySQL::Simple",
+	    description: "Install and enable the MySQL database engine",
+        version: 1.00,
+        license: "MIT",
+        tags: [ "cfdc", "database", "mysql", "enterprise_compatible" ],
+        authors: [ "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 109 }, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, cfengine: { version: "3.5.0" }, os: [ "linux" ] },
+    },
+
+    api:
+    {
+        simple:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "boolean", name: "server" },
+            { type: "return", name: "installed", },
+            { type: "return", name: "running", },
+        ],
+    },
+
+    namespace: "cfdc_db_mysql",
+    interface: [ "main.cf" ]
+}

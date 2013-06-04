@@ -583,6 +583,14 @@ mysql_server:
 	$(CFSKETCH_DA) --install Database::Install::MySQL --activate Database::Install::MySQL=$(SOURCEDIR)/databases/mysql_install/params/demo_server.json
 	$(RUNNER)
 
+mysql_simple_client:
+	$(CFSKETCH_DA) --install Database::Install::MySQL::Simple --activate Database::Install::MySQL::Simple=$(SOURCEDIR)/databases/mysql_install_simple/params/demo_client.json
+	$(RUNNER)
+
+mysql_simple_server:
+	$(CFSKETCH_DA) --install Database::Install::MySQL::Simple --activate Database::Install::MySQL::Simple=$(SOURCEDIR)/databases/mysql_install_simple/params/demo_server.json
+	$(RUNNER)
+
 postgresql_client:
 	$(CFSKETCH_DA) --install Database::Install::PostgreSQL --activate Database::Install::PostgreSQL=$(SOURCEDIR)/databases/postgresql_install/params/demo_client.json
 	$(RUNNER)
