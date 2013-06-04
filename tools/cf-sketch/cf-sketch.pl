@@ -78,6 +78,7 @@ my %options = (
                veryverbose => 0,
                standalone => 0,
                runfile => "$inputs_root/api-runfile.cf",
+               vardata => undef,
                standalonerunfile => "$inputs_root/api-runfile-standalone.cf",
                installsource => Util::local_cfsketches_source(File::Spec->curdir()) || undef,
                constdata => $constdata,
@@ -116,6 +117,7 @@ GetOptions(\%options,
 
            "standalone!",
            "runfile|rf=s",
+           "vardata=s",
            "standalonerunfile|srf=s",
            "repolist|rl=s@",
           );
@@ -331,7 +333,7 @@ sub api_interaction
                  relocate_path => "sketches",
                  filter_inputs => $options{filter},
                 },
-                vardata => "$inputs_root/cfsketch-vardata.conf",
+                vardata => "$options{vardata} || $inputs_root/cfsketch-vardata.conf",
                 constdata => $options{constdata},
                };
 
