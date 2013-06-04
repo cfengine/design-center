@@ -441,9 +441,9 @@ list of key-value arrays with keys:
 
 * `sketch`: the sketch name.
 
-* `target`: the sketch install directory.  Must be in the API's `repolist`.
+* `target`: the sketch install directory.  Must be in the API's `repolist`.  Optional; when not given, the first element of the `repolist` will be used.
 
-* `source`: the sketch source repository.  Must be in the API's `recognized_sources`.
+* `source`: the sketch source repository.  Must be in the API's `recognized_sources`.  Optional; when not given, the first element of the `recognized_sources` will be used.
 
 ```json
 {
