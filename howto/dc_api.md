@@ -443,7 +443,7 @@ list of key-value arrays with keys:
 
 * `target`: the sketch install directory.  Must be in the API's `repolist`.  Optional; when not given, the first element of the `repolist` will be used.
 
-* `source`: the sketch source repository.  Must be in the API's `recognized_sources`.  Optional; when not given, the first element of the `recognized_sources` will be used.
+* `source`: the sketch source repository.  Must be in the API's `recognized_sources`.  Optional; when not given, every element of the `recognized_sources` will be tried.  Can be a string or an array of strings.
 
 ```json
 {
@@ -452,8 +452,6 @@ list of key-value arrays with keys:
         install: [{
             sketch: "CFEngine::sketch_template",
             force: true,
-            target: "~/.cfagent/inputs/sketches",
-            source: "/home/tzz/source/design-center/tools/test/../../sketches"
         },
         {
             sketch: "VCS::vcs_mirror",
