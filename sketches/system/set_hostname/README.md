@@ -1,7 +1,7 @@
 # System::set_hostname version 1.05.2
 
 License: MIT
-Tags: cfdc, enterprise_compatible
+Tags: cfdc
 Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
