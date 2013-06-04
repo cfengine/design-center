@@ -10,7 +10,7 @@
     metadata:
     {
         "name": "Packages::removed",
-        "description": "Ensure certain packages are removed (not installed). The package manager of the OS (e.g. rpm or aptitude) is used to check the status of a package and remove it, if neccessary.",
+        "description": "Ensure certain packages are removed (not installed). The package manager of the OS (e.g. rpm or aptitude) is used to check the status of a package and remove it, if necessary.",
         "version": "1.0.0",
         "license": "MIT",
         "tags": [ "cfdc", "packages", "enterprise_compatible" ],
