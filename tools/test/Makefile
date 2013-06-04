@@ -78,6 +78,9 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
+	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Applications::Memcached", force: true } ] } }' | $(CFAPI)
+
+api_test:
 	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "path_override": { activated: true, test: true, verbose: true, qa: true, path_prefix: "/tmp/contain" } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define_environment: { "default": { activated: true, test: false, verbose: false } } } }' | $(CFAPI)
@@ -87,10 +90,6 @@ do:
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Applications::Memcached": { environment: "path_override", params: [ "memcached_11111" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {activate: { "Applications::Memcached": { environment: "default", params: [ "memcached_11111" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
-
-api_test:
-	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Applications::Memcached", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {test: ["Applications::Memcached"] } }' | $(CFAPI)
 
 api_activate:
 	@echo ...install CFEngine::sketch_template, deactivate all, activate just CFEngine::sketch_template with some metadata, then generate the runfile
