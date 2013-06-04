@@ -1,0 +1,187 @@
+body file control
+{
+  namespace => "cfdc_db_mysql";
+}
+
+bundle agent simple(runenv, metadata, server)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "server" expression => strcmp($(server), "1");
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+    ubuntu_12::
+      "packages" slist =>
+      {
+        "mysql-client",
+        "mysql-common",
+        "libmysqlclient18",
+        "libdbd-mysql-perl",
+        "libdbi-perl",
+        "libnet-daemon-perl",
+        "libplrpc-perl"
+      }, policy => "free";
+
+      "server_packages" slist =>
+      {
+        "mysql-server",
+        "mysql-server-core",
+        "libhtml-template-perl"
+      }, policy => "free";
+
+    redhat|centos|fedora::
+      "packages" slist =>
+      {
+        "mysql"
+      }, policy => "free";
+
+      "server_packages" slist =>
+      {
+        "mysql-server",
+        "perl-DBD-MySQL"
+      }, policy => "free";
+
+      "process_match" string => ".*mysqld.*", policy => "free";
+
+      !ubuntu_12.(debian|ubuntu)::
+      "packages" slist =>
+      {
+        "mysql-client",
+        "mysql-client-core",
+        "mysql-common",
+        "libmysqlclient16",
+        "libdbd-mysql-perl",
+        "libdbi-perl",
+        "libnet-daemon-perl",
+        "libplrpc-perl"
+      }, policy => "free";
+
+      "server_packages" slist =>
+      {
+        "mysql-server",
+        "mysql-server-core",
+        "libhtml-template-perl"
+      }, policy => "free";
+
+      suse|SuSe::
+      "packages" slist =>
+      {
+        "mysql-community-server-client",
+        "libmysqlclient16",
+        "libmysqlclient_r16"
+      }, policy => "free";
+
+      "server_packages" slist =>
+      {
+        "mysql-community-server"
+      }, policy => "free";
+
+    !(redhat|centos|fedora)::
+      "process_match" string => "/usr/sbin/mysqld.*", policy => "free";
+
+    server.test::
+      "all_packages" slist => { "test-packages", "test-server-packages" }, policy => "free";
+      "type" string => "test-server", policy => "free";
+
+    !server.test::
+      "all_packages" slist => { "test-packages" }, policy => "free";
+      "type" string => "test-client", policy => "free";
+
+    server.not_test::
+      "all_packages" slist => { @(packages), @(server_packages) }, policy => "free";
+
+    !server.not_test::
+      "all_packages" slist => { @(packages) }, policy => "free";
+
+    not_test::
+      "mode" string => "installing", policy => "free";
+
+    test::
+      "mode" string => "test-installing", policy => "free";
+
+    any::
+      "start_command" string => "/etc/init.d/mysql restart";
+      "canon[$(all_packages)]" string => canonify($(all_packages));
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  packages:
+      "$(all_packages)"
+      comment => "Install MySQL packages",
+      handle => "$(activation_id)_mysql_install_packages_add",
+      package_policy => "add",
+      package_method => default:generic,
+      classes => cfdc_dclib_350:scoped_generic("bundle", "install"),
+      action => default:log_repaired("stdout","MySQL $(type) was installed");
+
+  files:
+
+    server.(redhat|centos|fedora)::
+      "/tmp/mysql.sock"
+      comment => "Create a temp link to mysql.sock",
+      handle => "$(activation_id)_mysql_files_mysql_sock_redhat_centos_fedora",
+      link_from => default:ln_s("/var/lib/mysql/mysql.sock");
+
+    server.(debian|ubuntu)::
+
+      "/tmp/mysql.sock"
+      comment => "Create a temp link to mysql.sock",
+      handle => "$(activation_id)_mysql_files_mysql_sock_debian_ubuntu",
+      link_from => default:ln_s("/var/run/mysqld/mysqld.sock");
+
+  processes:
+    server.install_ok::
+      "$(process_match)"
+      comment => "Check for MySQL process",
+      handle => "$(activation_id)_mysql_processes_run",
+      restart_class => "start_mysql";
+
+  commands:
+    start_mysql::
+      "$(start_command)"
+      comment => "Start/Restart MySQL",
+      classes => cfdc_dclib_350:scoped_generic("bundle", "start"),
+      handle => "$(activation_id)_mysql_commands_run";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    start_ok::
+      "$(this.bundle): Server started OK";
+      "1" bundle_return_value_index => "running";
+
+    server.!start_ok::
+      "$(this.bundle): Server could not be started";
+    !start_ok::
+      "0" bundle_return_value_index => "running";
+
+    install_ok::
+      "1" bundle_return_value_index => "installed";
+
+    !install_ok::
+      "" bundle_return_value_index => "installed";
+
+    test::
+      "$(this.bundle): SIMULATE $(mode) of $(all_packages)";
+
+    verbose::
+      "$(this.bundle): MySQL $(mode) in $(type) mode; packages $(all_packages)";
+      "$(this.bundle): Install mode";
+    verbose.server::
+      "$(this.bundle): Server install mode";
+    verbose.!server::
+      "$(this.bundle): Client install mode";
+}
