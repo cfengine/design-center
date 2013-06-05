@@ -230,6 +230,19 @@ sub save_vardata
 
     $self->log("Saving vardata file $vardata_file");
 
+    my $dest_dir = File::Basename::dirname($vardata_file);
+    unless (-d $dest_dir)
+    {
+        $self->log("Attempting to create the missing vardata directory $dest_dir");
+
+        # ignore errors, there's nothing we can do and the error below will
+        # suffice
+        my $errors;
+        File::Path::make_path($dest_dir, {
+                                          error => $errors,
+                                         });
+    }
+
     open my $fh, '>', $vardata_file
      or return (0, "Vardata file $vardata_file could not be created: $!");
 
