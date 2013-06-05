@@ -516,6 +516,7 @@ sub resolve_dependencies
                     # try to install the dependency
                     my $search = $self->dcapi()->search(\@criteria);
                     my $installed = 0;
+                    my $install_result;
                     if ($search->success())
                     {
                         my $sdata = Util::hashref_search($search->data(), 'search') || {};
@@ -525,16 +526,18 @@ sub resolve_dependencies
                             $install_request{source} = $srepo;
                             $self->dcapi()->log("Trying to install dependency $dep for $name: %s",
                                                 \%install_request);
-                            my $install_result = $self->dcapi()->install([\%install_request]);
+                            $install_result = $self->dcapi()->install([\%install_request]);
                             if ($install_result->success())
                             {
                                 $installed = $install_result;
+                                last;
                             }
-                            else
-                            {
-                                return $install_result->add_error('dependency install',
-                                                                  "Could not install dependency $dep for $name");
-                            }
+                        }
+
+                        unless ($installed)
+                        {
+                            return $install_result->add_error('dependency install',
+                                                              "Could not install dependency $dep for $name");
                         }
                     }
                     else
