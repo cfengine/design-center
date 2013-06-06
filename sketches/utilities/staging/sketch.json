@@ -1,0 +1,49 @@
+{
+    manifest:
+    {
+        "main.cf": {desc: "main file" },
+        "README.md": {documentation: true},
+        "test.pl": { test:true },
+        "test.cf": {comment: "Test Policy"},
+        "params/demo.json": {comment: "Demo parameters."}
+    },
+
+    metadata:
+    {
+        name: "Utilities::Staging",
+	    description: "Stage a directory of content to a target directory.",
+        version: 1.0,
+        license: "MIT",
+        tags: ["cfdc", "stage", "directory", "rsync" ],
+        authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: {"CFEngine::stdlib": {version: 109}, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, cfengine: {version: "3.5.0"} }
+    },
+
+    api:
+    {
+        stage:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "source_dir", description: "Directory where the content can be found.", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "string", name: "dest_dir", description: "Directory where the content will be installed.", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "string", name: "owner", description: "Owner of the dest_dir after staging.", validation: "USERNAME_UNIX" },
+            { type: "string", name: "group", description: "Owner of the dest_dir after staging.", validation: "USERNAME_UNIX" },
+            { type: "string", name: "dirmode", description: "Directory mode to install.", validation: "DIGITS" },
+            { type: "string", name: "filemode", description: "File mode to install.", validation: "DIGITS" },
+            { type: "array", name: "options", description: "Staging options.",
+            default:
+              {
+                  excluded: [".cvs", ".svn", ".subversion", ".git", ".bzr"],
+                  precommand: "/bin/echo precommand",
+                  postcommand: "/bin/echo postcommand",
+              }
+            },
+            { type: "return", name: "staged", },
+            { type: "return", name: "directory", },
+        ],
+    },
+
+    namespace: "cfdc_staging",
+    interface: ["main.cf"]
+}

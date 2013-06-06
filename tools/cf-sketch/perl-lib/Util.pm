@@ -408,6 +408,14 @@ sub is_scalar_1
     return ((ref shift) eq '');
 }
 
+sub is_funcall
+{
+    my $ref = shift @_;
+    return ref $ref eq 'HASH' &&
+     exists $ref->{function} &&
+     exists $ref->{args};
+}
+
 sub is_json_boolean
 {
     my $v = shift;
@@ -436,7 +444,7 @@ sub recurse_print
     # recurse for hashes
     if (ref $ref eq 'HASH')
     {
-        if (exists $ref->{function} && exists $ref->{args})
+        if (is_funcall($ref))
         {
             push @print, {
                           path => $prefix,

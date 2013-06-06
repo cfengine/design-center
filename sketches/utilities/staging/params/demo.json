@@ -1,0 +1,11 @@
+{
+   "Utilities::Staging":
+   {
+       source_dir: "/var/tmp/files",
+       dest_dir: "/var/tmp/files_staged",
+       owner: { "function": "getenv", "args": ["LOGNAME", "128"] },
+       group: { "function": "getenv", "args": ["LOGNAME", "128"] },
+       dirmode: "755",
+       filemode: "644",
+   }
+}
