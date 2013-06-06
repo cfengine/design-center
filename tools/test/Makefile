@@ -727,3 +727,7 @@ nagios:
 php_fpm:
 	$(CFSKETCH_DA) --install Applications::PHP_FPM --activate Applications::PHP_FPM=$(SOURCEDIR)/applications/php_fpm/params/demo.json
 	$(RUNNER)
+
+staging:
+	$(CFSKETCH_DA) --install Utilities::Staging --activate Utilities::Staging=$(SOURCEDIR)/utilities/staging/params/demo.json
+	$(RUNNER)
