@@ -208,6 +208,8 @@ sub fill_param
     my $param_sets = shift;
     my $extra      = shift;
 
+    $api->log5("looking to fill parameter $name of type $type");
+
     if ($type eq 'environment')
     {
         return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
@@ -317,10 +319,12 @@ sub fill_param
                 $ret = {set=>$pkey, type => $type, name => $name, value => \%mapped};
             }
         }
-        elsif ($type eq 'string' && exists $pval{$name} && Util::is_scalar($pval{$name}))
+        elsif ($type eq 'string' && exists $pval{$name} &&
+               (Util::is_scalar($pval{$name}) || Util::is_funcall($pval{$name})))
         {
             $ret = {set=>$pkey, type => $type, name => $name, value => $pval{$name}};
         }
+        # TODO: should booleans accept funcalls?  hmm....
         elsif ($type eq 'boolean' && exists $pval{$name} && Util::is_scalar($pval{$name}))
         {
             $ret = {set=>$pkey, type => $type, name => $name, value => 0+!!$pval{$name}};

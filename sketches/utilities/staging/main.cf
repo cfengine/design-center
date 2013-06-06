@@ -1,0 +1,147 @@
+body file control
+{
+      namespace => "cfdc_staging";
+}
+
+bundle agent stage(runenv, metadata, source_dir, given_dest_dir, owner, group, dirmode, filemode, options)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "options_list" slist => maparray("$(this.k) = $(this.v)", $(options));
+      "excluded" slist => { "@($(options)[excluded])" };
+
+    activated::
+      "dest_dir" string => "$(default:eu.path_prefix)$(given_dest_dir)";
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+      "precommand" usebundle => command($(source_dir), "$($(options)[precommand])"),
+      handle => "cfdc_stage_precommand",
+      inherit => "true";
+
+      "copy" usebundle => copy($(source_dir),
+                               $(dest_dir),
+                               @(stage.excluded)),
+      classes => cfdc_dclib_350:scoped_generic("bundle", "copy"),
+      handle => "cfdc_stage_copy",
+      depends_on => { "cfdc_stage_precommand" },
+      inherit => "true";
+
+      "chmod" usebundle => chmod($(dest_dir),
+                                 $(owner),
+                                 $(group),
+                                 $(dirmode),
+                                 $(filemode)),
+      handle => "cfdc_stage_chmod",
+      depends_on => { "cfdc_stage_copy" },
+      classes => cfdc_dclib_350:scoped_generic("bundle", "chmod"),
+      inherit => "true";
+
+      "postcommand" usebundle => command($(dest_dir), "$($(options)[postcommand])"),
+      handle => "cfdc_stage_postcommand",
+      depends_on => { "cfdc_stage_chmod" },
+      inherit => "true";
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+      "$(this.bundle): Staging $(source_dir) to $(dest_dir) with owner $(owner), group $(group), dir/file modes $(dirmode)/$(filemode)";
+      "$(this.bundle): Excluded: $(excluded)";
+      "$(this.bundle): Options: $(options_list)";
+
+      "$(this.bundle): running in verbose mode";
+    test::
+      "$(this.bundle): running in test mode";
+
+    chmod_ok::
+      "$(dest_dir)" bundle_return_value_index => "directory";
+      "1" bundle_return_value_index => "staged";
+    chmod_not_ok::
+      "" bundle_return_value_index => "directory";
+      "" bundle_return_value_index => "staged";
+
+}
+
+bundle agent command(dir, command)
+{
+  commands:
+      "$(command)" contain => default:in_dir_shell($(dir));
+
+  reports:
+    verbose::
+      "$(this.bundle): Running '$(command)' in directory $(dir)";
+}
+
+bundle agent chmod(dir, owner, group, dirmode, filemode)
+{
+  files:
+      "$(dir)/."
+      file_select => default:dirs,
+      perms => default:mog($(dirmode), $(owner), $(group)),
+      depth_search => recurse_with_base("999");
+
+      "$(dir)/."
+      file_select => default:plain,
+      perms => default:mog($(filemode), $(owner), $(group)),
+      depth_search => recurse_with_base("999");
+
+  reports:
+    verbose::
+      "$(this.bundle): Setting permissions of $(dir) to owner $(owner), group $(group), dir/file modes $(dirmode)/$(filemode)";
+}
+
+body depth_search recurse_with_base(d)
+{
+      depth => "$(d)";
+      xdev  => "true";
+      include_basedir => "true";
+}
+
+bundle agent copy(from, to, excluded)
+{
+  vars:
+      "exclude" slist => { @(excluded) };
+
+  files:
+      "$(to)/."
+      copy_from => copy_stage("$(from)/."),
+      depth_search => recurse_except(@(copy.exclude));
+
+  reports:
+    verbose::
+      "$(this.bundle): Copying from $(from) to $(to)";
+}
+
+body copy_from copy_stage(from)
+{
+      check_root  => "true";
+      compare     => "hash";
+      copy_backup => "false";
+      preserve    => "false";
+      purge       => "true";
+      source      => "$(from)";
+      type_check  => "false";
+      verify      => "true";
+}
+
+body depth_search recurse_except(excluded)
+{
+      exclude_dirs => { @(excluded) };
+      depth => "9999";
+      include_basedir => "true";
+      xdev  => "true";
+}
