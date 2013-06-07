@@ -1,0 +1,81 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs) };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "1";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "1";
+      "verbose" string => "1";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib-3.5.0/library.cf", "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'metadata' from definition sketch metadata, activation ___001_Apache_Simple_apache
+      "___001_Apache_Simple_apache_metadata[api][configured][type]" string => "return";
+      "___001_Apache_Simple_apache_metadata[api][docroot][type]" string => "return";
+      "___001_Apache_Simple_apache_metadata[api][hostname][type]" string => "string";
+      "___001_Apache_Simple_apache_metadata[api][installed][type]" string => "return";
+      "___001_Apache_Simple_apache_metadata[api][metadata][type]" string => "metadata";
+      "___001_Apache_Simple_apache_metadata[api][options][type]" string => "array";
+      "___001_Apache_Simple_apache_metadata[api][port][type]" string => "string";
+      "___001_Apache_Simple_apache_metadata[api][runenv][type]" string => "environment";
+      "___001_Apache_Simple_apache_metadata[api][running][type]" string => "return";
+      "___001_Apache_Simple_apache_metadata[api][ssl_port][type]" string => "string";
+      "___001_Apache_Simple_apache_metadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "___001_Apache_Simple_apache_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::dclib::3.5.0", "CFEngine::stdlib" };
+      "___001_Apache_Simple_apache_metadata[license]" string => "MIT";
+      "___001_Apache_Simple_apache_metadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/web_servers/apache";
+      "___001_Apache_Simple_apache_metadata[manifest]" slist => { "README.md", "main.cf", "params/demo_apache.json", "templates/debian/default-ssl.tmpl", "templates/debian/default.tmpl", "templates/debian/ports.tmpl", "test.cf", "test.pl" };
+      "___001_Apache_Simple_apache_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "___001_Apache_Simple_apache_metadata[manifest_docs]" slist => { "README.md" };
+      "___001_Apache_Simple_apache_metadata[manifest_exe]" slist => { "cf_null" };
+      "___001_Apache_Simple_apache_metadata[manifest_extra]" slist => { "params/demo_apache.json", "templates/debian/default-ssl.tmpl", "templates/debian/default.tmpl", "templates/debian/ports.tmpl" };
+      "___001_Apache_Simple_apache_metadata[manifest_test]" slist => { "test.pl" };
+      "___001_Apache_Simple_apache_metadata[name]" string => "Apache::Simple";
+      "___001_Apache_Simple_apache_metadata[tags]" slist => { "cfdc", "webserver", "apache" };
+      "___001_Apache_Simple_apache_metadata[version]" string => "1";
+
+      # array 'options' from definition parameter definition from /home/tzz/source/design-center/tools/test/../../sketches/web_servers/apache/params/demo_apache.json, activation ___001_Apache_Simple_apache
+      "___001_Apache_Simple_apache_options[ssl]" string => "1";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "___001_Apache_Simple_apache" usebundle => cfdc_webserver:apache("cf_sketch_testing", "default:cfsketch_run.___001_Apache_Simple_apache_metadata", "myhost", "80", "443", "/home/www/docroot", "default:cfsketch_run.___001_Apache_Simple_apache_options"), ifvarclass => "(debian|redhat)", useresult => "return____001_Apache_Simple_apache";
+
+  reports:
+    inform_mode::
+      "activation ___001_Apache_Simple_apache returned installed = $(return____001_Apache_Simple_apache[installed])";
+      "activation ___001_Apache_Simple_apache returned configured = $(return____001_Apache_Simple_apache[configured])";
+      "activation ___001_Apache_Simple_apache returned running = $(return____001_Apache_Simple_apache[running])";
+      "activation ___001_Apache_Simple_apache returned docroot = $(return____001_Apache_Simple_apache[docroot])";
+      "activation ___001_Apache_Simple_apache could not run because it requires classes (debian|redhat)" ifvarclass => "inform_mode.!((debian|redhat))";
+}
