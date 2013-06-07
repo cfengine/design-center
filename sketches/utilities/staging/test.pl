@@ -6,6 +6,8 @@ use strict;
 use lib "../../libraries/dclib";
 use dctest;
 
+system("mkdir -p /var/tmp/files/1/2/3");
+
 my $todo = {
             "metadata check stage" => qr/R: cfdc_staging:stage/,
             "metadata check copy" => qr/R: cfdc_staging:copy/,
