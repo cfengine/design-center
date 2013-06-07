@@ -1,0 +1,36 @@
+{
+    "manifest":
+    {
+        "main.cf": { "desc": "main file" },
+        "test.pl": {test:true},
+        "test.cf": {comment: "Test Policy"},
+        "README.md": { "documentation": true },
+
+        "params/demo.json": { "comment": "Install New Relic: common parameters" },
+    },
+
+    "metadata":
+    {
+        "name": "Applications::NewRelic",
+        "description": "Sketch for installing, configuring, and starting New Relic.",
+        "version": 1.00,
+        "license": "MIT",
+        "tags": [ "cfdc", "newrelic" ],
+        "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {},
+                     "cfengine": { "version": "3.5.0" }, "os": [ "debian|ubuntu" ] }
+    },
+
+	"api" : {
+		"server" : [
+            { name : "runenv", type : "environment" },
+			{ name : "metadata", type : "metadata" },
+			{ name : "license_key", type : "string", default : "not valid" },
+            { type: "return", name: "installed", },
+            { type: "return", name: "configured", },
+            { type: "return", name: "restarted", },
+		],
+	},
+    "namespace": "cfdc_newrelic",
+    "interface": [ "main.cf" ]
+}

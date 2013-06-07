@@ -1,0 +1,98 @@
+body file control
+{
+      namespace => "cfdc_newrelic";
+}
+
+bundle agent server(runenv, metadata, license_key)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+      "NEWRELIC PREP $(runenv)"
+      usebundle => prep,
+      inherit => "true",
+      useresult => "prep_return";
+
+      "NEWRELIC INSTALL $(runenv)"
+      usebundle => install,
+      inherit => "true",
+      useresult => "install_return";
+
+      "NEWRELIC CONFIGURE $(runenv)"
+      usebundle => conf($(runenv), $(metadata), "$(install_return[package_status])", $(license_key)),
+      inherit => "true",
+      useresult => "config_return";
+
+      "NEWRELIC PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => proc;
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+}
+
+bundle agent prep
+{
+  files:
+      "$(default:eu.path_prefix)/etc/apt/sources.list.d/newrelic.list"
+      create => "true",
+      classes => default:if_repaired("newrelic_apt_update"),
+      edit_line => default:insert_lines("deb http://apt.newrelic.com/debian/ newrelic non-free");
+
+  commands:
+    not_test.newrelic_apt_update::
+      "$(debian_knowledge.call_apt_get) update";
+}
+
+bundle agent install
+{
+  packages:
+    not_test::
+      "newrelic-sysmond"
+      package_policy => "add",
+      classes => default:if_ok("newrelic_installed"),
+      package_method => default:apt;
+
+  reports:
+    verbose.newrelic_installed::
+      "$(this.bundle): Installed New Relic successfully.";
+    verbose.not_test.!newrelic_installed::
+      "$(this.bundle): Could not install New Relic successfully.";
+
+    newrelic_installed::
+      "1" bundle_return_value_index => "package_status";
+    not_test.!newrelic_installed::
+      "0" bundle_return_value_index => "package_status";
+    test::
+      "$(this.bundle): Overriding bundle return status to success (1) in test mode";
+      "1" bundle_return_value_index => "package_status";
+}
+
+bundle agent conf(runenv, metadata, pkg_status, license_key)
+{
+  classes:
+      "newrelic_installed" expression => strcmp("1", $(pkg_status));
+
+  commands:
+      "$(default:eu.exec_prefix)nrsysmond-config --set license_key='$(license_key)'";
+}
+
+bundle agent proc
+{
+  processes:
+      "nrsysmond"
+      restart_class => "proc_start";
+
+  commands:
+    proc_start::
+      "$(default:eu.exec_prefix)/etc/init.d/newrelic-sysmond start";
+}
