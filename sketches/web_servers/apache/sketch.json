@@ -1,0 +1,53 @@
+{
+    manifest:
+    {
+        "main.cf": {desc: "main file" },
+        "README.md": {documentation: true},
+        "test.pl": { test:true },
+        "test.cf": {comment: "Test Policy"},
+        "templates/debian/ports.tmpl": { comment: "Ports template" },
+        "templates/debian/default.tmpl": { comment: "Default non-SSL site" },
+        "templates/debian/default-ssl.tmpl": { comment: "Default SSL site" },
+        "params/demo_apache.json": {comment: "Demo parameters: install Apache."}
+    },
+
+    metadata:
+    {
+        name: "Apache::Simple",
+	    description: "Install and configure a webserver, e.g. Apache",
+        version: 1.00,
+        license: "MIT",
+        tags: [ "cfdc", "webserver", "apache" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: {
+            "CFEngine::stdlib": {version: 109}, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {},
+            cfengine: {version: "3.5.0"}, os: { "redhat":true, "debian":true }
+        }
+    },
+
+    api:
+    {
+        apache:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "hostname", description: "Main site host name.", validation: "HOSTNAME" },
+            { type: "string", name: "port", description: "Main site port number.", default: 80, validation: "PORT_NUMBER" },
+            { type: "string", name: "ssl_port", description: "Main site SSL port number.", default: 443, validation: "PORT_NUMBER" },
+            { type: "string", name: "docroot", description: "Document root for the main site.", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "array", name: "options", description: "Apache options.  Provide ssl=1 if you want SSL enabled.",
+            default:
+              {
+                  ssl: true,
+              }
+            },
+            { type: "return", name: "installed", },
+            { type: "return", name: "configured", },
+            { type: "return", name: "running", },
+            { type: "return", name: "docroot", },
+        ],
+    },
+
+    namespace: "cfdc_webserver",
+    interface: ["main.cf"]
+}
