@@ -333,7 +333,7 @@ sub api_interaction
                  relocate_path => "sketches",
                  filter_inputs => $options{filter},
                 },
-                vardata => "$options{vardata} || $inputs_root/cfsketch-vardata.conf",
+                vardata => $options{vardata} || "$inputs_root/cfsketch-vardata.conf",
                 constdata => $options{constdata},
                };
 
