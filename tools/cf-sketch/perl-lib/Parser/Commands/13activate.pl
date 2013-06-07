@@ -3,7 +3,7 @@
 #
 # CFEngine AS, October 2012
 #
-# Time-stamp: <2013-05-26 01:35:21 a10022>
+# Time-stamp: <2013-06-06 13:55:38 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -138,8 +138,7 @@ sub command_activate {
   else {
     # Define new environment, named after the given class expression
     my $classexp = $env;
-    # Sanitize environment name so it's a valid bundle name
-    $env =~ s/\W+/_/g;
+    $env = Util::canonify($env);
     Util::message("Defining new environment named '$env' for class expression '$classexp'\n");
     ($success, $result) = main::api_interaction({
                                                  define_environment =>
