@@ -584,4 +584,12 @@ sub dc_remove_tree
     return ! -d $_[0];
 }
 
+sub canonify
+{
+  my $str = shift;
+  # Sanitize name so it's a valid class or bundle name
+  $str =~ s/\W+/_/g;
+  return $str;
+}
+
 1;
