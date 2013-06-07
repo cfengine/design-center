@@ -735,3 +735,7 @@ php_fpm:
 staging:
 	$(CFSKETCH_DA) --install Utilities::Staging --activate Utilities::Staging=$(SOURCEDIR)/utilities/staging/params/demo.json
 	$(RUNNER)
+
+newrelic:
+	$(CFSKETCH_DA) --install Applications::NewRelic --activate Applications::NewRelic=$(SOURCEDIR)/applications/newrelic/params/demo.json
+	$(RUNNER)
