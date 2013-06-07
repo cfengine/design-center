@@ -3,7 +3,7 @@
 #
 # CFEngine AS, October 2012
 #
-# Time-stamp: <2013-06-07 01:28:20 a10022>
+# Time-stamp: <2013-06-07 02:18:20 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -134,10 +134,11 @@ sub interactive_config {
 
 sub single_prompt {
     my $msg=shift || "> ";
+    my $def=shift || "";
     my $input = Term::ReadLine->new("$msg");
     my @hist = $input->GetHistory();
     $input->clear_history;
-    my $str = $input->readline($msg);
+    my $str = $input->readline($msg, $def);
     $input->SetHistory(@hist);
     return $str;
 }
