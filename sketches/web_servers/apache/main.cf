@@ -1,0 +1,234 @@
+body file control
+{
+  namespace => "cfdc_webserver";
+}
+
+bundle agent apache(runenv, metadata, hostname, port, ssl_port, docroot, options)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "installed" expression => strcmp("1", "$(install_return[package_status])");
+      "running" expression => strcmp("1", "$(process_return[running])");
+      "configured" expression => strcmp("1", "$(config_return[configured])");
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  methods:
+      "E.T." usebundle => default:home($(this.promise_filename));
+
+      "utils" usebundle => default:eu($(runenv));
+
+      "APACHE INSTALL $(runenv)"
+      usebundle => apache_install,
+      inherit => "true",
+      useresult => "install_return";
+
+      "APACHE CONFIGURE $(runenv)"
+      usebundle => apache_conf($(runenv), $(metadata), "$(install_return[package_status])", $(hostname), $(port), $(ssl_port), $(docroot), $(options)),
+      inherit => "true",
+      useresult => "config_return";
+
+      "APACHE PROCESS $(runenv)"
+      inherit => "true",
+      handle => "cfdc_webserver_apache_process_check",
+      usebundle => apache_proc("$(config_return[service_mode])");
+
+      "APACHE PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => apache_proc("start"),
+      depends_on => { "cfdc_webserver_apache_process_check" },
+      useresult => "process_return";
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  reports:
+    not_test.installed::
+      "1" bundle_return_value_index => "installed";
+    not_test.!installed::
+      "" bundle_return_value_index => "installed";
+
+    not_test.configured::
+      "1" bundle_return_value_index => "configured";
+      "$(docroot)" bundle_return_value_index => "docroot";
+    not_test.!configured::
+      "" bundle_return_value_index => "configured";
+      "" bundle_return_value_index => "docroot";
+
+    not_test.running::
+      "1" bundle_return_value_index => "running";
+    not_test.!running::
+      "" bundle_return_value_index => "running";
+
+    test::
+      "1" bundle_return_value_index => "installed";
+      "1" bundle_return_value_index => "configured";
+      "1" bundle_return_value_index => "running";
+      "$(docroot)" bundle_return_value_index => "docroot";
+}
+
+bundle agent apache_install
+{
+  vars:
+    redhat::
+      "packages" slist => { "httpd", "httpd-tools", "mod_ssl" };
+    debian::
+      "packages" slist => { "apache2", "apache2-doc", "apache2-utils" };
+
+  packages:
+    not_test.redhat::
+      "$(packages)"
+      package_policy => "add",
+      classes => default:if_ok("cfdc_apache_installed"),
+      package_method => default:yum;
+
+    not_test.debian::
+      "$(packages)"
+      package_policy => "add",
+      classes => default:if_ok("cfdc_apache_installed"),
+      package_method => default:apt;
+
+  reports:
+    verbose.cfdc_apache_installed::
+      "$(this.bundle): Installed Apache successfully.";
+    verbose.not_test.!cfdc_apache_installed::
+      "$(this.bundle): Could not install Apache successfully.";
+
+    cfdc_apache_installed::
+      "1" bundle_return_value_index => "package_status";
+    not_test.!cfdc_apache_installed::
+      "0" bundle_return_value_index => "package_status";
+    test::
+      "$(this.bundle): Overriding bundle return status to success (1) in test mode";
+      "1" bundle_return_value_index => "package_status";
+}
+
+bundle agent apache_proc(service_mode)
+{
+  classes:
+      "conf_repaired" expression => strcmp("restart",$(service_mode));
+
+  vars:
+    redhat::
+      "control" string => "/etc/init.d/httpd";
+      "process" string => "httpd";
+
+    debian::
+      "control" string => "/etc/init.d/apache2";
+      "process" string => "apache2";
+
+  processes:
+    !conf_repaired::
+      "$(process)"
+      restart_class => "proc_start";
+
+  commands:
+    conf_repaired::
+      "$(default:eu.exec_prefix)$(control) restart";
+    proc_start::
+      "$(default:eu.exec_prefix)$(control) start";
+
+  reports:
+    not_test.proc_start::
+      "1" bundle_return_value_index => "running";
+    not_test.!proc_start::
+      "" bundle_return_value_index => "running";
+    test::
+      "1" bundle_return_value_index => "running";
+}
+
+bundle agent apache_conf(runenv, metadata, pkg_status, hostname, port, ssl_port, docroot, options)
+{
+  classes:
+      "cfdc_apache_installed" expression => strcmp("1", $(pkg_status));
+
+      "ssl" expression => strcmp("1", "$($(options)[ssl])");
+
+  vars:
+    any::
+      "tprefix" string => ifelse("debian",
+                                 "$(default:home.home)/templates/debian",
+                                 "redhat",
+                                 "$(default:home.home)/templates/redhat",
+                                 "$(default:home.home)/templates/unknown");
+
+      "prefix" string => ifelse("redhat", "$(default:eu.path_prefix)/etc/httpd",
+                                "$(default:eu.path_prefix)/etc/apache2");
+
+      "site_default" string => "$(prefix)/sites-available/default";
+      "site_default_ssl" string => "$(prefix)/sites-available/default-ssl";
+
+      "template" string => "$(tprefix)/default.tmpl";
+      "template_ssl" string => "$(tprefix)/default-ssl.tmpl";
+
+      "ports_template" string => "$(tprefix)/ports.tmpl";
+
+  files:
+    cfdc_apache_installed::
+      "$(prefix)/ports.conf"
+      create => "true",
+      edit_defaults => default:empty,
+      perms => default:m("644"),
+      classes => default:if_repaired("cfdc_apache_config_repaired"),
+      edit_line => expand_block_template($(ports_template));
+
+      "$(site_default)"
+      create => "true",
+      edit_defaults => default:empty,
+      perms => default:m("644"),
+      classes => default:if_repaired("cfdc_apache_config_repaired"),
+      edit_line => expand_block_template($(template));
+
+      "$(prefix)/sites-enabled/000-default"
+      move_obstructions => "true",
+      link_from => default:ln_s($(site_default));
+
+    ssl::
+      "$(site_default_ssl)"
+      create => "true",
+      edit_defaults => default:empty,
+      perms => default:m("644"),
+      classes => default:if_repaired("cfdc_apache_config_repaired"),
+      edit_line => expand_block_template($(template_ssl));
+
+      "$(prefix)/sites-enabled/001-default-ssl"
+      move_obstructions => "true",
+      link_from => default:ln_s($(site_default_ssl));
+
+    !ssl::
+      "$(prefix)/sites-enabled/000-default-ssl"
+      action => default:warn_only,
+      delete => default:tidy;
+
+  reports:
+    cfdc_apache_config_repaired::
+      "restart" bundle_return_value_index => "service_mode";
+    !cfdc_apache_config_repaired::
+      "start" bundle_return_value_index => "service_mode";
+
+    not_test.configured::
+      "1" bundle_return_value_index => "configured";
+    not_test.!configured::
+      "" bundle_return_value_index => "configured";
+    test::
+      "1" bundle_return_value_index => "configured";
+}
+
+# clone of expand_template from cfengine_stdlib.cf with string + preserve_block
+bundle edit_line expand_block_template(datafile)
+{
+  vars:
+      "data" string => readfile($(datafile), 100000);
+
+  insert_lines:
+
+      "$(data)"
+      insert_type => "preserve_block",
+      comment => "Expand variables in the template string",
+      expand_scalars => "true";
+}
