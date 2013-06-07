@@ -100,7 +100,7 @@ sub command_remove_params {
     my $todo;
     if ($params eq 'all')
     {
-        $todo = [ '.' ];
+        $todo = [ keys(%$defs) ];
     }
     else
     {
@@ -121,7 +121,7 @@ sub command_remove_envs {
     my $todo;
     if ($params eq 'all')
     {
-        $todo = [ '.' ];
+        $todo = [ keys(%$envs) ];
     }
     else
     {
