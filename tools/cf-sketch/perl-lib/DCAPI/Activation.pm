@@ -204,8 +204,8 @@ sub make_activation
 sub fill_param
 {
     my $api        = shift;
-    my $name       = shift;
-    my $type       = shift;
+    my $name       = shift || "";
+    my $type       = shift || "";
     my $param_sets = shift;
     my $extra      = shift;
 
