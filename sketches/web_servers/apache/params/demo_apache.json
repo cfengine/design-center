@@ -1,0 +1,7 @@
+{
+    "Apache::Simple":
+    {
+        hostname: "myhost",
+        docroot: "/home/www/docroot",
+    }
+}
