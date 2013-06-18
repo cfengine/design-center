@@ -45,6 +45,7 @@ bundle agent prep
   files:
       "$(default:eu.path_prefix)/etc/apt/sources.list.d/newrelic.list"
       create => "true",
+      edit_defaults => default:no_backup,
       classes => default:if_repaired("newrelic_apt_update"),
       edit_line => default:insert_lines("deb http://apt.newrelic.com/debian/ newrelic non-free");
 
@@ -55,9 +56,15 @@ bundle agent prep
 
 bundle agent install
 {
+  commands:
+      "$(default:eu.exec_prefix)/usr/bin/apt-key adv --keyserver hkp://subkeys.pgp.net --recv-keys 548C16BF"
+      useshell => "true",
+      handle => "cfdc_newrelic_addkey";
+
   packages:
     not_test::
       "newrelic-sysmond"
+      depends_on => { "cfdc_newrelic_addkey" },
       package_policy => "add",
       classes => default:if_ok("newrelic_installed"),
       package_method => default:apt;
@@ -83,7 +90,7 @@ bundle agent conf(runenv, metadata, pkg_status, license_key)
       "newrelic_installed" expression => strcmp("1", $(pkg_status));
 
   commands:
-      "$(default:eu.exec_prefix)nrsysmond-config --set license_key='$(license_key)'";
+      "$(default:eu.exec_prefix)/usr/sbin/nrsysmond-config --set license_key=$(license_key)";
 }
 
 bundle agent proc
