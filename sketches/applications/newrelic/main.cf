@@ -3,41 +3,76 @@ body file control
       namespace => "cfdc_newrelic";
 }
 
-bundle agent server(runenv, metadata, license_key)
+bundle agent server(runenv, metadata, license_key, ensure, install)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
+      "ensure" expression => strcmp("1", $(ensure));
+      "stop" not => strcmp("1", $(ensure));
+
+      "install" expression => strcmp("1", $(install));
+      "uninstall" not => strcmp("1", $(install));
+
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
 
   methods:
       "utils" usebundle => default:eu($(runenv));
 
       "NEWRELIC PREP $(runenv)"
       usebundle => prep,
-      inherit => "true",
-      useresult => "prep_return";
+      inherit => "true";
 
+    install::
       "NEWRELIC INSTALL $(runenv)"
       usebundle => install,
       inherit => "true",
-      useresult => "install_return";
+      useresult => "return";
 
+    uninstall::
+      "NEWRELIC UNINSTALL $(runenv)"
+      usebundle => uninstall,
+      inherit => "true",
+      useresult => "return";
+
+    ensure::
       "NEWRELIC CONFIGURE $(runenv)"
       usebundle => conf($(runenv), $(metadata), "$(install_return[package_status])", $(license_key)),
       inherit => "true",
-      useresult => "config_return";
+      useresult => "return";
 
       "NEWRELIC PROCESS $(runenv)"
       inherit => "true",
       usebundle => proc;
 
+      "NEWRELIC PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => proc_check,
+      useresult => "return";
+
+    stop::
+      "NEWRELIC STOP PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => stop;
+
+      "NEWRELIC STOP CHECK PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => stop_check,
+      useresult => "return";
+
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
       inherit => "true";
+
+  reports:
+      "$(return[process_status])" bundle_return_value_index => "running";
+      "$(return[package_status])" bundle_return_value_index => "installed";
+      "$(return[configure_status])" bundle_return_value_index => "configured";
 }
 
 bundle agent prep
@@ -47,6 +82,7 @@ bundle agent prep
       create => "true",
       edit_defaults => default:no_backup,
       classes => default:if_repaired("newrelic_apt_update"),
+      handle => "cfdc_newrelic_prep_aptsources_$(activation_id)",
       edit_line => default:insert_lines("deb http://apt.newrelic.com/debian/ newrelic non-free");
 
   commands:
@@ -58,15 +94,16 @@ bundle agent install
 {
   commands:
       "$(default:eu.exec_prefix)/usr/bin/apt-key adv --keyserver hkp://subkeys.pgp.net --recv-keys 548C16BF"
-      useshell => "true",
-      handle => "cfdc_newrelic_addkey";
+      contain => default:in_shell,
+      handle => "cfdc_newrelic_addkey_$(activation_id)";
 
   packages:
     not_test::
       "newrelic-sysmond"
-      depends_on => { "cfdc_newrelic_addkey" },
+      depends_on => { "cfdc_newrelic_addkey_$(activation_id)" },
       package_policy => "add",
       classes => default:if_ok("newrelic_installed"),
+      handle => "cfdc_newrelic_installpackage_$(activation_id)",
       package_method => default:apt;
 
   reports:
@@ -84,13 +121,55 @@ bundle agent install
       "1" bundle_return_value_index => "package_status";
 }
 
+bundle agent uninstall
+{
+  packages:
+    not_test::
+      "newrelic-sysmond"
+      package_policy => "delete",
+      classes => default:if_ok("newrelic_uninstalled"),
+      handle => "cfdc_newrelic_uninstallpackage_$(activation_id)",
+      package_method => default:apt;
+
+  reports:
+    verbose.newrelic_installed::
+      "$(this.bundle): Installed New Relic successfully.";
+    verbose.not_test.!newrelic_installed::
+      "$(this.bundle): Could not install New Relic successfully.";
+
+    newrelic_uninstalled::
+      "0" bundle_return_value_index => "package_status";
+    not_test.!newrelic_uninstalled::
+      "1" bundle_return_value_index => "package_status";
+    test::
+      "$(this.bundle): Overriding bundle return status to success (0, since it uninstalls!) in test mode";
+      "0" bundle_return_value_index => "package_status";
+}
+
 bundle agent conf(runenv, metadata, pkg_status, license_key)
 {
   classes:
       "newrelic_installed" expression => strcmp("1", $(pkg_status));
 
   commands:
-      "$(default:eu.exec_prefix)/usr/sbin/nrsysmond-config --set license_key=$(license_key)";
+    newrelic_installed::
+      "$(default:eu.exec_prefix)/usr/sbin/nrsysmond-config --set license_key=$(license_key)"
+      classes => default:if_ok("newrelic_configured"),
+      handle => "cfdc_newrelic_configure_licensekey_$(activation_id)";
+
+  reports:
+    verbose.newrelic_configured::
+      "$(this.bundle): Configured New Relic successfully.";
+    verbose.not_test.!newrelic_configured::
+      "$(this.bundle): Could not configure New Relic successfully.";
+
+    newrelic_configured::
+      "1" bundle_return_value_index => "configure_status";
+    not_test.!newrelic_configured::
+      "0" bundle_return_value_index => "configure_status";
+    test::
+      "$(this.bundle): Overriding bundle return status to success (1) in test mode";
+      "1" bundle_return_value_index => "configure_status";
 }
 
 bundle agent proc
@@ -102,4 +181,44 @@ bundle agent proc
   commands:
     proc_start::
       "$(default:eu.exec_prefix)/etc/init.d/newrelic-sysmond start";
+}
+
+
+bundle agent proc_check
+{
+  processes:
+      "nrsysmond"
+      restart_class => "proc_exists";
+
+  reports:
+    verbose.test::
+      "$(this.bundle): Simulating ensuring New Relic successfully.";
+
+    proc_exists||test::
+      "1" bundle_return_value_index => "process_status";
+    not_test.!proc_exists::
+      "0" bundle_return_value_index => "process_status";
+}
+
+bundle agent stop
+{
+  processes:
+      "nrsysmond"
+      process_stop => "$(default:eu.exec_prefix)/etc/init.d/newrelic-sysmond stop";
+}
+
+bundle agent stop_check
+{
+  processes:
+      "nrsysmond"
+      restart_class => "proc_exists";
+
+  reports:
+    verbose.test::
+      "$(this.bundle): Simulating stopping New Relic successfully.";
+
+    !proc_exists||test::
+      "1" bundle_return_value_index => "process_status";
+    not_test.proc_exists::
+      "0" bundle_return_value_index => "process_status";
 }
