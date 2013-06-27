@@ -735,3 +735,6 @@ newrelic:
 apache:
 	$(CFSKETCH_DA) --install Apache::Simple --activate Apache::Simple=$(SOURCEDIR)/web_servers/apache/params/demo_apache.json
 	$(RUNNER)
+
+uninstall_newrelic:
+	$(CFSKETCH_DA) --uninstall Applications::NewRelic
