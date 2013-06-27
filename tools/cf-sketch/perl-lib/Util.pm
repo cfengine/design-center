@@ -13,7 +13,6 @@ use Data::Dumper;
 use Term::ANSIColor qw(:constants);
 use File::Spec;
 use File::Basename;
-use File::Path qw(make_path remove_tree);
 use Cwd;
 
 BEGIN {
@@ -550,6 +549,39 @@ sub make_var_lines
     }
 
     return @ret;
+}
+
+sub dc_make_path
+{
+    if (-x '/bin/mkdir')
+    {
+        return 0 == system('/bin/mkdir', '-p', @_);
+    }
+
+    eval
+    {
+        require File::Path;
+        File::Path::make_path(@_);
+    };
+
+    return -d $_[0];
+}
+
+sub dc_remove_tree
+{
+    if (-x '/bin/rm')
+    {
+        return 0 == system('/bin/rm', '-rf', @_);
+    }
+
+
+    eval
+    {
+        require File::Path;
+        File::Path::remove_tree(@_);
+    };
+
+    return ! -d $_[0];
 }
 
 1;
