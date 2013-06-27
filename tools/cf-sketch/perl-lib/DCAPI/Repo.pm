@@ -174,7 +174,6 @@ sub install
         my $dest = "$abs_location/$file";
 
         require File::Basename;
-        require File::Path;
         require File::Copy;
         $self->api()->log4("Installing sketch %s: copying %s to %s",
                            $sketch->name(),
@@ -182,10 +181,7 @@ sub install
                            $dest);
 
         my $dest_dir = File::Basename::dirname($dest);
-        my $errors;
-        File::Path::make_path($dest_dir, {
-                                          error => $errors,
-                                         });
+        Util::dc_make_path($dest_dir);
 
         unless (-d $dest_dir)
         {
@@ -286,42 +282,16 @@ sub uninstall
 
     my $manifest = $sketch->manifest();
 
-    require File::Path;
-
-    my $results;
-    my $errors;
     $self->api()->log4("Uninstalling sketch %s: removing directory tree %s",
                        $sketch->name(),
                        $abs_location);
 
-    File::Path::remove_tree($abs_location,
-                            {
-                             error => \$errors,
-                             result => \$results,
-                            });
+    Util::dc_remove_tree($abs_location);
 
     if (-d $abs_location)
     {
         return $result->add_error('uninstallation',
                                   "It seems that $abs_location could not be removed");
-    }
-
-    if (ref $errors eq 'ARRAY')
-    {
-        $result->add_warning('uninstallation',
-                             "error while removing $abs_location: $_")
-         foreach @$errors;
-    }
-
-    if (ref $results eq 'ARRAY')
-    {
-        $self->api()->log5("Uninstalling sketch %s: removing %s",
-                           $sketch->name(),
-                           $_)
-         foreach @$results;
-
-        $result->add_data_key('uninstallation', ["uninstall", $sketch->name(), $abs_location, $_], "$abs_location/$_")
-         foreach @$results;
     }
 
     my @sketches = grep { $_ != $sketch } @{$self->sketches()};
