@@ -78,6 +78,7 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
+	echo '{ dc_api_version: "0.0.1", request: {define: { "memcached_11111": { "Applications::Memcached": [] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "first", force: true } ] } }' | $(CFAPI)
 
 api_test:
