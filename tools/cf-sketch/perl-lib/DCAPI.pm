@@ -712,6 +712,12 @@ sub define
 
     foreach my $dkey (keys %$define)
     {
+        if (ref $define->{$dkey} ne 'HASH')
+        {
+            return $result->add_error('syntax',
+                                      "Invalid define command: key $dkey");
+        }
+
         $self->definitions()->{$dkey} = $define->{$dkey};
         $result->add_data_key($dkey, ['define', $dkey], 1);
     }

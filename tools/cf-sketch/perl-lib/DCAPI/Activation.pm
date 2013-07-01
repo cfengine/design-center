@@ -261,16 +261,25 @@ sub fill_param
     my @filtered_param_sets;
     foreach my $pset (@$param_sets)
     {
-        my $specific_bundle = $pset->[1]->{__bundle__};
-        if (defined $specific_bundle && $specific_bundle ne $extra->{bundle})
+        my $pset_value = $pset->[1];
+        if (ref $pset_value ne 'HASH')
         {
-            $api->log("skipping parameter set because __bundle__ parameter '%s' was specified and doesn't match our bundle '%s'",
-                      $specific_bundle,
-                      $extra->{bundle});
+            $api->log("skipping invalid parameter set: %s",
+                      $pset);
         }
         else
         {
-            push @filtered_param_sets, $pset;
+            my $specific_bundle = $pset_value->{__bundle__};
+            if (defined $specific_bundle && $specific_bundle ne $extra->{bundle})
+            {
+                 $api->log("skipping parameter set because __bundle__ parameter '%s' was specified and doesn't match our bundle '%s'",
+                           $specific_bundle,
+                           $extra->{bundle});
+            }
+            else
+            {
+                 push @filtered_param_sets, $pset;
+            }
         }
     }
 
