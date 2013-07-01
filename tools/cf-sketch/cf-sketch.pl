@@ -72,12 +72,13 @@ my %options = (
                force => 0,
                quiet => 0,
                verbose => 0,
-               test => 0,
+               test => '!any',
                ignore => 1,
-               activated => 0,
+               activated => 'any',
                veryverbose => 0,
                standalone => 0,
                runfile => "$inputs_root/api-runfile.cf",
+               vardata => undef,
                standalonerunfile => "$inputs_root/api-runfile-standalone.cf",
                installsource => Util::local_cfsketches_source(File::Spec->curdir()) || undef,
                constdata => $constdata,
@@ -116,6 +117,7 @@ GetOptions(\%options,
 
            "standalone!",
            "runfile|rf=s",
+           "vardata=s",
            "standalonerunfile|srf=s",
            "repolist|rl=s@",
           );
@@ -133,10 +135,11 @@ $options{sourcedir} = $sourcedir;
 
 die "Sorry, can't locate source directory" unless -d $sourcedir;
 
-$options{test} = 1 if ($options{test} eq '');
+# Define default internal environment
+$options{test} = '!any' if !$options{test};
 my $env_test = $options{test};
 
-$options{activated} = 1 if ($options{activated} eq '');
+$options{activated} = 'any' if !$options{activated};
 my $env_activated = $options{activated};
 
 die "Sorry, can't locate constdata file '$options{constdata}'" unless (!$options{constdata} || -f $options{constdata});
@@ -145,10 +148,9 @@ api_interaction({
                  define_environment => {
                                         $options{environment} =>
                                         {
-                                         activated => 1,
-                                         test => $env_test,
                                          activated => $env_activated,
-                                         verbose => !!$options{verbose}
+                                         test => $env_test,
+                                         verbose => $options{verbose} ? 'any' : '!any',
                                         }
                                        }
                 });
@@ -331,7 +333,7 @@ sub api_interaction
                  relocate_path => "sketches",
                  filter_inputs => $options{filter},
                 },
-                vardata => "$inputs_root/cfsketch-vardata.conf",
+                vardata => $options{vardata} || "$inputs_root/cfsketch-vardata.conf",
                 constdata => $options{constdata},
                };
 

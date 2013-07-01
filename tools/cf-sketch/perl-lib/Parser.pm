@@ -574,6 +574,9 @@ sub _execute_command {
 	}
 
 	# Call the subroutine
+        if ($Config{verbose}) {
+          Util::warning("Calling command_$cmdcall(".join(',', map {$_ || ""} @cmdargs).")\n");
+        }
 	eval "command_$cmdcall".'(@cmdargs)';
 	if ($@) {
 	  return("Something went wrong with the '$cmdcall' command: $@");

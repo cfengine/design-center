@@ -46,7 +46,7 @@ sub function_exists
 # some other value. A value of 0 for $linelen makes it not do line wrapping.
 # If $lineprefix is given, it is printed at the beginning of each line.
 sub sprintlist {
-    my ($listref, $fline, $separator, $indent, $break, $linelen, $lp) = @_;
+    my ($listref, $fline, $separator, $indent, $break, $linelen, $lp, $nocolor) = @_;
     # Figure out default arguments
     my @list=@$listref;
     $separator ||= ", ";
@@ -88,7 +88,7 @@ sub sprintlist {
 
     # Finishing touches - insert first line and line prefixes, if any.
     $str.="$space$line";
-    $fline = GREEN . $fline . RESET;
+    $fline = GREEN . $fline . RESET unless $nocolor;
     $str=~s/^$space/$fline/;
     $str=~s/^/$lp/mg if $lp;
     return $str;
@@ -100,10 +100,10 @@ sub sprintlist {
 # that $separator is not used because we automatically break on white
 # space.
 # Syntax: sprintstr($string[, $firstline[, $indent[, $break[, $linelen
-#		[, $lineprefix]]]]]);
+#		[, $lineprefix,[ $nocolor]]]]]);
 # See sprintlist for the meaning of each parameter.
 sub sprintstr {
-    my ($str, $fl, $ind, $br, $len, $lp)=@_;
+    my ($str, $fl, $ind, $br, $len, $lp, $nocolor)=@_;
     # Split string into \n-separated parts, preserving all empty fields.
     my @strs = split(/\n/, $str, -1);
     # Now process each line separately, to preserve EOLs that were
@@ -114,7 +114,7 @@ sub sprintstr {
     {
         # Split in words.
         my @words=(split(/\s+/, $s));
-        $result.=sprintlist(\@words,$fl," ",$ind,$br,$len, $lp);
+        $result.=sprintlist(\@words,$fl," ",$ind,$br,$len, $lp, $nocolor);
         # Add EOL if needed (if there are still more lines to process)
         $result.="\n" if scalar(@strs);
         # The $firstline is only needed at the beginning of the first string.
@@ -582,6 +582,14 @@ sub dc_remove_tree
     };
 
     return ! -d $_[0];
+}
+
+sub canonify
+{
+  my $str = shift;
+  # Sanitize name so it's a valid class or bundle name
+  $str =~ s/\W+/_/g;
+  return $str;
 }
 
 1;

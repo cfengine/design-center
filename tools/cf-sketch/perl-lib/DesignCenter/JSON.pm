@@ -4,7 +4,6 @@
 # DC-specific JSON stuff
 #
 # CFEngine AS, October 2012.
-# Time-stamp: <2013-05-26 01:26:19 a10022>
 
 package DesignCenter::JSON;
 
@@ -196,7 +195,7 @@ sub pretty_print {
   my $indent = shift || "";
   my $exclude = shift || undef;
   my $print_cf_null = scalar(@_) ? shift @_ : 1;
-  my @print = recurse_print($json, undef, 1, 1, $print_cf_null);
+  my @print = recurse_print($json, undef, 1, 0, $print_cf_null);
   my $result = "";
   foreach my $p (@print) {
     my $name = $p->{path};

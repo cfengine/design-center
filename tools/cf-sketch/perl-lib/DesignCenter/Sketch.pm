@@ -4,7 +4,6 @@
 # Representation of a sketch
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2013-01-10 17:50:02 a10022>
 
 package DesignCenter::Sketch;
 
