@@ -2,7 +2,6 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2013-06-07 02:39:21 a10022>
 
 use Term::ANSIColor qw(:constants);
 use DesignCenter::JSON;
