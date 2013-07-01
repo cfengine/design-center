@@ -3,7 +3,7 @@
 #
 # CFEngine AS, October 2012
 #
-# Time-stamp: <2013-06-07 02:18:20 a10022>
+# Time-stamp: <2013-06-12 13:34:26 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -279,9 +279,11 @@ sub prompt_param {
     my $ex   = $p->{example};
     my $val  = $p->{validation};
 
+    my @parenstrs = ();
+    push @parenstrs, $desc if $desc;
+    push @parenstrs, "for example '$ex'" if $ex;
     my $parenstr = "";
-    my $exstr = "for example '$ex'" if $ex;
-    $parenstr = " (".join(", ", $desc || "", $exstr || "").")" if ($desc || $ex);
+    $parenstr = " (".join(", ", @parenstrs).")" if @parenstrs;
 
     my $ret = undef;
     Util::message("Please enter parameter $name$parenstr.\n");
@@ -294,7 +296,7 @@ sub prompt_param {
         print_validation_help($val);
         goto PROMPT_PARAM;
     }
-    return undef if !$ret || ($ret eq 'STOP');
+    return undef if ($ret eq 'STOP');
     return $ret;
 }
 
