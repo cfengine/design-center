@@ -718,6 +718,13 @@ sub define
                                       "Invalid define command: key $dkey");
         }
 
+        foreach my $pkey (sort keys %{$define->{$dkey}})
+        {
+            next if ref $define->{$dkey}->{$pkey} eq 'HASH';
+            return $result->add_error('syntax',
+                                      "Invalid define command: key $dkey/$pkey");
+        }
+
         $self->definitions()->{$dkey} = $define->{$dkey};
         $result->add_data_key($dkey, ['define', $dkey], 1);
     }
