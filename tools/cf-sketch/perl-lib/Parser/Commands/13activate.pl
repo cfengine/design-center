@@ -2,8 +2,6 @@
 # configure/activate command
 #
 # CFEngine AS, October 2012
-#
-# Time-stamp: <2013-06-06 13:55:38 a10022>
 
 use Term::ANSIColor qw(:constants);
 

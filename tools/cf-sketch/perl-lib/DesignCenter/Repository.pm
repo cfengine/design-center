@@ -4,7 +4,6 @@
 # Representation of a repository containing sketches
 #
 # Diego Zamboni <diego.zamboni@cfengine.com>
-# Time-stamp: <2012-10-10 02:31:46 a10022>
 
 package DesignCenter::Repository;
 

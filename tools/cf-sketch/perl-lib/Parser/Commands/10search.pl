@@ -1,5 +1,3 @@
-# Time-stamp: <2013-04-08 01:51:46 a10022>
-#
 # search command for searching through sketch list
 # Diego Zamboni, October 1st, 2012.
 # diego.zamboni@cfengine.com

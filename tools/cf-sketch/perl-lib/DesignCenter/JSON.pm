@@ -4,7 +4,6 @@
 # DC-specific JSON stuff
 #
 # CFEngine AS, October 2012.
-# Time-stamp: <2013-05-27 10:56:36 a10022>
 
 package DesignCenter::JSON;
 
