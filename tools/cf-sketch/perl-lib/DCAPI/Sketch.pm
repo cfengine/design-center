@@ -339,7 +339,7 @@ sub api_describe
     foreach my $param (@$bundle_api)
     {
         my $return = DCAPI::Activation::return_type($param->{type});
-        $ret{$param->{name}||""} = {
+        $ret{$param->{name}} = {
                                 type => $param->{type},
                                };
     }
