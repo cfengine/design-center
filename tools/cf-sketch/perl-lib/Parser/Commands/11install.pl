@@ -1,5 +1,3 @@
-# Time-stamp: <2013-04-08 03:07:17 a10022>
-#
 # search command for searching through sketch list
 # Diego Zamboni, October 1st, 2012.
 # diego.zamboni@cfengine.com
@@ -37,7 +35,18 @@ sub command_install
     if (ref $installresult eq 'HASH') {
       foreach my $repo (sort keys %$installresult) {
         foreach my $sketch (sort keys %{$installresult->{$repo}}) {
-          Util::success("Sketch $sketch installed under $repo.\n");
+            # $installresult contains mixed files and sketches, so we
+            # need to differentiate and print as appropriate. Files
+            # are not printed unless verbose mode is on.
+            if ($repo =~ m!/!)
+            {
+                Util::success("Sketch $sketch installed under $repo.\n");
+            }
+            else
+            {
+                Util::success("File $sketch installed as part of sketch $repo.\n")
+                   if $Config{verbose};
+            }
         }
       }
     }

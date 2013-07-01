@@ -2,8 +2,6 @@
 # configure/activate command
 #
 # CFEngine AS, October 2012
-#
-# Time-stamp: <2013-05-26 00:54:13 a10022>
 
 use Term::ANSIColor qw(:constants);
 
@@ -21,6 +19,12 @@ use Term::ReadLine;
     'Create a new parameter set for SKETCH named PARAMSET using the parameters from FILE.json, or interactively if the file is ommitted. If PARAMSET is omitted, a name is automatically generated.',
     'params\s+(\S+)\s*(?:\s+(\S+)(?:\s+(\S+))?)?',
     'define_params'
+   ],
+   [
+    'define environment [-n ENV_NAME ] [ ACTIVATION_CLASSEXP [ TEST_CLASSEXP [ VERBOSE_CLASSEXP ] ] ]',
+    'Create a new environment named ENV_NAME, with the given conditions for activation, test mode and verbose mode. If ENV_NAME is omitted, a name is automatically generated. If any of the class expressions is omitted, they are interactively queried.',
+    'env\S*(?:\s+-n\s*(\S+))?(?:\s+(\S+)(?:\s+(\S+)(?:\s+(\S+))?)?)?',
+    'define_env'
    ],
   ]
  );
@@ -128,10 +132,11 @@ sub interactive_config {
 
 sub single_prompt {
     my $msg=shift || "> ";
+    my $def=shift || "";
     my $input = Term::ReadLine->new("$msg");
     my @hist = $input->GetHistory();
     $input->clear_history;
-    my $str = $input->readline($msg);
+    my $str = $input->readline($msg, $def);
     $input->SetHistory(@hist);
     return $str;
 }
@@ -272,9 +277,11 @@ sub prompt_param {
     my $ex   = $p->{example};
     my $val  = $p->{validation};
 
+    my @parenstrs = ();
+    push @parenstrs, $desc if $desc;
+    push @parenstrs, "for example '$ex'" if $ex;
     my $parenstr = "";
-    my $exstr = "for example '$ex'" if $ex;
-    $parenstr = " (".join(", ", $desc || "", $exstr || "").")" if ($desc || $ex);
+    $parenstr = " (".join(", ", @parenstrs).")" if @parenstrs;
 
     my $ret = undef;
     Util::message("Please enter parameter $name$parenstr.\n");
@@ -287,7 +294,7 @@ sub prompt_param {
         print_validation_help($val);
         goto PROMPT_PARAM;
     }
-    return undef if !$ret || ($ret eq 'STOP');
+    return undef if ($ret eq 'STOP');
     return $ret;
 }
 
@@ -712,4 +719,70 @@ sub command_configure_interactive {
         }
     }
 
+}
+
+######################################################################
+
+sub check_env_name
+{
+    my $name = shift;
+    my $envs = main::get_environments;
+    if (exists($envs->{$name})) {
+        Util::error("Environment '$name' already exists. Please specify a different name.\n");
+        return undef;
+    }
+    return 1;
+}
+
+sub command_define_env
+{
+    my ($env_name, $activ_exp, $test_exp, $verbose_exp) = @_;
+
+    # If at least $activ_exp is given, then it's non-interactive mode
+    if ($activ_exp)
+    {
+        # Env name defaults to the canonified version of the activation condition
+        $env_name    ||= Util::canonify($activ_exp);
+        return unless check_env_name($env_name);
+        # Test and Verbose default to never
+        $test_exp    ||= "!any";
+        $verbose_exp ||= "!any";
+    }
+    else
+    {
+        # Enter interactive mode. Ask for missing information
+        unless ($env_name)
+        {
+            $env_name = single_prompt("Please enter a name for the new environment: ");
+            unless ($env_name)
+            {
+                Util::warning("Empty name entered - cancelling.\n");
+                return;
+            }
+        }
+        return unless check_env_name($env_name);
+
+        Util::message(Util::sprintstr("I will now prompt you for the conditions for activation, test, and verbose mode that will be associated with environment '$env_name'. Please enter them as CFEngine class expressions.\n", undef, 0, undef, undef, undef, 1));
+        $activ_exp = single_prompt("Please enter the activation condition: ");
+        unless ($activ_exp)
+        {
+            Util::warning("Empty activation condition entered - cancelling.\n");
+            return;
+        }
+        $test_exp = single_prompt("Please enter the test condition: ", "!any");
+        $test_exp ||= "!any";
+        $verbose_exp = single_prompt("Please enter the verbose condition: ", "!any");
+        $verbose_exp ||= "!any";
+    }
+    my ($success, $result) = main::api_interaction({define_environment => 
+                                                    {
+                                                     $env_name =>
+                                                     {
+                                                      'activated' => $activ_exp,
+                                                      'test' => $test_exp,
+                                                      'verbose' => $verbose_exp
+                                                     }
+                                                    }});
+    return unless $success;
+    Util::success("Environment '$env_name' successfully defined.\n");
 }

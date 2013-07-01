@@ -36,6 +36,12 @@ use DesignCenter::Config;
     'param\S*\s+(.*)',
     'remove_params',
    ],
+   [
+    'remove environment ENV_NAME|all ...',
+    'Undefine the given environment. Use "all" to remove all of them.',
+    'env\S*\s+(.*)',
+    'remove_envs',
+   ],
   ],
  );
 
@@ -94,7 +100,7 @@ sub command_remove_params {
     my $todo;
     if ($params eq 'all')
     {
-        $todo = [ '.' ];
+        $todo = [ keys(%$defs) ];
     }
     else
     {
@@ -107,6 +113,27 @@ sub command_remove_params {
         $todo = \@params;
     }
     my ($success, $result) = main::api_interaction({ undefine => $todo });
+}
+
+sub command_remove_envs {
+    my $params = shift;
+    my $envs = main::get_environments;
+    my $todo;
+    if ($params eq 'all')
+    {
+        $todo = [ keys(%$envs) ];
+    }
+    else
+    {
+        my @params = split ' ', $params;
+        foreach (@params)
+        {
+            Util::error("Param set '$_' does not exist.\n")
+               unless exists($envs->{$_});
+        }
+        $todo = \@params;
+    }
+    my ($success, $result) = main::api_interaction({ undefine_environment => $todo });
 }
 
 1;

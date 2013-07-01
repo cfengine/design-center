@@ -2,7 +2,6 @@
 # list command for displaying installed sketches
 #
 # CFEngine AS, October 2012
-# Time-stamp: <2013-05-26 01:16:23 a10022>
 
 use Term::ANSIColor qw(:constants);
 use DesignCenter::JSON;
@@ -43,6 +42,12 @@ use Util;
     'List defined validations. If REGEX is given, only list validations that match it. Use -v to show the full validation definition.',
     '(?:(-v)\b\s*)?val\S*(?:\s+(.*))?',
     'list_vals',
+   ],
+   [
+    '-list [-v] all [REGEX|all]',
+    'List all components (sketches, activations, param sets, environments, validations). If REGEX is given, only those that match.',
+    '(?:(-v)\b\s*)?all(?:\s+(.*))?',
+    'list_all',
    ],
    [
     'list [-v] [sketches|params|activations|environments|validations] [REGEX|all]',
@@ -89,7 +94,7 @@ sub command_list_sketches {
             }
             else
             {
-                Util::error("No sketches ".(($regex eq '.')?"are installed":"match your query").". Maybe use 'search' instead?\n");
+                Util::warning("No sketches ".(($regex eq '.')?"are installed":"match your query").". Maybe use 'search' instead?\n");
             }
         }
     }
@@ -126,6 +131,10 @@ sub command_list_params
                 print DesignCenter::JSON::pretty_print($list->{$name},"  ", undef, undef)."\n";
             }
         }
+    }
+    else
+    {
+        Util::warning("No parameter sets ".(($regex eq '.')?"are defined":"match your query").".\n");
     }
 }
 
@@ -226,6 +235,22 @@ sub command_list_vals
         }
     }
     Util::warning("No validations ".(($regex eq '.')?"are defined.\n" : "match your query\n")) unless $printed;
+}
+
+sub command_list_all
+{
+    my $full = shift;
+    my $regex =shift;
+
+    command_list_sketches($full, $regex);
+    Util::output("\n");
+    command_list_params($full, $regex);
+    Util::output("\n");
+    command_list_envs($full, $regex);
+    Util::output("\n");
+    command_list_activations($full, $regex);
+    Util::output("\n");
+    command_list_vals($full, $regex);
 }
 
 1;
