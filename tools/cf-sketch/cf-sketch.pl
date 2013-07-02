@@ -88,7 +88,7 @@ my %options = (
                dcapi => $dcapi,
               );
 
-Getopt::Long::Configure("bundling");
+Getopt::Long::Configure("bundling", "require_order");
 
 GetOptions(\%options,
            "expert!",
