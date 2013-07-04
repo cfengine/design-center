@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/bash -x
 
-DC=$1
-URL=$2
-BRANCH=$3
+DC=/var/tmp/dc
+URL=$1
+BRANCH=$2
 
 # If $DC exists, do nothing, assume it's installed already
 test -d $DC && exit 0

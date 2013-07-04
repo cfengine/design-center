@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # If /var/cfengine exists, do nothing, assume it's installed already
 test -d /var/cfengine && exit 0
@@ -10,6 +10,7 @@ rm gpg.key
 
 apt-get -qq update
 apt-get -qq -y install python-software-properties
+apt-get -qq -y install software-properties-common
 add-apt-repository http://cfengine.com/pub/apt
 apt-get -qq update
 apt-get -qq -y install cfengine-community
