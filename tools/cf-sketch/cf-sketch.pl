@@ -77,9 +77,9 @@ my %options = (
                activated => 0,
                veryverbose => 0,
                standalone => 0,
-               runfile => "$inputs_root/api-runfile.cf",
+               runfile => "$inputs_root/cf-sketch-runfile.cf",
                vardata => undef,
-               standalonerunfile => "$inputs_root/api-runfile-standalone.cf",
+               standalonerunfile => "$inputs_root/cf-sketch-runfile-standalone.cf",
                installsource => Util::local_cfsketches_source(File::Spec->curdir()) || undef,
                constdata => $constdata,
                # These are hardcoded above, we put them here for convenience
