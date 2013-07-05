@@ -31,7 +31,7 @@
             { type: "environment", name: "runenv" },
             { type: "metadata", name: "metadata" },
             { type: "list", name: "watch", description: "Absolute path to files or directories to watch", validation: "LIST_OF_PATH_ABSOLUTE_UNIX_OR_WINDOWS", example: "/etc or /etc/passwd" },
-            { type: "choice", name: "hash_algorithm", default: "sha256", description: "Hash algorithm", validation: "HASH_ALGORITHM" },
+            { type: "string", name: "hash_algorithm", default: "sha256", description: "Hash algorithm", choice: [ "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "best" ], },
             { type: "string", name: "ifelapsed", default: "1440", description: "Time in minutes that should elapse before recheck", validation: "IFELAPSED", example: "1440" },
             { type: "return", name: "paths", },
         ],
