@@ -148,6 +148,7 @@ sub make_activation
                          compositions => $compositions,
                          metadata => $metadata,
                          available_compositions => $api->compositions(),
+                         pdef => $p,
                         );
 
             $extra{default} = $p->{default} if exists $p->{default};
@@ -314,7 +315,18 @@ sub fill_param
         }
         elsif ($type eq 'string' && exists $pval{$name} && Util::is_scalar($pval{$name}))
         {
+            my $choice = Util::hashref_search($extra, qw/pdef choice/);
             $ret = {set=>$pkey, type => $type, name => $name, value => $pval{$name}};
+            if (defined $choice && ref $choice eq 'ARRAY')
+            {
+                unless (grep { $_ eq $pval{$name} } @$choice)
+                {
+                    $api->log("For %s parameter %s, choice %s didn't fit offered value %s",
+                              $extra->{bundle}, $name, $choice, $pval{$name});
+                    undef $ret;
+                }
+            }
+
         }
         elsif ($type eq 'boolean' && exists $pval{$name} && Util::is_scalar($pval{$name}))
         {
