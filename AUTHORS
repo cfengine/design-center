@@ -16,11 +16,11 @@ TODO
 Copyright
 =========
 
-The Design Center design and code is by Cfengine AS and all rights are
+The Design Center design and code is by CFEngine AS and all rights are
 reserved.
 
-In order to offer commericial support of cfengine to customers it is
-important for Cfengine AS to have an uncomplicated ownership of rights
+In order to offer commericial support of CFEngine to customers it is
+important for CFEngine AS to have an uncomplicated ownership of rights
 to the Design Center code in future products. For that reason we will
 require that substantial code contrbutions (contributions of
 sufficient size to warrant copyright) be accompanied by a signed
@@ -28,19 +28,19 @@ transfer of rights form to CFEngine AS.
 
 Such a transfer will not take away any of your freedoms under the GNU
 public licence or MIT license, but will guarantee that community
-contributions can be included in cfengine's commerical future, without
-the need to split cfengine into multiple versions i.e. this allows
-CFEngine AS to make money on commerical versions of CFEngine thus
+contributions can be included in CFEngine's commercial future, without
+the need to split CFEngine into multiple versions i.e. this allows
+CFEngine AS to make money on commercial versions of CFEngine thus
 supporting future in-house development.
 
 ========================================================================
 
-Cfengine AS Contributor statement
+CFEngine AS Contributor statement
 
 The terms stated below apply to your contribution of computer code and other
-material to software or projects owned or managed by Cfengine AS (“project”),
+material to software or projects owned or managed by CFEngine AS (“project”),
 and set out the intellectual property rights in the contributed material you
-transfer to Cfengine. If this contribution is on behalf of a company, “you” will
+transfer to CFEngine. If this contribution is on behalf of a company, “you” will
 also mean the company you identify below.
 
 1. "Material" and "contribution" shall mean any source code, object code, patch,
