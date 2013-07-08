@@ -21,6 +21,7 @@ puts "Command-line options are " + ours.to_s
 
 options= {
   :installer => :core,
+  :install_version => nil,
   :setup => [],
   :dctest => [],
   :box => 'ubuntu-13.04',
@@ -70,6 +71,11 @@ EOHIPPUS
         [:none, :core, :packages],
         "Installation method for CFEngine (none, core, packages)") do |v|
     options[:installer] = v
+  end
+
+  op.on("--install_version=[VERSION]",
+        "Installation version for CFEngine, where applicable") do |v|
+    options[:install_version] = v
   end
 
   op.on("--setup bootstrap,dc",
@@ -141,13 +147,15 @@ puts "Requested instance count [#{options[:count]}]"
 puts "Requested instance IP or IP prefix [#{options[:ip]}]"
 puts "Requested bootstrap IP [#{options[:bootstrap_ip]}]"
 
-actions = Actions.assemble(Boxes.type(box), options[:installer], options[:setup], options[:dctest])
+actions = Actions.assemble(Boxes.type(box), options[:installer], options[:install_version], options[:setup], options[:dctest])
+
+printable_version = options[:install_version] || 'latest'
 
 unless actions
-  abort "Sorry, the box #{options[:box]} with type #{box_type} and setup steps #{options[:installer]}, #{options[:setup].join(' ')}, #{options[:dctest].join(' ')} did not give us valid steps to follow.  Bye."
+  abort "Sorry, the box #{options[:box]} with type #{box_type} and setup steps #{options[:installer]} (version #{printable_version}), #{options[:setup].join(' ')}, #{options[:dctest].join(' ')} did not give us valid steps to follow.  Bye."
 end
 
-puts "From setup steps #{options[:installer]}, setup #{options[:setup].join(' ')}, dctest #{options[:dctest].join(' ')}, steps to follow: " + actions.to_s
+puts "From setup steps #{options[:installer]} (version #{printable_version}), setup #{options[:setup].join(' ')}, dctest #{options[:dctest].join(' ')}, steps to follow: " + actions.to_s
 
 puts "CFEngine test environment ready!"
 puts "Engaging donkey's attention..."
@@ -157,10 +165,7 @@ Vagrant::Config.run do |config|
   config.vm.box = File.basename(box)
   config.vm.box_url = box
 
-  # TODO: broken?
-  # config.vm.provider "virtualbox" do |v|
-  #   v.customize ["modifyvm", :id, "--memory", options[:vmsize]]
-  # end
+  config.vm.customize ["modifyvm", :id, "--memory", 1024]
 
   #### Define VMs ####
 
@@ -174,9 +179,8 @@ Vagrant::Config.run do |config|
       # shaddap, it works
       i.times { |c| ip = ip.succ() }
 
-      # TODO: broken?
-      # vm_config.vm.network :private_network, ip
-      vm_config.vm.network :hostonly, ip
+      vm_config.vm.network :private_network, ip
+      # vm_config.vm.network :hostonly, ip
       vm_config.vm.forward_port 80, 8080 + i
 
       options[:i] = i
