@@ -32,6 +32,7 @@ options= {
   :dcbranch => 'master',
   :vmname => 'cftester',
   :vmsize => "1024",
+  :baseport => "8080",
 }
 
 OptionParser.new do |op|
@@ -57,9 +58,14 @@ EOHIPPUS
     options[:vmname] = v
   end
 
-  op.on("--vmsize=[MSIZE]",
+  op.on("--vmsize=[VMSIZE]",
         "VM memory size") do |v|
     options[:vmsize] = v
+  end
+
+  op.on("--baseport=[BASEPORT]",
+        "Base forwarding port") do |v|
+    options[:baseport] = v
   end
 
   op.on("--dcbranch=[BRANCH]",
@@ -183,7 +189,7 @@ Vagrant.configure("2") do |config|
 
       vm_config.vm.network :private_network, ip: ip
       # vm_config.vm.network :hostonly, ip
-      vm_config.vm.network :forwarded_port, guest: 80, host: 8080+i
+      vm_config.vm.network :forwarded_port, guest: 80, host: options[:baseport]+i
 
       options[:i] = i
       actions.each do |a|
