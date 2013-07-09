@@ -160,12 +160,14 @@ puts "From setup steps #{options[:installer]} (version #{printable_version}), se
 puts "CFEngine test environment ready!"
 puts "Engaging donkey's attention..."
 
-Vagrant::Config.run do |config|
+Vagrant.configure("2") do |config|
 
   config.vm.box = File.basename(box)
   config.vm.box_url = box
 
-  config.vm.customize ["modifyvm", :id, "--memory", 1024]
+  config.vm.provider "virtualbox" do |v|
+    v.customize ["modifyvm", :id, "--memory", 1024]
+  end
 
   #### Define VMs ####
 
@@ -174,14 +176,14 @@ Vagrant::Config.run do |config|
     config.vm.define "#{options[:vmname]}#{iprint}" do |vm_config|
 
       # Host config
-      vm_config.vm.host_name = "#{options[:vmname]}#{iprint}"
+      vm_config.vm.hostname = "#{options[:vmname]}#{iprint}"
       ip = options[:ip]
       # shaddap, it works
       i.times { |c| ip = ip.succ() }
 
-      vm_config.vm.network :private_network, ip
+      vm_config.vm.network :private_network, ip: ip
       # vm_config.vm.network :hostonly, ip
-      vm_config.vm.forward_port 80, 8080 + i
+      vm_config.vm.network :forwarded_port, guest: 80, host: 8080+i
 
       options[:i] = i
       actions.each do |a|
