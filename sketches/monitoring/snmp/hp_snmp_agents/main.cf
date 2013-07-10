@@ -40,64 +40,64 @@ bundle agent monitoring_snmp_hp_snmp_agents(prefix, path, opt, snmpdconf, autoco
       "vars[pkg_install][type]" string => "NON_EMPTY_STRING";
       "vars[pkg_install][default]" string => "true";
 
-vars:
-  "bundle" string => "monitoring_snmp_hp_snmp_agents";
-  "class_prefix" string => canonify("$(prefix)_$(bundle)");
-  "packages" slist => { "hpacucli", "hp-health", "hp-snmp-agents" };
+  vars:
+      "bundle" string => "monitoring_snmp_hp_snmp_agents";
+      "class_prefix" string => canonify("$(prefix)_$(bundle)");
+      "packages" slist => { "hpacucli", "hp-health", "hp-snmp-agents" };
 
-  # This is just placeholder information if we ever decide to integrate
-  # the hpsnmpconfig binary
-  "path[hpsnmpconfig]"        string => "/sbin/hpsnmpconfig";
+      # This is just placeholder information if we ever decide to integrate
+      # the hpsnmpconfig binary
+      "path[hpsnmpconfig]"        string => "/sbin/hpsnmpconfig";
 
 
-  "valid_hpsnmpconfig_options" slist => { "rws", "ros", "rwmips", "romips", "tcs", "tdips", "sci", "sli"};
-  ##################################################
-  #  Deal with Configuration Options and Defaults  #
-  ##################################################
+      "valid_hpsnmpconfig_options" slist => { "rws", "ros", "rwmips", "romips", "tcs", "tdips", "sci", "sli"};
+      ##################################################
+      #  Deal with Configuration Options and Defaults  #
+      ##################################################
 
-  # Pull in all values provided by parameters
-  "opt[$(valid_hpsnmpconfig_options)]"
-        string => "$(opt[$(valid_hpsnmpconfig_options)])",
-    policy => "free",
-    ifvarclass => "hpsnmpconfig_opt_$(valid_hpsnmpconfig_options)_from_param",
-    comment => "Get options passed in from parameteres";
- 
-  # Default required options
-  # these are required because the hpsnmpconfig command requires them
-  "opt[rws]"
-    string => "private",
-    policy => "free",
-    ifvarclass => not("hpsnmpconfig_opt_rws_from_param"),
-    comment => "Default read/write community string for connections from
+      # Pull in all values provided by parameters
+      "opt[$(valid_hpsnmpconfig_options)]"
+      string => "$(opt[$(valid_hpsnmpconfig_options)])",
+      policy => "free",
+      ifvarclass => "hpsnmpconfig_opt_$(valid_hpsnmpconfig_options)_from_param",
+      comment => "Get options passed in from parameteres";
+      
+      # Default required options
+      # these are required because the hpsnmpconfig command requires them
+      "opt[rws]"
+      string => "private",
+      policy => "free",
+      ifvarclass => not("hpsnmpconfig_opt_rws_from_param"),
+      comment => "Default read/write community string for connections from
                 localhost";
 
-  "opt[ros]"
-    string => "public",
-    policy => "free",
-    ifvarclass => not("hpsnmpconfig_opt_ros_from_param"),
-    comment => "Default read only community string for connections from
+      "opt[ros]"
+      string => "public",
+      policy => "free",
+      ifvarclass => not("hpsnmpconfig_opt_ros_from_param"),
+      comment => "Default read only community string for connections from
                 localhost.";
-  ##################################################
+      ##################################################
 
-  "hpsnmpconfig_required_options" slist => { "rws", "ros" };
+      "hpsnmpconfig_required_options" slist => { "rws", "ros" };
 
-  "hp_snmp_agent_processes" slist => {
-                                       "cmahealthd",
-                                       "cmastdeqd",
-                                       "cmahostd",
-                                       "cmathreshd",
-                                       "cmasm2d",
-                                       "cmaperfd",
-                                       "cmapeerd",
-                                       "cmasasd",
-                                       "cmafcad",
-                                       "cmaeventd",
-                                       "cmaidad",
-                                       "cmaided",
-                                       "cmascsid",
-                                     };
+      "hp_snmp_agent_processes" slist => {
+					   "cmahealthd",
+					   "cmastdeqd",
+					   "cmahostd",
+					   "cmathreshd",
+					   "cmasm2d",
+					   "cmaperfd",
+					   "cmapeerd",
+					   "cmasasd",
+					   "cmafcad",
+					   "cmaeventd",
+					   "cmaidad",
+					   "cmaided",
+					   "cmascsid",
+      };
 
-classes:
+  classes:
       "_debug_monitoring_snmp_hp_snmp_agents" expression => regcmp("(?i)yes|true|on", "$(debug)");
 
       "hpsnmpconfig_opt_$(valid_hpsnmpconfig_options)_from_param" expression => isvariable("opt[$(valid_hpsnmpconfig_options)]");
@@ -107,9 +107,9 @@ classes:
       "pkg_refresh_interval" expression => isvariable("pkg_refresh_interval");
       "pkg_install" expression => regcmp("(?i)yes|true|on", "$(pkg_install)");
 
-  "monitoring_snmp_hp_snmp_agents_configured"
-    expression => regline(".*cmaX.*", "$(snmpconf)"),
-    comment => "The hp-snmp-agents init script performs
+      "monitoring_snmp_hp_snmp_agents_configured"
+      expression => regline(".*cmaX.*", "$(snmpconf)"),
+      comment => "The hp-snmp-agents init script performs
                 a 'grep \"cmaX\" /etc/snmp/snmpd.conf'
                 to validate configuration, that is supposed
                 to be performed by an interactive post-install
@@ -117,81 +117,81 @@ classes:
                 with snmp, but only activate these services when
                 present.";
 
-  "second_class_pass" and => {"first_class_pass"};
-  "first_class_pass" and => {"any"};
+      "second_class_pass" and => {"first_class_pass"};
+      "first_class_pass" and => {"any"};
 
-files:
-  # We have to force this to the second class pass or it does not resolve all the variables correctly
-  second_class_pass::
-    "$(snmpdconf)"
+  files:
+      # We have to force this to the second class pass or it does not resolve all the variables correctly
+    second_class_pass::
+      "$(snmpdconf)"
       create => "true",
       perms => mog("644", "root", "root"),
       edit_line => monitoring_snmp_hp_snmp_agents_edit_snmpdconf("$(bundle).opt"),
       ifvarclass => "hpsnmpconfig_autoconfig",
       comment => "Configure snmpd.conf for HP SNMP Agents";
-    
-packages:
-  (redhat|centos).pkg_install::
-    "$(packages)"
+      
+  packages:
+    (redhat|centos).pkg_install::
+      "$(packages)"
       package_policy => "add",
       package_method => yum_rpm,
       action         => if_elapsed("$(pkg_refresh_interval)"),
       classes        => if_repaired("$(bundle)_$(package)_installed"),
       comment        => "Install HP SNMP Related Packages";
 
-processes:
-  # If we are instructed to install packages, and we have to kill off hpsnmpconfig
-  # Then we assume that was because of the pesky post install script, the yum db
-  # might have uncompleted transactions (not in my testing), this is expected
-  # to be handeled seperately see yum-utils and yum-complete-transaction
-  "$(path[hpsnmpconfig])"
-    signals => { "term" , "kill" },
-    classes => if_repaired("$(bundle)_killed_hpsnmpconfig"),
-    ifvarclass => "pkg_install",
-    comment => "This takes care of the pesky interactive post install process
+  processes:
+      # If we are instructed to install packages, and we have to kill off hpsnmpconfig
+      # Then we assume that was because of the pesky post install script, the yum db
+      # might have uncompleted transactions (not in my testing), this is expected
+      # to be handeled seperately see yum-utils and yum-complete-transaction
+      "$(path[hpsnmpconfig])"
+      signals => { "term" , "kill" },
+      classes => if_repaired("$(bundle)_killed_hpsnmpconfig"),
+      ifvarclass => "pkg_install",
+      comment => "This takes care of the pesky interactive post install process
                 that is fired off by installing hp-snmp-agents.";
 
-  # Only monitor processes if the hp snmp agents have been configured
-  monitoring_snmp_hp_snmp_agents_configured::
-    "$(hp_snmp_agent_processes)"
+      # Only monitor processes if the hp snmp agents have been configured
+    monitoring_snmp_hp_snmp_agents_configured::
+      "$(hp_snmp_agent_processes)"
       restart_class => "$(bundle)_restart_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)",
       comment       => "$(hp_snmp_agent_processes) is a componenet of
                        hp-snmp-agents, it needs to be running for hp
                        utilities to work";
-  
-    "/opt/hp/hp-health/bin/hp-asrd"
+      
+      "/opt/hp/hp-health/bin/hp-asrd"
       comment         => "hp-asrd is needed for hp utilities to work",
       restart_class   => "$(bundle)_restart_hp_asrd";
-  
-    "hpasmlited"
+      
+      "hpasmlited"
       comment         => "hpasmlited is part of hp-health, its needed for hp utilities to work",
       restart_class   => "$(bundle)_restart_hp_health";
 
-commands:
-  "/sbin/service"
-    args => "hp-snmp-agents restart",
-    ifvarclass => canonify("$(bundle)_restart_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)"),
-    classes => if_repaired("$(bundle)_restarted_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)"),
-    comment => "Restart hp-snmp-agents if needed";
- 
-  "/sbin/service"
-    args => "hp-asrd restart",
-    ifvarclass => canonify("$(bundle)_restart_hp_asrd"),
-    classes => if_repaired("$(bundld)_restarted_hp_asrd"),
-    comment => "Restart hp-asrd if needed";
- 
-  "/sbin/service"
-    args => "hp-health restart",
-    ifvarclass => canonify("$(bundle)_restart_hp_health"),
-    classes => if_repaired("$(bundle)_restarted_hp_health"),
-    comment => "Restart hp-health if needed";
+  commands:
+      "/sbin/service"
+      args => "hp-snmp-agents restart",
+      ifvarclass => canonify("$(bundle)_restart_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)"),
+      classes => if_repaired("$(bundle)_restarted_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)"),
+      comment => "Restart hp-snmp-agents if needed";
+      
+      "/sbin/service"
+      args => "hp-asrd restart",
+      ifvarclass => canonify("$(bundle)_restart_hp_asrd"),
+      classes => if_repaired("$(bundld)_restarted_hp_asrd"),
+      comment => "Restart hp-asrd if needed";
+      
+      "/sbin/service"
+      args => "hp-health restart",
+      ifvarclass => canonify("$(bundle)_restart_hp_health"),
+      classes => if_repaired("$(bundle)_restarted_hp_health"),
+      comment => "Restart hp-health if needed";
 
-reports:
-  _debug_monitoring_snmp_hp_snmp_agents::
-    "DEBUG: $(bundle)  AUTO Config: NO",
+  reports:
+    _debug_monitoring_snmp_hp_snmp_agents::
+      "DEBUG: $(bundle)  AUTO Config: NO",
       ifvarclass => not("hpsnmpconfig_autoconfig");
 
-    "DEBUG: $(bundle)  snmpd.conf: $(snmpdconf)";
+      "DEBUG: $(bundle)  snmpd.conf: $(snmpdconf)";
 
       "DEBUG: $(bundle)  Parameter Defined: opt[$(valid_hpsnmpconfig_options)]: $(opt[$(valid_hpsnmpconfig_options)])", 
       ifvarclass => "hpsnmpconfig_opt_$(valid_hpsnmpconfig_options)_from_param";
@@ -199,75 +199,75 @@ reports:
       "DEBUG: $(bundle)  Parameter Not Defined: opt[$(valid_hpsnmpconfig_options)]", 
       ifvarclass => not("hpsnmpconfig_opt_$(valid_hpsnmpconfig_options)_from_param");
 
-  cfengine::
-    "I installed $(package), it's needed for HP monitoring",
+    cfengine::
+      "I installed $(package), it's needed for HP monitoring",
       ifvarclass => canonify("$(bundle)_$(package)_installed");
 
-    "I killed off hpsnmpconfig, we manage the configuration, not pesky interactive post install scripts",
+      "I killed off hpsnmpconfig, we manage the configuration, not pesky interactive post install scripts",
       ifvarclass => "$(bundle)_killed_hpsnmpconfig";
 
-    "$(hp_snmp_agent_processes) is not running",
+      "$(hp_snmp_agent_processes) is not running",
       ifvarclass => canonify("$(bundle)_restart_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)");
 
-    "/opt/hp/hp-health/bin/hp-asrd is not running",
+      "/opt/hp/hp-health/bin/hp-asrd is not running",
       ifvarclass => canonify("$(bundle)_restart_hp_asrd");
 
-    "hpasmlited is not running (part of hp-health)",
+      "hpasmlited is not running (part of hp-health)",
       ifvarclass => canonify("$(bundle)_restart_hp_health");
 
-    "I restarted hp-snmp-agents",
+      "I restarted hp-snmp-agents",
       ifvarclass => canonify("$(bundle)_restarted_monitoring_snmp_hp_snmp_agents_for_$(hp_snmp_agent_processes)");
 
-    "I restarted hp-asrd"
+      "I restarted hp-asrd"
       ifvarclass => canonify("$(bundld)_restarted_hp_asrd");
 
-    "I restarted hp-health"
+      "I restarted hp-health"
       ifvarclass => canonify("$(bundle)_restarted_hp_health");
 
-    "HP SNMP Agents has not been configured",
+      "HP SNMP Agents has not been configured",
       ifvarclass => not("monitoring_snmp_hp_snmp_agents_configured");
 
 }
 
 bundle edit_line monitoring_snmp_hp_snmp_agents_edit_snmpdconf(array)
 {
-vars:
-  "bundle" string => "monitoring_snmp_hp_snmp_agents_edit_snmpdconf";
-  "options" slist => getindices("$(array)");
+  vars:
+      "bundle" string => "monitoring_snmp_hp_snmp_agents_edit_snmpdconf";
+      "options" slist => getindices("$(array)");
 
-classes:
-  "$(options)_defined" or => { "any" };
+  classes:
+      "$(options)_defined" or => { "any" };
 
-insert_lines:
-  any::
-    "# This file is managed by CFEngine";
+  insert_lines:
+    any::
+      "# This file is managed by CFEngine";
 
-    "rwcommunity $($(array)[rws]) 127.0.0.1";
-    "rocommunity $($(array)[ros]) 127.0.0.1";
+      "rwcommunity $($(array)[rws]) 127.0.0.1";
+      "rocommunity $($(array)[ros]) 127.0.0.1";
 
-    "rwcommunity $($(array)[rwmips])",
+      "rwcommunity $($(array)[rwmips])",
       ifvarclass => "rwmips_defined";
 
-    "rocommunity $($(array)[romips])",
+      "rocommunity $($(array)[romips])",
       ifvarclass => "romips_defined";
 
-    "trapcommunity $($(array)[tcs])",
+      "trapcommunity $($(array)[tcs])",
       ifvarclass => "tcs_defined";
 
-    "trapsink $($(array)[tdips])",
+      "trapsink $($(array)[tdips])",
       ifvarclass => "tdips_defined";
 
-    "syscontact $($(array)[sci])",
+      "syscontact $($(array)[sci])",
       ifvarclass => "sci_defined";
 
-    "syslocation $($(array)[sli])",
+      "syslocation $($(array)[sli])",
       ifvarclass => "sli_defined";
 
-  64_bit::
-    "dlmod cmaX /usr/lib64/libcmaX64.so";
+    64_bit::
+      "dlmod cmaX /usr/lib64/libcmaX64.so";
 
-reports:
-  # Too bad you cant inherit classes yet :)
-  _debug_monitoring_snmp_hp_snmp_agents::
-    "DEBUG: $(bundle)  Parameter: $(array)[$(options)]: $($(array)[$(options)])";
+  reports:
+      # Too bad you cant inherit classes yet :)
+    _debug_monitoring_snmp_hp_snmp_agents::
+      "DEBUG: $(bundle)  Parameter: $(array)[$(options)]: $($(array)[$(options)])";
 }

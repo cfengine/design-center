@@ -41,8 +41,8 @@ bundle agent manage_metadata(runenv, metadata, name, given_path, perm, refresh_i
       "path" string => "$(default:eu.path_prefix)$(given_path)";
 
       "class_prefix"
-        string => canonify("$(this.bundle)_$(runenv)_$(path)"),
-        policy => "free";
+      string => canonify("$(this.bundle)_$(runenv)_$(path)"),
+      policy => "free";
 
 
   classes:
@@ -55,8 +55,8 @@ bundle agent manage_metadata(runenv, metadata, name, given_path, perm, refresh_i
       "_debug" or => { "debug_mode" };
 
       "$(class_prefix)_exists"
-        expression => fileexists("$(path)/repodata/repomd.xml"),
-        comment    => "Check if a repo exists yet";
+      expression => fileexists("$(path)/repodata/repomd.xml"),
+      comment    => "Check if a repo exists yet";
 
   methods:
       "utils" usebundle => default:eu($(runenv));
@@ -67,88 +67,88 @@ bundle agent manage_metadata(runenv, metadata, name, given_path, perm, refresh_i
 
   files:
       "$(path)/."
-        create       => "true",
-        perms        => default:mog($(mode), $(owner), $(group)),
-        depth_search => default:recurse("inf"),
-        comment      => "Ensure repository root directory exists with proper permissions";
+      create       => "true",
+      perms        => default:mog($(mode), $(owner), $(group)),
+      depth_search => default:recurse("inf"),
+      comment      => "Ensure repository root directory exists with proper permissions";
 
       # TODO: this only sees new/content change but not removals or file stats!
       # I expected that any change (including mtime would cause a repair)
       "$(path)"
-        changes      => default:dc_detect_all_change_using("md5"),
-        depth_search => default:recurse("1"),
-        classes      => default:dc_generic("$(class_prefix)_detected_change"),
-        comment      => "If any changes are detected we need to signal to update the metadata";
+      changes      => default:dc_detect_all_change_using("md5"),
+      depth_search => default:recurse("1"),
+      classes      => default:dc_generic("$(class_prefix)_detected_change"),
+      comment      => "If any changes are detected we need to signal to update the metadata";
 
   commands:
     not_test::
       "$(default:dc_paths.createrepo)"
-        args       => "$(path)",
-        contain    => default:dc_setuid_gid_umask($(owner), $(group), "022"),
-        classes    => default:dc_generic("$(class_prefix)_create"),
-        ifvarclass => not(canonify("$(class_prefix)_exists")),
-        comment    => "Create repository if one does not exist";
+      args       => "$(path)",
+      contain    => default:dc_setuid_gid_umask($(owner), $(group), "022"),
+      classes    => default:dc_generic("$(class_prefix)_create"),
+      ifvarclass => not(canonify("$(class_prefix)_exists")),
+      comment    => "Create repository if one does not exist";
 
       "$(default:dc_paths.createrepo)"
-        args       => "--update $(path)",
-        contain    => default:dc_setuid_gid_umask($(owner), $(group), "022"),
-        classes    => default:dc_generic("$(class_prefix)_metadata_update"),
-        ifvarclass => "$(class_prefix)_detected_change_repaired",
-        comment    => "We need to update the metadata since a change was detected";
+      args       => "--update $(path)",
+      contain    => default:dc_setuid_gid_umask($(owner), $(group), "022"),
+      classes    => default:dc_generic("$(class_prefix)_metadata_update"),
+      ifvarclass => "$(class_prefix)_detected_change_repaired",
+      comment    => "We need to update the metadata since a change was detected";
 
     test::
       "$(default:eu.exec_prefix)$(default:dc_paths.createrepo)"
-        args       => $(path),
-        classes    => default:dc_generic("$(class_prefix)_create"),
-        ifvarclass => not(canonify("$(class_prefix)_exists")),
-        comment    => "Create repository if one does not exist";
+      args       => $(path),
+      classes    => default:dc_generic("$(class_prefix)_create"),
+      ifvarclass => not(canonify("$(class_prefix)_exists")),
+      comment    => "Create repository if one does not exist";
 
       "$(default:eu.exec_prefix)$(default:dc_paths.createrepo)"
-        args       => "--update $(path)",
-        classes    => default:dc_generic("$(class_prefix)_metadata_update"),
-        ifvarclass => "$(class_prefix)_detected_change_repaired",
-        comment    => "We need to update the metadata since a change was detected";
+      args       => "--update $(path)",
+      classes    => default:dc_generic("$(class_prefix)_metadata_update"),
+      ifvarclass => "$(class_prefix)_detected_change_repaired",
+      comment    => "We need to update the metadata since a change was detected";
 
 
   reports:
     _verbose::
       "$(this.bundle): Repository metadata does not exist at $(path)"
-        ifvarclass => not(canonify("$(class_prefix)_exists"));
+      ifvarclass => not(canonify("$(class_prefix)_exists"));
 
       "$(this.bundle): Detected changes in $(path)/"
-        ifvarclass => "$(class_prefix)_detected_change_repaired";
+      ifvarclass => "$(class_prefix)_detected_change_repaired";
 
     _inform::
       "$(this.bundle): Initalized repository metadata at $(path)"
-        ifvarclass => "$(class_prefix)_create_ok";
+      ifvarclass => "$(class_prefix)_create_ok";
 
       "$(this.bundle): Repository metadata updated at $(path)"
-        ifvarclass => "$(class_prefix)_metadata_update_repaired";
+      ifvarclass => "$(class_prefix)_metadata_update_repaired";
 
     any::
       "$(this.bundle): Successfully created repository in $(path)"
-        bundle_return_value_index => "status",
-        ifvarclass => "$(class_prefix)_create_not_ok";
+      bundle_return_value_index => "status",
+      ifvarclass => "$(class_prefix)_create_not_ok";
 
       "$(this.bundle): Successfully updated repository in $(path)"
-        bundle_return_value_index => "status",
-        ifvarclass => "$(class_prefix)_metadata_update_ok";
+      bundle_return_value_index => "status",
+      ifvarclass => "$(class_prefix)_metadata_update_ok";
 
       "$(this.bundle): Unable to create or update repository in $(path) using $(createrepo)"
-        bundle_return_value_index => "status",
-        ifvarclass => "$(class_prefix)_create_not_ok|$(class_prefix)_metadata_update_not_ok";
+      bundle_return_value_index => "status",
+      ifvarclass => "$(class_prefix)_create_not_ok|$(class_prefix)_metadata_update_not_ok";
 
       "1"
-        bundle_return_value_index => "return_code",
-        ifvarclass => "$(class_prefix)_create_not_ok|$(class_prefix)_metadata_update_not_ok";
+      bundle_return_value_index => "return_code",
+      ifvarclass => "$(class_prefix)_create_not_ok|$(class_prefix)_metadata_update_not_ok";
 
       "0"
-        bundle_return_value_index => "return_code",
-        ifvarclass => "$(class_prefix)_create_ok|$(class_prefix)_metadata_update_ok";
+      bundle_return_value_index => "return_code",
+      ifvarclass => "$(class_prefix)_create_ok|$(class_prefix)_metadata_update_ok";
 
       ""
-        bundle_return_value_index => "return_code",
-        ifvarclass => "!($(class_prefix)_create_ok|$(class_prefix)_metadata_update_ok|$(class_prefix)_create_not_ok|$(class_prefix)_metadata_update_not_ok)";
+      bundle_return_value_index => "return_code",
+      ifvarclass => "!($(class_prefix)_create_ok|$(class_prefix)_metadata_update_ok|$(class_prefix)_create_not_ok|$(class_prefix)_metadata_update_not_ok)";
 
 
 }

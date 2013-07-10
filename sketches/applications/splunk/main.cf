@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_splunk";
+      namespace => "cfdc_splunk";
 }
 
 bundle agent install_forwarder(runenv, metadata, installdir, server, password, comment_marker)

@@ -14,7 +14,7 @@ bundle agent server(runenv,metadata,given_conf_file,given_pool_dir,pidfile,error
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
       "conf_file" string => "$(default:eu.path_prefix)$(given_conf_file)";
-			"pool_dir" string => "$(default:eu.path_prefix)$(given_pool_dir)";
+      "pool_dir" string => "$(default:eu.path_prefix)$(given_pool_dir)";
 
   methods:
       "utils" usebundle => default:eu($(runenv));
@@ -65,32 +65,32 @@ bundle agent install
 bundle agent conf(runenv,metadata,pkg_status,conf_file,pool_dir,pidfile,errorlog,pools)
 {
 
-	vars:
-		"pool_names" slist => getindices("$(pools)");
-		"conf_files" slist => maplist("$(this).conf","pool_names");
-		"existing_pools" slist => lsdir("$(pool_dir)", ".*\.conf$", "false");
+  vars:
+      "pool_names" slist => getindices("$(pools)");
+      "conf_files" slist => maplist("$(this).conf","pool_names");
+      "existing_pools" slist => lsdir("$(pool_dir)", ".*\.conf$", "false");
 
   classes:
       "applications_php_fpm_installed" expression => strcmp("1", $(pkg_status));
 
   files:
-		applications_php_fpm_installed.(ubuntu|debian)::
+    applications_php_fpm_installed.(ubuntu|debian)::
       "$(default:eu.path_prefix)$(conf_file)"
-			create => "true",
-			edit_defaults => default:empty,
-			classes => default:if_repaired("applications_php_fpm_config_repaired"),
-			edit_line => edit_conf($(pidfile),$(errorlog),$(pool_dir));
+      create => "true",
+      edit_defaults => default:empty,
+      classes => default:if_repaired("applications_php_fpm_config_repaired"),
+      edit_line => edit_conf($(pidfile),$(errorlog),$(pool_dir));
 
-		"$(pool_dir)/$(pool_names).conf"
-			create => "true",
-			edit_defaults => default:empty,
-			classes => default:if_repaired("applications_php_fpm_config_repaired"),
-			edit_line => edit_conf_pool("$(pool_names)", "$(pools)");
+      "$(pool_dir)/$(pool_names).conf"
+      create => "true",
+      edit_defaults => default:empty,
+      classes => default:if_repaired("applications_php_fpm_config_repaired"),
+      edit_line => edit_conf_pool("$(pool_names)", "$(pools)");
 
-		"$(pool_dir)/$(existing_pools)"
-			delete => default:tidy,
-			classes => default:if_repaired("applications_php_fpm_config_repaired"),
-			ifvarclass => not(reglist("@(conf_files)", "^$(existing_pools)$"));
+      "$(pool_dir)/$(existing_pools)"
+      delete => default:tidy,
+      classes => default:if_repaired("applications_php_fpm_config_repaired"),
+      ifvarclass => not(reglist("@(conf_files)", "^$(existing_pools)$"));
 
   reports:
     applications_php_fpm_config_repaired::
@@ -118,16 +118,16 @@ bundle agent proc(service_mode)
 
 bundle edit_line edit_conf(pidfile,error_log,pool_dir)
 {
-	insert_lines:
-"[global]
+  insert_lines:
+      "[global]
 pid = $(pidfile)
 error_log = $(error_log)
 include=$(pool_dir)/*.conf";
 }
 
 bundle edit_line edit_conf_pool(p,c) {
-	insert_lines:
-"[$(p)]
+  insert_lines:
+      "[$(p)]
 user = $($(c)[$(p)][user])
 group = $($(c)[$(p)][group])
 listen = $($(c)[$(p)][listen])
