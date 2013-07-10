@@ -23,12 +23,14 @@ sub command_install
     my $sketchstr = shift;
     my @sketches = split /[,\s]+/, $sketchstr;
     my @todo = map
-      {
+    {
         {
-          sketch => $_, force => $Config{force}, source => $Config{sourcedir},
-            target => $Config{repolist}->[0],
-          }
-      } @sketches;
+             sketch => $_,
+             force => 1,
+             source => undef,
+             target => undef,
+         }
+    } @sketches;
     my ($success, $result) = main::api_interaction({install => \@todo});
     Util::print_api_messages($result);
     my $installresult = Util::hashref_search($result, qw/data install/);
