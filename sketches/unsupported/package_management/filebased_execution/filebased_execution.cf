@@ -1,37 +1,37 @@
 bundle agent filebased_execution(package_source_dir)
 {
-classes:
- "has_packages" expression => isvariable("package_list");
+  classes:
+      "has_packages" expression => isvariable("package_list");
 
-vars:
-  "package_list"            slist => lsdir("$(package_source_dir)", "", "true");
+  vars:
+      "package_list"            slist => lsdir("$(package_source_dir)", "", "true");
 
-has_packages::
-  "package_list_executable" slist => grep(".*\.(exe|bat)$", "package_list");  
-  "package_list_msi"        slist => grep(".*\.msi$", "package_list");
+    has_packages::
+      "package_list_executable" slist => grep(".*\.(exe|bat)$", "package_list");  
+      "package_list_msi"        slist => grep(".*\.msi$", "package_list");
 
 
-files:
+  files:
 
-windows.has_packages::
-  "$(package_list)"
+    windows.has_packages::
+      "$(package_list)"
       comment => "Scan for file changes in repository",
       changes => detect_content,
       classes => if_repaired("package_file_changed_$(package_list)"),
-       handle => canonify("filebased_execution_change_$(package_list)");
-  
+      handle => canonify("filebased_execution_change_$(package_list)");
+      
 
-commands:
+  commands:
 
-  "$(package_list_executable)"
-       comment => "Run executable file if we have not seen it or it has changed",
-    ifvarclass => canonify("package_file_changed_$(package_list_executable)"),
-       contain => in_shell,
-        handle => canonify("filebased_execution_install_executable_$(package_list_executable)");
-	
-  "\"$(sys.winsysdir)\msiexec.exe\" /qn /i $(package_list_msi)"
-       comment => "Install msi-file if we have not seen it or it has changed",
-    ifvarclass => canonify("package_file_changed_$(package_list_msi)"),
-        handle => canonify("filebased_execution_install_msi_$(package_list_msi)");
+      "$(package_list_executable)"
+      comment => "Run executable file if we have not seen it or it has changed",
+      ifvarclass => canonify("package_file_changed_$(package_list_executable)"),
+      contain => in_shell,
+      handle => canonify("filebased_execution_install_executable_$(package_list_executable)");
+      
+      "\"$(sys.winsysdir)\msiexec.exe\" /qn /i $(package_list_msi)"
+      comment => "Install msi-file if we have not seen it or it has changed",
+      ifvarclass => canonify("package_file_changed_$(package_list_msi)"),
+      handle => canonify("filebased_execution_install_msi_$(package_list_msi)");
 }
 

@@ -42,8 +42,8 @@
 
 body process_select processes_named ( command ) {
 
-  command        => "$(command)";
-  process_result => "command";
+      command        => "$(command)";
+      process_result => "command";
 
 }
 
@@ -63,18 +63,18 @@ body process_select processes_named ( command ) {
 # Full-featured body 
 body delete deletesettings ( dirlinks, rmdirs ) {
 
-  # Preserve or delete symlinks?
-  dirlinks => "$(dirlinks)";
-  # Preserve or delete directories?
-  rmdirs   => "$(rmdirs)";
+      # Preserve or delete symlinks?
+      dirlinks => "$(dirlinks)";
+      # Preserve or delete directories?
+      rmdirs   => "$(rmdirs)";
 
 }
 
 # Std body
 body delete deletesettings_std {
 
-  dirlinks => "delete";
-  rmdirs   => "false";
+      dirlinks => "delete";
+      rmdirs   => "false";
 
 }
 
@@ -89,23 +89,23 @@ body delete deletesettings_std {
 ################################################################################
 
 body edit_defaults editsettings( edit_backup, empty_file_before_editing,
-  max_file_size ) {
+      max_file_size ) {
 
-  # Make a backup of the file before editing?
-  edit_backup               => "$(edit_backup)";
-  # Clear it before editing?
-  empty_file_before_editing => "$(empty_file_before_editing)";
-  # Decline to edit, if size exceeds this, in bytes
-  # Note: Supports orders-of-magnitude shorthand (i.e. "100K")
-  max_file_size             => "$(max_file_size)";
+      # Make a backup of the file before editing?
+      edit_backup               => "$(edit_backup)";
+      # Clear it before editing?
+      empty_file_before_editing => "$(empty_file_before_editing)";
+      # Decline to edit, if size exceeds this, in bytes
+      # Note: Supports orders-of-magnitude shorthand (i.e. "100K")
+      max_file_size             => "$(max_file_size)";
 
-}
+      }
 
 body edit_defaults editsettings_std( edit_backup ) {
 
-  edit_backup               => "$(edit_backup)";
-  empty_file_before_editing => "false";
-  max_file_size             => "100K";
+      edit_backup               => "$(edit_backup)";
+      empty_file_before_editing => "false";
+      max_file_size             => "100K";
 
 }
 
@@ -118,39 +118,39 @@ body edit_defaults editsettings_std( edit_backup ) {
 ################################################################################
 
 body edit_field editfield_settings(allow_blank_fields, extend_fields,
- field_operation, field_separator, field_value, select_field,
- start_fields_from_zero, value_separator) {
-  # Allow blank fields in a line (do not purge)?
-  allow_blank_fields     => "$(allow_blank_fields)";
-  # Add new fields at end of line, if necessary, to complete edit
-  extend_fields          => "$(extend_fields)";
-  # The method by which to edit a field in multi-field/column editing of 
-  # tabular files.  See reference guide for options; default is 'append'
-  field_operation        => "$(field_operation)";
-  # Regular expression used to separate fields in a line
-  field_separator        => "$(field_separator)";
-  # Set field to...
-  field_value            => "$(field_value)";
-  # Integer index of field being edited
-  select_field           => "$(select_field)";
-  # First field starts @ 0 instead of 1?  Useful for coordinated iteration
-  # over arrays.
-  start_fields_from_zero => "$(start_fields_from_zero)";
-  # Character separator for subfields inside the selected field
-  # (i.e., ',' in /etc/group, where ':' is the field separator
-  value_separator        => "$(value_separator)";
-}
+      field_operation, field_separator, field_value, select_field,
+      start_fields_from_zero, value_separator) {
+      # Allow blank fields in a line (do not purge)?
+      allow_blank_fields     => "$(allow_blank_fields)";
+      # Add new fields at end of line, if necessary, to complete edit
+      extend_fields          => "$(extend_fields)";
+      # The method by which to edit a field in multi-field/column editing of 
+      # tabular files.  See reference guide for options; default is 'append'
+      field_operation        => "$(field_operation)";
+      # Regular expression used to separate fields in a line
+      field_separator        => "$(field_separator)";
+      # Set field to...
+      field_value            => "$(field_value)";
+      # Integer index of field being edited
+      select_field           => "$(select_field)";
+      # First field starts @ 0 instead of 1?  Useful for coordinated iteration
+      # over arrays.
+      start_fields_from_zero => "$(start_fields_from_zero)";
+      # Character separator for subfields inside the selected field
+      # (i.e., ',' in /etc/group, where ':' is the field separator
+      value_separator        => "$(value_separator)";
+      }
 
 body edit_field editfield_settings_std(field_separator, select_field,
- field_value, field_operation) {
-  field_separator    => "$(field_separator)";
-  select_field       => "$(select_field)";
-  value_separator    => ",";
-  field_value        => "$(field_value)";
-  field_operation    => "$(field_operation)";
-  extend_fields      => "true";
-  allow_blank_fields => "true";
-}
+      field_value, field_operation) {
+      field_separator    => "$(field_separator)";
+      select_field       => "$(select_field)";
+      value_separator    => ",";
+      field_value        => "$(field_value)";
+      field_operation    => "$(field_operation)";
+      extend_fields      => "true";
+      allow_blank_fields => "true";
+      }
 
 ################################################################################
 #
@@ -163,7 +163,7 @@ bundle edit_line append_if_no_such_line( line ) {
 
   insert_lines:
 
-    "$(line)";
+      "$(line)";
 
 }
 
@@ -171,8 +171,8 @@ bundle edit_line append_if_no_such_line( line ) {
 bundle edit_line delete_lines_that_contain ( regexes ) {
 
   delete_lines:
-   
-    ".*" 
+      
+      ".*" 
       delete_select => delete_lines_containing( @(regexes) );
 
 }
@@ -181,8 +181,8 @@ bundle edit_line delete_lines_that_contain ( regexes ) {
 bundle edit_line delete_lines_that_match ( regexes ) {
 
   delete_lines:
-    
-    ".*" 
+      
+      ".*" 
       delete_select => delete_lines_matching( @(regexes) );
 
 }
@@ -193,13 +193,13 @@ bundle edit_line delete_lines_that_match ( regexes ) {
 # blocks.
 body delete_select delete_lines_containing( regexes ) {
 
-  delete_if_contains_from_list => { @(regexes) }; 
+      delete_if_contains_from_list => { @(regexes) }; 
 
 }
 
 body delete_select delete_lines_matching( regexes ) {
 
-  delete_if_match_from_list => { @(regexes) }; 
+      delete_if_match_from_list => { @(regexes) }; 
 
 }
 
@@ -214,11 +214,11 @@ body delete_select delete_lines_matching( regexes ) {
 # Full-featured body
 body perms permissions( mode, owners, group, rxdirs ) { 
 
-  mode     => "$(mode)";
-  owners   => { "$(owners)" };
-  groups   => { "$(group)" };
-  # true/false add execute flag for directories if read flag is set
-  rxdirs   => "$(rxdirs)";
+      mode     => "$(mode)";
+      owners   => { "$(owners)" };
+      groups   => { "$(group)" };
+      # true/false add execute flag for directories if read flag is set
+      rxdirs   => "$(rxdirs)";
 
 }
 
@@ -227,7 +227,7 @@ body perms permissions( mode, owners, group, rxdirs ) {
 # mode_owner_group body.
 body perms mode( mode ) {
 
-  mode    => "$(mode)";
+      mode    => "$(mode)";
 
 }
 
@@ -236,8 +236,8 @@ body perms mode( mode ) {
 # mode_owner_group body.
 body perms owner_group( owners, group ) {
 
-  owners  => { "$(owners)" };
-  groups  => { "$(group)" };
+      owners  => { "$(owners)" };
+      groups  => { "$(group)" };
 
 }
 
@@ -246,17 +246,17 @@ body perms owner_group( owners, group ) {
 # mode_owner_group body.
 body perms mode_owner( mode, owners ) {
 
-  mode    => "$(mode)";
-  owners  => { "$(owners)" };
+      mode    => "$(mode)";
+      owners  => { "$(owners)" };
 
 }
 
 # Standard body
 body perms mode_owner_group( mode, owners, group ) {
 
-  mode    => "$(mode)";
-  owners  => { "$(owners)" };
-  groups  => { "$(group)" };
+      mode    => "$(mode)";
+      owners  => { "$(owners)" };
+      groups  => { "$(group)" };
 
 }
 
@@ -269,47 +269,47 @@ body perms mode_owner_group( mode, owners, group ) {
 
 # Full-featured body
 body copy_from copy( source, servers, compare, copy_backup, encrypt, 
- check_root, portnumber, preserve, purge, stealth, verify ) {
+      check_root, portnumber, preserve, purge, stealth, verify ) {
 
-  # Server-side file location
-  source      => "$(source)";
-  # Slist of motherships to attempt to copy from.  If the first fails, the 
-  # second will be attempted.
-  servers     => { "@(servers)" };
-  # Method of determining whether a backup is necessary - mtime, hash, bitwise
-  # comparison, etc.
-  compare     => "$(compare)";
-  # Method of backup (true/false/timestamp)
-  copy_backup => "$(copy_backup)";
-  # Pass the file over SSL?  Leaving in this option in case we want to transfer
-  # large non-secret files in the future
-  encrypt     => "$(encrypt)";
-  # Check permissions on the root directory when depth_search? 
-  # Default=false
-  check_root  => "$(check_root)";
-  # Connect to servers using this port (default=5308)
-  portnumber  => "$(portnumber)";
-  # Maintain mode, owner and group from server-side copy of the file?
-  preserve    => "$(preserve)";
-  # Wipe out contents of directory first, when doing a recursive copy?
-  purge       => "$(purge)";
-  # Preserve file access and modification times on the promiser files? 
-  stealth     => "$(stealth)";
-  # Confirm that temporary landing file checksum matches server-side checksum
-  # before copying file into place?
-  verify      => "$(verify)";
-}
+      # Server-side file location
+      source      => "$(source)";
+      # Slist of motherships to attempt to copy from.  If the first fails, the 
+      # second will be attempted.
+      servers     => { "@(servers)" };
+      # Method of determining whether a backup is necessary - mtime, hash, bitwise
+      # comparison, etc.
+      compare     => "$(compare)";
+      # Method of backup (true/false/timestamp)
+      copy_backup => "$(copy_backup)";
+      # Pass the file over SSL?  Leaving in this option in case we want to transfer
+      # large non-secret files in the future
+      encrypt     => "$(encrypt)";
+      # Check permissions on the root directory when depth_search? 
+      # Default=false
+      check_root  => "$(check_root)";
+      # Connect to servers using this port (default=5308)
+      portnumber  => "$(portnumber)";
+      # Maintain mode, owner and group from server-side copy of the file?
+      preserve    => "$(preserve)";
+      # Wipe out contents of directory first, when doing a recursive copy?
+      purge       => "$(purge)";
+      # Preserve file access and modification times on the promiser files? 
+      stealth     => "$(stealth)";
+      # Confirm that temporary landing file checksum matches server-side checksum
+      # before copying file into place?
+      verify      => "$(verify)";
+      }
 
 # Standard body
 body copy_from copy_std( source, servers, purge, copy_backup ) {
 
-  source      => "$(source)";
-  servers     => { "@(servers)" };
-  compare     => "digest";
-  purge       => "$(purge)";
-  encrypt     => "true";
-  verify      => "true";
-  copy_backup => "$(copy_backup)";
+      source      => "$(source)";
+      servers     => { "@(servers)" };
+      compare     => "digest";
+      purge       => "$(purge)";
+      encrypt     => "true";
+      verify      => "true";
+      copy_backup => "$(copy_backup)";
 
 }
 
@@ -326,45 +326,45 @@ body copy_from copy_std( source, servers, purge, copy_backup ) {
 
 # Full-featured body
 body action actionsettings( action_policy, ifelapsed, expireafter, 
-  log_level, audit, background, report_level) {
+      log_level, audit, background, report_level) {
 
-  # What to do when a promiser doesn't conform with policy (fix/warn/nop)
-  action_policy     => "$(action_policy)";
-  # Waiting period required before reattempting the same promise, in minutes.
-  # Default=1.
-  ifelapsed         => "$(ifelapsed)";
-  # Put a bullet in promises from prior agent runs if they're found to be still
-  # lying around after this time, in minutes.  Default=1.
-  expireafter       => "$(expireafter)";
-  # Reporting level sent to syslog (inform/verbose/error/log).
-  log_level         => "$(log_level)";
-  # Record detailed information in the audit log about whether this promise was
-  # kept?
-  audit             => "$(audit)";
-  # Send this promise to the background?
-  background        => "$(background)";
-  # Reporting (stdout) level.  When agent is run non-interactively, this is the
-  # setting that affects how noisy mail will be (inform/verbose/error/log).
-  report_level      => "$(report_level)";
+      # What to do when a promiser doesn't conform with policy (fix/warn/nop)
+      action_policy     => "$(action_policy)";
+      # Waiting period required before reattempting the same promise, in minutes.
+      # Default=1.
+      ifelapsed         => "$(ifelapsed)";
+      # Put a bullet in promises from prior agent runs if they're found to be still
+      # lying around after this time, in minutes.  Default=1.
+      expireafter       => "$(expireafter)";
+      # Reporting level sent to syslog (inform/verbose/error/log).
+      log_level         => "$(log_level)";
+      # Record detailed information in the audit log about whether this promise was
+      # kept?
+      audit             => "$(audit)";
+      # Send this promise to the background?
+      background        => "$(background)";
+      # Reporting (stdout) level.  When agent is run non-interactively, this is the
+      # setting that affects how noisy mail will be (inform/verbose/error/log).
+      report_level      => "$(report_level)";
 
-}
+      }
 
 # Standard body
 body action actionsettings_fix_inform( report_level ) {
 
-  action_policy     => "fix";
-  expireafter       => "120";
-  log_level         => "inform";
-  report_level      => "$(report_level)";
+      action_policy     => "fix";
+      expireafter       => "120";
+      log_level         => "inform";
+      report_level      => "$(report_level)";
 
 }
 
 # Use when you want to repair a promise but send nothing to stdout (=no mail).
 body action actionsettings_fix_silent {
 
-  action_policy     => "fix";
-  expireafter       => "120";
-  log_level         => "inform";
+      action_policy     => "fix";
+      expireafter       => "120";
+      log_level         => "inform";
 
 }
 
@@ -373,10 +373,10 @@ body action actionsettings_fix_silent {
 # on a particular erroneous system state.
 body action actionsettings_warn_inform( report_level ) {
 
-  action_policy     => "warn";
-  expireafter       => "120";
-  log_level         => "inform";
-  report_level      => "$(report_level)";
+      action_policy     => "warn";
+      expireafter       => "120";
+      log_level         => "inform";
+      report_level      => "$(report_level)";
 
 }
 
@@ -386,10 +386,10 @@ body action actionsettings_warn_inform( report_level ) {
 # defined due to an error condition. 
 body action actionsettings_fix_inform_noisylogs( report_level ) {
 
-  action_policy     => "fix";
-  expireafter       => "120";
-  log_level         => "verbose";
-  report_level      => "$(report_level)";
+      action_policy     => "fix";
+      expireafter       => "120";
+      log_level         => "verbose";
+      report_level      => "$(report_level)";
 
 }
 
@@ -407,42 +407,42 @@ body action actionsettings_fix_inform_noisylogs( report_level ) {
 # with depth_search.... -JG, 20101011
 
 body depth_search searchsettings( depth, exclude_dirs, include_basedir,
-  include_dirs, rmdeadlinks, traverse_links, xdev ) {
+      include_dirs, rmdeadlinks, traverse_links, xdev ) {
 
-  # How far should we recurse?  (0/n/inf)
-  depth           => "$(depth)";
-  # Slist of regexes of directory names to exclude from promise
-  exclude_dirs    => { "@(exclude_dirs)" };
-  # Include base-level directory in promise?
-  include_basedir => "$(include_basedir)";
-  # Slist of regexes of directory names to include in promise
-  include_dirs    => { "$(include_dirs)" };
-  # Kill links that point nowhere?
-  rmdeadlinks     => "$(rmdeadlinks)";
-  # Follow links? (Dangerous - use with caution)
-  traverse_links  => "$(traverse_links)";
-  # Exclude directories that live on different devices? 
-  xdev            => "$(xdev)";
+      # How far should we recurse?  (0/n/inf)
+      depth           => "$(depth)";
+      # Slist of regexes of directory names to exclude from promise
+      exclude_dirs    => { "@(exclude_dirs)" };
+      # Include base-level directory in promise?
+      include_basedir => "$(include_basedir)";
+      # Slist of regexes of directory names to include in promise
+      include_dirs    => { "$(include_dirs)" };
+      # Kill links that point nowhere?
+      rmdeadlinks     => "$(rmdeadlinks)";
+      # Follow links? (Dangerous - use with caution)
+      traverse_links  => "$(traverse_links)";
+      # Exclude directories that live on different devices? 
+      xdev            => "$(xdev)";
 
-}
+      }
 
 body depth_search searchsettings_std( depth, include_basedir ) {
 
-  depth           => "$(depth)";
-  include_basedir => "$(include_basedir)";
+      depth           => "$(depth)";
+      include_basedir => "$(include_basedir)";
 
 }
 
 # Another typical Yale use case - allows for recursive copies with dir
 # exclusions (.svn, for example).
 body depth_search searchsettings_exclude( depth, exclude_dirs, 
-  include_basedir ) {
+      include_basedir ) {
 
-  depth           => "$(depth)";
-  exclude_dirs    => { "@(exclude_dirs)" };
-  include_basedir => "$(include_basedir)";
+      depth           => "$(depth)";
+      exclude_dirs    => { "@(exclude_dirs)" };
+      include_basedir => "$(include_basedir)";
 
-}
+      }
 
 ################################################################################
 #
@@ -456,18 +456,18 @@ body depth_search searchsettings_exclude( depth, exclude_dirs,
 # Find files by leaf_name 
 body file_select files_matching_leaf( leaf_name, file_types ) {
 
-  leaf_name       => { "@(leaf_name)" };
-  file_types      => { "@(file_types)" };
-  file_result     => "leaf_name.file_types";
+      leaf_name       => { "@(leaf_name)" };
+      file_types      => { "@(file_types)" };
+      file_result     => "leaf_name.file_types";
 
 }
 
 # Find files by not leaf_name 
 body file_select files_matching_not_leaf( leaf_name, file_types ) {
 
-  leaf_name       => { "@(leaf_name)" };
-  file_types      => { "@(file_types)" };
-  file_result     => "!leaf_name.file_types";
+      leaf_name       => { "@(leaf_name)" };
+      file_types      => { "@(file_types)" };
+      file_result     => "!leaf_name.file_types";
 
 }
 
@@ -475,9 +475,9 @@ body file_select files_matching_not_leaf( leaf_name, file_types ) {
 ### NOTE!!! path_name regexes are absolute (must start with '/')! ###
 body file_select files_matching_path( path_name, file_types ) {
 
-  path_name       => { "@(path_name)" };
-  file_types      => { "@(file_types)" };
-  file_result     => "path_name.file_types";
+      path_name       => { "@(path_name)" };
+      file_types      => { "@(file_types)" };
+      file_result     => "path_name.file_types";
 
 }
 
@@ -485,85 +485,85 @@ body file_select files_matching_path( path_name, file_types ) {
 ### NOTE!!! path_name regexes are absolute (must start with '/')! ###
 body file_select files_matching_not_path( path_name, file_types ) {
 
-  path_name       => { "@(path_name)" };
-  file_types      => { "@(file_types)" };
-  file_result     => "!path_name.file_types";
+      path_name       => { "@(path_name)" };
+      file_types      => { "@(file_types)" };
+      file_result     => "!path_name.file_types";
 
 }
 
 # Find files by path_name and leaf_name
 ### NOTE!!! path_name regexes are absolute (must start with '/')! ###
 body file_select files_matching_path_and_leaf( path_name, leaf_name, 
-  file_types ) {
+      file_types ) {
 
-  path_name       => { "@(path_name)" };
-  leaf_name       => { "@(leaf_name)" };
-  file_types      => { "@(file_types)" };
-  file_result     => "leaf_name.path_name.file_types";
+      path_name       => { "@(path_name)" };
+      leaf_name       => { "@(leaf_name)" };
+      file_types      => { "@(file_types)" };
+      file_result     => "leaf_name.path_name.file_types";
 
-}
+      }
 
 # Find files by path_name and not leaf_name
 ### NOTE!!! path_name regexes are absolute (must start with '/')! ###
 body file_select files_matching_path_and_not_leaf( path_name, leaf_name, 
-  file_types ) {
+      file_types ) {
 
-  path_name       => { "@(path_name)" };
-  leaf_name       => { "@(leaf_name)" };
-  file_types      => { "@(file_types)" };
-  file_result     => "!leaf_name.path_name.file_types";
+      path_name       => { "@(path_name)" };
+      leaf_name       => { "@(leaf_name)" };
+      file_types      => { "@(file_types)" };
+      file_result     => "!leaf_name.path_name.file_types";
 
-}
+      }
 
 # Find files by not path_name and leaf_name
 ### NOTE!!! path_name regexes are absolute (must start with '/')! ###
 body file_select files_matching_not_path_and_leaf( path_name, leaf_name, 
-  file_types ) {
+      file_types ) {
 
-  path_name       => { "@(path_name)" };
-  leaf_name       => { "@(leaf_name)" };
-  file_types      => { "@(file_types)" };
-  file_result     => "leaf_name.!path_name.file_types";
+      path_name       => { "@(path_name)" };
+      leaf_name       => { "@(leaf_name)" };
+      file_types      => { "@(file_types)" };
+      file_result     => "leaf_name.!path_name.file_types";
 
-}
+      }
 
 # Find files by not path_name and not leaf_name
 ### NOTE!!! path_name regexes are absolute (must start with '/')! ###
 body file_select files_matching_not_path_and_not_leaf( path_name, leaf_name, 
-  file_types ) {
+      file_types ) {
 
-  path_name       => { "@(path_name)" };
-  leaf_name       => { "@(leaf_name)" };
-  file_types      => { "@(file_types)" };
-  file_result     => "!leaf_name.!path_name.file_types";
+      path_name       => { "@(path_name)" };
+      leaf_name       => { "@(leaf_name)" };
+      file_types      => { "@(file_types)" };
+      file_result     => "!leaf_name.!path_name.file_types";
 
-}
+      }
 
 # Use case: tidies for files with mtime X and matching a particular regex
 ### NOTE!!! path_name regexes are absolute (must start with '/')! ###
 body file_select files_older_than_x_days( path_name, leaf_name, days, 
-  file_types ) {
+      file_types ) {
 
-  path_name       => { "@(path_name)" };
-  leaf_name       => { "@(leaf_name)" };
-  mtime           => irange(0, ago(0,0,"$(days)",0,0,0));
-  file_types      => { "@(file_types)" };
-  file_result     => "leaf_name.path_name.mtime.file_types";
+      path_name       => { "@(path_name)" };
+      leaf_name       => { "@(leaf_name)" };
+      mtime           => irange(0, ago(0,0,"$(days)",0,0,0));
+      file_types      => { "@(file_types)" };
+      file_result     => "leaf_name.path_name.mtime.file_types";
 
-}
+      }
 
 # Use case: find files owned by a particular user - potentially
 # for making deletions safer (only remove files owned by user X, not root)
 body file_select files_with_owner( path_name, leaf_name, search_owners, 
-  file_types ) {
+      file_types ) {
 
-  path_name       => { "@(path_name)" };
-  leaf_name       => { "@(leaf_name)" };
-  search_owners   => { "@(search_owners)" };
-  file_types      => { "@(file_types)" };
-  file_result     => "leaf_name.path_name.owner.file_types";
+      path_name       => { "@(path_name)" };
+      leaf_name       => { "@(leaf_name)" };
+      search_owners   => { "@(search_owners)" };
+      file_types      => { "@(file_types)" };
+      file_result     => "leaf_name.path_name.owner.file_types";
 
-}
+      }
 
 
 ################################################################################
@@ -576,32 +576,32 @@ body file_select files_with_owner( path_name, leaf_name, search_owners,
 
 # Full-featured body
 body link_from link( link_children, link_type, source, 
-  when_linking_children, when_no_source ) {
+      when_linking_children, when_no_source ) {
 
-  # Link all directory's children to source originals?
-  link_children         => "$(link_children)";
-  # Type of link used (symlink/hardlink/relative/absolute/none)
-  # Default=symlink
-  link_type             => "$(link_type)";
-  # Source file to which the link should point
-  source                => "$(source)";
-  # Policy for overriding existing files when linking directories of 
-  # children (alternative: "override_file")
-  when_linking_children => "$(when_linking_children)";
-  # Behaviour when the source file to link to does not exist
-  # (force/delete/nop)
-  when_no_source        => "$(when_no_source)"; 
+      # Link all directory's children to source originals?
+      link_children         => "$(link_children)";
+      # Type of link used (symlink/hardlink/relative/absolute/none)
+      # Default=symlink
+      link_type             => "$(link_type)";
+      # Source file to which the link should point
+      source                => "$(source)";
+      # Policy for overriding existing files when linking directories of 
+      # children (alternative: "override_file")
+      when_linking_children => "$(when_linking_children)";
+      # Behaviour when the source file to link to does not exist
+      # (force/delete/nop)
+      when_no_source        => "$(when_no_source)"; 
 
-}
+      }
 
 # Standard body
 body link_from link_std( source ) {
 
-  link_children         => "false";
-  link_type             => "symlink";
-  source                => "$(source)";
-  when_linking_children => "if_no_such_file";
-  when_no_source        => "nop"; 
+      link_children         => "false";
+      link_type             => "symlink";
+      source                => "$(source)";
+      when_linking_children => "if_no_such_file";
+      when_no_source        => "nop"; 
 
 }
 
@@ -617,44 +617,44 @@ body link_from link_std( source ) {
 
 # Full-featured body
 body contain container( useshell, umask, exec_owner, exec_group, exec_timeout, 
-  chdir, chroot, preview, no_output ) { 
+      chdir, chroot, preview, no_output ) { 
 
-  useshell      =>  "$(useshell)";
-  # Umask for files created by commands run with this container.
-  # Default: 077
-  umask         =>  "$(umask)";
-  exec_owner    =>  "$(exec_owner)";
-  exec_group    =>  "$(exec_group)";
-  # Put a bullet in the command if it's been running for more than X sec
-  exec_timeout  =>  "$(exec_timeout)";
-  # Run in this working directory
-  chdir         =>  "$(chdir)";
-  # Run in a chroot jail at this path
-  chroot        =>  "$(chroot)";
-  # Preview command when running in dry-run mode (cf-agent -n)?  
-  preview       =>  "$(preview)";
-  # Pipe stdout and stderr to /dev/null
-  no_output     =>  "$(no_output)";
+      useshell      =>  "$(useshell)";
+      # Umask for files created by commands run with this container.
+      # Default: 077
+      umask         =>  "$(umask)";
+      exec_owner    =>  "$(exec_owner)";
+      exec_group    =>  "$(exec_group)";
+      # Put a bullet in the command if it's been running for more than X sec
+      exec_timeout  =>  "$(exec_timeout)";
+      # Run in this working directory
+      chdir         =>  "$(chdir)";
+      # Run in a chroot jail at this path
+      chroot        =>  "$(chroot)";
+      # Preview command when running in dry-run mode (cf-agent -n)?  
+      preview       =>  "$(preview)";
+      # Pipe stdout and stderr to /dev/null
+      no_output     =>  "$(no_output)";
 
-}
+      }
 
 # Standard body
 body contain container_std( exec_owner, no_output ) { 
 
-  useshell      =>  "true";
-  exec_owner    =>  "$(exec_owner)";
-  exec_timeout  =>  "60";
-  no_output     =>  "$(no_output)";
+      useshell      =>  "true";
+      exec_owner    =>  "$(exec_owner)";
+      exec_timeout  =>  "60";
+      no_output     =>  "$(no_output)";
 
 }
 
 # Container for long-running jobs - give them 15m
 body contain container_longjob( exec_owner, no_output ) { 
 
-  useshell      =>  "true";
-  exec_owner    =>  "$(exec_owner)";
-  exec_timeout  =>  "900";
-  no_output     =>  "$(no_output)";
+      useshell      =>  "true";
+      exec_owner    =>  "$(exec_owner)";
+      exec_timeout  =>  "900";
+      no_output     =>  "$(no_output)";
 
 }
 
@@ -667,31 +667,31 @@ body contain container_longjob( exec_owner, no_output ) {
 
 # Full-featured body
 body rename rename_settings ( disable, disable_mode, disable_suffix, 
-  newname ) {
+      newname ) {
 
-  # Automatically rename and remove permissions to foo.$(disable_suffix)?
-  # Default=false
-  disable         =>  "$(disable)";
-  # Permissions to set when a file is disabled
-  disable_mode    =>  "$(disable_mode)";
-  # String to append to filename when disabled.  Default=".cf-disabled"
-  disable_suffix  =>  "$(disable_suffix)";
+      # Automatically rename and remove permissions to foo.$(disable_suffix)?
+      # Default=false
+      disable         =>  "$(disable)";
+      # Permissions to set when a file is disabled
+      disable_mode    =>  "$(disable_mode)";
+      # String to append to filename when disabled.  Default=".cf-disabled"
+      disable_suffix  =>  "$(disable_suffix)";
 
-}
+      }
 
 # Strip file of permissions, but don't change its name
 body rename disarm_file () {
 
-  disable_mode    => "000";
-  disable	  => "false";
+      disable_mode    => "000";
+      disable	  => "false";
 
 }
 
 # Strip file of permisssions and change its name to foo.cf-disabled
 body rename disable_file () {
 
-  disable_mode    => "000";
-  disable	  => "true";
+      disable_mode    => "000";
+      disable	  => "true";
 
 }
 
@@ -706,11 +706,11 @@ body rename disable_file () {
 # the promise couldn't be kept/repaired.
 body classes if_success_failure(yes,no) {
 
-  promise_kept     => { "$(yes)" };
-  promise_repaired => { "$(yes)" };
-  repair_failed    => { "$(no)" };
-  repair_denied    => { "$(no)" };
-  repair_timeout   => { "$(no)" };
+      promise_kept     => { "$(yes)" };
+      promise_repaired => { "$(yes)" };
+      repair_failed    => { "$(no)" };
+      repair_denied    => { "$(no)" };
+      repair_timeout   => { "$(no)" };
 
 }
 
@@ -722,16 +722,16 @@ body classes if_success_failure(yes,no) {
 
 bundle agent chkconfig_on(service) {
 
-classes:
+  classes:
 
-  "service_is_enabled"
-    expression => returnszero("/sbin/chkconfig --list $(service) 2>&1 | /bin/grep '[0-6]:on' > /dev/null", "useshell");
+      "service_is_enabled"
+      expression => returnszero("/sbin/chkconfig --list $(service) 2>&1 | /bin/grep '[0-6]:on' > /dev/null", "useshell");
 
-commands:
+  commands:
 
-  !service_is_enabled::
+    !service_is_enabled::
 
-    "/sbin/chkconfig $(service) on"
+      "/sbin/chkconfig $(service) on"
       contain => container_std("root", true),
       action  => actionsettings_fix_inform_noisylogs("verbose");
 
@@ -739,16 +739,16 @@ commands:
 
 bundle agent chkconfig_off(service) {
 
-classes:
+  classes:
 
-  "service_is_enabled"
-    expression => returnszero("/sbin/chkconfig --list $(service) 2>&1 | /bin/grep '[0-6]:on' > /dev/null", "useshell");
+      "service_is_enabled"
+      expression => returnszero("/sbin/chkconfig --list $(service) 2>&1 | /bin/grep '[0-6]:on' > /dev/null", "useshell");
 
-commands:
+  commands:
 
-  service_is_enabled::
+    service_is_enabled::
 
-    "/sbin/chkconfig $(service) off"
+      "/sbin/chkconfig $(service) off"
       contain => container_std("root", true),
       action  => actionsettings_fix_inform_noisylogs("verbose");
 
@@ -756,18 +756,18 @@ commands:
 
 bundle agent chkconfig_add(service) {
 
-classes:
+  classes:
 
-  "service_is_in_chkconfig"
-    expression => returnszero("/sbin/chkconfig --list $(service) > /dev/null 2>&1", "useshell");
+      "service_is_in_chkconfig"
+      expression => returnszero("/sbin/chkconfig --list $(service) > /dev/null 2>&1", "useshell");
 
-commands:
+  commands:
 
-  # Here, we don't test for the existence or validity of /etc/init.d/<service>
-  # chkconfig will error and yell if the init script does not support chkconfig
-  !service_is_in_chkconfig::
+      # Here, we don't test for the existence or validity of /etc/init.d/<service>
+      # chkconfig will error and yell if the init script does not support chkconfig
+    !service_is_in_chkconfig::
 
-    "/sbin/chkconfig --add $(service)"
+      "/sbin/chkconfig --add $(service)"
       contain => container_std("root", true),
       action  => actionsettings_fix_inform_noisylogs("verbose");
 
@@ -775,16 +775,16 @@ commands:
 
 bundle agent chkconfig_del(service) {
 
-classes:
+  classes:
 
-  "service_is_in_chkconfig"
-    expression => returnszero("/sbin/chkconfig --list $(service) > /dev/null 2>&1", "useshell");
+      "service_is_in_chkconfig"
+      expression => returnszero("/sbin/chkconfig --list $(service) > /dev/null 2>&1", "useshell");
 
-commands:
+  commands:
 
-  service_is_in_chkconfig::
+    service_is_in_chkconfig::
 
-    "/sbin/chkconfig --del $(service)"
+      "/sbin/chkconfig --del $(service)"
       contain => container_std("root", true),
       action  => actionsettings_fix_inform_noisylogs("verbose");
 
@@ -804,12 +804,12 @@ commands:
 # reside in - i.e. $(mybundle.myvar)
 bundle edit_line expand_variables(templatefile) {
 
-insert_lines:
+  insert_lines:
 
- "$(templatefile)"
+      "$(templatefile)"
 
-   insert_type     => "file",
-   expand_scalars  => "true";
+      insert_type     => "file",
+      expand_scalars  => "true";
 
 }
 
@@ -821,22 +821,22 @@ insert_lines:
 # like $(file) should look, switch template_std.
 bundle agent template_staging_std(file, prefix, fileserver, mode, owner, group) {
 
-files:
+  files:
 
-  "$(file).template"
-    copy_from    => copy_std("$(prefix)$(file).template",
-      "$(fileserver)", "false", "timestamp"),
-    perms        => mode_owner_group("$(mode)", "$(owner)", "$(group)"),
-    action       => actionsettings_fix_inform("inform");
+      "$(file).template"
+      copy_from    => copy_std("$(prefix)$(file).template",
+			       "$(fileserver)", "false", "timestamp"),
+      perms        => mode_owner_group("$(mode)", "$(owner)", "$(group)"),
+      action       => actionsettings_fix_inform("inform");
 
-  "$(file).staging"
-    perms         => mode_owner_group("$(mode)", "$(owner)", "$(group)"),
-    create        => "true",
-    edit_line     => expand_variables("$(file).template"),
-    # Using the full-featured body here because we need to empty the file
-    # client-side first.
-    edit_defaults => editsettings("timestamp", "true", "100K"),
-    action        => actionsettings_fix_inform("inform");
+      "$(file).staging"
+      perms         => mode_owner_group("$(mode)", "$(owner)", "$(group)"),
+      create        => "true",
+      edit_line     => expand_variables("$(file).template"),
+      # Using the full-featured body here because we need to empty the file
+      # client-side first.
+      edit_defaults => editsettings("timestamp", "true", "100K"),
+      action        => actionsettings_fix_inform("inform");
 
 }
 
@@ -847,22 +847,22 @@ files:
 # grokked by a process (/etc/httpd/conf.d, for example).
 bundle agent template_std(file, prefix, fileserver, mode, owner, group) {
 
-files:
+  files:
 
-  "$(file).template"
-    copy_from    => copy_std("$(prefix)$(file).template",
-      "$(fileserver)", "false", "timestamp"),
-    perms        => mode_owner_group("$(mode)", "$(owner)", "$(group)"),
-    action       => actionsettings_fix_inform("inform");
+      "$(file).template"
+      copy_from    => copy_std("$(prefix)$(file).template",
+			       "$(fileserver)", "false", "timestamp"),
+      perms        => mode_owner_group("$(mode)", "$(owner)", "$(group)"),
+      action       => actionsettings_fix_inform("inform");
 
-  "$(file)"
-    perms         => mode_owner_group("$(mode)", "$(owner)", "$(group)"),
-    create        => "true",
-    edit_line     => expand_variables("$(file).template"),
-    # Using the full-featured body here because we need to empty the file
-    # client-side first.
-    edit_defaults => editsettings("timestamp", "true", "100K"),
-    action        => actionsettings_fix_inform("inform");
+      "$(file)"
+      perms         => mode_owner_group("$(mode)", "$(owner)", "$(group)"),
+      create        => "true",
+      edit_line     => expand_variables("$(file).template"),
+      # Using the full-featured body here because we need to empty the file
+      # client-side first.
+      edit_defaults => editsettings("timestamp", "true", "100K"),
+      action        => actionsettings_fix_inform("inform");
 
 }
 
@@ -879,22 +879,22 @@ files:
 body package_method yum_rpm_exact
 
 {
-  package_changes => "individual";
-  package_list_command => "/bin/rpm -qa --qf '%{name} %{version}-%{release} %{arch}\n'"; 
+      package_changes => "individual";
+      package_list_command => "/bin/rpm -qa --qf '%{name} %{version}-%{release} %{arch}\n'"; 
 
-  package_list_name_regex    => "^(\S+?)\s\S+?\s\S+$";
-  package_list_version_regex => "^\S+?\s(\S+?)\s\S+$";
-  package_list_arch_regex    => "^\S+?\s\S+?\s(\S+)$";
-  # Force list of installed packages to update on every agent run
-  package_list_update_ifelapsed => "0";		
+      package_list_name_regex    => "^(\S+?)\s\S+?\s\S+$";
+      package_list_version_regex => "^\S+?\s(\S+?)\s\S+$";
+      package_list_arch_regex    => "^\S+?\s\S+?\s(\S+)$";
+      # Force list of installed packages to update on every agent run
+      package_list_update_ifelapsed => "0";		
 
-  package_installed_regex => ".*";
-  package_name_convention => "$(name)-$(version).$(arch)";
+      package_installed_regex => ".*";
+      package_name_convention => "$(name)-$(version).$(arch)";
 
-  package_add_command    => "/usr/bin/yum -y install";
-  package_update_command => "/usr/bin/yum -y update";
-  package_delete_command => "/usr/bin/yum -y erase";
-  package_verify_command => "/bin/rpm -V";
+      package_add_command    => "/usr/bin/yum -y install";
+      package_update_command => "/usr/bin/yum -y update";
+      package_delete_command => "/usr/bin/yum -y erase";
+      package_verify_command => "/bin/rpm -V";
 
 }
 
@@ -905,22 +905,22 @@ body package_method yum_rpm_exact
 body package_method yum_rpm_exact_enablerepo(repo)
 
 {
-  package_changes => "individual";
-  package_list_command => "/bin/rpm -qa --qf '%{name} %{version}-%{release} %{arch}\n'"; 
+      package_changes => "individual";
+      package_list_command => "/bin/rpm -qa --qf '%{name} %{version}-%{release} %{arch}\n'"; 
 
-  package_list_name_regex    => "^(\S+?)\s\S+?\s\S+$";
-  package_list_version_regex => "^\S+?\s(\S+?)\s\S+$";
-  package_list_arch_regex    => "^\S+?\s\S+?\s(\S+)$";
-  # Force list of installed packages to update on every agent run
-  package_list_update_ifelapsed => "0";		
+      package_list_name_regex    => "^(\S+?)\s\S+?\s\S+$";
+      package_list_version_regex => "^\S+?\s(\S+?)\s\S+$";
+      package_list_arch_regex    => "^\S+?\s\S+?\s(\S+)$";
+      # Force list of installed packages to update on every agent run
+      package_list_update_ifelapsed => "0";		
 
-  package_installed_regex => ".*";
-  package_name_convention => "$(name)-$(version).$(arch)";
+      package_installed_regex => ".*";
+      package_name_convention => "$(name)-$(version).$(arch)";
 
-  package_add_command    => "/usr/bin/yum -y install --enablerepo=$(repo)";
-  package_update_command => "/usr/bin/yum -y update --enablerepo=$(repo)";
-  package_delete_command => "/usr/bin/yum -y erase";
-  package_verify_command => "/bin/rpm -V";
+      package_add_command    => "/usr/bin/yum -y install --enablerepo=$(repo)";
+      package_update_command => "/usr/bin/yum -y update --enablerepo=$(repo)";
+      package_delete_command => "/usr/bin/yum -y erase";
+      package_verify_command => "/bin/rpm -V";
 
 }
 
@@ -930,23 +930,23 @@ body package_method yum_rpm_exact_enablerepo(repo)
 body package_method yum_rpm_byname
 
 {
-  package_changes => "individual";
-  package_list_command => "/bin/rpm -qa --qf '%{name} %{version}-%{release} %{arch}\n'"; 
+      package_changes => "individual";
+      package_list_command => "/bin/rpm -qa --qf '%{name} %{version}-%{release} %{arch}\n'"; 
 
-  package_list_name_regex    => "^(\S+?)\s\S+?\s\S+$";
-  package_list_version_regex => "^\S+?\s(\S+?)\s\S+$";
-  package_list_arch_regex    => "^\S+?\s\S+?\s(\S+)$";
-  # Force list of installed packages to update on every agent run
-  package_list_update_ifelapsed => "0";		
+      package_list_name_regex    => "^(\S+?)\s\S+?\s\S+$";
+      package_list_version_regex => "^\S+?\s(\S+?)\s\S+$";
+      package_list_arch_regex    => "^\S+?\s\S+?\s(\S+)$";
+      # Force list of installed packages to update on every agent run
+      package_list_update_ifelapsed => "0";		
 
 
-  package_installed_regex => ".*";
-  package_name_convention => "$(name)";
+      package_installed_regex => ".*";
+      package_name_convention => "$(name)";
 
-  package_add_command    => "/usr/bin/yum -y install";
-  package_update_command => "/usr/bin/yum -y update";
-  package_delete_command => "/usr/bin/yum -y erase";
-  package_verify_command => "/bin/rpm -V";
+      package_add_command    => "/usr/bin/yum -y install";
+      package_update_command => "/usr/bin/yum -y update";
+      package_delete_command => "/usr/bin/yum -y erase";
+      package_verify_command => "/bin/rpm -V";
 
 }
 
@@ -956,23 +956,23 @@ body package_method yum_rpm_byname
 body package_method yum_rpm_byname_enablerepo(repo)
 
 {
-  package_changes => "individual";
-  package_list_command => "/bin/rpm -qa --qf '%{name} %{version}-%{release} %{arch}\n'"; 
+      package_changes => "individual";
+      package_list_command => "/bin/rpm -qa --qf '%{name} %{version}-%{release} %{arch}\n'"; 
 
-  package_list_name_regex    => "^(\S+?)\s\S+?\s\S+$";
-  package_list_version_regex => "^\S+?\s(\S+?)\s\S+$";
-  package_list_arch_regex    => "^\S+?\s\S+?\s(\S+)$";
-  # Force list of installed packages to update on every agent run
-  package_list_update_ifelapsed => "0";		
+      package_list_name_regex    => "^(\S+?)\s\S+?\s\S+$";
+      package_list_version_regex => "^\S+?\s(\S+?)\s\S+$";
+      package_list_arch_regex    => "^\S+?\s\S+?\s(\S+)$";
+      # Force list of installed packages to update on every agent run
+      package_list_update_ifelapsed => "0";		
 
 
-  package_installed_regex => ".*";
-  package_name_convention => "$(name)";
+      package_installed_regex => ".*";
+      package_name_convention => "$(name)";
 
-  package_add_command    => "/usr/bin/yum -y install --enablerepo=$(repo)";
-  package_update_command => "/usr/bin/yum -y update --enablerepo=$(repo)";
-  package_delete_command => "/usr/bin/yum -y erase";
-  package_verify_command => "/bin/rpm -V";
+      package_add_command    => "/usr/bin/yum -y install --enablerepo=$(repo)";
+      package_update_command => "/usr/bin/yum -y update --enablerepo=$(repo)";
+      package_delete_command => "/usr/bin/yum -y erase";
+      package_verify_command => "/bin/rpm -V";
 
 }
 
@@ -985,34 +985,34 @@ body package_method yum_rpm_byname_enablerepo(repo)
 # Report if a mail server has more than $(threshold) messages in queue
 bundle agent bigq(threshold) {
 
-vars:
+  vars:
 
-  linux::
+    linux::
 
-    # count of live queue
-    "count"
+      # count of live queue
+      "count"
       string =>
-        execresult("/usr/bin/mailq | /bin/awk -F': ' '/Total requests/{print $2}'",
-          "useshell"),
-        policy => "overridable";
+      execresult("/usr/bin/mailq | /bin/awk -F': ' '/Total requests/{print $2}'",
+		 "useshell"),
+      policy => "overridable";
 
-classes:
+  classes:
 
-  linux::
+    linux::
 
-     "q_big" expression => isgreaterthan("$(count)","$(threshold)");
+      "q_big" expression => isgreaterthan("$(count)","$(threshold)");
 
-commands:
+  commands:
 
-  linux.q_big::
+    linux.q_big::
 
-    "/bin/echo -n \"Thresh: $(threshold).  Count: `/usr/bin/mailq | /bin/awk -F': ' '/Total requests/{print $2}'`\" | /usr/bin/logger -p mail.crit",
+      "/bin/echo -n \"Thresh: $(threshold).  Count: `/usr/bin/mailq | /bin/awk -F': ' '/Total requests/{print $2}'`\" | /usr/bin/logger -p mail.crit",
       contain => container_std("root", "false"),
       # Using full-featured body to extend ifelapsed; don't yell more 
       # than once every 4 hours
       # LIBRARY STUB: body action actionsettings( action_policy, ifelapsed,
       # expireafter, log_level, audit, background, report_level) {
       action => actionsettings("fix", "240", "120", "inform", "false",
-        "false", "inform");
+			       "false", "inform");
 
 }

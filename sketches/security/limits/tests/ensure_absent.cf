@@ -1,27 +1,27 @@
 #!/var/cfengine/bin/cf-agent -f
 body common control {
 
-    inputs => {"../../../libraries/copbl/cfengine_stdlib.cf","../main.cf", "default.cf.sub"};
-    bundlesequence => { default("$(this.promise_filename)") };
-    version => "1.0";
+      inputs => {"../../../libraries/copbl/cfengine_stdlib.cf","../main.cf", "default.cf.sub"};
+      bundlesequence => { default("$(this.promise_filename)") };
+      version => "1.0";
 
 }
 
 bundle agent init
 {
-vars:
-  "states" slist => { "actual", "expected" };
+  vars:
+      "states" slist => { "actual", "expected" };
 
-  "expected" string =>
-"BEGIN
+      "expected" string =>
+      "BEGIN
   I've got a lovely bunch of coconuts
   There they are standing in a row
   Big ones, small ones, some as big as your head
 END
 # This file is managed by CFEngine, manual edits may be reverted";
 
-  "actual" string =>
-"BEGIN
+      "actual" string =>
+      "BEGIN
   I've got a lovely bunch of coconuts
   There they are standing in a row
   Big ones, small ones, some as big as your head
@@ -32,46 +32,46 @@ testuser hard nofile DEBUG_COMPLETE
 testuser soft nproc DEBUG_COMPLETE
 testuser hard nproc DEBUG_COMPLETE";
 
-files:
-  "$(G.testfile).$(states)"
-    create => "true",
-    edit_line => init_insert("$(init.$(states))"),
-    edit_defaults => init_empty;
+  files:
+      "$(G.testfile).$(states)"
+      create => "true",
+      edit_line => init_insert("$(init.$(states))"),
+      edit_defaults => init_empty;
 }
 
 bundle agent test
 {
-vars:
-  "limits_test_filename" string => "/tmp/TEST.cfengine.actual";
-  "limits_domains[testuser][soft][nproc]" string => "DEBUG_COMPLETE";
-  "limits_domains[testuser][hard][nproc]" string => "DEBUG_COMPLETE";
-  "limits_domains[testuser][soft][nofile]" string => "DEBUG_COMPLETE";
-  "limits_domains[testuser][hard][nofile]" string => "DEBUG_COMPLETE";
-  "limit_contexts_text[debug]" string => "OFF";
-  "limits_empty_first" string => "false";
-  "limits_mgmt_policy" string => "ensure_absent";
- 
+  vars:
+      "limits_test_filename" string => "/tmp/TEST.cfengine.actual";
+      "limits_domains[testuser][soft][nproc]" string => "DEBUG_COMPLETE";
+      "limits_domains[testuser][hard][nproc]" string => "DEBUG_COMPLETE";
+      "limits_domains[testuser][soft][nofile]" string => "DEBUG_COMPLETE";
+      "limits_domains[testuser][hard][nofile]" string => "DEBUG_COMPLETE";
+      "limit_contexts_text[debug]" string => "OFF";
+      "limits_empty_first" string => "false";
+      "limits_mgmt_policy" string => "ensure_absent";
+      
 
-methods:
-    "test" usebundle => security_limits("test.limits_");
+  methods:
+      "test" usebundle => security_limits("test.limits_");
 }
 
 bundle agent check
 {
-methods:
-  "any" usebundle => default_check_diff("$(G.testfile).actual",
-                                      "$(G.testfile).expected",
-                                      "$(this.promise_filename)");
+  methods:
+      "any" usebundle => default_check_diff("$(G.testfile).actual",
+					    "$(G.testfile).expected",
+					    "$(this.promise_filename)");
 }
 
 
 body edit_defaults init_empty
 {
-        empty_file_before_editing => "true";
+      empty_file_before_editing => "true";
 }
 
 bundle edit_line init_insert(str)
 {
-insert_lines:
-        "$(str)";
+  insert_lines:
+      "$(str)";
 }

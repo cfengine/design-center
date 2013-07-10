@@ -1,58 +1,58 @@
 bundle common cfdc_hardware_info
 {
-vars:
-  any::
-    "class_prefix" string => "cfdc_hardware_info_";
+  vars:
+    any::
+      "class_prefix" string => "cfdc_hardware_info_";
 
-  linux::
-    "dmidecode_bin" string => "/usr/sbin/dmidecode";
+    linux::
+      "dmidecode_bin" string => "/usr/sbin/dmidecode";
 
-    "hardware_info_refresh_interval"
+      "hardware_info_refresh_interval"
       string => "1440",
       comment => "Probably the underlying hardware information does not change
                   frequently, and there is no need constantly check. Turn this
                   knob if you have a reason to refresh hardware information more
                   frequently";
 
-    "dmidecode[system-manufacturer]" 
+      "dmidecode[system-manufacturer]" 
       handle => "cfdc_hardware_info_vars_dmidecode_system_manufacturer",
       string => execresult("$(dmidecode_bin) -s system-manufacturer","noshell"),
       action => if_elapsed("$(hardware_info_refresh_interval)");
 
-    "dmidecode[system-product-name]"
+      "dmidecode[system-product-name]"
       string => execresult("$(dmidecode_bin) -s system-product-name","noshell"),
       action => if_elapsed("$(hardware_info_refresh_interval)");
 
-    ######################################
-    #  Manufacturer Regular Expressions  #
-    ######################################
-    "manufacturer[dell]"   string => "^Dell.*";
-    "manufacturer[hp]"     string => "^HP.*";
-    "manufacturer[lenovo]" string => "^LENOVO.*";
-    "manufacturer[vmware]" string => "^VMware, Inc\..*";
+      ######################################
+      #  Manufacturer Regular Expressions  #
+      ######################################
+      "manufacturer[dell]"   string => "^Dell.*";
+      "manufacturer[hp]"     string => "^HP.*";
+      "manufacturer[lenovo]" string => "^LENOVO.*";
+      "manufacturer[vmware]" string => "^VMware, Inc\..*";
 
-    "manufacturers" slist => getindices("manufacturer");
+      "manufacturers" slist => getindices("manufacturer");
 
-    #######################################
-    #  Product Class Regular Expressions  #
-    #######################################
-    "product[dell][server]"   string => "^PowerEdge.*";
-    "product[hp][server]"     string=> "^ProLiant.*";
-    "product[lenovo][laptop]" string => "^4270CTO.*";
-    "product[vmware][virtual_machine]" string => "^VMware Virtual Platform.*";
+      #######################################
+      #  Product Class Regular Expressions  #
+      #######################################
+      "product[dell][server]"   string => "^PowerEdge.*";
+      "product[hp][server]"     string=> "^ProLiant.*";
+      "product[lenovo][laptop]" string => "^4270CTO.*";
+      "product[vmware][virtual_machine]" string => "^VMware Virtual Platform.*";
 
-    # It would be cool to be able to automatically figure out the different
-    # product classes, but getting nth index of array isn't supported.
-    "products" slist => { "server", "laptop", "virtual_machine" };
+      # It would be cool to be able to automatically figure out the different
+      # product classes, but getting nth index of array isn't supported.
+      "products" slist => { "server", "laptop", "virtual_machine" };
 
-classes:
-  linux::
-    "$(class_prefix)$(manufacturers)"
+  classes:
+    linux::
+      "$(class_prefix)$(manufacturers)"
       expression => regcmp("$(manufacturer[$(manufacturers)])", "$(dmidecode[system-manufacturer])"),
       action => if_elapsed("$(hardware_info_refresh_interval)"),
       comment => "Raise class for each hardware manufacturer detected";
 
-    "$(class_prefix)$(manufacturers)_$(products)"
+      "$(class_prefix)$(manufacturers)_$(products)"
       expression => regcmp("$(product[$(manufacturers)][$(products)])", "$(dmidecode[system-product-name])"),
       action => if_elapsed("$(hardware_info_refresh_interval)"),
       comment => "Raise class for each hardware manufacturers product class detected";

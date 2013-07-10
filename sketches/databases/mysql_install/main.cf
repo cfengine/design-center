@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_db_mysql";
+      namespace => "cfdc_db_mysql";
 }
 
 bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_extra_packages)
@@ -50,7 +50,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
 
       "process_match" string => ".*mysqld.*", policy => "free";
 
-      !ubuntu_12.(debian|ubuntu)::
+    !ubuntu_12.(debian|ubuntu)::
       "packages" slist =>
       {
         "mysql-client",
@@ -70,7 +70,7 @@ bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_ex
         "libhtml-template-perl"
       }, policy => "free";
 
-      suse|SuSe::
+    suse|SuSe::
       "packages" slist =>
       {
         "mysql-community-server-client",

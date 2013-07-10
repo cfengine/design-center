@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_sketch_template";
+      namespace => "cfdc_sketch_template";
 }
 
 bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, myarray)

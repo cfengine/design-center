@@ -13,7 +13,7 @@ bundle common cf_sketch_testing
       "inform" string => "1";
 
       "env_vars" slist => { "test", "verbose", "inform" };
-  
+      
   classes:
       "runenv_$(this.bundle)_test" expression => "any"; 
       "runenv_$(this.bundle)_verbose" expression => "any"; 
@@ -23,7 +23,7 @@ bundle common cf_sketch_testing
 bundle common cfsketch_g
 {
   vars:
-    "path" string => "/srv/yum_repo";
+      "path" string => "/srv/yum_repo";
 
 }
 
@@ -32,12 +32,12 @@ bundle agent cfsketch_run
   methods:
       "cfsketch_g" usebundle => "cfsketch_g";
       "test"
-        useresult => "my_return_value",
-        usebundle => cfdc_yumrepo_3_0:manage_metadata( "cf_sketch_testing",
-                                                       "metadata",
-                                                       "$(cfsketch_g.path)",
-                                                       "root",
-                                                       "root");
+      useresult => "my_return_value",
+      usebundle => cfdc_yumrepo_3_0:manage_metadata( "cf_sketch_testing",
+                                                     "metadata",
+                                                     "$(cfsketch_g.path)",
+                                                     "root",
+                                                     "root");
 
   reports:
     cfengine::

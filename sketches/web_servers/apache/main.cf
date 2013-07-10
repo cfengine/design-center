@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_webserver";
+      namespace => "cfdc_webserver";
 }
 
 bundle agent apache(runenv, metadata, hostname, port, ssl_port, docroot, options)

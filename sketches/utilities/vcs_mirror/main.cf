@@ -56,8 +56,8 @@ bundle agent mirror(runenv, metadata, vcs, path, origin, branch, options)
                                                $(path),
                                                "parent_capture");
 
-    #   "second_pass" expression => "any";
-    #   "third_pass" expression => "second_pass";
+      #   "second_pass" expression => "any";
+      #   "third_pass" expression => "second_pass";
 
     known_vcs::
       "checkout_exists" expression => fileexists("$(configfile)");

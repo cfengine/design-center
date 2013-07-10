@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_cloud_services";
+      namespace => "cfdc_cloud_services";
 }
 
 bundle agent cloud_services(prefix, bundle_home, install_cfengine, stype, count, class, state, ec2, s3, sdb, vcli, openstack, hub)
@@ -41,20 +41,20 @@ security_group :NON_EMPTY_STRING
 aws_access_key :STRING
 aws_secret_key :STRING
 ssh_pub_key    :PATH
-)";
+      )";
       "vars[ec2][default]"               string => "{}";
 
       "vars[s3][type]"                   string => "ARRAY(
 acl            :=private|=public-read
 aws_access_key :STRING
 aws_secret_key :STRING
-)";
+      )";
       "vars[s3][default]"                string => "{}";
 
       "vars[sdb][type]"                  string => "ARRAY(
 aws_access_key :STRING
 aws_secret_key :STRING
-)";
+      )";
       "vars[sdb][default]"               string => "{}";
 
       "vars[vcli][type]"                 string => "ARRAY(
@@ -66,7 +66,7 @@ password           :NON_EMPTY_STRING
 datastore          :NON_EMPTY_STRING
 fullpath           :PATH
 disable_ssl_verify :BOOLEAN:default=0
-)";
+      )";
       "vars[vcli][default]"              string => "{}";
 
       # default to RackSpace 2.0 URLs
@@ -77,7 +77,7 @@ key            :NON_EMPTY_STRING
 password       :NON_EMPTY_STRING
 image          :NON_EMPTY_STRING
 master         :NON_EMPTY_STRING:default=cfmaster
-)";
+      )";
       "vars[openstack][default]"         string => "{}";
 
 
