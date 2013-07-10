@@ -134,10 +134,10 @@ sub single_prompt {
     my $msg=shift || "> ";
     my $def=shift || "";
     my $input = Term::ReadLine->new("$msg");
-    my @hist = $input->GetHistory();
-    $input->clear_history;
+    my @hist = $input->GetHistory() if $input->Features->{getHistory};
+    $input->clear_history if $input->Features->{setHistory};
     my $str = $input->readline($msg, $def);
-    $input->SetHistory(@hist);
+    $input->SetHistory(@hist) if $input->Features->{setHistory};
     return $str;
 }
 
@@ -195,8 +195,8 @@ sub query_and_validate {
 
     # Set up input prompt
     my $input = Term::ReadLine->new('interactive-config');
-    my @oldhist = $input->GetHistory();
-    $input->clear_history();
+    my @oldhist = $input->GetHistory() if $input->Features->{getHistory};
+    $input->clear_history() if $input->Features->{setHistory};
 
     my $bapi = $api->{$bundle};
     my $value;
@@ -209,7 +209,7 @@ sub query_and_validate {
             $valid = undef;
             $value = prompt_param($p, $input);
             unless (defined($value)) {
-                $input->SetHistory(@oldhist);
+                $input->SetHistory(@oldhist) if $input->Features->{setHistory};
                 return undef;
             }
             if (exists($p->{validation}))
@@ -223,7 +223,7 @@ sub query_and_validate {
         } while (!$valid);
         $data->{$p->{name}} = $value;
     }
-    $input->SetHistory(@oldhist);
+    $input->SetHistory(@oldhist) if $input->Features->{setHistory};
     return $data;
 }
 

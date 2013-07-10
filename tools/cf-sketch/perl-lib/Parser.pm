@@ -360,7 +360,7 @@ sub _gettextlines {
   my $regex=shift;
   my @history;
   my @result=();
-  if ($interactive) {
+  if ($interactive && $inputline->Features->{getHistory}) {
     # Remove history of commands while getting a description.
     @history=$inputline->GetHistory();
     $inputline->clear_history();
@@ -374,7 +374,7 @@ sub _gettextlines {
     }
     push @result, $line;
   }
-  if ($interactive) {
+  if ($interactive && $inputline->Features->{setHistory}) {
     # Restore the history of commands
     $inputline->SetHistory(@history);
   }
