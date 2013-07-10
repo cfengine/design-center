@@ -1,0 +1,53 @@
+body file control
+{
+        namespace => "cfdc_password_expiration";
+}
+
+bundle agent password_expiration(pass_max_days, pass_min_days, pass_warn_age,
+      min_uid, skipped_users, skipped_uids)
+{
+  vars:
+      # We store the individual parameters in an array,
+      # for easier reference and file editing
+      "logindefs[PASS_MAX_DAYS]"                      string => "$(pass_max_days)";
+      "logindefs[PASS_MIN_DAYS]"                      string => "$(pass_min_days)";
+      "logindefs[PASS_WARN_AGE]"                      string => "$(pass_warn_age)";
+
+      # Position of each parameter in /etc/shadow
+      "fieldnum[PASS_MIN_DAYS]"  string => "4";
+      "fieldnum[PASS_MAX_DAYS]"  string => "5";
+      "fieldnum[PASS_WARN_AGE]"  string => "6";
+      
+      # List of parameters to modify
+      "params" slist => getindices("logindefs");
+
+      # Get list of users, and also generate them in canonified form
+      # This list already excludes users specified by UID or name.
+      "users" slist => getusers("$(skipped_users)", "$(skipped_uids)");
+      "cusers[$(users)]" string => canonify("$(users)");
+
+  classes:
+      # Define classes for users that must not be modified by UID threshold
+      "skip_$(cusers[$(users)])"  expression => islessthan(getuid("$(users)"),
+                                                           "$(min_uid)");
+      
+  files:
+    linux::
+      "/etc/login.defs"
+        handle => "edit_logindefs",
+        comment => "Set desired login.defs parameters",
+        edit_line => default:set_config_values("cfdc_password_expiration:password_expiration.logindefs");
+      
+      "/etc/shadow"
+        handle => "edit_shadow_$(params)",
+        comment => "Modify $(params) for individual users.",
+        edit_defaults => default:backup_timestamp,
+        edit_line => default:set_user_field("$(users)",
+                                            "$(fieldnum[$(params)])",
+                                            "$(logindefs[$(params)])"),
+        ifvarclass => "!skip_$(cusers[$(users)])";
+
+  reports:
+    !linux::
+      "Warning: Security::password_expiration only knows how to operate on Linux for now.";
+}
