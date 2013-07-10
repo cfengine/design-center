@@ -2,9 +2,7 @@
     manifest:
     {
         "main.cf": { desc: "main file" },
-//        "README.md": { documentation: true },
-//        "params/demo.json": { comment: "simple demo of sketch" },
-//        "modules/getuserhome.sh": { module: true, perm: 755, comment: "Module to get a user's home directory." }
+        "README.md": { documentation: true },
     },
 
     metadata:
@@ -23,10 +21,6 @@
         // this is the name of the bundle!
         password_expiration:
         [
-//            { type: "environment", name: "runenv", },
-//            { type: "metadata", name: "mymetadata", },
-//            { type: "string", name: "prefix", default: "__PREFIX__" },
-
             { name: "pass_max_days", type: "string",
               description: "Maximum password age, in days" },
             { name: "pass_min_days", type: "string",
