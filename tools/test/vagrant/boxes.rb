@@ -11,7 +11,9 @@ https://s3.amazonaws.com/Vagrant_BaseBoxes/centos-6.1-x86_64-201306301713.box
 https://s3.amazonaws.com/Vagrant_BaseBoxes/centos-6.2-x86_64-201306301713.box
 https://s3.amazonaws.com/Vagrant_BaseBoxes/centos-6.3-x86_64-201306301713.box
 https://s3.amazonaws.com/Vagrant_BaseBoxes/centos-6.4-x86_64-201306301713.box
+
 https://s3.amazonaws.com/Vagrant_BaseBoxes/ubuntu-10.04-amd64-201306301713.box
+https://s3.amazonaws.com/Vagrant_BaseBoxes/ubuntu-10.04-i386-201307100003.box
 https://s3.amazonaws.com/Vagrant_BaseBoxes/ubuntu-10.10-amd64-201306301713.box
 https://s3.amazonaws.com/Vagrant_BaseBoxes/ubuntu-11.04-amd64-201306301713.box
 https://s3.amazonaws.com/Vagrant_BaseBoxes/ubuntu-11.10-amd64-201306301713.box
