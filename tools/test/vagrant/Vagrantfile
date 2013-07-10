@@ -189,7 +189,7 @@ Vagrant.configure("2") do |config|
 
       vm_config.vm.network :private_network, ip: ip
       # vm_config.vm.network :hostonly, ip
-      vm_config.vm.network :forwarded_port, guest: 80, host: options[:baseport]+i
+      vm_config.vm.network :forwarded_port, guest: 80, host: options[:baseport].to_i+i
 
       options[:i] = i
       actions.each do |a|
