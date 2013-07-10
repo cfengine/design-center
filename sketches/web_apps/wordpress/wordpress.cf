@@ -24,16 +24,16 @@ bundle agent wp_install(prefix, wp_dir, wp_params, tarfile, downloadurl, htmlroo
       "vars[prefix][default]"        string => "__PREFIX__";
 
       "vars[wp_dir][type]"                string => "PATH",
-        comment => "Directory where wordpress will be installed";
+      comment => "Directory where wordpress will be installed";
       # Wordpress configuration parameters
       "vars[wp_params][type]"             string => "ARRAY()",
-        comment => "Parameters to insert into Wordpress config file.";
+      comment => "Parameters to insert into Wordpress config file.";
       # General configuration parameters
       "vars[tarfile][type]"      string => "PATH",
-        comment => "Where to store the downloaded wordpress tar file";
+      comment => "Where to store the downloaded wordpress tar file";
       "vars[tarfile][default]"                string => "/root/wordpress-latest.tar.gz";
       "vars[downloadurl][type]"  string => "HTTP_URL|FILE_URL",
-        comment => "Download URL for the wordpress.tar.gz file";
+      comment => "Download URL for the wordpress.tar.gz file";
       "vars[downloadurl][default]"            string => "http://wordpress.org/latest.tar.gz";
 
       # look in wordpress-base.json to see how we fill in system-specific
@@ -51,9 +51,9 @@ bundle agent wp_install(prefix, wp_dir, wp_params, tarfile, downloadurl, htmlroo
 
   methods:
       "wp_vars"  usebundle => wp_vars("$(prefix)", "$(wp_dir)", "$(wp_params)", "$(tarfile)", "$(downloadurl)", "$(htmlroot)", @(wp_install.packages), "$(mysql_process)", "$(httpd_process)", "$(service_cmd)", "$(apache_srv)", "$(mysql_srv)"),
-        classes => always("$(canon_prefix)prepared");
+      classes => always("$(canon_prefix)prepared");
       "wp_debug" usebundle => wp_report_params("wp_vars.conf"),
-        ifvarclass => "debug";
+      ifvarclass => "debug";
       "wp_pkgs"  usebundle => wp_packages_installed("wp_vars.conf");
       "wp_svcs"  usebundle => wp_services_up("wp_vars.conf");
       "wp_tar"   usebundle => wp_tarball_is_present("wp_vars.conf");
@@ -103,9 +103,9 @@ bundle agent wp_packages_installed(params)
       "pkgs" slist => { @(wp_vars.wp_packages) };
   packages:
       "$(pkgs)"
-        package_policy => "add",
-        package_method => generic,
-        classes => if_repaired("packages_added");
+      package_policy => "add",
+      package_method => generic,
+      classes => if_repaired("packages_added");
 
   reports:
     debug::
@@ -114,7 +114,7 @@ bundle agent wp_packages_installed(params)
   commands:
     packages_added::
       "$($(params)[_sys_servicecmd]) $($(params)[_sys_apachesrv]) graceful" 
-        comment => "Restarting httpd so it can pick up new modules.";
+      comment => "Restarting httpd so it can pick up new modules.";
 
 }
 
@@ -144,7 +144,7 @@ bundle agent wp_tarball_is_present(params)
   commands:
     !wordpress_tarball_is_present::
       "/usr/bin/wget -q -O $($(params)[_tarfile]) $($(params)[_downloadurl])"
-        comment => "Downloading latest version of WordPress.";
+      comment => "Downloading latest version of WordPress.";
 
   reports:
     wordpress_tarball_is_present.verbose::
@@ -166,11 +166,11 @@ bundle agent wp_tarball_is_unrolled(params)
   commands:
     !wordpress_final_dir_is_present&!wordpress_src_dir_is_present::
       "/bin/tar -xzf $($(params)[_tarfile])"
-        comment => "Unrolling wordpress tarball to $($(params)[_htmlroot])/wordpress.",
-        contain => in_dir_shell("$($(params)[_htmlroot])");
+      comment => "Unrolling wordpress tarball to $($(params)[_htmlroot])/wordpress.",
+      contain => in_dir_shell("$($(params)[_htmlroot])");
     wordpress_src_dir_is_present&!wordpress_final_dir_is_present::
       "/bin/mv $($(params)[_htmlroot])/wordpress $($(params)[_wp_dir])"
-        comment => "Rename unrolled directory into its final destination $($(params)[_wp_dir])";
+      comment => "Rename unrolled directory into its final destination $($(params)[_wp_dir])";
 }
 
 #############################################
@@ -193,13 +193,13 @@ bundle agent wp_config_exists(params)
 {
   classes:
       "wordpress_config_file_exists"
-        expression => fileexists("$($(params)[_wp_config])");
+      expression => fileexists("$($(params)[_wp_config])");
 
   files:
     !wordpress_config_file_exists::
       "$($(params)[_wp_config])"
-        copy_from => backup_local_cp("$($(params)[_wp_cfgsample])"),
-        perms => m("644");
+      copy_from => backup_local_cp("$($(params)[_wp_cfgsample])"),
+      perms => m("644");
 
   reports:
     wordpress_config_file_exists.verbose::
@@ -217,9 +217,9 @@ bundle agent wp_is_properly_configured(params, wp_array)
 
   files:
       "$($(params)[_wp_config])"
-        edit_line => replace_or_add("define\('$(wpparams)', *(?!'$($(wp_array)[$(wpparams)]))'.*",
-				    "define('$(wpparams)', '$($(wp_array)[$(wpparams)])');"),
-        perms => m("644");
+      edit_line => replace_or_add("define\('$(wpparams)', *(?!'$($(wp_array)[$(wpparams)]))'.*",
+				  "define('$(wpparams)', '$($(wp_array)[$(wpparams)])');"),
+      perms => m("644");
 }
 
 #############################################

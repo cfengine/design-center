@@ -4,67 +4,67 @@
 
 bundle agent prog_perl(state)
 {
- vars:
+  vars:
 
- redhat|centos|fedora::
+    redhat|centos|fedora::
 
-  "perl_pkgs"   slist => {
-                          "perl",
-                         },
-              comment => "List of PERL packages for Redhat-related distributions",
-               handle => "prog_perl_vars_pkgs_redhat_centos_fedora";
+      "perl_pkgs"   slist => {
+                               "perl",
+      },
+      comment => "List of PERL packages for Redhat-related distributions",
+      handle => "prog_perl_vars_pkgs_redhat_centos_fedora";
 
- ubuntu|debian::
+    ubuntu|debian::
 
-  "perl_pkgs"   slist => {
-                          "perl",
-                         },
-              comment => "List of PERL packages for Debian-related distributions",
-               handle => "prog_perl_vars_pkgs_debian_ubuntu";
+      "perl_pkgs"   slist => {
+                               "perl",
+      },
+      comment => "List of PERL packages for Debian-related distributions",
+      handle => "prog_perl_vars_pkgs_debian_ubuntu";
 
- suse|SuSE::
+    suse|SuSE::
 
-  "perl_pkgs"   slist => {
-                          "perl",
-                         },
-              comment => "List of PERL packages for SUSE linux",
-               handle => "prog_perl_vars_pkgs_suse";
+      "perl_pkgs"   slist => {
+                               "perl",
+      },
+      comment => "List of PERL packages for SUSE linux",
+      handle => "prog_perl_vars_pkgs_suse";
 
-#
+      #
 
- classes:
+  classes:
 
-  any::
+    any::
 
-   "on"    expression => strcmp("$(state)","on"),
-              comment => "Check if to install packages",
-               handle => "prog_perl_classes_strcmp_on";
-   "purge" expression => strcmp("$(state)","purge"),
-              comment => "Check if to remove packages",
-               handle => "prog_perl_classes_strcmp_purge";
+      "on"    expression => strcmp("$(state)","on"),
+      comment => "Check if to install packages",
+      handle => "prog_perl_classes_strcmp_on";
+      "purge" expression => strcmp("$(state)","purge"),
+      comment => "Check if to remove packages",
+      handle => "prog_perl_classes_strcmp_purge";
 
-#
+      #
 
- packages:
+  packages:
 
-  on::
+    on::
 
-   "$(perl_pkgs)"
+      "$(perl_pkgs)"
 
-             comment => "Install PERL packages",
-              handle => "prog_perl_packages_add",
+      comment => "Install PERL packages",
+      handle => "prog_perl_packages_add",
       package_policy => "add",
       package_method => generic,
-              action => log_repaired("stdout","PERL environment was installed");
+      action => log_repaired("stdout","PERL environment was installed");
 
-  purge::
+    purge::
 
-   "$(perl_pkgs)"
+      "$(perl_pkgs)"
 
-             comment => "Remove PERL packages",
-              handle => "prog_perl_packages_remove",
+      comment => "Remove PERL packages",
+      handle => "prog_perl_packages_remove",
       package_policy => "delete",
       package_method => generic,
-              action => log_repaired("stdout","PERL environment was removed");
+      action => log_repaired("stdout","PERL environment was removed");
 
 }

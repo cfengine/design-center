@@ -1,83 +1,83 @@
 bundle agent cfdc_interface_settings_update(nic, config) {
-# expects string, array
-# nic: interface to operate on
-# config: configuration array containting keys that are valid options for 
-#         redhat style interface configuration
-#
-# note: this bundle only alters settings that have been directed, any other settings 
-#       in the file that are not managed will not be modifed.
-#
-#       
-# example usage:
-#    vars:
-#
-#            # "nics"              slist   => getindices("sys.ipv4");
-#            # this would work, you will be limited to taking action and editing
-#            # interfaces that are already detected. That might be an issue for you
-#            # if you if your trying to setup any bonds, so its reccomended to manually
-#            # specify the nics as below 
-#
-#            "nics"              slist   => { "eth0", "eth1" };
-#
-#            "eth0[DEVICE]"      string  => "eth0";
-#            "eth0[BOOTPROTO]"   string  => "none";
-#            "eth0[ONBOOT]"      string  => "yes";
-#            "eth0[IPADDR]"      string  => "192.168.35.11";
-#            "eth0[NETMASK]"     string  => "255.255.255.0";
-#
-#            "eth1[DEVICE]"      string  => "eth1";
-#            "eth1[BOOTPROTO]"   string  => "none";
-#            "eth1[ONBOOT]"      string  => "yes";
-#            "eth1[IPADDR]"      string  => "172.16.210.65";
-#            "eth1[NETMASK]"     string  => "255.255.255.192";
-#
-#
-#    methods:
-#
-#    "any" usebundle => cfdc_interface_settings_update("$(nics)", "context.$(nics)");
+      # expects string, array
+      # nic: interface to operate on
+      # config: configuration array containting keys that are valid options for 
+      #         redhat style interface configuration
+      #
+      # note: this bundle only alters settings that have been directed, any other settings 
+      #       in the file that are not managed will not be modifed.
+      #
+      #       
+      # example usage:
+      #    vars:
+      #
+      #            # "nics"              slist   => getindices("sys.ipv4");
+      #            # this would work, you will be limited to taking action and editing
+      #            # interfaces that are already detected. That might be an issue for you
+      #            # if you if your trying to setup any bonds, so its reccomended to manually
+      #            # specify the nics as below 
+      #
+      #            "nics"              slist   => { "eth0", "eth1" };
+      #
+      #            "eth0[DEVICE]"      string  => "eth0";
+      #            "eth0[BOOTPROTO]"   string  => "none";
+      #            "eth0[ONBOOT]"      string  => "yes";
+      #            "eth0[IPADDR]"      string  => "192.168.35.11";
+      #            "eth0[NETMASK]"     string  => "255.255.255.0";
+      #
+      #            "eth1[DEVICE]"      string  => "eth1";
+      #            "eth1[BOOTPROTO]"   string  => "none";
+      #            "eth1[ONBOOT]"      string  => "yes";
+      #            "eth1[IPADDR]"      string  => "172.16.210.65";
+      #            "eth1[NETMASK]"     string  => "255.255.255.192";
+      #
+      #
+      #    methods:
+      #
+      #    "any" usebundle => cfdc_interface_settings_update("$(nics)", "context.$(nics)");
 
 
-    vars:
-        # Contents of the ifdown-up script 
-        "ifdown_up_script" string => "#!/bin/bash
+  vars:
+      # Contents of the ifdown-up script 
+      "ifdown_up_script" string => "#!/bin/bash
 /sbin/ifdown $1
 /sbin/ifup $1";
-                                    
-    files:
-        redhat|centos::
-            "/etc/sysconfig/network-scripts/ifcfg-$(nic)"
-                create        => "true",
-                perms         => mog("644", "root", "root"),
-                edit_defaults => no_backup,
-                edit_line     => set_variable_values("$(config)"),
-                classes       => if_repaired("cfdc_interface_settings_update_ifupdown_$(nic)"),
-                handle        => "cfdc_interface_settings_update_files_etc_sysconfig_network_scripts_ifcfg_nic",
-                comment       => "configure interface persistent settings";
+      
+  files:
+    redhat|centos::
+      "/etc/sysconfig/network-scripts/ifcfg-$(nic)"
+      create        => "true",
+      perms         => mog("644", "root", "root"),
+      edit_defaults => no_backup,
+      edit_line     => set_variable_values("$(config)"),
+      classes       => if_repaired("cfdc_interface_settings_update_ifupdown_$(nic)"),
+      handle        => "cfdc_interface_settings_update_files_etc_sysconfig_network_scripts_ifcfg_nic",
+      comment       => "configure interface persistent settings";
 
-            # Using /sbin/ifdown and /sbin/ifup as seperate commands promises 
-            # leaves the interface in a down state. Seems that cf-agent stops
-            # executing after running /sbin/ifdown. This script is a workaround
-            # for that unexpected behavior
-            "/usr/local/sbin/ifdown-up"
-                create        => "true",
-                perms         => mog("755", "root", "root"),
-                edit_defaults => empty,
-                edit_line     => append_if_no_line("$(ifdown_up_script)"),
-                handle        => "cfdc_interface_settings_update_files_usr_local_sbin_ifdown_up",
-                comment       => "We need to use this script to down and up
+      # Using /sbin/ifdown and /sbin/ifup as seperate commands promises 
+      # leaves the interface in a down state. Seems that cf-agent stops
+      # executing after running /sbin/ifdown. This script is a workaround
+      # for that unexpected behavior
+      "/usr/local/sbin/ifdown-up"
+      create        => "true",
+      perms         => mog("755", "root", "root"),
+      edit_defaults => empty,
+      edit_line     => append_if_no_line("$(ifdown_up_script)"),
+      handle        => "cfdc_interface_settings_update_files_usr_local_sbin_ifdown_up",
+      comment       => "We need to use this script to down and up
                                   interfaces that have configuration changed.";
 
-    commands:
-        redhat|centos::
-            "/usr/local/sbin/ifdown-up $(nic)"
-                ifvarclass => "cfdc_interface_settings_update_ifupdown_$(nic)",
-                handle     => "cfdc_interface_settings_update_commands_ifdown_up",
-                depends_on => { "cfdc_interface_settings_update_files_usr_local_sbin_ifdown_up" },
-                comment    => "down the interface with old configuration, bring up with new";
+  commands:
+    redhat|centos::
+      "/usr/local/sbin/ifdown-up $(nic)"
+      ifvarclass => "cfdc_interface_settings_update_ifupdown_$(nic)",
+      handle     => "cfdc_interface_settings_update_commands_ifdown_up",
+      depends_on => { "cfdc_interface_settings_update_files_usr_local_sbin_ifdown_up" },
+      comment    => "down the interface with old configuration, bring up with new";
 
 
-    reports:
-        !(redhat|centos)::
-            "Sorry I only know how to work with redhat and centos machines";
+  reports:
+    !(redhat|centos)::
+      "Sorry I only know how to work with redhat and centos machines";
 
 }

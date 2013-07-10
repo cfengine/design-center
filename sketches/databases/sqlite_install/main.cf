@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_db_sqlite";
+      namespace => "cfdc_db_sqlite";
 }
 
 bundle agent ensure(runenv, metadata, purge, extra_packages, use_only_extra_packages)

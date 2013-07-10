@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_cloud_openstack";
+      namespace => "cfdc_cloud_openstack";
 }
 
 bundle agent ensure(runenv, metadata, count, class, install_cfengine, hub, options)

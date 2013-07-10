@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_utilities_tidy_dir";
+      namespace => "cfdc_utilities_tidy_dir";
 }
 
 bundle agent tidy_dir(runenv, metadata, dir, days_old, recurse)
@@ -19,23 +19,23 @@ bundle agent tidy_dir(runenv, metadata, dir, days_old, recurse)
 
   classes:
       "$(vars)"
-        expression => "default:runenv_$(runenv)_$(vars)";
+      expression => "default:runenv_$(runenv)_$(vars)";
 
       "not_$(vars)"
-        expression => "!default:runenv_$(runenv)_$(vars)";
+      expression => "!default:runenv_$(runenv)_$(vars)";
 
       "recurse"
-        expression => strcmp( $(recurse), "1" );
+      expression => strcmp( $(recurse), "1" );
       "disabled"
-        expression => strcmp( $(days_old), "" );
+      expression => strcmp( $(days_old), "" );
 
   files:
     !disabled::
       "$(dir)/."
-        delete => default:tidy,
-        file_select => default:days_old($(days_old)),
-        depth_search => default:recurse($(search_depth)),
-        action => default:policy($(action_policy));
+      delete => default:tidy,
+      file_select => default:days_old($(days_old)),
+      depth_search => default:recurse($(search_depth)),
+      action => default:policy($(action_policy));
 
   methods:
     verbose::

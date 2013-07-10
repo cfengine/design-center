@@ -58,7 +58,7 @@
 
 body file control
 {
-        namespace => "cfdc_sshd";
+      namespace => "cfdc_sshd";
 }
 
 bundle agent sshd(runenv, metadata, params)
@@ -95,10 +95,10 @@ bundle agent sshd_config(params)
 {
   methods:
       "vars" usebundle => cfdc_sshd:vars("$(params)"),
-        handle => "sshd_set_variables";
+      handle => "sshd_set_variables";
       "sshd_cfg"  usebundle => cfdc_sshd:set_cfg("cfdc_sshd:vars.conf"),
-        handle => "sshd_set_configuration",
-        comment => "Apply the ssh parameters";
+      handle => "sshd_set_configuration",
+      comment => "Apply the ssh parameters";
 }
 
 ######################################################################
@@ -112,88 +112,88 @@ bundle agent vars(params)
   vars:
       # Default value, for most OSs
       "conf[_sshd_config_file]" string => "/etc/ssh/sshd_config",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_start_cmd]"   string => "/etc/init.d/sshd start",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_stop_cmd]"    string => "/etc/init.d/sshd restart",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_restart_cmd]" string => "/etc/init.d/sshd reload",
-        policy => "free";
+      policy => "free";
       "conf[_create]" string => "false",
-        policy => "free";
+      policy => "free";
 
     debian::
       # OS-specific values that differ from the default
       "conf[_sshd_config_file]" string => "/etc/ssh/sshd_config",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_start_cmd]"   string => "/usr/sbin/service ssh start",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_stop_cmd]"    string => "/usr/sbin/service ssh restart",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_restart_cmd]" string => "/usr/sbin/service ssh reload",
-        policy => "free";
+      policy => "free";
 
       # OS-specific values that differ from the default
     darwin:: # Macs
       "conf[_sshd_config_file]" string => "/etc/sshd_config",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_start_cmd]"   string => "/usr/sbin/systemsetup -setremotelogin on",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_stop_cmd]"    string => "/usr/sbin/systemsetup -f -setremotelogin off",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_restart_cmd]" string => "",
-        policy => "free";
+      policy => "free";
     hpux::
       "conf[_sshd_config_file]" string => "/opt/ssh/etc/sshd_config",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_start_cmd]"   string => "/sbin/init.d/secsh start",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_stop_cmd]"    string => "/sbin/init.d/secsh stop",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_restart_cmd]" string => "",
-        policy => "free";
+      policy => "free";
       # These should be last, to override any OS-specific settings
     SSH_TEST_MODE::
       "conf[_sshd_config_file]" string => "/tmp/sshd_config",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_start_cmd]"   string => "/bin/echo --- I would now start sshd",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_stop_cmd]"    string => "/bin/echo --- I would now stop sshd",
-        policy => "free";
+      policy => "free";
       "conf[_sshd_restart_cmd]" string => "/bin/echo --- I would now restart sshd",
-        policy => "free";
+      policy => "free";
       "conf[_create]" string => "true",
-        policy => "free";
+      policy => "free";
     SSH_TEST_MODE_NORESTART::
       # Testing the case when no restart command is given
       "conf[_sshd_restart_cmd]" string => "",
-        policy => "free";
+      policy => "free";
     any::
       # Copy configuration parameters passed, into a local array
       "param_keys"          slist  => getindices("$(params)");
       "conf[$(param_keys)]" string => "$($(params)[$(param_keys)])",
-        policy => "free";
+      policy => "free";
 }
 
 bundle agent set_cfg(params)
 {
   files:
       "$($(params)[_sshd_config_file])"
-        handle => "sshd_edit_configfile",
-        comment => "Set desired sshd_config parameters",
-        edit_line => default:set_config_values_matching("$(params)", "[^_].*"),
-        create => "$($(params)[_create])",
-        classes => default:if_repaired("restart_sshd");
+      handle => "sshd_edit_configfile",
+      comment => "Set desired sshd_config parameters",
+      edit_line => default:set_config_values_matching("$(params)", "[^_].*"),
+      create => "$($(params)[_create])",
+      classes => default:if_repaired("restart_sshd");
 
   commands:
     restart_sshd.!no_restarts.!use_restart_cmd::
       "$($(params)[_sshd_stop_cmd]) && $($(params)[_sshd_start_cmd])"
-        handle => "sshd_stop_and_start",
-        comment => "Stop and restart sshd if the configuration file was modified",
-        contain => default:in_shell;
+      handle => "sshd_stop_and_start",
+      comment => "Stop and restart sshd if the configuration file was modified",
+      contain => default:in_shell;
     restart_sshd.!no_restarts.use_restart_cmd::
       "$($(params)[_sshd_restart_cmd])"
-        handle => "sshd_restart",
-        comment => "Restart sshd if the configuration file was modified",
-        contain => default:in_shell;
+      handle => "sshd_restart",
+      comment => "Restart sshd if the configuration file was modified",
+      contain => default:in_shell;
 }

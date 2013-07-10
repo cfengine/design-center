@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_file_integrity";
+      namespace => "cfdc_file_integrity";
 }
 
 bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
@@ -29,17 +29,17 @@ bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
       inherit => "true";
 
   files:
-    "$(watch)"
+      "$(watch)"
       comment      => "Detect changes to files",
       changes      => changes_file_integrity("$(hash_algorithm)"),
       depth_search => default:recurse("inf"),
       action       => default:if_elapsed("$(ifelapsed)"),
       handle       => "$(activation_id)_file_integrity_$(watch)";
 
- # TODO: make file changes promise always give a status when file does not exist
- #       we need at least one promise status to detect activation in Enterprise
- #       Can be removed when this bux is fixed: https://cfengine.com/dev/issues/2820
-    "$(sys.workdir)/ppkeys/."
+      # TODO: make file changes promise always give a status when file does not exist
+      #       we need at least one promise status to detect activation in Enterprise
+      #       Can be removed when this bux is fixed: https://cfengine.com/dev/issues/2820
+      "$(sys.workdir)/ppkeys/."
       create       => "true",
       handle       => "$(activation_id)_dummy_kept";
 
@@ -47,7 +47,7 @@ bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
     any::
       "$(watch_str)" bundle_return_value_index => "paths";
 
-      test::
+    test::
       "test mode";
 }
 

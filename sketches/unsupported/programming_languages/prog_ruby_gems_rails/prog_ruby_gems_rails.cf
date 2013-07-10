@@ -4,185 +4,185 @@
 
 bundle agent prog_ruby_gem_rails(vruby,vgem,state)
 {
- vars:
+  vars:
 
-  any::
+    any::
 
-    "ruby1x"  string => "$(vruby)",
-             comment => "A version of RUBY",
-              handle => "prog_ruby_gem_rails_vars_ruby1x";
-    "gem"     string => "$(vgem)",
-             comment => "A version of RUBYGEMS",
-              handle => "prog_ruby_gem_rails_vars_gem";
+      "ruby1x"  string => "$(vruby)",
+      comment => "A version of RUBY",
+      handle => "prog_ruby_gem_rails_vars_ruby1x";
+      "gem"     string => "$(vgem)",
+      comment => "A version of RUBYGEMS",
+      handle => "prog_ruby_gem_rails_vars_gem";
 
-  redhat|centos|fedora::
+    redhat|centos|fedora::
 
-    "dep_pkgs"  slist => {
-                          "httpd-devel",
-                          "openssl-devel",
-                          "zlib-devel",
-                          "curl-devel",
-                          "expat-devel",
-                          "gettext-devel",
-                          "mysql-server",
-                          "mysql-devel",
-                          "wget",
-                         },
-              comment => "List of ruby dependencies on Redhat-related distributions",
-               handle => "prog_ruby_gem_rails_vars_dep_pkgs_redhat_centos_fedora";
+      "dep_pkgs"  slist => {
+                             "httpd-devel",
+                             "openssl-devel",
+                             "zlib-devel",
+                             "curl-devel",
+                             "expat-devel",
+                             "gettext-devel",
+                             "mysql-server",
+                             "mysql-devel",
+                             "wget",
+      },
+      comment => "List of ruby dependencies on Redhat-related distributions",
+      handle => "prog_ruby_gem_rails_vars_dep_pkgs_redhat_centos_fedora";
 
-  debian|ubuntu::
+    debian|ubuntu::
 
-    "dep_pkgs"  slist => {
-                          "libssl-dev",
-                          "zlib1g-dev",
-                          "libcurl4-gnutls-dev",
-                          "libcurl4-openssl-dev",
-                          "libexpat1-dev",
-                          "mysql-server",
-                          "libmysqld-dev",
-                          "libmysqlclient-dev",
-                          "wget",
-                         },
-              comment => "List of ruby dependencies on Debian-related distributions",
-               handle => "prog_ruby_gem_rails_vars_dep_pkgs_debian_ubuntu";
+      "dep_pkgs"  slist => {
+                             "libssl-dev",
+                             "zlib1g-dev",
+                             "libcurl4-gnutls-dev",
+                             "libcurl4-openssl-dev",
+                             "libexpat1-dev",
+                             "mysql-server",
+                             "libmysqld-dev",
+                             "libmysqlclient-dev",
+                             "wget",
+      },
+      comment => "List of ruby dependencies on Debian-related distributions",
+      handle => "prog_ruby_gem_rails_vars_dep_pkgs_debian_ubuntu";
 
-  suse|SuSE::
+    suse|SuSE::
 
-    "dep_pkgs"  slist => {
-                          "apache2-devel",
-                          "libopenssl-devel",
-                          "zlib-devel",
-                          "libcurl-devel",
-                          "libexpat-devel",
-                          "mysql",
-                          "mysql-client",
-                          "mysql-community-server",
-                          "libmysqld-devel",
-                          "libmysqlclient-devel",
-                          "wget",
-                         },
-              comment => "List of ruby dependencies on SUSE",
-               handle => "prog_ruby_gem_rails_vars_dep_pkgs_suse";
+      "dep_pkgs"  slist => {
+                             "apache2-devel",
+                             "libopenssl-devel",
+                             "zlib-devel",
+                             "libcurl-devel",
+                             "libexpat-devel",
+                             "mysql",
+                             "mysql-client",
+                             "mysql-community-server",
+                             "libmysqld-devel",
+                             "libmysqlclient-devel",
+                             "wget",
+      },
+      comment => "List of ruby dependencies on SUSE",
+      handle => "prog_ruby_gem_rails_vars_dep_pkgs_suse";
 
-#
+      #
 
- classes:
+  classes:
 
-  any::
+    any::
 
-   "on"    expression => strcmp("$(state)","on"),
-              comment => "Check if to install packages",
-               handle => "prog_ruby_gem_rails_classes_strcmp_on";
-   "purge" expression => strcmp("$(state)","purge"),
-              comment => "Check if to remove packages",
-               handle => "prog_ruby_gem_rails_classes_strcmp_purge";
+      "on"    expression => strcmp("$(state)","on"),
+      comment => "Check if to install packages",
+      handle => "prog_ruby_gem_rails_classes_strcmp_on";
+      "purge" expression => strcmp("$(state)","purge"),
+      comment => "Check if to remove packages",
+      handle => "prog_ruby_gem_rails_classes_strcmp_purge";
 
-  # Check for RUBY, GEM and RAILS
+      # Check for RUBY, GEM and RAILS
 
-   "no_ruby"           not => fileexists("/usr/local/bin/ruby"),
-                   comment => "Check if there is no RUBY installed",
-                    handle => "prog_ruby_gem_rails_classes_no_ruby";
-   "have_ruby"  expression => fileexists("/usr/local/bin/ruby"),
-                   comment => "Check if there is RUBY installed",
-                    handle => "prog_ruby_gem_rails_classes_have_ruby";
-   "no_gem"            not => fileexists("/usr/local/bin/gem"),
-                   comment => "Check if there is no GEM installed",
-                    handle => "prog_ruby_gem_rails_classes_no_gem";
-   "have_gem"   expression => fileexists("/usr/local/bin/gem"),
-                   comment => "Check if there is GEM installed",
-                    handle => "prog_ruby_gem_rails_classes_have_gem";
-   "no_rails"          not => fileexists("/usr/local/bin/rails"),
-                   comment => "Check if there is no RAILS installed",
-                    handle => "prog_ruby_gem_rails_classes_no_rails";
+      "no_ruby"           not => fileexists("/usr/local/bin/ruby"),
+      comment => "Check if there is no RUBY installed",
+      handle => "prog_ruby_gem_rails_classes_no_ruby";
+      "have_ruby"  expression => fileexists("/usr/local/bin/ruby"),
+      comment => "Check if there is RUBY installed",
+      handle => "prog_ruby_gem_rails_classes_have_ruby";
+      "no_gem"            not => fileexists("/usr/local/bin/gem"),
+      comment => "Check if there is no GEM installed",
+      handle => "prog_ruby_gem_rails_classes_no_gem";
+      "have_gem"   expression => fileexists("/usr/local/bin/gem"),
+      comment => "Check if there is GEM installed",
+      handle => "prog_ruby_gem_rails_classes_have_gem";
+      "no_rails"          not => fileexists("/usr/local/bin/rails"),
+      comment => "Check if there is no RAILS installed",
+      handle => "prog_ruby_gem_rails_classes_no_rails";
 
-#
+      #
 
- files:
+  files:
 
-  any::
+    any::
 
-   "/tmp/install_ruby.sh"
-            comment => "Create a script to install ruby",
-             handle => "prog_ruby_gem_rails_files_install_ruby_sh",
-             create => "true",
-              perms => mog("755","root","root"),
+      "/tmp/install_ruby.sh"
+      comment => "Create a script to install ruby",
+      handle => "prog_ruby_gem_rails_files_install_ruby_sh",
+      create => "true",
+      perms => mog("755","root","root"),
       edit_defaults => empty,
-          edit_line => install_ruby("$(ruby1x)"),
-            classes => if_ok("please_install_ruby");
+      edit_line => install_ruby("$(ruby1x)"),
+      classes => if_ok("please_install_ruby");
 
-   "/tmp/install_gem_and_rails.rb"
-            comment => "Create a script to install rails by rubygems",
-             handle => "prog_ruby_gem_rails_files_install_gem_and_rails_rb",
-             create => "true",
-              perms => mog("755","root","root"),
+      "/tmp/install_gem_and_rails.rb"
+      comment => "Create a script to install rails by rubygems",
+      handle => "prog_ruby_gem_rails_files_install_gem_and_rails_rb",
+      create => "true",
+      perms => mog("755","root","root"),
       edit_defaults => empty,
-          edit_line => install_gem_and_rails("$(gem)"),
-            classes => if_ok("please_install_gem_and_rails");
+      edit_line => install_gem_and_rails("$(gem)"),
+      classes => if_ok("please_install_gem_and_rails");
 
-  purge_ruby_gem::
+    purge_ruby_gem::
 
-   "/usr/local/bin/gem"
+      "/usr/local/bin/gem"
       comment => "Remove GEM binary",
-       handle => "prog_ruby_gem_rails_files_remove_gem",
-       delete => tidy,
-       action => log_repaired("stdout","GEM was removed");
+      handle => "prog_ruby_gem_rails_files_remove_gem",
+      delete => tidy,
+      action => log_repaired("stdout","GEM was removed");
 
-   "/usr/local/bin/ruby"
+      "/usr/local/bin/ruby"
       comment => "Remove RUBY binary",
-       handle => "prog_ruby_gem_rails_files_remove_ruby",
-       delete => tidy,
-       action => log_repaired("stdout","RUBY was removed");
+      handle => "prog_ruby_gem_rails_files_remove_ruby",
+      delete => tidy,
+      action => log_repaired("stdout","RUBY was removed");
       
-#
+      #
 
- packages:
+  packages:
 
-  on::
+    on::
 
-   "$(dep_pkgs)"
+      "$(dep_pkgs)"
 
-             comment => "Prepare dependencies for ruby programing and ruby on rails",
-              handle => "prog_ruby_gem_rails_packages_add",
+      comment => "Prepare dependencies for ruby programing and ruby on rails",
+      handle => "prog_ruby_gem_rails_packages_add",
       package_policy => "add",
       package_method => generic,
-              action => log_repaired("stdout","RUBY dependencies were installed"),
-             classes => if_ok("have_deps");
+      action => log_repaired("stdout","RUBY dependencies were installed"),
+      classes => if_ok("have_deps");
 
-#
+      #
 
- commands:
+  commands:
 
-  please_install_ruby.have_deps.no_ruby::
+    please_install_ruby.have_deps.no_ruby::
 
-   "/tmp/install_ruby.sh"
+      "/tmp/install_ruby.sh"
       comment => "To setup RUBY from source",
-       handle => "prog_ruby_gem_rails_commands_install_ruby_sh",
+      handle => "prog_ruby_gem_rails_commands_install_ruby_sh",
       contain => in_shell,
       classes => if_repaired_then_cancel("no_ruby"),
-       action => log_repaired("stdout","RUBY was installed");
+      action => log_repaired("stdout","RUBY was installed");
 
-  please_install_gem_and_rails.have_deps.have_ruby.(no_gem|no_rails)::
+    please_install_gem_and_rails.have_deps.have_ruby.(no_gem|no_rails)::
 
-   "/tmp/install_gem_and_rails.rb"
+      "/tmp/install_gem_and_rails.rb"
       comment => "To setup RAILS and RUBYGEMS",
-       handle => "prog_ruby_gem_rails_commands_install_rails_rb",
+      handle => "prog_ruby_gem_rails_commands_install_rails_rb",
       contain => in_shell,
-       action => log_repaired("stdout","GEM and RAILS were installed");
+      action => log_repaired("stdout","GEM and RAILS were installed");
 
-  purge.have_gem::
+    purge.have_gem::
 
-   "/usr/local/bin/gem uninstall rails -x"
+      "/usr/local/bin/gem uninstall rails -x"
       comment => "Uninstall RAILS with GEM command",
-       handle => "prog_ruby_on_rails_commands_uninstall_rails",
+      handle => "prog_ruby_on_rails_commands_uninstall_rails",
       classes => if_ok("purge_ruby_gem");
 
-  Hr00.Min00_05::
+    Hr00.Min00_05::
 
-   "/usr/local/bin/gem update --system"
+      "/usr/local/bin/gem update --system"
       comment => "Check for rubygems update and its dependency once a day",
-       handle => "prog_ruby_on_rails_commands_gem_update_system",
-       action => log_repaired("stdout","GEM was installed");
+      handle => "prog_ruby_on_rails_commands_gem_update_system",
+      action => log_repaired("stdout","GEM was installed");
 
 }
 
@@ -190,8 +190,8 @@ bundle agent prog_ruby_gem_rails(vruby,vgem,state)
 
 bundle edit_line install_ruby(version)
 {
- insert_lines:
-"#!/bin/sh
+  insert_lines:
+      "#!/bin/sh
 
 cd /tmp
 echo $(version) | grep 1.8 > /dev/null && wget ftp://ftp.ruby-lang.org/pub/ruby/1.8/$(version).tar.gz
@@ -209,15 +209,15 @@ make install
 cd /tmp
 rm -rf $(version)*
 ruby --version"
-   comment => "A script to download ruby source and compile it",
-    handle => "install_ruby_insert_lines";
+      comment => "A script to download ruby source and compile it",
+      handle => "install_ruby_insert_lines";
 }
 ######################################################################
 
 bundle edit_line install_gem_and_rails(version)
 {
- insert_lines:
-"#!/usr/bin/env ruby
+  insert_lines:
+      "#!/usr/bin/env ruby
 
 def cmd(cmd)
   puts cmd; system(cmd)
@@ -230,13 +230,13 @@ cmd \"rm -rf /tmp/$(version)*\"
 cmd \"gem install rails\"
 #cmd \"gem install sqlite3-ruby\"
 #cmd \"gem install sqlite3-ruby --version=1.2.4\""
-   comment => "A script to download rubygems source and compile it",
-    handle => "install_gem_and_rails_insert_lines";
+      comment => "A script to download rubygems source and compile it",
+      handle => "install_gem_and_rails_insert_lines";
 }
 
 ######################################################################
 
 body classes if_repaired_then_cancel(xxx)
 {
- cancel_repaired => { "$(xxx)" };
+      cancel_repaired => { "$(xxx)" };
 }

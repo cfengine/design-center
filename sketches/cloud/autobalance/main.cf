@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_cloud";
+      namespace => "cfdc_cloud";
 }
 
 bundle agent autobalance(runenv, metadata, url, collector, thresholds, given_ec2_options, given_openstack_options, common_options)

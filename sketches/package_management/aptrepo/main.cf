@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_aptrepo";
+      namespace => "cfdc_aptrepo";
 }
 
 # Used for enforcing the contents of /etc/apt/sources.list or

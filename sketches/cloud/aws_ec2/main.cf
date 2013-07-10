@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_aws_ec2";
+      namespace => "cfdc_aws_ec2";
 }
 
 bundle agent ensure(runenv, metadata, count, ami, region, type, class, install_cfengine, hub, options)

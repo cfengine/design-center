@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_snmp";
+      namespace => "cfdc_snmp";
 }
 
 bundle agent walk(runenv, metadata, snmpwalk, agent, oids)

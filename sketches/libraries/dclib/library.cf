@@ -110,7 +110,7 @@ bundle edit_line insert_ini_section(name, config)
 # same as COPBL start location body
 body location dc_start
 {
-before_after => "before";
+      before_after => "before";
 }
 
 # same as COPBL paths location body
@@ -316,11 +316,11 @@ bundle common dc_paths
       "$(all_paths)" string => "$(path[$(all_paths)])";
 
   classes:
-    "_stdlib_has_path_$(all_paths)"
+      "_stdlib_has_path_$(all_paths)"
       expression => isvariable("$(all_paths)"),
       comment    => "It's useful to know if a given path is defined";
 
-    "_stdlib_path_exists_$(all_paths)"
+      "_stdlib_path_exists_$(all_paths)"
       expression => fileexists("$(path[$(all_paths)])"),
       comment    => "It's useful to know if $(all_paths) exists on the filesystem as defined";
 }
@@ -338,20 +338,20 @@ body contain dc_setuid_gid_umask(uid, gid, umask)
 # 077   | 600     (rw-------) | 700     (rwx------)
 # 277   | 400     (r--------) | 500     (r-x------)
 {
-exec_owner => "$(uid)";
-exec_group => "$(uid)";
-umask => "$(umask)";
+      exec_owner => "$(uid)";
+      exec_group => "$(uid)";
+      umask => "$(umask)";
 }
 
 body classes dc_generic(x)
 #
 # Define x prefixed/suffixed with promise outcome
 {
-  promise_repaired => { "promise_repaired_$(x)", "$(x)_repaired", "$(x)_ok" };
-  repair_failed => { "repair_failed_$(x)", "$(x)_failed", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
-  repair_denied => { "repair_denied_$(x)", "$(x)_denied", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
-  repair_timeout => { "repair_timeout_$(x)", "$(x)_timeout", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
-  promise_kept => { "promise_kept_$(x)", "$(x)_kept", "$(x)_ok", "$(x)_not_repaired" };
+      promise_repaired => { "promise_repaired_$(x)", "$(x)_repaired", "$(x)_ok" };
+      repair_failed => { "repair_failed_$(x)", "$(x)_failed", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+      repair_denied => { "repair_denied_$(x)", "$(x)_denied", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+      repair_timeout => { "repair_timeout_$(x)", "$(x)_timeout", "$(x)_not_ok", "$(x)_not_kept", "$(x)_not_repaired" };
+      promise_kept => { "promise_kept_$(x)", "$(x)_kept", "$(x)_ok", "$(x)_not_repaired" };
 }
 
 body changes dc_detect_all_change_using(hash)
@@ -360,7 +360,7 @@ body changes dc_detect_all_change_using(hash)
 # hash - supported hashing algorithm (md5, sha1, sha224, sha256, sha384,
 #   sha512, best)
 {
-hash           => "$(hash)";
-report_changes => "all";
-update_hashes  => "yes";
+      hash           => "$(hash)";
+      report_changes => "all";
+      update_hashes  => "yes";
 }
