@@ -1,6 +1,7 @@
 N:=2
 OP=up
 VM:=
+# notable REST options: bootstrap and dc
 REST:=
 
 ubuntu10-none:
