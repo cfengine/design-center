@@ -4,80 +4,80 @@
 
 bundle agent build_essential(state)
 {
- vars:
+  vars:
 
-  redhat|centos|fedora::
+    redhat|centos|fedora::
 
-   "package"   slist => { 
-                         "gcc",
-                         "gcc-c++",
-                         "bison",
-                         "flex",
-                         "autoconf",
-                         "automake",
-                         "libtool",
-                         "kernel-devel",
-                        },
-             comment => "List of build-essential packages for Redhat-related distributions",
-              handle => "build_essential_vars_package_redhat_centos_fedora";
+      "package"   slist => { 
+                             "gcc",
+                             "gcc-c++",
+                             "bison",
+                             "flex",
+                             "autoconf",
+                             "automake",
+                             "libtool",
+                             "kernel-devel",
+      },
+      comment => "List of build-essential packages for Redhat-related distributions",
+      handle => "build_essential_vars_package_redhat_centos_fedora";
 
-  ubuntu|debian::
+    ubuntu|debian::
 
-   "package"   slist => {
-                         "build-essential",
-                        },
-             comment => "List of build-essential packages for Debian-related distributions",
-              handle => "build_essential_vars_package_debian_ubuntu";
+      "package"   slist => {
+                             "build-essential",
+      },
+      comment => "List of build-essential packages for Debian-related distributions",
+      handle => "build_essential_vars_package_debian_ubuntu";
 
-  suse|SuSE::
+    suse|SuSE::
 
-   "package"   slist => {
-                        "gcc",
-                        "gcc-c++",
-                        "bison",
-                        "flex",
-                        "autoconf",
-                        "automake",
-                        "libtool",
-                        "kernel-devel",
-                        },
-             comment => "List of build-essential packages for SUSE linux",
-              handle => "build_essential_vars_package_suse";
+      "package"   slist => {
+                             "gcc",
+                             "gcc-c++",
+                             "bison",
+                             "flex",
+                             "autoconf",
+                             "automake",
+                             "libtool",
+                             "kernel-devel",
+      },
+      comment => "List of build-essential packages for SUSE linux",
+      handle => "build_essential_vars_package_suse";
 
-#
+      #
 
- classes:
+  classes:
 
-  any::
+    any::
 
-   "on"    expression => strcmp("$(state)","on"),
-              comment => "Check if to install packages",
-               handle => "build_essential_classes_strcmp_on";
-   "purge" expression => strcmp("$(state)","purge"),
-              comment => "Check if to remove packages",
-               handle => "build_essential_classes_strcmp_purge";
+      "on"    expression => strcmp("$(state)","on"),
+      comment => "Check if to install packages",
+      handle => "build_essential_classes_strcmp_on";
+      "purge" expression => strcmp("$(state)","purge"),
+      comment => "Check if to remove packages",
+      handle => "build_essential_classes_strcmp_purge";
 
-#
+      #
 
- packages:
+  packages:
 
-  on::
- 
-   "$(package)"
+    on::
+      
+      "$(package)"
 
-             comment => "Install the C and C++ programming environment",
-              handle => "build_essential_packages_add", 
+      comment => "Install the C and C++ programming environment",
+      handle => "build_essential_packages_add", 
       package_policy => "add",
       package_method => generic,
-              action => log_repaired("stdout","C/C++ environment were installed");
+      action => log_repaired("stdout","C/C++ environment were installed");
 
-  purge::
+    purge::
 
-   "$(package)"
+      "$(package)"
 
-             comment => "Remove the C and C++ programming environment",
-              handle => "build_essential_packages_remove", 
+      comment => "Remove the C and C++ programming environment",
+      handle => "build_essential_packages_remove", 
       package_policy => "delete",
       package_method => generic,
-              action => log_repaired("stdout","C/C++ environment were removed");   
+      action => log_repaired("stdout","C/C++ environment were removed");   
 }

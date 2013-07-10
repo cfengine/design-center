@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_aws_s3";
+      namespace => "cfdc_aws_s3";
 }
 
 bundle agent sync(runenv, metadata, directory, bucket, options)

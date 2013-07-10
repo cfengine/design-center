@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_cron";
+      namespace => "cfdc_cron";
 }
 
 bundle agent d(runenv, metadata, cron_path, file_task, runas, when, commands)

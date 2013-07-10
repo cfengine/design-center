@@ -1,4 +1,4 @@
- body common control
+body common control
 {
       bundlesequence => { cfsketch_g, cfsketch_run };
       inputs => { @(cfsketch_g.inputs) };

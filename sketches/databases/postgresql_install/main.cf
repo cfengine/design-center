@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_db_postgresql";
+      namespace => "cfdc_db_postgresql";
 }
 
 bundle agent ensure(runenv, metadata, server, purge, extra_packages, use_only_extra_packages)

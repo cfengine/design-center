@@ -31,39 +31,39 @@
 
 body package_method kernel_module
 {
-linux::
-           package_changes => "bulk";
+    linux::
+      package_changes => "bulk";
       package_list_command => "/bin/cat /proc/modules";
-   package_list_name_regex => "(\S+).*";
-package_list_version_regex => "(\S+).*"; # no version info available
-   package_installed_regex => ".+\h(Live\h|Loading).*";
-   package_name_convention => "$(name)";
+      package_list_name_regex => "(\S+).*";
+      package_list_version_regex => "(\S+).*"; # no version info available
+      package_installed_regex => ".+\h(Live\h|Loading).*";
+      package_name_convention => "$(name)";
 
-       package_add_command => "/sbin/modprobe --first-time --all";
-    package_delete_command => "/sbin/modprobe --first-time --remove";
+      package_add_command => "/sbin/modprobe --first-time --all";
+      package_delete_command => "/sbin/modprobe --first-time --remove";
 
-hpux::
-           package_changes => "bulk";
+    hpux::
+      package_changes => "bulk";
       package_list_command => "/usr/sbin/kmadmin -s";
-   package_list_name_regex => "(\S+)\h+\d+.*";
-package_list_version_regex => "(\S+)\h+\d+.*"; # no version info available
-   package_installed_regex => "\S+\h+\d+\h+LOADED\h.*";
-   package_name_convention => "$(name)";
+      package_list_name_regex => "(\S+)\h+\d+.*";
+      package_list_version_regex => "(\S+)\h+\d+.*"; # no version info available
+      package_installed_regex => "\S+\h+\d+\h+LOADED\h.*";
+      package_name_convention => "$(name)";
 
-       package_add_command => "/usr/sbin/kmadmin -L";
-    package_delete_command => "/usr/sbin/kmadmin -U";
+      package_add_command => "/usr/sbin/kmadmin -L";
+      package_delete_command => "/usr/sbin/kmadmin -U";
 
-solaris::
-           package_changes => "individual";
+    solaris::
+      package_changes => "individual";
       package_list_command => "/usr/sbin/modinfo";
-   package_list_name_regex => "\h*\d+\h+\S+\h+\S+\h+[\d-]+\h+\d+\h+(\S+).*";
-package_list_version_regex => "\h*\d+\h+\S+\h+\S+\h+[\d-]+\h+(\d+).*";
-   package_list_arch_regex => "\h*(\d+).*"; # Use arch to get ID for unload
- package_delete_convention => "$(arch)"; # Unload requires numeric ID of module 
-   package_installed_regex => ".*"; # all modules listed are loaded
-   package_name_convention => "$(name)";
+      package_list_name_regex => "\h*\d+\h+\S+\h+\S+\h+[\d-]+\h+\d+\h+(\S+).*";
+      package_list_version_regex => "\h*\d+\h+\S+\h+\S+\h+[\d-]+\h+(\d+).*";
+      package_list_arch_regex => "\h*(\d+).*"; # Use arch to get ID for unload
+      package_delete_convention => "$(arch)"; # Unload requires numeric ID of module 
+      package_installed_regex => ".*"; # all modules listed are loaded
+      package_name_convention => "$(name)";
 
-       package_add_command => "/usr/sbin/modload -p";
-    package_delete_command => "/usr/sbin/modunload -i";
+      package_add_command => "/usr/sbin/modload -p";
+      package_delete_command => "/usr/sbin/modunload -i";
 }
 #----------

@@ -15,11 +15,11 @@ bundle agent removed(runenv, metadata, pkgs_removed)
 
       "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
 
-files:
- # TODO: make packages promise always give a status when package is already removed
- #       we need at least one promise status to detect activation in Enterprise
- #       Can be removed when this bug is fixed: https://cfengine.com/dev/issues/2861
-    "$(sys.workdir)/ppkeys/."
+  files:
+      # TODO: make packages promise always give a status when package is already removed
+      #       we need at least one promise status to detect activation in Enterprise
+      #       Can be removed when this bug is fixed: https://cfengine.com/dev/issues/2861
+      "$(sys.workdir)/ppkeys/."
       create       => "true",
       handle       => "$(activation_id)_dummy_kept";
 
@@ -29,7 +29,7 @@ files:
       inherit => "true";
 
   packages:
-   not_test::
+    not_test::
       "$(pkgs_removed)"
       package_policy => "delete",
       package_method => default:generic,

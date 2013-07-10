@@ -1,38 +1,38 @@
 bundle common paths{
-# The following are variables that are global and can be used anywhere.
-    vars: 
-   
-        any::
-            "mf_cache" string => "/var/cache/cfmasterfiles",
-            comment => "Local cache of masterfiles";
+      # The following are variables that are global and can be used anywhere.
+  vars: 
+      
+    any::
+      "mf_cache" string => "/var/cache/cfmasterfiles",
+      comment => "Local cache of masterfiles";
 
-# definitions for gzip.  
+      # definitions for gzip.  
 
-        linux::
-            "gzip" string => "/bin/gzip";
+    linux::
+      "gzip" string => "/bin/gzip";
 
-# definitions for crontabs.
+      # definitions for crontabs.
 
-        debian|ubuntu::
-            "crontabs" string => "/var/spool/cron/crontabs";
+    debian|ubuntu::
+      "crontabs" string => "/var/spool/cron/crontabs";
 
-        redhat::
-            "crontabs" string => "/var/spool/cron";
+    redhat::
+      "crontabs" string => "/var/spool/cron";
 
-# definitions for services.
+      # definitions for services.
 
-        redhat|suse::
+    redhat|suse::
 
-            "svc_cmd" string => "/sbin/service",
-                comment => "Service start/stop command.";
+      "svc_cmd" string => "/sbin/service",
+      comment => "Service start/stop command.";
 
-        debian.!debian_5::
-            "svc_cmd" string => "/usr/sbin/service",
-                comment => "Service start/stop command.";
+    debian.!debian_5::
+      "svc_cmd" string => "/usr/sbin/service",
+      comment => "Service start/stop command.";
 
-        ## Support for lenny (debian_5 ) is terminated ( http://www.debian.org/News/2012/20120209 )
-        #
-        debian_5::
-            "svc_cmd" string => "/etc/init.d",
-                comment => "Service start/stop command.";
+      ## Support for lenny (debian_5 ) is terminated ( http://www.debian.org/News/2012/20120209 )
+      #
+    debian_5::
+      "svc_cmd" string => "/etc/init.d",
+      comment => "Service start/stop command.";
 }

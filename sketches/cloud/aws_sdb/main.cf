@@ -1,6 +1,6 @@
 body file control
 {
-  namespace => "cfdc_aws_sdb";
+      namespace => "cfdc_aws_sdb";
 }
 
 bundle agent sync(runenv, metadata, datafile, domain, options)

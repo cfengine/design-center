@@ -5,120 +5,120 @@
 #
 body common control {
 
-    bundlesequence => {"main"};
+      bundlesequence => {"main"};
 
-    inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+      inputs => { "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 }
 
 bundle agent main {
- methods:
-  "test ensure_absent" usebundle => test_ensure_absent;
-  "test ensure_absent" usebundle => test_ensure_present;
-  "test ensure_absent" usebundle => test_ensure_present_empty_first;
+  methods:
+      "test ensure_absent" usebundle => test_ensure_absent;
+      "test ensure_absent" usebundle => test_ensure_present;
+      "test ensure_absent" usebundle => test_ensure_present_empty_first;
 }
 
 bundle agent test_ensure_absent{
-vars:
-  "bundle" string => "test_ensure_absent";
+  vars:
+      "bundle" string => "test_ensure_absent";
 
-  "test_allow_before" string => "
+      "test_allow_before" string => "
 THIS IS AN EXTRA LINE, NO PROMISE HAS BEEN MADE ABOUT ITS ABSENSE
 sshd,sshd1 : ALL
 The sshd,sshd1 : ALL line should be removed
 ";
 
-  "test_allow_after" string => "
+      "test_allow_after" string => "
 THIS IS AN EXTRA LINE, NO PROMISE HAS BEEN MADE ABOUT ITS ABSENSE
 The sshd,sshd1 : ALL line should be removed
 ";
 
-  "test_debug" string => "true";
-  "test_test_filename" string => "/tmp/test_ensure_absent";
-  "test_mgmt_policy" string => "ensure_absent";
-  "test_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
-  "test_allow[ssh][clients]" slist => { "ALL" };
+      "test_debug" string => "true";
+      "test_test_filename" string => "/tmp/test_ensure_absent";
+      "test_mgmt_policy" string => "ensure_absent";
+      "test_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
+      "test_allow[ssh][clients]" slist => { "ALL" };
 
-methods:
-  "test" usebundle => init_test("$(bundle).test_");
-  "test" usebundle => do_test_ensure_absent("$(bundle).test_");
-  "test" usebundle => verify_test("$(bundle).test_", "ensure_absent");
+  methods:
+      "test" usebundle => init_test("$(bundle).test_");
+      "test" usebundle => do_test_ensure_absent("$(bundle).test_");
+      "test" usebundle => verify_test("$(bundle).test_", "ensure_absent");
 }
 bundle agent test_ensure_present_empty_first{
-vars:
-  "bundle" string => "test_ensure_present_empty_first";
+  vars:
+      "bundle" string => "test_ensure_present_empty_first";
 
-  "test_allow_before" string => "THIS IS AN EXTRA LINE, It should not exist";
+      "test_allow_before" string => "THIS IS AN EXTRA LINE, It should not exist";
 
-  "test_allow_after" string => "sshd,sshd1 : ALL";
+      "test_allow_after" string => "sshd,sshd1 : ALL";
 
-  "test_debug" string => "true";
-  "test_test_filename" string => "/tmp/test_ensure_present_empty_first";
-  "test_mgmt_policy" string => "ensure_present";
-  "test_empty_first" string => "true";
-  "test_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
-  "test_allow[ssh][clients]" slist => { "ALL" };
+      "test_debug" string => "true";
+      "test_test_filename" string => "/tmp/test_ensure_present_empty_first";
+      "test_mgmt_policy" string => "ensure_present";
+      "test_empty_first" string => "true";
+      "test_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
+      "test_allow[ssh][clients]" slist => { "ALL" };
 
-methods:
-  "test" usebundle => init_test("$(bundle).test_");
-  "test" usebundle => do_test_ensure_absent("$(bundle).test_");
-  "test" usebundle => verify_test("$(bundle).test_", "ensure_present_empty_first");
+  methods:
+      "test" usebundle => init_test("$(bundle).test_");
+      "test" usebundle => do_test_ensure_absent("$(bundle).test_");
+      "test" usebundle => verify_test("$(bundle).test_", "ensure_present_empty_first");
 }
 
 bundle agent test_ensure_present{
-vars:
-  "bundle" string => "test_ensure_present";
+  vars:
+      "bundle" string => "test_ensure_present";
 
-  "test_allow_before" string => "
+      "test_allow_before" string => "
 THIS IS AN EXTRA LINE, NO PROMISE HAS BEEN MADE ABOUT ITS PRESENCE 
 The sshd,sshd1 : ALL line should be added
 ";
 
-  "test_allow_after" string => "
+      "test_allow_after" string => "
 THIS IS AN EXTRA LINE, NO PROMISE HAS BEEN MADE ABOUT ITS PRESENCE 
 The sshd,sshd1 : ALL line should be added
 
 sshd,sshd1 : ALL";
 
-  "test_debug" string => "true";
-  "test_test_filename" string => "/tmp/test_ensure_present";
-  "test_mgmt_policy" string => "ensure_present";
-  "test_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
-  "test_allow[ssh][clients]" slist => { "ALL" };
+      "test_debug" string => "true";
+      "test_test_filename" string => "/tmp/test_ensure_present";
+      "test_mgmt_policy" string => "ensure_present";
+      "test_allow[ssh][daemons]" slist => { "sshd", "sshd1" };
+      "test_allow[ssh][clients]" slist => { "ALL" };
 
-methods:
-  "test" usebundle => init_test("$(bundle).test_");
-  "test" usebundle => do_test_ensure_absent("$(bundle).test_");
-  "test" usebundle => verify_test("$(bundle).test_", "ensure_present");
+  methods:
+      "test" usebundle => init_test("$(bundle).test_");
+      "test" usebundle => do_test_ensure_absent("$(bundle).test_");
+      "test" usebundle => verify_test("$(bundle).test_", "ensure_present");
 }
 bundle agent init_test(prefix){
-files:
-  "$($(prefix)test_filename).allow"
-    create => "true",
-    edit_defaults => empty,
-    edit_line => append_if_no_line("$($(prefix)allow_before)");
+  files:
+      "$($(prefix)test_filename).allow"
+      create => "true",
+      edit_defaults => empty,
+      edit_line => append_if_no_line("$($(prefix)allow_before)");
 
-  "$($(prefix)test_filename).allow_after"
-    create => "true",
-    edit_defaults => empty,
-    edit_line => append_if_no_line("$($(prefix)allow_after)");
+      "$($(prefix)test_filename).allow_after"
+      create => "true",
+      edit_defaults => empty,
+      edit_line => append_if_no_line("$($(prefix)allow_after)");
 }
 
 bundle agent do_test_ensure_absent(prefix){
-methods:
-  "test" usebundle => tcpwrappers("$(prefix)");
+  methods:
+      "test" usebundle => tcpwrappers("$(prefix)");
 }
 
 bundle agent verify_test(prefix, test){
-commands:
-  "/usr/bin/diff"
-    args => "$($(prefix)test_filename).allow $($(prefix)test_filename).allow_after",
-    contain => silent,
-    classes => if_ok("test_ok");
+  commands:
+      "/usr/bin/diff"
+      args => "$($(prefix)test_filename).allow $($(prefix)test_filename).allow_after",
+      contain => silent,
+      classes => if_ok("test_ok");
 
-reports:
-  test_ok::
-    "Test: $(test) OK";
-  !test_ok::
-    "Test: $(test) FAILED";
+  reports:
+    test_ok::
+      "Test: $(test) OK";
+    !test_ok::
+      "Test: $(test) FAILED";
 
 }

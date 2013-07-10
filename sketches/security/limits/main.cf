@@ -28,7 +28,7 @@ bundle agent limits(runenv, metadata, given_filename, domains, empty_first, ensu
                          "nice",
                          "rtprio",
                          "chroot",
-                       };
+      };
 
       "types" slist => { "soft", "hard", "-" };
       "mgmt_policies" slist => { "ensure_present", "ensure_absent" };

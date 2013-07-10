@@ -13,7 +13,7 @@ bundle agent abortclasses_filebased(runenv, metadata, abortclass, trigger_file, 
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    "timeout_action" string => "$($(timeout)[action])";
+      "timeout_action" string => "$($(timeout)[action])";
 
   classes:
       "alert_only" expression => strcmp("$(alert_only)", "1");
@@ -29,24 +29,24 @@ bundle agent abortclasses_filebased(runenv, metadata, abortclass, trigger_file, 
   files:
     timeout_enabled::
       "$(trigger_file)"
-        touch => "true", # Touching the file resets the timeout period, we attempt to do this because
-                         # file_select alone is not sufficient to comprise a promise cabable of defining
-                         # a class. An actionable attribute must accompany its filtering capability. If
-                         # we are unable to update the timestamp of the file, for example because its 
-                         # been set immutable this bundle will be activated during each execution of the
-                         # agent.
-                         # This bundle will execute any time the provided timeout is older than
-                         # the mtime of the trigger_file
-        file_select => abortclasses_not_modified_since("$($(timeout)[years])",
-                                                       "$($(timeout)[months])",
-                                                       "$($(timeout)[days])",
-                                                       "$($(timeout)[hours])",
-                                                       "$($(timeout)[minutes])",
-                                                       "$($(timeout)[seconds])"), 
-        ifvarclass => "$(trigger_context)",
-        classes => abortclasses_if_repaired_failed("trigger_timeout_action", "trigger_timeout_action");
-                # We define the trigger_timeout_action class on repair or fail because it meets the 
-                # minimum criteria of the file has not been modified inside the window.
+      touch => "true", # Touching the file resets the timeout period, we attempt to do this because
+      # file_select alone is not sufficient to comprise a promise cabable of defining
+      # a class. An actionable attribute must accompany its filtering capability. If
+      # we are unable to update the timestamp of the file, for example because its 
+      # been set immutable this bundle will be activated during each execution of the
+      # agent.
+      # This bundle will execute any time the provided timeout is older than
+      # the mtime of the trigger_file
+      file_select => abortclasses_not_modified_since("$($(timeout)[years])",
+                                                     "$($(timeout)[months])",
+                                                     "$($(timeout)[days])",
+                                                     "$($(timeout)[hours])",
+                                                     "$($(timeout)[minutes])",
+                                                     "$($(timeout)[seconds])"), 
+      ifvarclass => "$(trigger_context)",
+      classes => abortclasses_if_repaired_failed("trigger_timeout_action", "trigger_timeout_action");
+      # We define the trigger_timeout_action class on repair or fail because it meets the 
+      # minimum criteria of the file has not been modified inside the window.
 
   methods:
     verbose::
@@ -56,29 +56,29 @@ bundle agent abortclasses_filebased(runenv, metadata, abortclass, trigger_file, 
     fileexists::
       # We always alert if the trigger is tripped.
       "send alert"
-        usebundle  => abortclasses_alert,
-        comment    => "Raise alert that $(trigger_file) exists";
+      usebundle  => abortclasses_alert,
+      comment    => "Raise alert that $(trigger_file) exists";
 
     fileexists.trigger_timeout_action::
       "Trigger Timeout Action"
-        # This bundle is executed when the mtime of the file(years, months, days, hours, minutes, seconds)
-        # begining from mtime of $(trigger_file).
-        usebundle => $(timeout_action)("$(trigger_file)",
-                                       "$($(timeout)[years])",
-                                       "$($(timeout)[months])",
-                                       "$($(timeout)[days])",
-                                       "$($(timeout)[hours])",
-                                       "$($(timeout)[minutes])",
-                                       "$($(timeout)[seconds])"), 
-        comment => "Call $(timeout_action) for $(trigger_file) on interval";
+      # This bundle is executed when the mtime of the file(years, months, days, hours, minutes, seconds)
+      # begining from mtime of $(trigger_file).
+      usebundle => $(timeout_action)("$(trigger_file)",
+                                     "$($(timeout)[years])",
+                                     "$($(timeout)[months])",
+                                     "$($(timeout)[days])",
+                                     "$($(timeout)[hours])",
+                                     "$($(timeout)[minutes])",
+                                     "$($(timeout)[seconds])"), 
+      comment => "Call $(timeout_action) for $(trigger_file) on interval";
 
 
     fileexists.!alert_only::
       # Raise a class that matches abortclasses defined in body control executor
       "do abort"
-        usebundle  => abortclasses_abort($(abortclass)),
-        ifvarclass => "$(trigger_context)",
-        comment    => "Define $(abortclass) since file $(trigger_file) exists in the context of $(trigger_context)"; 
+      usebundle  => abortclasses_abort($(abortclass)),
+      ifvarclass => "$(trigger_context)",
+      comment    => "Define $(abortclass) since file $(trigger_file) exists in the context of $(trigger_context)"; 
 
   reports:
     verbose::
@@ -101,7 +101,7 @@ bundle agent abortclasses_filebased(runenv, metadata, abortclass, trigger_file, 
       "$(this.bundle):$(const.t)timeout[seconds]: $($(timeout)[seconds])";
 
       "abortclasses: trigger_context: $(trigger_context) not currently defined, will not actually abort",
-        ifvarclass => "$(trigger_context)";
+      ifvarclass => "$(trigger_context)";
 
     verbose.timeout_trigger::
       "abortclasses: timeout trigger mode!!!";
@@ -148,9 +148,9 @@ bundle agent abortclasses_abort(abort_class)
 body file_select abortclasses_not_modified_since(years, months, days, hours, minutes, seconds)
 # This will match the file if the files mtime is older than the supplied time difference to now.
 {
-  mtime       => irange(0,ago("$(years)", "$(months)", "$(days)", "$(hours)", "$(minutes)", "$(seconds)"));
-  #mtime       => irange(ago("$(years)", "$(months)", "$(days)", "$(hours)", "$(minutes)", "$(seconds)"), now);
-  file_result => "mtime";
+      mtime       => irange(0,ago("$(years)", "$(months)", "$(days)", "$(hours)", "$(minutes)", "$(seconds)"));
+      #mtime       => irange(ago("$(years)", "$(months)", "$(days)", "$(hours)", "$(minutes)", "$(seconds)"), now);
+      file_result => "mtime";
 }
 
 #
@@ -158,10 +158,10 @@ body file_select abortclasses_not_modified_since(years, months, days, hours, min
 #
 body classes abortclasses_if_repaired_failed(yes, no)
 {
-promise_repaired => { "$(yes)" };
-repair_failed    => { "$(no)" };
-repair_denied    => { "$(no)" };
-repair_timeout   => { "$(no)" };
+      promise_repaired => { "$(yes)" };
+      repair_failed    => { "$(no)" };
+      repair_denied    => { "$(no)" };
+      repair_timeout   => { "$(no)" };
 }
 
 
@@ -173,9 +173,9 @@ bundle agent abortclasses_timeout_action_noop(file, years, months, days, hours, 
 #
 # Just a noop bundle as a default
 {
-reports:
-  !any::
-    "Never gonna get it";
+  reports:
+    !any::
+      "Never gonna get it";
 }
 
 bundle agent abortclasses_pester_lester(file, years, months, days, hours, minutes, seconds)
@@ -188,10 +188,10 @@ bundle agent abortclasses_pester_lester(file, years, months, days, hours, minute
 # from under them.
 {
   vars:
-    "msg" string => "'Pssssst..... Hey Lester. Pester Pester Pester. Get out of manual mode!!!!!!'";
+      "msg" string => "'Pssssst..... Hey Lester. Pester Pester Pester. Get out of manual mode!!!!!!'";
 
   commands:
-    "/bin/echo"
+      "/bin/echo"
       args => "$(msg) | /usr/bin/wall",
       contain => in_shell,
       comment => "Blast the msg out on WALL in case Lester doesnt see reports";
@@ -210,14 +210,14 @@ bundle agent abortclasses_remove_trigger(file, years, months, days, hours, minut
 {
   files:
       "$(file)"
-        delete => tidy,
-        touch => "true",
-        classes => abortclasses_if_repaired_failed("cleared_trigger_file", "failed_clear_trigger_file");
+      delete => tidy,
+      touch => "true",
+      classes => abortclasses_if_repaired_failed("cleared_trigger_file", "failed_clear_trigger_file");
 
   reports:
     debug::
-    "$(this.bundle): IN abortclasses_remove_trigger";
-    # These probably need to be unique classes
+      "$(this.bundle): IN abortclasses_remove_trigger";
+      # These probably need to be unique classes
     cleared_trigger_file::
       "$(this.bundle): $(file) was removed because it was older than $(years) years, $(months) months, $(days) days, $(hours) hours, $(minutes) minutes, and $(seconds) seconds";
 
