@@ -15,7 +15,7 @@
         "description": "Sketch for installing, configuring, and starting New Relic.",
         "version": 1.00,
         "license": "MIT",
-        "tags": [ "cfdc", "newrelic" ],
+        "tags": [ "cfdc", "newrelic", "enterprise_compatible" ],
         "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {},
                      "cfengine": { "version": "3.5.0" }, "os": [ "debian|ubuntu|centos|redhat" ] }

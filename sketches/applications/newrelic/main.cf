@@ -77,6 +77,10 @@ bundle agent server(runenv, metadata, license_key, ensure, install)
 
 bundle agent prep
 {
+  classes:
+    redhat::
+      "repo_not_installed" not => fileexists("/etc/yum.repos.d/newrelic.repo");
+
   files:
     debian||ubuntu::
       "$(default:eu.path_prefix)/etc/apt/sources.list.d/newrelic.list"
@@ -87,8 +91,8 @@ bundle agent prep
       edit_line => default:insert_lines("deb http://apt.newrelic.com/debian/ newrelic non-free");
 
   commands:
-    not_test.redhat::
-      "$(default:eu.exec_prefix)/usr/bin/rpm -Uvh http://yum.newrelic.com/pub/newrelic/el5/x86_64/newrelic-repo-5-3.noarch.rpm"
+    not_test.redhat.repo_not_installed::
+      "$(default:eu.exec_prefix)$(default:paths.path[rpm]) -Uvh http://yum.newrelic.com/pub/newrelic/el5/x86_64/newrelic-repo-5-3.noarch.rpm";
     not_test.newrelic_apt_update::
       "$(debian_knowledge.call_apt_get) update";
 }
@@ -107,15 +111,14 @@ bundle agent install
       depends_on => { "cfdc_newrelic_addkey_$(activation_id)" },
       package_policy => "add",
       classes => default:if_ok("newrelic_installed"),
-      handle => "cfdc_newrelic_installpackage_$(activation_id)",
+      handle => "cfdc_newrelic_installpackage_apt_$(activation_id)",
       package_method => default:apt;
 
     not_test.redhat::
       "newrelic-sysmond"
-      depends_on => { "cfdc_newrelic_addkey_$(activation_id)" },
       package_policy => "add",
       classes => default:if_ok("newrelic_installed"),
-      handle => "cfdc_newrelic_installpackage_$(activation_id)",
+      handle => "cfdc_newrelic_installpackage_yum_$(activation_id)",
       package_method => default:yum;
 
   reports:
@@ -140,14 +143,14 @@ bundle agent uninstall
       "newrelic-sysmond"
       package_policy => "delete",
       classes => default:if_ok("newrelic_uninstalled"),
-      handle => "cfdc_newrelic_uninstallpackage_$(activation_id)",
+      handle => "cfdc_newrelic_uninstallpackage_apt_$(activation_id)",
       package_method => default:apt;
 
     not_test.redhat::
       "newrelic-sysmond"
       package_policy => "delete",
       classes => default:if_ok("newrelic_uninstalled"),
-      handle => "cfdc_newrelic_uninstallpackage_$(activation_id)",
+      handle => "cfdc_newrelic_uninstallpackage_yum_$(activation_id)",
       package_method => default:yum;
 
   reports:
