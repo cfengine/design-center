@@ -25,7 +25,7 @@ EOHIPPUS
 else
     while [ -n "$1" ]; do
         echo Installing requested package $1
-        /usr/bin/rpm -i $1
+        rpm -i $1
         shift
     done
 fi

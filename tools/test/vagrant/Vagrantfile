@@ -129,7 +129,7 @@ options[:setup] += ours
 puts "Parsed options from the command line + defaults:"
 pp options
 
-if options[:count] > 1 and !options[:bootstrap_ip]
+unless options[:bootstrap_ip]
   options[:bootstrap_ip] = options[:ip]
 end
 
