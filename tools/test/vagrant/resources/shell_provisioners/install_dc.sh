@@ -1,6 +1,7 @@
 #!/bin/bash -x
 
 DC=/var/tmp/dc
+DC_FINAL=/var/cfengine/design-center
 URL=$1
 BRANCH=$2
 
@@ -12,7 +13,6 @@ test -z "$BRANCH" && BRANCH=master
 
 apt-get -qq -y install git curl
 yum -y install git curl
-git clone -q -b $BRANCH $URL $DC
 
 # exit status = test status
-test -d $DC
+git clone -q -b $BRANCH $URL $DC && mv $DC_FINAL $DC_FINAL.cfsaved && mv $DC $DC_FINAL && test -d $DC_FINAL
