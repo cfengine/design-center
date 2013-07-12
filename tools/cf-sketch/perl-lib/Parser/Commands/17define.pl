@@ -111,7 +111,7 @@ sub interactive_config {
             $paramset = sprintf("$base-%03d", $i);
             $i++;
         } while (exists($defs->{$paramset}));
-        my $newname = single_prompt("Please enter a name for the new parameter set (default: $paramset): ");
+        my $newname = Util::single_prompt("Please enter a name for the new parameter set (default: $paramset): ");
         $paramset = $newname || $paramset;
     }
     Util::message("Querying configuration for parameter set '$paramset' for bundle '$bundle'.\n");
@@ -130,17 +130,6 @@ sub interactive_config {
     Util::success("Parameter set $paramset successfully defined.\n");
 }
 
-sub single_prompt {
-    my $msg=shift || "> ";
-    my $def=shift || "";
-    my $input = Term::ReadLine->new("$msg");
-    my @hist = $input->GetHistory() if $input->Features->{getHistory};
-    $input->clear_history if $input->Features->{setHistory};
-    my $str = $input->readline($msg, $def);
-    $input->SetHistory(@hist) if $input->Features->{setHistory};
-    return $str;
-}
-
 sub query_bundle {
     my $api=shift;
     my @bundles=();
@@ -154,32 +143,9 @@ sub query_bundle {
                ")";
         push @bundles, $bundlestr;
     }
-    my $numbundles=scalar(@bundles);
-    Util::message("This sketch has multiple accessible bundles.\n");
-    for my $i (1..$numbundles)
-    {
-        print "    ".YELLOW.$i.RESET.". ".$bundles[$i-1]."\n";
-    }
-    my $which=undef;
-    my $valid=undef;
-    do
-    {
-        $which=single_prompt("Which one do you want to configure? (1-$numbundles, Enter to cancel) ");
-        $valid=undef;
-        if ($which eq "")
-        {
-            return -1;
-        }
-        if ($which>=1 && $which <=$numbundles)
-        {
-            $valid=1;
-        }
-        else
-        {
-            Util::error("Invalid entry. Please retry.\n");
-        }
-    } until ($valid);
-    return $which-1;
+    return Util::choose_one("This sketch has multiple accessible bundles.",
+                            "Which one do you want to configure?",
+                            @bundles);
 }
 
 sub query_and_validate {
@@ -535,192 +501,6 @@ sub validationstr {
     }
 }
 
- sub query_and_validate_old {
-     my $var = shift;
-     my $input = shift;
-     my $prev = shift;
-     my $name = $var->{name};
-     my $type = $var->{type};
-     my $def  = $prev || (DesignCenter::JSON::recurse_print($var->{default}, undef, 1))[0]->{value};
-     my $value;
-     my $valid;
-
-     # List values
-     if ($type =~ m/^LIST\((.+)\)$/)
-     {
-         my $subtype = $1;
-         Util::output(GREEN."\nParameter '$name' must be a list of $subtype.\n".RESET);
-         Util::output("Please enter each value in turn, empty to finish.\n");
-         my $val = [];
-         while (1)
-         {
-             do {
-                 $valid = 0;
-                 my $elem = $input->readline("Please enter next value: ");
-                 if ($elem eq 'STOP')
-                 {
-                     return (undef, 1);
-                 }
-                 elsif ($elem eq '')
-                 {
-                     # Validate the whole thing
-                     $valid = DesignCenter::Sketch::validate($val, $type);
-                     return ($val, 0) if $valid;
-                     Util::error "List validation failed. Resetting, please reenter all the values.\n";
-                     $val = [];
-                 }
-                 else
-                 {
-                     $valid = DesignCenter::Sketch::validate($elem, $subtype);
-                     if ($valid)
-                     {
-                         push @$val, $elem;
-                     }
-                     else
-                     {
-                         Util::warning "Invalid value, please reenter it.\n";
-                     }
-                 }
-             } until ($valid);
-         }
-     }
-     elsif ($type =~ m/^(KV)?ARRAY\(/)
-     {
-         Util::output(GREEN."\nParameter '$name' must be an array.\n".RESET);
-         Util::output("Please enter each key and value in turn, empty key to finish.\n");
-         my $val = {};
-         my @keys = ();
-         if ($def && ref($def) eq 'HASH')
-         {
-             @keys = sort keys %$def;
-         }
-         while (1)
-         {
-             do {
-                 $valid = 0;
-                 my $oldkey = shift @keys;
-                 my $k = $input->readline("Please enter next key".
-                                          ($oldkey ? " [$oldkey]: " : ": "), $oldkey);
-                 if ($k eq 'STOP')
-                 {
-                     return (undef, 1);
-                 }
-                 elsif ($k eq '')
-                 {
-                     # Validate the whole thing
-                     $valid = DesignCenter::Sketch::validate($val, $type);
-                     return ($val, 0) if $valid;
-                     Util::error "Array validation failed. Resetting, please reenter all the values.\n";
-                     $val = {};
-                 }
-                 else
-                 {
-                     my $oldval = $def->{$k};
-                     my $v = $input->readline("Please enter value for $name\[$k\]".
-                                              ($oldval ? " [$oldval]: " : ": "), $oldval);
-                     if ($k eq 'STOP')
-                     {
-                         return (undef, 1);
-                     }
-                     else
-                     {
-                         # No validation happens here. Should probably be fixed.
-                         $val->{$k} = $v;
-                     }
-                 }
-             } until ($valid);
-         }
-     }
-     else
-     {
-         # Scalar values are the easiest
-         Util::output(GREEN."\nParameter '$name' must be a $type.\n".RESET);
-         do {
-             $valid=0;
-             my $stop=0;
-             $value = $input->readline("Please enter $name".
-                                       ($def ? " [$def]: ":": "), $def);
-             if ($value eq 'STOP')
-             {
-                 return (undef, 1);
-             }
-             $valid = DesignCenter::Sketch::validate($value, $type);
-             Util::warning "Invalid value, please reenter it.\n" unless $valid;
-         } until ($valid);
-     }
-     return ($value, undef);
- }
-
-sub command_configure_interactive {
-    my $name = shift;
-    my ($sketch, $num) = split(/#/, $name);
-
-    my $skobj = find_sketch($sketch) || return;
-
-    foreach my $repo (@{DesignCenter::Config->repolist})
-    {
-        my $contents = CFSketch::repo_get_contents($repo);
-        if (exists $contents->{$sketch})
-        {
-            my $data = $contents->{$sketch};
-            my $if = $data->{interface};
-
-            my $entry_point = DesignCenter::Sketch::verify_entry_point($sketch, $data);
-
-            if ($entry_point)
-            {
-                my $varlist = $entry_point->{varlist};
-                my $params = {};
-                if ($num)
-                {
-                    my @activations = @{$skobj->_activations};
-                    my $count = $skobj->num_instances;
-                    if ($num > $count)
-                    {
-                        Util::warning "Configuration instance #$num does not exist.\n";
-                        return;
-                    }
-                    $params = $activations[$num-1];
-                }
-                Parser::_message("Entering interactive configuration for sketch $sketch.\nPlease enter the requested parameters (enter STOP to abort):\n");
-                my $input = Term::ReadLine->new("cf-sketch-interactive");
-                foreach my $var (@$varlist)
-                {
-                    # These are internal parameters, we skip them
-                    if ($var->{name} =~ /^(prefix|class_prefix|canon_prefix)$/)
-                    {
-                        $params->{$var->{name}} = $params->{$var->{name}} || $var->{default};
-                        next;
-                    }
-                    my ($value, $stop) = query_and_validate($var, $input, $params->{$var->{name}});
-                    if ($stop)
-                    {
-                        Util::warning "Interrupting sketch configuration.\n";
-                        return;
-                    }
-                    $params->{$var->{name}} = $value;
-                }
-                # Parameter input complete, let's activate it
-                unless (DesignCenter::Sketch::install_config($sketch, $params, $num?($num-1):undef)) {
-                    Util::error "Error installing the sketch configuration.\n";
-                    return;
-                }
-            }
-            else
-            {
-                Util::error "Can't configure $sketch: missing entry point - it's probably a library-only sketch.";
-                return;
-            }
-        }
-        else
-        {
-            Util::error "I could not find sketch $sketch in the repositories. Is the name correct?\n";
-            return;
-        }
-    }
-
-}
-
 ######################################################################
 
 sub check_env_name
@@ -753,7 +533,7 @@ sub command_define_env
         # Enter interactive mode. Ask for missing information
         unless ($env_name)
         {
-            $env_name = single_prompt("Please enter a name for the new environment: ");
+            $env_name = Util::single_prompt("Please enter a name for the new environment: ");
             unless ($env_name)
             {
                 Util::warning("Empty name entered - cancelling.\n");
@@ -763,15 +543,15 @@ sub command_define_env
         return unless check_env_name($env_name);
 
         Util::message(Util::sprintstr("I will now prompt you for the conditions for activation, test, and verbose mode that will be associated with environment '$env_name'. Please enter them as CFEngine class expressions.\n", undef, 0, undef, undef, undef, 1));
-        $activ_exp = single_prompt("Please enter the activation condition: ");
+        $activ_exp = Util::single_prompt("Please enter the activation condition: ");
         unless ($activ_exp)
         {
             Util::warning("Empty activation condition entered - cancelling.\n");
             return;
         }
-        $test_exp = single_prompt("Please enter the test condition: ", "!any");
+        $test_exp = Util::single_prompt("Please enter the test condition: ", "!any");
         $test_exp ||= "!any";
-        $verbose_exp = single_prompt("Please enter the verbose condition: ", "!any");
+        $verbose_exp = Util::single_prompt("Please enter the verbose condition: ", "!any");
         $verbose_exp ||= "!any";
     }
     my ($success, $result) = main::api_interaction({define_environment => 

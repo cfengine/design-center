@@ -592,4 +592,43 @@ sub canonify
   return $str;
 }
 
+sub single_prompt {
+    my $msg=shift || "> ";
+    my $def=shift || "";
+    my $input = Term::ReadLine->new("$msg");
+    my @hist = $input->GetHistory() if $input->Features->{getHistory};
+    $input->clear_history if $input->Features->{setHistory};
+    my $str = $input->readline($msg, $def);
+    $input->SetHistory(@hist) if $input->Features->{setHistory};
+    return $str;
+}
+
+sub choose_one
+{
+  my $prompt_before = shift || "These are the options:";
+  my $prompt_after = shift || "Which one?";
+  my @choices = @_;
+  Util::message("$prompt_before\n");
+  my $numchoices=scalar(@choices);
+  for my $i (1..$numchoices) {
+    print "    ".YELLOW.$i.RESET.". ".$choices[$i-1]."\n";
+  }
+  my $which=undef;
+  my $valid=undef;
+  do
+    {
+      $which=single_prompt("$prompt_after (1-$numchoices, Enter to cancel) ");
+      $valid=undef;
+      if ($which eq "") {
+        return -1;
+      }
+      if ($which>=1 && $which <=$numchoices) {
+        $valid=1;
+      } else {
+        Util::error("Invalid entry. Please retry.\n");
+      }
+    } until ($valid);
+  return $which-1;
+}
+
 1;
