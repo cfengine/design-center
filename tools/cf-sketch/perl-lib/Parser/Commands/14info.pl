@@ -88,7 +88,7 @@ sub command_info {
                             print "  For bundle ".CYAN.$bundle.RESET."\n";
                             foreach my $p (@{$api->{$bundle}})
                             {
-                                print YELLOW."    ".$p->{name}.RESET.": ".$p->{type}.($p->{validation}? " (validation: $p->{validation})" : "")."\n"
+                                print YELLOW."    ".$p->{name}.RESET.": ".$p->{type}.($p->{description}? " ($p->{description})" : "").($p->{validation}? " (validation: $p->{validation})" : "").($p->{default}? " [default value: ".Dumper($p->{default})."]" : "")."\n"
                                  unless $p->{type} =~ /^(metadata|environment|bundle_options|return)$/;
                                 if ($p->{type} eq 'return')
                                 {
