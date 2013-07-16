@@ -1,28 +1,32 @@
-# Security::password_expiration version 1.00
+# Security::password_expiration version 1.0
 
 License: MIT
-Tags: cfdc
+Tags: security, sketchify_generated, cfdc
 Authors: Diego Zamboni <diego.zamboni@cfengine.com>
 
 ## Description
-Manage password expiration and age limits
+Manage password expiration and warning periods
 
 ## Dependencies
-CFEngine::stdlib
+none
 
 ## API
 ### bundle: password_expiration
-* parameter _string_ *pass_max_days* (default: none, description: Maximum password age, in days)
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* parameter _string_ *pass_min_days* (default: `"5"`, description: Minimum days between password changes)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* parameter _string_ *pass_warn_age* (default: `"2"`, description: Warning period (in days) before the password expires)
+* parameter _string_ *pass_max_days* (default: `"180"`, description: Maximum password age in days)
 
-* parameter _string_ *min_uid* (default: `"500"`, description: Minimum UID to consider when making changes to existing users)
+* parameter _string_ *pass_min_days* (default: `"5"`, description: Minimum password age in days)
 
-* parameter _string_ *skipped_users* (default: `""`, description: Comma-separated list of users to skip)
+* parameter _string_ *pass_warn_age* (default: `"2"`, description: Warning period before password expires, in days)
 
-* parameter _string_ *skipped_uids* (default: `""`, description: Comma-separated list of UIDs to skip)
+* parameter _string_ *min_uid* (default: `"500"`, description: Minimum UID to consider when updating existing accounts)
+
+* parameter _string_ *skipped_users* (default: none, description: Comma-separated list of usernames to skip when updating existing accounts)
+
+* parameter _string_ *skipped_uids* (default: none, description: Comma-separated list of UIDs to skip when updating existing accounts)
 
 
 ## SAMPLE USAGE

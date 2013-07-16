@@ -1,47 +1,79 @@
 {
-    manifest:
-    {
-        "main.cf": { desc: "main file" },
-        "README.md": { documentation: true },
-    },
-
-    metadata:
-    {
-        name: "Security::password_expiration",
-	    description: "Manage password expiration and age limits",
-        version: "1.00",
-        license: "MIT",
-        tags: [ "cfdc" ],
-        authors: [ "Diego Zamboni <diego.zamboni@cfengine.com>" ],
-        depends: { "CFEngine::stdlib": { version: 105 }, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
-    },
-
-    api:
-    {
-        // this is the name of the bundle!
-        password_expiration:
-        [
-            { name: "pass_max_days", type: "string",
-              description: "Maximum password age, in days" },
-            { name: "pass_min_days", type: "string",
-              description: "Minimum days between password changes",
-              default: "5" },
-            { name: "pass_warn_age", type: "string",
-              description: "Warning period (in days) before the password expires",
-              default: "2" },
-            { name: "min_uid", type: "string",
-              description: "Minimum UID to consider when making changes to existing users",
-              default: "500" },
-            { name: "skipped_users", type: "string",
-              description: "Comma-separated list of users to skip",
-              default: "" },
-            { name: "skipped_uids", type: "string",
-              description: "Comma-separated list of UIDs to skip",
-              default: "" }
-        ],
-    },
-
-    namespace: "cfdc_password_expiration",
-    
-    interface: [ "main.cf" ],
+   "api" : {
+      "password_expiration" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "default" : "180",
+            "description" : "Maximum password age in days",
+            "name" : "pass_max_days",
+            "type" : "string"
+         },
+         {
+            "default" : "5",
+            "description" : "Minimum password age in days",
+            "name" : "pass_min_days",
+            "type" : "string"
+         },
+         {
+            "default" : "2",
+            "description" : "Warning period before password expires, in days",
+            "name" : "pass_warn_age",
+            "type" : "string"
+         },
+         {
+            "default" : "500",
+            "description" : "Minimum UID to consider when updating existing accounts",
+            "name" : "min_uid",
+            "type" : "string"
+         },
+         {
+            "description" : "Comma-separated list of usernames to skip when updating existing accounts",
+            "name" : "skipped_users",
+            "type" : "string"
+         },
+         {
+            "description" : "Comma-separated list of UIDs to skip when updating existing accounts",
+            "name" : "skipped_uids",
+            "type" : "string"
+         }
+      ]
+   },
+   "interface" : [
+      "password_expiration.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "password_expiration.cf" : {
+         "desc" : "main file"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Diego Zamboni <diego.zamboni@cfengine.com>"
+      ],
+      "depends" : {
+         "cfengine" : {
+            "version" : "3.5.0"
+         }
+      },
+      "description" : "Manage password expiration and warning periods",
+      "license" : "MIT",
+      "name" : "Security::password_expiration",
+      "tags" : [
+         "security",
+         "sketchify_generated",
+         "cfdc"
+      ],
+      "version" : "1.0"
+   },
+   "namespace" : "cfdc_security_password_expiration"
 }
