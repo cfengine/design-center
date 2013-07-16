@@ -12,7 +12,7 @@ use File::Copy;
    'sketchify' =>
    [[
      'sketchify FILE.cf',
-     'Interactively generate a sketch from FILE.cf. All the necessary information is prompted from the user.',
+     'Interactively generate a sketch from FILE.cf. You will be prompted for all the necessary information.',
      '(\S+)(?:\s+(\S+)(?:\s+(\S+)(?:\s+(\S+))?)?)?'
     ]]
   );
