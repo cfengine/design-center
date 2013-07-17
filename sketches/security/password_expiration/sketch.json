@@ -64,7 +64,7 @@
          "cfengine" : {
             "version" : "3.5.0"
          },
-         "CFEngine::stdlib" : {},
+         "CFEngine::stdlib" : { "version": 111 },
       },
       "description" : "Manage password expiration and warning periods",
       "license" : "MIT",
