@@ -161,6 +161,9 @@ sub command_sketchify
 
     Util::message("I will now prompt you for the data needed to generate the sketch.\nPlease enter STOP at any prompt to interrumpt the process.\n\n");
 
+    # Get current CFEngine::stdlib version
+    my $stdlib = main::get_sketch("CFEngine::stdlib");
+    my $stdlib_version = $stdlib ? { "version" => $stdlib->{'CFEngine::stdlib'}->{metadata}->{version} } : {};
     # Empty sketch.json skeleton
     my $new_sketch = {
                       manifest =>
@@ -170,7 +173,8 @@ sub command_sketchify
                       },
                       metadata =>
                       { depends =>
-                        { cfengine => { version => "3.5.0" }
+                        { cfengine => { version => "3.5.0" },
+                          "CFEngine::stdlib" => $stdlib_version,
                         }
                       },
                       api => { $bundle => [] },
