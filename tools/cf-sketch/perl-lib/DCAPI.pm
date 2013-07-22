@@ -1479,6 +1479,83 @@ sub deactivate
     return $result;
 }
 
+sub regenerate_index
+{
+    my $self = shift;
+    my $request = shift; # the repodir
+
+    my $result = DCAPI::Result->new(api => $self,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+
+    foreach my $repodir (@{$self->recognized_sources()})
+    {
+        next if ref $request ne ''; # must be a scalar
+        next if $request ne $repodir; # must be the specific repo
+
+        if (Util::is_resource_local($repodir))
+        {
+            $self->log3("Regenerating index: searching for sketches in %s",
+                        $repodir);
+            my @todo;
+            $repodir = glob($repodir);
+            require File::Find;
+            File::Find::find(sub
+                 {
+                     push @todo, $File::Find::name if $_ eq 'sketch.json';
+                 }, $repodir);
+
+            # remove the cfsketches.json if it's there
+            $repodir = dirname($repodir) if $repodir =~ m/cfsketches.json$/;
+            my $index_file = "$repodir/cfsketches.json";
+
+            if (open my $index, '>', $index_file)
+            {
+                my $encoder = JSON::PP->new()->utf8()->canonical();
+                foreach my $f (@todo)
+                {
+                    eval
+                    {
+                        my $d = dirname($f);
+                        $d =~ s,^$repodir/,,;
+                        $d =~ s,^\./,,;
+                        $self->log3("Regenerating index: on sketch dir $d");
+                        my $j = regenerate_cfsketches_read_file($f);
+                        my $out = JSON::PP->new()->allow_barekey()->relaxed()->utf8()->allow_nonref()->decode($j);
+                        $out->{api} = {} unless exists $out->{api};
+
+                        # note we encode BEFORE writing a line
+                        my $out_string = sprintf("%s\t%s\n",
+                                                 $d, $encoder->encode($out));
+                        print $index $out_string;
+                    };
+
+                    if ($@)
+                    {
+                        $result->add_error($f, $@);
+                    }
+                }
+            }
+            else
+            {
+                $self->log("Regenerating index: could not save $index_file");
+                $result->add_error($index_file, $!);
+            }
+        }
+    }
+
+    return $result;
+}
+
+sub regenerate_cfsketches_read_file
+{
+    my $f = shift;
+    open my $fh, '<', $f or warn "Couldn't open $f: $!";
+    return join('', <$fh>);
+}
+
 sub run_cf
 {
     my $self = shift @_;

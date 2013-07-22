@@ -1301,6 +1301,38 @@ parameter definitions, and data validations.
 The command does not allow the user to change the runfile type (standalone or
 not) or location, as that is a possible security risk.
 
+#### `regenerate_index`
+
+The `regenerate_index` command takes a directory parameter (string) and writes
+the `cfsketches.json` index from all the sketches found in a given directory.
+The directory must be local and listed in the API configuration's
+`recognized_sources`.  The command returns an error if the index could not be
+written or if an error happened while loading any sketch.json files.
+
+```json
+{ dc_api_version: "0.0.1", request: {regenerate_index: "~/source/cfengine/design-center/sketches" } }
+```
+
+```
+DCAPI::log3(DCAPI.pm:1500): Regenerating index: searching for sketches in ~/source/cfengine/design-center/sketches
+DCAPI::log3(DCAPI.pm:1523): Regenerating index: on sketch dir applications/memcached
+...
+DCAPI::log3(DCAPI.pm:1523): Regenerating index: on sketch dir web_servers/apache
+```
+
+```json
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {},
+        "log": [],
+        "tags": {}
+    }
+```
+
 #### `test`
 
 The `test` command tests *installed* sketches.  It always returns true if the
