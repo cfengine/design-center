@@ -25,7 +25,7 @@
         // the key is the name of the bundle!
         installed:
         [
-            { type: "bundle_options", single_use: true },
+            { type: "bundle_options", name: "", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
             { type: "list", name: "pkgs_add", description: "Packages that should be installed", validation: "LIST_OF_PACKAGE_NAME", example: "apache2, zsh" }
