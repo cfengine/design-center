@@ -78,8 +78,6 @@ CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
 
 do:
-	echo '{ dc_api_version: "0.0.1", request: {define: { "memcached_11111": { "Applications::Memcached": [] } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "first", force: true } ] } }' | $(CFAPI)
 
 api_test:
 	echo '{ dc_api_version: "0.0.1", request: {deactivate: true } }' | $(CFAPI)
@@ -428,6 +426,9 @@ api_cleanup:
 	@echo ...valid request to uninstall CFEngine::stdlib
 	echo '{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "$(API_SKETCHDIR)" } ] } }' | $(CFAPI)
 
+api_regenerate_index:
+	echo '{ dc_api_version: "0.0.1", request: {regenerate_index: "~/source/cfengine/design-center/sketches" } }' | $(CFAPI)
+
 run:
 	$(RUNNER)
 
@@ -442,6 +443,9 @@ search:
 
 regenerate_readme:
 	$(CFSKETCH) --make_readme
+
+regenerate_cfsketches:
+	$(CFSKETCH) --make_cfsketches
 
 test:
 	$(CFSKETCH) --install $(SKETCH) --apitest $(SKETCH) --noignore -v
