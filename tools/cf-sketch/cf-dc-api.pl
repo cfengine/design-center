@@ -101,6 +101,7 @@ my $decompose = Util::hashref_search($request, qw/decompose/);
 my $compositions = Util::hashref_search($request, qw/compositions/);
 
 my $regenerate = Util::hashref_search($request, qw/regenerate/);
+my $regenerate_index = Util::hashref_search($request, qw/regenerate_index/);
 
 if ($debug)
 {
@@ -225,6 +226,10 @@ elsif (defined $validate)
 elsif (defined $regenerate)
 {
     $result = $api->regenerate($regenerate);
+}
+elsif ($regenerate_index) # must be true
+{
+    $result = $api->regenerate_index($regenerate_index);
 }
 else
 {

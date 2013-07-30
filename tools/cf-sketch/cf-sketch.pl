@@ -106,6 +106,7 @@ GetOptions(\%options,
            "list:s",
            "search:s",
            "make_readme:s",
+           "make_cfsketches:s",
            "filter=s@",
            "install|i=s@",
            "apitest=s@",
@@ -162,6 +163,13 @@ if (exists $options{'make_readme'})
                      search => $options{search} eq '' ? '.' : $options{search}
                     },
                     make_list_printer('search', 'README.md'));
+}
+
+if (exists $options{'make_cfsketches'})
+{
+    api_interaction({
+                     regenerate_index => $options{sourcedir},
+                    });
 }
 
 if (exists $options{'search'})
