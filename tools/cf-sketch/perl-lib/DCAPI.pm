@@ -1760,9 +1760,9 @@ sub cencode_pretty { shift; CAN_CODER->pretty->encode(@_) };
 
 sub dump_encode { shift; use Data::Dumper; return Dumper([@_]); }
 
-sub curl_GET { shift->curl('GET', @_) };
+sub curl_GET { shift->curl_call('', @_) };
 
-sub curl
+sub curl_call
 {
     my $self = shift @_;
     my $mode = shift @_;
