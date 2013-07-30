@@ -80,7 +80,7 @@ my %options = (
                runfile => "$inputs_root/cf-sketch-runfile.cf",
                vardata => undef,
                standalonerunfile => "$inputs_root/cf-sketch-runfile-standalone.cf",
-               installsource => Util::local_cfsketches_source(File::Spec->curdir()) || undef,
+               installsource => Util::local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches.json',
                constdata => $constdata,
                # These are hardcoded above, we put them here for convenience
                version => $VERSION,
@@ -125,15 +125,34 @@ GetOptions(\%options,
 #die "$0: cf-sketch can only be used in --expert mode" unless $options{expert};
 
 die "$0: --installsource FILE must be specified" unless $options{installsource};
-die "$0: $options{installsource} is not a file" unless (-f "$options{installsource}");
-
-$options{repolist} = [ "$inputs_root/sketches" ] unless scalar @{$options{repolist}};
-$options{verbose} = 1 if $options{veryverbose};
 
 my $sourcedir = dirname($options{installsource});
 $options{sourcedir} = $sourcedir;
 
-die "Sorry, can't locate source directory" unless -d $sourcedir;
+if (Util::is_resource_local($options{installsource}))
+{
+    die "$0: $options{installsource} is not a file" unless (-f "$options{installsource}");
+    die "Sorry, can't locate source directory" unless -d $sourcedir;
+}
+else
+{
+    my $remote = Util::get_remote($options{installsource});
+    die "Could not retrieve remote URL $options{installsource}, aborting"
+        unless $remote;
+
+    warn <<EOHIPPUS;
+
+You are using a remote sketch repository ($options{installsource}),
+which may be slow.  If you run cf-sketch with the --installsource option
+pointing to cfsketches.json, or run it in your Design Center checkout directory,
+or give the DC API a config.json with a 'recognized_source' parameter, it will
+find your local Design Center checkout more easily and avoid network queries
+
+EOHIPPUS
+}
+
+$options{repolist} = [ "$inputs_root/sketches" ] unless scalar @{$options{repolist}};
+$options{verbose} = 1 if $options{veryverbose};
 
 $options{test} = 1 if ($options{test} eq '');
 my $env_test = $options{test};
