@@ -17,7 +17,7 @@ has desc         => ( is => 'ro', required => 1 );
 has describe     => ( is => 'rw' );
 has location     => ( is => 'ro', required => 1 );
 has rel_location => ( is => 'ro', required => 1 );
-has verify_files => ( is => 'ro', required => 1 );
+has verify_files => ( is => 'ro');
 
 # sketch-specific properties
 has api         => ( is => 'rw' );
