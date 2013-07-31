@@ -1780,7 +1780,6 @@ EOHIPPUS
 
     return ([<$c>], undef);
 }
-;
 
 sub load_raw
 {

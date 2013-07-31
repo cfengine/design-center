@@ -193,7 +193,16 @@ sub install
             $result->add_error('installation', "created $abs_location but it's not writeable.  fix your umask.");
         }
 
-        File::Copy::copy($source, $dest);
+        if (Util::is_resource_local($source))
+        {
+            File::Copy::copy($source, $dest);
+        }
+        else
+        {
+            # Requires curl
+            $self->api()->curl_call("-o '$dest'", $source);
+        }
+
         if (-f $dest)
         {
             $result->add_data_key('installation', ["install", $sketch->name(), $file], $dest);
