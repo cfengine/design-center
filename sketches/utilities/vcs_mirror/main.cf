@@ -136,6 +136,8 @@ bundle agent git(vcs, path, origin, branch, options)
       {
         # Fetch repo contents
         "$(vcs) fetch -t origin +refs/heads/*:refs/remotes/origin/*",
+        # Stash changes if possible
+        "$(vcs) stash --include-untracked -q",
         # Remove untracked files
         "$(vcs) clean -f -f -x -q -d .",
         # Discard changes to index and working tree since HEAD
