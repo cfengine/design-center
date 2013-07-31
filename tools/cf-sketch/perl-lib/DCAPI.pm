@@ -1514,7 +1514,7 @@ sub regenerate_index
             if (open my $index, '>', $index_file)
             {
                 my $encoder = JSON::PP->new()->utf8()->canonical();
-                foreach my $f (@todo)
+                foreach my $f (sort @todo)
                 {
                     eval
                     {
