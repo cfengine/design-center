@@ -556,8 +556,9 @@ aws_sdb:
 	$(CFSKETCH_DA) --install Cloud::Services::AWS::SDB --activate Cloud::Services::AWS::SDB=$(SOURCEDIR)/cloud/aws_sdb/params/demo.json
 	$(RUNNER)
 
-vcli:
-	@echo NOT IMPLEMENTED
+vmware:
+	$(CFSKETCH_DA) --install Cloud::Services::VMWare --activate Cloud::Services::VMWare=$(SOURCEDIR)/cloud/vmware/params/demo.json
+	$(RUNNER)
 
 openstack:
 	$(CFSKETCH_DA) --install Cloud::Services::OpenStack --activate Cloud::Services::OpenStack=$(SOURCEDIR)/cloud/openstack/params/demo.json

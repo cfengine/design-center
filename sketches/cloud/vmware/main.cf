@@ -1,0 +1,65 @@
+body file control
+{
+      namespace => "cfdc_cloud_vmware";
+}
+
+bundle agent ensure(runenv, metadata,
+      count, class, install_cfengine, hub,
+      start_command, stop_command, count_command,
+      options)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "home" string => dirname($(this.promise_filename));
+
+      "extra_options" string => ifelse("test", "--test", "");
+
+      "shim" string => "$(home)/scripts/cf3vmware --start_command=$(start_command) --stop_command=$(stop_command) --count_command=$(count_command) --hub=$(hub) --install_cfengine=$(install_cfengine) $(extra_options)";
+
+  methods:
+      "utils" usebundle => default:eu($(runenv)), handle => "eu_utils";
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  commands:
+      "$(shim) control $(count) $(class)"
+      module => "true",
+      classes => cfdc_dclib_350:scoped_generic("bundle", "cf3vmware");
+
+  reports:
+    cf3vmware_ok::
+      "$(cf3vmware.current_count)" bundle_return_value_index => "instance_count";
+
+    cf3vmware_not_ok::
+      "" bundle_return_value_index => "instance_count";
+
+    verbose.cf3vmware_further_convergence_needed::
+      "$(this.bundle): Further convergence will be needed: current count $(cf3vmware.current_count) didn't reach desired count $(count)";
+    verbose.cf3vmware_decom_needed::
+      "$(this.bundle): Decom was needed: previous count $(cf3vmware.previous_count) was over desired count $(count)";
+    verbose.cf3vmware_boostrap_needed::
+      "$(this.bundle): Bootstrap was needed: previous count $(cf3vmware.previous_count) was under desired count $(count)";
+
+    verbose.cf3vmware_decom_done::
+      "$(this.bundle): Decom was done";
+    verbose.cf3vmware_boostrap_done::
+      "$(this.bundle): Bootstrap was done";
+
+    cfengine::
+      "$(this.bundle): VCLI goal: $(count) $(class).";
+
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+      "$(this.bundle): shim is $(shim)";
+}

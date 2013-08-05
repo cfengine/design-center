@@ -1,0 +1,84 @@
+#!/usr/bin/perl -w
+
+use strict;
+use warnings;
+use Getopt::Long;
+
+my %options = (
+              );
+
+Getopt::Long::Configure("bundling", "require_order");
+
+GetOptions(\%options,
+           "start_command=s",
+           "stop_command=s",
+           "count_command=s",
+           "hub=s",
+           "install_cfengine=i",
+           "test!",
+          );
+
+my ($mode, $count, $class) = @ARGV;
+
+die "Syntax: $0 --start_command=SC --stop_command=ST --count_command=CC --hub=H --install_cfengine=[1|0] [--test] control COUNT CLASS"
+ unless ($mode eq 'control' && $count !~ m/\D/ && $class &&
+         $options{stop_command} &&
+         $options{start_command} &&
+         $options{count_command} &&
+         exists $options{install_cfengine} &&
+         $options{hub}
+        );
+
+my $old = -1;
+my $current = -1;
+
+if ($options{test})
+{
+ $old = 0;
+ $current = 1;
+}
+else
+{
+ $old = qx/$options{count_command} $class/;
+ if ($old !~ m/\D/)
+ {
+  $old = 0;
+  warn "The prior count of $class instances could not be obtained from '$options{count_command} $class'";
+ }
+
+ if ($old > $count)
+ {
+  my @args = ($old, $count, $class);
+  system($options{stop_command}, @args)
+   and warn "Could not run '$options{stop_command} @args'";
+ }
+ else
+ {
+  my @args = ($old, $count, $class, $options{hub}, $options{install_cfengine});
+  system($options{start_command}, @args)
+   and warn "Could not run '$options{start_command} @args'";
+ }
+
+ $current = qx/$options{count_command} $class/;
+ if (!defined $current || $current !~ m/\D/)
+ {
+  $current = 0;
+  warn "The current count of $class instances could not be obtained from '$options{count_command} $class'";
+ }
+
+}
+
+print "=previous_count=$old\n";
+print "=requested_count=$count\n";
+print "=current_count=$current\n";
+
+print "+cf3vmware_further_convergence_needed\n" if $count != $current;
+
+print "+cf3vmware_decom_needed\n" if $old > $count;
+print "+cf3vmware_boostrap_needed\n" if $count > $old;
+
+print "+cf3vmware_decom_done\n" if $old > $current;
+print "+cf3vmware_boostrap_done\n" if $current > $old;
+
+printf "=decom_count=%d\n", $old - $current;
+printf "=bootstrap_count=%d\n", $current - $old;
