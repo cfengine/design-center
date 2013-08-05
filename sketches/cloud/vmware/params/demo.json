@@ -1,0 +1,21 @@
+[
+    {
+        // ensure 1 cfworkers
+        "Cloud::Services::VMWare":
+        {
+            count: 1,
+            class: "cfworker",
+            install_cfengine: true,
+            hub: "$(sys.ipv4)",
+            // parameters: PRIOR_COUNT COUNT CLASS HUB INSTALL_CFENGINE
+            start_command: "/root/start_vm.sh",
+            // parameters: PRIOR_COUNT COUNT CLASS
+            stop_command: "/root/stop_vm.sh",
+            // parameters: CLASS
+            count_command: "/root/count_vm.sh",
+            options:
+            {
+            },
+        }
+    },
+]

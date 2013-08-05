@@ -1,0 +1,41 @@
+{
+    manifest:
+    {
+        "main.cf": { desc: "main file" },
+        "README.md": { documentation: true },
+        "scripts/cf3vmware": { perm: 755, comment: "VMWare shim" },
+        "params/demo.json": { comment: "simple demo of VMWare integration through the vSphere Perl SDK" },
+    },
+
+    metadata:
+    {
+        name: "Cloud::Services::VMWare",
+	description: "Manage VMWare services through the vSphere Perl SDK",
+        version: 1.0,
+        license: "MIT",
+        tags: [ "cfdc", "cloud", "vmware", "vcli" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::stdlib": { version: 110 },  "CFEngine::dclib::3.5.0": {}, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
+    },
+    
+    api:
+    {
+        ensure:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "count", },
+            { type: "string", name: "class", description: "Logical class to assign to machines" },
+            { type: "boolean", name: "install_cfengine", },
+            { type: "string", name: "hub", description: "Hub from which the instances should bootstrap" },
+            { type: "string", name: "start_command", description: "Command to start some VMs.  Parameters: COUNT CLASS HUB INSTALL_CFENGINE" },
+            { type: "string", name: "stop_command", description: "Command to stop some VMs.  Parameters: COUNT CLASS" },
+            { type: "string", name: "count_command", description: "Command to count VMs.  Parameters: CLASS" },
+            { type: "array", name: "options", description: "Options" },
+            { type: "return", name: "instance_count", },
+        ],
+    },
+
+    namespace: "cfdc_cloud_vmware",
+    interface: [ "main.cf" ]
+}
