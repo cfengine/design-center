@@ -54,13 +54,13 @@ ifeq ($(VV),1)
 endif
 
 ifeq ($(V),1)
-  EXTRA:=--verbose
+  EXTRA:=--verbose=any
 endif
 
 ifneq ($(T),)
   EXTRA:= $(EXTRA) --test=$(T)
 else
-  EXTRA:= $(EXTRA) --test
+  EXTRA:= $(EXTRA) --test=any
 endif
 
 ifneq ($(A),)
