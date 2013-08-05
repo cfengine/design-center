@@ -1,4 +1,4 @@
-# Webserver::Install version 1
+# Apache::Simple version 1
 
 License: MIT
 Tags: cfdc, webserver, apache
@@ -24,7 +24,7 @@ CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 * parameter _string_ *docroot* (default: none, description: Document root for the main site.)
 
-* parameter _array_ *options* (default: `{"ssl":true}`, description: Apache options.)
+* parameter _array_ *options* (default: `{"ssl":true}`, description: Apache options.  Provide ssl=1 if you want SSL enabled.)
 
 * returns _return_ *installed* (default: none, description: none)
 

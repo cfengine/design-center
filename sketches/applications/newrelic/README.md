@@ -1,7 +1,7 @@
 # Applications::NewRelic version 1
 
 License: MIT
-Tags: cfdc, newrelic
+Tags: cfdc, newrelic, enterprise_compatible
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
@@ -18,11 +18,15 @@ CFEngine::dclib, CFEngine::stdlib
 
 * parameter _string_ *license_key* (default: `"not valid"`, description: none)
 
+* parameter _boolean_ *ensure* (default: `true`, description: Ensure service is running.  Set to false to stop service.)
+
+* parameter _boolean_ *install* (default: `true`, description: Install packages.  Set to false to remove them.)
+
 * returns _return_ *installed* (default: none, description: none)
 
 * returns _return_ *configured* (default: none, description: none)
 
-* returns _return_ *restarted* (default: none, description: none)
+* returns _return_ *running* (default: none, description: none)
 
 
 ## SAMPLE USAGE

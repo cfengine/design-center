@@ -12,6 +12,8 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## API
 ### bundle: removed
+* bundle option: name = 
+
 * bundle option: single_use = true
 
 * parameter _environment_ *runenv* (default: none, description: none)
