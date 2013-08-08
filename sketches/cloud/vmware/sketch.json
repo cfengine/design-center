@@ -26,9 +26,9 @@
         [
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "mymetadata", },
-            { type: "string", name: "count", },
-            { type: "string", name: "class", description: "Logical class to assign to machines" },
-            { type: "boolean", name: "install_cfengine", },
+            { type: "string", name: "count", description: "Number of VMs you want to ensure are running."},
+            { type: "string", name: "class", description: "Logical class to assign to the created virtual machines" },
+            { type: "boolean", name: "install_cfengine", description: "Whether CFEngine should be installed on the new VMs"},
             { type: "string", name: "hub", description: "Hub from which the instances should bootstrap" },
             { type: "string", name: "start_command", description: "Command to start some VMs.  Parameters: COUNT CLASS HUB INSTALL_CFENGINE" },
             { type: "string", name: "stop_command", description: "Command to stop some VMs.  Parameters: COUNT CLASS" },
