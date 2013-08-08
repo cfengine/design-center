@@ -1,14 +1,14 @@
-# Cloud::Services::OpenStack version 1
+# Cloud::Services::VMWare version 1
 
 License: MIT
-Tags: cfdc, cloud, openstack
+Tags: cfdc, cloud, vmware, vcli
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
-Manage OpenStack services
+Manage VMWare services through the vSphere Perl SDK
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib, Cloud::Services::Common
+CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 ## API
 ### bundle: ensure
@@ -24,7 +24,13 @@ CFEngine::dclib, CFEngine::stdlib, Cloud::Services::Common
 
 * parameter _string_ *hub* (default: none, description: Hub from which the instances should bootstrap)
 
-* parameter _array_ *options* (default: none, description: Options: security_group, netrc, ssh_pub_key.)
+* parameter _string_ *start_command* (default: none, description: Command to start some VMs.  Parameters: COUNT CLASS HUB INSTALL_CFENGINE)
+
+* parameter _string_ *stop_command* (default: none, description: Command to stop some VMs.  Parameters: COUNT CLASS)
+
+* parameter _string_ *count_command* (default: none, description: Command to count VMs.  Parameters: CLASS)
+
+* parameter _array_ *options* (default: none, description: Options)
 
 * returns _return_ *instance_count* (default: none, description: none)
 

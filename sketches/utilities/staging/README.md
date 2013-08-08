@@ -1,22 +1,38 @@
-# Data::Stitch version 1
+# Utilities::Staging version 1
 
 License: MIT
-Tags: cfdc, data, stitch, template
+Tags: cfdc, stage, directory, rsync
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
-Build file from class-controlled pieces in format 'context::line_to_insert'.  Limitation: the pieces concatenated must not exceed MAXVARSIZE.
+Stage a directory of content to a target directory.
 
 ## Dependencies
 CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 ## API
-### bundle: cfdc_stitch
-* parameter _string_ *filename* (default: none, description: File to edit (overwriting).)
+### bundle: stage
+* parameter _environment_ *runenv* (default: none, description: none)
 
-* parameter _array_ *pieces* (default: none, description: key-value array of pieces in format CONTEXT::PIECE.  Keys should sort() sequentially.  Best use numbers like 000, 001, etc. for the keys or simply pass a JSON list.)
+* parameter _metadata_ *metadata* (default: none, description: none)
 
-* returns _return_ *built* (default: none, description: none)
+* parameter _string_ *source_dir* (default: none, description: Directory where the content can be found.)
+
+* parameter _string_ *dest_dir* (default: none, description: Directory where the content will be installed.)
+
+* parameter _string_ *owner* (default: none, description: Owner of the dest_dir after staging.)
+
+* parameter _string_ *group* (default: none, description: Owner of the dest_dir after staging.)
+
+* parameter _string_ *dirmode* (default: none, description: Directory mode to install.)
+
+* parameter _string_ *filemode* (default: none, description: File mode to install.)
+
+* parameter _array_ *options* (default: `{"precommand":"/bin/echo precommand","postcommand":"/bin/echo postcommand","excluded":[".cvs",".svn",".subversion",".git",".bzr"]}`, description: Staging options.)
+
+* returns _return_ *staged* (default: none, description: none)
+
+* returns _return_ *directory* (default: none, description: none)
 
 
 ## SAMPLE USAGE

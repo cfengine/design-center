@@ -12,6 +12,8 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## API
 ### bundle: installed
+* bundle option: name = 
+
 * bundle option: single_use = true
 
 * parameter _environment_ *runenv* (default: none, description: none)
@@ -19,8 +21,6 @@ CFEngine::dclib, CFEngine::stdlib
 * parameter _metadata_ *metadata* (default: none, description: none)
 
 * parameter _list_ *pkgs_add* (default: none, description: Packages that should be installed)
-
-* parameter _list_ *pkgs_delete* (default: none, description: Packages that should not be installed)
 
 
 ## SAMPLE USAGE

@@ -1,7 +1,7 @@
 # System::set_hostname version 1.05.2
 
 License: MIT
-Tags: cfdc, enterprise_compatible
+Tags: cfdc
 Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
@@ -12,6 +12,8 @@ CFEngine::dclib, CFEngine::stdlib
 
 ## API
 ### bundle: set
+* bundle option: name = 
+
 * bundle option: single_use = true
 
 * parameter _environment_ *runenv* (default: none, description: none)
