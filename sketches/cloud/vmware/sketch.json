@@ -10,10 +10,10 @@
     metadata:
     {
         name: "Cloud::Services::VMWare",
-	description: "Manage VMWare services through the vSphere Perl SDK",
+	    description: "Manage VMWare services through the vSphere Perl SDK and other external tools.",
         version: 1.0,
         license: "MIT",
-        tags: [ "cfdc", "cloud", "vmware", "vcli" ],
+        tags: [ "cfdc", "cloud", "vmware", "vcli", "enterprise_compatible" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
         depends: { "CFEngine::stdlib": { version: 110 },  "CFEngine::dclib::3.5.0": {}, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
     },

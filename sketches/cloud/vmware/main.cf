@@ -16,6 +16,8 @@ bundle agent ensure(runenv, metadata,
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
       "home" string => dirname($(this.promise_filename));
 
       "extra_options" string => ifelse("test", "--test", "");
@@ -32,6 +34,7 @@ bundle agent ensure(runenv, metadata,
   commands:
       "$(shim) control $(count) $(class)"
       module => "true",
+      handle => "$(activation_id)_cloud_vmware_control",
       classes => cfdc_dclib_350:scoped_generic("bundle", "cf3vmware");
 
   reports:
