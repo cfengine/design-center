@@ -18,7 +18,7 @@
         "tags": [ "cfdc", "newrelic", "enterprise_compatible" ],
         "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {},
-                     "cfengine": { "version": "3.5.0" }, "os": [ "debian|ubuntu|centos|redhat" ] }
+                     "cfengine": { "version": "3.5.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
     },
 
 	"api" : {
