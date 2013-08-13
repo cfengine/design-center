@@ -12,7 +12,7 @@
     "metadata":
     {
         "name": "Applications::NewRelic",
-        "description": "Sketch for installing, configuring, and starting New Relic.",
+        "description": "Sketch for installing, configuring, and starting New Relic monitoring plugins (only server monitoring supported at the moment).",
         "version": 1.00,
         "license": "MIT",
         "tags": [ "cfdc", "newrelic", "enterprise_compatible" ],
@@ -26,7 +26,7 @@
             { name : "runenv", type : "environment" },
 			{ name : "metadata", type : "metadata" },
 			{ name : "license_key", type : "string", description: "New Relic license key", default : "not valid" },
-			{ name : "ensure", type : "boolean", default : true, description: "Ensure service is running.  Set to false to stop service." },
+			{ name : "ensure", type : "boolean", default : true, description: "Ensure server monitoring service is running.  Set to false to stop service." },
 			{ name : "install", type : "boolean", default : true, description: "Install packages.  Set to false to remove them." },
             { type: "return", name: "installed", },
             { type: "return", name: "configured", },
