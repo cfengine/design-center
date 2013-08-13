@@ -87,7 +87,7 @@ bundle agent prep
       create => "true",
       edit_defaults => default:no_backup,
       classes => default:if_repaired("newrelic_apt_update"),
-      handle => "cfdc_newrelic_prep_aptsources_$(activation_id)",
+      handle => "$(server.activation_id)_cfdc_newrelic_prep_aptsources",
       edit_line => default:insert_lines("deb http://apt.newrelic.com/debian/ newrelic non-free");
 
   commands:
@@ -103,22 +103,22 @@ bundle agent install
     debian||ubuntu::
       "$(default:eu.exec_prefix)/usr/bin/apt-key adv --keyserver hkp://subkeys.pgp.net --recv-keys 548C16BF"
       contain => default:in_shell,
-      handle => "cfdc_newrelic_addkey_$(activation_id)";
+      handle => "$(server.activation_id)_cfdc_newrelic_addkey";
 
   packages:
     not_test.(debian||ubuntu)::
       "newrelic-sysmond"
-      depends_on => { "cfdc_newrelic_addkey_$(activation_id)" },
+      depends_on => { "$(server.activation_id)_cfdc_newrelic_addkey" },
       package_policy => "add",
       classes => default:if_ok("newrelic_installed"),
-      handle => "cfdc_newrelic_installpackage_apt_$(activation_id)",
+      handle => "$(server.activation_id)_cfdc_newrelic_installpackage_apt",
       package_method => default:apt;
 
     not_test.redhat::
       "newrelic-sysmond"
       package_policy => "add",
       classes => default:if_ok("newrelic_installed"),
-      handle => "cfdc_newrelic_installpackage_yum_$(activation_id)",
+      handle => "$(server.activation_id)_cfdc_newrelic_installpackage_yum",
       package_method => default:yum;
 
   reports:
@@ -143,14 +143,14 @@ bundle agent uninstall
       "newrelic-sysmond"
       package_policy => "delete",
       classes => default:if_ok("newrelic_uninstalled"),
-      handle => "cfdc_newrelic_uninstallpackage_apt_$(activation_id)",
+      handle => "$(server.activation_id)_cfdc_newrelic_uninstallpackage_apt",
       package_method => default:apt;
 
     not_test.redhat::
       "newrelic-sysmond"
       package_policy => "delete",
       classes => default:if_ok("newrelic_uninstalled"),
-      handle => "cfdc_newrelic_uninstallpackage_yum_$(activation_id)",
+      handle => "$(server.activation_id)_cfdc_newrelic_uninstallpackage_yum",
       package_method => default:yum;
 
   reports:
@@ -177,7 +177,7 @@ bundle agent conf(runenv, metadata, pkg_status, license_key)
     newrelic_installed::
       "$(default:eu.exec_prefix)/usr/sbin/nrsysmond-config --set license_key=$(license_key)"
       classes => default:if_ok("newrelic_configured"),
-      handle => "cfdc_newrelic_configure_licensekey_$(activation_id)";
+      handle => "$(server.activation_id)_cfdc_newrelic_configure_licensekey";
 
   reports:
     verbose.newrelic_configured::
