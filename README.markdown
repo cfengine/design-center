@@ -5,8 +5,9 @@
 Welcome to the CFEngine Design Center, a place for CFEngine community
 members and developers to share code and information.
 
-To get started, please read the documentation
-[on the CFEngine website](https://cfengine.com/docs/3.5/reference-design-center.html).
+To get started, please read the documentation [on the CFEngine website](https://cfengine.com/docs/3.5/manuals-design-center.html).
+
+The [reference documentation](https://cfengine.com/docs/3.5/reference-design-center.html) will also be helpful.
 
 The official page of the Design Center is at <http://cfengine.com/cfengine-design-center>
 
