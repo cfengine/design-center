@@ -8,7 +8,7 @@ Authors: Ted Zlatanov <tzz@lifelogs.com>
 Autobalance load amongst cloud offerings based on Data::Classes results
 
 ## Dependencies
-Cloud::Services::AWS::EC2, Cloud::Services::OpenStack, Data::Classes
+Cloud::Services::AWS::EC2, Cloud::Services::OpenStack, Cloud::Services::VMWare, Data::Classes
 
 ## API
 ### bundle: autobalance
@@ -26,7 +26,9 @@ Cloud::Services::AWS::EC2, Cloud::Services::OpenStack, Data::Classes
 
 * parameter _list_ *openstack_options* (default: none, description: OpenStack options)
 
-* parameter _array_ *common_options* (default: none, description: Common options for both sketches)
+* parameter _list_ *vmware_options* (default: none, description: VMWare options)
+
+* parameter _array_ *common_options* (default: none, description: Common options for all sketches)
 
 
 ## SAMPLE USAGE

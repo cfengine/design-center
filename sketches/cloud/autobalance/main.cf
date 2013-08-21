@@ -3,7 +3,7 @@ body file control
       namespace => "cfdc_cloud";
 }
 
-bundle agent autobalance(runenv, metadata, url, collector, thresholds, given_ec2_options, given_openstack_options, common_options)
+bundle agent autobalance(runenv, metadata, url, collector, thresholds, given_ec2_options, given_openstack_options, given_vmware_options, common_options)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
@@ -14,10 +14,11 @@ bundle agent autobalance(runenv, metadata, url, collector, thresholds, given_ec2
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
       "threshold_names" slist => getindices($(thresholds));
-      "types" slist => { "ec2", "openstack" };
+      "types" slist => { "ec2", "openstack", "vmware" };
 
       "openstack_options" slist => { @(given_openstack_options) };
       "ec2_options" slist => { @(given_ec2_options) };
+      "vmware_options" slist => { @(given_vmware_options) };
 
   methods:
     verbose::
@@ -52,8 +53,23 @@ bundle agent autobalance(runenv, metadata, url, collector, thresholds, given_ec2
                                                                   $(common_options)),
       ifvarclass => "default:autobalance_$(threshold_names)";
 
+      "ensure VMWare" usebundle => cfdc_cloud_openstack:ensure($(runenv),
+                                                               "",
+                                                               "$($(thresholds)[$(threshold_names)][vmware])",
+                                                               nth("vmware_options", 0),
+                                                               nth("vmware_options", 1),
+                                                               nth("vmware_options", 2),
+                                                               nth("vmware_options", 3),
+                                                               nth("vmware_options", 4),
+                                                               nth("vmware_options", 5),
+                                                               $(common_options)),
+      ifvarclass => "default:autobalance_$(threshold_names)";
+
   reports:
     test::
+      "$(this.bundle): In test mode, simulating ensure of $($(thresholds)[$(threshold_names)][vmware]) VMWare instances"
+      ifvarclass => "default:autobalance_$(threshold_names)";
+
       "$(this.bundle): In test mode, simulating ensure of $($(thresholds)[$(threshold_names)][ec2]) EC2 instances"
       ifvarclass => "default:autobalance_$(threshold_names)";
 

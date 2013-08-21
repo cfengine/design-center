@@ -4,10 +4,10 @@
         url: "file:///tmp/status.txt",
         thresholds:
         {
-            critical: { ec2: 3, openstack: 3 },
-            high: { ec2: 2, openstack: 2 },
-            normal: { ec2: 1, openstack: 1 },
-            off: { ec2: 0, openstack: 0 },
+            critical: { vmware: 3, openstack: 3 },
+            high: { vmware: 2, openstack: 2 },
+            normal: { vmware: 1, openstack: 1 },
+            off: { vmware: 0, openstack: 0 },
         },
 
         ec2_options: ["ami-a29943cb", "us-east-1", "t1.micro", "cfworker", true, "$(sys.ipv4)"],
