@@ -1,7 +1,7 @@
 # Demo::SimpleApplication version 1.0
 
 License: MIT
-Tags: vmworld2013, demo, sketchify_generated
+Tags: vmworld2013, demo, sketchify_generated, enterprise_compatible
 Authors: Nick Anderson <nick.anderson@cfengine.com>, Ted Zlatanov <ted.zlatanov@cfengine.com>, Diego Zamboni <diego.zamboni@cfengine.com>
 
 ## Description
