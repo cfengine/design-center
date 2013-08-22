@@ -1,0 +1,60 @@
+body file control
+{
+      namespace => "cfdc_simpleapplication";
+}
+
+bundle agent deploy(runenv, metadata, workers)
+{
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "singles" slist => { "haworker", "mcworker" };
+
+  classes:
+      "$(type)" expression => "any";
+
+  vars:
+      "host_marker" string => ".removal.marker";
+      "type" string => ifelse("am_policy_hub", "hub",
+                              classmatch("webworker.*"), "webworker",
+                              classmatch("mcworker.*"), "mcworker",
+                              classmatch("haworker.*"), "haworker",
+                              "unknown");
+
+  methods:
+    any::
+      "deploy" usebundle => cfdc_simpleapplication:configure(runenv, ""),
+      handle => "$(activation_id)_simpleapplication_deploy_configure";
+
+    hub::
+      "ensure webworkers" usebundle => cfdc_cloud_vmware:ensure($(runenv),
+                                                                "",
+                                                                $(workers),
+                                                                "webworker",
+                                                                "1",
+                                                                $(sys.ipv4),
+                                                                "/var/cfengine/scripts/start_vm.sh",
+                                                                "/var/cfengine/scripts/stop_vm.sh",
+                                                                "/var/cfengine/scripts/count_vm.sh"),
+      handle => "$(activation_id)_simpleapplication_ensure_webworkers";
+
+      "ensure singles" usebundle => cfdc_cloud_vmware:ensure($(runenv),
+                                                             "",
+                                                             "1",
+                                                             $(single),
+                                                             "1",
+                                                             $(sys.ipv4),
+                                                             "/var/cfengine/scripts/start_vm.sh",
+                                                             "/var/cfengine/scripts/stop_vm.sh",
+                                                             "/var/cfengine/scripts/count_vm.sh",
+                                                             ""),
+      handle => "$(activation_id)_simpleapplication_ensure_singles";
+}
