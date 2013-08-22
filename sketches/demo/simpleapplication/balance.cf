@@ -65,7 +65,7 @@ bundle agent hub
 {
   commands:
       "/var/cfengine/scripts/collect.pl"
-      classes => if_ok("edit_hosts"),
+      classes => default:if_ok("edit_hosts"),
       module => "true";
 
   methods:
@@ -89,8 +89,8 @@ bundle agent hub_edit
     host_lines_defined::
       "$(sys.workdir)/masterfiles/list_hosts.dat"
       create => "true",
-      edit_defaults => empty,
-      edit_line => insert_lines(@(hub_edit.host_lines));
+      edit_defaults => default:empty,
+      edit_line => default:insert_lines(@(hub_edit.host_lines));
 
   reports:
     inform_mode::
@@ -102,7 +102,7 @@ bundle agent hub_ha_edit
   vars:
       "worker_lines" slist => maparray("server $(this.k) $(this.v):80",
                                        "default:collect_pl.server"),
-      classes => always("worker_lines_evaluated");
+      classes => default:always("worker_lines_evaluated");
 
     worker_lines_evaluated::
       "filtered_lines" slist => grep(".*webworker.*", "worker_lines");
@@ -110,8 +110,8 @@ bundle agent hub_ha_edit
   files:
       "$(sys.workdir)/masterfiles/list_ha.dat"
       create => "true",
-      edit_defaults => empty,
-      edit_line => insert_lines(@(hub_ha_edit.filtered_lines));
+      edit_defaults => default:empty,
+      edit_line => default:insert_lines(@(hub_ha_edit.filtered_lines));
 
   reports:
     inform_mode::
@@ -132,7 +132,7 @@ bundle common hub_load_classes
 bundle agent webworker
 {
   packages:
-      "httpd" classes => if_repaired("restart_httpd"), package_method => yum_rpm;
+      "httpd" classes => default:if_repaired("restart_httpd"), package_method => default:yum_rpm;
 
   commands:
     restart_httpd::
@@ -159,15 +159,15 @@ bundle agent setup_web_content
       "$(html_dir)"
            comment => "Copy static HTML files",
             handle => "webworker_copy_html",
-         copy_from => local_cp("$(files_dir)$(html_dir)"),
-      depth_search => recurse("inf"),
-             perms => m("644");
+         copy_from => default:local_cp("$(files_dir)$(html_dir)"),
+      depth_search => default:recurse("inf"),
+             perms => default:m("644");
 
       "$(html_dir)/$(html_files)"
            comment => "Generate HTML files from templates",
             handle => "webworker_generate_html_from_template",
             create => "true",
-             perms => m("644"),
+             perms => default:m("644"),
      edit_template => "$(template_dir)/$(html_files).tmpl";
 
 }
@@ -188,12 +188,12 @@ OPTIONS=""
 
   files:
       "/etc/sysconfig/memcached"
-      edit_defaults => empty,
-      classes => if_repaired("restart_memcached"),
-      edit_line => insert_lines($(config));
+      edit_defaults => default:empty,
+      classes => default:if_repaired("restart_memcached"),
+      edit_line => default:insert_lines($(config));
 
   packages:
-      "memcached" classes => if_repaired("restart_memcached"), package_method => yum_rpm;
+      "memcached" classes => default:if_repaired("restart_memcached"), package_method => default:yum_rpm;
 
   commands:
     restart_memcached::
@@ -298,13 +298,13 @@ $(config_workers_joined)
 ";
 
   packages:
-      "haproxy" package_method => yum_rpm;
+      "haproxy" package_method => default:yum_rpm;
 
   files:
       "/etc/haproxy/haproxy.cfg"
-      edit_defaults => empty,
-      classes => if_repaired("restart_haproxy"),
-      edit_line => insert_lines($(config));
+      edit_defaults => default:empty,
+      classes => default:if_repaired("restart_haproxy"),
+      edit_line => default:insert_lines($(config));
 
   commands:
     restart_haproxy::
