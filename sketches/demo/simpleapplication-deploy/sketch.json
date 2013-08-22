@@ -34,7 +34,8 @@
          "ensure",
          "deploy",
          "demo",
-         "sketchify_generated"
+         "sketchify_generated",
+         "enterprise_compatible"
       ],
        "version" : "1.0",
        depends: { "Demo::SimpleApplication": { }, "Cloud::Services::VMWare": {}, cfengine: { version: "3.5.0" },
