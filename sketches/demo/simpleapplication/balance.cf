@@ -1,0 +1,321 @@
+body file control
+{
+      namespace => "cfdc_simpleapplication";
+}
+# Custom policy to run on each type of server: hub, webworkers, haworkers, mcworkers
+
+######################################################################
+# General entry point for everyone
+bundle agent configure(runenv, metadata)
+{
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  classes:
+      "$(type)" expression => "any";
+
+  vars:
+      "host_marker" string => ".removal.marker";
+      "type" string => ifelse("am_policy_hub", "hub",
+                              classmatch("webworker.*"), "webworker",
+                              classmatch("mcworker.*"), "mcworker",
+                              classmatch("haworker.*"), "haworker",
+                              "unknown");
+
+  methods:
+      "edit /etc/hosts" usebundle => etc_hosts_edit;
+      "do task" usebundle => $(type),
+	handle => "$(configure.activation_id)_configure_host";
+
+  reports:
+      "load balancing; type = $(type)";
+}
+
+######################################################################
+# Editing /etc/hosts to add information about hosts in the setup
+bundle agent etc_hosts_edit
+{
+  files:
+      "/etc/hosts" edit_line => hosts_edit("$(sys.workdir)/inputs/list_hosts.dat",
+                                           $(cfdc_simpleapplication:configure.host_marker));
+
+}
+
+bundle edit_line hosts_edit(datafile, marker)
+{
+  vars:
+      "hostlines" slist => readstringlist($(datafile), "#.*", "\n", 500, 40000);
+  insert_lines:
+      "$(hostlines)";
+  delete_lines:
+      ".*$(marker)";
+}
+
+######################################################################
+# Hub-specific policy
+bundle agent hub
+{
+  commands:
+      "/var/cfengine/scripts/collect.pl"
+      classes => default:if_ok("edit_hosts"),
+      module => "true";
+
+  methods:
+    edit_hosts::
+      "edit" usebundle => hub_edit, inherit => "true";
+      "ha_edit" usebundle => hub_ha_edit, inherit => "true";
+      "load_classes" usebundle => hub_load_classes, inherit => "true";
+
+  reports:
+      "$(this.bundle): running";
+}
+
+bundle agent hub_edit
+{
+  vars:
+      "host_lines" slist => maparray("$(this.v) $(this.k) $(this.k)$(cfdc_simpleapplication:configure.host_marker)",
+                                     "default:collect_pl.server");
+  classes:
+      "host_lines_defined" expression => isvariable("host_lines");
+  files:
+    host_lines_defined::
+      "$(sys.workdir)/masterfiles/list_hosts.dat"
+      create => "true",
+      edit_defaults => default:empty,
+      edit_line => default:insert_lines(@(hub_edit.host_lines));
+
+  reports:
+    inform_mode::
+      "$(this.bundle): Machine lines: $(host_lines)";
+}
+
+bundle agent hub_ha_edit
+{
+  vars:
+      "worker_lines" slist => maparray("server $(this.k) $(this.v):80",
+                                       "default:collect_pl.server"),
+      classes => default:always("worker_lines_evaluated");
+
+    worker_lines_evaluated::
+      "filtered_lines" slist => grep(".*webworker.*", "worker_lines");
+
+  files:
+      "$(sys.workdir)/masterfiles/list_ha.dat"
+      create => "true",
+      edit_defaults => default:empty,
+      edit_line => default:insert_lines(@(hub_ha_edit.filtered_lines));
+
+  reports:
+    inform_mode::
+      "$(this.bundle): Filtered HA worker lines: $(filtered_lines)";
+}
+
+# Simulate load using time-based classes for demo purposes
+bundle common hub_load_classes
+{
+  classes:
+      "load_low" expression => "Q1|Q3";
+      "load_med" expression => "Q2";
+      "load_high" expression => "Q4";
+}
+
+######################################################################
+# Webworker-specific policy
+bundle agent webworker
+{
+  packages:
+      "httpd" classes => default:if_repaired("restart_httpd"), package_method => default:yum_rpm;
+
+  commands:
+    restart_httpd::
+      "/etc/init.d/httpd restart";
+
+  methods:
+      "setup_html" usebundle => setup_web_content;
+
+  reports:
+      "$(this.bundle): running";
+}
+
+bundle agent setup_web_content
+{
+  vars:
+      "template_dir" string => "$(sys.workdir)/inputs/templates";
+      "files_dir"    string => "$(sys.workdir)/inputs/files";
+      # Base HTML directory
+      "html_dir"     string => "/var/www/html";
+      # Files within html_dir that need to be generated from templates
+      "html_files"   slist => { "index.html" };
+
+  files:
+      "$(html_dir)"
+           comment => "Copy static HTML files",
+            handle => "webworker_copy_html",
+         copy_from => default:local_cp("$(files_dir)$(html_dir)"),
+      depth_search => default:recurse("inf"),
+             perms => default:m("644");
+
+      "$(html_dir)/$(html_files)"
+           comment => "Generate HTML files from templates",
+            handle => "webworker_generate_html_from_template",
+            create => "true",
+             perms => default:m("644"),
+     edit_template => "$(template_dir)/$(html_files).tmpl";
+
+}
+
+######################################################################
+# MCworker-specific policy
+bundle agent mcworker
+{
+  vars:
+      "config" string => '
+# This file is maintained by CFEngine.  Any changes will be overwritten.
+PORT="11211"
+USER="memcached"
+MAXCONN="1024"
+CACHESIZE="256"
+OPTIONS=""
+';
+
+  files:
+      "/etc/sysconfig/memcached"
+      edit_defaults => default:empty,
+      classes => default:if_repaired("restart_memcached"),
+      edit_line => default:insert_lines($(config));
+
+  packages:
+      "memcached" classes => default:if_repaired("restart_memcached"), package_method => default:yum_rpm;
+
+  commands:
+    restart_memcached::
+      "/etc/init.d/memcached restart";
+
+  reports:
+      "$(this.bundle): running";
+}
+
+######################################################################
+# HAworker-specific policy
+bundle agent haworker
+{
+  vars:
+      "config_workers_joined" string => readfile("$(sys.workdir)/inputs/list_ha.dat", 40000);
+
+      "config" string => "
+# This file is maintained by CFEngine.  Any changes will be overwritten.
+
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   http://haproxy.1wt.eu/download/1.4/doc/configuration.txt
+#
+#---------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+frontend  main *:80
+    acl url_static       path_beg       -i /static /javascript /stylesheets
+    acl url_static       path_end       -i .jpg .gif .css .js
+
+    use_backend static          if url_static
+    default_backend             app
+
+#---------------------------------------------------------------------
+# static backend for serving up images, stylesheets and such
+#---------------------------------------------------------------------
+backend static
+    balance     roundrobin
+    server      static 127.0.0.1:4331 check
+
+#---------------------------------------------------------------------
+# round robin balancing between the various backends
+#---------------------------------------------------------------------
+backend app
+    balance     roundrobin
+$(config_workers_joined)
+";
+
+  packages:
+      "haproxy" package_method => default:yum_rpm;
+
+  files:
+      "/etc/haproxy/haproxy.cfg"
+      edit_defaults => default:empty,
+      classes => default:if_repaired("restart_haproxy"),
+      edit_line => default:insert_lines($(config));
+
+  commands:
+    restart_haproxy::
+      "/etc/init.d/haproxy restart";
+
+  reports:
+      "$(this.bundle): running";
+}
+
+bundle agent unknown
+{
+  reports:
+      "$(this.bundle): running";
+}
