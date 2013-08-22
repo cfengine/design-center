@@ -31,7 +31,8 @@
       "depends" : {
          "cfengine" : {
             "version" : "3.5.0"
-         }
+         },
+         "os" : [ {"centos" : "CentOS Linux" } ]
       },
       "description" : "Configures hosts for a simple application consisting of webworkers (Apache + simple static content), haworkers (haproxy dynamically configured to use the existing webworkers) and mcworkers (memcached)",
       "license" : "MIT",
