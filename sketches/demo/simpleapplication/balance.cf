@@ -33,7 +33,7 @@ bundle agent configure(runenv, metadata)
   methods:
       "edit /etc/hosts" usebundle => etc_hosts_edit;
       "do task" usebundle => $(type),
-	"handle" => "$(configure.activation_id)_configure_host";
+	handle => "$(configure.activation_id)_configure_host";
 
   reports:
       "load balancing; type = $(type)";
