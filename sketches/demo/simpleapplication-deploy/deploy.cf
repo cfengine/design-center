@@ -43,7 +43,8 @@ bundle agent deploy(runenv, metadata, workers)
                                                                 $(sys.ipv4),
                                                                 "/var/cfengine/scripts/start_vm.sh",
                                                                 "/var/cfengine/scripts/stop_vm.sh",
-                                                                "/var/cfengine/scripts/count_vm.sh"),
+                                                                "/var/cfengine/scripts/count_vm.sh",
+                                                                "return"),
       handle => "$(activation_id)_simpleapplication_ensure_webworkers";
 
       "ensure singles" usebundle => cfdc_cloud_vmware:ensure($(runenv),
@@ -55,6 +56,6 @@ bundle agent deploy(runenv, metadata, workers)
                                                              "/var/cfengine/scripts/start_vm.sh",
                                                              "/var/cfengine/scripts/stop_vm.sh",
                                                              "/var/cfengine/scripts/count_vm.sh",
-                                                             ""),
+                                                             "return"),
       handle => "$(activation_id)_simpleapplication_ensure_singles";
 }
