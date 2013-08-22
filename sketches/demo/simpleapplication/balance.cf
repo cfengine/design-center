@@ -45,7 +45,7 @@ bundle agent etc_hosts_edit
 {
   files:
       "/etc/hosts" edit_line => hosts_edit("$(sys.workdir)/inputs/list_hosts.dat",
-                                           $(host_marker));
+                                           $(cfdc_simpleapplication:configure.host_marker));
 
 }
 
@@ -81,7 +81,7 @@ bundle agent hub
 bundle agent hub_edit
 {
   vars:
-      "host_lines" slist => maparray("$(this.v) $(this.k) $(this.k)$(load_balance.host_marker)",
+      "host_lines" slist => maparray("$(this.v) $(this.k) $(this.k)$(cfdc_simpleapplication:configure.host_marker)",
                                      "default:collect_pl.server");
   classes:
       "host_lines_defined" expression => isvariable("host_lines");
