@@ -1,0 +1,48 @@
+{
+   "api" : {
+      "configure" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         }
+      ]
+   },
+   "interface" : [
+      "balance.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "balance.cf" : {
+         "desc" : "main file"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Nick Anderson <nick.anderson@cfengine.com>",
+         "Ted Zlatanov <ted.zlatanov@cfengine.com>",
+         "Diego Zamboni <diego.zamboni@cfengine.com>"
+      ],
+      "depends" : {
+         "cfengine" : {
+            "version" : "3.5.0"
+         }
+      },
+      "description" : "Configures hosts for a simple application consisting of webworkers (Apache + simple static content), haworkers (haproxy dynamically configured to use the existing webworkers) and mcworkers (memcached)",
+      "license" : "MIT",
+      "name" : "Demo::SimpleApplication",
+      "tags" : [
+         "vmworld2013",
+         "demo",
+         "sketchify_generated",
+         "enterprise_compatible"
+      ],
+      "version" : "1.0"
+   },
+   "namespace" : "cfdc_simpleapplication"
+}
