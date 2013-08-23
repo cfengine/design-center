@@ -7,6 +7,12 @@
               "description" : "Number of web workers",
               "name" : "workers",
               "type" : "string"
+          },
+          {
+              "description" : "Enable this deployment? (if disabled, destroy the VMs)",
+              "name" : "enable",
+              "type" : "boolean",
+              "default": true
           }
       ]
    },

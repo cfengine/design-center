@@ -3,12 +3,14 @@ body file control
       namespace => "cfdc_simpleapplication";
 }
 
-bundle agent deploy(runenv, metadata, workers)
+bundle agent deploy(runenv, metadata, workers, enable)
 {
 
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "enable" expression => strcmp("$(enable)", "1");
 
   vars:
       "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
@@ -34,11 +36,11 @@ bundle agent deploy(runenv, metadata, workers)
       "deploy" usebundle => cfdc_simpleapplication:configure(runenv, ""),
       handle => "$(activation_id)_simpleapplication_deploy_configure";
 
-    hub::
+    hub.enable::
       "ensure webworkers" usebundle => cfdc_cloud_vmware:ensure($(runenv),
                                                                 "",
                                                                 $(workers),
-                                                                "webworker",
+                                                                "webworker-$(activation_id)",
                                                                 "1",
                                                                 $(sys.ipv4),
                                                                 "/var/cfengine/scripts/start_vm.sh",
@@ -50,7 +52,7 @@ bundle agent deploy(runenv, metadata, workers)
       "ensure singles" usebundle => cfdc_cloud_vmware:ensure($(runenv),
                                                              "",
                                                              "1",
-                                                             $(single),
+                                                             "$(single)-$(activation_id)",
                                                              "1",
                                                              $(sys.ipv4),
                                                              "/var/cfengine/scripts/start_vm.sh",
@@ -58,4 +60,29 @@ bundle agent deploy(runenv, metadata, workers)
                                                              "/var/cfengine/scripts/count_vm.sh",
                                                              "return"),
       handle => "$(activation_id)_simpleapplication_ensure_singles";
+
+    hub.!enable::
+      "ensure no webworkers" usebundle => cfdc_cloud_vmware:ensure($(runenv),
+                                                                "",
+                                                                "0",
+                                                                "webworker-$(activation_id)",
+                                                                "1",
+                                                                $(sys.ipv4),
+                                                                "/var/cfengine/scripts/start_vm.sh",
+                                                                "/var/cfengine/scripts/stop_vm.sh",
+                                                                "/var/cfengine/scripts/count_vm.sh",
+                                                                "return"),
+      handle => "$(activation_id)_simpleapplication_disable_webworkers";
+
+      "ensure no singles" usebundle => cfdc_cloud_vmware:ensure($(runenv),
+                                                             "",
+                                                             "0",
+                                                             "$(single)-$(activation_id)",
+                                                             "1",
+                                                             $(sys.ipv4),
+                                                             "/var/cfengine/scripts/start_vm.sh",
+                                                             "/var/cfengine/scripts/stop_vm.sh",
+                                                             "/var/cfengine/scripts/count_vm.sh",
+                                                             "return"),
+      handle => "$(activation_id)_simpleapplication_disable_singles";
 }
