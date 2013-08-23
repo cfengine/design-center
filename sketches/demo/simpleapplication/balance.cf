@@ -111,7 +111,7 @@ bundle agent hub_ha_edit
       "$(sys.workdir)/masterfiles/list_ha.dat"
       create => "true",
       edit_defaults => default:empty,
-      edit_line => default:insert_lines(@(hub_ha_edit.filtered_lines));
+      edit_line => default:insert_lines(@(filtered_lines));
 
   reports:
     inform_mode::
