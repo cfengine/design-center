@@ -53,16 +53,16 @@ bundle agent autobalance(runenv, metadata, url, collector, thresholds, given_ec2
                                                                   $(common_options)),
       ifvarclass => "default:autobalance_$(threshold_names)";
 
-      "ensure VMWare" usebundle => cfdc_cloud_openstack:ensure($(runenv),
-                                                               "",
-                                                               "$($(thresholds)[$(threshold_names)][vmware])",
-                                                               nth("vmware_options", 0),
-                                                               nth("vmware_options", 1),
-                                                               nth("vmware_options", 2),
-                                                               nth("vmware_options", 3),
-                                                               nth("vmware_options", 4),
-                                                               nth("vmware_options", 5),
-                                                               $(common_options)),
+      "ensure VMWare" usebundle => cfdc_cloud_vmware:ensure($(runenv),
+                                                            "",
+                                                            "$($(thresholds)[$(threshold_names)][vmware])",
+                                                            nth("vmware_options", 0),
+                                                            nth("vmware_options", 1),
+                                                            nth("vmware_options", 2),
+                                                            nth("vmware_options", 3),
+                                                            nth("vmware_options", 4),
+                                                            nth("vmware_options", 5),
+                                                            $(common_options)),
       ifvarclass => "default:autobalance_$(threshold_names)";
 
   reports:
