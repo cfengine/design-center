@@ -1,7 +1,7 @@
 # Demo::SimpleApplication::Deploy version 1.0
 
 License: MIT
-Tags: vmware, ensure, deploy, demo, sketchify_generated
+Tags: vmware, ensure, deploy, demo, sketchify_generated, enterprise_compatible
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
@@ -17,6 +17,8 @@ Cloud::Services::VMWare, Demo::SimpleApplication
 * parameter _metadata_ *mymetadata* (default: none, description: none)
 
 * parameter _string_ *workers* (default: none, description: Number of web workers)
+
+* parameter _boolean_ *enable* (default: `true`, description: Enable this deployment? (if disabled, destroy the VMs))
 
 
 ## SAMPLE USAGE
