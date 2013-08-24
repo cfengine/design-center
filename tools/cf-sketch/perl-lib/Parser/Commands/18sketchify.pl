@@ -12,7 +12,7 @@ use File::Copy;
    'sketchify' =>
    [[
      'sketchify FILE.cf',
-     'Interactively generate a sketch from FILE.cf. All the necessary information is prompted from the user.',
+     'Interactively generate a sketch from FILE.cf. You will be prompted for all the necessary information.',
      '(\S+)(?:\s+(\S+)(?:\s+(\S+)(?:\s+(\S+))?)?)?'
     ]]
   );
@@ -161,6 +161,9 @@ sub command_sketchify
 
     Util::message("I will now prompt you for the data needed to generate the sketch.\nPlease enter STOP at any prompt to interrumpt the process.\n\n");
 
+    # Get current CFEngine::stdlib version
+    my $stdlib = main::get_sketch("CFEngine::stdlib");
+    my $stdlib_version = $stdlib ? { "version" => $stdlib->{'CFEngine::stdlib'}->{metadata}->{version} } : {};
     # Empty sketch.json skeleton
     my $new_sketch = {
                       manifest =>
@@ -170,7 +173,8 @@ sub command_sketchify
                       },
                       metadata =>
                       { depends =>
-                        { cfengine => { version => "3.5.0" }
+                        { cfengine => { version => "3.5.0" },
+                          "CFEngine::stdlib" => $stdlib_version,
                         }
                       },
                       api => { $bundle => [] },
@@ -400,7 +404,28 @@ sub command_sketchify
                                                     },
                                                     main::make_list_printer('search', 'README.md'));
 
-    Util::success("We are done! Please check your new sketch under $output\n");
+    Util::success("\nWe are done! Please check your new sketch under $output.\n\n");
+    Util::success(qq(There are a few things you may want to check by hand, since I don't know how to
+do them automatically yet:
+
+1. Verify the dependencies for your sketch in $json_file.
+   By default I added only CFEngine::stdlib as a dependency.
+2. Make sure all the calls to bodies/bundles in the standard library are
+   prefixed with 'default:' so that they are found (the stdlib lives in the
+   'default' namespace). For example, if your sketch uses the if_repaired
+   body definition, you need to replace calls like this:
+       classes => if_repaired("foo")
+   with
+       classes => default:if_repaired("foo")
+3. Make sure variable references used in function or bundle calls are
+   prefixed with the namespace for your new sketch. For example, if
+   you have something like this:
+       edit_line => default:set_config_values("mybundle.somearray")
+   you need to change it to this (assuming your sketch namespace is
+   "some_sketch"):
+       edit_line => default:set_config_values("some_sketch:mybundle.somearray")
+
+))
 }
 
 1;

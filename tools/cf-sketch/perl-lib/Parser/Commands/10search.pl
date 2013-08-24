@@ -29,9 +29,10 @@ sub command_search {
     }
     else
     {
+        # Get everything and to the search here for more flexibility
         ($success, $result) = main::api_interaction({
                                                describe => 1,
-                                               search => $regex,
+                                               search => '.'
                                               });
         my $list = Util::hashref_search($result, 'data', 'search');
         if (ref $list eq 'HASH')
@@ -43,9 +44,13 @@ sub command_search {
                 my %found = ();
                 foreach my $sketch (values %{$list->{$repo}})
                 {
-                    my $name = Util::hashref_search($sketch, qw/metadata name/);
-                    my $desc = Util::hashref_search($sketch, qw/metadata description/);
-                    $found{$name} = $desc || "(no description found)";
+                    my $sketch_data = $Config{dcapi}->encode($sketch);
+                    if ($sketch_data =~ /$regex/i)
+                    {
+                        my $name = Util::hashref_search($sketch, qw/metadata name/);
+                        my $desc = Util::hashref_search($sketch, qw/metadata description/);
+                        $found{$name} = $desc || "(no description found)";
+                    }
                 }
                 if (keys %found)
                 {
