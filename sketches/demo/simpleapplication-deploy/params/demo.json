@@ -1,0 +1,6 @@
+{
+    "Demo::SimpleApplication::Deploy":
+    {
+        workers: 3
+    }
+}
