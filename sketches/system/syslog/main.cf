@@ -3,8 +3,36 @@ body file control
       namespace => "cfdc_syslog";
 }
 
-bundle agent ensure(runenv,metadata,conf_file,config)
+bundle agent set(runenv, metadata, given_syslog_file, empty_first, ensured_kv, removed_kv, removed_vars)
 {
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "syslog_vars" slist => getindices("$(ensured_kv)");
+
+      "removed_kvindices" slist => getindices("$(removed_kv)");
+
+      # build the array of things to be removed
+      "removed[$(removed_vars)]"  string => ".*";
+      "removed[$(removed_kvindices)]" string => "$($(removed_kv)[$(removed_kvindices)])";
+
+    second_class_pass::
+      "removed_indices" slist => { getindices("cfdc_syslog:set.removed") };
+
+    any::
+      "syslog_file" string => "$(default:eu.path_prefix)$(given_syslog_file)";
+
+  classes:
+      # We need to know if we are on the second pass
+      "second_class_pass" and => {"first_class_pass"};
+      "first_class_pass" and => {"any"};
+
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "empty_first" expression => strcmp($(empty_first), "1");
+
   methods:
       "utils" usebundle => default:eu($(runenv));
 
@@ -13,35 +41,92 @@ bundle agent ensure(runenv,metadata,conf_file,config)
       inherit => "true";
 
   files:
-      "$(default:eu.path_prefix)$(conf_file)"
+    second_class_pass.!empty_first::
+      "$(syslog_file)"
       create => "true",
-      edit_defaults => default:empty,
-      classes => default:if_repaired("syslog_config_repaired"),
-      edit_line => system_syslog_edit_config("$(config)");
+      handle => "syslog_files_noempty",
+      edit_line => default:set_config_values("$(ensured_kv)"),
+      classes => default:if_repaired("syslog_reload"),
+      comment => "Only ensure specific defined values are present";
 
-  processes:
-    !syslog_config_repaired::
-      ".*/syslogd"
-      restart_class => "syslog_proc_start";
+    second_class_pass.empty_first::
+      "$(syslog_file)"
+      create => "true",
+      handle => "syslog_files_empty_first",
+      edit_defaults => default:empty,
+      edit_line => default:set_config_values("$(ensured_kv)"),
+      classes => default:if_repaired("syslog_reload"),
+      comment => "Empty file before ensuring specified values are present,
+this effectively promises the full file content.";
+
+    second_class_pass::
+      "$(syslog_file)"
+      create => "true",
+      edit_line => cfdc_syslog:del_variable_values("cfdc_syslog:set.removed"),
+      classes => default:if_repaired("syslog_reload"),
+      comment => "Ensure the variables and values given do not exist at all.";
 
   commands:
-    syslog_config_repaired.(sunos_5_8|sunos_5_9)::
+    syslog_reload.(sunos_5_8|sunos_5_9)::
       "$(default:eu.exec_prefix)/etc/init.d/syslog stop && $(default:eu.exec_prefix)/etc/init.d/syslog start"
       contain => default:in_shell;
-    syslog_config_repaired.(sunos_5_10|sunos_5_11)::
+    syslog_reload.(sunos_5_10|sunos_5_11)::
       "$(default:eu.exec_prefix)/usr/sbin/svcadm restart svc:/network/ntp:default";
     syslog_proc_start.(sunos_5_8|sunos_5_9)::
       "$(default:eu.exec_prefix)/etc/init.d/syslog start";
     syslog_proc_start.(sunos_5_10|sunos_5_11)::
       "$(default:eu.exec_prefix)/usr/sbin/svcadm enable svc:/network/ntp:default";
+
+  services:
+    syslog_reload.linux::
+      "rsyslog"
+        service_policy => "restart";
+        classes => default:if_repaired("syslog_reloaded"),
+        comment => "Reload syslog after repairing configuration";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    any::
+      "$(syslog_file)" bundle_return_value_index => "syslog_file";
+
+    second_class_pass.verbose.empty_first::
+      "$(this.bundle): $(syslog_file) will be emptied before editing";
+
+    second_class_pass.verbose::
+      "$(this.bundle): VERBOSE is turned on for syslog";
+
+      "$(this.bundle): Set syslog var: $(syslog_vars)=$($(ensured_kv)[$(syslog_vars)])";
+      "$(this.bundle): Remove syslog var: $(removed_indices)=$(cfdc_syslog:set.removed[$(removed_indices)])";
+      # "Removed vars: $(removed_indices)";
+
+      "$(this.bundle): I repaired $(syslog_file), syslog needs to be reloaded"
+      ifvarclass => "syslog_reload";
+
+      "$(this.bundle): I successfully reloaded syslog"
+      ifvarclass => "syslog_reloaded";
+
 }
 
-bundle edit_line system_syslog_edit_config(c)
+bundle edit_line del_variable_values(v)
 {
   vars:
-      "selectors" slist => getindices("$(c)");
 
-  insert_lines:
-      "# This file is managed by CFEngine. Local changes will be overwritten";
-      "$(selectors)$($(c)[$(selectors)][action])";
+      "index" slist => getindices("$(v)");
+
+      # Be careful if the index string contains funny chars
+
+      "cindex[$(index)]" string => canonify("$(index)");
+
+  delete_lines:
+
+      "$(index)\s*=\s*$($(v)[$(index)])"
+      comment => "Delete a specific variable";
+
+  reports:
+    verbose::
+      "$(this.bundle): we will delete lines matching: '$(index)\s*=\s*$($(v)[$(index)])'";
 }
