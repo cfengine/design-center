@@ -436,8 +436,8 @@ sub input_param {
         }
         elsif ($type eq 'boolean')
         {
-            my $str = input_scalar($input, ($prompt ? $prompt : "$name "), $def, undef);
-            $data = ($str =~ /^(yes|true|1|on)$/i) ? 1 : undef;
+            my $str = input_scalar($input, ($prompt ? $prompt : "$name")." (true/false) ", $def, undef);
+            $data = ($str =~ /^(yes|true|1|on)$/i) ? 1 : 0;
             $valid = $str =~ /^(yes|true|1|on|no|false|0|off)$/i;
         }
     } while (!$valid);
