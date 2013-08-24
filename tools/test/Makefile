@@ -752,3 +752,7 @@ apache:
 
 uninstall_newrelic:
 	$(CFSKETCH_DA) --uninstall Applications::NewRelic
+
+demo_deploy:
+	$(CFSKETCH_DA) --install Demo::SimpleApplication::Deploy --activate Demo::SimpleApplication::Deploy=$(SOURCEDIR)/demo/simpleapplication-deploy/params/demo.json
+	$(RUNNER)
