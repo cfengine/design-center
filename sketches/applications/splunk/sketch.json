@@ -14,11 +14,11 @@
     metadata:
     {
         name: "Applications::Splunk",
-	    description: "Install and enable Splunk",
+	    description: "Install and enable a Splunk forwarder",
         version: 1.0,
         license: "MIT",
-        tags: ["cfdc", "install", "splunk" ],
-        authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
+        tags: ["cfdc", "install", "splunk", "enterprise_compatible" ],
+        authors: ["Ted Zlatanov <tzz@lifelogs.com>", "Diego Zamboni <diego.zamboni@cfengine.com>" ],
         depends: {"CFEngine::stdlib": {version: 109}, "CFEngine::dclib": {}, cfengine: {version: "3.4.2"}, os: ["linux"] }
     },
 
