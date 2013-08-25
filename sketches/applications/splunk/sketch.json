@@ -19,7 +19,7 @@
         license: "MIT",
         tags: ["cfdc", "install", "splunk", "enterprise_compatible" ],
         authors: ["Ted Zlatanov <tzz@lifelogs.com>", "Diego Zamboni <diego.zamboni@cfengine.com>" ],
-        depends: {"CFEngine::stdlib": {version: 109}, "CFEngine::dclib": {}, cfengine: {version: "3.4.2"}, os: ["linux"] }
+        depends: {"CFEngine::stdlib": {version: 109}, "CFEngine::dclib": {}, cfengine: {version: "3.4.2"}, os: [ { "linux": "All Linux distributions" } ] }
     },
 
     api:
