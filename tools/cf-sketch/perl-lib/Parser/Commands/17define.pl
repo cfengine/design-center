@@ -275,6 +275,10 @@ sub input_scalar {
     {
         # Default value is included in the prompt
         $data = $input->readline($prompt.($def? "[$def]" : "").": ", $def);
+        if ($data eq '' && $def)
+        {
+            $data = $def;
+        }
         return $data unless $data;
         # STOP ends data input
         if ($data eq 'STOP')
