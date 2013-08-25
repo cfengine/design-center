@@ -8,6 +8,8 @@ use Term::ANSIColor qw(:constants);
 use Util;
 use Term::ReadLine;
 
+$VALIDATE_CURRENT_PARAM = 1;
+
 ######################################################################
 
 %COMMANDS =
@@ -210,7 +212,7 @@ sub validate_param {
     my $p = shift;
     my $value = shift;
 
-    if ($p->{validation} && $value ne '?')
+    if ($p->{validation} && $value ne '?' && $VALIDATE_CURRENT_PARAM)
     {
         return validate_value($p->{validation}, $value);
     }
@@ -483,6 +485,8 @@ sub validationstr {
 
     return "" unless $valname;
 
+    $VALIDATE_CURRENT_PARAM = 1;
+
     my $vals = main::get_validations;
     my $val = $vals->{$valname};
     if ($val)
@@ -500,6 +504,7 @@ sub validationstr {
     {
         if ($valname)
         {
+            $VALIDATE_CURRENT_PARAM = undef;
             return "This parameter is defined as a '$valname', but I don't have a validation by that name. I will treat it as a scalar and accept anything you type.";
         }
     }
