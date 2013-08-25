@@ -34,17 +34,19 @@ bundle agent install_forwarder(runenv, metadata, installdir, server, password, c
   files:
     splunkforwarder_installed::
       "$(installdir)/etc/system/local/outputs.conf"
+      create => "true",
       perms => default:mog("600", "root", "root"),
       classes => default:if_repaired("splunkforwarder_repaired"),
       edit_defaults => default:empty,
-      edit_line => default:expand_template("$($(metadata)[location])/templates/splunk-outputs.conf"),
+      edit_line => default:expand_template("$(sys.workdir)/inputs/$($(metadata)[location])/templates/splunk-outputs.conf"),
       handle => "$(activation_id)_write_outputs_conf";
 
       "$(installdir)/etc/system/local/inputs.conf"
+      create => "true",
       perms => default:mog("600", "root", "root"),
       classes => default:if_repaired("splunkforwarder_repaired"),
       edit_defaults => default:empty,
-      edit_line => default:expand_template("$($(metadata)[location])/templates/splunk-inputs.conf"),
+      edit_line => default:expand_template("$(sys.workdir)/inputs/$($(metadata)[location])/templates/splunk-inputs.conf"),
       handle => "$(activation_id)_write_inputs_conf";
 
       "$(installdir)/ftr"
