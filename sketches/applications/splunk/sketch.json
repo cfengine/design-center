@@ -14,7 +14,7 @@
     metadata:
     {
         name: "Applications::Splunk",
-	    description: "Install and enable a Splunk forwarder",
+	    description: "Configure and enable a Splunk forwarder",
         version: 1.0,
         license: "MIT",
         tags: ["cfdc", "install", "splunk", "enterprise_compatible" ],
