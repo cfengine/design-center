@@ -30,13 +30,13 @@ bundle agent install_forwarder(runenv, metadata, installdir, server, password, c
 
   files:
     splunkforwarder_installed::
-      "$(default:eu.path_prefix)$(installdir)/etc/system/local/outputs.conf"
+      "$(installdir)/etc/system/local/outputs.conf"
       perms => default:mog("600", "root", "root"),
       classes => default:if_repaired("splunkforwarder_repaired"),
       edit_defaults => default:empty,
       edit_line => default:expand_template("$($(metadata)[location])/templates/splunk-outputs.conf");
 
-      "$(default:eu.path_prefix)$(installdir)/etc/system/local/inputs.conf"
+      "$(installdir)/etc/system/local/inputs.conf"
       perms => default:mog("600", "root", "root"),
       classes => default:if_repaired("splunkforwarder_repaired"),
       edit_defaults => default:empty,
@@ -44,19 +44,19 @@ bundle agent install_forwarder(runenv, metadata, installdir, server, password, c
 
   commands:
     splunkforwarder_installed.!splunkforwarder_configured::
-      "$(default:eu.exec_prefix)$(splunkforwarder_control) edit user admin -password '$(password)' -role admin -auth admin:changeme"
+      "$(splunkforwarder_control) edit user admin -password '$(password)' -role admin -auth admin:changeme"
       classes => default:if_ok("splunkforwarder_configured");
 
     splunkforwarder_installed.!splunkforwarder_boot_enabled::
-      "$(default:eu.exec_prefix)$(splunkforwarder_control) enable boot-start"
+      "$(splunkforwarder_control) enable boot-start"
       classes => default:if_ok("splunkforwarder_enabled");
 
     splunkforwarder_installed.splunkforwarder_start::
-      "$(default:eu.exec_prefix)$(splunkforwarder_control) start --no-prompt --answer-yes --accept-license"
+      "$(splunkforwarder_control) start --no-prompt --answer-yes --accept-license"
       classes => default:if_ok("splunkforwarder_restarted");
 
     splunkforwarder_repaired::
-      "$(default:eu.exec_prefix)$(splunkforwarder_control) restart --no-prompt --answer-yes --accept-license"
+      "$(splunkforwarder_control) restart --no-prompt --answer-yes --accept-license"
       classes => default:if_ok("splunkforwarder_restarted");
 
   methods:
