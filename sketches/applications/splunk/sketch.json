@@ -29,7 +29,7 @@
 			{ name : "runenv", type : "environment" },
 			{ name : "metadata", type : "metadata" },
             { type: "string", name: "installdir", description: "Where will the Splunk forwarder be installed?", default: "/opt/splunkforwarder", validation: "PATH_ABSOLUTE_UNIX" },
-            { type: "string", name: "server", description: "Splunk collecting (remote!) name in server:port format", validation: "HOSTNAME:PORT" },
+            { type: "string", name: "server", description: "Splunk collecting (remote!) name in server:port format" },
             { type: "string", name: "password", description: "Password for the Splunk forwarder" },
             { type: "string", name: "comment_marker", description: "The comment marker in our Splunk forwarder templates", default: "# MANAGED BY CFENGINE" },
             { type: "return", name: "installed", },
