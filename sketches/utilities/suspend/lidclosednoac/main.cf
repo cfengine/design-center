@@ -1,0 +1,92 @@
+body file control
+{
+      namespace => "cfdc_utilities_suspend_lidclosednoac";
+}
+bundle agent run(runenv, metadata)
+# @brief Suspend when you laptop lid is closed and running on battery
+# @param runenv The environment in which the bundle is activated. This is typically used for testing
+# @param metadata The metadata that describes the sketch
+{
+  vars:
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "lid_info_path" string => "/proc/acpi/button/lid";
+
+    lid_exists::
+      "lids" slist => lsdir("$(lid_info_path)", "^(?![.]).*", "false");
+
+      # Unable to read files of 0 length directly
+      #"$(lids)_state" string => readfile ("$(lid_info_path)/$(lids)/state", "100");
+      "$(lids)_state" string => execresult("/bin/cat $(lid_info_path)/$(lids)/state", "noshell");
+
+
+  classes:
+      "lid_exists" expression => isdir("$(lid_info_path)"),
+        comment => "Because of a bug in versions 3.5.2 and earlier, we need to
+                    ensure that the path exists before we try and lsdir.
+                    Otherwise CFEngine will have a fatal error";
+
+      "$(lids)_open" expression => regcmp(".*open.*", "$($(lids)_state)");
+      "on_ac_power" expression => returnszero("/usr/bin/on_ac_power", "noshell");
+
+  commands:
+    !(on_ac_power|test)::
+      "/usr/sbin/pm-suspend"
+        handle     => "$(activation_id)_run_commands_not_ac_power_not_lid_open_suspend",
+        ifvarclass => not("$(lids)_open"),
+        comment    => "This helps me not have to worry about unplugging from
+                       power before closing the lid of my computer. The built
+                       in gnome desktop suspend logic only triggers on the
+                       event of lid close. If power is plugged in this does not
+                       happen. When power is removed the machine continues to
+                       run.";
+
+  methods:
+    "metadata"
+      usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  reports:
+
+    verbose::
+      "$(this.bundle): running in verbose mode";
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv $(runenv)_$(vars)' was defined"
+        ifvarclass => "$(vars)";
+
+      "$(this.bundle): lid_state: $($(lids)_state)";
+      "$(this.bundle): power_source: AC"
+        ifvarclass => "on_ac_power";
+      "$(this.bundle): power_source: Battery"
+        ifvarclass => "!on_ac_power";
+
+
+    test::
+      "$(this.bundle): running in test mode";
+      "$(this.bundle): owner => $(owner)";
+      "$(this.bundle): on_ac_power => true" 
+        ifvarclass => "on_ac_power";
+      "$(this.bundle): on_ac_power => false"
+        ifvarclass => not("on_ac_power");
+      "$(this.bundle): $(lids)_closed => true"
+        ifvarclass => not("$(lids)_open");
+
+    cfengine::
+      "$($(lids)_state))"
+        handle => "$(activation_id)_return_lid_state",
+        bundle_return_value_index => "lid_state";
+
+      "AC"
+        bundle_return_value_index => "power_source",
+        handle => "$(activation_id)_return_power_source_ac",
+        ifvarclass => "on_ac_power";
+
+      "Battery"
+        bundle_return_value_index => "power_source",
+        handle => "$(activation_id)_return_power_source_battery",
+        ifvarclass => "!on_ac_power";
+
+}

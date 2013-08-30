@@ -1,0 +1,56 @@
+{
+   "api" : {
+      "run" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "name": "lid_state",
+            type: "return"
+         },
+         {
+            "name": "power_source",
+            type: "return"
+         }
+
+      ]
+   },
+   "interface" : [
+      "main.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "main.cf" : {
+         "desc" : "main file"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Nick Anderson <nick@cmdln.org>"
+      ],
+      "depends" : {
+         "CFEngine::dclib": { version: "1.0.0" },
+         "cfengine" : { "version" : "3.5.0"},
+         "os": [ {"linux":"Linux"} ]
+      },
+      "description" : "Suspend when lid is closed and AC power is not present. ",
+      "license" : "MIT",
+      "name" : "Utilities::Suspend::LidClosedNoAC",
+      "tags" : [
+         "laptop",
+         "suspend",
+         "sketchify_generated",
+         "utility",
+         "enterprise_compatible"
+      ],
+      "version" : "1.0"
+   },
+   "namespace" : "cfdc_utilities_suspend_lidclosednoac"
+}
