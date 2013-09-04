@@ -100,7 +100,7 @@ bundle agent abortclasses_filebased(runenv, metadata, abortclass, trigger_file, 
       "$(this.bundle):$(const.t)timeout[minutes]: $($(timeout)[minutes])";
       "$(this.bundle):$(const.t)timeout[seconds]: $($(timeout)[seconds])";
 
-      "abortclasses: trigger_context: $(trigger_context) not currently defined, will not actually abort",
+      "abortclasses: trigger_context: $(trigger_context) not currently defined, will not actually abort"
       ifvarclass => "$(trigger_context)";
 
     verbose.timeout_trigger::
