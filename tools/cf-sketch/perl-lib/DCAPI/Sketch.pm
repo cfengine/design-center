@@ -9,7 +9,7 @@ use Util;
 use Mo qw/default build builder is required option/;
 
 use constant MEMBERS => qw/entry_point interface manifest metadata api namespace/;
-use constant META_MEMBERS => qw/name version description license tags depends authors/;
+use constant META_MEMBERS => qw/name version description bundle_descriptions license tags depends authors/;
 
 has dcapi        => ( is => 'ro', required => 1 );
 has repo         => ( is => 'ro', required => 1 );
@@ -272,7 +272,15 @@ EOHIPPUS
     {
         # TODO: use api_describe
         my $spec = $data{api}->{$bundle};
-        push @p, "### bundle: $bundle";
+
+        my $bundle_desc = '';
+        my $bundle_descriptions = $data{bundle_descriptions};
+        $bundle_descriptions = {} if ref $bundle_descriptions ne 'HASH';
+
+        $bundle_desc = sprintf(' (description: %s)', $bundle_descriptions->{$bundle})
+         if exists $bundle_descriptions->{$bundle};
+
+        push @p, "### bundle: $bundle$bundle_desc";
         foreach my $param (@$spec)
         {
             my $return = DCAPI::Activation::return_type($param->{type});

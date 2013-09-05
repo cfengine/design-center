@@ -11,7 +11,7 @@ Manage VMWare services through the vSphere Perl SDK and other external tools.
 CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 ## API
-### bundle: ensure
+### bundle: ensure (description: Ensure a specific number of VMs are running, starting or stopping them as needed through custom scripts.)
 * parameter _environment_ *runenv* (default: none, description: none)
 
 * parameter _metadata_ *mymetadata* (default: none, description: none)

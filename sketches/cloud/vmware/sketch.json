@@ -11,6 +11,10 @@
     {
         name: "Cloud::Services::VMWare",
 	    description: "Manage VMWare services through the vSphere Perl SDK and other external tools.",
+        bundle_descriptions:
+        {
+            ensure: "Ensure a specific number of VMs are running, starting or stopping them as needed through custom scripts."
+        },
         version: 1.0,
         license: "MIT",
         tags: [ "cfdc", "cloud", "vmware", "vcli", "enterprise_compatible" ],
