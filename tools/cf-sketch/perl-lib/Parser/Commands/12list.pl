@@ -26,7 +26,7 @@ use Util;
     'list_activations',
    ],
    [
-    '-list [-v] params [REGEX|all]',
+    '-list [-v] paramsets [REGEX|all]',
     'List defined parameter sets. If REGEX is given, only list sets that match it (either in the set name or the sketch name to which they correspond). Use -v to show the values in each parameter set.',
     '(?:(-v)\b\s*)?param\S*(?:\s+(.*))?',
     'list_params',
@@ -50,7 +50,7 @@ use Util;
     'list_all',
    ],
    [
-    'list [-v] [sketches|params|activations|environments|validations] [REGEX|all]',
+    'list [-v] [sketches|paramsets|activations|environments|validations] [REGEX|all]',
     'List defined sketches, parameter sets, activations, environments or validations (sketches is the default). If REGEX is given, only list those that match it. Use -v to show detailed information.',
     '(?:(-v)\b\s*)?(?:sketch\S*\b\s*)?(.*)',
     'list_sketches',
