@@ -17,7 +17,7 @@ use Term::ReadLine;
    [
     'define paramset SKETCH [ PARAMSET [FILE.json] ]',
     'Create a new parameter set for SKETCH named PARAMSET using the parameters from FILE.json, or interactively if the file is ommitted. If PARAMSET is omitted, a name is automatically generated.',
-    'param(?:set|eters|eterset)?\s+(\S+)\s*(?:\s+(\S+)(?:\s+(\S+))?)?',
+    'param\S*\s+(\S+)\s*(?:\s+(\S+)(?:\s+(\S+))?)?',
     'define_params'
    ],
    [
