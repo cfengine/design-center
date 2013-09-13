@@ -1,4 +1,4 @@
-# System::tzconfig version 1.2
+# System::tzconfig version 1.3
 
 License: MIT
 Tags: cfdc
