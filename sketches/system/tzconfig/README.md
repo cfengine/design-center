@@ -8,7 +8,7 @@ Authors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>
 Manage system timezone configuration
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib
+CFEngine::dclib
 
 ## API
 ### bundle: set
