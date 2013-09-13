@@ -5,7 +5,7 @@ Tags: cfdc, routes, iptables
 Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
 ## Description
-Sets defaults and user permissions in the sudoers file
+Sets default network routes
 
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib

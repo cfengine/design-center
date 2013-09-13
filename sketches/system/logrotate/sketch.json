@@ -8,7 +8,7 @@
     "metadata":
     {
         "name": "System::Logrotate",
-        "description": "Sets defaults and user permissions in the sudoers file",
+        "description": "Configure the LogRotate daemon",
         "version": 1.00,
         "license": "MIT",
         "tags": [ "cfdc", "logrotate" ],

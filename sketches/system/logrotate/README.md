@@ -5,7 +5,7 @@ Tags: cfdc, logrotate
 Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
 ## Description
-Sets defaults and user permissions in the sudoers file
+Configure the LogRotate daemon
 
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib
