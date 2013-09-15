@@ -3,6 +3,7 @@
     {
         "main.cf": { desc: "main file" },
         "README.md": { documentation: true },
+        "README.include": { documentation: true },
         "params/demo.json": { comment: "simple demo of OpenStack integration" },
     },
 

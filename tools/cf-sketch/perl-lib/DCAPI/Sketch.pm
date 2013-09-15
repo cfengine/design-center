@@ -254,6 +254,18 @@ EOHIPPUS
     $data{tags} = join ", ", @{$data{tags}};
     $data{depends} = (join ", ", sort(grep(/::/, keys %{$data{depends}})))||'none';
 
+    my $inc = 'README.include';
+    my $incfile = sprintf '%s/%s', $self->location(), $inc;
+
+    if (exists $data{manifest}->{$inc} && -e $incfile)
+    {
+        open my $i, '<', $incfile or warn "Could not include defined include file $incfile";
+        while (<$i>)
+        {
+         $data{description} .= $_;
+        }
+    }
+
     # api:
     # {
     #     // the key is the name of the bundle!
