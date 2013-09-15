@@ -274,6 +274,10 @@ the example below, the returned data is actually the sketch's auto-generated
 testing Makefile has a convenience `regenerate_readme` target to do this for all
 the DC sketches.
 
+If the manifest includes a `README.include` file, it will be included verbatim
+in the `README.md` in the Description section.  That makes it easier to write
+documentation for your sketches.
+
 ```json
 { dc_api_version: "0.0.1", request: {describe: "README", list: [["name", "matches", "ping"]] } }
 ```

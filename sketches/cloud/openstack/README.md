@@ -6,6 +6,21 @@ Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
 Manage OpenStack services
+This sketch will start or stop OpenStack compute instances.
+
+You have to provide it some basic parameters such as the template ID.  Also you
+provide a class name for the new machines and a target count.
+
+In addition in the `options` array you can provide a netrc file.  When that file
+has a line in this format:
+
+```
+machine OpenStack username yourname login yourpublickey password yourprivatekey
+```
+
+all the OpenStack interactions will be authenticated with that public and
+private key combination.
+
 
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib, Cloud::Services::Common

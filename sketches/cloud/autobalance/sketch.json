@@ -5,6 +5,7 @@
         "test.cf": {comment: "Test Policy"},
         "test.pl": {test:true},
         "README.md": { documentation: true },
+        "README.include": { documentation: true },
         "params/demo.json": { comment: "simple demo of Cloud::Autobalance: AWS EC2 and OpenStack" },
         "params/demo_vmware.json": { comment: "simple demo of Cloud::Autobalance: VMWare and OpenStack" },
     },
@@ -12,7 +13,7 @@
     metadata:
     {
         name: "Cloud::Autobalance",
-	    description: "Autobalance load amongst cloud offerings based on Data::Classes results",
+	    description: "Autobalance load amongst cloud offerings based on Data::Classes results.",
         version: 1.0,
         license: "MIT",
         tags: [ "cfdc", "cloud", "balance", "ec2", "openstack" ],
