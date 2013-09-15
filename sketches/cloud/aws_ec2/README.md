@@ -6,6 +6,22 @@ Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
 Manage AWS EC2 services
+This sketch will start or stop AWS EC2 instances.
+
+You have to provide it some basic parameters such as the AMI and region and
+instance type.  Also you provide a class name for the new machines and a target
+count.
+
+In addition in the `options` array you can provide a netrc file.  When that file
+has a line in this format:
+
+```
+machine AWS username yourname login yourpublickey password yourprivatekey
+```
+
+all the AWS interactions will be authenticated with that public and private key
+combination.
+
 
 ## Dependencies
 CFEngine::dclib, CFEngine::stdlib, Cloud::Services::Common

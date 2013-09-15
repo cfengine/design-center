@@ -6,6 +6,31 @@ Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
 Manage VMWare services through the vSphere Perl SDK and other external tools.
+This sketch will start or stop VMWare VMs.
+
+You have to provide it the names of the start, stop, and count
+scripts.  Also you provide a class name for the new machines and a
+target count.
+
+The start script will get called with the parameters `PRIOR_COUNT`,
+`COUNT`, `CLASS`, `HUB`, and `INSTALL_CFENGINE` (0 or 1).
+
+The stop script takes `PRIOR_COUNT`, `COUNT`, and `CLASS`.
+
+The count script takes just the `CLASS` parameter.
+
+So let's say you activate this sketch with class `cfworker`, target
+count 5, and hub 10.2.3.10.
+
+The count script will be called with `cfworker`.  Let's say it returns
+0, since no machines were running.  It will keep getting called
+whenever the policy is run.
+
+The start script will be called with `0 5 cfworker 10.2.3.10 1`.
+
+If we somehow end up with 10 VMs by accident, the stop script will be
+called with `10 5 cfworker`.
+
 
 ## Dependencies
 CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
