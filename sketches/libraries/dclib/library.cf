@@ -1,3 +1,20 @@
+bundle agent activation(bundlename, metadata)
+{
+  classes:
+      "given" not => strcmp($(metadata), "");
+      "not_given" expression => strcmp($(metadata), "");
+
+  vars:
+    given::
+      "activation_id" string => canonify("$(bundlename)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+  reports:
+    given::
+      "$(activation_id)" bundle_return_value_index => "id";
+    not_given::
+      "METADATA_NOT_GIVEN" bundle_return_value_index => "id";
+}
+
 bundle agent report_metadata(bundlename, metadata)
 {
   classes:
