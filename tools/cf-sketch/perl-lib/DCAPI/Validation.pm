@@ -280,12 +280,15 @@ sub validate
     foreach my $atype (qw/array_k array_v/)
     {
         my $k = Util::hashref_search($d, $atype);
+        my $strictMatch = Util::hashref_search($d, 'array_map_strict');
+        my $permissiveMatch = Util::hashref_search($d, 'array_map_permissive');
+
 
         if (defined $k)
         {
             return $result->add_error([$atype, qw/validation/],
                                       "The '$atype' validation can't take a $data_type")
-             if ref $data ne 'HASH';
+            if ref $data ne 'HASH';
 
             $self->api()->log4("Validating %s: checking '$atype' is %s",
                                $self->name,
@@ -300,12 +303,111 @@ sub validate
                     next if $ok;
 
                     my $each_ok = 1;
+                    my $dataIndex = 0;
+                    my $check;
+
                     foreach my $element (@data)
                     {
-                        my $check = $self->api()->validate({ validation => $k_type,
-                                                             data => $element});
+                        if (defined $strictMatch)
+                        {
+                            $self->api()->log4("Validating array strict with name %s: checking '$atype' is %s with array strict %s",
+                               $self->name,
+                               $k,
+                               $strictMatch);
+
+                            my @requiredKeys = keys $strictMatch;
+                            my @dataKeys =  keys %$data;
+
+
+                            if ($atype eq 'array_k')
+                            {
+                                $self->api()->log4("Validating array strict with name %s: checking [@requiredKeys] contains %s",
+                                                   $self->name
+                                                   ,$element);
+                                # check if we have keys in the specified required array
+                                return $result->add_error([qw/key validation/],
+                                  "The key '$element' is not valid.")
+                                  unless grep { $_ eq $element } @requiredKeys;
+
+                                  next;
+
+                            }
+
+                            if ($atype eq 'array_v')
+                             {
+                                # validate the data with they key
+                                my $keyIndex = $dataKeys[$dataIndex];
+                                my $validationType = $strictMatch->{$keyIndex};
+                                $self->api()->log4("Validating array strict with value %s with validation type %s",$element,$validationType);
+                                $check = $self->api()->validate({ validation => $validationType,
+                                                                  data => $element});
+
+                                if (!$check->success())
+                                {
+                                  my @error = values $check->errors();
+                                  my $stringError = join(',',@error);
+                                  return $result->add_error([qw/Array value validation/],
+                                  $stringError);
+                                }
+                             }
+                        }
+                        elsif(defined $permissiveMatch)
+                        {
+
+                          $self->api()->log4("Validating array permissive with name %s: checking '$atype' is %s with array permissive %s",
+                                             $self->name,
+                                             $k,
+                                             $permissiveMatch);
+
+                              my @dataKeys = keys %$data ;
+
+                              if ($atype eq 'array_v')
+                              {
+                                my $keyIndex = $dataKeys[$dataIndex];
+
+                                if (defined $keyIndex)
+                                {
+                                  my $validationType = $permissiveMatch->{$keyIndex};
+                                  if (defined $validationType)
+                                  {
+                                    $self->api()->log4("Validating array permissive with value %s with validation type %s",$element,$validationType);
+                                    $check = $self->api()->validate({ validation => $validationType,
+                                                                      data => $element});
+                                     if (!$check->success())
+                                     {
+                                        my @error = values $check->errors();
+                                        my $stringError = join(',',@error);
+                                        return $result->add_error([qw/Array value validation/],
+                                        $stringError);
+                                     }
+                                  }
+                                  else
+                                  {
+                                   # Do generic check for array value
+                                   $check = $self->api()->validate({ validation => $k_type,
+                                                                     data => $element});
+                                  }
+                               }
+                             }
+                             if ($atype eq 'array_k')
+                             {
+                               # for keys just do a generic check
+                               $check = $self->api()->validate({ validation => $k_type,
+                                                                 data => $element});
+                             }
+                        }
+                        else
+                        {
+                            # If no array permissive or strict is defined
+                            $self->api()->log4("generic array validation with type  %s and value %s",$element,$k_type);
+                            $check = $self->api()->validate({ validation => $k_type,
+                                                              data => $element});
+                        }
+
                         $each_ok &&= $check->success();
+                        $dataIndex++;
                     }
+
                     $ok ||= $each_ok;
                 }
 
