@@ -3,7 +3,7 @@ body file control
       namespace => "cfdc_sudoers";
 }
 
-bundle agent ensure(runenv,metadata,given_file_path,visudo_path,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_permissions)
+bundle agent ensure(runenv,metadata,given_file_path,visudo_path,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_specs,drop_dirs)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
@@ -16,12 +16,28 @@ bundle agent ensure(runenv,metadata,given_file_path,visudo_path,defaults,user_al
       "file_path" string => "$(default:eu.path_prefix)$(given_file_path)";
       "tmp_path" string => "$(file_path).cfsketch.tmp";
 
+      "user_specs_i" slist => getindices($(user_specs));
+      "cmnd_alias_i" slist => getindices($(cmnd_alias));
+
+      "CFEnotice"
+      string  => "# This file is managed by CFEngine, manual edits will be reverted",
+      comment => "It's nice to let people know why the file keep magically reverting on them";
+
   files:
       "$(tmp_path)"
       create => "true",
       edit_defaults => default:empty,
       perms => default:m("440"),
-      edit_line => sudoers_insert_lines($(defaults),$(user_alias),$(host_alias),$(cmnd_alias),$(runas_alias),$(user_permissions));
+      edit_line => sudoers_insert_lines(
+                                         $(CFEnotice),
+                                         $(defaults),
+                                         $(user_alias),
+                                         $(host_alias),
+                                         "cfdc_sudoers:ensure.cmnd_aliases_result",
+                                         $(runas_alias),
+                                         "cfdc_sudoers:ensure.user_specs_result",
+                                         $(drop_dirs)
+      );
 
       "$(file_path)"
       copy_from => default:local_dcp("$(tmp_path)"),
@@ -35,6 +51,16 @@ bundle agent ensure(runenv,metadata,given_file_path,visudo_path,defaults,user_al
 
   methods:
       "utils" usebundle => default:eu($(runenv));
+
+      "make_user_specs_$(user_specs_i)"
+      usebundle => make_user_specs("$(user_specs_i)",
+                                   "$(user_specs)[$(user_specs_i)]"),
+      useresult => "user_specs_result";
+
+      "make_cmnd_aliases_$(cmnd_alias_i)"
+      usebundle => make_cmnd_specs("$(cmnd_alias_i)",
+                                   "$(cmnd_alias)[$(cmnd_alias_i)]"),
+      useresult => "cmnd_aliases_result";
 
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
@@ -50,20 +76,127 @@ bundle agent ensure(runenv,metadata,given_file_path,visudo_path,defaults,user_al
       ifvarclass => "$(vars)";
 }
 
-bundle edit_line sudoers_insert_lines(defaults,user_alias,host_alias,cmnd_alias,runas_alias,up) {
+bundle edit_line sudoers_insert_lines(notice,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_specs,drop_dirs) {
   vars:
       "d_i" slist => getindices($(defaults));
-      "u_i" slist => getindices($(user_alias));
-      "h_i" slist => getindices($(host_alias));
-      "c_i" slist => getindices($(cmnd_alias));
-      "r_i" slist => getindices($(runas_alias));
-      "up_i" slist => getindices($(up));
+      "d_s" slist => sort("d_i","lex");
 
-  insert_lines:
-      "$($(defaults)[$(d_i)][default_desc]) $($(defaults)[$(d_i)][default_value])";
-      "User_Alias $($(user_alias)[$(u_i)][alias_name]) = $($(user_alias)[$(u_i)][user_list])";
-      "Runas_Alias $($(runas_alias)[$(r_i)[alias_name]) = $($(user_alias)[$(u_i)][runas_list])";
-      "Host_Alias $($(host_alias)[$(h_i)[alias_name]) = $($(host_alias)[$(h_i)][host_list])";
-      "Cmnd_Alias $($(cmnd_alias)[$(c_i)[alias_name]) = $($(cmnd_alias)[$(c_i)][cmnd_list])";
-      "$($(up)[$(up_i)][user_spec]) $($(up)[$(up_i)][host_spec]) = ($($(up)[$(up_i)][host_spec])) $($(up)[$(up_i)][password]): $($(up)[$(up_i)][cmnd_spec])";
+      "ua_i" slist => getindices($(user_alias));
+      "ua_s" slist => sort("ua_i","lex");
+      "ua[$(ua_i)]" string => join(', ', "$(user_alias)[$(ua_i)]");
+
+      "ra_i" slist => getindices($(runas_alias));
+      "ra_s" slist => sort("ra_i","lex");
+      "ra[$(ra_i)]" string => join(', ', "$(runas_alias)[$(ra_i)]");
+
+      "ha_i" slist => getindices($(host_alias));
+      "ha_s" slist => sort("ha_i","lex");
+      "ha[$(ha_i)]" string => join(', ', "$(host_alias)[$(ha_i)]");
+
+      "ca_i" slist => getindices($(cmnd_alias));
+      "ca_s" slist => sort("ca_i","lex");
+
+      "us_i" slist => getindices($(user_specs));
+      "us_s" slist => sort("us_i","lex");
+
+      "dd_i" slist => getindices($(drop_dirs));
+      "dd_s" slist => sort("dd_i","lex");
+
+ insert_lines:
+      "$(notice)";
+      "$($(defaults)[$(d_s)][type]) $($(defaults)[$(d_s)][parameters])";
+      "User_Alias $(ua_s) = $(ua[$(ua_s)])";
+      "Runas_Alias $(ra_s) = $(ra[$(ra_s)])";
+      "Host_Alias $(ha_s) = $(ha[$(ha_s)])";
+      "Cmnd_Alias $(ca_s) = $($(cmnd_alias)[$(ca_s)])";
+      "$($(user_specs)[$(us_s)])";
+      "#includedir $($(drop_dirs)[$(dd_s)])";
+}
+
+bundle agent make_user_specs(index, user_specs_array)
+{
+  vars:
+      "user_list" string => join(",","$(user_specs_array)[user_list]");
+      "host_list" string => join(",","$(user_specs_array)[host_list]");
+
+      "cmnd_spec_l" slist => getvalues("cmnd_specs_result");
+      "cmnd_specs_s" string => join(",", "cmnd_spec_l");
+
+  methods:
+      "make_cmnd_specs_$(index)"
+      usebundle => make_cmnd_specs( $(index), "$(user_specs_array)[cmnd_spec_list]" ),
+      useresult => "cmnd_specs_result";
+
+  reports:
+      "$(user_list) $(host_list) = $(cmnd_specs_s)"
+      bundle_return_value_index => $(index);
+}
+
+bundle agent make_cmnd_specs (index, cmnd_spec_list)
+{
+  vars:
+      "cs_i" slist => getindices($(cmnd_spec_list));
+      "cmnd_specs_l" slist => getvalues("cmnd_spec_result");
+      "cmnd_specs_s" string => join(", ", "cmnd_specs_l");
+
+  methods:
+      "make_cmnd_spec_$(index)_$(cs_i)"
+      usebundle => make_cmnd_spec(
+                                   "$(index)_$(cs_i)",
+                                   "$(cmnd_spec_list)[$(cs_i)][runas_specs]",
+                                   "$(cmnd_spec_list)[$(cs_i)][selinux_spec]",
+                                   "$(cmnd_spec_list)[$(cs_i)][tag_specs]",
+                                   "$(cmnd_spec_list)[$(cs_i)][cmnd]"
+      ),
+      useresult => "cmnd_spec_result";
+
+  reports:
+      "$(cmnd_specs_s)"
+      bundle_return_value_index => $(index);
+}
+
+bundle agent make_cmnd_spec (index, runas_specs, selinux_spec, tag_specs, cmnd)
+{
+  classes:
+      "tag_specs_defined" expression => isvariable($(tag_specs));
+
+      "runas_users_defined" expression => isvariable("$(runas_specs)[users]");
+      "runas_groups_defined" expression => isvariable("$(runas_specs)[groups]");
+
+      "selinux_role_defined" expression => isvariable("$(selinux_spec)[role]");
+      "selinux_type_defined" expression => isvariable("$(selinux_spec)[type]");
+
+      "tag_specs_defined" expression => isvariable("$(tag_specs)");
+
+  vars:
+    any::
+      "runas_users_j" string => join(",", "$(runas_specs)[users]");
+      "runas_groups_j" string => join(",", "$(runas_specs)[groups]");
+    runas_users_defined.runas_groups_defined::
+      "runas_specs_s" string => "($(runas_users_j) : $(runas_groups_j) ) ";
+    runas_users_defined.!runas_groups_defined::
+      "runas_specs_s" string => "($(runas_users_j)) ";
+    !runas_users_defined.runas_groups_defined::
+      "runas_specs_s" string => "(: $(runas_groups_j)) ";
+    !runas_users_defined.!runas_groups_defined::
+      "runas_specs_s" string => "";
+
+    selinux_role_defined::
+      "selinux_spec_s" string => "ROLE=$($(selinux_spec)[role]) ";
+    selinux_type_defined::
+      "selinux_spec_s" string => "TYPE=$($(selinux_spec)[type]) ";
+    !selinux_role_defined.!selinux_type_defined::
+      "selinux_spec_s" string => "";
+
+    tag_specs_defined::
+      "tag_specs_l" slist => maplist("$(this):", "$(tag_specs)");
+      "tag_specs_j" string => join(",", "tag_specs_l");
+      "tag_specs_s" string => "$(tag_specs_j) ";
+    !tag_specs_defined::
+      "tag_specs_s" string => "";
+
+  reports:
+      "$(runas_specs_s)$(selinux_spec_s)$(tag_specs_s)$($(cmnd))"
+      bundle_return_value_index => "$(index)";
+
 }

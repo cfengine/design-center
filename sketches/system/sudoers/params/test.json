@@ -5,19 +5,21 @@
             "file_path": "/tmp/sudoers",
             "drop_dirs": [ "/etc/sudoers.d" ],
             "defaults" : [
-                { "type" : "Defaults", "entry" : "syslog=auth" },
-                { "type" : "Defaults:FULLTIMERS", "entry" : "!lecture" },
-                { "type" : "Defaults:millert" , "entry" : "!authenticate" },
-                { "type" : "Defaults@SERVERS" , "entry" : "log_year, logfile=/var/log/sudo.log" }
+                { "type" : "Defaults", "parameters" : "!authenticate" },
+                { "type" : "Defaults@SERVER_LIST" , "parameters" : "authenticate" },
+                { "type" : "Defaults@myserver1,myserver2" , "parameters" : "authenticate" },
+                { "type" : "Defaults:USER_LIST", "parameters" : "authenticate" },
+                { "type" : "Defaults:myuser1,myuser2", "parameters" : "authenticate" },
+                { "type" : "Defaults!CMND_LIST" , "parameters" : "authenticate" },
+                { "type" : "Defaults!/bin/mycommand1,/sbin/mycommand2" , "parameters" : "authenticate" }
             ],
             "user_alias" : {
-                "FULLTIMERS" : [ "millert", "mikef", "dowdy" ],
-                "PARTTIMERS" : [ "bostley", "jwfox", "crawl" ],
-                "WEBMASTERS" : [ "will", "wendy", "wim" ]
+                "USER_LIST" : [ "myuser1", "myuser2" ],
             },
             "runas_alias" : {
                 "OP" : [ "root", "operator" ],
-                "DB" : [ "oracle, sybase" ]
+                "DB" : [ "oracle, sybase" ],
+                "RUNAS_LIST" : [ "root" ]
             },
             "host_alias" : {
                 "SPARC" : [ "bigtime", "eclipse", "moet", "anchor" ],
