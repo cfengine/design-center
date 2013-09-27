@@ -3,11 +3,14 @@ body file control
       namespace => "cfdc_sudoers";
 }
 
-bundle agent ensure(runenv,metadata,given_file_path,visudo_path,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_specs,drop_dirs)
+bundle agent ensure(runenv,metadata,prefix,given_file_path,visudo_path,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_specs,drop_dirs)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "verify_passed"
+      expression => returnszero("$(default:eu.exec_prefix)$(visudo_path) -c -f $(tmp_path) > /dev/null 2>&1", "useshell");
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
@@ -29,54 +32,68 @@ bundle agent ensure(runenv,metadata,given_file_path,visudo_path,defaults,user_al
       edit_defaults => default:empty,
       perms => default:m("440"),
       edit_line => sudoers_insert_lines(
+                                         $(prefix),
                                          $(CFEnotice),
                                          $(defaults),
                                          $(user_alias),
                                          $(host_alias),
-                                         "cfdc_sudoers:ensure.cmnd_aliases_result",
+                                         "cfdc_sudoers:ensure.cmnd_aliases_result[$(prefix)]",
                                          $(runas_alias),
-                                         "cfdc_sudoers:ensure.user_specs_result",
+                                         "cfdc_sudoers:ensure.user_specs_result[$(prefix)]",
                                          $(drop_dirs)
-      );
+      ),
+      classes => cfdc_dclib_350:scoped_generic("namespace","$(prefix)_sudoers_built"),
+      ifvarclass => "$(prefix)_make_user_specs_reached.$(prefix)_make_cmnd_aliases_reached",
+      comment => "Populate the temporary sudoers file";
 
       "$(file_path)"
       copy_from => default:local_dcp("$(tmp_path)"),
       perms => default:m("440"),
-      classes => default:always("cfdc_sudoers_verify_attempted"),
-      ifvarclass => and(returnszero("$(default:eu.exec_prefix)$(visudo_path) -c -f $(tmp_path) > /dev/null 2>&1", "useshell"));
+      ifvarclass => and("visudo_check_passed"),
+      comment => "Install the new sudoers file";
 
     cfdc_sudoers_verify_attempted.not_test::
       "$(tmp_path)"
-      delete => default:tidy;
+      delete => default:tidy,
+      comment => "Remove the temporary sudoers file";
 
   methods:
       "utils" usebundle => default:eu($(runenv));
 
-      "make_user_specs_$(user_specs_i)"
-      usebundle => make_user_specs("$(user_specs_i)",
+      "make_user_specs_$(prefix)_$(user_specs_i)"
+      usebundle => make_user_specs( $(prefix),
+                                    $(user_specs_i),
                                    "$(user_specs)[$(user_specs_i)]"),
-      useresult => "user_specs_result";
+      useresult => "user_specs_result[$(prefix)]",
+      classes => cfdc_dclib_350:scoped_generic("namespace","$(prefix)_make_user_specs"),
+      comment => "Construct the User_Spec for each user specification";
 
-      "make_cmnd_aliases_$(cmnd_alias_i)"
-      usebundle => make_cmnd_specs("$(cmnd_alias_i)",
+      "make_cmnd_aliases_$(prefix)_$(cmnd_alias_i)"
+      usebundle => make_cmnd_specs( $(prefix),
+                                    $(cmnd_alias_i),
                                    "$(cmnd_alias)[$(cmnd_alias_i)]"),
-      useresult => "cmnd_aliases_result";
+      useresult => "cmnd_aliases_result[$(prefix)]",
+      classes => cfdc_dclib_350:scoped_generic("namespace","$(prefix)_make_cmnd_aliases"),
+      comment => "Construct the Cmnd_Spec_List for each Cmnd_Alias";
 
     verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      "metadata" usebundle => default:report_metadata($(prefix), $(metadata)),
       inherit => "true";
 
   reports:
     verbose.cfdc_sudoers_verify_attempted.test::
-      "$(this.bundle): Leaving $(tmp_path) in place in test mode; normally it would be deleted.";
+      "$(prefix): Leaving $(tmp_path) in place in test mode; normally it would be deleted.";
 
     verbose::
-      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
-      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      "$(prefix): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(prefix): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
       ifvarclass => "$(vars)";
+
+      "$(prefix): visudo check passed on $(tmp_path)"
+      ifvarclass => "visudo_check_passed";
 }
 
-bundle edit_line sudoers_insert_lines(notice,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_specs,drop_dirs) {
+bundle edit_line sudoers_insert_lines(prefix,notice,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_specs,drop_dirs) {
   vars:
       "d_i" slist => getindices($(defaults));
       "d_s" slist => sort("d_i","lex");
@@ -113,7 +130,7 @@ bundle edit_line sudoers_insert_lines(notice,defaults,user_alias,host_alias,cmnd
       "#includedir $($(drop_dirs)[$(dd_s)])";
 }
 
-bundle agent make_user_specs(index, user_specs_array)
+bundle agent make_user_specs(prefix, index, user_specs_array)
 {
   vars:
       "user_list" string => join(",","$(user_specs_array)[user_list]");
@@ -123,8 +140,8 @@ bundle agent make_user_specs(index, user_specs_array)
       "cmnd_specs_s" string => join(",", "cmnd_spec_l");
 
   methods:
-      "make_cmnd_specs_$(index)"
-      usebundle => make_cmnd_specs( $(index), "$(user_specs_array)[cmnd_spec_list]" ),
+      "make_cmnd_specs_$(prefix)_$(index)"
+      usebundle => make_cmnd_specs( $(prefix), $(index), "$(user_specs_array)[cmnd_spec_list]" ),
       useresult => "cmnd_specs_result";
 
   reports:
@@ -132,7 +149,7 @@ bundle agent make_user_specs(index, user_specs_array)
       bundle_return_value_index => $(index);
 }
 
-bundle agent make_cmnd_specs (index, cmnd_spec_list)
+bundle agent make_cmnd_specs(prefix, index, cmnd_spec_list)
 {
   vars:
       "cs_i" slist => getindices($(cmnd_spec_list));
@@ -140,8 +157,9 @@ bundle agent make_cmnd_specs (index, cmnd_spec_list)
       "cmnd_specs_s" string => join(", ", "cmnd_specs_l");
 
   methods:
-      "make_cmnd_spec_$(index)_$(cs_i)"
+      "make_cmnd_spec_$(prefix)_$(index)_$(cs_i)"
       usebundle => make_cmnd_spec(
+                                   $(prefix),
                                    "$(index)_$(cs_i)",
                                    "$(cmnd_spec_list)[$(cs_i)][runas_specs]",
                                    "$(cmnd_spec_list)[$(cs_i)][selinux_spec]",
@@ -155,7 +173,7 @@ bundle agent make_cmnd_specs (index, cmnd_spec_list)
       bundle_return_value_index => $(index);
 }
 
-bundle agent make_cmnd_spec (index, runas_specs, selinux_spec, tag_specs, cmnd)
+bundle agent make_cmnd_spec (prefix, index, runas_specs, selinux_spec, tag_specs, cmnd)
 {
   classes:
       "tag_specs_defined" expression => isvariable($(tag_specs));

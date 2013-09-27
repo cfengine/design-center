@@ -5,10 +5,10 @@
             "file_path": "/tmp/sudoers",
             "drop_dirs": [ "/etc/sudoers.d" ],
             "defaults" : [
-                { "type" : "Defaults", "entry" : "syslog=auth" },
-                { "type" : "Defaults:FULLTIMERS", "entry" : "!lecture" },
-                { "type" : "Defaults:millert" , "entry" : "!authenticate" },
-                { "type" : "Defaults@SERVERS" , "entry" : "log_year, logfile=/var/log/sudo.log" }
+                { "type" : "Defaults", "parameters" : "syslog=auth" },
+                { "type" : "Defaults:FULLTIMERS", "parameters" : "!lecture" },
+                { "type" : "Defaults:millert" , "parameters" : "!authenticate" },
+                { "type" : "Defaults@SERVERS" , "parameters" : "log_year, logfile=/var/log/sudo.log" }
             ],
             "user_alias" : {
                 "FULLTIMERS" : [ "millert", "mikef", "dowdy" ],

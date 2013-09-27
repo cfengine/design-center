@@ -1,9 +1,15 @@
 # -*- mode: javascript; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # vi:tabstop=4:expandtab
+[
+    {
+        "System::Sudoers" : {
+            "file_path": "/tmp/sudoers",
+            "drop_dirs": [ "/etc/sudoers.d" ]
+        }
+    },
     {
         "System::Sudoers": {
-            "file_path": "/tmp/sudoers",
-            "drop_dirs": [ "/etc/sudoers.d" ],
+            "file_path": "/tmp/sudoers.d/sample.sudoers",
             "defaults" : [
                 { "type" : "Defaults", "parameters" : "!authenticate" },
                 { "type" : "Defaults@SERVER_LIST" , "parameters" : "authenticate" },
@@ -231,3 +237,4 @@
                 ]
         }
     }
+]
