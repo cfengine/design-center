@@ -3,30 +3,38 @@
     {
         "main.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
+        "test.cf": {comment: "Test Policy"},
+        "test.pl": { test: true},
+        "params/test.json": {comment: "Testing parameter set"},
+        "params/demo.json": {comment: "Demo of package control."}
     },
 
     "metadata":
     {
         "name": "System::Sudoers",
         "description": "Sets defaults and user permissions in the sudoers file",
-        "version": 1.00,
+        "version": "2.0.1",
         "license": "MIT",
         "tags": [ "cfdc", "sudoers" ],
-        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>", "Ben Heilman <bheilman@enova.com>" ],
+        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0" : {}, "cfengine": { "version": "3.5.2" }, "os": [ "linux" ] }
     },
     "api" : {
 		     "ensure" : [
 				 { "name" : "runenv", "type" : "environment" },
 				 { "name" : "metadata", "type" : "metadata" },
+
+                 { "name" : "prefix", "type" : "string", "default" : "__PREFIX__" },
+
 				 { "name" : "file_path", "type" : "string", "default" : "/etc/sudoers" },
 				 { "name" : "visudo_path", description: "Path to visudo command.  Use /bin/true to make it always succeed.", "type" : "string", "default" : "/usr/sbin/visudo" },
-				 { "name" : "defaults", "type" : "array" },
-				 { "name" : "user_alias", "type" : "array" },
-				 { "name" : "host_alias", "type" : "array" },
-				 { "name" : "cmnd_alias", "type" : "array" },
-				 { "name" : "runas_alias", "type" : "array" },
-				 { "name" : "user_permissions", "type" : "array" },
+				 { "name" : "defaults", "type" : "array", "default" : [] },
+				 { "name" : "user_alias", "type" : "array", "default" : [] },
+				 { "name" : "host_alias", "type" : "array", "default" : [] },
+				 { "name" : "cmnd_alias", "type" : "array", "default" : [] },
+				 { "name" : "runas_alias", "type" : "array", "default" : [] },
+				 { "name" : "user_specs", "type" : "array", "default" : [] },
+                 { "name" : "drop_dirs", "type" : "array", "description" : "List of drop directories", "default" : [] },
 			 ]
 		},
     "namespace": "cfdc_sudoers",

@@ -664,7 +664,8 @@ syslog:
 	$(RUNNER)
 
 sudoers:
-	$(CFSKETCH_DA) --install System::Sudoers --activate System::Sudoers=$(SOURCEDIR)/system/sudoers/params/demo.json
+	$(CFSKETCH_DA) --install System::Sudoers --activate System::Sudoers=$(SOURCEDIR)/system/sudoers/params/test.json
+	(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --apitest System::Sudoers
 	$(RUNNER)
 
 routes:

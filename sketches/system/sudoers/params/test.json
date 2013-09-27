@@ -1,23 +1,31 @@
 # -*- mode: javascript; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
 # vi:tabstop=4:expandtab
+[
+    {
+        "System::Sudoers" : {
+            "file_path": "/tmp/sudoers",
+            "drop_dirs": [ "/etc/sudoers.d" ]
+        }
+    },
     {
         "System::Sudoers": {
-            "file_path": "/tmp/sudoers",
-            "drop_dirs": [ "/etc/sudoers.d" ],
+            "file_path": "/tmp/sudoers.d/sample.sudoers",
             "defaults" : [
-                { "type" : "Defaults", "parameters" : "syslog=auth" },
-                { "type" : "Defaults:FULLTIMERS", "parameters" : "!lecture" },
-                { "type" : "Defaults:millert" , "parameters" : "!authenticate" },
-                { "type" : "Defaults@SERVERS" , "parameters" : "log_year, logfile=/var/log/sudo.log" }
+                { "type" : "Defaults", "parameters" : "!authenticate" },
+                { "type" : "Defaults@SERVER_LIST" , "parameters" : "authenticate" },
+                { "type" : "Defaults@myserver1,myserver2" , "parameters" : "authenticate" },
+                { "type" : "Defaults:USER_LIST", "parameters" : "authenticate" },
+                { "type" : "Defaults:myuser1,myuser2", "parameters" : "authenticate" },
+                { "type" : "Defaults!CMND_LIST" , "parameters" : "authenticate" },
+                { "type" : "Defaults!/bin/mycommand1,/sbin/mycommand2" , "parameters" : "authenticate" }
             ],
             "user_alias" : {
-                "FULLTIMERS" : [ "millert", "mikef", "dowdy" ],
-                "PARTTIMERS" : [ "bostley", "jwfox", "crawl" ],
-                "WEBMASTERS" : [ "will", "wendy", "wim" ]
+                "USER_LIST" : [ "myuser1", "myuser2" ],
             },
             "runas_alias" : {
                 "OP" : [ "root", "operator" ],
-                "DB" : [ "oracle, sybase" ]
+                "DB" : [ "oracle, sybase" ],
+                "RUNAS_LIST" : [ "root" ]
             },
             "host_alias" : {
                 "SPARC" : [ "bigtime", "eclipse", "moet", "anchor" ],
@@ -229,3 +237,4 @@
                 ]
         }
     }
+]
