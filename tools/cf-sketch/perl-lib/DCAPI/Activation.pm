@@ -317,7 +317,7 @@ sub fill_param
         }
         elsif ($type eq 'array' && exists $pval{$name} && ref $pval{$name} eq 'ARRAY')
         {
-            my %mapped = map { sprintf('%06d', $_) => $pval{$name}->[$_] } 0 .. scalar @{$pval{$name}};
+            my %mapped = map { sprintf('%06d', $_) => $pval{$name}->[$_] } 0 .. scalar @{$pval{$name}} - 1;
             if (defined $ret)           # merge arrays
             {
                 my $oldval = $ret->{value};
