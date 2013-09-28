@@ -3,10 +3,10 @@
     {
         "main.cf": { "desc": "main file" },
         "README.md": { "documentation": true },
-        "test.cf": {comment: "Test Policy"},
-        "test.pl": { test: true},
-        "params/test.json": {comment: "Testing parameter set"},
-        "params/demo.json": {comment: "Demo of package control."}
+        "test.cf": { "comment": "Test Policy"},
+        "test.pl": { "test": true},
+        "params/test.json": {"comment": "Testing parameter set"},
+        "params/demo.json": {"comment": "Demo of package control."}
     },
 
     "metadata":
@@ -27,7 +27,7 @@
             { "name" : "prefix", "type" : "string", "default" : "__PREFIX__" },
 
             { "name" : "file_path", "type" : "string", "default" : "/etc/sudoers", "description" : "path to sudoers file to edit" },
-            { "name" : "visudo_path", "type" : "string", "default" : "/usr/sbin/visudo", "description": "path to visudo command", },
+            { "name" : "visudo_path", "type" : "string", "default" : "/usr/sbin/visudo", "description": "path to visudo command" },
             { "name" : "defaults", "type" : "array", "default" : [] },
             { "name" : "user_alias", "type" : "array", "default" : [] },
             { "name" : "host_alias", "type" : "array", "default" : [] },

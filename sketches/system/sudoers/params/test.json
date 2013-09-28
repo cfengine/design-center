@@ -113,7 +113,7 @@
                     "cmnd_spec_list" : {
                         "0": { "tag_specs" : [ "NOPASSWD", "NOSETENV" ], "cmnd" : "ALL" }
                     }
-                },
+                }
             ]
         }
     }
