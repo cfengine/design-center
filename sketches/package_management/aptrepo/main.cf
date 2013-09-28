@@ -41,6 +41,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
     activated::
       "$(file)"
       create        => "true",
+      perms         => default:m("0644"),
       edit_defaults => default:empty,
       edit_line     => sources_list($(CFEnotice), @(cfdc_aptrepo:ensure.entries)),
       classes       => default:classes_generic("$(class_prefix)_ensure"),
