@@ -1,7 +1,7 @@
 PWD:=$(shell pwd)
 SOURCEDIR:=$(PWD)/../../sketches
 
-CFPATH:=$(dirname $(which cf-agent))
+CFPATH:=$(shell dirname $$(which cf-agent))
 
 ifeq ($(CFPATH),)
   CFPATH:=/var/cfengine/bin
