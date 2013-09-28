@@ -31,7 +31,7 @@ use DesignCenter::Config;
   'remove' =>
   [
    [
-    'remove params PARAMSET|all ...',
+    'remove paramset PARAMSET|all ...',
     'Undefine the given parameter sets. Use "all" to remove all of them.',
     'param\S*\s+(.*)',
     'remove_params',

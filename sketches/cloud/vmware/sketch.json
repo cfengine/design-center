@@ -3,6 +3,7 @@
     {
         "main.cf": { desc: "main file" },
         "README.md": { documentation: true },
+        "README.include": { documentation: true },
         "scripts/cf3vmware": { perm: 755, comment: "VMWare shim" },
         "params/demo.json": { comment: "simple demo of VMWare integration through the vSphere Perl SDK" },
     },
@@ -11,6 +12,10 @@
     {
         name: "Cloud::Services::VMWare",
 	    description: "Manage VMWare services through the vSphere Perl SDK and other external tools.",
+        bundle_descriptions:
+        {
+            ensure: "Ensure a specific number of VMs are running, starting or stopping them as needed through custom scripts."
+        },
         version: 1.0,
         license: "MIT",
         tags: [ "cfdc", "cloud", "vmware", "vcli", "enterprise_compatible" ],

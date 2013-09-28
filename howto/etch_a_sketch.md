@@ -24,6 +24,7 @@ listed in the `manifest`, and the corresponding bundle as listed in the API.
         {
             name: "Utilities::ping_report",
     	    description: "Report on pingability of hosts",
+            bundle_descriptions: { ping: "Ping a specific host" },
             version: 1.2,
             license: "MIT",
             tags: ["cfdc"],
@@ -60,6 +61,10 @@ runtime to see if the bundle should run.  So specifying `depends.os = 'linux',
 depends.classes = 'specialclass'` really says "install everywhere you like, but
 this can only run on Linux when _specialclass_ is set".  The CFEngine version
 and sketch dependencies, on the other hand, are checked at install time.
+
+The `bundle_descriptions` key under `metadata` should be a key-value array with
+key = bundle name and value = description of that bundle, as shown in the
+example.
 
 The `namespace` key, if missing, is assumed to be `null` and thus any `api`
 bundles are in the `default` namespace.

@@ -8,7 +8,7 @@
     "metadata":
     {
         "name": "System::Routes",
-        "description": "Sets defaults and user permissions in the sudoers file",
+        "description": "Sets default network routes",
         "version": 1.00,
         "license": "MIT",
         "tags": [ "cfdc", "routes", "iptables" ],

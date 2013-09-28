@@ -43,7 +43,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
       create        => "true",
       edit_defaults => default:empty,
       edit_line     => sources_list($(CFEnotice), @(cfdc_aptrepo:ensure.entries)),
-      classes       => default:classes_generic("$(class_prefix)_prep"),
+      classes       => default:classes_generic("$(class_prefix)_ensure"),
       comment       => "Create $(file) and note that the file is managed by CFEngine";
 
   reports:
@@ -54,7 +54,7 @@ bundle agent ensure(runenv, metadata, given_file, url, distribution, components,
 
       "$(this.bundle): file $(file); ensuring line $(entries)";
 
-    cfengine3::
+    cfengine::
       "$(file)" bundle_return_value_index => "file",
       ifvarclass => canonify("$(class_prefix)_ensure_ok");
 

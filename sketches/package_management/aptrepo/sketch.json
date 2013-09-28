@@ -13,7 +13,7 @@
     {
         name: "Repository::apt::Maintain",
 	    description: "Manage deb repositories in /etc/apt/sources.list.d/ files or /etc/apt/sources.list",
-        version: 1.0,
+        version: "1.0.1",
         license: "MIT",
         tags: [ "cfdc" ],
         authors: [ "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" ],

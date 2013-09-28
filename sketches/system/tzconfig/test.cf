@@ -42,7 +42,7 @@ bundle common cfsketch_g
       "__001_System_tzconfig_set_metadata[manifest_extra]" slist => { "params/US_Central.json" };
       "__001_System_tzconfig_set_metadata[name]" string => "System::tzconfig";
       "__001_System_tzconfig_set_metadata[tags]" slist => { "cfdc" };
-      "__001_System_tzconfig_set_metadata[version]" string => "1.2";
+      "__001_System_tzconfig_set_metadata[version]" string => "1.3";
 }
 
 bundle agent cfsketch_run

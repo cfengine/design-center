@@ -5,10 +5,19 @@ Tags: cfdc, cloud, balance, ec2, openstack
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
-Autobalance load amongst cloud offerings based on Data::Classes results
+Autobalance load amongst cloud offerings based on Data::Classes results.
+Imagine if a single file or web resource could signal your infrastructure to
+grow or shrink?
+
+This is exactly what Cloud::Autobalance can do for you.  Just give it a URL,
+some threshold definitions, and options for the EC2, OpenStack, and VMWare
+connecttivity.  It will take care of creating or destroying VM instances in any
+of those three environments using the Cloud::Services::VMWare,
+Cloud::Services::OpenStack, and Cloud::Services::AWS::EC2 sketches.
+
 
 ## Dependencies
-Cloud::Services::AWS::EC2, Cloud::Services::OpenStack, Data::Classes
+Cloud::Services::AWS::EC2, Cloud::Services::OpenStack, Cloud::Services::VMWare, Data::Classes
 
 ## API
 ### bundle: autobalance
@@ -26,7 +35,9 @@ Cloud::Services::AWS::EC2, Cloud::Services::OpenStack, Data::Classes
 
 * parameter _list_ *openstack_options* (default: none, description: OpenStack options)
 
-* parameter _array_ *common_options* (default: none, description: Common options for both sketches)
+* parameter _list_ *vmware_options* (default: none, description: VMWare options)
+
+* parameter _array_ *common_options* (default: none, description: Common options for all sketches)
 
 
 ## SAMPLE USAGE

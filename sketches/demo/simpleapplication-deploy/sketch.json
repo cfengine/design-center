@@ -1,0 +1,52 @@
+{
+   "api" : {
+      "deploy" : [
+          { type: "environment", name: "runenv", },
+          { type: "metadata", name: "mymetadata", },
+          {
+              "description" : "Number of web workers",
+              "name" : "workers",
+              "type" : "string"
+          },
+          {
+              "description" : "Enable this deployment? (if disabled, destroy the VMs)",
+              "name" : "enable",
+              "type" : "boolean",
+              "default": true
+          }
+      ]
+   },
+   "interface" : [
+      "deploy.cf"
+   ],
+   "manifest" : {
+       "params/demo.json": { desc: "example parameters" },
+      "README.md" : {
+         "documentation" : true
+      },
+      "deploy.cf" : {
+         "desc" : "main file"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "description" : "Deploy a full infrastructure for a simple application",
+      "license" : "MIT",
+      "name" : "Demo::SimpleApplication::Deploy",
+      "tags" : [
+         "vmware",
+         "ensure",
+         "deploy",
+         "demo",
+         "sketchify_generated",
+         "enterprise_compatible"
+      ],
+       "version" : "1.0",
+       depends: { "Demo::SimpleApplication": { }, "Cloud::Services::VMWare": {}, cfengine: { version: "3.5.0" },
+                  "os" : [ {"linux" : "All Linux distributions"} ]
+                }
+   },
+   "namespace" : "cfdc_simpleapplication"
+}

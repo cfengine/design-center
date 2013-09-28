@@ -719,6 +719,10 @@ autobalance:
 	$(CFSKETCH_DA) --install Cloud::Autobalance --activate Cloud::Autobalance=$(SOURCEDIR)/cloud/autobalance/params/demo.json
 	$(RUNNER)
 
+autobalance_vmware:
+	$(CFSKETCH_DA) --install Cloud::Autobalance --activate Cloud::Autobalance=$(SOURCEDIR)/cloud/autobalance/params/demo_vmware.json
+	$(RUNNER)
+
 users:
 	$(CFSKETCH_DA) --install Users::Local --activate Users::Local=$(SOURCEDIR)/system/users_local/params/demo.json
 	$(RUNNER)
@@ -749,3 +753,7 @@ apache:
 
 uninstall_newrelic:
 	$(CFSKETCH_DA) --uninstall Applications::NewRelic
+
+demo_deploy:
+	$(CFSKETCH_DA) --install Demo::SimpleApplication::Deploy --activate Demo::SimpleApplication::Deploy=$(SOURCEDIR)/demo/simpleapplication-deploy/params/demo.json
+	$(RUNNER)
