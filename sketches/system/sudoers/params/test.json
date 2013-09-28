@@ -1,10 +1,8 @@
-# -*- mode: javascript; indent-tabs-mode: nil; sh-basic-offset: 4; -*-
-# vi:tabstop=4:expandtab
 [
     {
         "System::Sudoers" : {
-            "file_path": "/tmp/sudoers",
-            "drop_dirs": [ "/etc/sudoers.d" ]
+            "file_path" : "/tmp/sudoers",
+            "drop_dirs" : [ "/etc/sudoers.d" ]
         }
     },
     {
@@ -12,7 +10,7 @@
             "file_path": "/tmp/sudoers.d/sample.sudoers",
             "defaults" : [
                 { "type" : "Defaults", "parameters" : "!authenticate" },
-                { "type" : "Defaults@SERVER_LIST" , "parameters" : "authenticate" },
+                { "type" : "Defaults@HOST_LIST" , "parameters" : "authenticate" },
                 { "type" : "Defaults@myserver1,myserver2" , "parameters" : "authenticate" },
                 { "type" : "Defaults:USER_LIST", "parameters" : "authenticate" },
                 { "type" : "Defaults:myuser1,myuser2", "parameters" : "authenticate" },
@@ -20,22 +18,13 @@
                 { "type" : "Defaults!/bin/mycommand1,/sbin/mycommand2" , "parameters" : "authenticate" }
             ],
             "user_alias" : {
-                "USER_LIST" : [ "myuser1", "myuser2" ],
+                "USER_LIST" : [ "myuser1", "myuser2" ]
             },
             "runas_alias" : {
-                "OP" : [ "root", "operator" ],
-                "DB" : [ "oracle, sybase" ],
-                "RUNAS_LIST" : [ "root" ]
+                "RUNAS_LIST" : [ "root", "daemon" ]
             },
             "host_alias" : {
-                "SPARC" : [ "bigtime", "eclipse", "moet", "anchor" ],
-                "SGI" : [ "grolsch", "dandelion", "black" ],
-                "ALPHA" : [ "widget", "thalamus", "foobar" ],
-                "HPPA" : [ "boa", "nag", "python" ],
-                "CUNETS" : [ "128.138.0.0/255.255.0.0" ],
-                "CSNETS" : [ "128.138.243.0", "128.138.204.0/24", "128.138.242.0" ],
-                "SERVERS" : [ "master", "mail", "www", "ns" ],
-                "CDROM" : [ "orion", "perseus", "hercules" ]
+                "HOST_LIST" : [ "host1", "host2" ]
             },
             "cmnd_alias" : {
                 "DUMPS" : {
@@ -44,197 +33,88 @@
                     "2" : { "cmnd" : "/usr/sbin/rdump" },
                     "3" : { "cmnd" : "/usr/sbin/restore" },
                     "4" : { "cmnd" : "/usr/sbin/rrestore" }
-                },
-                "KILL" : {
-                    "0" : {"cmnd" : "/usr/bin/kill" }
-                },
-                "PRINTING" : {
-                    "0" : { "cmnd" : "/usr/sbin/lpc" },
-                    "1" : { "cmnd" : "/usr/bin/lprm" }
-                },
-                "SHUTDOWN" : {
-                    "0" : { "cmnd" : "/usr/sbin/shutdown" }
-                },
-                "HALT" : {
-                    "0" : { "cmnd" : "/usr/sbin/halt" }
-                },
-                "REBOOT" : {
-                    "0" : { "cmnd" : "/usr/sbin/reboot" }
-                },
-                "SHELLS" : {
-                    "0" : { "cmnd" : "/usr/bin/sh" },
-                    "1" : { "cmnd" : "/usr/bin/csh" },
-                    "2" : { "cmnd" : "/usr/bin/ksh" },
-                    "3" : { "cmnd" : "/usr/local/bin/tcsh" },
-                    "4" : { "cmnd" : "/usr/bin/rsh" },
-                    "5" : { "cmnd" : "/usr/local/bin/zsh" }
-                },
-                "SU" : {
-                    "0" : { "cmnd" : "/usr/bin/su" }
-                },
-                "PAGERS" : {
-                    "0" : { "cmnd" : "/usr/bin/more" },
-                    "1" : { "cmnd" : "/usr/bin/pg" },
-                    "2" : { "cmnd" : "/usr/bin/less" }
                 }
             },
-                "user_specs" : [
+            "user_specs" : [
                 {
-                            "user_list" : [ "root" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
-                        "0": { "runas_specs" : { "users" : [ "ALL" ] }, "cmnd" : "ALL" }
-                            }
-                },
-                {
-                            "user_list" : [ "%wheel" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
-                        "0": { "runas_specs" : { "users" : [ "ALL" ] }, "cmnd" : "ALL" }
-                            }
-                },
-                {
-                            "user_list" : [ "FULLTIMERS" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
-                        "0": { "tag_specs" : [ "NOPASSWD" ], "cmnd" : "ALL" }
-                            }
-                },
-                {
-                            "user_list" : [ "PARTTIMERS" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "minimal" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "jack" ],
-                            "host_list" : [ "CSNETS" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "user1", "user2" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "lisa" ],
-                            "host_list" : [ "CUNETS" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "multiple_hosts" ],
+                    "host_list" : [ "host1", "host2" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "operator" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
-                        "0": { "cmnd" : "DUMPS" },
-                        "1": { "cmnd" : "KILL" },
-                        "2": { "cmnd" : "SHUTDOWN" },
-                        "3": { "cmnd" : "HALT" },
-                        "4": { "cmnd" : "REBOOT" },
-                        "5": { "cmnd" : "PRINTING" },
-                        "6": { "cmnd" : "sudoedit /etc/printcap" },
-                        "7": { "cmnd" : "/usr/oper/bin/" }
-                            }
+                    "user_list" : [ "multiple_commands" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "cmnd" : "/bin/echo" },
+                        "1": { "cmnd" : "/bin/ls" }
+                    }
                 },
                 {
-                            "user_list" : [ "pete" ],
-                            "host_list" : [ "HPPA" ],
-                            "cmnd_spec_list" : {
-                        "0": { "cmnd" : "/usr/bin/passwd [A-Za-z]*" },
-                        "1": { "cmnd" : "!/usr/bin/passwd root" }
-                            }
+                    "user_list" : [ "runas_users" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "runas_specs" : { "users" : [ "root", "daemon" ] }, "cmnd" : "ALL" }
+                    }
                 },
                 {
-                            "user_list" : [ "%opers" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
-                        "0": { "runas_specs" : { "groups": [ "ADMINGRP" ] }, "cmnd" : "/usr/sbin/" }
-                            }
+                    "user_list" : [ "runas_groups" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "runas_specs" : { "groups" : [ "adm", "disk" ] }, "cmnd" : "ALL" }
+                    }
                 },
                 {
-                            "user_list" : [ "bob" ],
-                            "host_list" : [ "SPARC" ],
-                            "cmnd_spec_list" : {
-                        "0": { "runas_specs" : { "users": [ "OP" ] }, "cmnd" : "ALL" }
-                            }
+                    "user_list" : [ "runas_users_and_groups" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "runas_specs" : { "users" : [ "root", "daemon" ], "groups" : [ "adm", "disk" ] }, "cmnd" : "ALL" }
+                    }
                 },
                 {
-                            "user_list" : [ "bob" ],
-                            "host_list" : [ "SGI" ],
-                            "cmnd_spec_list" : {
-                        "0": { "runas_specs" : { "users": [ "OP" ] }, "cmnd" : "ALL" }
-                            }
+                    "user_list" : [ "runas_users_and_groups" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "runas_specs" : { "users" : [ "root", "daemon" ], "groups" : [ "adm", "disk" ] }, "cmnd" : "ALL" }
+                    }
                 },
                 {
-                            "user_list" : [ "jim" ],
-                            "host_list" : [ "+biglab" ],
-                            "cmnd_spec_list" : {
-                        "0": { "cmnd" : "ALL" }
-                            }
+                    "user_list" : [ "runas_selinux_role" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "selinux_spec" : { "role" : "sysadm_r" }, "cmnd" : "ALL" }
+                    }
                 },
                 {
-                            "user_list" : [ "+secretaries" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
-                        "0": { "cmnd" : "PRINTING" },
-                        "1": { "cmnd" : "/usr/bin/adduser" },
-                        "2": { "cmnd" : "/usr/bin/rmuser" }
-                            }
+                    "user_list" : [ "runas_selinux_type" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "selinux_spec" : { "type" : "user_home_t" }, "cmnd" : "ALL" }
+                    }
                 },
                 {
-                            "user_list" : [ "fred" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
-                        "0": { "runas_specs" : { "users" : [ "DB" ] }, "tag_specs" : [ "NOPASSWD" ], "cmnd" : "PRINTING" }
-                            }
+                    "user_list" : [ "tag_specs" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "tag_specs" : [ "NOPASSWD", "NOSETENV" ], "cmnd" : "ALL" }
+                    }
                 },
-                {
-                            "user_list" : [ "john" ],
-                            "host_list" : [ "ALPHA" ],
-                            "cmnd_spec_list" : {
-                        "0": { "cmnd" : "/usr/bin/su [!-]*" },
-                        "1": { "cmnd" : "!/usr/bin/su *root*" }
-                            }
-                },
-                {
-                            "user_list" : [ "jill" ],
-                            "host_list" : [ "SERVERS" ],
-                            "cmnd_spec_list" : {
-                        "0": { "cmnd" : "/usr/bin/" },
-                        "1": { "cmnd" : "!SU" },
-                        "2": { "cmnd" : "!SHELLS" }
-                            }
-                },
-                {
-                            "user_list" : [ "steve" ],
-                            "host_list" : [ "CSNETS" ],
-                            "cmnd_spec_list" : {
-                        "0": { "runas_specs" : { "users" : [ "operator" ] }, "cmnd" : "/usr/local/op_commands/" }
-                            }
-                },
-                {
-                            "user_list" : [ "matt" ],
-                            "host_list" : [ "valkyrie" ],
-                            "cmnd_spec_list" : {
-                        "0": { "cmnd" : "KILL" }
-                            }
-                },
-                {
-                            "user_list" : [ "WEBMASTERS" ],
-                            "host_list" : [ "www" ],
-                            "cmnd_spec_list" : {
-                        "0": { "runas_specs" : { "users" : [ "www" ] }, "cmnd" : "ALL" },
-                        "1": { "runas_specs" : { "users" : [ "root" ] }, "cmnd" : "/usr/bin/su www" }
-                            }
-                },
-                {
-                            "user_list" : [ "ALL" ],
-                            "host_list" : [ "CDROM" ],
-                            "cmnd_spec_list" : {
-                        "0": { "tag_specs" : [ "NOPASSWD" ], "cmnd" : "/sbin/umount /CDROM" },
-                        "1": { "cmnd" : "/sbin/mount -o nosuid\\,nodev /dev/cd0a /CDROM" }
-                            }
-                }
-                ]
+            ]
         }
     }
 ]

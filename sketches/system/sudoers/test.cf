@@ -28,7 +28,7 @@ bundle common cfsketch_g
   vars:
       # Files that need to be loaded for the activated sketches and
       # their dependencies.
-      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+      "inputs" slist => { "../../libraries/dclib-3.5.0/library.cf", "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
 }
 
 bundle agent cfsketch_run
@@ -42,15 +42,16 @@ bundle agent cfsketch_run
       "___001_System_Sudoers_ensure_metadata[api][file_path][type]" string => "string";
       "___001_System_Sudoers_ensure_metadata[api][host_alias][type]" string => "array";
       "___001_System_Sudoers_ensure_metadata[api][metadata][type]" string => "metadata";
+      "___001_System_Sudoers_ensure_metadata[api][prefix][type]" string => "string";
       "___001_System_Sudoers_ensure_metadata[api][runas_alias][type]" string => "array";
       "___001_System_Sudoers_ensure_metadata[api][runenv][type]" string => "environment";
       "___001_System_Sudoers_ensure_metadata[api][user_alias][type]" string => "array";
       "___001_System_Sudoers_ensure_metadata[api][user_specs][type]" string => "array";
       "___001_System_Sudoers_ensure_metadata[api][visudo_path][type]" string => "string";
       "___001_System_Sudoers_ensure_metadata[authors]" slist => { "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>", "Ben Heilman <bheilman@enova.com>" };
-      "___001_System_Sudoers_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "___001_System_Sudoers_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::dclib::3.5.0", "CFEngine::stdlib" };
       "___001_System_Sudoers_ensure_metadata[license]" string => "MIT";
-      "___001_System_Sudoers_ensure_metadata[location]" string => "/home/bheilman/.cfagent/inputs/../../system/sudoers";
+      "___001_System_Sudoers_ensure_metadata[location]" string => "/home/bheilman/.cfagent/inputs/sketches/system/sudoers";
       "___001_System_Sudoers_ensure_metadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json", "params/test.json", "test.cf", "test.pl" };
       "___001_System_Sudoers_ensure_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
       "___001_System_Sudoers_ensure_metadata[manifest_docs]" slist => { "README.md" };
@@ -59,161 +60,128 @@ bundle agent cfsketch_run
       "___001_System_Sudoers_ensure_metadata[manifest_test]" slist => { "test.pl" };
       "___001_System_Sudoers_ensure_metadata[name]" string => "System::Sudoers";
       "___001_System_Sudoers_ensure_metadata[tags]" slist => { "cfdc", "sudoers" };
-      "___001_System_Sudoers_ensure_metadata[version]" string => "2.0.0";
+      "___001_System_Sudoers_ensure_metadata[version]" string => "2.0.1";
 
-      # array 'defaults' from definition parameter definition from /home/bheilman/design-center/tools/test/../../../../system/sudoers/params/test.json, activation ___001_System_Sudoers_ensure
-      "___001_System_Sudoers_ensure_defaults[000000][parameters]" string => "!authenticate";
-      "___001_System_Sudoers_ensure_defaults[000000][type]" string => "Defaults";
-      "___001_System_Sudoers_ensure_defaults[000001][parameters]" string => "authenticate";
-      "___001_System_Sudoers_ensure_defaults[000001][type]" string => "Defaults@SERVER_LIST";
-      "___001_System_Sudoers_ensure_defaults[000002][parameters]" string => "authenticate";
-      "___001_System_Sudoers_ensure_defaults[000002][type]" string => "Defaults@myserver1,myserver2";
-      "___001_System_Sudoers_ensure_defaults[000003][parameters]" string => "authenticate";
-      "___001_System_Sudoers_ensure_defaults[000003][type]" string => "Defaults:USER_LIST";
-      "___001_System_Sudoers_ensure_defaults[000004][parameters]" string => "authenticate";
-      "___001_System_Sudoers_ensure_defaults[000004][type]" string => "Defaults:myuser1,myuser2";
-      "___001_System_Sudoers_ensure_defaults[000005][parameters]" string => "authenticate";
-      "___001_System_Sudoers_ensure_defaults[000005][type]" string => "Defaults!CMND_LIST";
-      "___001_System_Sudoers_ensure_defaults[000006][parameters]" string => "authenticate";
-      "___001_System_Sudoers_ensure_defaults[000006][type]" string => "Defaults!/bin/mycommand1,/sbin/mycommand2";
-      "___001_System_Sudoers_ensure_defaults[000007][parameters]" string => "authenticate";
-      "___001_System_Sudoers_ensure_defaults[000007][type]" string => "Defaults>RUNAS_LIST";
-      "___001_System_Sudoers_ensure_defaults[000008][parameters]" string => "authenticate";
-      "___001_System_Sudoers_ensure_defaults[000008][type]" string => "Defaults>myuser1,myuser2:mygroup";
+      # array 'defaults' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-1, activation ___001_System_Sudoers_ensure
 
-      # array 'user_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../../../system/sudoers/params/test.json, activation ___001_System_Sudoers_ensure
-      "___001_System_Sudoers_ensure_user_alias[FULLTIMERS]" slist => { "millert", "mikef", "dowdy" };
-      "___001_System_Sudoers_ensure_user_alias[PARTTIMERS]" slist => { "bostley", "jwfox", "crawl" };
-      "___001_System_Sudoers_ensure_user_alias[WEBMASTERS]" slist => { "will", "wendy", "wim" };
+      # array 'user_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-1, activation ___001_System_Sudoers_ensure
 
-      # array 'host_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../../../system/sudoers/params/test.json, activation ___001_System_Sudoers_ensure
-      "___001_System_Sudoers_ensure_host_alias[ALPHA]" slist => { "widget", "thalamus", "foobar" };
-      "___001_System_Sudoers_ensure_host_alias[CDROM]" slist => { "orion", "perseus", "hercules" };
-      "___001_System_Sudoers_ensure_host_alias[CSNETS]" slist => { "128.138.243.0", "128.138.204.0/24", "128.138.242.0" };
-      "___001_System_Sudoers_ensure_host_alias[CUNETS]" slist => { "128.138.0.0/255.255.0.0" };
-      "___001_System_Sudoers_ensure_host_alias[HPPA]" slist => { "boa", "nag", "python" };
-      "___001_System_Sudoers_ensure_host_alias[SERVERS]" slist => { "master", "mail", "www", "ns" };
-      "___001_System_Sudoers_ensure_host_alias[SGI]" slist => { "grolsch", "dandelion", "black" };
-      "___001_System_Sudoers_ensure_host_alias[SPARC]" slist => { "bigtime", "eclipse", "moet", "anchor" };
+      # array 'host_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-1, activation ___001_System_Sudoers_ensure
 
-      # array 'cmnd_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../../../system/sudoers/params/test.json, activation ___001_System_Sudoers_ensure
-      "___001_System_Sudoers_ensure_cmnd_alias[DUMPS][0][cmnd]" string => "/usr/bin/mt";
-      "___001_System_Sudoers_ensure_cmnd_alias[DUMPS][1][cmnd]" string => "/usr/sbin/dump";
-      "___001_System_Sudoers_ensure_cmnd_alias[DUMPS][2][cmnd]" string => "/usr/sbin/rdump";
-      "___001_System_Sudoers_ensure_cmnd_alias[DUMPS][3][cmnd]" string => "/usr/sbin/restore";
-      "___001_System_Sudoers_ensure_cmnd_alias[DUMPS][4][cmnd]" string => "/usr/sbin/rrestore";
-      "___001_System_Sudoers_ensure_cmnd_alias[HALT][0][cmnd]" string => "/usr/sbin/halt";
-      "___001_System_Sudoers_ensure_cmnd_alias[KILL][0][cmnd]" string => "/usr/bin/kill";
-      "___001_System_Sudoers_ensure_cmnd_alias[PAGERS][0][cmnd]" string => "/usr/bin/more";
-      "___001_System_Sudoers_ensure_cmnd_alias[PAGERS][1][cmnd]" string => "/usr/bin/pg";
-      "___001_System_Sudoers_ensure_cmnd_alias[PAGERS][2][cmnd]" string => "/usr/bin/less";
-      "___001_System_Sudoers_ensure_cmnd_alias[PRINTING][0][cmnd]" string => "/usr/sbin/lpc";
-      "___001_System_Sudoers_ensure_cmnd_alias[PRINTING][1][cmnd]" string => "/usr/bin/lprm";
-      "___001_System_Sudoers_ensure_cmnd_alias[REBOOT][0][cmnd]" string => "/usr/sbin/reboot";
-      "___001_System_Sudoers_ensure_cmnd_alias[SHELLS][0][cmnd]" string => "/usr/bin/sh";
-      "___001_System_Sudoers_ensure_cmnd_alias[SHELLS][1][cmnd]" string => "/usr/bin/csh";
-      "___001_System_Sudoers_ensure_cmnd_alias[SHELLS][2][cmnd]" string => "/usr/bin/ksh";
-      "___001_System_Sudoers_ensure_cmnd_alias[SHELLS][3][cmnd]" string => "/usr/local/bin/tcsh";
-      "___001_System_Sudoers_ensure_cmnd_alias[SHELLS][4][cmnd]" string => "/usr/bin/rsh";
-      "___001_System_Sudoers_ensure_cmnd_alias[SHELLS][5][cmnd]" string => "/usr/local/bin/zsh";
-      "___001_System_Sudoers_ensure_cmnd_alias[SHUTDOWN][0][cmnd]" string => "/usr/sbin/shutdown";
-      "___001_System_Sudoers_ensure_cmnd_alias[SU][0][cmnd]" string => "/usr/bin/su";
+      # array 'cmnd_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-1, activation ___001_System_Sudoers_ensure
 
-      # array 'runas_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../../../system/sudoers/params/test.json, activation ___001_System_Sudoers_ensure
-      "___001_System_Sudoers_ensure_runas_alias[DB]" slist => { "oracle, sybase" };
-      "___001_System_Sudoers_ensure_runas_alias[OP]" slist => { "root", "operator" };
+      # array 'runas_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-1, activation ___001_System_Sudoers_ensure
 
-      # array 'user_specs' from definition parameter definition from /home/bheilman/design-center/tools/test/../../../../system/sudoers/params/test.json, activation ___001_System_Sudoers_ensure
-      "___001_System_Sudoers_ensure_user_specs[000000][cmnd_spec_list][0][cmnd]" string => "ALL";
-      "___001_System_Sudoers_ensure_user_specs[000000][cmnd_spec_list][0][runas_specs][users]" slist => { "ALL" };
-      "___001_System_Sudoers_ensure_user_specs[000000][host_list]" slist => { "ALL" };
-      "___001_System_Sudoers_ensure_user_specs[000000][user_list]" slist => { "root" };
-      "___001_System_Sudoers_ensure_user_specs[000001][cmnd_spec_list][0][cmnd]" string => "ALL";
-      "___001_System_Sudoers_ensure_user_specs[000001][cmnd_spec_list][0][runas_specs][users]" slist => { "ALL" };
-      "___001_System_Sudoers_ensure_user_specs[000001][host_list]" slist => { "ALL" };
-      "___001_System_Sudoers_ensure_user_specs[000001][user_list]" slist => { "%wheel" };
-      "___001_System_Sudoers_ensure_user_specs[000002][cmnd_spec_list][0][cmnd]" string => "ALL";
-      "___001_System_Sudoers_ensure_user_specs[000002][cmnd_spec_list][0][tag_specs]" slist => { "NOPASSWD" };
-      "___001_System_Sudoers_ensure_user_specs[000002][host_list]" slist => { "ALL" };
-      "___001_System_Sudoers_ensure_user_specs[000002][user_list]" slist => { "FULLTIMERS" };
-      "___001_System_Sudoers_ensure_user_specs[000003][cmnd_spec_list][0][cmnd]" string => "ALL";
-      "___001_System_Sudoers_ensure_user_specs[000003][host_list]" slist => { "ALL" };
-      "___001_System_Sudoers_ensure_user_specs[000003][user_list]" slist => { "PARTTIMERS" };
-      "___001_System_Sudoers_ensure_user_specs[000004][cmnd_spec_list][0][cmnd]" string => "ALL";
-      "___001_System_Sudoers_ensure_user_specs[000004][host_list]" slist => { "CSNETS" };
-      "___001_System_Sudoers_ensure_user_specs[000004][user_list]" slist => { "jack" };
-      "___001_System_Sudoers_ensure_user_specs[000005][cmnd_spec_list][0][cmnd]" string => "ALL";
-      "___001_System_Sudoers_ensure_user_specs[000005][host_list]" slist => { "CUNETS" };
-      "___001_System_Sudoers_ensure_user_specs[000005][user_list]" slist => { "lisa" };
-      "___001_System_Sudoers_ensure_user_specs[000006][cmnd_spec_list][0][cmnd]" string => "DUMPS";
-      "___001_System_Sudoers_ensure_user_specs[000006][cmnd_spec_list][1][cmnd]" string => "KILL";
-      "___001_System_Sudoers_ensure_user_specs[000006][cmnd_spec_list][2][cmnd]" string => "SHUTDOWN";
-      "___001_System_Sudoers_ensure_user_specs[000006][cmnd_spec_list][3][cmnd]" string => "HALT";
-      "___001_System_Sudoers_ensure_user_specs[000006][cmnd_spec_list][4][cmnd]" string => "REBOOT";
-      "___001_System_Sudoers_ensure_user_specs[000006][cmnd_spec_list][5][cmnd]" string => "PRINTING";
-      "___001_System_Sudoers_ensure_user_specs[000006][cmnd_spec_list][6][cmnd]" string => "sudoedit /etc/printcap";
-      "___001_System_Sudoers_ensure_user_specs[000006][cmnd_spec_list][7][cmnd]" string => "/usr/oper/bin/";
-      "___001_System_Sudoers_ensure_user_specs[000006][host_list]" slist => { "ALL" };
-      "___001_System_Sudoers_ensure_user_specs[000006][user_list]" slist => { "operator" };
-      "___001_System_Sudoers_ensure_user_specs[000007][cmnd_spec_list][0][cmnd]" string => "/usr/bin/passwd [A-Za-z]*";
-      "___001_System_Sudoers_ensure_user_specs[000007][cmnd_spec_list][1][cmnd]" string => "!/usr/bin/passwd root";
-      "___001_System_Sudoers_ensure_user_specs[000007][host_list]" slist => { "HPPA" };
-      "___001_System_Sudoers_ensure_user_specs[000007][user_list]" slist => { "pete" };
-      "___001_System_Sudoers_ensure_user_specs[000008][cmnd_spec_list][0][cmnd]" string => "/usr/sbin/";
-      "___001_System_Sudoers_ensure_user_specs[000008][cmnd_spec_list][0][runas_specs][groups]" slist => { "ADMINGRP" };
-      "___001_System_Sudoers_ensure_user_specs[000008][host_list]" slist => { "ALL" };
-      "___001_System_Sudoers_ensure_user_specs[000008][user_list]" slist => { "%opers" };
-      "___001_System_Sudoers_ensure_user_specs[000009][cmnd_spec_list][0][cmnd]" string => "ALL";
-      "___001_System_Sudoers_ensure_user_specs[000009][cmnd_spec_list][0][runas_specs][users]" slist => { "OP" };
-      "___001_System_Sudoers_ensure_user_specs[000009][host_list]" slist => { "SPARC" };
-      "___001_System_Sudoers_ensure_user_specs[000009][user_list]" slist => { "bob" };
-      "___001_System_Sudoers_ensure_user_specs[000010][cmnd_spec_list][0][cmnd]" string => "ALL";
-      "___001_System_Sudoers_ensure_user_specs[000010][cmnd_spec_list][0][runas_specs][users]" slist => { "OP" };
-      "___001_System_Sudoers_ensure_user_specs[000010][host_list]" slist => { "SGI" };
-      "___001_System_Sudoers_ensure_user_specs[000010][user_list]" slist => { "bob" };
-      "___001_System_Sudoers_ensure_user_specs[000011][cmnd_spec_list][0][cmnd]" string => "ALL";
-      "___001_System_Sudoers_ensure_user_specs[000011][host_list]" slist => { "+biglab" };
-      "___001_System_Sudoers_ensure_user_specs[000011][user_list]" slist => { "jim" };
-      "___001_System_Sudoers_ensure_user_specs[000012][cmnd_spec_list][0][cmnd]" string => "PRINTING";
-      "___001_System_Sudoers_ensure_user_specs[000012][cmnd_spec_list][1][cmnd]" string => "/usr/bin/adduser";
-      "___001_System_Sudoers_ensure_user_specs[000012][cmnd_spec_list][2][cmnd]" string => "/usr/bin/rmuser";
-      "___001_System_Sudoers_ensure_user_specs[000012][host_list]" slist => { "ALL" };
-      "___001_System_Sudoers_ensure_user_specs[000012][user_list]" slist => { "+secretaries" };
-      "___001_System_Sudoers_ensure_user_specs[000013][cmnd_spec_list][0][cmnd]" string => "PRINTING";
-      "___001_System_Sudoers_ensure_user_specs[000013][cmnd_spec_list][0][runas_specs][users]" slist => { "DB" };
-      "___001_System_Sudoers_ensure_user_specs[000013][cmnd_spec_list][0][tag_specs]" slist => { "NOPASSWD" };
-      "___001_System_Sudoers_ensure_user_specs[000013][host_list]" slist => { "ALL" };
-      "___001_System_Sudoers_ensure_user_specs[000013][user_list]" slist => { "fred" };
-      "___001_System_Sudoers_ensure_user_specs[000014][cmnd_spec_list][0][cmnd]" string => "/usr/bin/su [!-]*";
-      "___001_System_Sudoers_ensure_user_specs[000014][cmnd_spec_list][1][cmnd]" string => "!/usr/bin/su *root*";
-      "___001_System_Sudoers_ensure_user_specs[000014][host_list]" slist => { "ALPHA" };
-      "___001_System_Sudoers_ensure_user_specs[000014][user_list]" slist => { "john" };
-      "___001_System_Sudoers_ensure_user_specs[000015][cmnd_spec_list][0][cmnd]" string => "/usr/bin/";
-      "___001_System_Sudoers_ensure_user_specs[000015][cmnd_spec_list][1][cmnd]" string => "!SU";
-      "___001_System_Sudoers_ensure_user_specs[000015][cmnd_spec_list][2][cmnd]" string => "!SHELLS";
-      "___001_System_Sudoers_ensure_user_specs[000015][host_list]" slist => { "SERVERS" };
-      "___001_System_Sudoers_ensure_user_specs[000015][user_list]" slist => { "jill" };
-      "___001_System_Sudoers_ensure_user_specs[000016][cmnd_spec_list][0][cmnd]" string => "/usr/local/op_commands/";
-      "___001_System_Sudoers_ensure_user_specs[000016][cmnd_spec_list][0][runas_specs][users]" slist => { "operator" };
-      "___001_System_Sudoers_ensure_user_specs[000016][host_list]" slist => { "CSNETS" };
-      "___001_System_Sudoers_ensure_user_specs[000016][user_list]" slist => { "steve" };
-      "___001_System_Sudoers_ensure_user_specs[000017][cmnd_spec_list][0][cmnd]" string => "KILL";
-      "___001_System_Sudoers_ensure_user_specs[000017][host_list]" slist => { "valkyrie" };
-      "___001_System_Sudoers_ensure_user_specs[000017][user_list]" slist => { "matt" };
-      "___001_System_Sudoers_ensure_user_specs[000018][cmnd_spec_list][0][cmnd]" string => "ALL";
-      "___001_System_Sudoers_ensure_user_specs[000018][cmnd_spec_list][0][runas_specs][users]" slist => { "www" };
-      "___001_System_Sudoers_ensure_user_specs[000018][cmnd_spec_list][1][cmnd]" string => "/usr/bin/su www";
-      "___001_System_Sudoers_ensure_user_specs[000018][cmnd_spec_list][1][runas_specs][users]" slist => { "root" };
-      "___001_System_Sudoers_ensure_user_specs[000018][host_list]" slist => { "www" };
-      "___001_System_Sudoers_ensure_user_specs[000018][user_list]" slist => { "WEBMASTERS" };
-      "___001_System_Sudoers_ensure_user_specs[000019][cmnd_spec_list][0][cmnd]" string => "/sbin/umount /CDROM";
-      "___001_System_Sudoers_ensure_user_specs[000019][cmnd_spec_list][0][tag_specs]" slist => { "NOPASSWD" };
-      "___001_System_Sudoers_ensure_user_specs[000019][cmnd_spec_list][1][cmnd]" string => "/sbin/mount -o nosuid\,nodev /dev/cd0a /CDROM";
-      "___001_System_Sudoers_ensure_user_specs[000019][host_list]" slist => { "CDROM" };
-      "___001_System_Sudoers_ensure_user_specs[000019][user_list]" slist => { "ALL" };
+      # array 'user_specs' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-1, activation ___001_System_Sudoers_ensure
 
-      # array 'drop_dirs' from definition parameter definition from /home/bheilman/design-center/tools/test/../../../../system/sudoers/params/test.json, activation ___001_System_Sudoers_ensure
+      # array 'drop_dirs' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-1, activation ___001_System_Sudoers_ensure
       "___001_System_Sudoers_ensure_drop_dirs[000000]" string => "/etc/sudoers.d";
+
+      # array 'metadata' from definition sketch metadata, activation ___002_System_Sudoers_ensure
+      "___002_System_Sudoers_ensure_metadata[api][cmnd_alias][type]" string => "array";
+      "___002_System_Sudoers_ensure_metadata[api][defaults][type]" string => "array";
+      "___002_System_Sudoers_ensure_metadata[api][drop_dirs][type]" string => "array";
+      "___002_System_Sudoers_ensure_metadata[api][file_path][type]" string => "string";
+      "___002_System_Sudoers_ensure_metadata[api][host_alias][type]" string => "array";
+      "___002_System_Sudoers_ensure_metadata[api][metadata][type]" string => "metadata";
+      "___002_System_Sudoers_ensure_metadata[api][prefix][type]" string => "string";
+      "___002_System_Sudoers_ensure_metadata[api][runas_alias][type]" string => "array";
+      "___002_System_Sudoers_ensure_metadata[api][runenv][type]" string => "environment";
+      "___002_System_Sudoers_ensure_metadata[api][user_alias][type]" string => "array";
+      "___002_System_Sudoers_ensure_metadata[api][user_specs][type]" string => "array";
+      "___002_System_Sudoers_ensure_metadata[api][visudo_path][type]" string => "string";
+      "___002_System_Sudoers_ensure_metadata[authors]" slist => { "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>", "Ben Heilman <bheilman@enova.com>" };
+      "___002_System_Sudoers_ensure_metadata[depends]" slist => { "CFEngine::dclib", "CFEngine::dclib::3.5.0", "CFEngine::stdlib" };
+      "___002_System_Sudoers_ensure_metadata[license]" string => "MIT";
+      "___002_System_Sudoers_ensure_metadata[location]" string => "/home/bheilman/.cfagent/inputs/sketches/system/sudoers";
+      "___002_System_Sudoers_ensure_metadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json", "params/test.json", "test.cf", "test.pl" };
+      "___002_System_Sudoers_ensure_metadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "___002_System_Sudoers_ensure_metadata[manifest_docs]" slist => { "README.md" };
+      "___002_System_Sudoers_ensure_metadata[manifest_exe]" slist => { "cf_null" };
+      "___002_System_Sudoers_ensure_metadata[manifest_extra]" slist => { "params/demo.json", "params/test.json" };
+      "___002_System_Sudoers_ensure_metadata[manifest_test]" slist => { "test.pl" };
+      "___002_System_Sudoers_ensure_metadata[name]" string => "System::Sudoers";
+      "___002_System_Sudoers_ensure_metadata[tags]" slist => { "cfdc", "sudoers" };
+      "___002_System_Sudoers_ensure_metadata[version]" string => "2.0.1";
+
+      # array 'defaults' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-2, activation ___002_System_Sudoers_ensure
+      "___002_System_Sudoers_ensure_defaults[000000][parameters]" string => "!authenticate";
+      "___002_System_Sudoers_ensure_defaults[000000][type]" string => "Defaults";
+      "___002_System_Sudoers_ensure_defaults[000001][parameters]" string => "authenticate";
+      "___002_System_Sudoers_ensure_defaults[000001][type]" string => "Defaults@HOST_LIST";
+      "___002_System_Sudoers_ensure_defaults[000002][parameters]" string => "authenticate";
+      "___002_System_Sudoers_ensure_defaults[000002][type]" string => "Defaults@myserver1,myserver2";
+      "___002_System_Sudoers_ensure_defaults[000003][parameters]" string => "authenticate";
+      "___002_System_Sudoers_ensure_defaults[000003][type]" string => "Defaults:USER_LIST";
+      "___002_System_Sudoers_ensure_defaults[000004][parameters]" string => "authenticate";
+      "___002_System_Sudoers_ensure_defaults[000004][type]" string => "Defaults:myuser1,myuser2";
+      "___002_System_Sudoers_ensure_defaults[000005][parameters]" string => "authenticate";
+      "___002_System_Sudoers_ensure_defaults[000005][type]" string => "Defaults!CMND_LIST";
+      "___002_System_Sudoers_ensure_defaults[000006][parameters]" string => "authenticate";
+      "___002_System_Sudoers_ensure_defaults[000006][type]" string => "Defaults!/bin/mycommand1,/sbin/mycommand2";
+
+      # array 'user_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-2, activation ___002_System_Sudoers_ensure
+      "___002_System_Sudoers_ensure_user_alias[USER_LIST]" slist => { "myuser1", "myuser2" };
+
+      # array 'host_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-2, activation ___002_System_Sudoers_ensure
+      "___002_System_Sudoers_ensure_host_alias[HOST_LIST]" slist => { "host1", "host2" };
+
+      # array 'cmnd_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-2, activation ___002_System_Sudoers_ensure
+      "___002_System_Sudoers_ensure_cmnd_alias[DUMPS][0][cmnd]" string => "/usr/bin/mt";
+      "___002_System_Sudoers_ensure_cmnd_alias[DUMPS][1][cmnd]" string => "/usr/sbin/dump";
+      "___002_System_Sudoers_ensure_cmnd_alias[DUMPS][2][cmnd]" string => "/usr/sbin/rdump";
+      "___002_System_Sudoers_ensure_cmnd_alias[DUMPS][3][cmnd]" string => "/usr/sbin/restore";
+      "___002_System_Sudoers_ensure_cmnd_alias[DUMPS][4][cmnd]" string => "/usr/sbin/rrestore";
+
+      # array 'runas_alias' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-2, activation ___002_System_Sudoers_ensure
+      "___002_System_Sudoers_ensure_runas_alias[RUNAS_LIST]" slist => { "root", "daemon" };
+
+      # array 'user_specs' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-2, activation ___002_System_Sudoers_ensure
+      "___002_System_Sudoers_ensure_user_specs[000000][cmnd_spec_list][0][cmnd]" string => "ALL";
+      "___002_System_Sudoers_ensure_user_specs[000000][host_list]" slist => { "ALL" };
+      "___002_System_Sudoers_ensure_user_specs[000000][user_list]" slist => { "minimal" };
+      "___002_System_Sudoers_ensure_user_specs[000001][cmnd_spec_list][0][cmnd]" string => "ALL";
+      "___002_System_Sudoers_ensure_user_specs[000001][host_list]" slist => { "ALL" };
+      "___002_System_Sudoers_ensure_user_specs[000001][user_list]" slist => { "user1", "user2" };
+      "___002_System_Sudoers_ensure_user_specs[000002][cmnd_spec_list][0][cmnd]" string => "ALL";
+      "___002_System_Sudoers_ensure_user_specs[000002][host_list]" slist => { "host1", "host2" };
+      "___002_System_Sudoers_ensure_user_specs[000002][user_list]" slist => { "multiple_hosts" };
+      "___002_System_Sudoers_ensure_user_specs[000003][cmnd_spec_list][0][cmnd]" string => "/bin/echo";
+      "___002_System_Sudoers_ensure_user_specs[000003][cmnd_spec_list][1][cmnd]" string => "/bin/ls";
+      "___002_System_Sudoers_ensure_user_specs[000003][host_list]" slist => { "ALL" };
+      "___002_System_Sudoers_ensure_user_specs[000003][user_list]" slist => { "multiple_commands" };
+      "___002_System_Sudoers_ensure_user_specs[000004][cmnd_spec_list][0][cmnd]" string => "ALL";
+      "___002_System_Sudoers_ensure_user_specs[000004][cmnd_spec_list][0][runas_specs][users]" slist => { "root", "daemon" };
+      "___002_System_Sudoers_ensure_user_specs[000004][host_list]" slist => { "ALL" };
+      "___002_System_Sudoers_ensure_user_specs[000004][user_list]" slist => { "runas_users" };
+      "___002_System_Sudoers_ensure_user_specs[000005][cmnd_spec_list][0][cmnd]" string => "ALL";
+      "___002_System_Sudoers_ensure_user_specs[000005][cmnd_spec_list][0][runas_specs][groups]" slist => { "adm", "disk" };
+      "___002_System_Sudoers_ensure_user_specs[000005][host_list]" slist => { "ALL" };
+      "___002_System_Sudoers_ensure_user_specs[000005][user_list]" slist => { "runas_groups" };
+      "___002_System_Sudoers_ensure_user_specs[000006][cmnd_spec_list][0][cmnd]" string => "ALL";
+      "___002_System_Sudoers_ensure_user_specs[000006][cmnd_spec_list][0][runas_specs][groups]" slist => { "adm", "disk" };
+      "___002_System_Sudoers_ensure_user_specs[000006][cmnd_spec_list][0][runas_specs][users]" slist => { "root", "daemon" };
+      "___002_System_Sudoers_ensure_user_specs[000006][host_list]" slist => { "ALL" };
+      "___002_System_Sudoers_ensure_user_specs[000006][user_list]" slist => { "runas_users_and_groups" };
+      "___002_System_Sudoers_ensure_user_specs[000007][cmnd_spec_list][0][cmnd]" string => "ALL";
+      "___002_System_Sudoers_ensure_user_specs[000007][cmnd_spec_list][0][runas_specs][groups]" slist => { "adm", "disk" };
+      "___002_System_Sudoers_ensure_user_specs[000007][cmnd_spec_list][0][runas_specs][users]" slist => { "root", "daemon" };
+      "___002_System_Sudoers_ensure_user_specs[000007][host_list]" slist => { "ALL" };
+      "___002_System_Sudoers_ensure_user_specs[000007][user_list]" slist => { "runas_users_and_groups" };
+      "___002_System_Sudoers_ensure_user_specs[000008][cmnd_spec_list][0][cmnd]" string => "ALL";
+      "___002_System_Sudoers_ensure_user_specs[000008][cmnd_spec_list][0][selinux_spec][role]" string => "sysadm_r";
+      "___002_System_Sudoers_ensure_user_specs[000008][host_list]" slist => { "ALL" };
+      "___002_System_Sudoers_ensure_user_specs[000008][user_list]" slist => { "runas_selinux_role" };
+      "___002_System_Sudoers_ensure_user_specs[000009][cmnd_spec_list][0][cmnd]" string => "ALL";
+      "___002_System_Sudoers_ensure_user_specs[000009][cmnd_spec_list][0][selinux_spec][type]" string => "user_home_t";
+      "___002_System_Sudoers_ensure_user_specs[000009][host_list]" slist => { "ALL" };
+      "___002_System_Sudoers_ensure_user_specs[000009][user_list]" slist => { "runas_selinux_type" };
+      "___002_System_Sudoers_ensure_user_specs[000010][cmnd_spec_list][0][cmnd]" string => "ALL";
+      "___002_System_Sudoers_ensure_user_specs[000010][cmnd_spec_list][0][tag_specs]" slist => { "NOPASSWD", "NOSETENV" };
+      "___002_System_Sudoers_ensure_user_specs[000010][host_list]" slist => { "ALL" };
+      "___002_System_Sudoers_ensure_user_specs[000010][user_list]" slist => { "tag_specs" };
+
+      # array 'drop_dirs' from definition parameter definition from /home/bheilman/design-center/tools/test/../../sketches/system/sudoers/params/test.json-2, activation ___002_System_Sudoers_ensure
 
   methods:
     any::
@@ -221,9 +189,12 @@ bundle agent cfsketch_run
       "cf_sketch_testing" usebundle => "cf_sketch_testing";
 
     runenv_cf_sketch_testing_activated::
-      "___001_System_Sudoers_ensure" usebundle => cfdc_sudoers:ensure("cf_sketch_testing", "default:cfsketch_run.___001_System_Sudoers_ensure_metadata", "/tmp/sudoers", "/usr/sbin/visudo", "default:cfsketch_run.___001_System_Sudoers_ensure_defaults", "default:cfsketch_run.___001_System_Sudoers_ensure_user_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_host_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_cmnd_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_runas_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_user_specs", "default:cfsketch_run.___001_System_Sudoers_ensure_drop_dirs"), ifvarclass => "linux", useresult => "return____001_System_Sudoers_ensure";
+      "___001_System_Sudoers_ensure" usebundle => cfdc_sudoers:ensure("cf_sketch_testing", "default:cfsketch_run.___001_System_Sudoers_ensure_metadata", "___001_System_Sudoers_ensure", "/tmp/sudoers", "/usr/sbin/visudo", "default:cfsketch_run.___001_System_Sudoers_ensure_defaults", "default:cfsketch_run.___001_System_Sudoers_ensure_user_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_host_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_cmnd_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_runas_alias", "default:cfsketch_run.___001_System_Sudoers_ensure_user_specs", "default:cfsketch_run.___001_System_Sudoers_ensure_drop_dirs"), ifvarclass => "linux", useresult => "return____001_System_Sudoers_ensure";
+    runenv_cf_sketch_testing_activated::
+      "___002_System_Sudoers_ensure" usebundle => cfdc_sudoers:ensure("cf_sketch_testing", "default:cfsketch_run.___002_System_Sudoers_ensure_metadata", "___002_System_Sudoers_ensure", "/tmp/sudoers.d/sample.sudoers", "/usr/sbin/visudo", "default:cfsketch_run.___002_System_Sudoers_ensure_defaults", "default:cfsketch_run.___002_System_Sudoers_ensure_user_alias", "default:cfsketch_run.___002_System_Sudoers_ensure_host_alias", "default:cfsketch_run.___002_System_Sudoers_ensure_cmnd_alias", "default:cfsketch_run.___002_System_Sudoers_ensure_runas_alias", "default:cfsketch_run.___002_System_Sudoers_ensure_user_specs", "default:cfsketch_run.___002_System_Sudoers_ensure_drop_dirs"), ifvarclass => "linux", useresult => "return____002_System_Sudoers_ensure";
 
   reports:
     inform_mode::
       "activation ___001_System_Sudoers_ensure could not run because it requires classes linux" ifvarclass => "inform_mode.!(linux)";
+      "activation ___002_System_Sudoers_ensure could not run because it requires classes linux" ifvarclass => "inform_mode.!(linux)";
 }

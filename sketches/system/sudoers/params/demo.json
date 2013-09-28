@@ -70,53 +70,53 @@
                     "2" : { "cmnd" : "/usr/bin/less" }
                 }
             },
-                "user_specs" : [
+            "user_specs" : [
                 {
-                            "user_list" : [ "root" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "root" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
                         "0": { "runas_specs" : { "users" : [ "ALL" ] }, "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "%wheel" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "%wheel" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
                         "0": { "runas_specs" : { "users" : [ "ALL" ] }, "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "FULLTIMERS" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "FULLTIMERS" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
                         "0": { "tag_specs" : [ "NOPASSWD" ], "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "PARTTIMERS" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "PARTTIMERS" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "jack" ],
-                            "host_list" : [ "CSNETS" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "jack" ],
+                    "host_list" : [ "CSNETS" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "lisa" ],
-                            "host_list" : [ "CUNETS" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "lisa" ],
+                    "host_list" : [ "CUNETS" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "operator" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "operator" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "DUMPS" },
                         "1": { "cmnd" : "KILL" },
                         "2": { "cmnd" : "SHUTDOWN" },
@@ -125,107 +125,107 @@
                         "5": { "cmnd" : "PRINTING" },
                         "6": { "cmnd" : "sudoedit /etc/printcap" },
                         "7": { "cmnd" : "/usr/oper/bin/" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "pete" ],
-                            "host_list" : [ "HPPA" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "pete" ],
+                    "host_list" : [ "HPPA" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "/usr/bin/passwd [A-Za-z]*" },
                         "1": { "cmnd" : "!/usr/bin/passwd root" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "%opers" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "%opers" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
                         "0": { "runas_specs" : { "groups": [ "ADMINGRP" ] }, "cmnd" : "/usr/sbin/" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "bob" ],
-                            "host_list" : [ "SPARC" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "bob" ],
+                    "host_list" : [ "SPARC" ],
+                    "cmnd_spec_list" : {
                         "0": { "runas_specs" : { "users": [ "OP" ] }, "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "bob" ],
-                            "host_list" : [ "SGI" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "bob" ],
+                    "host_list" : [ "SGI" ],
+                    "cmnd_spec_list" : {
                         "0": { "runas_specs" : { "users": [ "OP" ] }, "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "jim" ],
-                            "host_list" : [ "+biglab" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "jim" ],
+                    "host_list" : [ "+biglab" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "ALL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "+secretaries" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "+secretaries" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "PRINTING" },
                         "1": { "cmnd" : "/usr/bin/adduser" },
                         "2": { "cmnd" : "/usr/bin/rmuser" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "fred" ],
-                            "host_list" : [ "ALL" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "fred" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
                         "0": { "runas_specs" : { "users" : [ "DB" ] }, "tag_specs" : [ "NOPASSWD" ], "cmnd" : "PRINTING" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "john" ],
-                            "host_list" : [ "ALPHA" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "john" ],
+                    "host_list" : [ "ALPHA" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "/usr/bin/su [!-]*" },
                         "1": { "cmnd" : "!/usr/bin/su *root*" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "jill" ],
-                            "host_list" : [ "SERVERS" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "jill" ],
+                    "host_list" : [ "SERVERS" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "/usr/bin/" },
                         "1": { "cmnd" : "!SU" },
                         "2": { "cmnd" : "!SHELLS" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "steve" ],
-                            "host_list" : [ "CSNETS" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "steve" ],
+                    "host_list" : [ "CSNETS" ],
+                    "cmnd_spec_list" : {
                         "0": { "runas_specs" : { "users" : [ "operator" ] }, "cmnd" : "/usr/local/op_commands/" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "matt" ],
-                            "host_list" : [ "valkyrie" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "matt" ],
+                    "host_list" : [ "valkyrie" ],
+                    "cmnd_spec_list" : {
                         "0": { "cmnd" : "KILL" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "WEBMASTERS" ],
-                            "host_list" : [ "www" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "WEBMASTERS" ],
+                    "host_list" : [ "www" ],
+                    "cmnd_spec_list" : {
                         "0": { "runas_specs" : { "users" : [ "www" ] }, "cmnd" : "ALL" },
                         "1": { "runas_specs" : { "users" : [ "root" ] }, "cmnd" : "/usr/bin/su www" }
-                            }
+                    }
                 },
                 {
-                            "user_list" : [ "ALL" ],
-                            "host_list" : [ "CDROM" ],
-                            "cmnd_spec_list" : {
+                    "user_list" : [ "ALL" ],
+                    "host_list" : [ "CDROM" ],
+                    "cmnd_spec_list" : {
                         "0": { "tag_specs" : [ "NOPASSWD" ], "cmnd" : "/sbin/umount /CDROM" },
                         "1": { "cmnd" : "/sbin/mount -o nosuid\\,nodev /dev/cd0a /CDROM" }
-                            }
+                    }
                 }
-                ]
+            ]
         }
     }
