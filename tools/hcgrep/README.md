@@ -67,6 +67,7 @@ but you will miss the ability to use a specific cf-promises binary.
 ## REQUIREMENTS
 
 - Bash  
+- CFEngine 3.4+
 
 ## LICENSE
 The MIT License (MIT)
