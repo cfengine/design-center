@@ -128,6 +128,12 @@ api_validations:
 	@echo ...define complicated URL regex
 	echo '{ dc_api_version: "0.0.1", request: {define_validation: { URL: { valid_regex: "^[A-Za-z]{3,9}://.+" } } } }' | $(CFAPI)
 
+	@echo .. define array validation with strict
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { ARRAY_STRICT: { array_k: [ "NONEMPTY_STRING" ], array_v: [ "NONEMPTY_STRING" ], array_map_strict: {"action":"NONEMPTY_STRING","days":"NONEMPTY_STRING"} } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { ARRAY_PERMISSIVE: { array_k: [ "NONEMPTY_STRING" ], array_v: [ "NONEMPTY_STRING" ], array_map_permissive: {"action":"NONEMPTY_STRING","days":"DIGITS" } } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {define_validation: { ARRAY_STRICT_PERMISSIVE: { array_k: [ "NONEMPTY_STRING" ], array_v: [ "NONEMPTY_STRING" ],  array_map_strict: {"action":"NONEMPTY_STRING","days":"DIGITS" },array_map_permissive: {"action":"NONEMPTY_STRING","days":"DIGITS" } } } } }' | $(CFAPI)
+
+
 api_validate:
 	@echo ...now validate choices
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "AB", data: "A" } } }' | $(CFAPI)
@@ -180,6 +186,16 @@ api_validate:
 
 	@echo ...a non-existing validation
 	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "FOOBAR_BAZ", data: {"hello":256} } } }' | $(CFAPI)
+
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_STRICT", data: {"days":"256",'action':"12"} } } }' | $(CFAPI)
+
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_STRICT", data: {"days":"256",'action':"12","extra":"fail"} } } }' | $(CFAPI)
+
+
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_PERMISSIVE", data: {"days":22,'action':"12","extra":"what what"} } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_STRICT_PERMISSIVE", data: {"days":22,'action':"12"} } } }' | $(CFAPI)
+
+
 
 api_environments:
 	@echo ...show all environments
