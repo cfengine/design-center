@@ -1,0 +1,120 @@
+[
+    {
+        "System::Sudoers" : {
+            "file_path" : "/tmp/sudoers",
+            "drop_dirs" : [ "/etc/sudoers.d" ]
+        }
+    },
+    {
+        "System::Sudoers": {
+            "file_path": "/tmp/sudoers.d/sample.sudoers",
+            "defaults" : [
+                { "type" : "Defaults", "parameters" : "!authenticate" },
+                { "type" : "Defaults@HOST_LIST" , "parameters" : "authenticate" },
+                { "type" : "Defaults@myserver1,myserver2" , "parameters" : "authenticate" },
+                { "type" : "Defaults:USER_LIST", "parameters" : "authenticate" },
+                { "type" : "Defaults:myuser1,myuser2", "parameters" : "authenticate" },
+                { "type" : "Defaults!CMND_LIST" , "parameters" : "authenticate" },
+                { "type" : "Defaults!/bin/mycommand1,/sbin/mycommand2" , "parameters" : "authenticate" }
+            ],
+            "user_alias" : {
+                "USER_LIST" : [ "myuser1", "myuser2" ]
+            },
+            "runas_alias" : {
+                "RUNAS_LIST" : [ "root", "daemon" ]
+            },
+            "host_alias" : {
+                "HOST_LIST" : [ "host1", "host2" ]
+            },
+            "cmnd_alias" : {
+                "DUMPS" : {
+                    "0" : { "cmnd" : "/usr/bin/mt" },
+                    "1" : { "cmnd" : "/usr/sbin/dump" },
+                    "2" : { "cmnd" : "/usr/sbin/rdump" },
+                    "3" : { "cmnd" : "/usr/sbin/restore" },
+                    "4" : { "cmnd" : "/usr/sbin/rrestore" }
+                }
+            },
+            "user_specs" : [
+                {
+                    "user_list" : [ "minimal" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "cmnd" : "ALL" }
+                    }
+                },
+                {
+                    "user_list" : [ "user1", "user2" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "cmnd" : "ALL" }
+                    }
+                },
+                {
+                    "user_list" : [ "multiple_hosts" ],
+                    "host_list" : [ "host1", "host2" ],
+                    "cmnd_spec_list" : {
+                        "0": { "cmnd" : "ALL" }
+                    }
+                },
+                {
+                    "user_list" : [ "multiple_commands" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "cmnd" : "/bin/echo" },
+                        "1": { "cmnd" : "/bin/ls" }
+                    }
+                },
+                {
+                    "user_list" : [ "runas_users" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "runas_specs" : { "users" : [ "root", "daemon" ] }, "cmnd" : "ALL" }
+                    }
+                },
+                {
+                    "user_list" : [ "runas_groups" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "runas_specs" : { "groups" : [ "adm", "disk" ] }, "cmnd" : "ALL" }
+                    }
+                },
+                {
+                    "user_list" : [ "runas_users_and_groups" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "runas_specs" : { "users" : [ "root", "daemon" ], "groups" : [ "adm", "disk" ] }, "cmnd" : "ALL" }
+                    }
+                },
+                {
+                    "user_list" : [ "runas_users_and_groups" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "runas_specs" : { "users" : [ "root", "daemon" ], "groups" : [ "adm", "disk" ] }, "cmnd" : "ALL" }
+                    }
+                },
+                {
+                    "user_list" : [ "runas_selinux_role" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "selinux_spec" : { "role" : "sysadm_r" }, "cmnd" : "ALL" }
+                    }
+                },
+                {
+                    "user_list" : [ "runas_selinux_type" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "selinux_spec" : { "type" : "user_home_t" }, "cmnd" : "ALL" }
+                    }
+                },
+                {
+                    "user_list" : [ "tag_specs" ],
+                    "host_list" : [ "ALL" ],
+                    "cmnd_spec_list" : {
+                        "0": { "tag_specs" : [ "NOPASSWD", "NOSETENV" ], "cmnd" : "ALL" }
+                    }
+                }
+            ]
+        }
+    }
+]
