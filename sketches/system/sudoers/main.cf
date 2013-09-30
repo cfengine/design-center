@@ -3,11 +3,28 @@ body file control
       namespace => "cfdc_sudoers";
 }
 
-bundle agent ensure(runenv,metadata,given_file_path,visudo_path,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_permissions)
+bundle agent ensure(runenv,metadata,prefix,given_file_path,visudo_path,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_specs,drop_dirs)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "$(booleans)" not => strcmp("$($(booleans))","");
+      "not_$(booleans)" expression => strcmp("$($(booleans))","");
+      "$(strings)" not => strcmp("$($(strings))","");
+      "null_$(strings)" expression => strcmp("$($(strings))","");
+      "$(lists)" expression => isgreaterthan(length($(lists)),0);
+      "empty_$(lists)" not => isgreaterthan(length($(lists)),0);
+      "$(arrays)" and => { isvariable("arrays[$(arrays)][indices]"), isvariable("api"), regcmp("'.+'","$(arrays[$(arrays)][join])") };
+      "zero_$(arrays)" and => { isvariable("arrays[$(arrays)][indices]"), isvariable("api"), strcmp("''","$(arrays[$(arrays)][join])") };
+
+      "visudo_check_passed"
+      expression => returnszero("$(default:eu.exec_prefix)$(visudo_path) -c -f $(tmp_path) > /dev/null 2>&1", "useshell"),
+      ifvarclass => "tmp_build_ok";
+
+      "visudo_check_failed"
+      not => returnszero("$(default:eu.exec_prefix)$(visudo_path) -c -f $(tmp_path) > /dev/null 2>&1", "useshell"),
+      ifvarclass => "tmp_build_ok";
 
   vars:
       "vars" slist => { "@(default:$(runenv).env_vars)" };
@@ -16,54 +33,227 @@ bundle agent ensure(runenv,metadata,given_file_path,visudo_path,defaults,user_al
       "file_path" string => "$(default:eu.path_prefix)$(given_file_path)";
       "tmp_path" string => "$(file_path).cfsketch.tmp";
 
+      "api" slist => getindices("$(metadata)[api]");
+      "type[$($(metadata)[api][$(api)][type])][$(api)]" string => "$($(metadata)[api][$(api)][type])";
+      "booleans" slist => getindices("type[boolean]");
+      "strings" slist => getindices("type[string]");
+      "lists" slist => getindices("type[list]");
+      "arrays" slist => getindices("type[array]");
+
+      "lists[$(lists)][join]" string => concat("'",join(":","$(lists)"),"'");
+      "arrays[$(arrays)][indices]" slist => getindices("$($(arrays))"), policy => "free";
+      "arrays[$(arrays)][join]" string => concat("'",join(":","arrays[$(arrays)][indices]"),"'"), policy => "free";
+
+      "CFEnotice"
+      string  => "# This file is managed by CFEngine, manual edits will be reverted",
+      comment => "It's nice to let people know why the file keep magically reverting on them";
+
+    test::
+      "contents" slist => readstringlist($(tmp_path), "^$", "\n", 1000, 10240),
+      ifvarclass => "tmp_build_ok";
+
   files:
       "$(tmp_path)"
       create => "true",
       edit_defaults => default:empty,
       perms => default:m("440"),
-      edit_line => sudoers_insert_lines($(defaults),$(user_alias),$(host_alias),$(cmnd_alias),$(runas_alias),$(user_permissions));
+      edit_line => sudoers_insert_lines(
+                                         $(prefix),
+                                         $(CFEnotice),
+                                         $(defaults),
+                                         $(user_alias),
+                                         $(host_alias),
+                                         "$(this.bundle).cmnd_aliases_result[$(prefix)]",
+                                         $(runas_alias),
+                                         "$(this.bundle).user_specs_result[$(prefix)]",
+                                         $(drop_dirs)
+      ),
+      classes => cfdc_dclib_350:scoped_generic("bundle","tmp_build"),
+      ifvarclass => "(make_user_specs_reached|zero_user_specs).(make_cmnd_aliases_reached|zero_cmnd_alias)",
+      comment => "Populate the temporary sudoers file";
 
       "$(file_path)"
       copy_from => default:local_dcp("$(tmp_path)"),
       perms => default:m("440"),
-      classes => default:always("cfdc_sudoers_verify_attempted"),
-      ifvarclass => and(returnszero("$(default:eu.exec_prefix)$(visudo_path) -c -f $(tmp_path) > /dev/null 2>&1", "useshell"));
+      classes => cfdc_dclib_350:scoped_generic("bundle","install_sudoers"),
+      ifvarclass => "visudo_check_passed",
+      comment => "Install the new sudoers file";
 
-    cfdc_sudoers_verify_attempted.not_test::
+    install_sudoers_reached.not_test::
       "$(tmp_path)"
-      delete => default:tidy;
+      delete => default:tidy,
+      comment => "Remove the temporary sudoers file";
 
   methods:
       "utils" usebundle => default:eu($(runenv));
 
+      "make_user_specs_$(prefix)_$(arrays[user_specs][indices])"
+      usebundle => make_user_specs( $(prefix),
+                                    "$(arrays[user_specs][indices])",
+                                    "$(user_specs)[$(arrays[user_specs][indices])]"),
+      useresult => "user_specs_result[$(prefix)]",
+      classes => cfdc_dclib_350:scoped_generic("bundle","make_user_specs"),
+      comment => "Construct the User_Spec for each user specification";
+
+      "make_cmnd_aliases_$(prefix)_$(arrays[cmnd_alias][indices])"
+      usebundle => make_cmnd_specs( $(prefix),
+                                    "$(arrays[cmnd_alias][indices])",
+                                    "$(cmnd_alias)[$(arrays[cmnd_alias][indices])]"),
+      useresult => "cmnd_aliases_result[$(prefix)]",
+      classes => cfdc_dclib_350:scoped_generic("bundle","make_cmnd_aliases"),
+      comment => "Construct the Cmnd_Spec_List for each Cmnd_Alias";
+
     verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      "metadata" usebundle => default:report_metadata($(prefix), $(metadata)),
       inherit => "true";
 
   reports:
-    verbose.cfdc_sudoers_verify_attempted.test::
-      "$(this.bundle): Leaving $(tmp_path) in place in test mode; normally it would be deleted.";
+    any::
+      "$(prefix): visudo check failed on $(tmp_path)"
+      ifvarclass => "visudo_check_failed";
+
+    verbose.test::
+      "$(prefix): sudoers file $(tmp_path) built"
+      ifvarclass => "tmp_build_ok";
+
+      "$(prefix): visudo check passed on $(tmp_path)"
+      ifvarclass => "visudo_check_passed";
+
+      "$(prefix): Leaving $(tmp_path) in place in test mode; normally it would be deleted."
+      ifvarclass => "install_sudoers_ok";
+
+      "$(prefix): SUDOERS: $(contents)"
+      ifvarclass => isvariable("contents");
 
     verbose::
-      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
-      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      "$(prefix): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(prefix): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
       ifvarclass => "$(vars)";
 }
 
-bundle edit_line sudoers_insert_lines(defaults,user_alias,host_alias,cmnd_alias,runas_alias,up) {
+bundle edit_line sudoers_insert_lines(prefix,notice,defaults,user_alias,host_alias,cmnd_alias,runas_alias,user_specs,drop_dirs) {
   vars:
       "d_i" slist => getindices($(defaults));
-      "u_i" slist => getindices($(user_alias));
-      "h_i" slist => getindices($(host_alias));
-      "c_i" slist => getindices($(cmnd_alias));
-      "r_i" slist => getindices($(runas_alias));
-      "up_i" slist => getindices($(up));
+      "d_s" slist => sort("d_i","lex");
+
+      "ua_i" slist => getindices($(user_alias));
+      "ua_s" slist => sort("ua_i","lex");
+      "ua[$(ua_i)]" string => join(', ', "$(user_alias)[$(ua_i)]");
+
+      "ra_i" slist => getindices($(runas_alias));
+      "ra_s" slist => sort("ra_i","lex");
+      "ra[$(ra_i)]" string => join(', ', "$(runas_alias)[$(ra_i)]");
+
+      "ha_i" slist => getindices($(host_alias));
+      "ha_s" slist => sort("ha_i","lex");
+      "ha[$(ha_i)]" string => join(', ', "$(host_alias)[$(ha_i)]");
+
+      "ca_i" slist => getindices($(cmnd_alias));
+      "ca_s" slist => sort("ca_i","lex");
+
+      "us_i" slist => getindices($(user_specs));
+      "us_s" slist => sort("us_i","lex");
+
+      "dd_i" slist => getindices($(drop_dirs));
+      "dd_s" slist => sort("dd_i","lex");
 
   insert_lines:
-      "$($(defaults)[$(d_i)][default_desc]) $($(defaults)[$(d_i)][default_value])";
-      "User_Alias $($(user_alias)[$(u_i)][alias_name]) = $($(user_alias)[$(u_i)][user_list])";
-      "Runas_Alias $($(runas_alias)[$(r_i)[alias_name]) = $($(user_alias)[$(u_i)][runas_list])";
-      "Host_Alias $($(host_alias)[$(h_i)[alias_name]) = $($(host_alias)[$(h_i)][host_list])";
-      "Cmnd_Alias $($(cmnd_alias)[$(c_i)[alias_name]) = $($(cmnd_alias)[$(c_i)][cmnd_list])";
-      "$($(up)[$(up_i)][user_spec]) $($(up)[$(up_i)][host_spec]) = ($($(up)[$(up_i)][host_spec])) $($(up)[$(up_i)][password]): $($(up)[$(up_i)][cmnd_spec])";
+      "$(notice)";
+      "$($(defaults)[$(d_s)][type]) $($(defaults)[$(d_s)][parameters])";
+      "User_Alias $(ua_s) = $(ua[$(ua_s)])";
+      "Runas_Alias $(ra_s) = $(ra[$(ra_s)])";
+      "Host_Alias $(ha_s) = $(ha[$(ha_s)])";
+      "Cmnd_Alias $(ca_s) = $($(cmnd_alias)[$(ca_s)])";
+      "$($(user_specs)[$(us_s)])";
+      "#includedir $($(drop_dirs)[$(dd_s)])";
+}
+
+bundle agent make_user_specs(prefix, index, user_specs_array)
+{
+  vars:
+      "user_list" string => join(",","$(user_specs_array)[user_list]");
+      "host_list" string => join(",","$(user_specs_array)[host_list]");
+
+      "cmnd_spec_l" slist => getvalues("cmnd_specs_result");
+      "cmnd_specs_s" string => join(",", "cmnd_spec_l"), ifvarclass => "make_cmnd_specs_reached";
+
+  methods:
+      "make_cmnd_specs_$(prefix)_$(index)"
+      usebundle => make_cmnd_specs( $(prefix), $(index), "$(user_specs_array)[cmnd_spec_list]" ),
+      useresult => "cmnd_specs_result",
+      classes => cfdc_dclib_350:scoped_generic("bundle", "make_cmnd_specs"),
+      comment => "Build the Cmnd_Spec_List";
+
+  reports:
+      "$(user_list) $(host_list) = $(cmnd_specs_s)"
+      bundle_return_value_index => $(index);
+}
+
+bundle agent make_cmnd_specs(prefix, index, cmnd_spec_list)
+{
+  vars:
+      "cs_i" slist => getindices($(cmnd_spec_list));
+      "cmnd_specs_l" slist => getvalues("cmnd_spec_result");
+      "cmnd_specs_s" string => join(", ", "cmnd_specs_l"), ifvarclass => "make_cmnd_spec_reached";
+
+  methods:
+      "make_cmnd_spec_$(prefix)_$(index)_$(cs_i)"
+      usebundle => make_cmnd_spec(
+                                   $(prefix),
+                                   "$(index)_$(cs_i)",
+                                   "$(cmnd_spec_list)[$(cs_i)][runas_specs]",
+                                   "$(cmnd_spec_list)[$(cs_i)][selinux_spec]",
+                                   "$(cmnd_spec_list)[$(cs_i)][tag_specs]",
+                                   "$(cmnd_spec_list)[$(cs_i)][cmnd]"
+      ),
+      useresult => "cmnd_spec_result",
+      classes => cfdc_dclib_350:scoped_generic("bundle", "make_cmnd_spec"),
+      comment => "Build each Cmnd_Spec";
+
+  reports:
+      "$(cmnd_specs_s)"
+      bundle_return_value_index => $(index);
+}
+
+bundle agent make_cmnd_spec (prefix, index, runas_specs, selinux_spec, tag_specs, cmnd)
+{
+  classes:
+      "runas_users_defined" expression => isvariable("$(runas_specs)[users]");
+      "runas_groups_defined" expression => isvariable("$(runas_specs)[groups]");
+
+      "selinux_role_defined" expression => isvariable("$(selinux_spec)[role]");
+      "selinux_type_defined" expression => isvariable("$(selinux_spec)[type]");
+
+      "tag_specs_defined" expression => isvariable($(tag_specs));
+
+  vars:
+    any::
+      "runas_users_j" string => join(",", "$(runas_specs)[users]");
+      "runas_groups_j" string => join(",", "$(runas_specs)[groups]");
+    runas_users_defined.runas_groups_defined::
+      "runas_specs_s" string => "($(runas_users_j) : $(runas_groups_j)) ", policy => "free";
+    runas_users_defined.!runas_groups_defined::
+      "runas_specs_s" string => "($(runas_users_j)) ", policy => "free";
+    !runas_users_defined.runas_groups_defined::
+      "runas_specs_s" string => "(: $(runas_groups_j)) ", policy => "free";
+    !runas_users_defined.!runas_groups_defined::
+      "runas_specs_s" string => "", policy => "free";
+
+    selinux_role_defined::
+      "selinux_spec_s" string => "ROLE=$($(selinux_spec)[role]) ", policy => "free";
+    selinux_type_defined::
+      "selinux_spec_s" string => "TYPE=$($(selinux_spec)[type]) ", policy => "free";
+    !selinux_role_defined.!selinux_type_defined::
+      "selinux_spec_s" string => "", policy => "free";
+
+    tag_specs_defined::
+      "tag_specs_l" slist => maplist("$(this):", "$(tag_specs)");
+      "tag_specs_j" string => join(" ", "tag_specs_l");
+      "tag_specs_s" string => "$(tag_specs_j) ", policy => "free";
+    !tag_specs_defined::
+      "tag_specs_s" string => "", policy => "free";
+
+  reports:
+      "$(runas_specs_s)$(selinux_spec_s)$(tag_specs_s)$($(cmnd))"
+      bundle_return_value_index => "$(index)";
 }
