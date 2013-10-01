@@ -79,9 +79,10 @@ bundle agent ensure(runenv,metadata,prefix,given_file_path,visudo_path,defaults,
       ifvarclass => "visudo_check_passed",
       comment => "Install the new sudoers file";
 
-    install_sudoers_reached.not_test::
+    not_test::
       "$(tmp_path)"
       delete => default:tidy,
+      ifvarclass => "install_sudoers_reached",
       comment => "Remove the temporary sudoers file";
 
   methods:
