@@ -14,9 +14,11 @@ bundle agent install_forwarder(runenv, metadata, installdir, server, password, c
       "splunkforwarder_installed" expression => fileexists($(installdir));
 
     splunkforwarder_installed::
-      "splunkforwarder_configured" expression => regline($(marker), "$(installdir)/etc/system/local/outputs.conf");
+      "splunkforwarder_configured" expression => regline($(comment_marker), "$(installdir)/etc/system/local/outputs.conf");
 
   vars:
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
@@ -26,38 +28,60 @@ bundle agent install_forwarder(runenv, metadata, installdir, server, password, c
 
   processes:
     any::
-      "splunkd" restart_class => "splunkforwarder_start";
+      "splunkd" restart_class => "splunkforwarder_start",
+        handle => "$(activation_id)_check_splunk_process";
 
   files:
     splunkforwarder_installed::
-      "$(default:eu.path_prefix)$(installdir)/etc/system/local/outputs.conf"
+      "$(installdir)/etc/system/local/outputs.conf"
+      create => "true",
       perms => default:mog("600", "root", "root"),
       classes => default:if_repaired("splunkforwarder_repaired"),
       edit_defaults => default:empty,
-      edit_line => default:expand_template("$($(metadata)[location])/templates/splunk-outputs.conf");
+      edit_line => default:expand_template("$(sys.workdir)/inputs/$($(metadata)[location])/templates/splunk-outputs.conf"),
+      handle => "$(activation_id)_write_outputs_conf";
 
-      "$(default:eu.path_prefix)$(installdir)/etc/system/local/inputs.conf"
+      "$(installdir)/etc/system/local/inputs.conf"
+      create => "true",
       perms => default:mog("600", "root", "root"),
       classes => default:if_repaired("splunkforwarder_repaired"),
       edit_defaults => default:empty,
-      edit_line => default:expand_template("$($(metadata)[location])/templates/splunk-inputs.conf");
+      edit_line => default:expand_template("$(sys.workdir)/inputs/$($(metadata)[location])/templates/splunk-inputs.conf"),
+      handle => "$(activation_id)_write_inputs_conf";
+
+      "$(installdir)/ftr"
+        delete => default:tidy,
+        comment => "Remove first-time read file, to avoid interactive EULA prompt",
+        handle => "$(activation_id)_remove_ftr";
+
 
   commands:
+    !splunkforwarder_installed::
+      "/bin/false" -> { "Mission Portal Design Center UI" }
+        comment => "Since this sketch does not handle installing
+                   splunkforwarder we must have a promise fail if its not present for Mission
+                   Portal to detect the sketch is failing.",
+        handle => "$(activation_id)_splunkforwarder_not_installed";
+
     splunkforwarder_installed.!splunkforwarder_configured::
-      "$(default:eu.exec_prefix)$(splunkforwarder_control) edit user admin -password '$(password)' -role admin -auth admin:changeme"
-      classes => default:if_ok("splunkforwarder_configured");
+      "$(splunkforwarder_control) edit user admin -password '$(password)' -role admin -auth admin:changeme"
+      classes => default:if_ok("splunkforwarder_configured"),
+      handle => "$(activation_id)_set_admin_password";
 
     splunkforwarder_installed.!splunkforwarder_boot_enabled::
-      "$(default:eu.exec_prefix)$(splunkforwarder_control) enable boot-start"
-      classes => default:if_ok("splunkforwarder_enabled");
+      "$(splunkforwarder_control) enable boot-start"
+      classes => default:if_ok("splunkforwarder_enabled"),
+      handle => "$(activation_id)_enable_bootstart";
 
     splunkforwarder_installed.splunkforwarder_start::
-      "$(default:eu.exec_prefix)$(splunkforwarder_control) start --no-prompt --answer-yes --accept-license"
-      classes => default:if_ok("splunkforwarder_restarted");
+      "$(splunkforwarder_control) start --no-prompt --answer-yes --accept-license"
+      classes => default:if_ok("splunkforwarder_restarted"),
+      handle => "$(activation_id)_splunk_start";
 
     splunkforwarder_repaired::
-      "$(default:eu.exec_prefix)$(splunkforwarder_control) restart --no-prompt --answer-yes --accept-license"
-      classes => default:if_ok("splunkforwarder_restarted");
+      "$(splunkforwarder_control) restart --no-prompt --answer-yes --accept-license"
+      classes => default:if_ok("splunkforwarder_restarted"),
+      handle => "$(activation_id)_splunk_restart";
 
   methods:
       "utils" usebundle => default:eu($(runenv)); # $(default:eu.path_prefix)
