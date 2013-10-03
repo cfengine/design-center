@@ -1,0 +1,7 @@
+2013-10-02  Nick Anderson <nick@cmdln.org>
+
+	* Incorperate Diegos sketch updates to make enterprise compatible
+	* Use /bin/false when splunkforwarder is not installed to trigger sketch
+	failure for Mission Portal UI.
+	* version bump to 1.0.1
+	* Remove stdlib dependency per https://cfengine.com/dev/issues/3316
