@@ -79,9 +79,10 @@ bundle agent ensure(runenv,metadata,prefix,given_file_path,visudo_path,defaults,
       ifvarclass => "visudo_check_passed",
       comment => "Install the new sudoers file";
 
-    install_sudoers_reached.not_test::
+    not_test::
       "$(tmp_path)"
       delete => default:tidy,
+      ifvarclass => "install_sudoers_reached",
       comment => "Remove the temporary sudoers file";
 
   methods:
@@ -193,7 +194,10 @@ bundle agent make_cmnd_specs(prefix, index, cmnd_spec_list)
 {
   vars:
       "cs_i" slist => getindices($(cmnd_spec_list));
-      "cmnd_specs_l" slist => getvalues("cmnd_spec_result");
+
+      "cmnd_specs_i" slist => getindices("cmnd_spec_result"), ifvarclass => "make_cmnd_spec_reached";
+      "cmnd_specs_is" slist => sort("cmnd_specs_i","lex"), ifvarclass => "make_cmnd_spec_reached";
+      "cmnd_specs_l" slist => maplist("$(cmnd_spec_result[$(this)])","cmnd_specs_is"), ifvarclass => "make_cmnd_spec_reached";
       "cmnd_specs_s" string => join(", ", "cmnd_specs_l"), ifvarclass => "make_cmnd_spec_reached";
 
   methods:
