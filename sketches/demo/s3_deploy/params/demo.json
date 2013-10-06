@@ -1,0 +1,17 @@
+[
+    {
+        "Demo::S3::Deploy":
+        {
+            directory: "/tmp/uploadthis",
+            bucket: "cfsketch_cloud_uploads",
+        }
+    },
+    {
+        "Demo::S3::Deploy":
+        {
+            directory: "/tmp/uploadthis",
+            bucket: "cfsketch_cloud_uploads",
+            enabled: false
+        }
+    }
+]
