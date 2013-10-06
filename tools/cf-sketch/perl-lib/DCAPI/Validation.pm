@@ -310,12 +310,16 @@ sub validate
                     {
                         if (defined $strictMatch)
                         {
+                            return $result->add_error([$atype, qw/validation/],
+                                                   "Invalid array_map_strict data: '$strictMatch'")
+                                unless ref $strictMatch eq 'HASH';
+
                             $self->api()->log4("Validating array strict with name %s: checking '$atype' is %s with array strict %s",
                                $self->name,
                                $k,
                                $strictMatch);
 
-                            my @requiredKeys = keys $strictMatch;
+                            my @requiredKeys = keys %$strictMatch;
                             my @dataKeys =  keys %$data;
 
 
@@ -341,18 +345,13 @@ sub validate
                                 $self->api()->log4("Validating array strict with value %s with validation type %s",$element,$validationType);
                                 $check = $self->api()->validate({ validation => $validationType,
                                                                   data => $element});
-
-                                if (!$check->success())
-                                {
-                                  my @error = values $check->errors();
-                                  my $stringError = join(',',@error);
-                                  return $result->add_error([qw/Array value validation/],
-                                  $stringError);
-                                }
                              }
                         }
                         elsif(defined $permissiveMatch)
                         {
+                            return $result->add_error([$atype, qw/validation/],
+                                                   "Invalid array_map_permissive data: '$permissiveMatch'")
+                                unless ref $permissiveMatch eq 'HASH';
 
                           $self->api()->log4("Validating array permissive with name %s: checking '$atype' is %s with array permissive %s",
                                              $self->name,
@@ -373,13 +372,6 @@ sub validate
                                     $self->api()->log4("Validating array permissive with value %s with validation type %s",$element,$validationType);
                                     $check = $self->api()->validate({ validation => $validationType,
                                                                       data => $element});
-                                     if (!$check->success())
-                                     {
-                                        my @error = values $check->errors();
-                                        my $stringError = join(',',@error);
-                                        return $result->add_error([qw/Array value validation/],
-                                        $stringError);
-                                     }
                                   }
                                   else
                                   {
