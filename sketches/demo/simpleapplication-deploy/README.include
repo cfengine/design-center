@@ -1,0 +1,11 @@
+This is a demo of an application that can deploy vertically across 1 HA hub
+(redirecting traffic), 1 memcached worker (pseudo-database), and N web workers
+(serving web traffic).  Horizontally the application can be deployed on
+OpenStack, EC2, or VMWare, depending on the given type.
+
+The detailed configuration is in `deploy.cf` and intended for customization.
+Typically the policy author will know the right EC2 instance type and AMI, or
+the VMWare start/stop/count script.  The user-level configuration is simply the
+number of web workers, the horizontal (platform) type, and whether the
+deployment should be enabled or disabled (stopped).
+

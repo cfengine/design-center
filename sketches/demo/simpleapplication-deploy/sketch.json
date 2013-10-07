@@ -9,6 +9,13 @@
               "type" : "string"
           },
           {
+              "description" : "Type of deployment: ec2 or openstack or vmware",
+              "name" : "type",
+              "type" : "string",
+              validation: "CLOUD_PLATFORM",
+              "default": "vmware"
+          },
+          {
               "description" : "Enable this deployment? (if disabled, destroy the VMs)",
               "name" : "enable",
               "type" : "boolean",
@@ -44,7 +51,7 @@
          "enterprise_compatible"
       ],
        "version" : "1.0",
-       depends: { "Demo::SimpleApplication": { }, "Cloud::Services::VMWare": {}, cfengine: { version: "3.5.0" },
+       depends: { "Demo::SimpleApplication": { }, "Cloud::Services::VMWare": {}, "Cloud::Services::AWS::EC2": {}, "Cloud::Services::OpenStack": {}, cfengine: { version: "3.5.0" },
                   "os" : [ {"linux" : "All Linux distributions"} ]
                 }
    },

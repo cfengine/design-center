@@ -3,7 +3,7 @@ body file control
       namespace => "cfdc_simpleapplication";
 }
 
-bundle agent deploy(runenv, metadata, workers, enable)
+bundle agent deploy(runenv, metadata, workers, type, enable)
 {
 
   classes:
@@ -11,6 +11,7 @@ bundle agent deploy(runenv, metadata, workers, enable)
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
       "enable" expression => strcmp("$(enable)", "1");
+      "$(type)" expression => "any";
 
   vars:
       "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
@@ -20,10 +21,6 @@ bundle agent deploy(runenv, metadata, workers, enable)
 
       "singles" slist => { "haworker", "mcworker" };
 
-  classes:
-      "$(type)" expression => "any";
-
-  vars:
       "host_marker" string => ".removal.marker";
       "type" string => ifelse("am_policy_hub", "hub",
                               classmatch("webworker.*"), "webworker",
@@ -31,58 +28,168 @@ bundle agent deploy(runenv, metadata, workers, enable)
                               classmatch("haworker.*"), "haworker",
                               "unknown");
 
+      "common_options[netrc]" string => "~/.netrc";
+      # OpenStack options
+      "common_options[image]" string => "5cebb13a-f783-4f8c-8058-c4182c724ccd";
+      "common_options[master]" string => "haworker";
+      # EC2 options
+      "common_options[security_group]" string => "default";
+      "common_options[ssh_pub_key]" string => "/root/.ssh/id_rsa.pub";
+
   methods:
     any::
+      # Note that this (the application bundle) doesn't change whether we run on
+      # EC2 or VMWare or OpenStack or any other platform
       "deploy" usebundle => cfdc_simpleapplication:configure(runenv, ""),
       handle => "$(activation_id)_simpleapplication_deploy_configure";
 
-    hub.enable::
-      "ensure webworkers" usebundle => cfdc_cloud_vmware:ensure($(runenv),
-                                                                "",
-                                                                $(workers),
-                                                                "webworker",
-                                                                "1",
-                                                                $(sys.ipv4),
-                                                                "/var/cfengine/scripts/start_vm.sh",
-                                                                "/var/cfengine/scripts/stop_vm.sh",
-                                                                "/var/cfengine/scripts/count_vm.sh",
-                                                                "return"),
-      handle => "$(activation_id)_simpleapplication_ensure_webworkers";
+    hub.enable.vmware::
+      "ensure VMWare webworkers"
+      usebundle => cfdc_cloud_vmware:ensure($(runenv),
+                                            "",
+                                            $(workers),
+                                            "webworker",
+                                            "1",
+                                            $(sys.ipv4),
+                                            "/var/cfengine/scripts/start_vm.sh",
+                                            "/var/cfengine/scripts/stop_vm.sh",
+                                            "/var/cfengine/scripts/count_vm.sh",
+                                            "return"),
+      handle => "$(activation_id)_simpleapplication_ensure_vmware_webworkers";
 
-      "ensure singles" usebundle => cfdc_cloud_vmware:ensure($(runenv),
-                                                             "",
-                                                             "1",
-                                                             $(singles),
-                                                             "1",
-                                                             $(sys.ipv4),
-                                                             "/var/cfengine/scripts/start_vm.sh",
-                                                             "/var/cfengine/scripts/stop_vm.sh",
-                                                             "/var/cfengine/scripts/count_vm.sh",
-                                                             "return"),
-      handle => "$(activation_id)_simpleapplication_ensure_singles";
+      "ensure VMWare singles"
+      usebundle => cfdc_cloud_vmware:ensure($(runenv),
+                                            "",
+                                            "1",
+                                            $(singles),
+                                            "1",
+                                            $(sys.ipv4),
+                                            "/var/cfengine/scripts/start_vm.sh",
+                                            "/var/cfengine/scripts/stop_vm.sh",
+                                            "/var/cfengine/scripts/count_vm.sh",
+                                            "return"),
+      handle => "$(activation_id)_simpleapplication_ensure_vmware_singles";
 
-    hub.!enable::
-      "ensure no webworkers" usebundle => cfdc_cloud_vmware:ensure($(runenv),
-                                                                "",
-                                                                "0",
-                                                                "webworker",
-                                                                "1",
-                                                                $(sys.ipv4),
-                                                                "/var/cfengine/scripts/start_vm.sh",
-                                                                "/var/cfengine/scripts/stop_vm.sh",
-                                                                "/var/cfengine/scripts/count_vm.sh",
-                                                                "return"),
-      handle => "$(activation_id)_simpleapplication_disable_webworkers";
+    hub.enable.openstack::
+      "ensure OpenStack singles"
+      usebundle => cfdc_cloud_openstack:ensure($(runenv),
+                                               "",
+                                               "1",
+                                               $(singles),
+                                               "1",
+                                               $(sys.ipv4),
+                                               "cfdc_simpleapplication:deploy.common_options"),
+      handle => "$(activation_id)_simpleapplication_ensure_openstack_singles";
 
-      "ensure no singles" usebundle => cfdc_cloud_vmware:ensure($(runenv),
-                                                             "",
-                                                             "0",
-                                                             $(singles),
-                                                             "1",
-                                                             $(sys.ipv4),
-                                                             "/var/cfengine/scripts/start_vm.sh",
-                                                             "/var/cfengine/scripts/stop_vm.sh",
-                                                             "/var/cfengine/scripts/count_vm.sh",
-                                                             "return"),
-      handle => "$(activation_id)_simpleapplication_disable_singles";
+      "ensure OpenStack webworkers"
+      usebundle => cfdc_cloud_openstack:ensure($(runenv),
+                                               "",
+                                               $(workers),
+                                               "webworker",
+                                               "1",
+                                               $(sys.ipv4),
+                                               "cfdc_simpleapplication:deploy.common_options"),
+      handle => "$(activation_id)_simpleapplication_ensure_openstack_webworkers";
+
+    hub.enable.ec2::
+      "ensure EC2 singles"
+      usebundle => cfdc_aws_ec2:ensure($(runenv),
+                                       "",
+                                       "1",
+                                       "ami-a29943cb",
+                                       "us-east-1",
+                                       "t1.micro",
+                                       $(singles),
+                                       "1",
+                                       $(sys.ipv4),
+                                       "cfdc_simpleapplication:deploy.common_options"),
+      handle => "$(activation_id)_simpleapplication_ensure_ec2_singles";
+
+      "ensure EC2 webworkers"
+      usebundle => cfdc_aws_ec2:ensure($(runenv),
+                                       "",
+                                       $(workers),
+                                       "ami-a29943cb",
+                                       "us-east-1",
+                                       "t1.micro",
+                                       "webworker",
+                                       "1",
+                                       $(sys.ipv4),
+                                       "cfdc_simpleapplication:deploy.common_options"),
+      handle => "$(activation_id)_simpleapplication_ensure_ec2_webworkers";
+
+    hub.!enable.vmware::
+      "ensure no VMWare webworkers"
+      usebundle => cfdc_cloud_vmware:ensure($(runenv),
+                                            "",
+                                            "0",
+                                            "webworker",
+                                            "1",
+                                            $(sys.ipv4),
+                                            "/var/cfengine/scripts/start_vm.sh",
+                                            "/var/cfengine/scripts/stop_vm.sh",
+                                            "/var/cfengine/scripts/count_vm.sh",
+                                            "return"),
+      handle => "$(activation_id)_simpleapplication_disable_vmware_webworkers";
+
+      "ensure no VMWare singles"
+      usebundle => cfdc_cloud_vmware:ensure($(runenv),
+                                            "",
+                                            "0",
+                                            $(singles),
+                                            "1",
+                                            $(sys.ipv4),
+                                            "/var/cfengine/scripts/start_vm.sh",
+                                            "/var/cfengine/scripts/stop_vm.sh",
+                                            "/var/cfengine/scripts/count_vm.sh",
+                                            "return"),
+      handle => "$(activation_id)_simpleapplication_disable_vmware_singles";
+
+    hub.!enable.openstack::
+      "ensure no OpenStack singles"
+      usebundle => cfdc_cloud_openstack:ensure($(runenv),
+                                               "",
+                                               "0",
+                                               $(singles),
+                                               "1",
+                                               $(sys.ipv4),
+                                               "cfdc_simpleapplication:deploy.common_options"),
+      handle => "$(activation_id)_simpleapplication_disable_openstack_singles";
+
+      "ensure OpenStack webworkers"
+      usebundle => cfdc_cloud_openstack:ensure($(runenv),
+                                               "",
+                                               $(workers),
+                                               "webworker",
+                                               "1",
+                                               $(sys.ipv4),
+                                               "cfdc_simpleapplication:deploy.common_options"),
+      handle => "$(activation_id)_simpleapplication_disable_openstack_webworkers";
+
+    hub.!enable.ec2::
+      "ensure no EC2 singles"
+      usebundle => cfdc_aws_ec2:ensure($(runenv),
+                                       "",
+                                       "0",
+                                       "ami-a29943cb",
+                                       "us-east-1",
+                                       "t1.micro",
+                                       $(singles),
+                                       "1",
+                                       $(sys.ipv4),
+                                       "cfdc_simpleapplication:deploy.common_options"),
+      handle => "$(activation_id)_simpleapplication_disable_ec2_singles";
+
+      "ensure no EC2 webworkers"
+      usebundle => cfdc_aws_ec2:ensure($(runenv),
+                                       "",
+                                       "0",
+                                       "ami-a29943cb",
+                                       "us-east-1",
+                                       "t1.micro",
+                                       "webworker",
+                                       "1",
+                                       $(sys.ipv4),
+                                       "cfdc_simpleapplication:deploy.common_options"),
+      handle => "$(activation_id)_simpleapplication_disable_ec2_webworkers";
 }

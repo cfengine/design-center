@@ -1,6 +1,8 @@
 {
     "Demo::SimpleApplication::Deploy":
     {
+        // defaults to VMWare
+        type: "EC2",
         workers: 3
     }
 }
