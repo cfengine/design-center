@@ -1,0 +1,20 @@
+
+This sketch will synchronize a `directory` to a S3 `bucket` or clear the
+`bucket` (depending on whether `enabled` is set).
+
+You only need to provide the `bucket` name and the `directory` name.  The files
+will be uploaded with the `public-read` ACL.
+
+In addition you can provide a `netrc` file location.  When that file has a line
+in this format:
+
+```
+machine AWS username yourname login yourpublickey password yourprivatekey
+```
+
+all the AWS interactions will be authenticated with that public and private key
+combination.
+
+The `netrc` location is `AUTO` by default, which tells the sketch to look under
+`_directory_/../netrc` (one level above `directory` in a file called `netrc`).
+But you can set it to anything.
