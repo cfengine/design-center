@@ -3,7 +3,7 @@ body file control
       namespace => "cfdc_simpleapplication";
 }
 
-bundle agent s3deploy(runenv, metadata, enable, bucket, directory, given_netrc)
+bundle agent s3deploy(runenv, metadata, enable, bucket, directory, netrc)
 {
 
   classes:
@@ -12,7 +12,6 @@ bundle agent s3deploy(runenv, metadata, enable, bucket, directory, given_netrc)
 
       "deployment_enabled" expression => strcmp("$(enable)", "1");
       "deployment_disabled" not => strcmp("$(enable)", "1");
-      "auto_netrc" expression => strcmp("$(netrc)", "AUTO");
 
   vars:
       "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
@@ -21,8 +20,6 @@ bundle agent s3deploy(runenv, metadata, enable, bucket, directory, given_netrc)
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
       "home" string => dirname($(directory));
-      "netrc" string => ifelse("auto_netrc", "$(home)/netrc",
-                               $(given_netrc));
 
       "s3_options[acl]" string => "public-read";
       "s3_options[netrc]" string => "$(netrc)";

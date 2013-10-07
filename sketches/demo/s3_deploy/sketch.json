@@ -21,10 +21,10 @@
               validation: "PATH_ABSOLUTE_UNIX"
           },
           {
-              "description" : "netrc file to use (leave AUTO to use `directory`/../netrc)",
+              "description" : "netrc file to use (see documentation for format)",
               "name" : "netrc",
               "type" : "string",
-              "default": "AUTO"
+              "default": "~/.netrc"
           }
       ]
    },
