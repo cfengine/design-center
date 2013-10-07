@@ -18,8 +18,7 @@
 #
 
 
-$program_version = "1.80";
-$ec2_version = "2012-10-01";
+$ec2_version = "2013-02-01";
 $sqs_version = "2009-02-01";
 $elb_version = "2010-07-01";
 $sdb_version = "2009-04-15";
@@ -27,7 +26,7 @@ $iam_version = "2010-05-08";
 $sts_version = "2011-06-15";
 $pa_version  = "2009-01-06";
 $r53_version = "2012-02-29";
-
+$ebn_version = "2010-12-01";
 
 #
 # Need to implement:
@@ -44,6 +43,9 @@ $r53_version = "2012-02-29";
 #
 
 @cmd = (
+    ["aws", "xml-version", XMLVERSION, [
+        ["", Service],
+    ]],
     ["ec2", "add-group addgrp", CreateSecurityGroup, [
 	 ["", GroupName],
 	 ["d", GroupDescription],
@@ -143,6 +145,14 @@ $r53_version = "2012-02-29";
 	 ["x", ExecutableByN],
      ]],
     ["ec2", "describe-instances din", DescribeInstances, [["", InstanceIdN]]],
+    ["ec2", "describe-instance-attributes dinatt", DescribeInstanceAttribute, [
+	 ["", InstanceId],
+	 ["attribute a" => "Attribute"],
+     ]],
+    ["ec2", "describe-instance-status dins", DescribeInstanceStatus, [
+      ["", InstanceIdN],
+      ["a", IncludeAllInstances],
+     ]],
     ["ec2", "describe-keypairs dkey", DescribeKeyPairs, [["", KeyNameN]]],
     ["ec2", "describe-placement-groups", DescribePlacementGroups, [["", GroupNameN]]],
     ["ec2", "describe-regions dreg", DescribeRegions],
@@ -274,8 +284,8 @@ $r53_version = "2012-02-29";
 	 ["virtual-name" => "BlockDeviceMapping.N.VirtualName"],
 	 ["snapshot s" => "BlockDeviceMapping.N.Ebs.SnapshotId"],
 	 ["volume-size" => "BlockDeviceMapping.N.Ebs.VolumeSize"],
-	 ["profile-arn" => "LaunchSpecification.IamInstanceProfile.Arn"],
-	 ["profile-name" => "LaunchSpecification.IamInstanceProfile.Name"],
+	 ["profile-arn" => "IamInstanceProfile.Arn"],
+	 ["profile-name role" => "IamInstanceProfile.Name"],
 	 ["delete-on-termination" => "BlockDeviceMapping.N.Ebs.DeleteOnTermination"],
 	 ["monitor m" => "Monitoring.Enabled"],
 	 ["disable-api-termination" => DisableApiTermination],
@@ -313,6 +323,149 @@ $r53_version = "2012-02-29";
 	 ["tag", undef, undef, \&parse_tags_delete],
      ]],
 
+    ###########################
+    ###  Elastic BeaNstalk  ###
+    ###########################
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_CheckDNSAvailability.html
+    ["ebn", "check-dns-vailability", CheckDNSAvailability, [
+     ["", CNAMEPrefix],
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_CreateApplication.html
+    ["ebn", "create-application", CreateApplication, [
+     ["", ApplicationName],
+     ["description", ApplicationDescription]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_CreateApplicationVersion.html
+    ["ebn", "create-application-version", CreateApplicationVersion, [
+     ["", ApplicationName],
+     ["autocreate", AutoCreateApplication],
+     ["description", Description],
+     ["sourcebucket", 'SourceBundle.S3Bucket'],
+     ["sourcekey", 'SourceBundle.S3Key'],
+     ["versionlabel", VersionLabel]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_CreateConfigurationTemplate.html
+    ["ebn", "create-configuration-template", CreateConfigurationTemplate, [
+     ["", ApplicationName],
+     ["description", Description],
+     ["environmentid", EnvironmentId],
+     ["solutionstackname", SolutionStackName],
+     ["sourceconfiguration", SourceConfiguration],
+     ["templatename", TemplateName]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_CreateStorageLocation.html
+    ["ebn", "create-storage-location", CreateStorageLocation, [
+     ["", S3Bucket]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_DeleteApplication.html
+    ["ebn", "delete-application", DeleteApplication, [
+     ["", ApplicationName],
+     ["forceterminate", TerminateEnvByForce]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_DeleteApplicationVersion.html
+    ["ebn", "delete-application-version", DeleteApplicationVersion, [
+     ["", ApplicationName],
+     ["deletesourcebundle", DeleteSourceBundle],
+     ["versionlabel", VersionLabel]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_DeleteConfigurationTemplate.html
+    ["ebn", "delete-configuration-template", DeleteConfigurationTemplate, [
+     ["", ApplicationName],
+     ["templatename", TemplateName]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_DeleteEnvironmentConfiguration.html
+    ["ebn", "delete-environment-configuration", DeleteEnvironmentConfiguration, [
+     ["", ApplicationName],
+     ["environmentname", EnvironmentName]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_DescribeApplicationVersions.html
+    ["ebn", "describe-application-versions", DescribeApplicationVersions, [
+     ["", ApplicationName],
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_DescribeApplications.html
+    ["ebn", "describe-applications", DescribeApplications, []],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_DescribeConfigurationOptions.html
+    ["ebn", "describe-configuration-options", DescribeConfigurationOptions, [
+     ["", ApplicationName],
+     ["environmentname", EnvironmentName],
+     ["solutionstackname", SolutionStackName],
+     ["templatename", TemplateName]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_DescribeConfigurationSettings.html
+    ["ebn", "describe-configuration-settings", DescribeConfigurationSettings, [
+     ["", ApplicationName],
+     ["environmentname", EnvironmentName],
+     ["templatename", TemplateName]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_DescribeEnvironmentResources.html
+    ["ebn", "describe-configuration-options", DescribeEnvironmentResources, [
+     ["environmentid", EnvironmentId],
+     ["environmentname", EnvironmentName]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_DescribeEnvironments.html
+    ["ebn", "describe-environments", DescribeEnvironments, [
+     ["", ApplicationName],
+     ["includedeleted", IncludeDeleted],
+     ["includedeletedbackto", IncludeDeletedBackTo],
+     ["versionlabel", VersionLabel]
+    ]],
+    ###
+    ### NOT Implemented: http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_DescribeEvents.html
+    ###
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_ListAvailableSolutionStacks.html
+    ["ebn", "list-solution-stacks", ListAvailableSolutionStacks, []],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_RebuildEnvironment.html
+    ["ebn", "rebuild-environment", RebuildEnvironment, [
+     ["environmentid", EnvironmentId],
+     ["environmentname", EnvironmentName]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_RequestEnvironmentInfo.html
+    ["ebn", "request-environment-info", RequestEnvironmentInfo, []],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_RestartAppServer.html
+    ["ebn", "restart-app-server", RestartAppServer, [
+     ["environmentid", EnvironmentId],
+     ["environmentname", EnvironmentName]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_RetrieveEnvironmentInfo.html
+    ["ebn", "retrieve-environment-info", RetrieveEnvironmentInfo, []],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_SwapEnvironmentCNAMEs.html
+    ["ebn", "swap-environment-cnames", SwapEnvironmentCNAMEs, [
+     ["destinationenvironmentid", DestinationEnvironmentId],
+     ["destinationenvironmentname", DestinationEnvironmentName],
+     ["sourceenvironmentid", SourceEnvironmentId],
+     ["sourceenvironmentname", SourceEnvironmentName],
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_TerminateEnvironment.html
+    ["ebn", "terminate-environment", TerminateEnvironment, [
+     ["environmentid", EnvironmentId],
+     ["environmentname", EnvironmentName]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_UpdateApplication.html
+    ["ebn", "update-application", UpdateApplication, [
+     ["", ApplicationName],
+     ["description", ApplicationDescription]
+    ]],
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_UpdateApplicationVersion.html
+    ["ebn", "update-application-version", UpdateApplicationVersion, [
+     ["", ApplicationName],
+     ["description", Description],
+     ["versionlabel", VersionLabel]
+    ]],
+    ###
+    ### NOT Implemented: http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_UpdateConfigurationTemplate.html
+    ###
+    # http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_UpdateEnvironment.html
+    ["ebn", "update-environment", UpdateEnvironment, [
+     ["description", Description],
+     ["environmentid", EnvironmentId],
+     ["environmentname", EnvironmentName],
+     ["templatename", TemplateName],
+     ["versionlabel", VersionLabel]
+    ]],
+    ###
+    ### NOT Implemented: http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_ValidateConfigurationSettings.html
+    ###
+    
     #############
     ###  ELB  ###
     #############
@@ -341,6 +494,7 @@ $r53_version = "2012-02-29";
 	 ["protocol", "Listeners.member.1.Protocol"],
 	 ["loadbalancerport", "Listeners.member.1.LoadBalancerPort"],
 	 ["instanceport", "Listeners.member.1.InstancePort"],
+	 ["sslcertificateid", "Listeners.member.1.SSLCertificateId"],
      ]],
     ["elb", "create-lb-listeners clbl", CreateLoadBalancerListeners, [
 	 ["", LoadBalancerName],
@@ -774,7 +928,7 @@ unshift @ARGV, $1 if $0 =~ /^(?:.*[\\\/])?(?:(?:ec2|pa|s3|sqs|sdb)-?)?(.+?)(?:\.
     @meta{qw(1 assume cmd0 content_length curl curl_options cut d delimiter dns_alias dump_xml exec expire_time fail h help http
 	     insecure insecure_signing insecure_aws insecureaws install json l limit_rate link
 	     max_time marker md5 no_vhost parts prefix private progress public queue r region request requester retry role ruby quiet
-	     s3host sanity_check secrets_file set_acl sha1 sign silent simple t v verbose vv vvv wait xml yaml)} = undef;
+	     s3host sanity_check secrets_file set_acl sha1 sign silent simple sts_host t v verbose vv vvv wait xml yaml)} = undef;
 
     my @awsrc = "";
     for (split(/(?:\#.*?(?=\n)|'(.*?)'|"((?:\\[\\\"]|.)*?)"|((?:\\.|\$.|[^\s\'\"\#])+))/s, load_file_silent("$home/.awsrc")))
@@ -888,10 +1042,11 @@ if ($cut)
 # Exercise for the reader: why is this END block here?  (Hint: bug in Perl?)
 END {close STDOUT}
 
-$s3host ||= $ENV{S3_URL} || "s3.amazonaws.com";
+# Don't know if the -gov- default for $s3host is correct... are there other GovCloud regions, and what endpoint do they use?
+$s3host ||= $ENV{S3_URL} || ($region =~ /-gov-/? "s3-$region.amazonaws.com": "s3.amazonaws.com");
+$sts_host ||= $ENV{STS_URL} || ($s3host =~ /^s3-(.*?)\.amazonaws\.com$/? "sts.$1.amazonaws.com": "sts.amazonaws.com");
 
-
-print STDERR "aws version: v$program_version  (ec2: $ec2_version, sqs: $sqs_version, elb: $elb_version, sdb: $sdb_version, iam: $iam_version)\n" if $v;
+print STDERR "aws versions: (ec2: $ec2_version, sqs: $sqs_version, elb: $elb_version, sdb: $sdb_version, iam: $iam_version, ebn: $ebn_version)\n" if $v;
 
 $insecsign = "--insecure" if $insecure || $insecure_signing;
 $insecureaws = "--insecure" if $insecureaws || $insecure_aws;
@@ -918,11 +1073,15 @@ if ($role)
 {
     if ($role == 1)
     {
-	($role) = qx[$curl -s --fail  http://169.254.169.254/latest/meta-data/iam/security-credentials/];
+	my $cmd = qq[$curl -s --max-time 2 --fail  http://169.254.169.254/latest/meta-data/iam/security-credentials/];
+	print "$cmd\n" if $v;
+	($role) = qx[$cmd];
     }
     if ($role)
     {
-	my $json = qx[$curl -s --fail http://169.254.169.254/latest/meta-data/iam/security-credentials/$role];
+	my $cmd = qq[$curl -s --max-time 2 --fail http://169.254.169.254/latest/meta-data/iam/security-credentials/$role];
+	print "$cmd\n" if $v;
+	my $json = qx[$cmd];
 	($awskey) = $json =~ /"AccessKeyId" : "(.*?)"/;
 	($secret) = $json =~ /"SecretAccessKey" : "(.*?)"/;
 	($session) = $json =~ /"Token" : "(.*?)"/;
@@ -941,6 +1100,12 @@ unless ($awskey && $secret)
 
 unless ($awskey && $secret)
 {
+    # try to resolve any globs
+    unless (-s $secrets_file)
+    {
+         $secrets_file = glob($secrets_file);
+    }
+
     if (-s $secrets_file)
     {
 	if ($secrets_file =~ /\.gpg$/)
@@ -981,7 +1146,7 @@ unless ($awskey && $secret)
 
 unless ($awskey && $secret)
 {
-    ($role) = qx[$curl -s --fail  http://169.254.169.254/latest/meta-data/iam/security-credentials/];
+    ($role) = qx[$curl -s --fail --max-time 1 http://169.254.169.254/latest/meta-data/iam/security-credentials/];
     if ($role)
     {
 	my $json = qx[$curl -s --fail http://169.254.169.254/latest/meta-data/iam/security-credentials/$role];
@@ -1014,8 +1179,8 @@ if ($assume)
 	$url .= "$_=@{[encode_url($data{$_})]}";
     }
 
-    my $sig = sign("GET\nsts.amazonaws.com\n/\n$url", $data{SignatureMethod});
-    $url = "https://sts.amazonaws.com/?Signature=@{[encode_url($sig)]}&$url";
+    my $sig = sign("GET\n$sts_host\n/\n$url", $data{SignatureMethod});
+    $url = "https://$sts_host/?Signature=@{[encode_url($sig)]}&$url";
     my $xml = qx[$curl -s '$url'];
 
     if ($xml !~ /<AccessKeyId>/)
@@ -1097,13 +1262,13 @@ if (!-e "$home/.awsrc" || $sanity_check)
 	warn "sanity-check: This curl (v$curl_version) does not support --retry (>= v7.12.3), so --retry is disabled\n" unless $silent;
     }
 
-    my $aws = qx[$curl -q -s $insecureaws --dump-header - $scheme://connection.$s3host/test];
+    my $aws = qx[$curl -q -s $insecureaws --include $scheme://connection.$s3host/test];
     print $aws if $v >= 2;
     my($d, $mon, $y, $h, $m, $s) = $aws =~ /^Date: ..., (..) (...) (....) (..):(..):(..) GMT\r?$/m;
 
     if (!$d)
     {
-	$aws = qx[$curl -q -s --insecure --dump-header - $scheme://connection.$s3host/test];
+	$aws = qx[$curl -q -s --insecure --include $scheme://connection.$s3host/test];
 	($d, $mon, $y, $h, $m, $s) = $aws =~ /^Date: ..., (..) (...) (....) (..):(..):(..) GMT\r?$/m;
 	if ($d)
 	{
@@ -1111,7 +1276,7 @@ if (!-e "$home/.awsrc" || $sanity_check)
 	}
 	else
 	{
-	    $aws = qx[$curl -q -s --insecure --dump-header - http://connection.$s3host/test];
+	    $aws = qx[$curl -q -s --insecure --include http://connection.$s3host/test];
 	    ($d, $mon, $y, $h, $m, $s) = $aws =~ /^Date: ..., (..) (...) (....) (..):(..):(..) GMT\r?$/m;
 	    if ($d)
 	    {
@@ -1254,7 +1419,7 @@ if (!$cmd_data)
 	    $output .= "\t\t$one\n";
 	}
     }
-    $output .= "aws version: v$program_version  (ec2 $ec2_version, sqs $sqs_version, elb $elb_version, sdb $sdb_version)\n";
+    $output .= "aws versions: (ec2 $ec2_version, sqs $sqs_version, elb $elb_version, sdb $sdb_version, ebn $ebn_version)\n";
     die $output;
 }
 
@@ -1299,7 +1464,25 @@ if (!$cmd_data)
 
     my($result);
 
-    if ($service eq "ec2" || $service eq "sqs" || $service eq "elb" || $service eq "sdb" || $service eq "iam" || $service eq "pa")
+    if ($service eq "aws")
+    {
+       if ($action eq "XMLVERSION") 
+       {
+          my $versions = { "ec2" => $ec2_version, "sqs" => $sqs_version, "elb" => $elb_version, "sdb" => $sdb_version, "iam" => $iam_version, "ebn" => $ebn_version };
+          if ($#ARGV > 0)
+          {
+               print "$versions->{$argv[0]}\n";
+          }
+          else
+          {
+               for (keys %$versions)
+               {
+                    print "$_: $versions->{$_}\n";
+               }
+          }
+       }
+    }
+    elsif ($service eq "ec2" || $service eq "sqs" || $service eq "elb" || $service eq "sdb" || $service eq "iam" || $service eq "pa" || $service eq "ebn")
     {
 	#print STDERR "(@{[join(', ', @argv)]})\n" if $v;
 
@@ -1457,6 +1640,18 @@ if (!$cmd_data)
 	    $bucket =~ s/^([^\?\/]+)(\?|$ )/$1\/$2/xs; # turn abc or abc? into abc/ or abc/?
 	    $bucket .= $file if $bucket =~ /\/$/;
 
+	    # delete previous partial multi-part uploads
+	    for (1..10)
+	    {
+		print "deleting multipart uploads $bucket...\n" if $v;
+		my $xml = s3(DELETE, undef, "$bucket?upload");
+		if ($xml)
+		{
+		    print $xml if $v;
+		    last;
+		}
+	    }
+
 	    $parts = int(($SZ + $GB5 - 1) / $GB5) unless $parts > 1;
 	    my $slice = int(($SZ + $parts - 1) / $parts);
 	    if ($slice < $MB5 && $parts > 1)
@@ -1465,18 +1660,32 @@ if (!$cmd_data)
 		$slice = $MB5;
 		print STDERR "multipart upload: Too many parts makes slice too small; adjusting to $parts parts\n";
 	    }
-	    my($uploadId) = s3(POST, undef, "$bucket?uploads") =~ /<UploadId>(.*?)<\/UploadId>/;
+	    my($uploadId) = s3(POST, undef, "$bucket?uploads", undef, @head) =~ /<UploadId>(.*?)<\/UploadId>/;
 	    print "uploadId = $uploadId\n" if $v;
+	    die "missing uploadId\n" if !$uploadId;
 	    for (my $i = 0; $i < $parts; $i++)
 	    {
 		my $beg = $i * $slice + 1;
 		my $end = $beg + $slice - 1;
 		$end = $SZ if $end > $SZ;
 		local $content_length = $end - $beg + 1;
-		my $cmd = "tail -c +$beg $file |head -c $content_length";
-		print "$cmd ($content_length) bytes\n" if $v;
-		open STDIN, "$cmd|" or die "part @{[$i + 1]}: $!";
-		s3(PUT, undef, "$bucket?partNumber=@{[$i + 1]}&uploadId=$uploadId", "-");
+		local($exit_code);
+		for my $iter (0..$retry)
+		{
+		    print "failed to upload partNumber=@{[$i + 1]}... retrying #$iter of $retry...\n" if $iter && !$fail;
+		    undef $exit_code;
+		    my $cmd = "tail -c +$beg $file |head -c $content_length";
+		    print "$cmd (bytes)\n" if $v;
+		    open STDIN, "$cmd|" or die "part @{[$i + 1]}: $!";
+		    s3(PUT, undef, "$bucket?partNumber=@{[$i + 1]}&uploadId=$uploadId", "-");
+		    last unless $exit_code == 23;
+		}
+		if ($exit_code)
+		{
+		    print "failed to upload partNumber=@{[$i + 1]}\n" if !$fail;
+		    s3(DELETE, undef, "$bucket?uploadId=$uploadId");
+		    exit $exit_code;
+		}
 	    }
 	    s3(POST, undef, "$bucket?uploadId=$uploadId");
 	}
@@ -1703,6 +1912,10 @@ if (!$cmd_data)
     elsif ($result =~ /<GetConsoleOutputResponse/)
     {
 	print decode_base64($result =~ /<output>(.*?)<\/output>/s);
+    }
+    elsif ($result =~ /<DescribeInstanceAttributeResponse/)
+    {
+	print+ $result =~ /<value>(.*?)<\/value>/, "\n";
     }
     elsif ($result =~ /<RunInstancesResponse|<DescribeInstancesResponse|<RequestSpotInstancesResponse|<DescribeSpotInstanceRequestsResponse/ && ($simple || $wait))
     {
@@ -2155,7 +2368,7 @@ sub xml2tab
 			   |ListGroupPoliciesResult|GetGroupPolicyResult
 			   |SendMessageResult|CreateTagsResponse|DeleteTagsResponse
 	    )$/x
-	    || $tag2 =~ /^(?:addressesSet-item|availabilityZoneInfo-item|imagesSet-item|instancesSet-item
+	    || $tag2 =~ /^(?:addressesSet-item|availabilityZoneInfo-item|imagesSet-item|instancesSet-item|instanceStatusSet-item
 			   |ipPermissions-item|keySet-item|reservedInstancesOfferingsSet-item|securityGroupInfo-item|volumeSet-item|snapshotSet-item|regionInfo-item
 			   |ReceiveMessageResult-Message
 			   |LoadBalancerDescriptions-member
@@ -2399,7 +2612,8 @@ sub s3
 
     $set_acl = "public-read"	if $public;
     $set_acl = "private"	if $private;
-    push @header, "x-amz-acl: $set_acl" if $verb eq PUT && $set_acl;
+    # the multipart upload stuff is getting icky
+    push @header, "x-amz-acl: $set_acl" if $set_acl && $verb =~ /^(?:POST|PUT)$/ && $name !~ /\?partNumber=|\?uploadId=/;
 
     $requester = "requester" if $requester == 1;
     push @header, "x-amz-request-payer: $requester" if $requester;
@@ -2437,14 +2651,13 @@ sub s3
     }
 
     my($ub, $uo, $uq) = $name =~ /^(.+?)(?:\/(.*?))?(\?(?:acl|delete|location|logging|bittorrent|lifecycle|policy|requestPayment
-							|website
-							|uploadId=[\.\w]+
+							|uploadId=[\.\-\w]+
 							|uploads
 							|upload
-							|partNumber=\d+&uploadId=[\.\w]+
+							|partNumber=\d+&uploadId=[\.\-\w]+
 							|partNumber=\d+
 							|part
-							|versioning|versions))?$/sx;
+							|versioning|versions|website))?$/sx;
 
     my $uname = encode_url($ub) . "/" . encode_url($uo) . $uq if $name;
 
@@ -2501,7 +2714,7 @@ sub s3
 	    system "cat $file" if $v >= 2;
 	}
 
-	die "$uname: no matching multipart upload found\n" if $uq eq "?upload" && length($uploadId) == 0;
+	return "$uname: no matching multipart upload found\n" if $uq eq "?upload" && length($uploadId) == 0;
 
 	$uname .= "Id=$uploadId" if $uq eq "?upload";				# List Parts / Complete Multipart Upload / Abort Multipart Upload
 	$uname .= "&uploadId=$uploadId" if $uq =~ /^?partNumber=\d+$/;		# Upload Part NNN
@@ -2655,6 +2868,8 @@ sub s3
     {
 	print STDERR "$code\n" unless $v;
 	$exit_code = 22;
+	# exit code 23 means that there was no reply - happens with multipart upload sometimes
+	$exit_code = 23 if !length($code);
 	return if $fail;
     }
 
@@ -2736,6 +2951,7 @@ sub ec2
     $version .= $elb_version if $service eq "elb";
     $version .= $sdb_version if $service eq "sdb";
     $version .= $iam_version if $service eq "iam";
+    $version .= $ebn_version if $service eq "ebn";
 
     # see http://developer.amazonwebservices.com/connect/entry!default.jspa?externalID=3912
     $region = {eu => "eu-west-1", us => "us-east-1", uswest => "us-west-1", ap => "ap-southeast-1"}->{lc $region} || $region;
@@ -2772,6 +2988,11 @@ sub ec2
 	# $endpoint = "iam.$region.amazonaws.com" if $region;
     }
 
+    if ( $service eq "ebn" )
+    {
+    $endpoint = "elasticbeanstalk.us-east-1.amazonaws.com";
+    $endpoint = "elasticbeanstalk.$region.amazonaws.com" if $region;
+    }
     my @session = (SecurityToken => $session) if $session;
     my %data = (AWSAccessKeyId => $awskey, @session, SignatureMethod => ($sha1? HmacSHA1: HmacSHA256), SignatureVersion => 2, Version => $version, ($expire_time? Expires: Timestamp) => $zulu, @_);
 
@@ -2890,7 +3111,7 @@ sub guess_is_unix
 
 sub get_home_directory
 {
-    return "$ENV{HOMEDRIVE}$ENV{HOMEPATH}" || "C:" if !$isUnix;
+    return $ENV{HOME} || "$ENV{HOMEDRIVE}$ENV{HOMEPATH}" || "C:" if !$isUnix;
     return (getpwuid($<))[7];
 }
 
