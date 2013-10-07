@@ -11,6 +11,7 @@ bundle agent s3deploy(runenv, metadata, enable, bucket, directory, given_netrc)
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
       "enabled" expression => strcmp("$(enable)", "1");
+      "not_enabled" not => strcmp("$(enable)", "1");
       "auto_netrc" expression => strcmp("$(netrc)", "AUTO");
 
   vars:
@@ -28,17 +29,24 @@ bundle agent s3deploy(runenv, metadata, enable, bucket, directory, given_netrc)
 
   methods:
     enabled::
-      "S3 deploy" usebundle => cfdc_aws_s3:sync(runenv, "", $(directory), $(bucket), "$(this.bundle).s3_options"),
+      "S3 deploy" usebundle => cfdc_aws_s3:sync($(runenv),
+                                                "",
+                                                $(directory),
+                                                $(bucket),
+                                                "cfdc_simpleapplication:s3deploy.s3_options"),
       handle => "$(activation_id)_s3_do_deploy";
 
-    !enabled::
-      "S3 clear" usebundle => cfdc_aws_s3:clear(runenv, "", $(bucket), "$(this.bundle).s3_options"),
+    not_enabled::
+      "S3 clear" usebundle => cfdc_aws_s3:clear($(runenv),
+                                                "",
+                                                $(bucket),
+                                                "cfdc_simpleapplication:s3deploy.s3_options"),
       handle => "$(activation_id)_s3_do_clear";
 
   reports:
     enabled::
       "Deploying $(directory) to S3 bucket $(bucket) with netrc '$(netrc)'";
 
-    !enabled::
+    not_enabled::
       "Clearing S3 bucket $(bucket) with netrc '$(netrc)'";
 }
