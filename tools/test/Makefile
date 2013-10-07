@@ -773,3 +773,7 @@ uninstall_newrelic:
 demo_deploy:
 	$(CFSKETCH_DA) --install Demo::SimpleApplication::Deploy --activate Demo::SimpleApplication::Deploy=$(SOURCEDIR)/demo/simpleapplication-deploy/params/demo.json
 	$(RUNNER)
+
+demo_s3deploy:
+	$(CFSKETCH_DA) --install Demo::S3::Deploy --activate Demo::S3::Deploy=$(SOURCEDIR)/demo/s3_deploy/params/demo.json
+	$(RUNNER)

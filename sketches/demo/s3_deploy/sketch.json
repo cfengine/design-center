@@ -1,0 +1,62 @@
+{
+   "api" : {
+      "s3deploy" : [
+          { type: "environment", name: "runenv", },
+          { type: "metadata", name: "mymetadata", },
+          {
+              "description" : "Enable this deployment? (if disabled, destroy the S3 bucket)",
+              "name" : "enable",
+              "type" : "boolean",
+              "default": true
+          },
+          {
+              "description" : "AWS S3 bucket name",
+              "name" : "bucket",
+              "type" : "string"
+          },
+          {
+              "description" : "Directory to deploy into the S3 bucket",
+              "name" : "directory",
+              "type" : "string",
+              validation: "PATH_ABSOLUTE_UNIX"
+          },
+          {
+              "description" : "netrc file to use (leave AUTO to use `directory`/../netrc)",
+              "name" : "netrc",
+              "type" : "string",
+              "default": "AUTO"
+          }
+      ]
+   },
+   "interface" : [
+      "deploy.cf"
+   ],
+   "manifest" : {
+       "params/demo.json": { desc: "example parameters" },
+      "README.md" : {
+         "documentation" : true
+      },
+      "deploy.cf" : {
+         "desc" : "main file"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+      "description" : "Deploy a directory to AWS S3 as simply as possible.",
+      "license" : "MIT",
+      "name" : "Demo::S3::Deploy",
+      "tags" : [
+         "s3",
+         "deploy",
+         "demo",
+         "enterprise_compatible"
+      ],
+       "version" : "1.0",
+       depends: { "Cloud::Services::AWS::S3": {}, cfengine: { version: "3.5.1" },
+                  "os" : [ {"linux" : "All Linux distributions"} ]
+                }
+   },
+   "namespace" : "cfdc_simpleapplication"
+}

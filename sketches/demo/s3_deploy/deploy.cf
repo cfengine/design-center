@@ -1,0 +1,44 @@
+body file control
+{
+      namespace => "cfdc_simpleapplication";
+}
+
+bundle agent s3deploy(runenv, metadata, enable, bucket, directory, given_netrc)
+{
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "enabled" expression => strcmp("$(enable)", "1");
+      "auto_netrc" expression => strcmp("$(netrc)", "AUTO");
+
+  vars:
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "home" string => dirname($(directory));
+      "netrc" string => ifelse("auto_netrc", "$(home)/netrc",
+                               $(given_netrc));
+
+      "s3_options[acl]" string => "public-read";
+      "s3_options[netrc]" string => "$(netrc)";
+
+  methods:
+    enabled::
+      "S3 deploy" usebundle => cfdc_aws_s3:sync(runenv, "", $(directory), $(bucket), "$(this.bundle).s3_options"),
+      handle => "$(activation_id)_s3_do_deploy";
+
+    !enabled::
+      "S3 clear" usebundle => cfdc_aws_s3:clear(runenv, "", $(bucket), "$(this.bundle).s3_options"),
+      handle => "$(activation_id)_s3_do_clear";
+
+  reports:
+    enabled::
+      "Deploying $(directory) to S3 bucket $(bucket) with netrc '$(netrc)'";
+
+    !enabled::
+      "Clearing S3 bucket $(bucket) with netrc '$(netrc)'";
+}

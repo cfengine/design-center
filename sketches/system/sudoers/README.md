@@ -1,4 +1,4 @@
-# System::Sudoers version 2.0.1
+# System::Sudoers version 2.0.2
 
 License: MIT
 Tags: cfdc, sudoers
@@ -18,9 +18,9 @@ CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 * parameter _string_ *prefix* (default: `"__PREFIX__"`, description: none)
 
-* parameter _string_ *file_path* (default: `"/etc/sudoers"`, description: none)
+* parameter _string_ *file_path* (default: `"/etc/sudoers"`, description: path to sudoers file to edit)
 
-* parameter _string_ *visudo_path* (default: `"/usr/sbin/visudo"`, description: Path to visudo command.  Use /bin/true to make it always succeed.)
+* parameter _string_ *visudo_path* (default: `"/usr/sbin/visudo"`, description: path to visudo command)
 
 * parameter _array_ *defaults* (default: `[]`, description: none)
 
@@ -34,7 +34,7 @@ CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 * parameter _array_ *user_specs* (default: `[]`, description: none)
 
-* parameter _array_ *drop_dirs* (default: `[]`, description: List of drop directories)
+* parameter _array_ *drop_dirs* (default: `[]`, description: Drop directories)
 
 
 ## SAMPLE USAGE
