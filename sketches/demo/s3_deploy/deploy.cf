@@ -10,8 +10,8 @@ bundle agent s3deploy(runenv, metadata, enable, bucket, directory, given_netrc)
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
-      "enabled" expression => strcmp("$(enable)", "1");
-      "not_enabled" not => strcmp("$(enable)", "1");
+      "deployment_enabled" expression => strcmp("$(enable)", "1");
+      "deployment_disabled" not => strcmp("$(enable)", "1");
       "auto_netrc" expression => strcmp("$(netrc)", "AUTO");
 
   vars:
@@ -28,7 +28,7 @@ bundle agent s3deploy(runenv, metadata, enable, bucket, directory, given_netrc)
       "s3_options[netrc]" string => "$(netrc)";
 
   methods:
-    enabled::
+    deployment_enabled::
       "S3 deploy" usebundle => cfdc_aws_s3:sync($(runenv),
                                                 "",
                                                 $(directory),
@@ -36,17 +36,26 @@ bundle agent s3deploy(runenv, metadata, enable, bucket, directory, given_netrc)
                                                 "cfdc_simpleapplication:s3deploy.s3_options"),
       handle => "$(activation_id)_s3_do_deploy";
 
-    not_enabled::
+    deployment_disabled::
       "S3 clear" usebundle => cfdc_aws_s3:clear($(runenv),
                                                 "",
                                                 $(bucket),
                                                 "cfdc_simpleapplication:s3deploy.s3_options"),
       handle => "$(activation_id)_s3_do_clear";
 
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
   reports:
-    enabled::
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    deployment_enabled::
       "Deploying $(directory) to S3 bucket $(bucket) with netrc '$(netrc)'";
 
-    not_enabled::
+    deployment_disabled::
       "Clearing S3 bucket $(bucket) with netrc '$(netrc)'";
 }
