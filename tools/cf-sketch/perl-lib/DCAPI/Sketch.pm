@@ -257,7 +257,7 @@ EOHIPPUS
     my $inc = 'README.include';
     my $incfile = sprintf '%s/%s', $self->location(), $inc;
 
-    if (exists $data{manifest}->{$inc} && -e $incfile)
+    if (-e $incfile)
     {
         open my $i, '<', $incfile or warn "Could not include defined include file $incfile";
         while (<$i>)
