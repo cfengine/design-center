@@ -777,3 +777,11 @@ demo_deploy:
 demo_s3deploy:
 	$(CFSKETCH_DA) --install Demo::S3::Deploy --activate Demo::S3::Deploy=$(SOURCEDIR)/demo/s3_deploy/params/demo.json
 	$(RUNNER)
+
+data_triggers_github:
+	$(CFSKETCH_DA) --install Data::Triggers::Github --activate Data::Triggers::Github=$(SOURCEDIR)/utilities/triggers_github/params/demo.json
+	$(RUNNER)
+
+data_triggers_jenkins:
+	$(CFSKETCH_DA) --install Data::Triggers::Jenkins --activate Data::Triggers::Jenkins=$(SOURCEDIR)/utilities/triggers_jenkins/params/demo.json
+	$(RUNNER)

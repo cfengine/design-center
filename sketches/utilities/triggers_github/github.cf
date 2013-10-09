@@ -1,0 +1,121 @@
+body file control
+{
+      namespace => "cfdc_triggers";
+}
+
+bundle agent github(runenv, metadata, url, branch, s3_bucket, netrc)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "base" string => lastnode($(url), "/");
+      "stagedir" string => "/var/tmp/staging-github-$(base)";
+      "repo" string => "$(url).git";
+
+      "feed" string => "$(url)/commits/master.atom",
+      comment => "Atom feed parsed for the interesting timestamp";
+
+      "persist" string => canonify(concat("_github_persist_update_",
+                                          $(feed),
+                                          "_",
+                                          $(curl.updated))),
+      handle => "$(activation_id)_triggers_github_persist";
+
+      # options for vcs_mirror
+      "vcs_opt[nowipe]" string => "1";
+      "vcs_opt[vcs][runas]" string => getenv("LOGNAME", "128");
+      "vcs_opt[vcs][umask]" string => "000";
+
+      # options for aws_s3
+      "s3_options[acl]" string => "public-read";
+      "s3_options[netrc]" string => "$(netrc)";
+
+  commands:
+      # we will look for a timestamp like <updated>2013-10-03T11:26:50-07:00</updated>
+      "/usr/bin/curl -s '$(feed)' | /usr/bin/perl -n -e 'next unless m/\\Dupdated\\D+(\\d.+T.+\\d)\\D+updated/; print \"=updated=$1\\n\"; exit;'"
+      handle => "$(activation_id)_triggers_github_curl",
+      module => "true",
+      contain => default:in_shell;
+
+  methods:
+      "check if known" usebundle => notifications_github_check($(persist)),
+      depends_on => { "$(activation_id)_triggers_github_persist" },
+      inherit => "true",
+      handle => "$(activation_id)_triggers_github_check";
+
+      "set persistent" usebundle => notifications_github_set($(persist)),
+      depends_on => { "$(activation_id)_triggers_github_persist",
+                      "$(activation_id)_triggers_github_check" },
+      inherit => "true",
+      handle => "$(activation_id)_triggers_github_set";
+
+    github_got_update::
+      "deploy" usebundle => cfdc_vcs:mirror($(runenv),
+                                            "",
+                                            "/usr/bin/git",
+                                            $(stagedir),
+                                            $(repo),
+                                            $(branch),
+                                            "cfdc_triggers:github.vcs_opt"),
+      handle => "$(activation_id)_triggers_github_vcs_mirror";
+
+      "S3 deploy" usebundle => cfdc_aws_s3:sync($(runenv),
+                                                "",
+                                                $(stagedir),
+                                                $(s3_bucket),
+                                                "cfdc_triggers:github.s3_options"),
+      handle => "$(activation_id)_triggers_github_s3_deploy";
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+      "$(this.bundle): running in verbose mode";
+
+      "$(this.bundle): Last updated $(feed) = $(curl.updated)";
+
+    verbose.!github_got_update::
+      "$(this.bundle): the $(feed) update $(persist) was already known";
+
+    verbose.github_got_update::
+      "$(this.bundle): the $(feed) update $(persist) is news to us";
+
+}
+
+bundle agent notifications_github_check(pname)
+{
+  classes:
+      "github_got_update" not => $(pname),
+      scope => "namespace";
+
+  reports:
+    verbose::
+      "$(this.bundle): Checking if $(pname) is defined";
+
+      "$(this.bundle): $(pname) is defined" ifvarclass => $(pname);
+      "$(this.bundle): $(pname) is NOT defined" ifvarclass => "!$(pname)";
+
+      "$(this.bundle): github_got_update is defined" ifvarclass => "github_got_update";
+      "$(this.bundle): github_got_update is NOT defined" ifvarclass => "!github_got_update";
+
+}
+
+bundle agent notifications_github_set(pname)
+{
+  classes:
+      "$(pname)" expression => "any",
+      persistence => "90m"; # persist for a VERY long time
+}

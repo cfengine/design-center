@@ -1,0 +1,79 @@
+body file control
+{
+      namespace => "cfdc_triggers";
+}
+
+bundle agent jenkins(runenv, metadata, module_run, module_namespace, source_suffix, destination)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "deploy_ok" expression => "default:jenkins_module_loaded";
+
+    deploy_ok::
+      # the jenkinsnotify class is defined by the Jenkins plugin
+      "recent_ok" expression => "default:jenkinsnotify";
+
+  vars:
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  methods:
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+    deploy_ok::
+      "stage" usebundle => cfdc_staging:stage($(runenv),
+                                              "",
+                                              "$($(module_namespace).WORKSPACE)/$(source_suffix)",
+                                              $(destination),
+                                              getenv("LOGNAME", 128),
+                                              getenv("LOGNAME", 128),
+                                              "0755",
+                                              "0644",
+                                              ""),
+      classes => always_set_and_cancel("deployment_ok", "jenkinsnotify"),
+      handle => "$(activation_id)_triggers_jenkins_staging";
+
+  commands:
+      "$(module_run)" module => "true";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+      "$(this.bundle): running in verbose mode";
+
+    verbose.deploy_ok::
+      "Deployment script enabled";
+
+    verbose.recent_ok::
+      "The build succeeded recently!  Deploying from '$($(module_namespace).WORKSPACE)/$(source_suffix)' to '$(destination)'";
+
+    verbose.deployment_ok::
+      "The build was deployed successfully to '$(destination)'";
+
+    verbose.recent_ok.jenkinsnotify.!deployment_ok::
+      "The build was NOT deployed successfully, check the logs ";
+
+    verbose.test::
+      "$(this.bundle): running in test mode";
+}
+
+body classes always_set_and_cancel(set, cancel)
+{
+      promise_repaired => { "$(set)" };
+      promise_kept => { "$(set)" };
+      repair_failed => { "$(set)" };
+      repair_denied => { "$(set)" };
+      repair_timeout => { "$(set)" };
+
+      cancel_notkept => { "default:$(cancel)", "$(cancel)" };
+      cancel_kept => { "default:$(cancel)", "$(cancel)" };
+}

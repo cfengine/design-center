@@ -1,0 +1,10 @@
+[
+    {
+        "Data::Triggers::Github":
+        {
+            url: "https://github.com/tzz/jim",
+            branch: "master",
+            s3_bucket: "tzz_jim_bucket",
+        }
+    },
+]
