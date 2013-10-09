@@ -11,7 +11,7 @@
            },
            {
                "name" : "url",
-               description: "Base URL of Github repo, e.g. https://github.com/cfengine/vagrant-cfe",
+               description: "Base URL of Github repo, e.g. https://github.com/tzz/simplesite",
                validation: "URL",
                "type" : "string"
            },

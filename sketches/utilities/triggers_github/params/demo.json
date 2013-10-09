@@ -2,9 +2,9 @@
     {
         "Data::Triggers::Github":
         {
-            url: "https://github.com/tzz/jim",
+            url: "https://github.com/tzz/simplesite",
             branch: "master",
-            s3_bucket: "tzz_jim_bucket",
+            s3_bucket: "tzz_simplesite_bucket",
         }
     },
 ]
