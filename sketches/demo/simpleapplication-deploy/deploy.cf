@@ -3,7 +3,7 @@ body file control
       namespace => "cfdc_simpleapplication";
 }
 
-bundle agent deploy(runenv, metadata, workers, type, enable)
+bundle agent deploy(runenv, metadata, workers, cloud_type, enable)
 {
 
   classes:
@@ -11,7 +11,7 @@ bundle agent deploy(runenv, metadata, workers, type, enable)
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
       "enable" expression => strcmp("$(enable)", "1");
-      "$(type)" expression => "any";
+      "$(cloud_type)" expression => "any";
 
   vars:
       "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
