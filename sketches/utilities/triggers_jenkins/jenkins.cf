@@ -21,6 +21,9 @@ bundle agent jenkins(runenv, metadata, module_run, module_namespace, source_suff
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
+      "stage_opts[precommand]" string => "/bin/true";
+      "stage_opts[postcommand]" string => "/bin/true";
+
   methods:
     verbose::
       "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
@@ -31,11 +34,11 @@ bundle agent jenkins(runenv, metadata, module_run, module_namespace, source_suff
                                               "",
                                               "$($(module_namespace).WORKSPACE)/$(source_suffix)",
                                               $(destination),
-                                              getenv("LOGNAME", 128),
-                                              getenv("LOGNAME", 128),
+                                              "root",
+                                              "root",
                                               "0755",
                                               "0644",
-                                              ""),
+                                              "cfdc_triggers:jenkins.stage_opts"),
       classes => always_set_and_cancel("deployment_ok", "jenkinsnotify"),
       handle => "$(activation_id)_triggers_jenkins_staging";
 
@@ -59,7 +62,7 @@ bundle agent jenkins(runenv, metadata, module_run, module_namespace, source_suff
     verbose.deployment_ok::
       "The build was deployed successfully to '$(destination)'";
 
-    verbose.recent_ok.jenkinsnotify.!deployment_ok::
+    verbose.recent_ok.default:jenkinsnotify.!deployment_ok::
       "The build was NOT deployed successfully, check the logs ";
 
     verbose.test::
