@@ -30,7 +30,7 @@ bundle agent github(runenv, metadata, url, branch, s3_bucket, netrc)
 
       # options for vcs_mirror
       "vcs_opt[nowipe]" string => "1";
-      "vcs_opt[vcs][runas]" string => getenv("LOGNAME", "128");
+      "vcs_opt[vcs][runas]" string => "root";
       "vcs_opt[vcs][umask]" string => "000";
 
       # options for aws_s3
