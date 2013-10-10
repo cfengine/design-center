@@ -1,0 +1,25 @@
+
+# Purpose
+
+Data::Triggers::Github shows how to handle external notifications with Github.
+
+## Github triggers
+
+The configuration is minimal: you provide a `url` pointing to a Github repo, a
+`branch`, and a `s3_bucket` to upload into.  So, for the example URL
+`https://github.com/tzz/jim` (having a file `jim.pl in branch `master`) and S3
+bucket `tzz_jim_bucket` you would ultimately have `jim.pl` uploaded to
+https://s3.amazonaws.com/tzz_jim_bucket/jim.pl
+
+You can provide a netrc file, which simply has this format:
+
+```
+machine AWS username yourname login yourpublickey password yourprivatekey
+```
+
+If you don't specify it, that file defaults to `~/.netrc` as evaluated by the
+account that runs cf-agent (/root/.netrc typically).  Note that the file can be
+GnuPG-encrypted (indicated by a `.gpg` extension) in which case you need
+`gpg-agent` running and to read the GnuPG manual.  Whether encrypted or not, at
+least make the file readable only to the account that runs cf-agent.
+

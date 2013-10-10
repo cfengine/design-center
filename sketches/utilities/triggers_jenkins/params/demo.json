@@ -1,0 +1,11 @@
+[
+    {
+        "Data::Triggers::Jenkins":
+        {
+            module_run: "/tmp/jenkins-postbuild",
+            module_namespace: "jenkins_postbuild",
+            source_suffix: "myartifacts/",
+            destination: "/var/tmp/deployment",
+        }
+    },
+]

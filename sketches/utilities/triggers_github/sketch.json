@@ -1,0 +1,78 @@
+{
+   "api" : {
+       "github" : [
+           {
+               "name" : "runenv",
+               "type" : "environment"
+           },
+           {
+               "name" : "metadata",
+               "type" : "metadata"
+           },
+           {
+               "name" : "url",
+               description: "Base URL of Github repo, e.g. https://github.com/tzz/simplesite",
+               validation: "URL",
+               "type" : "string"
+           },
+           {
+               "name" : "branch",
+               description: "branch of Github repo",
+               validation: "NONEMPTY_STRING",
+               "default": "master",
+               "type" : "string"
+           },
+           {
+               "name" : "s3_bucket",
+               description: "S3 bucket to deploy into",
+               validation: "NONEMPTY_STRING",
+               "type" : "string"
+           },
+           {
+               "name" : "netrc",
+               description: "netrc file, see README.md",
+               validation: "NONEMPTY_STRING",
+               "default": "~/.netrc",
+               "type" : "string"
+           }
+       ],
+   },
+   "interface" : [
+       "github.cf"
+   ],
+   "manifest" : {
+       "README.md" : {
+           "documentation" : true
+       },
+       "github.cf" : {
+           "desc" : "main file"
+       }
+   },
+   "metadata" : {
+       "authors" : [
+           "Ted Zlatanov <tzz@lifelogs.com>"
+       ],
+       "depends" : {
+           "CFEngine::stdlib" : {},
+           "VCS::vcs_mirror": {},
+           "Cloud::Services::AWS::S3": {},
+           "cfengine" : {
+              "version" : "3.5.1"
+           }
+       },
+       "description" : "Trigger behavior from a Github Atom feed to deploy to S3",
+       "license" : "MIT",
+       "name" : "Data::Triggers::Github",
+      "tags" : [
+          "classes",
+          "trigger",
+          "notification",
+          "github",
+          "sketchify_generated",
+          "persistent",
+          "enterprise_compatible"
+      ],
+       "version" : "1.0"
+   },
+   "namespace" : "cfdc_triggers"
+}

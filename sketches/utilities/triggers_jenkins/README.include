@@ -1,0 +1,30 @@
+
+# Purpose
+
+Data::Triggers::Jenkins shows how to handle external notifications from Jenkins.
+
+## Jenkins triggers
+
+You need to install the Jenkins plugin as explained here: 
+https://github.com/cfengine/vagrant-cfe/blob/master/README-jenkins.md
+
+The policy logs will be slightly different from what's described there, because
+you're using this Design Center sketch.
+
+The configuration is to specify the Jenkins plugin's generated module
+(`module_run` set to `/tmp/jenkins-postbuild` if you followed the guide above);
+then to specify the module namespace (`module_namespace` is then
+`jenkins_postbuild`); and finally the `source_suffix` where artifacts reside
+under the Jenkins workspace (e.g. `myartifacts/`) and a `destination`,
+e.g. `/var/tmp/deployment`.
+
+Now, whenever Jenkins builds successfully, a special token (class) will be
+created for CFEngine's next run.  The next run will see that special token and
+trigger the deployment, which can be roughly expressed as 
+
+```
+rsync -a $WORKSPACE/$source_suffix $destination
+```
+
+There is more to it, and you should look inside `jenkins.cf` if you are curious
+about the deployment defaults or want to change them.
