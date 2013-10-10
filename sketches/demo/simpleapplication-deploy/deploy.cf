@@ -192,4 +192,18 @@ bundle agent deploy(runenv, metadata, workers, cloud_type, enable)
                                        $(sys.ipv4),
                                        "cfdc_simpleapplication:deploy.common_options"),
       handle => "$(activation_id)_simpleapplication_disable_ec2_webworkers";
+
+  reports:
+      "$(this.bundle): Deploying SimpleApplication with $(workers) web workers, cloud type $(cloud_type), enable=$(enable)";
+      "$(this.bundle): cloud type $(cloud_type)" ifvarclass => "$(cloud_type)";
+
+    hub::
+      "$(this.bundle): On the hub";
+    !hub::
+      "$(this.bundle): Not on the hub";
+
+    enable::
+      "$(this.bundle): enabled";
+    !enable::
+      "$(this.bundle): disabled";
 }
