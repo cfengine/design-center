@@ -120,6 +120,7 @@ GetOptions(\%options,
 
            "standalone!",
            "runfile|rf=s",
+           "runfile_header=s",
            "vardata=s",
            "standalonerunfile|srf=s",
            "repolist|rl=s@",
@@ -366,6 +367,11 @@ sub api_interaction
                 vardata => $options{vardata} || "$inputs_root/cfsketch-vardata.conf",
                 constdata => $options{constdata},
                };
+
+    if (exists $options{runfile_header})
+    {
+        $opts->{runfile}->{header} = $options{runfile_header};
+    }
 
     if (exists $options{apiconfig})
     {
