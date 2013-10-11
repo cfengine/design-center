@@ -649,11 +649,20 @@ sub aws_ec2
    }
   }
 
-  $run = sprintf("$tool run-instances %s -g %s -t %s --region %s $udata",
+  my $optional = '';
+  foreach my $o (qw/block_device_mapping/)
+  {
+      next unless defined $options{ec2}->{$o};
+      next if $options{ec2}->{$o} =~ m/^\$/; # unexpanded variable
+      $optional .= sprintf("--%s=%s ", $o, $options{ec2}->{$o});
+  }
+
+  $run = sprintf("$tool run-instances %s -g %s -t %s --region %s %s $udata",
                  $options{ec2}->{ami},
                  $options{ec2}->{security_group},
                  $options{ec2}->{instance_type},
-                 $options{ec2}->{region});
+                 $options{ec2}->{region}),
+                 $optional;
   open $t, "$run|" or die "Could not create instances with command [$run]: $!";;
  }
  else
