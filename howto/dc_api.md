@@ -1502,6 +1502,9 @@ provides.
 If you specify the array `standalone_inputs` under `runfile`, its members will
 be added to the generated runfile when `standalone` is `true` but not otherwise.
 
+If you specify the string `header` under `runfile`, it will be inserted before
+any other comments (so you can have, for instance, a comment).
+
 #### `vardata`
 
 The file location where the API will record all data.
@@ -1516,6 +1519,7 @@ The file location where the API will record all data.
  recognized_sources: [ "~/source/design-center/sketches" ],
  runfile: { location: "~/.cfagent/inputs/api-runfile.cf",
             standalone: true,
+            header: "# This file is maintained by CFEngine",
             relocate_path: "sketches",
             filter_inputs: [ "some bad file" ],
             standalone_inputs: [ "extra.cf" ]

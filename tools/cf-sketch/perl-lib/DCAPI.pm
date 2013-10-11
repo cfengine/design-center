@@ -1382,7 +1382,11 @@ EOHIPPUS
 
     my $invocation_lines = join "\n", @invocation_lines;
 
+    my $runfile_header = defined $self->runfile()->{header} ? $self->runfile()->{header} : '';
+
     my $runfile_data = <<EOHIPPUS;
+$runfile_header
+
 $standalone_lines
 
 $environment_lines
