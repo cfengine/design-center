@@ -23,7 +23,7 @@ bundle agent ensure(runenv, metadata, count, ami, region, type, class, install_c
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-      "shim" string => "$(default:cloud_shim.shim) --netrc $($(options)[netrc]) --ec2 ami=$(ami) --ec2 instance_type=$(type) --ec2 region=$(region) --ec2 security_group=$($(options)[security_group]) --ec2 ssh_pub_key=$($(options)[ssh_pub_key]) --hub=$(hub) --install_cfengine=$(install_cfengine) ec2";
+      "shim" string => "$(default:cloud_shim.shim) --netrc $($(options)[netrc]) --ec2 ami=$(ami) --ec2 instance_type=$(type) --ec2 region=$(region) --ec2 security_group=$($(options)[security_group]) --ec2 ssh_pub_key=$($(options)[ssh_pub_key]) --ec2 block_device_mapping=$($(options)[block_device_mapping]) --hub=$(hub) --install_cfengine=$(install_cfengine) ec2";
 
     AWS_home_called.test::
       "current_count" string => execresult("$(shim) count $(class)", "useshell");

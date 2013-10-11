@@ -13,7 +13,9 @@
                 // security_group: "cf",
                 security_group: "default",
                 netrc: "/home/tzz/.netrc",
-                ssh_pub_key: "/root/.ssh/id_rsa.pub"
+                ssh_pub_key: "/root/.ssh/id_rsa.pub",
+// optionally you can specify a block_device_mapping
+//                block_device_mapping: "/dev/sdf=:100"
             },
         }
     },
