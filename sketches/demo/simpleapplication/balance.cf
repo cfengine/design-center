@@ -20,7 +20,8 @@ bundle agent configure(runenv, metadata)
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
   classes:
-      "$(type)" expression => "any";
+      "$(type)" expression => "any",
+      scope => "namespace";
 
   vars:
       "host_marker" string => ".removal.marker";

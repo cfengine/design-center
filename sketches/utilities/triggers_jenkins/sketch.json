@@ -1,0 +1,71 @@
+{
+   "api" : {
+       "jenkins" : [
+           {
+               "name" : "runenv",
+               "type" : "environment"
+           },
+           {
+               "name" : "metadata",
+               "type" : "metadata"
+           },
+           {
+               "name" : "module_run",
+               description: "Path to Jenkins signalling module, see README.md",
+               "type" : "string"
+           },
+           {
+               "name" : "module_namespace",
+               description: "Namespace of Jenkins signalling module, see README.md",
+               "type" : "string"
+           },
+           {
+               "name" : "source_suffix",
+               description: "Directory in the Jenkins workspace to deploy, see README.md",
+               "type" : "string"
+           },
+           {
+               "name" : "destination",
+               description: "Destination for build artifacts, see README.md",
+               "type" : "string"
+           },
+       ],
+   },
+   "interface" : [
+       "jenkins.cf"
+   ],
+   "manifest" : {
+       "README.md" : {
+           "documentation" : true
+       },
+       "jenkins.cf" : {
+           "desc" : "main file"
+       }
+   },
+   "metadata" : {
+       "authors" : [
+           "Ted Zlatanov <tzz@lifelogs.com>"
+       ],
+       "depends" : {
+           "CFEngine::stdlib" : {},
+           "Utilities::Staging" : {},
+           "cfengine" : {
+              "version" : "3.5.1"
+           }
+       },
+       "description" : "Trigger behavior from a Jenkins successful build to stage some artifacts",
+       "license" : "MIT",
+       "name" : "Data::Triggers::Jenkins",
+      "tags" : [
+          "classes",
+          "trigger",
+          "notification",
+          "sketchify_generated",
+          "jenkins",
+          "persistent",
+          "enterprise_compatible"
+      ],
+       "version" : "1.0"
+   },
+   "namespace" : "cfdc_triggers"
+}
