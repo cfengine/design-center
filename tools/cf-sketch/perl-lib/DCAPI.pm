@@ -1359,11 +1359,22 @@ sub regenerate
      "${context_indent}inform_mode::",
       @report_lines;
 
+    my $standalone_inputs = $self->runfile()->{standalone_inputs};
+    my $standalone_inputs_exp = '';
+    if (ref $standalone_inputs eq 'ARRAY' &&
+        scalar @$standalone_inputs > 0)
+    {
+        $self->log("Regenerate: standalone inputs are %s",
+                   $standalone_inputs);
+        $standalone_inputs_exp = sprintf(', %s',
+                                         join(",", map { "'$_'" } @$standalone_inputs));
+    }
+
     my $standalone_lines = <<EOHIPPUS;
 body common control
 {
       bundlesequence => { cfsketch_g, cfsketch_run };
-      inputs => { @(cfsketch_g.inputs) };
+      inputs => { @(cfsketch_g.inputs) $standalone_inputs_exp };
 }
 EOHIPPUS
 

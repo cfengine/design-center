@@ -1499,6 +1499,9 @@ any elements in that array will be omitted from the generated runfile.  That way
 you can, for example, exclude the `cfengine_stdlib.cf` that Design Center
 provides.
 
+If you specify the array `standalone_inputs` under `runfile`, its members will
+be added to the generated runfile when `standalone` is `true` but not otherwise.
+
 #### `vardata`
 
 The file location where the API will record all data.
@@ -1511,7 +1514,12 @@ The file location where the API will record all data.
  log_level: 4,
  repolist: [ "~/.cfagent/inputs/sketches" ],
  recognized_sources: [ "~/source/design-center/sketches" ],
- runfile: { location: "~/.cfagent/inputs/api-runfile.cf", standalone: true, relocate_path: "sketches", filter_inputs: [ "some bad file" ] },
+ runfile: { location: "~/.cfagent/inputs/api-runfile.cf",
+            standalone: true,
+            relocate_path: "sketches",
+            filter_inputs: [ "some bad file" ],
+            standalone_inputs: [ "extra.cf" ]
+          },
  vardata: "~/.cfagent/vardata.conf",
 }
 ```
