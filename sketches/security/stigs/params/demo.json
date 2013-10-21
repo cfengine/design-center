@@ -1,0 +1,8 @@
+{
+    "Security::STIG":
+    {
+        mark_created: true,
+        mark_modified: true,
+        mark_added: true,
+    }
+}

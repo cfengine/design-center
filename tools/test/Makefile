@@ -793,3 +793,7 @@ run_once:
 dropdir:
 	$(CFSKETCH_DA) --install Run::Dropdir --activate Run::Dropdir=$(SOURCEDIR)/utilities/dropdir/params/demo.json
 	$(RUNNER)
+
+stigs:
+	$(CFSKETCH_DA) --install Security::STIG --activate Security::STIG=$(SOURCEDIR)/security/stigs/params/demo.json
+	$(RUNNER)

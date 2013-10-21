@@ -1,0 +1,55 @@
+{
+   "api" : {
+      "stigs" : [
+         {
+            "name" : "runenv",
+            "type" : "environment"
+         },
+         {
+            "name" : "metadata",
+            "type" : "metadata"
+         },
+         {
+            "name" : "mark_created",
+            "type" : "boolean"
+         },
+         {
+            "name" : "mark_modified",
+            "type" : "boolean"
+         },
+         {
+            "name" : "mark_added",
+            "type" : "boolean"
+         }
+      ]
+   },
+   "interface" : [
+      "STIGs.cf"
+   ],
+   "manifest" : {
+      "README.md" : {
+         "documentation" : true
+      },
+      "STIGs.cf" : {
+         "desc" : "main file"
+      }
+   },
+   "metadata" : {
+      "authors" : [
+         "Jurica Borozan",
+         "Ted Zlatanov <tzz@lifelogs.com>"
+      ],
+       depends: { "CFEngine::stdlib": {version: 111}, "CFEngine::dclib": {}, cfengine: {version: "3.5.0"}, os: [ "linux" ] },
+      "description" : "Implement STIGs security policies",
+      "license" : "MIT",
+       "name" : "Security::STIG",
+      "tags" : [
+         "stig",
+         "security",
+         "sketchify_generated",
+         "hardening"
+      ],
+      "version" : "1.0"
+   },
+   "namespace" : "cfdc_stigs"
+}

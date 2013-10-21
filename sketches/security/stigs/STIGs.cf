@@ -1,0 +1,1878 @@
+body file control
+{
+      namespace => "cfdc_stigs";
+}
+
+################################################################################
+#
+#                             _    _    _    _
+#                            / \  / \  / \  / \
+#                           ( S )( T )( I )( G )
+#                            \_/  \_/  \_/  \_/
+#
+#                    Security Technical Implementation Guides
+#
+#                            OS SRG UNIX Version
+#                            Version 1 Release 2
+#
+#
+#  Copyright (C) CFEngine AS
+#
+#  You are licensed to modify this code for your own private purposes.
+#  No derivative of this work may be shared with any third party without
+#  the permission of the Cfengine company.
+#
+# This community file comes with no warranty of fitness for any purpose.
+#
+#
+################################################################################
+
+#
+# STIGs compliance with Cfengine 3 (Nova)
+#
+
+## if there is need for marking CFEngine modified and created files
+## as well as need for marking added lines, uncomment double "##" bellow
+## where applicable
+
+##bundle common g_STIGs
+##{
+## vars:
+##
+##  any::
+##
+##   "cfe_created_file"        string =>
+##"####################################
+### This file is created by cfengine #
+######################################
+##";
+##
+##   "cfe_modified_file"       string =>
+##"#####################################
+### This file is modified by cfengine #
+#######################################
+##";
+##   "cfe_modified_file_regexp" string => "#+\s# This file is modified by cfengine #\s#+";
+##
+##   "cfe_added_lines"          string => "### These lines are added by cfengine ###";
+##   "cfe_added_lines_regexp"   string => "$(cfe_added_lines)";
+##
+##}
+
+bundle agent stigs(runenv, metadata, mark_created, mark_modified, mark_added)
+{
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "mark_created" expression => strcmp($(mark_created), "1");
+      "mark_modified" expression => strcmp($(mark_modified), "1");
+      "mark_added" expression => strcmp($(mark_added), "1");
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+    any::
+      "go" usebundle => stigs_do,
+      inherit => "true";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    verbose::
+      "$(this.bundle): running in verbose mode";
+    test::
+      "$(this.bundle): running in test mode";
+
+}
+
+bundle agent stigs_do
+{
+  vars:
+    redhat_5|redhat_6|centos_6::
+
+      "shadow" -> { "GEN000560" }
+      comment => "Read all contents in /etc/shadow for string manipulation later on",
+      handle => "stigs_vars_strings_from_etc_shadow",
+      string => readfile("/etc/shadow", 99999);
+
+      "shadow_list" -> { "GEN000560" }
+      comment => "Break strings into a list",
+      handle => "stigs_vars_list_from_etc_shadow",
+      slist => splitstring("$(shadow)","[\n]",500);
+
+      "usr_dir" -> { "GEN001080" }
+      comment => "/usr directory",
+      handle => "stigs_vars_usr_directory",
+      string => "/usr/bin";
+
+      "shells" -> { "GEN001080" }
+      comment => "List of Root shells",
+      handle => "stigs_vars_root_shells",
+      slist => { "bash", "sh" };
+
+      "fstab_contents" -> { "GEN001080", "GEN002420" }
+      comment => "All Contents of /etc/fstab",
+      handle => "stigs_vars_fstab_contents",
+      string => readfile("/etc/fstab","4000");
+
+      "network_services_daemon_files" -> { "GEN001180" }
+      comment => "List of Network services daemon files",
+      handle => "stigs_vars_network_services_daemon_files",
+      slist => {
+                 "/var/cfengine/state/cf_incoming.nfsd",
+                 "/var/cfengine/state/cf_outgoing.nfsd",
+                 "/usr/sbin/.*",
+      };
+
+      "system_log_files" -> { "GEN001260" }
+      comment => "List of system log files",
+      handle => "stigs_vars_system_log_files",
+      slist => {
+                 "/var/log"
+      };
+
+      "manual_page_files" -> { "GEN001280" }
+      comment => "List of manual page files",
+      handle => "stigs_vars_manual_page_files",
+      slist => {
+                 "/usr/share/man",
+      };
+
+      "home_users" -> { "GEN001440", "GEN001460", "GEN001480", "GEN001500", "GEN001520" }
+      comment => "Create a tmp file listing HOME users",
+      handle => "stigs_vars_home_users_tmp",
+      string => execresult("/bin/grep home /etc/passwd | /bin/awk -F':' '{print $1}'","useshell");
+
+      "users_list" -> { "GEN001440", "GEN001460", "GEN001480", "GEN001500", "GEN001520" }
+      comment => "Read the tmp file to create an actual list of HOME users",
+      handle => "stigs_vars_home_users_list",
+      slist => splitstring("$(home_users)", "[\n]", 500);
+
+      "rc_files" -> { "GEN001580", "GEN001620", "GEN001660", "GEN001680" }
+      comment => "List of Run Control Scripts",
+      handle => "stigs_vars_rc_files",
+      slist => {
+                 "/etc/rc.d/rc",
+                 "/etc/rc.d/rc.local",
+                 "/etc/rc.d/rc.sysinit",
+      };
+
+      "global_init_files" -> { "GEN001720", "GEN001740", "GEN001760", "GEN001780" }
+      comment => "List of Global Initialization files",
+      handle => "stigs_vars_global_init_files",
+      slist => {
+                 "/etc/profile",
+                 "/etc/bashrc",
+                 "/etc/environment",
+      };
+
+      "skeleton_dot_files" -> { "GEN001800", "GEN001820" }
+      comment => "List of default/skeleton dot files",
+      handle => "stigs_vars_skeleton_dot_files",
+      slist => {
+                 "/etc/skel/.bash_logout",
+                 "/etc/skel/.bash_profile",
+                 "/etc/skel/.emacs",
+                 "/etc/skel/.bashrc",
+      };
+
+      "hosts_related_files" -> { "GEN002040" }
+      comment => "List of hosts related files",
+      handle => "stigs_vars_hosts_related_files",
+      slist => {
+                 "/root/.rhosts",
+                 "/root/.shosts",
+                 "/etc/hosts.equiv",
+      };
+
+      "pam_files" -> { "GEN002100" }
+      comment => "List of PAM files to disable .rhosts",
+      handle => "stigs_vars_pam_files",
+      slist => {
+                 "/etc/pam.d/ekshell",
+                 "/etc/pam.d/kshell",
+      };
+
+      "shell_files" -> { "GEN002160", "GEN002180", "GEN002200", "GEN002220" }
+      comment => "List of login shells from /etc/shells",
+      handle => "stigs_vars_shell_files",
+      slist => readstringlist("/etc/shells", "#.*", "[\n]", 10, 1000);
+
+      "fstab_list" -> { "GEN002420" }
+      comment => "Break string into a list",
+      handle => "stigs_vars_list_from_etc_fstab",
+      slist => splitstring("$(fstab_contents)", "[\n]", 100);
+
+      "umask_files" -> { "GEN001560", "GEN002560" }
+      comment => "List of files which contain system and user default umask",
+      handle => "stigs_vars_umask_files",
+      slist => {
+                 "/etc/bashrc",
+                 "/etc/csh.cshrc",
+                 "/etc/csh.login",
+      };
+
+      "allusers_not_root" -> { "GEN002640", "GEN003300", "GEN003320" }
+      comment => "List of all system accounts but root and hypen users",
+      handle => "stigs_vars_list_allusers_not_root",
+      slist => getusers("root,avahi-autoipd","0");
+
+      "$(allusers_not_root)_uid" -> { "GEN002640" }
+      comment => "List of system UIDs",
+      handle => "stigs_vars_allusers_not_root_uid",
+      int => getuid("$(allusers_not_root)");
+
+      "preferred_services" -> { "GEN002660" }
+      comment => "List of system services to be turn on",
+      handle => "stigs_vars_preferred_services",
+      slist => {
+                 "auditd"
+      };
+
+      "$(preferred_services)_status" -> { "GEN002660" }
+      comment => "List of service status of those preferred services",
+      handle => "stigs_vars_preferred_services_status",
+      string => execresult("/sbin/chkconfig --list $(preferred_services)","noshell");
+
+      "cron_users" -> { "GEN002960" }
+      comment => "List of users who would be able to use cron utility",
+      handle => "stigs_vars_cron_users",
+      slist => {
+                 "root",
+                 "user1",
+                 "user2",
+                 "user3",
+      };
+
+      "cron_dirs" -> { "GEN003040", "GEN003080" }
+      comment => "List of cron directories",
+      handle => "stigs_vars_cron_dirs",
+      slist => {
+                 "/etc/cron.hourly",
+                 "/etc/cron.daily",
+                 "/etc/cron.weekly",
+                 "/etc/cron.monthly",
+                 "/etc/cron.d",
+      };
+
+      "other_cron_dirs" -> { "GEN003040", "GEN003080" }
+      comment => "List of other cron directories",
+      handle => "stigs_vars_other_cron_dirs",
+      slist => {
+                 "/var/spool/cron",
+      };
+
+      "cron_files" -> { "GEN003040", "GEN003080" }
+      comment => "List of cron files",
+      handle => "stigs_vars_cron_files",
+      slist => {
+                 "/etc/crontab",
+                 "/usr/share/logwatch/scripts/logwatch.pl",
+      };
+
+      "at_deny_users" -> { "GEN003300", "GEN003320" }
+      comment => "List of users to add to /etc/at.deny (All users but root)",
+      handle => "stigs_vars_at_deny_users",
+      slist => getusers("root","0");
+
+      "unneeded_services" -> { "GEN003700", "GEN003860" }
+      comment => "List of unneeded inetd/xinetd services to be disabled",
+      handle => "stigs_vars_unneeded_services",
+      slist => {
+                 "bluetooth",
+                 "irda",
+                 "im_sensors",
+                 "portmap",
+                 "rawdevices",
+                 "rpcgssd",
+                 "rpcidmapd",
+                 "rpcsvcgssd",
+                 "sendmail",
+                 "xinetd",
+                 "finger"
+      };
+
+      "$(unneeded_services)_status" -> { "GEN003700", "GEN003860" }
+      comment => "List of service status of those unneeded services",
+      handle => "stigs_vars_unneeded_services_status",
+      string => execresult("/sbin/chkconfig --list $(unneeded_services)","noshell");
+
+      "homes" -> { "GEN004580" }
+      comment => "String source of all home directories on the system",
+      handle => "stigs_vars_homes_source",
+      string => execresult("/bin/cut -d: -f6 /etc/passwd","noshell");
+
+      "home_list" -> { "GEN004580" }
+      comment => "List of all home directories on the system (ready to use)",
+      handle => "sting_vars_home_list",
+      slist => splitstring("$(homes)", "[\n]", 100);
+
+      #   "accounts_to_disable" -> { "GEN004820", "GEN004840" }
+      #      comment => "List of users to be disabled (not to be deleted from the system)",
+      #       handle => "stigs_vars_accounts_to_disable",
+      #        slist => {
+      #                  "ftp",
+      #                 };
+
+      "accounts_to_delete" -> { "GEN004820", "GEN004840", "LNX00320", "LNX00340" }
+      comment => "List of unnecessary accounts",
+      handle => "stigs_vars_accounts_to_delete",
+      slist => {
+                 "ftp",
+                 "shutdown",
+                 "halt",
+                 "game",
+                 "news",
+                 "operator",
+                 "gopher",
+                 "nfsnobody",
+      };
+
+      "security_tools" -> { "GEN006520" }
+      comment => "List of security tools and databases",
+      handle => "stigs_vars_security_tools",
+      slist => {
+                 "/etc/rc.d/init.d/iptables",
+                 "/sbin/iptables",
+                 "/usr/share/logwatch/scripts/services/iptables",
+      };
+
+      "hosts_allow" -> { "GEN006620" }
+      comment => "List of hosts to be assigned to /etc/hosts.allow",
+      handle => "stigs_vars_hosts_allow",
+      slist => {
+                 "ALL:10.",
+                 "ALL:172.16.",
+                 "ALL:192.168.",
+      };
+
+      #
+
+  classes:
+    redhat_5|redhat_6|centos_6::
+
+      "have_usr_partitioned" -> { "GEN001080" }
+      comment => "Check if /usr is partitioned",
+      handle => "stigs_classes_usr_partitioned",
+      expression => regcmp(".*/usr.*","$(fstab_contents)");
+
+      "have_usr_$(shells)" -> { "GEN001080" }
+      comment => "Check if there are any Root shells in $(usr_dir)",
+      handle => "stigs_classes_shells_in_usr",
+      expression => fileexists("$(usr_dir)/$(shells)");
+
+      "do_$(hosts_related_files)" -> { "GEN002040" }
+      comment => "Check if the files are symlinks",
+      handle => "stigs_classes_hosts_related_files",
+      not => islink("$(hosts_related_files)");
+
+      "$(allusers_not_root)_less_than_500" -> { "GEN002640" }
+      comment => "Check if the UID less than 500 (System accounts)",
+      handle => "stigs_classes_uid_less_than_500",
+      expression => islessthan("$($(allusers_not_root)_uid)","500");
+
+      "$(preferred_services)_off" -> { "GEN002660" }
+      comment => "Check if those preferred services are on or not",
+      handle => "stigs_classes_preferred_services_off",
+      not => regcmp(".*:on.*","$($(preferred_services)_status)");
+
+      "$(unneeded_services)_on" -> { "GEN003700", "GEN003860" }
+      comment => "Check if those unneeded services are on or not",
+      handle => "stigs_classes_unneeded_services_on",
+      expression => regcmp(".*:on.*","$($(unneeded_services)_status)");
+
+      "have_xwindows" -> { "LNX00360" }
+      comment => "Check if the machine has X windows installed",
+      handle => "stigs_classes_have_xwindows",
+      expression => fileexists("/etc/gdm/custom.conf");
+
+      #
+
+  files:
+
+    redhat_5::
+
+      "$(default:eu.path_prefix)/etc/syslog.conf" -> { "GEN000440", "GEN003160", "GEN003660", "GEN005400", "GEN005420" }
+      comment => "CAT II & III (Previously - G012, G209, G656, G657) UNIX STIG: 3.1.3 Account Access, 4.14 System Logging Daemon",
+      handle => "stigs_files_rh5_etc_syslog_conf",
+      perms => default:mog("640","root","root"),
+      edit_line => maintain_syslog_conf,
+      classes => default:if_repaired("restart_syslog");
+
+    redhat_6|centos_6::
+
+      "$(default:eu.path_prefix)/etc/rsyslog.conf" -> { "GEN000440", "GEN003160", "GEN003660", "GEN005400", "GEN005420" }
+      comment => "CAT II & III (Previously - G012, G209, G656, G657) UNIX STIG: 3.1.3 Account Access, 4.14 System Logging Daemon",
+      handle => "stigs_files_rh6_etc_syslog_conf",
+      perms => default:mog("640","root","root"),
+      edit_line => maintain_syslog_conf,
+      classes => default:if_repaired("restart_syslog");
+
+    redhat_5|redhat_6|centos_6::
+
+      "$(default:eu.path_prefix)/etc/inittab" -> { "GEN000020", "GEN000040", "GEN000060", "LNX00580" }
+      comment => "CAT I & II (Previously - G001, G002, G003, L222) UNIX STIG: 2.5.1.1 System Equipment, 12.14 The /etc/inittab File",
+      handle => "stigs_files_etc_inittab",
+      edit_line => maintain_inittab,
+      classes => default:if_repaired("restart_inittab");
+
+      "$(default:eu.path_prefix)/etc/pam.d/system-auth-ac" -> { "GEN000460", "GEN000600", "GEN000620", "GEN000640", "GEN000800" }
+      comment => "CAT II (Previously - G013, G019, G606) UNIX STIG: 3.1.3 Account Access, 3.2.1 Password Guidelines",
+      handle => "stigs_files_etc_pam_d_system_auth",
+      edit_defaults => default:empty,
+      edit_line => maintain_system_auth;
+
+      "$(default:eu.path_prefix)/usr/share/authconfig/authconfig.py"
+      comment => "CAT II (Previously - G013) UNIX STIG: 3.1.3 Accounnt Access",
+      handle => "stigs_files_usr_sbin_authconfig",
+      perms => default:m("ugo-x");
+
+      "$(default:eu.path_prefix)/etc/login.defs" -> { "GEN000480", "GEN000540", "GEN000580", "GEN000700" }
+      comment => "CAT II (Previously - G004, G019, G020) UNIX STIG: 3.1.3 Account Access, 3.2.1 Password Guidelines",
+      handle => "stigs_files_etc_login_defs",
+      edit_line => maintain_login_defs;
+
+      "$(default:eu.path_prefix)/etc/profile" -> { "GEN000500" }
+      comment => "CAT II (Previously - G605) UNIX STIG: 3.1.4 Inactivity Timeout/Locking",
+      handle => "stigs_vars_etc_profile",
+      edit_line => maintain_etc_profile;
+
+      "$(default:eu.path_prefix)/root" -> { "GEN000920" }
+      comment => "CAT II (Previously - G023) UNIX STIG: 3.3 Root Account",
+      handle => "stigs_files_root_dir",
+      perms => default:mog("700","root","root");
+
+      "$(default:eu.path_prefix)/" -> { "GEN000920" }
+      comment => "CAT II (Previously - G023) UNIX STIG: 3.3 Root Account",
+      handle => "stigs_files_not_root_and_tmp_dir",
+      depth_search => default:recurse("1"),
+      file_select => only_dir_exclude2("root","tmp"),
+      perms => default:mog("755","root","root");
+
+      "$(default:eu.path_prefix)/etc/securetty" -> { "GEN000980", "LNX00620", "LNX00640", "LNX00660" }
+      comment => "CAT II UNIX STIG: 3.3 Root Account, 12.17 The /etc/securetty File",
+      handle => "stigs_files_etc_securetty",
+      perms => default:mog("640","root","root"),
+      edit_line => maintain_securetty;
+      # alternative is to recreate file instead of delete/insert
+      #    edit_defaults => default:empty,
+      #        edit_line => maintain_securetty2;
+
+      "$(default:eu.path_prefix)/etc/pam.d/sshd" -> { "GEN001020" }
+      comment => "CAT II UNIX STIG: 3.3 Root Account",
+      handle => "stigs_files_etc_pamd_sshd",
+      edit_line => maintain_pamd_sshd;
+
+      "$(default:eu.path_prefix)/etc/pam.d/login" -> { "GEN001020" }
+      comment => "CAT II UNIX STIG: 3.3 Root Account",
+      handle => "stigs_files_etc_pamd_login",
+      edit_line => maintain_pamd_login;
+
+      "$(default:eu.path_prefix)/etc/security/access.conf" -> { "GEN001020", "LNX00400", "LNX00420", "LNX00440" }
+      comment => "CAT II (Previously - L044, L045, L046) UNIX STIG: 3.3 Root Account, 12.11 Console Access ",
+      handle => "stigs_files_etc_security_access_conf",
+      perms => default:mog("640","root","root"),
+      edit_line => maintain_security_access_conf;
+
+      "$(default:eu.path_prefix)/$(usr_dir)/$(shells)" -> { "GEN001080" }
+      comment => "CAT III, (Previously - G229) UNIX STIG: 3.3 Root Account",
+      handle => "stigs_files_usr_bin_root_shells",
+      rename => default:disable,
+      ifvarclass => "have_usr_partitioned.have_usr_$(shells)";
+
+      "$(default:eu.path_prefix)/$(usr_dir)/$(shells).cfdisabled" -> { "GEN001080" }
+      comment => "CAT III, (Previously - G229) UNIX STIG: 3.3 Root Account",
+      handle => "stigs_files_usr_bin_root_shells_cfdisabled",
+      perms => default:mog("400","root","root");
+
+      "$(default:eu.path_prefix)/etc/passwd" -> { "GEN001080", "GEN001380", "GEN001400" }
+      comment => "CAT I && III (Previously - G047, G048, G229) UNIX STIG: 3.3 Root Account, 3.4 File and Directory Controls",
+      handle => "stigs_files_set_root_shell",
+      perms => default:mog("644", "root","root"),
+      edit_line => set_user_field("root","7","/bin/bash");
+
+      "$(default:eu.path_prefix)/etc/ssh/sshd_config" -> { "GEN001120", "GEN005500", "GEN005540" }
+      comment => "CAT I & II (Previously - G500, G701) UNIX STIG: 3.3.1 Encrypted Root Access, 4.15 Secure Shell (SSH) and Equivalents",
+      handle => "stigs_files_etc_ssh_sshd_config",
+      edit_line => maintain_sshd_config,
+      classes => default:if_repaired("restart_sshd");
+
+      "$(default:eu.path_prefix)/$(network_services_daemon_files)" -> { "GEN001180" }
+      comment => "CAT II (Previously - G036) UNIX STIG: 3.4 File and Directory Controls",
+      handle => "stigs_files_network_services_daemon_files",
+      perms => default:m("755");
+
+      "$(default:eu.path_prefix)/$(system_log_files)" -> { "GEN001260", "GEN002700" }
+      comment => "CAT I & II (Previously - G095) UNIX STIG: 3.4 File and Directory Controls, 3.16 Audit Requirements",
+      handle => "stigs_files_system_log_files",
+      depth_search => default:recurse("inf"),
+      file_select => exclude2("cron.*","audit"),
+      perms => default:m("600");
+
+      "$(default:eu.path_prefix)/$(manual_page_files)" -> { "GEN001280" }
+      comment => "CAT III, UNIX STIG: 3.4 File and Directory Controls",
+      handle => "stigs_files_manual_page_files",
+      depth_search => default:recurse("inf"),
+      perms => default:m("644");
+
+      "$(default:eu.path_prefix)/etc/shadow" -> { "GEN001400", "GEN001420" }
+      comment => "CAT I (Previously - G047) UNIX STIG: 3.4 File and Directory Controls",
+      handle => "stigs_files_etc_shadow",
+      perms => default:mog("400","root","root");
+
+      "$(default:eu.path_prefix)/home/$(users_list)/." -> { "GEN001440", "GEN001460", "GEN001480", "GEN001500", "GEN001520", "GEN001540", "GEN001560" }
+      comment => "CAT II & III & IV, (Previously - G051, G052, G053, G054, G055, G067, G068) UNIX STIG: 3.5, 3.6 Home Directories and User Files",
+      handle => "stigs_files_home_users",
+      create => "true",
+      depth_search => default:recurse("inf"),
+      perms => default:mog("700","$(users_list)","$(users_list)"); # this works only if each user has it's own group
+      #             perms => default:mo("700","$(users_list)"); # or use this line
+
+      "$(default:eu.path_prefix)/var/lib/avahi-autoipd/." -> { "GEN001460" }
+      comment => "CAT IV (Previously - G052) UNIX STIG: 3.5 Home Directories",
+      handle => "stigs_files_var_lib_avahi_autoipd",
+      create => "true",
+      perms => default:m("644");
+
+      "$(default:eu.path_prefix)/$(umask_files)" -> { "GEN001560", "GEN002560" }
+      comment => "CAT II (Previously - G068, G089), UNIX STIG: 3.6 User Files, 3.13 Umask",
+      handle => "stigs_files_etc_bashrc",
+      edit_line => maintain_umask("077");
+
+      "$(default:eu.path_prefix)/$(rc_files)" -> { "GEN001580", "GEN001620", "GEN001660", "GEN001680" }
+      comment => "CAT I & II (Previously - G058, G061, G611, G612) UNIX STIG: 3.7 Run Control Scripts",
+      handle => "stigs_files_rc_files",
+      perms => default:mog("755","root","root");
+
+      #   "$(default:eu.path_prefix)/etc/init.d/.*" -> { "GEN001580", "GEN001620", "GEN001660", "GEN001680" }
+      #      comment => "CAT I & II (Previously - G058, G061, G611, G612) UNIX STIG: 3.7 Run Control Scripts",
+      #       handle => "stigs_files_run_control_scripts_etc_initd",
+      #        perms => default:mog("755","root","root");
+
+      "$(default:eu.path_prefix)/etc/rc.d/init.d" -> { "GEN001580", "GEN001620", "GEN001660", "GEN001680" }
+      comment => "CAT I & II (Previously - G058, G061, G611, G612) UNIX STIG: 3.7 Run Control Scripts",
+      handle => "stigs_files_run_control_scripts_etc_rcd_initd",
+      depth_search => default:recurse("1"),
+      file_select => default:exclude("iptables"),
+      perms => default:mog("755","root","root");
+
+      "$(default:eu.path_prefix)/$(global_init_files)" -> { "GEN001720", "GEN001740", "GEN001760", "GEN001780" }
+      comment => "CAT II (Previously - G112) UNIX STIG: 3.8.1 Global Initialization Files",
+      handle => "stigs_files_global_init_files",
+      edit_line => append_if_no_line("mesg n"),
+      perms => default:mog("644","root","root");
+
+      "$(default:eu.path_prefix)/$(skeleton_dot_files)" -> { "GEN001800", "GEN001820" }
+      comment => "CAT II (Previously - G038) UNIX STIG: 3.8.1 Global Initialization Files",
+      handle => "stigs_files_skeleton_dot_files",
+      perms => default:mog("644","root","root");
+
+      "$(default:eu.path_prefix)/$(hosts_related_files)" -> { "GEN002040" }
+      comment => "CAT I UNIX STIG: 3.9 Trusted System/System Access Control Files",
+      handle => "stigs_files_remove_and_symlink_hosts_related_files",
+      delete => default:tidy,
+      link_from => default:ln_s("/dev/null"),
+      ifvarclass => canonify("do_$(hosts_related_files)");
+
+      "$(default:eu.path_prefix)/$(pam_files)" -> { "GEN002100" }
+      comment => "CAT II UNIX STIG: 3.9 Trusted System/System Access Control Files",
+      handle => "stigs_files_pam_files",
+      edit_line => comment_lines_matching("^auth.*pam_rhosts_auth.so","#");
+
+      "$(default:eu.path_prefix)/etc/shells" -> { "GEN002120" }
+      comment => "CAT II (Previously - G069) UNIX STIG: 3.10 Shells",
+      handle => "stigs_files_etc_shells",
+      create => "true",
+      edit_defaults => default:empty,
+      perms => default:mog("644","root","root"),
+      edit_line => maintain_etc_shells;
+
+      "$(default:eu.path_prefix)/$(shell_files)" -> { "GEN002160", "GEN002180", "GEN002200", "GEN002220" }
+      comment => "CAT I & II (Previously - G072, G073, G074, G075) UNIX STIG: 3.10 Shells",
+      handle => "stigs_files_shell_files",
+      perms => default:mog("0755","root","root");
+
+      "$(default:eu.path_prefix)/etc/security/console.perms.d/50-default.perms" -> { "GEN002320" }
+      comment => "CAT II (Previously - G501) UNIX STIG: 3.11 Device Files",
+      handle => "stigs_files_security_default_perms",
+      edit_line => remove_audio_devices;
+
+      "$(default:eu.path_prefix)/etc/udev/rules.d/55-audio-perms.rules" -> { "GEN002320", "GEN002340", "GEN002360" }
+      comment => "CAT II (Previously - G501, G502, G504) UNIX STIG: 3.11 Device Files",
+      handle => "stigs_files_audio_perms_rules",
+      create => "true",
+      edit_line => maintain_audio_devices;
+
+      "$(default:eu.path_prefix)/var/cfengine/state/cf_incoming.*" -> { "GEN002480" }
+      comment => "CAT II (Previously - G079) UNIX STIG: 3.12.3 Stick Bit",
+      handle => "stigs_files_cf_incoming_files",
+      perms => default:m("644");
+
+      "$(default:eu.path_prefix)/etc/passwd" -> { "GEN002640", "GEN005000" }
+      comment => "CAT I & II (Previously - G649, G092) UNIX STIG: 3.15 Default Accounts, 4.8.1 FTP Configuration",
+      handle => "stigs_files_default_accounts_shell",
+      edit_line => set_user_field("$(allusers_not_root)","7","/sbin/nologin"),
+      ifvarclass => "$(allusers_not_root)_less_than_500";
+
+      "$(default:eu.path_prefix)/etc/passwd" -> { "GEN002640" }
+      comment => "CAT II (Previously - G092) UNIX STIG: 3.15 Default Accounts",
+      handle => "stigs_files_default_accounts_shell_for_badnaming_users",
+      edit_line => set_user_field("avahi-autoipd","7","/sbin/nologin");
+
+      "$(default:eu.path_prefix)/etc/audit/audit.rules" -> { "GEN002660", "GEN002700", "GEN002720", "GEN002740", "GEN002760", "GEN002780", "GEN002800", "GEN002820", "GEN002840" }
+      comment => "CAT I (Previously - G093, G095, G100-G106) UNIX STIG: 3.16 Audit Requirements",
+      handle => "stigs_files_etc_audit_audit_rules",
+      perms => default:m("640"),
+      edit_defaults => default:empty,
+      edit_line => maintain_audit_rules;
+
+      "$(default:eu.path_prefix)/var/log/audit" -> { "GEN002680" }
+      comment => "CAT II (Previously - G094) UNIX STIG: 3.16 Audit Requirements",
+      handle => "stigs_files_var_log_audit",
+      perms => default:m("700");
+
+      "$(default:eu.path_prefix)/etc/logrotate.d/audit" -> { "GEN002860" }
+      comment => "CAT II (Previously - G674) UNIX STIG: 3.16 Audit Requirements",
+      handle => "stigs_files_logrotated_audit",
+      create => "true",
+      perms => default:mog("644","root","root"),
+      edit_defaults => default:empty,
+      edit_line => maintain_logrotated_audit;
+
+      "$(default:eu.path_prefix)/etc/cron.deny" -> { "GEN002960", "GEN003060", "GEN003200", "GEN003260" }
+      comment => "CAT II (Previously - G620, G623) UNIX STIG: 3.17.3 Restrictions",
+      handle => "stigs_files_etc_cron_deny",
+      create => "true",
+      perms => default:mog("600","root","root"),
+      edit_defaults => default:empty,
+      edit_line => append_if_no_line("ALL");
+
+      "$(default:eu.path_prefix)/etc/cron.allow" -> { "GEN002960", "GEN002980","GEN003060", "GEN003240" }
+      comment => "CAT II (Previously - G622) UNIX STIG: 3.17.3 Restrictions",
+      handle => "stigs_files_etc_cron_allow",
+      create => "true",
+      perms => default:mog("600","root","root"),
+      edit_defaults => default:empty,
+      edit_line => maintain_cron_allow("@(STIGs.cron_users)");
+
+      "$(default:eu.path_prefix)/$(cron_dirs)" -> { "GEN003040", "GEN003080" }
+      comment => "CAT II (Previously - G205) UNIX STIG: 3.17.3 Restrictions",
+      handle => "stigs_files_cron_dirs_600",
+      depth_search => default:recurse("inf"),
+      perms => default:mog("600","root","root");
+
+      "$(default:eu.path_prefix)/$(other_cron_dirs)" -> { "GEN003040", "GEN003080" }
+      comment => "CAT II (Previously - G205) UNIX STIG: 3.17.3 Restrictions",
+      handle => "stigs_files_other_cron_dirs_700",
+      depth_search => default:recurse("inf"),
+      perms => default:mog("700","root","root");
+
+      "$(default:eu.path_prefix)/$(cron_files)" -> { "GEN003040", "GEN003080" }
+      comment => "CAT II (Previously - G205) UNIX STIG: 3.17.3 Restrictions",
+      handle => "stigs_files_other_cron_files",
+      perms => default:mog("600","root","root");
+
+      "$(default:eu.path_prefix)/etc" -> { "GEN003100", "GEN003120", "GEN003140" }
+      comment => "CAT II (Previously - G206, G207) UNIX STIG: 3.17.3 Restrictions",
+      handle => "stigs_files_cron_dirs_755",
+      depth_search => default:recurse("1"),
+      file_select => cron_dirs,
+      perms => default:mog("755","root","root");
+
+      "$(default:eu.path_prefix)/var/spool" -> { "GEN003100", "GEN003120", "GEN003140" }
+      comment => "CAT II (Previously - G206, G207) UNIX STIG: 3.17.3 Restrictions",
+      handle => "stigs_files_other_cron_dirs_755",
+      depth_search => default:recurse("1"),
+      file_select => cron_dirs,
+      perms => default:mog("755","root","root");
+
+      "$(default:eu.path_prefix)/var/log/cron.*" -> { "GEN003180" }
+      comment => "CAT II (Previously - G210) UNIX STIG: 3.17.3 Restrictions",
+      handle => "stigs_files_var_log_cron",
+      perms => default:mog("600","root","root");
+
+      "$(default:eu.path_prefix)/etc/at.deny" -> { "GEN003280", "GEN003300", "GEN003320", "GEN003340", "GEN003480" }
+      comment => "CAT II (Previously - G211, G212, G213, G214, G630) UNIX STIG: 3.18.3 Restrictions",
+      handle => "stigs_files_etc_at_deny_all_not_root",
+      create => "true",
+      perms => default:mog("600","root","root"),
+      edit_line => append_if_no_lines("@(STIGs.at_deny_users)");
+
+      "$(default:eu.path_prefix)/etc/at.allow" -> { "GEN003320", "GEN003340", "GEN003460" }
+      comment => "CAT II (Previously - G213, G214, G629) UNIX STIG: 3.18.3 Restrictions",
+      handle => "stigs_files_etc_at_allow",
+      create => "true",
+      perms => default:mog("600","root","root"),
+      edit_defaults => default:empty,
+      edit_line => maintain_at_allow;
+
+      "$(default:eu.path_prefix)/var/spool/at/spool/" -> { "GEN003400", "GEN003420" }
+      comment => "CAT II (Previously - G625, G626) UNIX STIG: 3.18.3 Restrictions",
+      handle => "stigs_files_var_spool_at_spool",
+      perms => default:mog("755","root","root");
+
+      "$(default:eu.path_prefix)/etc/security/limits.conf" -> { "GEN003500" }
+      comment => "CAT III UNIX STIG: 3.20.1 Restrict/Disable Core Dumps",
+      handle => "stigs_files_etc_security_limits_conf",
+      edit_line => append_if_no_line("* - core 0");
+
+      "$(default:eu.path_prefix)/var/crash" -> { "GEN003520" }
+      comment => "CAT III UNIX STIG: 3.20.1 Restrict/Disable Core Dumps",
+      handle => "stigs_files_var_crash",
+      perms => default:mog("700","root","root");
+
+      "$(default:eu.path_prefix)/etc/sysctl.conf" -> { "GEN003600", "GEN005600", "LNX00480", "LNX00500","LNX00520" }
+      comment => "CAT II (Previously - L204, L206, L208) UNIX STIG: 3.20.5 Network Security Settings, 12.12 Kernel Configuration File",
+      handle => "stigs_files_etc_sysctl_conf",
+      perms => default:mog("600","root","root"),
+      edit_line => maintain_sysctl_conf,
+      # alternative is to recreate file instead of delete/insert
+      #      edit_line => maintain_sysctl_conf2,
+      #  edit_defaults => default:empty,
+      classes => default:if_repaired("restart_sysctl");
+
+      "$(default:eu.path_prefix)/etc/xinetd.d" -> { "GEN003720", "GEN003740" }
+      comment => "CAT II (Previously - G107, G108) UNIX STIG: 4 Network Services",
+      handle => "stigs_files_etc_xinetdd_dir",
+      perms => default:mog("755","root","root");
+
+      "$(default:eu.path_prefix)/etc/xinetd.d" -> { "GEN003720" }
+      comment => "CAT II (Previously - G107) UNIX STIG: 4 Network Services",
+      handle => "stigs_files_etc_xinetdd_files",
+      depth_search => default:recurse("inf"),
+      perms => default:mog("644","root","root");
+
+      "$(default:eu.path_prefix)/etc/xinetd.conf" -> { "GEN003720", "GEN003740" }
+      comment => "CAT II (Previously - G107, G108) UNIX STIG: 4 Network Services",
+      handle => "stigs_files_etc_xinetd_conf",
+      perms => default:mog("440","root","root");
+
+      "$(default:eu.path_prefix)/etc/services" -> { "GEN003760", "GEN003780" }
+      comment => "CAT II (Previously - G109, G110) UNIX STIG: 4 Network Services",
+      handle => "stigs_files_etc_services",
+      perms => default:mog("644","root","root");
+
+      "$(default:eu.path_prefix)/usr/bin/finger" -> { "GEN003860" }
+      comment => "CAT II (Previously - V046) UNIX STIG: 4.3 Finger",
+      handle => "stigs_files_user_bin_finger",
+      rename => default:disable;
+
+      "$(default:eu.path_prefix)/usr/sbin/tcpdump" -> { "GEN003865" }
+      comment => "CAT II, UNIX STIG: 4.3 TCPDump",
+      handle => "stigs_files_user_sbin_tcpdump",
+      rename => default:disable;
+
+      "$(default:eu.path_prefix)/bin/traceroute" -> { "GEN003960", "GEN003980", "GEN004000" }
+      comment => "CAT II (Previously - G631, G632, G633) UNIX STIG: 4.5 Traceroute",
+      handle => "stigs_files_bin_traceroute",
+      perms => default:mog("700","root","root");
+
+      "$(default:eu.path_prefix)/etc/aliases" -> { "GEN004360", "GEN004380", "GEN004640" }
+      comment => "CAT I & II (Previously - G127, G128, V126) UNIX STIG: 4.7 Sendmail or Equivalent",
+      handle => "stigs_files_etc_aliases",
+      perms => default:mog("644","root","root"),
+      edit_line => comment_lines_matching("decode:\h+root","#"),
+      classes => default:if_repaired("restart_aliases");
+
+      "$(default:eu.path_prefix)/etc/mail/sendmail.cf" -> { "GEN004440", "GEN004540", "GEN004560" }
+      comment => "CAT II & IV (Previously - G133, G646) UNIX STIG: 4.7 Sendmail or Equivalent",
+      handle => "stigs_files_etc_mail_sendmail_cf",
+      edit_line => maintain_sendmail,
+      classes => default:if_repaired("restart_sendmail");
+
+      "$(default:eu.path_prefix)/var/log/maillog" -> { "GEN004480", "GEN004500" }
+      comment => "CAT II (Previously - G135, G136) UNIX STIG: 4.7 Sendmail or Equivalent",
+      handle => "stigs_files_var_log_maillog",
+      perms => default:mog("600","root","root");
+
+      "$(default:eu.path_prefix)/$(home_list)/.forward" -> { "GEN004580" }
+      comment => "CAT I (Previously - G647) UNIX STIG: 4.7 Sendmail or Equivalent",
+      handle => "stigs_files_home_dot_forward",
+      delete => default:tidy;
+
+      "$(default:eu.path_prefix)/etc/ftpusers" -> { "GEN004880", "GEN004920", "GEN004940" }
+      comment => "CAT II (Previously - G140, G142, G143) UNIX STIG: 4.8.1 FTP Configuration",
+      handle => "stigs_files_etc_ftpusers",
+      create => "true",
+      perms => default:mo("640","root");
+
+      "$(default:eu.path_prefix)/etc/ftpusers" -> { "GEN004900" }
+      comment => "CAT II (Previously - G141) UNIX STIG: 4.8.1 FTP Configuration",
+      handle => "stigs_files_editing_etc_ftpusers",
+      edit_line => maintain_ftpusers("$(allusers_not_root)"),
+      ifvarclass => "$(allusers_not_root)_less_than_500";
+
+      "$(default:eu.path_prefix)/etc/snmp/snmpd.conf" -> { "GEN005320", "GEN005360" }
+      comment => "CAT II (Previously - G225) UNIX STIG: 4.13 Simple Network Management Protocol (SNMP)",
+      handle => "stigs_files_etc_snmp_snmpd_conf",
+      perms => default:mog("700","root","sys");
+
+      "$(default:eu.path_prefix)/etc/ssh/ssh_config" -> { "GEN005500" }
+      comment => "CAT I UNIX STIG: 4.15 Secure Shell (SSH) and Equivalents",
+      handle => "stigs_files_etc_ssh_ssh_config",
+      edit_line => maintain_ssh_config;
+
+      "$(default:eu.path_prefix)/etc/ssh/ssh_banner" -> { "GEN005540" }
+      comment => "CAT II UNIX STIG: 4.15 Secure Shell (SSH) and Equivalents",
+      handle => "stigs_files_etc_ssh_ssh_banner",
+      create => "true",
+      perms => default:mog("640","root","root"),
+      edit_defaults => default:empty,
+      edit_line => create_ssh_banner;
+
+      "$(default:eu.path_prefix)/etc/exports" -> { "GEN005740", "GEN005760" }
+      comment => "CAT II & III (Previously - G178, G179) UNIX STIG: 4.20 Network Filesystem (NFS)",
+      handle => "stigs_files_etc_export",
+      perms => default:mog("644","root","root");
+
+      "$(default:eu.path_prefix)/etc/samba/smb.conf" -> { "GEN006100", "GEN006120", "GEN006140" }
+      comment => "CAT II (Previously - L050, L051, L052) UNIX STIG: 4.24 Samba",
+      handle => "stigs_files_etc_samba_smb_conf",
+      perms => default:mog("644","root","root");
+
+      "$(default:eu.path_prefix)/usr/bin/smbpasswd" -> { "GEN006160", "GEN006180", "GEN006200" }
+      comment => "CAT II (Previously - L054, L055, L056) UNIX STIG: 4.24 Samba",
+      handle => "stigs_files_usr_bin_smbpasswd",
+      perms => default:mog("600","root","root");
+
+      "$(default:eu.path_prefix)/etc/news/hosts.nntp" -> { "GEN006260" }
+      comment => "CAT II (Previously - L154) UNIX STIG: 4.25 Internet Network News (INN)",
+      handle => "stigs_files_etc_news_hosts_nttp",
+      perms => default:m("600");
+
+      "$(default:eu.path_prefix)/etc/news/hosts.nntp.nolimit" -> { "GEN006280" }
+      comment => "CAT II (Previously - L156) UNIX STIG: 4.25 Internet Network News (INN)",
+      handle => "stigs_files_etc_news_hosts_nttp_nolimit",
+      perms => default:m("600");
+
+      "$(default:eu.path_prefix)/etc/news/nnrp.access" -> { "GEN006300" }
+      comment => "CAT II (Previously - L158) UNIX STIG: 4.25 Internet Network News (INN)",
+      handle => "stigs_files_etc_news_nnrp_access",
+      perms => default:m("600");
+
+      "$(default:eu.path_prefix)/etc/news/passwd.nntp" -> { "GEN006320" }
+      comment => "CAT II (Previously - L160) UNIX STIG: 4.25 Internet Network News (INN)",
+      handle => "stigs_files_etc_news_passwd_nntp",
+      perms => default:m("600");
+
+      "$(default:eu.path_prefix)/etc/news" -> { "GEN006340", "GEN006360" }
+      comment => "CAT II (Previously - L162, L164) UNIX STIG: 4.25 Internet Network New (INN)",
+      handle => "stigs_files_etc_news",
+      depth_search => default:recurse("inf"),
+      perms => default:og("root","root");
+
+      "$(default:eu.path_prefix)/$(security_tools)" -> { "GEN006520" }
+      comment => "CAT II (Previously - G189) UNIX STIG: 6 UNIX Security Tools",
+      handle => "stigs_files_security_tools",
+      perms => default:mog("740","root","root");
+
+      "$(default:eu.path_prefix)/etc/hosts.allow" -> { "GEN006620" }
+      comment => "CAT II UNIX STIG: 6.6 Access Control Programs and TCP_WRAPPERS",
+      handle => "stigs_files_etc_hosts_allow",
+      edit_line => append_if_no_lines("@(STIGs.hosts_allow)");
+
+      "$(default:eu.path_prefix)/etc/hosts.deny" -> { "GEN006620" }
+      comment => "CAT II UNIX STIG: 6.6 Access Control Programs and TCP_WRAPPERS",
+      handle => "stigs_files_etc_hosts_deny",
+      edit_line => append_if_no_line("ALL: ALL");
+
+      #   "$(default:eu.path_prefix)/boot/grub/menu.lst" -> { "LNX00140" }
+      #        comment => "CAT I (Previously - L072) UNIX STIG: 12.4.1.1 Password Protecting the GRUB Console Boot Loader",
+      #         handle => "stigs_files_boot_grub_menu_lst",
+      #      edit_line => maintain_grub;
+
+      "$(default:eu.path_prefix)/boot/grub/grub.conf" -> { "LNX00160" }
+      comment => "CAT II (Previously - L074) UNIX STIG: 12.4.1.1 Password Protecting the GRUB Console Boot Loader",
+      handle => "stigs_files_boot_grub_grub_conf",
+      perms => default:m("600");
+
+      "$(default:eu.path_prefix)/etc/lilo.conf" -> { "LNX00220" }
+      comment => "CAT II (Previously - L080) UNIX STIG: 12.4.1.2 Password Protecting the LILO Boot Loader",
+      handle => "stigs_files_etc_lilo_conf",
+      perms => default:m("600");
+
+      "$(default:eu.path_prefix)/etc/gdm/custom.conf" -> { "LNX00360" }
+      comment => "CAT II (Previously - L032) UNIX STIG: 12.10 X Windows",
+      handle => "stigs_files_etc_gdm_custom_conf",
+      edit_line => maintain_gdm_custom_conf,
+      ifvarclass => "have_xwindows";
+
+      #
+
+  commands:
+
+    redhat_5.restart_syslog::
+
+      "$(default:eu.exec_prefix) /etc/init.d/syslog restart" -> { "GEN000440", "GEN003160", "GEN003660", "GEN005400", "GEN005420" }
+      comment => "CAT II & III (Previously - G012, G209, G656, G657) UNIX STIG: 3.1.3 Account Access, 4.14 System Logging Daemon",
+      handle => "stigs_commands_rh5_restart_syslog";
+
+    (redhat_6|centos_6).restart_syslog::
+
+      "$(default:eu.exec_prefix) /etc/init.d/rsyslog restart" -> { "GEN000440", "GEN003160", "GEN003660", "GEN005400", "GEN005420" }
+      comment => "CAT II & III (Previously - G012, G209, G656, G657) UNIX STIG: 3.1.3 Account Access, 4.14 System Logging Daemon",
+      handle => "stigs_commands_rh6_restart_syslog";
+
+    redhat_5|redhat_6|centos_6::
+
+      "$(default:eu.exec_prefix) /sbin/chkconfig $(preferred_services) on" -> { "GEN002660" }
+      comment => "CAT II (Previously - G093) UNIX STIG: 3.16 Audit Requirements",
+      handle => "stigs_commands_enable_preferred_services",
+      ifvarclass => "$(preferred_services)_off";
+
+      "$(default:eu.exec_prefix) /sbin/chkconfig $(unneeded_services) off" -> { "GEN003700", "GEN003860" }
+      comment => "CAT II (Previously - V046) UNIX STIG: 4 Network Services",
+      handle => "stigs_commands_disable_unneeded_services",
+      ifvarclass => "$(unneeded_services)_on";
+
+    restart_inittab::
+
+      "$(default:eu.exec_prefix) /sbin/init q" -> { "GEN000020", "GEN000040", "GEN000060", "LNX00580" }
+      comment => "CAT I & II (Previously - G001, G002, G003, L222) UNIX STIG: 2.5.1.1 System Equipment, 12.14 The /etc/inittab File",
+      handle => "stigs_commands_restart_inittab",
+      contain => default:silent;
+
+    restart_sysctl::
+
+      "$(default:eu.exec_prefix) /sbin/sysctl -p" -> { "GEN003600" }
+      comment => "CAT II UNIX STIG: 3.20.5 Network Security",
+      handle => "stigs_commands_restart_sysctl",
+      contain => default:silent;
+
+    restart_sendmail::
+
+      "$(default:eu.exec_prefix) /sbin/service sendmail restart" -> { "GEN004540", "GEN004560" }
+      comment => "CAT II (Previously - G646) UNIX STIG: 4.7 Sendmail or Equivalent",
+      handle => "stigs_commands_restart_sendmail";
+
+    restart_aliases::
+
+      "$(default:eu.exec_prefix) /usr/bin/newaliases" -> { "GEN004640" }
+      comment => "CAT I (Previously - V126) 4.7 Sendmail or Equivalent",
+      handle => "sting_commands_restart_aliases";
+
+    restart_sshd::
+
+      "$(default:eu.exec_prefix) /sbin/service sshd restart" -> { "GEN005500", "GEN005540" }
+      comment => "CAT I & II (Previously - G701) UNIX STIG: 4.15 Secure Shell (SSH) and Equivalents",
+      handle => "stigs_commands_restart_sshd";
+
+      #
+
+  methods:
+
+    redhat_5|redhat_6|centos_6::
+
+      "UNIX STIG 3.2.1" -> { "GEN000560" }
+      comment => "CAT I (Previously - G018) UNIX STIG: 3.2.1 Password Guidelines",
+      handle => "stigs_methods_unix_stigs_3_2_1",
+      usebundle => disable_accounts_without_passwd("$(shadow_list)");
+
+      "UNIX STIG 3.12.1" -> { "GEN002420" }
+      comment => "CAT II (Previously - G086) UNIX STIG: 3.12.1 Set User ID (suid)",
+      handle => "stigs_methods_unix_stigs_3_12_1",
+      usebundle => filesystem_mounted_with_nosuid("/etc/fstab","$(fstab_list)");
+
+      #   "UNIX STIG 4.8" -> { "GEN004820", "GEN004840" }
+      #        comment => "CAT II (Previously - L140, L142) UNIX STIG: 4.8 File Transfer Protocol (FTP)",
+      #         handle => "stigs_methods_unix_stigs_4_8",
+      #      usebundle => disabling_accounts("$(accounts_to_disable)");
+
+      "UNIX STIG 4.8/UNIX STIG 12.9" -> { "GEN004820", "GEN004840", "LNX00320", "LNX00340" }
+      comment => "CAT I & II (Previously - G107, V052, L140, L142) UNIX STIG: 4.8 File Transfer Protocol (FTP) and Telnet, 12.9 Default Accounts",
+      handle => "stigs_methods_unix_stigs_4_8_12_9",
+      usebundle => deleting_accounts("$(accounts_to_delete)");
+}
+
+##### bundle agent for methods here #####
+
+# GEN000560
+bundle agent disable_accounts_without_passwd(string)
+{
+  classes:
+
+      "name_ok" -> { "GEN000560" }
+      comment => "Extract only a name field from an inputs string",
+      handle => "disable_accounts_without_passwd_classes_name_field",
+      expression => regextract(
+                                "^[\w-]+",
+                                "$(string)",
+                                "name"
+      );
+
+      "passwd_ok" -> { "GEN000560" }
+      comment => "Extract only a passwd field from an inputs string",
+      handle => "disable_accounts_without_passwd_classes_passwd_field",
+      expression => regextract(
+                                ":(.*?):",
+                                "$(string)",
+                                "passwd"
+      );
+
+      "no_passwd" -> { "GEN000560" }
+      comment => "Check if there is a password or not",
+      handle => "disable_accounts_without_passwd_classes_no_passwd",
+      not => regcmp(".*\$.*","$(passwd[1])");
+
+      #
+
+  files:
+
+      "$(default:eu.path_prefix)/etc/passwd" -> { "GEN000560" }
+      comment => "Set user shell /sbin/nologin",
+      handle => "disable_accounts_without_passwd_files_etc_passwd",
+      edit_line => set_user_field("$(name[0])","7","/sbin/nologin"),
+      ifvarclass => "no_passwd";
+}
+
+# GEN002420
+bundle agent filesystem_mounted_with_nosuid(path,string)
+{
+  classes:
+      "option_ok" expression => regextract(
+                                            "\S+\s+\S+\s+\S+\s+(\S+)",
+                                            "$(string)",
+                                            "option"
+      );
+
+  classes:
+      "have_home"      expression => regcmp(".*\/home.*", "$(string)");
+      "have_boot"      expression => regcmp(".*\/boot.*", "$(string)");
+      "have_sys"       expression => regcmp(".*\/sys.*", "$(string)");
+      "have_usr"       expression => regcmp(".*\/usr.*", "$(string)");
+      "have_usr_local" expression => regcmp(".*\/usr\/local.*", "$(string)");
+      "no_acl"         not => regcmp(".*acl.*", "$(string)");
+
+  files:
+      "$(default:eu.path_prefix)$(path)"
+      edit_line => set_fstab_field("/home","4","$(option[1]),nosuid,nodev,acl"),
+      ifvarclass => "have_home.no_acl";
+      "$(default:eu.path_prefix)$(path)"
+      edit_line => set_fstab_field("/boot","4","$(option[1]),nosuid,acl"),
+      ifvarclass => "have_boot.no_acl";
+      "$(default:eu.path_prefix)$(path)"
+      edit_line => set_fstab_field("/sys","4","$(option[1]),nosuid,acl"),
+      ifvarclass => "have_sys.no_acl";
+      "$(default:eu.path_prefix)$(path)"
+      edit_line => set_fstab_field("/usr","4","$(option[1]),nodev,acl"),
+      ifvarclass => "have_usr.no_acl";
+      "$(default:eu.path_prefix)$(path)"
+      edit_line => set_fstab_field("/usr/local","4","$(option[1]),nodev,acl"),
+      ifvarclass => "have_usr_local.no_acl";
+}
+
+# GEN004828, GEN004840
+bundle agent disabling_accounts(name)
+{
+  files:
+
+      "$(default:eu.path_prefix)/etc/passwd" -> { "GEN004820", "GEN004840" }
+      comment => "Set shell to /sbin/nologin",
+      handle => "disabling_accounts_files_etc_passwd",
+      edit_line => set_user_field("$(name)","7","/sbin/nologin");
+
+      "$(default:eu.path_prefix)/etc/shadow" -> { "GEN004820", "GEN004840" }
+      comment => "Set passwd to !",
+      handle => "disabling_accounts_files_etc_shadow",
+      edit_line => set_user_field("$(name)","2","!!");
+}
+
+# LNX00320, LNX00340
+bundle agent deleting_accounts(name)
+{
+  files:
+
+      "$(default:eu.path_prefix)/etc/passwd" -> { "LNX00320", "LNX00340" }
+      comment => "Remove unnecessary accounts from /etc/passwd",
+      handle => "deleting_accounts_files_etc_passwd",
+      edit_line => delete_lines_matching("^$(name):.*");
+
+      "$(default:eu.path_prefix)/etc/shadow" -> { "LNX00320", "LNX00340" }
+      comment => "Remove unnecessary accounts from /etc/shadow",
+      handle => "deleting_accounts_files_etc_shadow",
+      edit_line => delete_lines_matching("^$(name):.*");
+}
+
+#
+##### bundle edit_line here #####
+#
+
+# GEN000020, GEN000040, GEN000060, LNX00580
+bundle edit_line maintain_inittab
+{
+  delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+      ##  "$(g_STIGs.cfe_added_lines_regexp)";
+
+      "~:S:wait.*" -> { "GEN000020", "GEN000040", "GEN000060" }
+      comment => "Configured to require a password when boot to single-user mode.",
+      handle => "maintain_inittab_delete_lines_gen000020_gen000040_gen000060";
+
+      "^ca::ctrlaltdel.*" -> { "LNX00580" }
+      comment => "Disable CTRL+ALT+DEL.",
+      handle => "maintain_inittab_delete_lines_lnx00580";
+
+  insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)"  insert_type => "preserve_block", location => start;
+      ##  "$(g_STIGs.cfe_added_lines)";
+
+      "~:S:wait:/sbin/sulogin   # GEN000020, GEN000040, GEN000060" -> { "GEN000020", "GEN000040", "GEN000060" }
+      comment => "Configured to require a password when boot to single-user mode.",
+      handle => "maintain_inittab_insert_lines_gen000020_gen000040_gen000060";
+
+      "ca:12345:ctrlaltdel:/bin/echo \"CTRL-ALT-DEL is disabled\"   # LNX00580" -> { "LNX00580" }
+      comment => "Disable CTRL+ALT+DEL.",
+      handle => "maintain_inittab_insert_lines_lnx00580";
+}
+
+# GEN000440, GEN003160, GEN003660
+bundle edit_line maintain_syslog_conf
+{
+  delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+
+      "^auth.notice.*" -> { "GEN003660" }
+      comment => "Delete existing auth.notice log",
+      handle => "maintain_syslog_conf_delete_lines_gen003660";
+
+  replace_patterns:
+      "^authpriv\.\*\h+(?!/var/log/secure).*" -> { "GEN000440" }
+      comment => "Check authentication log will be shown in /var/log/secure",
+      handle => "maintain_syslog_conf_replace_patterns_gen000440_1",
+      replace_with => default:value("authprivdummy");
+      "^authprivdummy$" -> { "GEN000440" }
+      comment => "Check authentication log will be shown in /var/log/secure",
+      handle => "maintain_syslog_conf_replace_patterns_gen000440_2",
+      replace_with => default:value("authpriv.*$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)/var/log/secure");
+
+      "^cron\.\*h+(?!/var/log/cron).*" -> { "GEN003160" }
+      comment => "Check cron log will be shown in /var/log/cron",
+      handle => "maintain_syslog_conf_replace_patterns_gen003160_1",
+      replace_with => default:value("crondummy");
+      "^crondummy$" -> { "GEN003160" }
+      comment => "Check cron log will be shown in /var/log/cron",
+      handle => "maintain_syslog_conf_replace_patterns_gen003160_2",
+      replace_with => default:value("cron.*$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)/var/log/cron");
+
+  insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)" insert_type => "preserve_block", location => start;
+
+      "auth.notice$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)/var/log/messages" -> { "GEN003660" }
+      comment => "Log authentication notice and informational data",
+      handle => "maintain_syslog_conf_insert_lines_gen003660";
+}
+
+# GEN000460, GEN000600, GEN000620, GEN000640, GEN000800
+bundle edit_line maintain_system_auth
+{
+  insert_lines:
+      ## "$(g_STIGs.cfe_created_file)" insert_type => "preserve_block";
+
+      "#%PAM-1.0
+# GEN000460, GEN000600, GEN000620, GEN000640, GEN000800
+auth        required      pam_tally2.so deny=3 onerr=fail unlock_time=900
+
+auth        required      pam_env.so
+auth        required      pam_unix.so nullok try_first_pass audit
+
+account     required      pam_unix.so
+account     required      pam_tally2.so
+password    required      pam_cracklib.so try_first_pass retry=3 minlen=10 dcredit=-1 ucredit=-1 lcredit=-1 ocredit=-1 difok=-2
+password    required      pam_unix.so md5 shadow nullok try_first_pass use_authtok remember=10
+
+session     optional      pam_keyinit.so revoke
+session     required      pam_limits.so
+session     required      pam_unix.so" -> { "GEN000460", "GEN000600", "GEN000620", "GEN000640", "GEN000800" }
+      comment => "Ensure /etc/pam.d/system-auth-ac has good contents",
+      handle => "maintain_system_auth_insert_lines_gen000460",
+      insert_type => "preserve_block";
+}
+
+# GEN000480, GEN000540, GEN000580, GEN000700
+bundle edit_line maintain_login_defs
+{
+  replace_patterns:
+      "^PASS_MAX_DAYS\h+(?!90).*" -> { "GEN000700" }
+      comment => "Passwords will be expired in 90 days.",
+      handle => "maintain_login_defs_replace_patterns_gen000700_1",
+      replace_with => default:value("PASS_MAX_DAYSdummy90");
+      "^PASS_MAX_DAYSdummy90" -> { "GEN000700" }
+      comment => "Passwords will be expired in 90 days.",
+      handle => "maintain_login_defs_replace_patterns_gen000700_2",
+      replace_with => default:value("PASS_MAX_DAYS   90   # GEN000700");
+
+      "^PASS_MIN_DAYS\h+(?!1).*" -> { "GEN000540" }
+      comment => "Passwords can be changed once every 24 hours.",
+      handle => "maintain_login_defs_replace_patterns_gen000540_1",
+      replace_with => default:value("PASS_MIN_DAYSdummy1");
+      "^PASS_MIN_DAYSdummy1" -> { "GEN000540" }
+      comment => "Passwords can be changed once every 24 hours.",
+      handle => "maintain_login_defs_replace_patterns_gen000540_2",
+      replace_with => default:value("PASS_MIN_DAYS    1   # GEN000540");
+
+      "^PASS_MIN_LEN\h+(?!8).*" -> { "GEN000580" }
+      comment => "A password does not contain a minimum of 8 characters",
+      handle => "maintain_login_defs_replace_patterns_gen000580_1",
+      replace_with => default:value("PASS_MIN_LENdummy8");
+      "^PASS_MIN_LENdummy8" -> { "GEN000580" }
+      comment => "A password does not contain a minimum of 8 characters",
+      handle => "maintain_login_defs_replace_patterns_gen000580_2",
+      replace_with => default:value("PASS_MIN_LEN    8   # GEN000580");
+
+  delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+
+      "^FAIL_DELAY.*" -> { "GEN000480" }
+      comment => "Clear up an existing login delay.",
+      handle => "maintain_login_defs_delete_lines_gen000480";
+
+  insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)" insert_type => "preserve_block", location => start;
+
+      "FAIL_DELAY     4   # GEN000480" -> { "GEN000480" }
+      comment => "The login delay between login prompts after a failed login is set to less than four seconds.",
+      handle => "maintain_login_defs_insert_lines_gen000480";
+}
+
+# GEN000500
+bundle edit_line maintain_etc_profile
+{
+  delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+      ##  "$(g_STIGs.cfe_added_lines_regexp)";
+
+      "^TMOUT.*" -> { "GEN000500" }
+      comment => "Clear up all TMOUT lines",
+      handle => "maintain_etc_profile_delete_lines_gen000500";
+
+  insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)" insert_type => "preserve_block", location => start;
+      ##  "$(g_STIGs.cfe_added_lines)";
+
+      "TMOUT=900" -> { "GEN000500" }
+      comment => "Set TMOUT to lock the screen after 15 minutes of inactivity",
+      handle => "maintain_etc_profile_insert_lines_gen000500";
+}
+
+# GEN000980
+bundle edit_line maintain_securetty
+{
+  delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+
+      "vc/(\d+)" -> { "GEN000980" }
+      comment => "Allow root to login only from the system console.",
+      handle => "maintain_securetty_delete_lines_gen000980_1";
+
+      "tty(\d+)" -> { "GEN000980" }
+      comment => "Allow root to login only from the system console.",
+      handle => "maintain_securetty_delete_lines_gen000980_2";
+
+  insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)" insert_type => "preserve_block", location => start;
+
+      "console" -> { "GEN000980" }
+      comment => "Allow root to login only from the system console.",
+      handle => "maintain_securetty_insert_lines_gen000980";
+
+      # instead of having only console, when working with hypervisors, it is
+      # good to have few ttys to prevent locking out
+      #  "console
+      #tty1
+      #tty2" -> { "GEN000980" }
+      #        comment => "Allow root to login only from the system console.",
+      #         handle => "maintain_securetty_insert_lines_gen000980",
+      #    insert_type => "preserve_block";
+}
+
+## GEN000980
+#bundle edit_line maintain_securetty2
+#{
+# insert_lines:
+#  "$(g_STIGs.cfe_created_file)" insert_type => "preserve_block", location => start;
+#  "console
+#tty1
+#tty2" -> { "GEN000980" }
+#        comment => "Allow root to login only from the system console.",
+#         handle => "maintain_securetty_insert_lines_gen000980",
+#    insert_type => "preserve_block";
+#}
+
+# GEN001020
+bundle edit_line maintain_pamd_sshd
+{
+  replace_patterns:
+      "^account\s+required\s+pam_(?!access).*so$" -> { "GEN001020" }
+      comment => "Root privilege must be gained via switch from user account",
+      handle => "maintain_pamd_sshd_replace_patterns_gen001020",
+      replace_with => default:value("account    required     pam_access.so");
+
+      ## delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+      ##
+      ## insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)" insert_type => "preserve_block", location => start;
+}
+
+# GEN001020
+bundle edit_line maintain_pamd_login
+{
+  replace_patterns:
+      "^account\s+required\s+pam_(?!access).*so$" -> { "GEN001020" }
+      comment => "Root privilege must be gained via switch from user account",
+      handle => "maintain_pamd_login_replace_patterns_gen001020",
+      replace_with => default:value("account    required     pam_access.so");
+
+      ## delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+      ##
+      ## insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)"  insert_type => "preserve_block", location => start;
+}
+
+# GEN001020
+bundle edit_line maintain_security_access_conf
+{
+  delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+      ##  "$(g_STIGs.cfe_added_lines_regexp)";
+
+      "[+-]\s+:\s+root\s+:\s+.*";
+      "\-\s+:\s+ALL\s+EXCEPT\s+users\s+:\s+ALL";
+
+  insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)"  insert_type => "preserve_block", location => start;
+      ##  "$(g_STIGs.cfe_added_lines)";
+
+      "+ : root : cron crond tty1 tty2
+- : root : ALL EXCEPT LOCAL
+- : ALL EXCEPT users : ALL" -> { "GEN001020" }
+      comment => "Allow only root uses cron and local login",
+      handle => "maintain_security_access_conf_insert_lines_gen001020",
+      insert_type => "preserve_block";
+}
+
+# GEN002120
+bundle edit_line maintain_etc_shells
+{
+  insert_lines:
+      ## "$(g_STIGs.cfe_created_file)";
+
+      "/bin/sh
+/bin/bash
+/sbin/nologin
+/bin/tcsh
+/bin/csh
+/bin/ksh
+/bin/ksh93" -> { "GEN002120" }
+      comment => "Ensure /etc/shells has good contents",
+      handle => "maintain_etc_shells_insert_lines_gen002120",
+      insert_type => "preserve_block";
+}
+
+# GEN002320
+bundle edit_line remove_audio_devices
+{
+  delete_lines:
+      ".*sound.*" -> { "GEN002320" }
+      comment => "Delete all lines contains a word, sound",
+      handle => "remove_audio_devices_delete_lines_sound_gen002320";
+
+      ".*snd.*" -> { "GEN002320" }
+      comment => "Delete all lines contains a word, snd",
+      handle => "remove_audio_devices_delete_lines_snd_gen002320";
+
+      ".*mixer.*" -> { "GEN002320" }
+      comment => "Delete all lines contains a word, mixer",
+      handle => "remove_audio_devices_delete_lines_mixer_gen002320";
+}
+
+# GEN002320, GEN002340, GEN002360
+bundle edit_line maintain_audio_devices
+{
+  insert_lines:
+      "SUBSYSTEM==\"sound|snd\", OWNER=\"root\", GROUP=\"root\", MODE=\"0644\""
+      comment => "Append a line to ensure audio devices' permission and ownership",
+      handle => "maintain_audio_devices_insert_lines_gen002320";
+}
+
+# GEN002420
+bundle edit_line set_fstab_field(path,field,val)
+{
+  field_edits:
+      ".*\$(path)\s.*"
+      comment => "Edit a user attribute in the password file",
+      edit_field => default:col("\s+","$(field)","$(val)","set");
+}
+
+# GEN002560
+bundle edit_line maintain_umask(mask)
+{
+  replace_patterns:
+      "\h+umask\s(?!$(mask)$).*" -> { "GEN002560" }
+      comment => "Ensure umask is 077",
+      handle => "maintain_umask_replace_patterns_gen002560",
+      replace_with => default:value("    umask 077");
+}
+
+# GEN002660 GEN002720 GEN002740 GEN002760 GEN002780 GEN002800 GEN002820 GEN002840
+bundle edit_line maintain_audit_rules
+{
+  insert_lines:
+      ## "$(g_STIGs.cfe_created_file)" insert_type => "preserve_block";
+
+      "# This file contains the auditctl rules that are loaded
+# whenever the audit daemon is started via the initscripts.
+# The rules are simply the parameters that would be passed
+# to auditctl.
+
+# GEN002660 GEN002720 GEN002740 GEN002760 GEN002780 GEN002800 GEN002820 GEN002840
+
+# First rule - delete all
+-D
+
+# Enable auditing
+-e 1
+
+# Increase the buffers to survive stress events.
+# Make this bigger for busy systems
+-b 8192
+
+# Failure of auditd causes a kernel panic
+-f 2
+
+# GEN002720 Logon/Logout
+-w /bin/login -p x
+-w /bin/logout -p x
+
+# GEN002740 DAC permission changes
+-a exit,always -S chmod -S chown -S chown32 -S fchmod -S fchown -S fchown32 -S lchown -S lchown32
+
+# GEN002760 Unauthorized file access attempts
+-a exit,always -F success=0 -S open -S mknod -S pipe -S mkdir -S creat -S truncate -S truncate64 -S ftruncate -S ftruncate64
+
+# GEN002780 Privileged commands
+-a exit,always -S chroot -S mount -S umount -S umount2 -S adjtimex -S kill
+-w /usr/sbin/pwck
+-w /bin/chgrp
+-w /usr/bin/newgrp
+-w /usr/sbin/groupadd
+-w /usr/sbin/groupmod
+-w /usr/sbin/groupdel
+-w /usr/sbin/useradd
+-w /usr/sbin/userdel
+-w /usr/sbin/usermod
+-w /usr/bin/chage
+-w /usr/bin/setfacl
+-w /usr/bin/chacl
+
+# GEN002800 Deleting files
+-a exit,always -S unlink -S rmdir
+
+# GEN002820 System administration actions
+# These two lines could be the cause of problems with filling audit logs and preventing system usage after installation
+-w /var/log/audit/audit.log
+-w /var/log/audit/audit[1-4].log
+-w /var/log/messages
+-w /var/log/lastlog
+-w /var/log/faillog
+-w /etc/audit/auditd.conf -p wa
+-w /etc/audit/audit.rules -p wa
+-w /etc/selinux/config -p wa
+-w /etc/passwd -p wa
+-w /etc/shadow -p wa
+-w /etc/group  -p wa
+-w /etc/ssh/sshd_config
+-w /etc/pam.d
+-w /etc/login.defs
+-w /etc/rc.d/init.d
+-w /etc/inittab -p wa
+-w /var/run/utmp
+-w /var/run/wtmp
+-a exit,always -S acct -S reboot -S sched_setparam -S sched_setscheduler -S setdomainname -S setrlimit -S settimeofday -S stime -S swapon
+
+# GEN002840 Security personnel actions
+-a exit,always -S init_module -S delete_module -S setxattr -S lsetxattr -S fsetxattr -S removexattr -S lremovexattr -S fremovexattr
+-w /bin/su" -> { "GEN002660", "GEN002720", "GEN002740", "GEN002760", "GEN002780", "GEN002800", "GEN002820", "GEN002840" }
+      comment => "Ensure /etc/audit/audit.rules has good contents",
+      handle => "maintain_audit_rules_insert_lines_gen002660_gen002720_gen002840",
+      insert_type => "preserve_block";
+}
+
+# GEN002860
+bundle edit_line maintain_logrotated_audit
+{
+  insert_lines:
+      ## "$(g_STIGs.cfe_created_file)" insert_type => "preserve_block";
+
+      "/var/log/audit/audit.log {
+$(const.t)daily
+$(const.t)notifempty
+$(const.t)missingok
+$(const.t)postrotate
+$(const.t)/sbin/service auditd restart 2> /dev/null > /dev/null || true
+$(const.t)endscript
+      }" -> { "GEN002860" }
+      comment => "Ensure old audit logs are closed and new audit logs are started daily",
+      handle => "maintain_logrotated_audit_insert_lines_gen002860",
+      insert_type => "preserve_block";
+}
+
+# GEN002960
+bundle edit_line maintain_cron_allow(name)
+{
+      # delete_lines:
+      #  ".*" -> { "GEN002960" }
+      #     comment => "Remove all restricted users",
+      #      handle => "maintain_cron_allow_delete_lines_gen02960";
+
+  insert_lines:
+      "$(name)" -> { "GEN002960" }
+      comment => "Allow users from the list to use cron utility",
+      handle => "maintain_cron_allow_insert_lines_gen02960";
+}
+
+# GEN003320
+bundle edit_line maintain_at_allow
+{
+  insert_lines:
+      "root" -> { "GEN003320" }
+      comment => "Remove all restricted users",
+      handle => "maintain_at_allow_insert_lines_gen03320";
+}
+
+# GEN003600 GEN005600
+bundle edit_line maintain_sysctl_conf
+{
+  delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+      ##  "$(g_STIGs.cfe_added_lines_regexp)";
+
+      "^net.ipv4.tcp_max_syn_backlog.*" -> { "GEN003600" }
+      comment => "Clear up an existing Network parameters.",
+      handle => "maintain_sysctl_conf_delete_lines_gen003600";
+
+      "^net.ipv4.ip_forward.*" -> { "GEN005600" }
+      comment => "Clear up an existing ip_forward parameters.",
+      handle => "maintain_sysctl_conf_delete_lines_gen005600";
+
+  insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)"  insert_type => "preserve_block", location => start;
+      ##  "$(g_STIGs.cfe_added_lines)";
+
+      "net.ipv4.tcp_max_syn_backlog = 1280" -> { "GEN003600" }
+      comment => "Secure Network parameters.",
+      handle => "maintain_sysctl_conf_insert_lines_gen003600";
+
+      "net.ipv4.ip_forward = 0" -> { "GEN005600" }
+      comment => "Disable IP forwarding.",
+      handle => "maintain_sysctl_conf_insert_lines_gen005600";
+}
+
+## "extended" version of sysctl.conf settings
+## GEN003600 GEN005600
+#bundle edit_line maintain_sysctl_conf2
+#{
+# insert_lines:
+###  "$(g_STIGs.cfe_created_file)";
+#
+#  "# Kernel sysctl configuration file for Red Hat Linux
+##
+## For binary values, 0 is disabled, 1 is enabled.  See sysctl(8) and
+## sysctl.conf(5) for more details.
+#
+## Controls IP packet forwarding
+#net.ipv4.ip_forward = 0
+#
+## Controls source route verification
+#net.ipv4.conf.default.rp_filter = 1
+#
+## Do not accept source routing
+#net.ipv4.conf.default.accept_source_route = 0
+#
+## Controls the System Request debugging functionality of the kernel
+#kernel.sysrq = 0
+#
+## Controls whether core dumps will append the PID to the core filename.
+## Useful for debugging multi-threaded applications.
+#kernel.core_uses_pid = 1
+#
+## Controls the use of TCP syncookies
+#net.ipv4.tcp_syncookies = 1
+#
+## Disable netfilter on bridges.
+#net.bridge.bridge-nf-call-ip6tables = 0
+#net.bridge.bridge-nf-call-iptables = 0
+#net.bridge.bridge-nf-call-arptables = 0
+#
+## Controls the default maxmimum size of a mesage queue
+#kernel.msgmnb = 65536
+#
+## Controls the maximum size of a message, in bytes
+#kernel.msgmax = 65536
+#
+## Controls the maximum shared segment size, in bytes
+#kernel.shmmax = 68719476736
+#
+## Controls the maximum number of shared memory segments, in pages
+#kernel.shmall = 4294967296
+#
+## Avoid a smurf attack
+#net.ipv4.icmp_echo_ignore_broadcasts = 1
+#
+### Turn on protection for bad icmp error messages
+#net.ipv4.icmp_ignore_bogus_error_responses = 1
+#
+## Turn on syncookies for SYN flood attack protection
+# net.ipv4.tcp_syncookies = 1
+#
+## Turn on and log spoofed, source routed, and redirect packets
+#net.ipv4.conf.all.log_martians = 1
+#net.ipv4.conf.default.log_martians = 1
+#
+## No source routed packets here
+#net.ipv4.conf.all.accept_source_route = 0
+## net.ipv4.conf.default.accept_source_route = 0
+#
+## Turn on reverse path filtering
+#net.ipv4.conf.all.rp_filter = 1
+## net.ipv4.conf.default.rp_filter = 1
+#
+## Make sure no one can alter the routing tables
+#net.ipv4.conf.all.accept_redirects = 0
+#net.ipv4.conf.default.accept_redirects = 0
+#net.ipv4.conf.all.secure_redirects = 0
+#net.ipv4.conf.default.secure_redirects = 0
+#
+## Don't act as a router
+## net.ipv4.ip_forward = 0
+#net.ipv4.conf.all.send_redirects = 0
+#net.ipv4.conf.default.send_redirects = 0
+#
+## Turn on execshild
+#kernel.exec-shield = 1
+#kernel.randomize_va_space = 1
+#
+## Tune IPv6
+#net.ipv6.conf.default.router_solicitations = 0
+#net.ipv6.conf.default.accept_ra_rtr_pref = 0
+#net.ipv6.conf.default.accept_ra_pinfo = 0
+#net.ipv6.conf.default.accept_ra_defrtr = 0
+#net.ipv6.conf.default.autoconf = 0
+#net.ipv6.conf.default.dad_transmits = 0
+#net.ipv6.conf.default.max_addresses = 1
+#
+## Optimization for port usefor LBs
+## Increase system file descriptor limit
+#fs.file-max = 65535
+#
+## Allow for more PIDs (to reduce rollover problems); may break some programs 32768
+#kernel.pid_max = 65536
+#
+## Increase system IP port limits
+#net.ipv4.ip_local_port_range = 2000 65000
+#
+## Increase TCP max buffer size setable using setsockopt()
+#net.ipv4.tcp_rmem = 4096 87380 8388608
+#net.ipv4.tcp_wmem = 4096 87380 8388608
+#
+## Increase Linux auto tuning TCP buffer limits
+## min, default, and max number of bytes to use
+## set max to at least 4MB, or higher if you use very high BDP paths
+## Tcp Windows etc
+#net.core.rmem_max = 8388608
+#net.core.wmem_max = 8388608
+#net.core.netdev_max_backlog = 5000
+#net.ipv4.tcp_window_scaling = 1
+#
+## Increase the number of possible inotify(7) watches
+#fs.inotify.max_user_watches = 65536
+## Avoid deleting secondary IPs on deleting the primary IP
+#net.ipv4.conf.default.promote_secondaries = 1
+#net.ipv4.conf.all.promote_secondaries = 1
+#"  -> { "GEN003600", "GEN005600" }
+#       comment => "Secure Network parameters.",
+#        handle => "maintain_sysctl_conf_insert_lines_gen003600_gen005600",
+#   insert_type => "preserve_block";
+#}
+
+# GEN004440 GEN004540, GEN004560
+bundle edit_line maintain_sendmail
+{
+  replace_patterns:
+      "^O LogLevel=(?!9).*" -> { "GEN004440" }
+      comment => "Disable the sendmail help command.",
+      handle => "maintain_sendmail_replace_patterns_gen004440",
+      replace_with => default:value("O LogLevel=9");
+
+      "^(O.*helpfile)$" -> { "GEN004540" }
+      comment => "Disable the sendmail help command.",
+      handle => "maintain_sendmail_replace_patterns_gen004540",
+      replace_with => default:comment("#");
+
+      "^O SmtpGreetingMessage=\$j Sendmail \$v/\$Z; \$b" -> { "GEN004560" }
+      comment => "Hide sendmail version.",
+      handle => "maintain_sendmail_replace_patterns_gen004560",
+      replace_with => default:value("O SmtpGreetingMessage=$j Sendmail STIG-GEN004560; $b");
+}
+
+# GEN004900
+bundle edit_line maintain_ftpusers(name)
+{
+  insert_lines:
+      ##  "$(g_STIGs.cfe_created_file)" insert_type => "preserve_block";
+
+      "root" -> { "GEN004900" }
+      comment => "Add system accounts to /etc/ftpusers",
+      handle => "maintain_ftpusers_insert_lines_root_gen004900";
+
+      "avahi-autoipd" -> { "GEN004900" }
+      comment => "Add system accounts to /etc/ftpusers",
+      handle => "maintain_ftpusers_insert_lines_avahi_autoipd_gen004900";
+
+      "$(name)" -> { "GEN004900" }
+      comment => "Add system accounts to /etc/ftpusers",
+      handle => "maintain_ftpusers_insert_lines_system_accounts_gen004900";
+}
+
+# GEN005540
+bundle edit_line create_ssh_banner
+{
+  insert_lines:
+      "*******************************************************************************
+* NOTICE TO USERS WARNING! The use of this system is restricted to authorized *
+* users, unauthorized access is forbidden and will be prosecuted by law.      *
+* All information and communications on this system are subject to review,    *
+* monitoring and recording at any time, without notice or permission.         *
+*            ***Users should have no expectation of privacy.***               *
+*******************************************************************************" -> { "GEN005540" }
+      comment => "Banner for SSH",
+      handle => "create_ssh_banner_insert_lines_gen005540";
+}
+
+# GEN001120, GEN005500, GEN005540
+bundle edit_line maintain_sshd_config
+{
+  delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+
+      "^Banner.*" -> { "GEN005540" }
+      comment => "Clear up an existing Banner.",
+      handle => "maintain_sshd_config_delete_lines_gen005540";
+
+      "^PermitRootLogin.*" -> { "GEN001120" }
+      comment => "Clear up an existing PermitRootLogin",
+      handle => "maintain_sshd_config_delete_lines_gen001120";
+
+      "^Protocol.*" -> { "GEN005500" }
+      comment => "Clear up an existing Protocol",
+      handle => "maintain_sshd_config_delete_lines_gen005500";
+
+  insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)" insert_type => "preserve_block", location => start;
+
+      "Banner /etc/ssh/ssh_banner   # GEN005540" -> { "GEN005540" }
+      comment => "Configure a warning banner.",
+      handle => "maintain_sshd_config_insert_lines_gen005540";
+
+      "PermitRootLogin no   # GEN001120" -> { "GEN001120" }
+      comment => "Don't allow root to use SSH directly.",
+      handle => "maintain_sshd_config_insert_lines_gen001120";
+
+      "Protocol 2   # GEN005500" -> { "GEN005500" }
+      comment => "Allow only SSH Protocol version 2",
+      handle => "maintain_sshd_config_insert_lines_gen005500";
+}
+
+# GEN005500
+bundle edit_line maintain_ssh_config
+{
+  delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+
+      "^Ciphers.*" -> { "GEN005500" }
+      comment => "Clear up an existing Ciphers",
+      handle => "maintain_ssh_config_delete_lines_gen005500";
+
+  insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)" insert_type => "preserve_block", location => start;
+      "Ciphers aes256-cbc,aes192-cbc,blowfish-cbc,cast128-cbc,aes128-cbc,3des-cbc" -> { "GEN005500" }
+      comment => "Allow only specific ciphers to be used",
+      handle => "maintain_ssh_config_insert_lines_gen005500";
+}
+
+# LNX00140
+bundle edit_line maintain_grub
+{
+  delete_lines:
+      ##  "$(g_STIGs.cfe_modified_file_regexp)";
+
+      "^password.*" -> { "LNX00140" }
+      comment => "Clear up an existing MD5 encrypted password.",
+      handle => "maintain_grub_delete_lines_lnx00140";
+
+  insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)" insert_type => "preserve_block", location => start;
+
+      # default password is cfengine
+      "password --md5 $(const.dollar)1$(const.dollar)8fI020$(const.dollar)YPs7MCo3A1ZkS7xagjYnb0" -> { "LNX00140" }
+      comment => "Use an MD5 encrypted password to GRUB",
+      handle => "maintain_grub_insert_lines_lnx00140",
+      location => before("^title.*");
+}
+
+# LNX00360
+bundle edit_line maintain_gdm_custom_conf
+{
+  insert_lines:
+      ##  "$(g_STIGs.cfe_modified_file)" insert_type => "preserve_block", location => start;
+
+      "[server-Standard]
+name=Standard server
+command=/usr/bin/Xorg -br -audit 4 -s 15
+flexible=true" -> { "LNX00360" }
+      comment => "Enable X server audit level 4 and 15 minutes timeout time",
+      handle => "maintain_gdm_custom_conf_insert_lines_lnx00360",
+      insert_type => "preserve_block";
+}
+
+##### body here #####
+
+body location before(str)
+{
+      before_after => "before";
+      first_last => "first";
+      select_line_matching => "$(str)";
+}
+
+body file_select cron_dirs
+{
+      leaf_name => { "cron.*" };
+      file_types  => { "dir" };
+      file_result => "leaf_name.file_types";
+}
+
+body file_select exclude2(name1,name2)
+{
+      leaf_name  => { "$(name1)", "$(name2)"};
+      file_result => "!leaf_name";
+}
+
+body file_select only_dir_exclude2(name1,name2)
+{
+      file_types  => { "dir" };
+      leaf_name  => { "$(name1)", "$(name2)"};
+      file_result => "!leaf_name.file_types";
+}
