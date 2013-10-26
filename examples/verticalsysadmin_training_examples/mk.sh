@@ -13,4 +13,4 @@ xmlto \
 pdf \
 ${FILE_BASENAME}.xml
 
-ls ${FILE_BASENAME}.pdf
+evince ${FILE_BASENAME}.pdf
