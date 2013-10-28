@@ -28,13 +28,13 @@
 
             { "name" : "file_path", "type" : "string", "default" : "/etc/sudoers", "description" : "path to sudoers file to edit" },
             { "name" : "visudo_path", "type" : "string", "default" : "/usr/sbin/visudo", "description": "path to visudo command" },
-            { "name" : "defaults", "type" : "array", "default" : [] },
-            { "name" : "user_alias", "type" : "array", "default" : [] },
-            { "name" : "host_alias", "type" : "array", "default" : [] },
-            { "name" : "cmnd_alias", "type" : "array", "default" : [] },
-            { "name" : "runas_alias", "type" : "array", "default" : [] },
-            { "name" : "user_specs", "type" : "array", "default" : [] },
-            { "name" : "drop_dirs", "type" : "array", "default" : [], "description" : "Drop directories" }
+            { "name" : "defaults", "type" : "list", "default" : [] },
+            { "name" : "user_alias", "type" : "list", "default" : [] },
+            { "name" : "host_alias", "type" : "list", "default" : [] },
+            { "name" : "cmnd_alias", "type" : "list", "default" : [] },
+            { "name" : "runas_alias", "type" : "list", "default" : [] },
+            { "name" : "user_specs", "type" : "list", "default" : [] },
+            { "name" : "drop_dirs", "type" : "list", "default" : [], "description" : "Drop directories" }
         ]
     },
     "namespace": "cfdc_sudoers",
