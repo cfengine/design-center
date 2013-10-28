@@ -41,7 +41,7 @@ CFEngine::stdlib, Cloud::Services::AWS::S3, VCS::vcs_mirror
 
 * parameter _metadata_ *metadata* (default: none, description: none)
 
-* parameter _string_ *url* (default: none, description: Base URL of Github repo, e.g. https://github.com/cfengine/vagrant-cfe)
+* parameter _string_ *url* (default: none, description: Base URL of Github repo, e.g. https://github.com/tzz/simplesite)
 
 * parameter _string_ *branch* (default: `"master"`, description: branch of Github repo)
 

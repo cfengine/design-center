@@ -22,19 +22,19 @@ CFEngine::dclib, CFEngine::dclib::3.5.0, CFEngine::stdlib
 
 * parameter _string_ *visudo_path* (default: `"/usr/sbin/visudo"`, description: path to visudo command)
 
-* parameter _array_ *defaults* (default: `[]`, description: none)
+* parameter _list_ *defaults* (default: `[]`, description: none)
 
-* parameter _array_ *user_alias* (default: `[]`, description: none)
+* parameter _list_ *user_alias* (default: `[]`, description: none)
 
-* parameter _array_ *host_alias* (default: `[]`, description: none)
+* parameter _list_ *host_alias* (default: `[]`, description: none)
 
-* parameter _array_ *cmnd_alias* (default: `[]`, description: none)
+* parameter _list_ *cmnd_alias* (default: `[]`, description: none)
 
-* parameter _array_ *runas_alias* (default: `[]`, description: none)
+* parameter _list_ *runas_alias* (default: `[]`, description: none)
 
-* parameter _array_ *user_specs* (default: `[]`, description: none)
+* parameter _list_ *user_specs* (default: `[]`, description: none)
 
-* parameter _array_ *drop_dirs* (default: `[]`, description: Drop directories)
+* parameter _list_ *drop_dirs* (default: `[]`, description: Drop directories)
 
 
 ## SAMPLE USAGE
