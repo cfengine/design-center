@@ -2,7 +2,7 @@
 
 License: MIT
 Tags: stig, security, sketchify_generated, hardening
-Authors: Jurica Borozan, Ted Zlatanov <tzz@lifelogs.com>
+Authors: Jurica Borozan <jurica.borozan@gmail.com>, Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
 Implement STIGs security policies
