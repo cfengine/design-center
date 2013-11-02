@@ -1,0 +1,33 @@
+{
+    manifest:
+    {
+        "main.cf": {desc: "main file" },
+        "README.md": {documentation: true},
+        "test.cf": {comment: "Test Policy"},
+        "params/demo.json": {comment: "Demo of usage."}
+    },
+
+    metadata:
+    {
+        name: "Run::Once",
+	    description: "Run a given script at most once when a given context is true.",
+        version: 1.0,
+        license: "MIT",
+        tags: ["cfdc", "run", "once", "window", "enterprise_compatible" ],
+        authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::dclib": {}, "CFEngine::stdlib": {}, cfengine: {version: "3.5.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
+    },
+
+    api:
+    {
+        run:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "context", description: "Context in which to run", default: "any" },
+            { type: "list", name: "scripts", description: "List of scripts to run" },
+        ],
+    },
+
+    interface: ["main.cf"]
+}

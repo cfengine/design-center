@@ -1,0 +1,4 @@
+[
+   { "Run::Once": { context: "any", scripts: ["/sbin/sysctl -a"] } },
+   { "Run::Once": { context: "solaris", scripts: ["/special/script"] } },
+]

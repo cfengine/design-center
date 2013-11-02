@@ -1,0 +1,108 @@
+body file control
+{
+      namespace => "cfdc_utilities_run_once";
+}
+
+bundle agent run(runenv, metadata, context, scripts)
+{
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+  classes:
+      "$(vars)"
+      expression => "default:runenv_$(runenv)_$(vars)";
+
+      "not_$(vars)"
+      expression => "!default:runenv_$(runenv)_$(vars)";
+
+      "second_pass" expression => "any";
+
+  methods:
+    second_pass::
+      "utils" usebundle => default:eu($(runenv)),
+      inherit => "true";
+
+      "checkit" usebundle => checkit($(scripts),
+                                     $(activation_id),
+                                     "$(scripts) $(activation_id)"),
+      inherit => "true";
+
+      "runit" usebundle => runit($(scripts),
+                                 $(context),
+                                 $(activation_id),
+                                 "$(scripts) $(activation_id)"),
+      inherit => "true";
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  reports:
+    verbose::
+      "$(this.bundle): running in verbose mode";
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    test::
+      "$(this.bundle): running in test mode";
+}
+
+bundle agent checkit(script, id, pname)
+{
+  classes:
+      "$(pc)_unknown" not => $(pc),
+      scope => "namespace";
+
+  vars:
+      "pc" string => canonify($(pname));
+
+  reports:
+    verbose::
+      "$(this.bundle): Checking if $(pname) is defined";
+
+      "$(this.bundle): $(pc) is defined" ifvarclass => $(pc);
+      "$(this.bundle): $(pc) is NOT defined" ifvarclass => "!$(pc)";
+
+      "$(this.bundle): $(pc)_unknown is defined" ifvarclass => "$(pc)_unknown";
+      "$(this.bundle): $(pc)_unknown is NOT defined" ifvarclass => "!$(pc)_unknown";
+
+}
+
+bundle agent runit(cmd, context, id, pname)
+{
+  vars:
+      "pc" string => canonify($(pname));
+
+  commands:
+      "$(default:eu.exec_prefix)$(cmd)"
+      contain => default:in_shell,
+      handle => "$(id)_ran",
+      comment => "Run the given command iff the context is true and we haven't run it before.",
+      ifvarclass => concat(canonify($(pname)), "_unknown.$(context)"),
+      classes => run_once_persist($(pname));
+
+  reports:
+    verbose::
+      "$(this.bundle): WE HAVE the required context '$(context)'"
+      ifvarclass => "$(context)";
+
+      "$(this.bundle): WE LACK the required context '$(context)'"
+      ifvarclass => "!($(context))";
+
+      "$(this.bundle): The command ran or has already run for context '$(pc)'"
+      ifvarclass => $(pc);
+
+      "$(this.bundle): The command did not run successfully and has not already run for context '$(pc)'"
+      ifvarclass => "$(pc)_unknown";
+}
+
+body classes run_once_persist(x)
+{
+      persist_time => "90m";
+      promise_repaired => { $(x) };
+      promise_kept => { $(x) };
+}
