@@ -145,6 +145,7 @@ sub make_activation
                          sketch_name => $found->name(),
                          bundle => $b,
                          id => $activation_id,
+                         timestamp => 'notime', # we only take a timestamp externally
                          compositions => $compositions,
                          metadata => $metadata,
                          available_compositions => $api->compositions(),
@@ -238,6 +239,12 @@ sub fill_param
     {
         my $metadata = $extra->{sketch}->runfile_data_dump();
         $metadata = Util::hashref_merge($metadata,
+                                        {
+                                         activation => {
+                                                        identifier => $extra->{id},
+                                                        timestamp => $extra->{timestamp},
+                                                       },
+                                        },
                                         {
                                          activation => $extra->{metadata},
                                          bundle_options => $extra->{sketch}->api_options($extra->{bundle}),
