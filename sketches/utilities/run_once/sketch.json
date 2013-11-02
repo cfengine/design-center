@@ -13,9 +13,9 @@
 	    description: "Run a given script at most once when a given context is true.",
         version: 1.0,
         license: "MIT",
-        tags: ["cfdc", "run", "once", "window" ],
+        tags: ["cfdc", "run", "once", "window", "enterprise_compatible" ],
         authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::dclib": {}, "CFEngine::stdlib": {}, cfengine: {version: "3.5.0"}, os: ["linux"] }
+        depends: { "CFEngine::dclib": {}, "CFEngine::stdlib": {}, cfengine: {version: "3.5.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
     },
 
     api:
