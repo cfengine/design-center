@@ -240,15 +240,15 @@ sub fill_param
         my $metadata = $extra->{sketch}->runfile_data_dump();
         $metadata = Util::hashref_merge($metadata,
                                         {
+                                         activation => $extra->{metadata},
+                                         bundle_options => $extra->{sketch}->api_options($extra->{bundle}),
+                                         api => $extra->{sketch}->api_describe($extra->{bundle}),
+                                        },
+                                        {
                                          activation => {
                                                         identifier => $extra->{id},
                                                         timestamp => $extra->{timestamp},
                                                        },
-                                        },
-                                        {
-                                         activation => $extra->{metadata},
-                                         bundle_options => $extra->{sketch}->api_options($extra->{bundle}),
-                                         api => $extra->{sketch}->api_describe($extra->{bundle}),
                                         });
 
         return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
