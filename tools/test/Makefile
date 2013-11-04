@@ -789,3 +789,7 @@ data_triggers_jenkins:
 run_once:
 	$(CFSKETCH_DA) --install Run::Once --activate Run::Once=$(SOURCEDIR)/utilities/run_once/params/demo.json
 	$(RUNNER)
+
+dropdir:
+	$(CFSKETCH_DA) --install Run::Dropdir --activate Run::Dropdir=$(SOURCEDIR)/utilities/dropdir/params/demo.json
+	$(RUNNER)

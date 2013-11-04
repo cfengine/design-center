@@ -1,0 +1,92 @@
+body common control
+{
+      bundlesequence => { cfsketch_g, cfsketch_run };
+      inputs => { @(cfsketch_g.inputs)  };
+}
+
+
+# environment common bundles
+
+# environment cf_sketch_testing
+bundle common cf_sketch_testing
+{
+  vars:
+      "activated" string => "any";
+      "env_vars" slist => { "activated", "test", "verbose" };
+      "test" string => "any";
+      "verbose" string => "any";
+  classes:
+      "runenv_cf_sketch_testing_activated" expression => "any";
+      "runenv_cf_sketch_testing_test" expression => "any";
+      "runenv_cf_sketch_testing_verbose" expression => "any";
+}
+
+
+# activation data
+bundle common cfsketch_g
+{
+  vars:
+      # Files that need to be loaded for the activated sketches and
+      # their dependencies.
+      "inputs" slist => { "../../libraries/dclib/library.cf", "../../libraries/copbl/cfengine_stdlib.cf", "main.cf" };
+}
+
+bundle agent cfsketch_run
+{
+  vars:
+
+      # array 'mymetadata' from definition sketch metadata, activation ___001_Run_Dropdir_dropdir_run
+      "___001_Run_Dropdir_dropdir_run_mymetadata[api][context][type]" string => "string";
+      "___001_Run_Dropdir_dropdir_run_mymetadata[api][days][type]" string => "string";
+      "___001_Run_Dropdir_dropdir_run_mymetadata[api][directory][type]" string => "string";
+      "___001_Run_Dropdir_dropdir_run_mymetadata[api][mymetadata][type]" string => "metadata";
+      "___001_Run_Dropdir_dropdir_run_mymetadata[api][runenv][type]" string => "environment";
+      "___001_Run_Dropdir_dropdir_run_mymetadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "___001_Run_Dropdir_dropdir_run_mymetadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "___001_Run_Dropdir_dropdir_run_mymetadata[license]" string => "MIT";
+      "___001_Run_Dropdir_dropdir_run_mymetadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/utilities/dropdir";
+      "___001_Run_Dropdir_dropdir_run_mymetadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json", "test.cf" };
+      "___001_Run_Dropdir_dropdir_run_mymetadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "___001_Run_Dropdir_dropdir_run_mymetadata[manifest_docs]" slist => { "README.md" };
+      "___001_Run_Dropdir_dropdir_run_mymetadata[manifest_exe]" slist => { "cf_null" };
+      "___001_Run_Dropdir_dropdir_run_mymetadata[manifest_extra]" slist => { "params/demo.json" };
+      "___001_Run_Dropdir_dropdir_run_mymetadata[manifest_test]" slist => { "cf_null" };
+      "___001_Run_Dropdir_dropdir_run_mymetadata[name]" string => "Run::Dropdir";
+      "___001_Run_Dropdir_dropdir_run_mymetadata[tags]" slist => { "cfdc", "run", "dropdir", "window", "enterprise_compatible" };
+      "___001_Run_Dropdir_dropdir_run_mymetadata[version]" string => "1";
+
+      # array 'mymetadata' from definition sketch metadata, activation ___002_Run_Dropdir_dropdir_run
+      "___002_Run_Dropdir_dropdir_run_mymetadata[api][context][type]" string => "string";
+      "___002_Run_Dropdir_dropdir_run_mymetadata[api][days][type]" string => "string";
+      "___002_Run_Dropdir_dropdir_run_mymetadata[api][directory][type]" string => "string";
+      "___002_Run_Dropdir_dropdir_run_mymetadata[api][mymetadata][type]" string => "metadata";
+      "___002_Run_Dropdir_dropdir_run_mymetadata[api][runenv][type]" string => "environment";
+      "___002_Run_Dropdir_dropdir_run_mymetadata[authors]" slist => { "Ted Zlatanov <tzz@lifelogs.com>" };
+      "___002_Run_Dropdir_dropdir_run_mymetadata[depends]" slist => { "CFEngine::dclib", "CFEngine::stdlib" };
+      "___002_Run_Dropdir_dropdir_run_mymetadata[license]" string => "MIT";
+      "___002_Run_Dropdir_dropdir_run_mymetadata[location]" string => "/home/tzz/.cfagent/inputs/sketches/utilities/dropdir";
+      "___002_Run_Dropdir_dropdir_run_mymetadata[manifest]" slist => { "README.md", "main.cf", "params/demo.json", "test.cf" };
+      "___002_Run_Dropdir_dropdir_run_mymetadata[manifest_cf]" slist => { "main.cf", "test.cf" };
+      "___002_Run_Dropdir_dropdir_run_mymetadata[manifest_docs]" slist => { "README.md" };
+      "___002_Run_Dropdir_dropdir_run_mymetadata[manifest_exe]" slist => { "cf_null" };
+      "___002_Run_Dropdir_dropdir_run_mymetadata[manifest_extra]" slist => { "params/demo.json" };
+      "___002_Run_Dropdir_dropdir_run_mymetadata[manifest_test]" slist => { "cf_null" };
+      "___002_Run_Dropdir_dropdir_run_mymetadata[name]" string => "Run::Dropdir";
+      "___002_Run_Dropdir_dropdir_run_mymetadata[tags]" slist => { "cfdc", "run", "dropdir", "window", "enterprise_compatible" };
+      "___002_Run_Dropdir_dropdir_run_mymetadata[version]" string => "1";
+
+  methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+      "cf_sketch_testing" usebundle => "cf_sketch_testing";
+
+    runenv_cf_sketch_testing_activated::
+      "___001_Run_Dropdir_dropdir_run" usebundle => dropdir_run("cf_sketch_testing", "default:cfsketch_run.___001_Run_Dropdir_dropdir_run_mymetadata", "any", "/tmp/dropdir", "7"), ifvarclass => "(any|linux|windows)", useresult => "return____001_Run_Dropdir_dropdir_run";
+    runenv_cf_sketch_testing_activated::
+      "___002_Run_Dropdir_dropdir_run" usebundle => dropdir_run("cf_sketch_testing", "default:cfsketch_run.___002_Run_Dropdir_dropdir_run_mymetadata", "solaris", "/tmp/dropdir-solaris", "14"), ifvarclass => "(any|linux|windows)", useresult => "return____002_Run_Dropdir_dropdir_run";
+
+  reports:
+    inform_mode::
+      "activation ___001_Run_Dropdir_dropdir_run could not run because it requires classes (any|linux|windows)" ifvarclass => "inform_mode.!((any|linux|windows))";
+      "activation ___002_Run_Dropdir_dropdir_run could not run because it requires classes (any|linux|windows)" ifvarclass => "inform_mode.!((any|linux|windows))";
+}

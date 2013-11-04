@@ -1,0 +1,4 @@
+[
+   { "Run::Dropdir": { context: "any", directory: "/tmp/dropdir", days: 7 } },
+   { "Run::Dropdir": { context: "solaris", directory: "/tmp/dropdir-solaris", days: 14 } },
+]
