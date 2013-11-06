@@ -26,7 +26,7 @@
             { type: "metadata", name: "mymetadata", },
             { type: "string", name: "context", description: "Context in which to run", default: "any" },
             { type: "string", name: "directory", description: "Drop directory (put scripts to be run here)" },
-            { type: "string", name: "days", description: "Number of days to keep the scripts", validation: "DIGITS", default: "any" },
+            { type: "string", name: "days", description: "Number of days to keep the scripts", validation: "DIGITS", default: 7 },
         ],
     },
 
