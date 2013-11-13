@@ -17,6 +17,10 @@ bundle agent client(runenv,metadata,peers,servers,restrictions,driftfile,given_s
       "statsdir" string => "$(default:eu.path_prefix)$(given_statsdir)";
 
   methods:
+      "meta"
+      usebundle => default:activation($(this.bundle), $(metadata)),
+      useresult => "act";
+
       "utils" usebundle => default:eu($(runenv));
 
       "NTP CLIENT INSTALL $(runenv)"
@@ -51,19 +55,27 @@ bundle agent install
   packages:
     not_test.(ubuntu|debian)::
       "ntp"
+      handle => "$(cfdc_ntp:client.act[id])_install_debians",
       package_policy => "add",
       classes => default:if_ok("ntp_client_installed"),
       package_method => default:apt;
 
+    not_test.!(ubuntu|debian)::
+      "ntp"
+      handle => "$(cfdc_ntp:client.act[id])_install_non_debians",
+      package_policy => "add",
+      classes => default:if_ok("ntp_client_installed"),
+      package_method => default:generic;
+
   reports:
-    verbose.installed::
+    verbose.ntp_client_installed::
       "$(this.bundle): Installed NTP successfully.";
-    verbose.not_test.!installed::
+    verbose.not_test.!ntp_client_installed::
       "$(this.bundle): Could not install NTP successfully.";
 
-    installed::
+    ntp_client_installed::
       "1" bundle_return_value_index => "package_status";
-    not_test.!installed::
+    not_test.!ntp_client_installed::
       "0" bundle_return_value_index => "package_status";
     test::
       "$(this.bundle): Overriding bundle return status to success (1) in test mode";
@@ -79,10 +91,12 @@ bundle agent conf(runenv,metadata,pkg_status,peers,servers,restrictions,driftfil
     ntp_client_installed.(redhat|centos|fedora|debian|ubuntu)::
       "$(statsdir)/."
       create => "true",
+      handle => "$(cfdc_ntp:client.act[id])_mkdir_stats",
       perms => default:mog("755", "ntp", "ntp");
 
       "$(conffile)"
       create => "true",
+      handle => "$(cfdc_ntp:client.act[id])_mkfile_conffile",
       edit_defaults => default:empty,
       classes => default:if_repaired("ntp_client_config_repaired"),
       perms => default:mog("644","root","root"),
@@ -109,6 +123,7 @@ bundle agent proc(service_mode)
   processes:
     !ntp_client_conf_repaired::
       "ntpd"
+      handle => "$(cfdc_ntp:client.act[id])_process",
       restart_class => "ntp_client_proc_start";
 
   commands:

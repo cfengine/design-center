@@ -20,7 +20,7 @@ CFEngine::dclib, CFEngine::stdlib
 
 * parameter _string_ *directory* (default: none, description: Drop directory (put scripts to be run here))
 
-* parameter _string_ *days* (default: `"any"`, description: Number of days to keep the scripts)
+* parameter _string_ *days* (default: `7`, description: Number of days to keep the scripts)
 
 
 ## SAMPLE USAGE

@@ -1,7 +1,7 @@
 # Networking::NTP::Client version 1
 
 License: MIT
-Tags: cfdc, ntp
+Tags: cfdc, ntp, enterprise_compatible
 Authors: Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>
 
 ## Description
