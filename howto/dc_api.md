@@ -763,6 +763,11 @@ You can pass a `identifier` parameter to an `activate` command, which can then
 be used to `deactivate` an activation specifically, and which will show up in
 the classes and prefixes of that activation.
 
+You can pass a `priority` parameter to an `activate` command, which will be used
+for sorting the activations.  By default all activations get priority `0`.  The
+priorities are sorted lexicographically (`00a` comes before `00b` and `10` comes
+before `9`).
+
 You can pass a `metadata` parameter to an `activate` command, which will show up
 under the `activation` key in the metadata.
 
