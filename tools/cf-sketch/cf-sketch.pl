@@ -242,7 +242,12 @@ if (scalar @{$options{apitest}})
         push @todo, join('|', split ',', $_);
     }
 
-    api_interaction({test => \@todo, coverage => $options{coverage}});
+    my ($success, $result) = api_interaction({test => \@todo,
+                                              coverage => $options{coverage}});
+
+    exit 0 if $success;
+
+    exit 1;
 }
 
 if (scalar @{$options{uninstall}})
