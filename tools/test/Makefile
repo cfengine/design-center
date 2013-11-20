@@ -86,8 +86,8 @@ api_test:
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "CFEngine::dclib", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {install: [ { sketch: "Applications::Memcached", force: true, target: "$(API_SKETCHDIR)", source: "$(SOURCEDIR)" } ] } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {define: { "memcached_11111": { "Applications::Memcached": { port: 11111 } } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Applications::Memcached": { environment: "path_override", params: [ "memcached_11111" ] } } } }' | $(CFAPI)
-	echo '{ dc_api_version: "0.0.1", request: {activate: { "Applications::Memcached": { environment: "default", params: [ "memcached_11111" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Applications::Memcached": { priority: "001", environment: "path_override", params: [ "memcached_11111" ] } } } }' | $(CFAPI)
+	echo '{ dc_api_version: "0.0.1", request: {activate: { "Applications::Memcached": { priority: "002", environment: "default", params: [ "memcached_11111" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "0.0.1", request: {regenerate: { } } }' | $(CFAPI)
 
 api_activate:

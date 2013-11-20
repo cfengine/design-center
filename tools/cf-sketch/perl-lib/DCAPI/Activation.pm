@@ -15,6 +15,7 @@ has metadata => ( is => 'ro', required => 1 );
 has prefix => ( is => 'ro', required => 0, default => '' );
 has compositions => ( is => 'ro', required => 1, default => [] );
 has id => ( is => 'ro', required => 1 );
+has priority => ( is => 'ro', required => 1 );
 
 our $activation_position = 1;
 
@@ -120,6 +121,9 @@ sub make_activation
 
     my $bundle;
     my %bundle_params;
+
+    my $activation_priority = Util::hashref_search($spec, qw/priority/) || '0';
+
     my $activation_id;
 
     foreach my $b (@bundles_to_check)
@@ -197,6 +201,7 @@ sub make_activation
                                   environment => $env,
                                   bundle => $bundle,
                                   id => $activation_id,
+                                  priority => $activation_priority,
                                   compositions => $compositions,
                                   metadata => $metadata,
                                   params => $bundle_params{$bundle});

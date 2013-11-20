@@ -1139,6 +1139,8 @@ sub regenerate
 
     return $result unless $result->success();
 
+    @activations = sort { $a->priority() cmp $b->priority() } @activations;
+
     # resolve each activation from the others
     foreach my $a (@activations)
     {
