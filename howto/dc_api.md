@@ -764,7 +764,7 @@ be used to `deactivate` an activation specifically, and which will show up in
 the classes and prefixes of that activation.
 
 You can pass a `priority` parameter to an `activate` command, which will be used
-for sorting the activations.  By default all activations get priority `0`.  The
+for sorting the activations.  By default all activations get priority `1`.  The
 priorities are sorted lexicographically (`00a` comes before `00b` and `10` comes
 before `9`).
 

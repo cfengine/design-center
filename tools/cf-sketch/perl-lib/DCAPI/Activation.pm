@@ -122,7 +122,7 @@ sub make_activation
     my $bundle;
     my %bundle_params;
 
-    my $activation_priority = Util::hashref_search($spec, qw/priority/) || '0';
+    my $activation_priority = Util::hashref_search($spec, qw/priority/) || '1';
 
     my $activation_id;
 
