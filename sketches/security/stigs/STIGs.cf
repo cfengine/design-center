@@ -28,7 +28,7 @@ body file control
 ################################################################################
 
 #
-# STIGs compliance with Cfengine 3 (Nova)
+# stigs compliance with Cfengine 3 (Nova)
 #
 
 bundle agent stigs(runenv, metadata, mark_created, mark_modified, mark_added)
@@ -38,17 +38,16 @@ bundle agent stigs(runenv, metadata, mark_created, mark_modified, mark_added)
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
       "cfe_created_file"        string =>
-      "####################################
+"####################################
 # This file is created by cfengine #
 ####################################
 ";
 
       "cfe_modified_file"       string =>
-      "#####################################
+"#####################################
 # This file is modified by cfengine #
 #####################################
 ";
-
       "cfe_modified_file_regexp" string => "#+\s# This file is modified by cfengine #\s#+";
 
       "cfe_added_lines"          string => "### These lines are added by cfengine ###";
@@ -58,9 +57,12 @@ bundle agent stigs(runenv, metadata, mark_created, mark_modified, mark_added)
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
       "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
 
-      "mark_created" expression => strcmp($(mark_created), "1");
-      "mark_modified" expression => strcmp($(mark_modified), "1");
-      "mark_added" expression => strcmp($(mark_added), "1");
+      "mark_created" expression => strcmp($(mark_created), "1"),
+                          scope => "namespace";
+      "mark_modified" expression => strcmp($(mark_modified), "1"),
+                           scope => "namespace";
+      "mark_added" expression => strcmp($(mark_added), "1"),
+                        scope => "namespace";
 
   methods:
       "utils" usebundle => default:eu($(runenv));
@@ -71,7 +73,7 @@ bundle agent stigs(runenv, metadata, mark_created, mark_modified, mark_added)
 
     any::
       "go" usebundle => stigs_do,
-      inherit => "true";
+             inherit => "true";
 
   reports:
     verbose::
@@ -268,7 +270,14 @@ bundle agent stigs_do
       handle => "stigs_vars_cron_files",
       slist => {
                  "/etc/crontab",
+      };
+
+      "logwatch_files" -> { "GEN003040", "GEN003080", "GEN006520" }
+      comment => "List of logwatch files",
+      handle => "stigs_vars_logwatch_files",
+      slist => {
                  "/usr/share/logwatch/scripts/logwatch.pl",
+                 "/usr/share/logwatch/scripts/services/iptables",
       };
 
       "at_deny_users" -> { "GEN003300", "GEN003320" }
@@ -335,7 +344,6 @@ bundle agent stigs_do
       slist => {
                  "/etc/rc.d/init.d/iptables",
                  "/sbin/iptables",
-                 "/usr/share/logwatch/scripts/services/iptables",
       };
 
       "hosts_allow" -> { "GEN006620" }
@@ -386,6 +394,51 @@ bundle agent stigs_do
       comment => "Check if the machine has X windows installed",
       handle => "stigs_classes_have_xwindows",
       expression => fileexists("/etc/gdm/custom.conf");
+
+      "have_etc_pam_files" -> { "GEN002100" }
+      comment => "Check if the machine has ekshell file in pam.d directory",
+      handle => "stigs_classes_have_files_ekshell",
+      expression => fileexists("/etc/pam.d/ekshell");
+
+      "have_etc_pam_files" -> { "GEN002100" }
+      comment => "Check if the machine has kshell file in pam.d directory",
+      handle => "stigs_classes_have_files_kshell",
+      expression => fileexists("/etc/pam.d/kshell");
+
+      "have_security_default_perms" -> { "GEN002320" }
+      comment => "Check if the machine has 50-default.rules file",
+      handle => "stigs_classes_have_security_default_perms",
+      expression => fileexists("/etc/security/console.perms.d/50-default.perms");
+
+      "have_share_logwatch_scripts" -> { "GEN003040", "GEN003080", "GEN006520" }
+      comment => "Check if the machine has logwatch scripts directory",
+      handle => "stigs_classes_have_share_logwatch_scripts",
+      expression => fileexists("/usr/share/logwatch/scripts/.");
+
+      "have_var_spool_at_spool" -> { "GEN003400", "GEN003420" }
+      comment => "Check if the machine has /var/spool/at/spool directory",
+      handle => "stigs_classes_have_var_spool_at_spool",
+      expression => fileexists("/var/spool/at/spool/.");
+
+      "have_etc_mail" -> { "GEN004440", "GEN004540", "GEN004560" }
+      comment => "Check if the machine has /etc/mail directory",
+      handle => "stigs_classes_have_etc_mail",
+      expression => fileexists("/etc/mail/.");
+
+      "have_etc_snmp" -> { "GEN005320", "GEN005360" }
+      comment => "Check if the machine has /etc/snmp directory",
+      handle => "stigs_classes_have_etc_snmp",
+      expression => fileexists("/etc/snmp/.");
+
+      "have_etc_samba" -> { "GEN006100", "GEN006120", "GEN006140" }
+      comment => "Check if the machine has /etc/samba directory",
+      handle => "stigs_classes_have_etc_samba",
+      expression => fileexists("/etc/samba/.");
+
+      "have_etc_news" -> { "GEN006340", "GEN006360" }
+      comment => "Check if the machine has /etc/news directory",
+      handle => "stigs_classes_have_etc_news",
+      expression => fileexists("/etc/news/.");
 
       #
 
@@ -490,7 +543,7 @@ bundle agent stigs_do
       comment => "CAT I && III (Previously - G047, G048, G229) UNIX STIG: 3.3 Root Account, 3.4 File and Directory Controls",
       handle => "stigs_files_set_root_shell",
       perms => default:mog("644", "root","root"),
-      edit_line => set_user_field("root","7","/bin/bash");
+      edit_line => default:set_user_field("root","7","/bin/bash");
 
       "$(default:eu.path_prefix)/etc/ssh/sshd_config" -> { "GEN001120", "GEN005500", "GEN005540" }
       comment => "CAT I & II (Previously - G500, G701) UNIX STIG: 3.3.1 Encrypted Root Access, 4.15 Secure Shell (SSH) and Equivalents",
@@ -560,7 +613,7 @@ bundle agent stigs_do
       "$(default:eu.path_prefix)/$(global_init_files)" -> { "GEN001720", "GEN001740", "GEN001760", "GEN001780" }
       comment => "CAT II (Previously - G112) UNIX STIG: 3.8.1 Global Initialization Files",
       handle => "stigs_files_global_init_files",
-      edit_line => append_if_no_line("mesg n"),
+      edit_line => default:append_if_no_line("mesg n"),
       perms => default:mog("644","root","root");
 
       "$(default:eu.path_prefix)/$(skeleton_dot_files)" -> { "GEN001800", "GEN001820" }
@@ -578,7 +631,8 @@ bundle agent stigs_do
       "$(default:eu.path_prefix)/$(pam_files)" -> { "GEN002100" }
       comment => "CAT II UNIX STIG: 3.9 Trusted System/System Access Control Files",
       handle => "stigs_files_pam_files",
-      edit_line => comment_lines_matching("^auth.*pam_rhosts_auth.so","#");
+      edit_line => default:comment_lines_matching("^auth.*pam_rhosts_auth.so","#"),
+      ifvarclass => "have_pam_files";
 
       "$(default:eu.path_prefix)/etc/shells" -> { "GEN002120" }
       comment => "CAT II (Previously - G069) UNIX STIG: 3.10 Shells",
@@ -596,7 +650,8 @@ bundle agent stigs_do
       "$(default:eu.path_prefix)/etc/security/console.perms.d/50-default.perms" -> { "GEN002320" }
       comment => "CAT II (Previously - G501) UNIX STIG: 3.11 Device Files",
       handle => "stigs_files_security_default_perms",
-      edit_line => remove_audio_devices;
+      edit_line => remove_audio_devices,
+      ifvarclass => "have_security_default_perms";
 
       "$(default:eu.path_prefix)/etc/udev/rules.d/55-audio-perms.rules" -> { "GEN002320", "GEN002340", "GEN002360" }
       comment => "CAT II (Previously - G501, G502, G504) UNIX STIG: 3.11 Device Files",
@@ -612,13 +667,13 @@ bundle agent stigs_do
       "$(default:eu.path_prefix)/etc/passwd" -> { "GEN002640", "GEN005000" }
       comment => "CAT I & II (Previously - G649, G092) UNIX STIG: 3.15 Default Accounts, 4.8.1 FTP Configuration",
       handle => "stigs_files_default_accounts_shell",
-      edit_line => set_user_field("$(allusers_not_root)","7","/sbin/nologin"),
+      edit_line => default:set_user_field("$(allusers_not_root)","7","/sbin/nologin"),
       ifvarclass => "$(allusers_not_root)_less_than_500";
 
       "$(default:eu.path_prefix)/etc/passwd" -> { "GEN002640" }
       comment => "CAT II (Previously - G092) UNIX STIG: 3.15 Default Accounts",
       handle => "stigs_files_default_accounts_shell_for_badnaming_users",
-      edit_line => set_user_field("avahi-autoipd","7","/sbin/nologin");
+      edit_line => default:set_user_field("avahi-autoipd","7","/sbin/nologin");
 
       "$(default:eu.path_prefix)/etc/audit/audit.rules" -> { "GEN002660", "GEN002700", "GEN002720", "GEN002740", "GEN002760", "GEN002780", "GEN002800", "GEN002820", "GEN002840" }
       comment => "CAT I (Previously - G093, G095, G100-G106) UNIX STIG: 3.16 Audit Requirements",
@@ -646,7 +701,7 @@ bundle agent stigs_do
       create => "true",
       perms => default:mog("600","root","root"),
       edit_defaults => default:empty,
-      edit_line => append_if_no_line("ALL");
+      edit_line => default:append_if_no_line("ALL");
 
       "$(default:eu.path_prefix)/etc/cron.allow" -> { "GEN002960", "GEN002980","GEN003060", "GEN003240" }
       comment => "CAT II (Previously - G622) UNIX STIG: 3.17.3 Restrictions",
@@ -654,7 +709,7 @@ bundle agent stigs_do
       create => "true",
       perms => default:mog("600","root","root"),
       edit_defaults => default:empty,
-      edit_line => maintain_cron_allow("@(stigs_do.cron_users)");
+      edit_line => maintain_cron_allow("@(cfdc_stigs:stigs_do.cron_users)");
 
       "$(default:eu.path_prefix)/$(cron_dirs)" -> { "GEN003040", "GEN003080" }
       comment => "CAT II (Previously - G205) UNIX STIG: 3.17.3 Restrictions",
@@ -672,6 +727,12 @@ bundle agent stigs_do
       comment => "CAT II (Previously - G205) UNIX STIG: 3.17.3 Restrictions",
       handle => "stigs_files_other_cron_files",
       perms => default:mog("600","root","root");
+
+      "$(default:eu.path_prefix)/$(logwatch_files)" -> { "GEN003040", "GEN003080", "GEN006520" }
+      comment => "CAT II (Previously - G205, G189) UNIX STIG: 3.17.3 Restrictions & 6 UNIX Security Tools",
+      handle => "stigs_files_other_logwatch_files",
+      perms => default:mog("600","root","root"),
+      ifvarclass => "have_share_logwatch_scripts";
 
       "$(default:eu.path_prefix)/etc" -> { "GEN003100", "GEN003120", "GEN003140" }
       comment => "CAT II (Previously - G206, G207) UNIX STIG: 3.17.3 Restrictions",
@@ -697,7 +758,7 @@ bundle agent stigs_do
       handle => "stigs_files_etc_at_deny_all_not_root",
       create => "true",
       perms => default:mog("600","root","root"),
-      edit_line => append_if_no_lines("@(stigs_do.at_deny_users)");
+      edit_line => default:append_if_no_lines("@(cfdc_stigs:stigs_do.at_deny_users)");
 
       "$(default:eu.path_prefix)/etc/at.allow" -> { "GEN003320", "GEN003340", "GEN003460" }
       comment => "CAT II (Previously - G213, G214, G629) UNIX STIG: 3.18.3 Restrictions",
@@ -710,12 +771,13 @@ bundle agent stigs_do
       "$(default:eu.path_prefix)/var/spool/at/spool/" -> { "GEN003400", "GEN003420" }
       comment => "CAT II (Previously - G625, G626) UNIX STIG: 3.18.3 Restrictions",
       handle => "stigs_files_var_spool_at_spool",
-      perms => default:mog("755","root","root");
+      perms => default:mog("755","root","root"),
+      ifvarclass => "have_var_spool_at_spool";
 
       "$(default:eu.path_prefix)/etc/security/limits.conf" -> { "GEN003500" }
       comment => "CAT III UNIX STIG: 3.20.1 Restrict/Disable Core Dumps",
       handle => "stigs_files_etc_security_limits_conf",
-      edit_line => append_if_no_line("* - core 0");
+      edit_line => default:append_if_no_line("* - core 0");
 
       "$(default:eu.path_prefix)/var/crash" -> { "GEN003520" }
       comment => "CAT III UNIX STIG: 3.20.1 Restrict/Disable Core Dumps",
@@ -772,14 +834,15 @@ bundle agent stigs_do
       comment => "CAT I & II (Previously - G127, G128, V126) UNIX STIG: 4.7 Sendmail or Equivalent",
       handle => "stigs_files_etc_aliases",
       perms => default:mog("644","root","root"),
-      edit_line => comment_lines_matching("decode:\h+root","#"),
+      edit_line => default:comment_lines_matching("decode:\h+root","#"),
       classes => default:if_repaired("restart_aliases");
 
       "$(default:eu.path_prefix)/etc/mail/sendmail.cf" -> { "GEN004440", "GEN004540", "GEN004560" }
       comment => "CAT II & IV (Previously - G133, G646) UNIX STIG: 4.7 Sendmail or Equivalent",
       handle => "stigs_files_etc_mail_sendmail_cf",
       edit_line => maintain_sendmail,
-      classes => default:if_repaired("restart_sendmail");
+      classes => default:if_repaired("restart_sendmail"),
+      ifvarclass => "have_etc_mail";
 
       "$(default:eu.path_prefix)/var/log/maillog" -> { "GEN004480", "GEN004500" }
       comment => "CAT II (Previously - G135, G136) UNIX STIG: 4.7 Sendmail or Equivalent",
@@ -806,7 +869,8 @@ bundle agent stigs_do
       "$(default:eu.path_prefix)/etc/snmp/snmpd.conf" -> { "GEN005320", "GEN005360" }
       comment => "CAT II (Previously - G225) UNIX STIG: 4.13 Simple Network Management Protocol (SNMP)",
       handle => "stigs_files_etc_snmp_snmpd_conf",
-      perms => default:mog("700","root","sys");
+      perms => default:mog("700","root","sys"),
+      ifvarclass => "have_etc_snmp";
 
       "$(default:eu.path_prefix)/etc/ssh/ssh_config" -> { "GEN005500" }
       comment => "CAT I UNIX STIG: 4.15 Secure Shell (SSH) and Equivalents",
@@ -829,7 +893,8 @@ bundle agent stigs_do
       "$(default:eu.path_prefix)/etc/samba/smb.conf" -> { "GEN006100", "GEN006120", "GEN006140" }
       comment => "CAT II (Previously - L050, L051, L052) UNIX STIG: 4.24 Samba",
       handle => "stigs_files_etc_samba_smb_conf",
-      perms => default:mog("644","root","root");
+      perms => default:mog("644","root","root"),
+      ifvarclass => "have_etc_samba";
 
       "$(default:eu.path_prefix)/usr/bin/smbpasswd" -> { "GEN006160", "GEN006180", "GEN006200" }
       comment => "CAT II (Previously - L054, L055, L056) UNIX STIG: 4.24 Samba",
@@ -839,28 +904,33 @@ bundle agent stigs_do
       "$(default:eu.path_prefix)/etc/news/hosts.nntp" -> { "GEN006260" }
       comment => "CAT II (Previously - L154) UNIX STIG: 4.25 Internet Network News (INN)",
       handle => "stigs_files_etc_news_hosts_nttp",
-      perms => default:m("600");
+      perms => default:m("600"),
+      ifvarclass => "have_etc_news";
 
       "$(default:eu.path_prefix)/etc/news/hosts.nntp.nolimit" -> { "GEN006280" }
       comment => "CAT II (Previously - L156) UNIX STIG: 4.25 Internet Network News (INN)",
       handle => "stigs_files_etc_news_hosts_nttp_nolimit",
-      perms => default:m("600");
+      perms => default:m("600"),
+      ifvarclass => "have_etc_news";
 
       "$(default:eu.path_prefix)/etc/news/nnrp.access" -> { "GEN006300" }
       comment => "CAT II (Previously - L158) UNIX STIG: 4.25 Internet Network News (INN)",
       handle => "stigs_files_etc_news_nnrp_access",
-      perms => default:m("600");
+      perms => default:m("600"),
+      ifvarclass => "have_etc_news";
 
       "$(default:eu.path_prefix)/etc/news/passwd.nntp" -> { "GEN006320" }
       comment => "CAT II (Previously - L160) UNIX STIG: 4.25 Internet Network News (INN)",
       handle => "stigs_files_etc_news_passwd_nntp",
-      perms => default:m("600");
+      perms => default:m("600"),
+      ifvarclass => "have_etc_news";
 
       "$(default:eu.path_prefix)/etc/news" -> { "GEN006340", "GEN006360" }
       comment => "CAT II (Previously - L162, L164) UNIX STIG: 4.25 Internet Network New (INN)",
       handle => "stigs_files_etc_news",
       depth_search => default:recurse("inf"),
-      perms => default:og("root","root");
+      perms => default:og("root","root"),
+      ifvarclass => "have_etc_news";
 
       "$(default:eu.path_prefix)/$(security_tools)" -> { "GEN006520" }
       comment => "CAT II (Previously - G189) UNIX STIG: 6 UNIX Security Tools",
@@ -870,12 +940,12 @@ bundle agent stigs_do
       "$(default:eu.path_prefix)/etc/hosts.allow" -> { "GEN006620" }
       comment => "CAT II UNIX STIG: 6.6 Access Control Programs and TCP_WRAPPERS",
       handle => "stigs_files_etc_hosts_allow",
-      edit_line => append_if_no_lines("@(stigs_do.hosts_allow)");
+      edit_line => default:append_if_no_lines("@(cfdc_stigs:stigs_do.hosts_allow)");
 
       "$(default:eu.path_prefix)/etc/hosts.deny" -> { "GEN006620" }
       comment => "CAT II UNIX STIG: 6.6 Access Control Programs and TCP_WRAPPERS",
       handle => "stigs_files_etc_hosts_deny",
-      edit_line => append_if_no_line("ALL: ALL");
+      edit_line => default:append_if_no_line("ALL: ALL");
 
       #   "$(default:eu.path_prefix)/boot/grub/menu.lst" -> { "LNX00140" }
       #        comment => "CAT I (Previously - L072) UNIX STIG: 12.4.1.1 Password Protecting the GRUB Console Boot Loader",
@@ -904,57 +974,57 @@ bundle agent stigs_do
 
     redhat_5.restart_syslog::
 
-      "$(default:eu.exec_prefix) /etc/init.d/syslog restart" -> { "GEN000440", "GEN003160", "GEN003660", "GEN005400", "GEN005420" }
+      "$(default:eu.exec_prefix)/etc/init.d/syslog restart" -> { "GEN000440", "GEN003160", "GEN003660", "GEN005400", "GEN005420" }
       comment => "CAT II & III (Previously - G012, G209, G656, G657) UNIX STIG: 3.1.3 Account Access, 4.14 System Logging Daemon",
       handle => "stigs_commands_rh5_restart_syslog";
 
     (redhat_6|centos_6).restart_syslog::
 
-      "$(default:eu.exec_prefix) /etc/init.d/rsyslog restart" -> { "GEN000440", "GEN003160", "GEN003660", "GEN005400", "GEN005420" }
+      "$(default:eu.exec_prefix)/etc/init.d/rsyslog restart" -> { "GEN000440", "GEN003160", "GEN003660", "GEN005400", "GEN005420" }
       comment => "CAT II & III (Previously - G012, G209, G656, G657) UNIX STIG: 3.1.3 Account Access, 4.14 System Logging Daemon",
       handle => "stigs_commands_rh6_restart_syslog";
 
     redhat_5|redhat_6|centos_6::
 
-      "$(default:eu.exec_prefix) /sbin/chkconfig $(preferred_services) on" -> { "GEN002660" }
+      "$(default:eu.exec_prefix)/sbin/chkconfig $(preferred_services) on" -> { "GEN002660" }
       comment => "CAT II (Previously - G093) UNIX STIG: 3.16 Audit Requirements",
       handle => "stigs_commands_enable_preferred_services",
       ifvarclass => "$(preferred_services)_off";
 
-      "$(default:eu.exec_prefix) /sbin/chkconfig $(unneeded_services) off" -> { "GEN003700", "GEN003860" }
+      "$(default:eu.exec_prefix)/sbin/chkconfig $(unneeded_services) off" -> { "GEN003700", "GEN003860" }
       comment => "CAT II (Previously - V046) UNIX STIG: 4 Network Services",
       handle => "stigs_commands_disable_unneeded_services",
       ifvarclass => "$(unneeded_services)_on";
 
     restart_inittab::
 
-      "$(default:eu.exec_prefix) /sbin/init q" -> { "GEN000020", "GEN000040", "GEN000060", "LNX00580" }
+      "$(default:eu.exec_prefix)/sbin/init q" -> { "GEN000020", "GEN000040", "GEN000060", "LNX00580" }
       comment => "CAT I & II (Previously - G001, G002, G003, L222) UNIX STIG: 2.5.1.1 System Equipment, 12.14 The /etc/inittab File",
       handle => "stigs_commands_restart_inittab",
       contain => default:silent;
 
     restart_sysctl::
 
-      "$(default:eu.exec_prefix) /sbin/sysctl -p" -> { "GEN003600" }
+      "$(default:eu.exec_prefix)/sbin/sysctl -p" -> { "GEN003600" }
       comment => "CAT II UNIX STIG: 3.20.5 Network Security",
       handle => "stigs_commands_restart_sysctl",
       contain => default:silent;
 
     restart_sendmail::
 
-      "$(default:eu.exec_prefix) /sbin/service sendmail restart" -> { "GEN004540", "GEN004560" }
+      "$(default:eu.exec_prefix)/sbin/service sendmail restart" -> { "GEN004540", "GEN004560" }
       comment => "CAT II (Previously - G646) UNIX STIG: 4.7 Sendmail or Equivalent",
       handle => "stigs_commands_restart_sendmail";
 
     restart_aliases::
 
-      "$(default:eu.exec_prefix) /usr/bin/newaliases" -> { "GEN004640" }
+      "$(default:eu.exec_prefix)/usr/bin/newaliases" -> { "GEN004640" }
       comment => "CAT I (Previously - V126) 4.7 Sendmail or Equivalent",
       handle => "sting_commands_restart_aliases";
 
     restart_sshd::
 
-      "$(default:eu.exec_prefix) /sbin/service sshd restart" -> { "GEN005500", "GEN005540" }
+      "$(default:eu.exec_prefix)/sbin/service sshd restart" -> { "GEN005500", "GEN005540" }
       comment => "CAT I & II (Previously - G701) UNIX STIG: 4.15 Secure Shell (SSH) and Equivalents",
       handle => "stigs_commands_restart_sshd";
 
@@ -983,6 +1053,7 @@ bundle agent stigs_do
       comment => "CAT I & II (Previously - G107, V052, L140, L142) UNIX STIG: 4.8 File Transfer Protocol (FTP) and Telnet, 12.9 Default Accounts",
       handle => "stigs_methods_unix_stigs_4_8_12_9",
       usebundle => deleting_accounts("$(accounts_to_delete)");
+
 }
 
 ##### bundle agent for methods here #####
@@ -1022,7 +1093,7 @@ bundle agent disable_accounts_without_passwd(string)
       "$(default:eu.path_prefix)/etc/passwd" -> { "GEN000560" }
       comment => "Set user shell /sbin/nologin",
       handle => "disable_accounts_without_passwd_files_etc_passwd",
-      edit_line => set_user_field("$(name[0])","7","/sbin/nologin"),
+      edit_line => default:set_user_field("$(name[0])","7","/sbin/nologin"),
       ifvarclass => "no_passwd";
 }
 
@@ -1070,12 +1141,12 @@ bundle agent disabling_accounts(name)
       "$(default:eu.path_prefix)/etc/passwd" -> { "GEN004820", "GEN004840" }
       comment => "Set shell to /sbin/nologin",
       handle => "disabling_accounts_files_etc_passwd",
-      edit_line => set_user_field("$(name)","7","/sbin/nologin");
+      edit_line => default:set_user_field("$(name)","7","/sbin/nologin");
 
       "$(default:eu.path_prefix)/etc/shadow" -> { "GEN004820", "GEN004840" }
       comment => "Set passwd to !",
       handle => "disabling_accounts_files_etc_shadow",
-      edit_line => set_user_field("$(name)","2","!!");
+      edit_line => default:set_user_field("$(name)","2","!!");
 }
 
 # LNX00320, LNX00340
@@ -1086,12 +1157,12 @@ bundle agent deleting_accounts(name)
       "$(default:eu.path_prefix)/etc/passwd" -> { "LNX00320", "LNX00340" }
       comment => "Remove unnecessary accounts from /etc/passwd",
       handle => "deleting_accounts_files_etc_passwd",
-      edit_line => delete_lines_matching("^$(name):.*");
+      edit_line => default:delete_lines_matching("^$(name):.*");
 
       "$(default:eu.path_prefix)/etc/shadow" -> { "LNX00320", "LNX00340" }
       comment => "Remove unnecessary accounts from /etc/shadow",
       handle => "deleting_accounts_files_etc_shadow",
-      edit_line => delete_lines_matching("^$(name):.*");
+      edit_line => default:delete_lines_matching("^$(name):.*");
 }
 
 #
@@ -1100,10 +1171,10 @@ bundle agent deleting_accounts(name)
 
 # GEN000020, GEN000040, GEN000060, LNX00580
 bundle edit_line maintain_inittab
-{
+ {
   delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
-      "$(stigs.cfe_added_lines_regexp)";
+      "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
+      "$(cfdc_stigs:stigs.cfe_added_lines_regexp)";
 
       "~:S:wait.*" -> { "GEN000020", "GEN000040", "GEN000060" }
       comment => "Configured to require a password when boot to single-user mode.",
@@ -1114,15 +1185,9 @@ bundle edit_line maintain_inittab
       handle => "maintain_inittab_delete_lines_lnx00580";
 
   insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
+      "$(cfdc_stigs:stigs.cfe_modified_file)" insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
+      "$(cfdc_stigs:stigs.cfe_added_lines)" ifvarclass => "mark_added";
 
-    mark_added::
-      "$(stigs.cfe_added_lines)";
-
-    any::
       "~:S:wait:/sbin/sulogin   # GEN000020, GEN000040, GEN000060" -> { "GEN000020", "GEN000040", "GEN000060" }
       comment => "Configured to require a password when boot to single-user mode.",
       handle => "maintain_inittab_insert_lines_gen000020_gen000040_gen000060";
@@ -1136,7 +1201,7 @@ bundle edit_line maintain_inittab
 bundle edit_line maintain_syslog_conf
 {
   delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
+      "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
 
       "^auth.notice.*" -> { "GEN003660" }
       comment => "Delete existing auth.notice log",
@@ -1162,12 +1227,8 @@ bundle edit_line maintain_syslog_conf
       replace_with => default:value("cron.*$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)/var/log/cron");
 
   insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
+      "$(cfdc_stigs:stigs.cfe_modified_file)" insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
 
-    any::
       "auth.notice$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)$(const.t)/var/log/messages" -> { "GEN003660" }
       comment => "Log authentication notice and informational data",
       handle => "maintain_syslog_conf_insert_lines_gen003660";
@@ -1177,12 +1238,8 @@ bundle edit_line maintain_syslog_conf
 bundle edit_line maintain_system_auth
 {
   insert_lines:
-    mark_created::
-      "$(stigs.cfe_created_file)"
-      insert_type => "preserve_block",
-      ifvarclass => "mark_created";
+      "$(cfdc_stigs:stigs.cfe_created_file)" insert_type => "preserve_block", ifvarclass => "mark_created";
 
-    any::
       "#%PAM-1.0
 # GEN000460, GEN000600, GEN000620, GEN000640, GEN000800
 auth        required      pam_tally2.so deny=3 onerr=fail unlock_time=900
@@ -1235,19 +1292,15 @@ bundle edit_line maintain_login_defs
       replace_with => default:value("PASS_MIN_LEN    8   # GEN000580");
 
   delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
+      "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
 
       "^FAIL_DELAY.*" -> { "GEN000480" }
       comment => "Clear up an existing login delay.",
       handle => "maintain_login_defs_delete_lines_gen000480";
 
   insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
+      "$(cfdc_stigs:stigs.cfe_modified_file)" insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
 
-    any::
       "FAIL_DELAY     4   # GEN000480" -> { "GEN000480" }
       comment => "The login delay between login prompts after a failed login is set to less than four seconds.",
       handle => "maintain_login_defs_insert_lines_gen000480";
@@ -1257,23 +1310,17 @@ bundle edit_line maintain_login_defs
 bundle edit_line maintain_etc_profile
 {
   delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
-      "$(stigs.cfe_added_lines_regexp)";
+      "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
+      "$(cfdc_stigs:stigs.cfe_added_lines_regexp)";
 
       "^TMOUT.*" -> { "GEN000500" }
       comment => "Clear up all TMOUT lines",
       handle => "maintain_etc_profile_delete_lines_gen000500";
 
   insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
+      "$(cfdc_stigs:stigs.cfe_modified_file)" insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
+      "$(cfdc_stigs:stigs.cfe_added_lines)" ifvarclass => "mark_added";
 
-    mark_added::
-      "$(stigs.cfe_added_lines)";
-
-    any::
       "TMOUT=900" -> { "GEN000500" }
       comment => "Set TMOUT to lock the screen after 15 minutes of inactivity",
       handle => "maintain_etc_profile_insert_lines_gen000500";
@@ -1283,7 +1330,7 @@ bundle edit_line maintain_etc_profile
 bundle edit_line maintain_securetty
 {
   delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
+      "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
 
       "vc/(\d+)" -> { "GEN000980" }
       comment => "Allow root to login only from the system console.",
@@ -1294,12 +1341,8 @@ bundle edit_line maintain_securetty
       handle => "maintain_securetty_delete_lines_gen000980_2";
 
   insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
+      "$(cfdc_stigs:stigs.cfe_modified_file)" insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
 
-    any::
       "console" -> { "GEN000980" }
       comment => "Allow root to login only from the system console.",
       handle => "maintain_securetty_insert_lines_gen000980";
@@ -1318,8 +1361,7 @@ bundle edit_line maintain_securetty
 #bundle edit_line maintain_securetty2
 #{
 # insert_lines:
-#   mark_created::
-#     "$(stigs.cfe_created_file)" insert_type => "preserve_block", location => default:start;
+#  "$(cfdc_stigs:stigs.cfe_created_file)" insert_type => "preserve_block", location => default:start, ifvarclass => "mark_created";
 #  "console
 #tty1
 #tty2" -> { "GEN000980" }
@@ -1337,14 +1379,11 @@ bundle edit_line maintain_pamd_sshd
       handle => "maintain_pamd_sshd_replace_patterns_gen001020",
       replace_with => default:value("account    required     pam_access.so");
 
-  delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
-
-  insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
+      delete_lines:
+       "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
+      
+      insert_lines:
+       "$(cfdc_stigs:stigs.cfe_modified_file)" insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
 }
 
 # GEN001020
@@ -1356,36 +1395,27 @@ bundle edit_line maintain_pamd_login
       handle => "maintain_pamd_login_replace_patterns_gen001020",
       replace_with => default:value("account    required     pam_access.so");
 
-  delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
-
-  insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
+      delete_lines:
+       "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
+      
+      insert_lines:
+       "$(cfdc_stigs:stigs.cfe_modified_file)"  insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
 }
 
 # GEN001020
 bundle edit_line maintain_security_access_conf
 {
   delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
-      "$(stigs.cfe_added_lines_regexp)";
+      "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
+      "$(cfdc_stigs:stigs.cfe_added_lines_regexp)";
 
       "[+-]\s+:\s+root\s+:\s+.*";
       "\-\s+:\s+ALL\s+EXCEPT\s+users\s+:\s+ALL";
 
   insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
+      "$(cfdc_stigs:stigs.cfe_modified_file)"  insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
+      "$(cfdc_stigs:stigs.cfe_added_lines)" ifvarclass => "mark_added";
 
-    mark_added::
-      "$(stigs.cfe_added_lines)";
-
-    any::
       "+ : root : cron crond tty1 tty2
 - : root : ALL EXCEPT LOCAL
 - : ALL EXCEPT users : ALL" -> { "GEN001020" }
@@ -1398,10 +1428,8 @@ bundle edit_line maintain_security_access_conf
 bundle edit_line maintain_etc_shells
 {
   insert_lines:
-    mark_created::
-      "$(stigs.cfe_created_file)";
+      "$(cfdc_stigs:stigs.cfe_created_file)" ifvarclass => "mark_created";
 
-    any::
       "/bin/sh
 /bin/bash
 /sbin/nologin
@@ -1463,11 +1491,8 @@ bundle edit_line maintain_umask(mask)
 bundle edit_line maintain_audit_rules
 {
   insert_lines:
-    mark_created::
-      "$(stigs.cfe_created_file)"
-      insert_type => "preserve_block";
+      "$(cfdc_stigs:stigs.cfe_created_file)" insert_type => "preserve_block", ifvarclass => "mark_created";
 
-    any::
       "# This file contains the auditctl rules that are loaded
 # whenever the audit daemon is started via the initscripts.
 # The rules are simply the parameters that would be passed
@@ -1550,11 +1575,8 @@ bundle edit_line maintain_audit_rules
 bundle edit_line maintain_logrotated_audit
 {
   insert_lines:
-    mark_created::
-      "$(stigs.cfe_created_file)"
-      insert_type => "preserve_block";
+      "$(cfdc_stigs:stigs.cfe_created_file)" insert_type => "preserve_block", ifvarclass => "mark_created";
 
-    any::
       "/var/log/audit/audit.log {
 $(const.t)daily
 $(const.t)notifempty
@@ -1595,8 +1617,8 @@ bundle edit_line maintain_at_allow
 bundle edit_line maintain_sysctl_conf
 {
   delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
-      "$(stigs.cfe_added_lines_regexp)";
+      "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
+      "$(cfdc_stigs:stigs.cfe_added_lines_regexp)";
 
       "^net.ipv4.tcp_max_syn_backlog.*" -> { "GEN003600" }
       comment => "Clear up an existing Network parameters.",
@@ -1607,14 +1629,9 @@ bundle edit_line maintain_sysctl_conf
       handle => "maintain_sysctl_conf_delete_lines_gen005600";
 
   insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
-    mark_added::
-      "$(stigs.cfe_added_lines)";
+      "$(cfdc_stigs:stigs.cfe_modified_file)"  insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
+      "$(cfdc_stigs:stigs.cfe_added_lines)" ifvarclass => "mark_added";
 
-    any::
       "net.ipv4.tcp_max_syn_backlog = 1280" -> { "GEN003600" }
       comment => "Secure Network parameters.",
       handle => "maintain_sysctl_conf_insert_lines_gen003600";
@@ -1628,12 +1645,10 @@ bundle edit_line maintain_sysctl_conf
 # GEN003600 GEN005600
 bundle edit_line maintain_sysctl_conf2
 {
-  insert_lines:
-    mark_created::
-      "$(stigs.cfe_created_file)";
+ insert_lines:
+  "$(cfdc_stigs:stigs.cfe_created_file)" ifvarclass => "mark_created";
 
-    any::
-      "# Kernel sysctl configuration file for Red Hat Linux
+  "# Kernel sysctl configuration file for Red Hat Linux
 #
 # For binary values, 0 is disabled, 1 is enabled.  See sysctl(8) and
 # sysctl.conf(5) for more details.
@@ -1748,9 +1763,9 @@ fs.inotify.max_user_watches = 65536
 net.ipv4.conf.default.promote_secondaries = 1
 net.ipv4.conf.all.promote_secondaries = 1
 "  -> { "GEN003600", "GEN005600" }
-      comment => "Secure Network parameters.",
-      handle => "maintain_sysctl_conf_insert_lines_gen003600_gen005600",
-      insert_type => "preserve_block";
+       comment => "Secure Network parameters.",
+        handle => "maintain_sysctl_conf_insert_lines_gen003600_gen005600",
+   insert_type => "preserve_block";
 }
 
 # GEN004440 GEN004540, GEN004560
@@ -1777,10 +1792,8 @@ bundle edit_line maintain_sendmail
 bundle edit_line maintain_ftpusers(name)
 {
   insert_lines:
-    mark_created::
-      ## "$(stigs.cfe_created_file)" insert_type => "preserve_block";
+      ## "$(cfdc_stigs:stigs.cfe_created_file)" insert_type => "preserve_block", ifvarclass => "mark_created";
 
-    any::
       "root" -> { "GEN004900" }
       comment => "Add system accounts to /etc/ftpusers",
       handle => "maintain_ftpusers_insert_lines_root_gen004900";
@@ -1813,7 +1826,7 @@ bundle edit_line create_ssh_banner
 bundle edit_line maintain_sshd_config
 {
   delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
+      "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
 
       "^Banner.*" -> { "GEN005540" }
       comment => "Clear up an existing Banner.",
@@ -1828,12 +1841,8 @@ bundle edit_line maintain_sshd_config
       handle => "maintain_sshd_config_delete_lines_gen005500";
 
   insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
+      "$(cfdc_stigs:stigs.cfe_modified_file)" insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
 
-    any::
       "Banner /etc/ssh/ssh_banner   # GEN005540" -> { "GEN005540" }
       comment => "Configure a warning banner.",
       handle => "maintain_sshd_config_insert_lines_gen005540";
@@ -1851,19 +1860,14 @@ bundle edit_line maintain_sshd_config
 bundle edit_line maintain_ssh_config
 {
   delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
+      "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
 
       "^Ciphers.*" -> { "GEN005500" }
       comment => "Clear up an existing Ciphers",
       handle => "maintain_ssh_config_delete_lines_gen005500";
 
   insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
-
-    any::
+      "$(cfdc_stigs:stigs.cfe_modified_file)" insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
       "Ciphers aes256-cbc,aes192-cbc,blowfish-cbc,cast128-cbc,aes128-cbc,3des-cbc" -> { "GEN005500" }
       comment => "Allow only specific ciphers to be used",
       handle => "maintain_ssh_config_insert_lines_gen005500";
@@ -1873,19 +1877,15 @@ bundle edit_line maintain_ssh_config
 bundle edit_line maintain_grub
 {
   delete_lines:
-      "$(stigs.cfe_modified_file_regexp)";
+      "$(cfdc_stigs:stigs.cfe_modified_file_regexp)";
 
       "^password.*" -> { "LNX00140" }
       comment => "Clear up an existing MD5 encrypted password.",
       handle => "maintain_grub_delete_lines_lnx00140";
 
   insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
+      "$(cfdc_stigs:stigs.cfe_modified_file)" insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
 
-    any::
       # default password is cfengine
       "password --md5 $(const.dollar)1$(const.dollar)8fI020$(const.dollar)YPs7MCo3A1ZkS7xagjYnb0" -> { "LNX00140" }
       comment => "Use an MD5 encrypted password to GRUB",
@@ -1897,12 +1897,8 @@ bundle edit_line maintain_grub
 bundle edit_line maintain_gdm_custom_conf
 {
   insert_lines:
-    mark_modified::
-      "$(stigs.cfe_modified_file)"
-      insert_type => "preserve_block",
-      location => default:start;
+      "$(cfdc_stigs:stigs.cfe_modified_file)" insert_type => "preserve_block", location => default:start, ifvarclass => "mark_modified";
 
-    any::
       "[server-Standard]
 name=Standard server
 command=/usr/bin/Xorg -br -audit 4 -s 15
@@ -1940,3 +1936,4 @@ body file_select only_dir_exclude2(name1,name2)
       leaf_name  => { "$(name1)", "$(name2)"};
       file_result => "!leaf_name.file_types";
 }
+
