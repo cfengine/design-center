@@ -1,0 +1,15 @@
+[
+    {
+        "System::Sudoers" : {
+            "cmnd_alias": [ "C_reboot = /sbin/halt, /sbin/reboot" ],
+            "defaults": [],
+            "drop_dirs": [],
+            "file_path": "/etc/sudoers.d/10_svh",
+            "host_alias": [ "H_all = localhost, x12345, x54321" ],
+            "runas_alias": [ "R_root = root" ],
+            "user_alias": [ "U_admins = svenh, root, fnord" ],
+            "user_specs": [ "U_admins H_all = (R_root) C_reboot" ],
+            "visudo_path": "/usr/sbin/visudo"
+        }
+    },
+]

@@ -679,11 +679,6 @@ syslog:
 	$(CFSKETCH_DA) --install System::Syslog --activate System::Syslog=$(SOURCEDIR)/system/syslog/params/demo.json
 	$(RUNNER)
 
-sudoers:
-	$(CFSKETCH_DA) --install System::Sudoers --activate System::Sudoers=$(SOURCEDIR)/system/sudoers/params/test.json
-	(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --apitest System::Sudoers
-	$(RUNNER)
-
 routes:
 	$(CFSKETCH_DA) --install System::Routes --activate System::Routes=$(SOURCEDIR)/system/routes/params/demo.json
 	$(RUNNER)
@@ -796,4 +791,14 @@ dropdir:
 
 stigs:
 	$(CFSKETCH_DA) --install Security::STIG --activate Security::STIG=$(SOURCEDIR)/security/stigs/params/demo.json
+	$(RUNNER)
+
+
+sudoers:
+	$(CFSKETCH_DA) --install System::Sudoers --activate System::Sudoers=$(SOURCEDIR)/system/sudoers/params/test.json
+	(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --apitest System::Sudoers
+	$(RUNNER)
+
+sudoers2:
+	$(CFSKETCH_DA) --install System::Sudoers --activate System::Sudoers=$(SOURCEDIR)/system/sudoers/params/fnord.json
 	$(RUNNER)
