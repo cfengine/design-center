@@ -5,4 +5,5 @@
  recognized_sources: [ "~/source/cfengine/design-center/sketches" ],
  runfile: { location: "/var/cfengine/inputs/api-runfile.cf", standalone: true, relocate_path: "sketches" },
  vardata: "/var/cfengine/vardata.conf",
+ constdata: "/var/cfengine/constdata.conf",
 }

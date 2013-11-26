@@ -1465,7 +1465,18 @@ every single installed sketch:
         "log": [],
         "tags": {}
     }
-}```
+}
+```
+
+#### `selftests`
+
+The `selftests` command lists the internal API tests.  It's for internal use
+only and so left undocumented.
+
+#### `selftest`
+
+The `selftest` command runs internal API tests.  It's for internal use only and
+so left undocumented.
 
 ### API CLI Interface and config.json
 
