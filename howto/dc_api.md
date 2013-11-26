@@ -1465,7 +1465,8 @@ every single installed sketch:
         "log": [],
         "tags": {}
     }
-}```
+}
+```
 
 #### `selftests`
 
