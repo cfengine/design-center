@@ -445,6 +445,9 @@ api_cleanup:
 api_regenerate_index:
 	echo '{ dc_api_version: "0.0.1", request: {regenerate_index: "~/source/cfengine/design-center/sketches" } }' | $(CFAPI)
 
+api_selftest:
+	echo '{ dc_api_version: "0.0.1", request: { selftest: ".*" } }' | $(CFAPI)
+
 run:
 	$(RUNNER)
 

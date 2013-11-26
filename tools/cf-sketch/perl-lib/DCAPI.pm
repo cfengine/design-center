@@ -20,6 +20,7 @@ use constant CAN_CODER => JSON->new()->canonical()->utf8()->allow_nonref();
 use Mo qw/build default builder coerce is required/;
 
 our @vardata_keys = qw/compositions activations definitions environments validations/;
+our @constdata_keys = qw/selftests/;
 
 has version => ( is => 'ro', default => sub { API_VERSION } );
 
@@ -63,6 +64,7 @@ has definitions => ( is => 'rw', default => sub { {} });
 has activations => ( is => 'rw', default => sub { {} });
 has validations => ( is => 'rw', default => sub { {} });
 has environments => ( is => 'rw', default => sub { { } } );
+has selftests => ( is => 'rw', default => sub { { } } );
 
 has cfengine_min_version => ( is => 'ro', required => 1 );
 has cfengine_version => ( is => 'rw' );
@@ -214,6 +216,15 @@ sub set_config
                     }
                 }
             }
+
+            foreach my $key (@constdata_keys)
+            {
+                if (exists $v_data->{$key})
+                {
+                    $self->log5("Successfully loaded constdata $key from constdata file $constdata_file");
+                    $self->$key($v_data->{$key});
+                }
+            }
         }
     }
 
@@ -316,6 +327,7 @@ sub data_dump
      vardata => $self->vardata(),
      runfile => $self->runfile(),
      map { $_ => $self->$_() } @vardata_keys,
+     map { $_ => $self->$_() } @constdata_keys,
     };
 }
 
@@ -335,6 +347,72 @@ sub list
                               status => 1,
                               success => 1,
                               data => { list => $self->collect_int($self->repos(), @_) });
+}
+
+sub selftests
+{
+    my $self = shift;
+    return DCAPI::Result->new(api => $self,
+                              status => 1,
+                              success => 1,
+                              data => { selftests => $self->selftests() });
+}
+
+# Note this facility is intentionally not very careful about data
+# inputs and reference types.  It's for internal DC use only, not for
+# general access like the test() function which tests a sketch.
+
+sub selftest
+{
+    my $self = shift;
+    my $regex = shift;
+
+    my @log;
+    my @results;
+
+    my $success = 1;
+
+    $self->config()->{log} = \@log;
+    foreach my $test (@{$self->selftests()})
+    {
+        next unless $test->{name} =~ m/$regex/;
+        $self->log("Running self-test %s", $test);
+
+        my @expected = @{$test->{expected}};
+
+        foreach my $command (@{$test->{commands}})
+        {
+            my $expect = shift @expected;
+            $self->log3("Testing: command %s, expected %s", $command, $expect);
+            my $result = $self->dispatch({
+                                          dc_api_version => $self->version(),
+                                          request => $command
+                                         }, \@log);
+
+            my $ok = 1;
+            if (ref $result eq 'DCAPI::Result')
+            {
+                $result = $result->data_dump();
+
+                foreach my $k (sort keys %$expect)
+                {
+                    my $v = Util::hashref_search($result, 'api_ok', $k);
+                    $self->log4("Result '%s': '%s', expected '%s'",
+                                $k, $v, $expect->{$k});
+                    $ok &&= $self->cencode($v) eq $self->cencode($expect->{$k});
+                }
+            }
+
+            $ok = $ok ? 1 : undef;
+            $success &&= $ok;
+            push @results, [ $test->{name}, $command, $result, $ok ];
+        }
+    }
+
+    DCAPI::Result->new(api => $self,
+                       status => 1,
+                       success => $success,
+                       data => { log => \@log, results => \@results });
 }
 
 sub test
@@ -874,6 +952,12 @@ sub undefine_environment
                                     status => 1,
                                     success => 1,
                                     data => { });
+
+    if (Util::is_json_boolean($undefine_environment) &&
+        $undefine_environment)
+    {
+        $undefine_environment = [sort keys %{$self->environments()}];
+    }
 
     if (ref $undefine_environment ne 'ARRAY')
     {
@@ -1703,9 +1787,16 @@ sub log_int
 
     return unless $self->log_level() >= $log_level;
 
+    my $varlog = 0;
     my $close_out_fh = 1;
     my $out_fh;
-    if ($self->log_mode() eq 'STDERR')
+    if (ref $self->log_mode() eq 'ARRAY')
+    {
+        $close_out_fh = 0;
+        $varlog = 1;
+        undef $out_fh;
+    }
+    elsif ($self->log_mode() eq 'STDERR')
     {
         $close_out_fh = 0;
         $out_fh = \*STDERR;
@@ -1767,8 +1858,11 @@ sub log_int
 
         close $out_fh if $close_out_fh;
     }
+    elsif ($varlog)
+    {
+        push @{$self->log_mode()}, [ $prefix, @plist ];
+    }
 }
-;
 
 sub decode { shift; CODER->decode(@_) };
 sub encode { shift; CODER->encode(@_) };
@@ -1904,6 +1998,200 @@ sub exit_error
              ->out();
     }
     exit $ENV{NOIGNORE} ? 1 : 0;
+}
+
+sub dispatch
+{
+    my $self = shift @_;
+    my $data = shift @_;
+    my $log = shift @_;
+
+    my $debug = Util::hashref_search($data, qw/debug/);
+    my $version = Util::hashref_search($data, qw/dc_api_version/);
+    my $request = Util::hashref_search($data, qw/request/);
+
+    my $selftest = Util::hashref_search($request, qw/selftest/);
+    my $selftests = Util::hashref_search($request, qw/selftests/);
+
+    my $test = Util::hashref_search($request, qw/test/);
+    my $coverage = Util::hashref_search($request, qw/coverage/);
+
+    my $list = Util::hashref_search($request, qw/list/);
+    my $search = Util::hashref_search($request, qw/search/);
+    my $describe = Util::hashref_search($request, qw/describe/);
+
+    my $install = Util::hashref_search($request, qw/install/);
+    my $uninstall = Util::hashref_search($request, qw/uninstall/);
+
+    my $define = Util::hashref_search($request, qw/define/);
+    my $undefine = Util::hashref_search($request, qw/undefine/);
+    my $definitions = Util::hashref_search($request, qw/definitions/);
+
+    my $define_environment = Util::hashref_search($request, qw/define_environment/);
+    my $undefine_environment = Util::hashref_search($request, qw/undefine_environment/);
+    my $environments = Util::hashref_search($request, qw/environments/);
+
+    my $define_validation = Util::hashref_search($request, qw/define_validation/);
+    my $undefine_validation = Util::hashref_search($request, qw/undefine_validation/);
+    my $validations = Util::hashref_search($request, qw/validations/);
+    my $validate = Util::hashref_search($request, qw/validate/);
+
+    my $activate = Util::hashref_search($request, qw/activate/);
+    my $deactivate = Util::hashref_search($request, qw/deactivate/);
+    my $activations = Util::hashref_search($request, qw/activations/);
+
+    my $compose = Util::hashref_search($request, qw/compose/);
+    my $decompose = Util::hashref_search($request, qw/decompose/);
+    my $compositions = Util::hashref_search($request, qw/compositions/);
+
+    my $regenerate = Util::hashref_search($request, qw/regenerate/);
+    my $regenerate_index = Util::hashref_search($request, qw/regenerate_index/);
+
+    if ($debug)
+    {
+        push @$log, $self->data_dump();
+    }
+
+    unless (defined $version && $version eq $self->version())
+    {
+        $self->exit_error("Sorry, I can't handle broken JSON, or a missing or incorrect DC API Version: " . $self->version() . " vs. " . ($version||'???') , @$log);
+    }
+
+    unless (defined $request)
+    {
+        $self->exit_error("No request provided.", @$log);
+    }
+
+    my $result;
+
+    if (defined $selftest)
+    {
+        $result = $self->selftest($selftest);
+    }
+    elsif (defined $selftests)
+    {
+        $result = $self->selftests();
+    }
+    elsif (defined $test)
+    {
+        $result = $self->test($test, { test => 1, coverage => $coverage });
+    }
+    elsif (defined $list)
+    {
+        $result = $self->list($list, { describe => $describe});
+    }
+    elsif (defined $search)
+    {
+        $result = $self->search($search, { describe => $describe});
+    }
+    elsif (defined $describe)
+    {
+        $result = $self->describe($describe);
+    }
+    elsif (defined $install)
+    {
+        $result = $self->install($install);
+    }
+    elsif (defined $uninstall)
+    {
+        $result = $self->uninstall($uninstall);
+    }
+    elsif (defined $compositions)
+    {
+        $result = DCAPI::Result->new(api => $self,
+                                     status => 1,
+                                     success => 1,
+                                     data => {compositions => $self->compositions()});
+    }
+    elsif (defined $compose)
+    {
+        $result = $self->compose($compose);
+    }
+    elsif (defined $decompose)
+    {
+        $result = $self->decompose($decompose);
+    }
+    elsif (defined $activations)
+    {
+        $result = DCAPI::Result->new(api => $self,
+                                     status => 1,
+                                     success => 1,
+                                     data=> {activations => $self->activations()});
+    }
+    elsif (defined $activate)
+    {
+        $result = $self->activate($activate, { compose => $compose });
+    }
+    elsif (defined $deactivate)
+    {
+        $result = $self->deactivate($deactivate);
+    }
+    elsif (defined $definitions)
+    {
+        $result = DCAPI::Result->new(api => $self,
+                                     status => 1,
+                                     success => 1,
+                                     data=> {definitions => $self->definitions()});
+    }
+    elsif (defined $define)
+    {
+        $result = $self->define($define);
+    }
+    elsif (defined $undefine)
+    {
+        $result = $self->undefine($undefine);
+    }
+    elsif (defined $environments)
+    {
+        $result = DCAPI::Result->new(api => $self,
+                                     status => 1,
+                                     success => 1,
+                                     data=> {environments => $self->environments()});
+    }
+    elsif (defined $define_environment)
+    {
+        $result = $self->define_environment($define_environment);
+    }
+    elsif (defined $undefine_environment)
+    {
+        $result = $self->undefine_environment($undefine_environment);
+    }
+    elsif (defined $validations)
+    {
+        $result = DCAPI::Result->new(api => $self,
+                                     status => 1,
+                                     success => 1,
+                                     data=> {validations => $self->validations()});
+    }
+    elsif (defined $define_validation)
+    {
+        $result = $self->define_validation($define_validation);
+    }
+    elsif (defined $undefine_validation)
+    {
+        $result = $self->undefine_validation($undefine_validation);
+    }
+    elsif (defined $validate)
+    {
+        $result = $self->validate($validate);
+    }
+    elsif (defined $regenerate)
+    {
+        $result = $self->regenerate($regenerate);
+    }
+    elsif ($regenerate_index)           # must be true
+    {
+        $result = $self->regenerate_index($regenerate_index);
+    }
+    else
+    {
+        $result = DCAPI::Result->new(api => $self,
+                                     status => 1,
+                                     success => 1,
+                                     log => [ "Nothing to do, but we're OK, thanks for asking." ]);
+    }
+
+    return $result;
 }
 
 1;
