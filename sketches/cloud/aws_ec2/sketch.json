@@ -33,7 +33,7 @@
             { type: "string", name: "hub", description: "Hub from which the instances should bootstrap" },
             { type: "array", name: "options", description: "Options: security_group, netrc, ssh_pub_key, block_device_mapping.",
               validation: "AWS_S3_VALIDATION",
-              default: { security_group: "default", netrc: "/root/.netrc", ssh_pub_key: "/root/.ssh/id_rsa.pub", block_device_mapping: "" },
+              default: { security_group: "default", netrc: "/root/.netrc", ssh_pub_key: "/root/.ssh/id_rsa.pub" },
             },
             { type: "return", name: "instance_count", },
         ],
