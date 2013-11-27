@@ -375,7 +375,7 @@ sub selftest
     $self->config()->{log} = \@log;
     foreach my $test (@{$self->selftests()})
     {
-        next unless $test->{name} =~ m/$regex/;
+        next unless ($regex eq 'any' || $test->{name} =~ m/$regex/);
         $self->log("Running self-test %s", $test);
 
         my @expected = @{$test->{expected}};

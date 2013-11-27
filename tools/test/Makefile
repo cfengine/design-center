@@ -448,6 +448,9 @@ api_regenerate_index:
 api_selftest:
 	echo '{ dc_api_version: "0.0.1", request: { selftest: ".*" } }' | $(CFAPI)
 
+api_selftest_specific:
+	echo '{ dc_api_version: "0.0.1", request: { selftest: "$(T)" } }' | $(CFAPI)
+
 run:
 	$(RUNNER)
 
