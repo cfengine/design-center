@@ -423,6 +423,12 @@ sub is_json_boolean
     return ((ref $v) =~ m/JSON.*Boolean/);
 }
 
+sub json_boolean
+{
+    my $v = shift;
+    return $v ? JSON::true : JSON::false;
+}
+
 sub dump_ref
 {
     require Data::Dumper;
