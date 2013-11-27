@@ -372,22 +372,23 @@ sub selftest
 
     my $success = 1;
 
-    $self->config()->{log} = \@log;
     foreach my $test (@{$self->selftests()})
     {
+        $self->config()->{log} = \@log;
         next unless ($regex eq 'any' || $test->{name} =~ m/$regex/);
         $self->log("Running self-test %s", $test);
 
-        my @expected = @{$test->{expected}};
-
-        foreach my $command (@{$test->{commands}})
+        foreach my $subtest (@{$test->{subtests}})
         {
-            my $expect = shift @expected;
+            my @sublog;
+            $self->config()->{log} = \@sublog;
+            my $expect = $subtest->{expected};
+            my $command = $subtest->{command};
             $self->log3("Testing: command %s, expected %s", $command, $expect);
             my $result = $self->dispatch({
                                           dc_api_version => $self->version(),
                                           request => $command
-                                         }, \@log);
+                                         }, \@sublog);
 
             my $ok = 1;
             if (ref $result eq 'DCAPI::Result')
@@ -399,19 +400,26 @@ sub selftest
                     my $v = Util::hashref_search($result, 'api_ok', $k);
                     $self->log4("Result '%s': '%s', expected '%s'",
                                 $k, $v, $expect->{$k});
-                    $ok &&= $self->cencode($v) eq $self->cencode($expect->{$k});
+
+                    if ($self->cencode($v) ne $self->cencode($expect->{$k}))
+                    {
+                        $ok = 0;
+                    }
                 }
             }
 
-            $ok = $ok ? 1 : undef;
             $success &&= $ok;
-            push @results, [ $test->{name}, $command, $result, $ok ];
+            push @results, { test => $test->{name},
+                             subtest => $subtest,
+                             result => $result,
+                             log => \@sublog,
+                             subtest_success => Util::json_boolean($ok) };
         }
     }
 
     DCAPI::Result->new(api => $self,
                        status => 1,
-                       success => $success,
+                       success => Util::json_boolean($success),
                        data => { log => \@log, results => \@results });
 }
 
