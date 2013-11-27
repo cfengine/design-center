@@ -1117,6 +1117,10 @@ sub validate
     {
         return $validation->validate($validate->{data});
     }
+    elsif (ref $validation eq 'DCAPI::Result') #it's a result object
+    {
+        return $validation;
+    }
 
     # else, there was an error
     return $result;
