@@ -417,10 +417,19 @@ sub selftest
         }
     }
 
+    my @passed = grep { $_->{subtest_success} } @results;
+
     DCAPI::Result->new(api => $self,
                        status => 1,
                        success => Util::json_boolean($success),
-                       data => { log => \@log, results => \@results });
+                       data =>
+                       {
+                           log => \@log,
+                           results => \@results,
+                           tests_total => scalar @results,
+                           tests_passed => scalar @passed,
+                           tests_passed_pct => scalar @results ? (scalar @passed * 100.0) / scalar @results : 100,
+                       });
 }
 
 sub test
