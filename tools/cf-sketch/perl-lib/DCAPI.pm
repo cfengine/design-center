@@ -421,6 +421,7 @@ sub selftest
             my @sublog;
             $self->config()->{log} = \@sublog;
             my $expect = $subtest->{expected};
+            my $expect_match = $subtest->{expected_match};
             my $command = $subtest->{command};
             $self->log3("Testing: command %s, expected %s", $command, $expect);
             my $result = $self->dispatch({
@@ -440,6 +441,14 @@ sub selftest
                                 $k, $v, $expect->{$k});
 
                     if ($self->cencode($v) ne $self->cencode($expect->{$k}))
+                    {
+                        $ok = 0;
+                    }
+                }
+
+                if (defined $expect_match)
+                {
+                    if ($self->cencode($result) !~ m/$expect_match/)
                     {
                         $ok = 0;
                     }
@@ -1649,6 +1658,7 @@ sub regenerate_index
                                     success => 1,
                                     data => { });
 
+    my $found = 0;
 
     foreach my $repodir (@{$self->recognized_sources()})
     {
@@ -1703,8 +1713,13 @@ sub regenerate_index
                 $self->log("Regenerating index: could not save $index_file");
                 $result->add_error($index_file, $!);
             }
+
+            $found = 1;
         }
     }
+
+    $result->add_error('repodir', "Did not find the repodir")
+        unless $found;
 
     return $result;
 }
