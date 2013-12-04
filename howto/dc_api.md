@@ -131,7 +131,8 @@ Here are examples of three `list` commands.  The first one lists everything inst
                     "Data::Classes": "Data::Classes",
                     "CFEngine::stdlib": "CFEngine::stdlib",
                     "Utilities::ipverify": "Utilities::ipverify"
-                }
+                },
+            "count": 10
             }
         },
         "log": [],
@@ -140,7 +141,7 @@ Here are examples of three `list` commands.  The first one lists everything inst
 }
 ```
 
-Note the top-level key under `data` is the name of the repository, which is
+Note the top-level key under `data/list` is the name of the repository, which is
 always a local directory.
 
 The next one takes *terms* and lists all the sketches whose name satisfies the
@@ -166,13 +167,18 @@ The next one takes *terms* and lists all the sketches whose name satisfies the
                     "CFEngine::sketch_template": "CFEngine::sketch_template",
                     "CFEngine::stdlib": "CFEngine::stdlib"
                 }
-            }
+            },
+            "count": 5
         },
         "log": [],
         "tags": {}
     }
 }
 ```
+
+##### option: `count_only`
+
+When `count_only` is given as a top-level option with a value of `true`, only the `count` is returned..
 
 ##### option: `describe`
 
@@ -294,7 +300,8 @@ documentation for your sketches.
                 "/home/tzz/.cfagent/inputs/sketches": {
                     "Utilities::ping_report": ["/home/tzz/.cfagent/inputs/sketches/utilities/ping_report", "# Utilities::ping_report version 1.2\n\nLicense: MIT\nTags: cfdc\nAuthors: Nick Anderson <nick@cmdln.org>, Ted Zlatanov <tzz@lifelogs.com>\n\n## Description\nReport on pingability of hosts\n\n## Dependencies\nCFEngine::dclib, CFEngine::stdlib\n\n## API\n### bundle: ping\n* parameter _environment_ *runenv* (default: none, description: none)\n\n* parameter _metadata_ *metadata* (default: none, description: none)\n\n* parameter _list_ *hosts* (default: none, description: none)\n\n* parameter _string_ *count* (default: none, description: none)\n\n* returns _return_ *reached* (default: none, description: none)\n\n* returns _return_ *not_reached* (default: none, description: none)\n\n\n## SAMPLE USAGE\nSee `test.cf` or the example parameters provided\n\n"]
                 }
-            }
+            },
+            "count": 1
         },
         "log": [],
         "tags": {}
@@ -307,6 +314,10 @@ documentation for your sketches.
 The `search` command works exactly like `list` above, except that the candidate
 list contains all available sketches (from `recognized_sources`), not just the
 installed sketches.
+
+##### option: `count_only`
+
+When `count_only` is given as a top-level option with a value of `true`, only the `count` is returned..
 
 ##### option: `describe`
 
