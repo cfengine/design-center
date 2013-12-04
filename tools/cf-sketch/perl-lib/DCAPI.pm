@@ -334,19 +334,57 @@ sub data_dump
 sub search
 {
     my $self = shift;
+    my $term_data = shift;
+    my $options = shift || {};
+
+    my $results = $self->collect_int($self->recognized_sources(), $term_data, $options);
+    my $count = 0;
+    foreach (keys %$results)
+    {
+        $count += scalar keys %{$results->{$_}};
+    }
+
+    my %ret;
+
+    $ret{count} = $count;
+
+    unless ($options->{count_only})
+    {
+        $ret{search} = $results;
+    }
+
     return DCAPI::Result->new(api => $self,
                               status => 1,
                               success => 1,
-                              data => { search => $self->collect_int($self->recognized_sources(), @_) });
+                              data => \%ret);
 }
 
 sub list
 {
     my $self = shift;
+    my $term_data = shift;
+    my $options = shift || {};
+
+    my $results = $self->collect_int($self->repos(), $term_data, $options);
+    my $count = 0;
+    foreach (keys %$results)
+    {
+        $count += scalar keys %{$results->{$_}};
+    }
+
+    my %ret;
+
+    $ret{count} = $count;
+
+    unless ($options->{count_only})
+    {
+        $ret{list} = $results;
+    }
+
     return DCAPI::Result->new(api => $self,
                               status => 1,
                               success => 1,
-                              data => { list => $self->collect_int($self->repos(), @_) });
+                              data => \%ret);
 }
 
 sub selftests
@@ -2040,6 +2078,7 @@ sub dispatch
     my $list = Util::hashref_search($request, qw/list/);
     my $search = Util::hashref_search($request, qw/search/);
     my $describe = Util::hashref_search($request, qw/describe/);
+    my $count_only = Util::hashref_search($request, qw/count_only/);
 
     my $install = Util::hashref_search($request, qw/install/);
     my $uninstall = Util::hashref_search($request, qw/uninstall/);
@@ -2099,11 +2138,11 @@ sub dispatch
     }
     elsif (defined $list)
     {
-        $result = $self->list($list, { describe => $describe});
+        $result = $self->list($list, { describe => $describe, count_only => $count_only });
     }
     elsif (defined $search)
     {
-        $result = $self->search($search, { describe => $describe});
+        $result = $self->search($search, { describe => $describe, count_only => $count_only });
     }
     elsif (defined $describe)
     {
