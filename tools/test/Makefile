@@ -449,9 +449,6 @@ api_regenerate_index:
 api_selftest:
 	echo '{ dc_api_version: "0.0.1", request: { selftest: "$(T)" } }' | $(CFAPI)
 
-api_selftest_pipe:
-	echo '{ dc_api_version: "0.0.1", request: { selftest: "$(T)" } }' | $(CFAPI) | grep tests_passed_pct | grep 100
-
 run:
 	$(RUNNER)
 
