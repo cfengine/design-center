@@ -449,6 +449,9 @@ api_regenerate_index:
 api_selftest:
 	echo '{ dc_api_version: "0.0.1", request: { selftest: "$(T)" } }' | $(CFAPI)
 
+api_selftest_junit:
+	echo '{ dc_api_version: "0.0.1", request: { selftest: "$(T)" } }' | $(CFAPI) | ./json2junit.pl
+
 run:
 	$(RUNNER)
 
