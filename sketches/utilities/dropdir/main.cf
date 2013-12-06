@@ -47,8 +47,8 @@ bundle agent dropdir_run(runenv, metadata, context, directory, days)
 bundle agent dropdir_cleanit(script, days, id)
 {
   classes:
-      "cleanit" expression => isgreaterthan($(age), $(ago));
-      "recent" not => isgreaterthan($(age), $(ago));
+      "cleanit" expression => isgreaterthan($(ago), $(age));
+      "recent" not => isgreaterthan($(ago), $(age));
 
   vars:
       "pc" string => canonify($(pname));
