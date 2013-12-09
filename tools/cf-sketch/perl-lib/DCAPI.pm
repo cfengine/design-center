@@ -37,7 +37,7 @@ has cfagent => (
 
                     return $c if -x $c;
 
-                    return undef;
+                    return $ENV{CF_AGENT_OVERRIDE};
                 }
                );
 
@@ -50,7 +50,7 @@ has cfpromises => (
 
                        return $c if -x $c;
 
-                       return undef;
+                       return $ENV{CF_PROMISES_OVERRIDE};
                    }
                   );
 
@@ -84,11 +84,19 @@ has canonical_coder =>
 sub BUILD
 {
     my $self = shift @_;
-    my $bin = $self->cfagent();
-    my $cfv = `$bin -V`;
-    if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
+
+    if (exists $ENV{CF_VERSION_OVERRIDE})
     {
-        $self->cfengine_version($1);
+        $self->cfengine_version($ENV{CF_VERSION_OVERRIDE});
+    }
+    else
+    {
+        my $bin = $self->cfagent();
+        my $cfv = `$bin -V`;
+        if ($cfv =~ m/\s+(\d+\.\d+\.\d+)/)
+        {
+            $self->cfengine_version($1);
+        }
     }
 }
 

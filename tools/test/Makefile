@@ -450,7 +450,7 @@ api_selftest:
 	echo '{ dc_api_version: "0.0.1", request: { selftest: "$(T)" } }' | $(CFAPI)
 
 api_selftest_junit:
-	echo '{ dc_api_version: "0.0.1", request: { selftest: "$(T)" } }' | $(CFAPI) | ./json2junit.pl
+	echo '{ dc_api_version: "0.0.1", request: { selftest: "$(T)" } }' | env CF_AGENT_OVERRIDE=/no/such/file CF_PROMISES_OVERRIDE=/no/such/file CF_VERSION_OVERRIDE=3.5.2 $(CFAPI) | ./json2junit.pl
 
 run:
 	$(RUNNER)
