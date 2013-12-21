@@ -194,13 +194,16 @@ merge = refs/heads/$(branch)
       "$(this.bundle): mirror_command = $(mirror_command)";
 }
 
-bundle agent svn(vcs, path, origin, branch, options)
+bundle agent svn(given_vcs, path, origin, branch, options)
 {
   classes:
       "nowipe" expression => strcmp("$($(options)[nowipe])", "1");
       "wipe" expression => "!nowipe";
 
   vars:
+      # use this version if you like to live dangerously
+      # "vcs" string => "$(given_vcs) -q --trust-server-cert --no-auth-cache --non-interactive";
+      "vcs" string => "$(given_vcs) -q --no-auth-cache --non-interactive";
     nowipe::
       "update_command" slist =>
       {
@@ -230,7 +233,7 @@ bundle agent svn(vcs, path, origin, branch, options)
 
   reports:
     verbose::
-      "$(this.bundle): setting up $(vcs) commands for path '$(path)', origin '$(origin)', branch '$(branch)'";
+      "$(this.bundle): setting up $(given_vcs) commands for path '$(path)', origin '$(origin)', branch '$(branch)'";
       "$(this.bundle): we will look for the config file $(configfile)";
       "$(this.bundle): update_command = $(update_command)";
       "$(this.bundle): mirror_command = $(mirror_command)";
