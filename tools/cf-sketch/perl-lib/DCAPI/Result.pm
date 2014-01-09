@@ -25,7 +25,7 @@ sub data_dump
     return {
             $top_key =>
             {
-             success => ($self->success() ? JSON::PP::true : JSON::PP::false),
+             success => ($self->success() ? JSON::true : JSON::false),
              warnings => $self->warnings(),
              errors => $self->errors(),
              log => $self->log(),

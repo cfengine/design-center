@@ -2,7 +2,7 @@
 
 BEGIN
 {
-    $ENV{PERL_JSON_BACKEND} = 'JSON::backportPP';
+    $ENV{PERL_JSON_BACKEND} = 'JSON::XS';
 
     if (-l $0)
     {
