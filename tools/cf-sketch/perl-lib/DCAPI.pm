@@ -1485,10 +1485,12 @@ sub regenerate
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
 
-        push @invocation_lines, sprintf('%s"%s" -> { "%s" } usebundle => %s%s(%s), ifvarclass => "%s", useresult => "return_%s";',
+        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s" } usebundle => %s%s(%s), ifvarclass => "%s", useresult => "return_%s";',
                                         $indent,
                                         $a->id(),
-                                        $a->id(),
+                                        $a->prefix(),
+                                        $a->sketch()->name(),
+                                        $a->bundle(),
                                         $namespace_prefix,
                                         $a->bundle(),
                                         $a->make_bundle_params(),
