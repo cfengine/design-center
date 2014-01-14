@@ -2,8 +2,6 @@
  log: "STDERR",
  log_level: 4,
  repolist: [ "/var/cfengine/inputs/sketches" ],
- recognized_sources: [ "~/source/cfengine/design-center/sketches" ],
- runfile: { location: "/var/cfengine/inputs/api-runfile.cf", standalone: true, relocate_path: "sketches" },
- vardata: "/var/cfengine/vardata.conf",
- constdata: "/var/cfengine/constdata.conf",
+ recognized_sources: [ "/var/cfengine/design-center/sketches" ],
+ runfile: { },
 }

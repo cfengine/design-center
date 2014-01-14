@@ -13,7 +13,7 @@ use DCAPI::Activation;
 use DCAPI::Result;
 use DCAPI::Validation;
 
-use constant API_VERSION => '0.0.1';
+use constant API_VERSION => '3.6.0';
 use constant CODER => JSON->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
 use constant CAN_CODER => JSON->new()->canonical()->utf8()->allow_nonref();
 
@@ -113,6 +113,13 @@ sub set_config
 
     $self->config($self->load($file));
 
+    my @repos = @{(Util::hashref_search($self->config(), qw/repolist/) || [])};
+    return $result->add_error('repolist', "No repolist entries were provided")
+     unless scalar @repos;
+
+    $self->log5("Adding recognized repo $_") foreach @repos;
+    push @{$self->repos()}, @repos;
+
     my $runfile = Util::hashref_search($self->config(), qw/runfile/);
 
     if (ref $runfile ne 'HASH')
@@ -122,23 +129,13 @@ sub set_config
     else
     {
         %{$self->runfile()} = %$runfile;
-        $result->add_error('runfile', "runfile has no location")
+        $self->runfile()->{location} = "$repos[0]/meta/api-runfile.cf"
          unless exists $self->runfile()->{location};
-
-        $result->add_error('runfile', "runfile has no standalone boolean")
-         unless exists $self->runfile()->{standalone};
-
-        $result->add_error('runfile', "runfile has no relocate_path parameter")
-         unless exists $self->runfile()->{relocate_path};
     }
 
     my @sources = @{(Util::hashref_search($self->config(), qw/recognized_sources/) || [])};
     $self->log5("Adding recognized source $_") foreach @sources;
     push @{$self->recognized_sources()}, @sources;
-
-    my @repos = @{(Util::hashref_search($self->config(), qw/repolist/) || [])};
-    $self->log5("Adding recognized repo $_") foreach @repos;
-    push @{$self->repos()}, @repos;
 
     foreach my $location (@{$self->repos()}, @{$self->recognized_sources()})
     {
@@ -155,84 +152,74 @@ sub set_config
         }
     }
 
-    my $vardata_file = Util::hashref_search($self->config(), qw/vardata/);
+    my $vardata_file = Util::hashref_search($self->config(), qw/vardata/) || "$repos[0]/meta/vardata.conf";# TODO: verify!
 
-    if ($vardata_file)
+    $vardata_file = glob($vardata_file);
+    $self->log5("Loading vardata file $vardata_file");
+    $self->vardata($vardata_file);
+    if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file))
     {
-        $vardata_file = glob($vardata_file);
-        $self->log5("Loading vardata file $vardata_file");
-        $self->vardata($vardata_file);
-        if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file))
-        {
-            $self->log("Creating missing vardata file $vardata_file");
-            my ($ok, @save_warnings) = $self->save_vardata();
+        $self->log("Creating missing vardata file $vardata_file");
+        my ($ok, @save_warnings) = $self->save_vardata();
 
-            $result->add_error('vardata', @save_warnings)
-             unless $ok;
-        }
+        $result->add_error('vardata', @save_warnings)
+         unless $ok;
+    }
 
-        my ($v_data, @v_warnings) = $self->load($vardata_file);
-        $result->add_error('vardata', @v_warnings)
-         if scalar @v_warnings;
+    my ($v_data, @v_warnings) = $self->load($vardata_file);
+    $result->add_error('vardata', @v_warnings)
+     if scalar @v_warnings;
 
-        if (ref $v_data ne 'HASH')
-        {
-            $result->add_error($vardata_file, "vardata is not a hash");
-        }
-        else
-        {
-            $self->log3("Successfully loaded vardata file $vardata_file");
-
-            foreach my $key (@vardata_keys)
-            {
-                if (exists $v_data->{$key})
-                {
-                    $self->$key(Util::hashref_merge($self->$key(), $v_data->{$key}));
-                }
-                else
-                {
-                    $result->add_error($vardata_file, "vardata has no key '$key'");
-                }
-            }
-        }
+    if (ref $v_data ne 'HASH')
+    {
+        $result->add_error($vardata_file, "vardata is not a hash");
     }
     else
     {
-        $result->add_error('vardata', "No vardata file specified");
+        $self->log3("Successfully loaded vardata file $vardata_file");
+
+        foreach my $key (@vardata_keys)
+        {
+            if (exists $v_data->{$key})
+            {
+                $self->$key(Util::hashref_merge($self->$key(), $v_data->{$key}));
+            }
+            else
+            {
+                $result->add_error($vardata_file, "vardata has no key '$key'");
+            }
+        }
     }
 
-    my $constdata_file = Util::hashref_search($self->config(), qw/constdata/);
+    my $constdata_file = Util::hashref_search($self->config(), qw/constdata/) || "$repos[0]/meta/constdata.conf";# TODO: verify!
 
-    if ($constdata_file)
+    $constdata_file = glob($constdata_file);
+    $self->log5("Loading constdata file $constdata_file");
+    $self->constdata($constdata_file);
+    if (-f $constdata_file && -r $constdata_file)
     {
-        $constdata_file = glob($constdata_file);
-        $self->log5("Loading constdata file $constdata_file");
-        $self->constdata($constdata_file);
-        if (-f $constdata_file && -r $constdata_file)
-        {
-            my ($v_data, @v_warnings) = $self->load($constdata_file);
-            $result->add_error('constdata', @v_warnings)
-             if scalar @v_warnings;
+        my ($v_data, @v_warnings) = $self->load($constdata_file);
+        $result->add_error('constdata', @v_warnings)
+         if scalar @v_warnings;
 
-            foreach my $key (@vardata_keys)
+        foreach my $key (@vardata_keys)
+        {
+            if (exists $v_data->{$key} && ref $v_data->{$key} eq 'HASH' && ref $self->$key() eq 'HASH')
             {
-                if (exists $v_data->{$key} && ref $v_data->{$key} eq 'HASH' && ref $self->$key() eq 'HASH')
+                foreach my $subkey (sort keys %{$v_data->{$key}})
                 {
-                    foreach my $subkey (sort keys %{$v_data->{$key}})
-                    {
-                        $self->log5("Successfully loaded override $key/$subkey from constdata file $constdata_file");
-                        $self->$key()->{$subkey} = $v_data->{$key}->{$subkey};
-                    }
+                    $self->log5("Successfully loaded override $key/$subkey from constdata file $constdata_file");
+                    $self->$key()->{$subkey} = $v_data->{$key}->{$subkey};
                 }
             }
+        }
 
-            foreach my $key (@constdata_keys)
+        foreach my $key (@constdata_keys)
+        {
+            if (exists $v_data->{$key})
             {
-                if (exists $v_data->{$key})
-                {
-                    $self->log5("Successfully loaded constdata $key from constdata file $constdata_file");
-                    $self->$key($v_data->{$key});
-                }
+                $self->log5("Successfully loaded constdata $key from constdata file $constdata_file");
+                $self->$key($v_data->{$key});
             }
         }
     }
@@ -1279,8 +1266,6 @@ sub regenerate
                                     success => 1,
                                     data => { });
 
-    my $relocate = $self->runfile()->{relocate_path};
-
     my @activations;                 # these are DCAPI::Activation objects
     my $acts = $self->activations(); # these are data structures
     foreach my $sketch (keys %$acts)
@@ -1321,7 +1306,7 @@ sub regenerate
     my @inputs;
     foreach my $a (@activations)
     {
-        push @inputs, $a->sketch()->get_inputs($relocate, 5);
+        push @inputs, $a->sketch()->get_inputs();
         $self->log("Regenerate: adding inputs %s", \@inputs);
     }
 
@@ -1533,35 +1518,12 @@ sub regenerate
      "${context_indent}inform_mode::",
       @report_lines;
 
-    my $standalone_inputs = $self->runfile()->{standalone_inputs};
-    my $standalone_inputs_exp = '';
-    if (ref $standalone_inputs eq 'ARRAY' &&
-        scalar @$standalone_inputs > 0)
-    {
-        $self->log("Regenerate: standalone inputs are %s",
-                   $standalone_inputs);
-        $standalone_inputs_exp = sprintf(', %s',
-                                         join(",", map { "'$_'" } @$standalone_inputs));
-    }
-
-    my $standalone_lines = <<EOHIPPUS;
-body common control
-{
-      bundlesequence => { cfsketch_g, cfsketch_run };
-      inputs => { @(cfsketch_g.inputs) $standalone_inputs_exp };
-}
-EOHIPPUS
-
-    $standalone_lines = '' unless $self->runfile()->{standalone};
-
     my $invocation_lines = join "\n", @invocation_lines;
 
     my $runfile_header = defined $self->runfile()->{header} ? $self->runfile()->{header} : '';
 
     my $runfile_data = <<EOHIPPUS;
 $runfile_header
-
-$standalone_lines
 
 $environment_lines
 

@@ -13,20 +13,17 @@ BEGIN
 }
 
 ######################################################################
-my $VERSION="3.5.1b1";
-my $DATE="July 2013";
+my $VERSION="3.6.0";
+my $DATE="2014";
 ######################################################################
 
-my $inputs_root;
-my $configdir;
 my @toremove;
+my $inputs_root;
 
 BEGIN
 {
-    # Inputs directory depending on root/non-root/policy hub
-    $inputs_root = $> != 0 ? glob("~/.cfagent/inputs") : (-e '/var/cfengine/state/am_policy_hub' ? '/var/cfengine/masterfiles' : '/var/cfengine/inputs');
-    # Configuration directory depending on root/non-root
-    $configdir = $> == 0 ? '/etc/cf-sketch' : glob('~/.cf-sketch');
+    $inputs_root = pop @ARGV;
+    die "Syntax: $0 [options] INPUTSDIR" unless -d $inputs_root;
 }
 
 use File::Basename;
@@ -51,14 +48,6 @@ $| = 1;                                 # autoflush
 # for encode/decode, not to use it directly!!!
 my $dcapi = DCAPI->new(cfengine_min_version => 1);
 
-# Find constdata.conf
-my $constdata=undef;
-foreach ($FindBin::Bin, "$FindBin::Bin/perl-lib", "$FindBin::Bin/../lib/cf-sketch", "/var/cfengine/constdata.conf") {
-  if (-f "$_/constdata.conf") {
-    $constdata = "$_/constdata.conf";
-  }
-}
-
 use Getopt::Long;
 
 my %options = (
@@ -70,7 +59,6 @@ my %options = (
                coverage => 0,
                uninstall => [],
                filter => [],
-               standalone_inputs => [],
                force => 0,
                quiet => 0,
                verbose => 0,
@@ -78,12 +66,7 @@ my %options = (
                ignore => 1,
                activated => 'any',
                veryverbose => 0,
-               standalone => 0,
-               runfile => "$inputs_root/cf-sketch-runfile.cf",
-               vardata => undef,
-               standalonerunfile => "$inputs_root/cf-sketch-runfile-standalone.cf",
                installsource => Util::local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches.json',
-               constdata => $constdata,
                # These are hardcoded above, we put them here for convenience
                version => $VERSION,
                date => $DATE,
@@ -110,7 +93,6 @@ GetOptions(\%options,
            "make_readme:s",
            "make_cfsketches:s",
            "filter=s@",
-           "standalone_inputs=s@",
            "install|i=s@",
            "install-all|ia",
            "apitest=s@",
@@ -118,24 +100,21 @@ GetOptions(\%options,
            "uninstall=s@",
            "deactivate-all|da",
            "activate|a=s%",
-           "constdata=s",
 
-           "standalone!",
-           "runfile|rf=s",
            "runfile_header=s",
-           "vardata=s",
-           "standalonerunfile|srf=s",
            "repolist|rl=s@",
           );
-
-#die "$0: cf-sketch can only be used in --expert mode" unless $options{expert};
 
 die "$0: --installsource FILE must be specified" unless $options{installsource};
 
 my $sourcedir = dirname($options{installsource});
 $options{sourcedir} = $sourcedir;
 
-if (Util::is_resource_local($options{installsource}))
+if (exists $options{'make_cfsketches'})
+{
+    # do nothing in this case
+}
+elsif (Util::is_resource_local($options{installsource}))
 {
     die "$0: $options{installsource} is not a file" unless (-f "$options{installsource}");
     die "Sorry, can't locate source directory" unless -d $sourcedir;
@@ -167,8 +146,6 @@ my $env_test = $options{test};
 $options{activated} = 'any' if !$options{activated};
 my $env_activated = $options{activated};
 
-die "Sorry, can't locate constdata file '$options{constdata}'" unless (!$options{constdata} || -f $options{constdata});
-
 api_interaction({
                  define_environment => {
                                         $options{environment} =>
@@ -186,7 +163,8 @@ if (exists $options{'make_readme'})
                      describe => 'README',
                      search => $options{search} eq '' ? '.' : $options{search}
                     },
-                    make_readme_saver('search', 'README.md'));
+                    make_list_printer('search', 'README.md'));
+    exit 0;
 }
 
 if (exists $options{'make_cfsketches'})
@@ -194,6 +172,7 @@ if (exists $options{'make_cfsketches'})
     api_interaction({
                      regenerate_index => $options{sourcedir},
                     });
+    exit 0;
 }
 
 if (exists $options{'search'})
@@ -372,14 +351,8 @@ sub api_interaction
                 ],
                 runfile =>
                 {
-                 location => $options{standalone} ? $options{standalonerunfile} : $options{runfile},
-                 standalone => $options{standalone},
-                 relocate_path => "sketches",
                  filter_inputs => $options{filter},
-                 standalone_inputs => $options{standalone_inputs},
                 },
-                vardata => $options{vardata} || "$inputs_root/cfsketch-vardata.conf",
-                constdata => $options{constdata},
                };
 
     if (exists $options{runfile_header})
@@ -430,7 +403,7 @@ sub api_interaction
     }
 
     my $data = $dcapi->cencode({
-                                dc_api_version => "0.0.1",
+                                dc_api_version => "3.6.0",
                                 request => $request,
                                });
     print ">> $data\n" if $options{verbose};
