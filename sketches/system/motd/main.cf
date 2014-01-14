@@ -5,63 +5,45 @@ body file control
 
 bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_path, symlink_path)
 {
-  vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
+@include "../../sketch_template/standard.inc"
 
-    test::
-      "owner"
-      string => getenv("LOGNAME",100),
+  vars:
+      "main_path"
+      string => "$(default:eu.path_prefix)$(motd_path)",
+      comment => "Path of the main MotD (typical the only one)";
+
+      "owner" string => ifelse("test", $(this.promiser_uid),
+                               "root"),
       comment => "Owner of the MotD file";
 
-      "path_prefix"
-      string => "/tmp",
-      comment => "Prefix to file paths";
-
-    not_test::
-      "owner"
-      string => "root",
-      comment => "Owner of the MotD files";
-
-      "path_prefix"
-      string => "",
-      comment => "Prefix to file paths";
-
-    activated::
-      "main_path"
-      string => "$(path_prefix)$(motd_path)",
-      comment => "Path of the main MotD (typical the only one)";
-
-    activated.split_content::
       "output_path"
       string => "$(path_prefix)$(dynamic_path)",
-      comment => "Path of the main MotD (typical the only one)";
+      comment => "Path of the main MotD (typically the only one)";
 
     activated.create_symlink::
       "symlink_link"
       string => "$(path_prefix)$(symlink_path)",
       comment => "Path of the main MotD (typical the only one)";
 
-    activated.!skip_prepend::
+    activated..!prepend_command_not_given::
       "output"
-      string => execresult("$(prepend_command)","noshell"),
+      string => execresult("$(default:eu.exec_prefix)$(prepend_command)",
+                           "noshell"),
       comment => "Command output to prepend to MtoD";
 
-    activated.!(skip_prepend|split_content)::
+    activated.!(prepend_command_not_given|dynamic_path_given)::
       "main_lines"
       slist => { $(output), $(motd) },
       comment => "Lines to print to the MotD";
 
-    activated.(skip_prepend|split_content)::
+    activated.(prepend_command_not_given|dynamic_path_given)::
       "main_lines"
       slist => { $(motd) },
       comment => "Lines to print to the MotD";
 
   classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
-
-      "skip_prepend"
+    activated::
+      "prepend_command_not_given"
       expression => strcmp($(prepend_command),""),
       comment => "Skip executing prepend command if it is not set";
 
@@ -69,11 +51,12 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       not => strcmp($(symlink_path),""),
       comment => "Create symlink if the target is specified";
 
-      "split_content"
+      "dynamic_path_given"
       not => strcmp($(dynamic_path),""),
       comment => "Split MotD into dynamic and static portions";
 
   files:
+    activated::
       "$(main_path)"
       pathtype => "literal",
       create => "true",
@@ -85,25 +68,25 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       classes => default:classes_generic("files_main"),
       comment => "Create and populate the static motd file";
 
-    split_content.!skip_prepend::
+    dynamic_path_given.!prepend_command_not_given::
       "$(output_path)"
       pathtype => "literal",
       create => "true",
       move_obstructions => "true",
       edit_defaults => default:empty,
       edit_line => default:insert_lines($(output)),
-      perms => default:mog("444",$(owner),$(owner)),
+      perms => default:mog("444", $(owner), $(owner)),
       handle => "files_dynamic_populated",
       classes => default:classes_generic("files_dynamic"),
       comment => "Create and populate the dynamic motd file";
 
-    split_content.skip_prepend::
+    dynamic_path_given.prepend_command_not_given::
       "$(output_path)"
       pathtype => "literal",
       create => "true",
       move_obstructions => "true",
       edit_defaults => default:empty,
-      perms => default:mog("444",$(owner),$(owner)),
+      perms => default:mog("444", $(owner), $(owner)),
       handle => "files_dynamic_empty",
       classes => default:classes_generic("files_dynamic"),
       comment => "create an empty dynamic motd file";
@@ -118,28 +101,14 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       classes => default:classes_generic("files_symlink"),
       comment => "create a symlink to the motd file";
 
-  methods:
-    verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      inherit => "true";
-
   reports:
-    verbose::
-      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
-      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
-      ifvarclass => "$(vars)";
-
-      # use the "verbose" context to show the sketch operation (for the user)
-    verbose::
-      "$(this.bundle): running in verbose mode";
-
       # use the "test" context to help debug the sketch (for the developer)
     test::
       "$(this.bundle): running in test mode";
       "$(this.bundle): owner = $(owner)";
-      "$(this.bundle): output = $(output)" ifvarclass => "!skip_prepend";
+      "$(this.bundle): output = $(output)" ifvarclass => "!prepend_command_not_given";
       "$(this.bundle): main_path = $(main_path)";
       "$(this.bundle): main_lines = $(main_lines)";
-      "$(this.bundle): output_path = $(output_path)" ifvarclass => "split_content";
+      "$(this.bundle): output_path = $(output_path)" ifvarclass => "dynamic_path_given";
       "$(this.bundle): symlink_link = $(symlink_link)" ifvarclass => "create_symlink";
 }
