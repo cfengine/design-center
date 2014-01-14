@@ -31,7 +31,7 @@ $| = 1;                         # autoflush
 my $base = basename($0);
 my @log;
 
-my $required_version = '3.4.0';
+my $required_version = '3.6.0';
 my $api = DCAPI->new(cfengine_min_version => $required_version);
 
 unless ($api->curl())

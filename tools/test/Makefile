@@ -7,26 +7,13 @@ ifeq ($(CFPATH),)
   CFPATH:=/var/cfengine/bin
 endif
 
-# If $HOME/.cf-sketch-config.json exists, use it, otherwise use the defaults
-ifeq ($(wildcard $(HOME)/.cf-sketch-config.json),)
-  ifeq ($(LOGNAME),root)
-    CFGFILE=$(PWD)/../cf-sketch/config-root.json
-  else
-    CFGFILE=$(PWD)/../cf-sketch/config.json
-  endif
-else
-  CFGFILE=$(HOME)/.cf-sketch-config.json
-endif
-
-API_DIR:=~/.cfagent/inputs
-RUNFILE:=~/.cfagent/inputs/standalone-cf-sketch-runfile.cf
-
-CFAPI:=$(PWD)/../cf-sketch/cf-dc-api.pl $(CFGFILE)
-
 ifeq ($(LOGNAME),root)
-  RUNFILE:=/var/cfengine/inputs/standalone-cf-sketch-runfile.cf
   API_DIR:=/var/cfengine/inputs
+else
+  API_DIR:=~/.cfagent/inputs
 endif
+
+CFAPI:=$(PWD)/../cf-sketch/cf-dc-api.pl $(API_DIR)
 
 ifneq ($(NOIGNORE),1)
 
@@ -46,8 +33,8 @@ ifneq ($(NOIGNORE),1)
 
 endif
 
-API_RUNFILE:=$(API_DIR)/api-runfile.cf
 API_SKETCHDIR:=$(API_DIR)/sketches
+API_RUNFILE:=$(API_SKETCHDIR)/meta/api-runfile.cf
 
 ifeq ($(VV),1)
   EXTRA:=--veryverbose
@@ -73,9 +60,9 @@ ifneq ($(FILTER),)
   EXTRA:= $(EXTRA) --filter=$(FILTER)
 endif
 
-CFSKETCH:=(cd $(SOURCEDIR); make); $(PWD)/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches.json --cfpath=$(CFPATH) $(EXTRA) --force --standalone
-CFSKETCH_DA:=rm $(RUNFILE); $(CFSKETCH) --install CFEngine::stdlib --deactivate-all --generate -v --force --standalonerunfile $(RUNFILE)
-RUNNER:=$(CFPATH)/cf-agent -KI -f $(RUNFILE)
+CFSKETCH:=$(PWD)/../cf-sketch/cf-sketch.pl --make_cfsketches --installsource=$(SOURCEDIR)/cfsketches.json $(SOURCEDIR); $(PWD)/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches.json --cfpath=$(CFPATH) $(EXTRA) --force
+CFSKETCH_DA:=rm $(API_RUNFILE); $(CFSKETCH) --deactivate-all --generate -v --force $(API_DIR)
+RUNNER:=$(CFPATH)/cf-agent -KI -f $(API_DIR)/promises.cf
 
 do:
 
@@ -456,31 +443,31 @@ run:
 	$(RUNNER)
 
 generate:
-	$(CFSKETCH) --generate --runfile $(RUNFILE)
+	$(CFSKETCH) --generate $(API_DIR)
 
 list:
-	$(CFSKETCH) --list
+	$(CFSKETCH) --list $(API_DIR)
 
 search:
-	$(CFSKETCH) --search
+	$(CFSKETCH) --search $(API_DIR)
 
 regenerate_readme:
-	$(CFSKETCH) --make_readme
+	$(CFSKETCH) --make_readme $(API_DIR)
 
 regenerate_cfsketches:
-	$(CFSKETCH) --make_cfsketches
+	$(PWD)/../cf-sketch/cf-sketch.pl --make_cfsketches --installsource=$(SOURCEDIR)/cfsketches.json $(SOURCEDIR)
 
 test:
-	$(CFSKETCH) --install $(SKETCH) --apitest $(SKETCH) --noignore -v
+	$(CFSKETCH) --install $(SKETCH) --apitest $(SKETCH) --noignore -v $(API_DIR)
 
 testinstalled:
-	$(CFSKETCH) --apitest $(SKETCH) --noignore -v
+	$(CFSKETCH) --apitest $(SKETCH) --noignore -v $(API_DIR)
 
 testallinstalled:
-	$(CFSKETCH) --apitest 1 --noignore -v
+	$(CFSKETCH) --apitest 1 --noignore -v $(API_DIR)
 
 testcoverage:
-	$(CFSKETCH) --apitest 1 --coverage --noignore -v
+	$(CFSKETCH) --apitest 1 --coverage --noignore -v $(API_DIR)
 
 # individual sketch tests follow
 
