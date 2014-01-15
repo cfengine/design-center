@@ -8,14 +8,10 @@ Authors: Ben Heilman <bheilman@enova.com>
 Configure the Message of the Day
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib
+CFEngine::sketch_template
 
 ## API
 ### bundle: entry
-* parameter _environment_ *runenv* (default: none, description: none)
-
-* parameter _metadata_ *metadata* (default: none, description: none)
-
 * parameter _string_ *motd* (default: none, description: Message of the Day (aka motd))
 
 * parameter _string_ *motd_path* (default: `"/etc/motd"`, description: Location of the primary, often only, MotD file)
