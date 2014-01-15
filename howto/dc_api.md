@@ -1544,6 +1544,9 @@ specified, it defaults to the first element of `repolist` plus
 
 You should avoid changing this explicitly without very good reason.
 
+A `vardata` of `-` (just a dash) means that the API will not try to write to the
+vardata file, but will pretend everything is OK.
+
 #### `constdata`
 
 The file location for the pre-defined API validations and other constant DC
@@ -1551,6 +1554,9 @@ data.  If not specified, it defaults to the first element of `repolist` plus
 `/meta/constdata.conf`. [[[TODO: verify]]]
 
 You should avoid changing this explicitly without very good reason.
+
+A `constdata` of `-` (just a dash) means that the API will not try to load the
+constdata file, but will pretend everything is OK.
 
 #### Full `config.json` example
 
