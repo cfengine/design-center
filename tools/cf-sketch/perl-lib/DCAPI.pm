@@ -207,31 +207,41 @@ sub set_config
     $constdata_file = glob($constdata_file);
     $self->log5("Loading constdata file $constdata_file");
     $self->constdata($constdata_file);
-    if (-f $constdata_file && -r $constdata_file)
-    {
-        my ($v_data, @v_warnings) = $self->load($constdata_file);
-        $result->add_error('constdata', @v_warnings)
-         if scalar @v_warnings;
 
-        foreach my $key (@vardata_keys)
+    if ($constdata_file eq '-')
+    {
+        $self->log("Ignoring constdata file '$constdata_file' as requested");
+        $v_data = {};
+        @v_warnings = ();
+    }
+    else
+    {
+        if (-f $constdata_file && -r $constdata_file)
         {
-            if (exists $v_data->{$key} && ref $v_data->{$key} eq 'HASH' && ref $self->$key() eq 'HASH')
+            ($v_data, @v_warnings) = $self->load($constdata_file);
+            $result->add_error('constdata', @v_warnings)
+             if scalar @v_warnings;
+        }
+    }
+
+    foreach my $key (@vardata_keys)
+    {
+        if (ref $v_data eq 'HASH' && exists $v_data->{$key} && ref $v_data->{$key} eq 'HASH' && ref $self->$key() eq 'HASH')
+        {
+            foreach my $subkey (sort keys %{$v_data->{$key}})
             {
-                foreach my $subkey (sort keys %{$v_data->{$key}})
-                {
-                    $self->log5("Successfully loaded override $key/$subkey from constdata file $constdata_file");
-                    $self->$key()->{$subkey} = $v_data->{$key}->{$subkey};
-                }
+                $self->log5("Successfully loaded override $key/$subkey from constdata file $constdata_file");
+                $self->$key()->{$subkey} = $v_data->{$key}->{$subkey};
             }
         }
+    }
 
-        foreach my $key (@constdata_keys)
+    foreach my $key (@constdata_keys)
+    {
+        if (exists $v_data->{$key})
         {
-            if (exists $v_data->{$key})
-            {
-                $self->log5("Successfully loaded constdata $key from constdata file $constdata_file");
-                $self->$key($v_data->{$key});
-            }
+            $self->log5("Successfully loaded constdata $key from constdata file $constdata_file");
+            $self->$key($v_data->{$key});
         }
     }
 
