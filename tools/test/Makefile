@@ -1,5 +1,6 @@
 PWD:=$(shell pwd)
-SOURCEDIR:=$(PWD)/../../sketches
+DCDIR:=$(PWD)/../..
+SOURCEDIR:=$(DCDIR)/sketches
 
 CFPATH:=$(shell dirname $$(which cf-agent))
 
@@ -60,9 +61,18 @@ ifneq ($(FILTER),)
   EXTRA:= $(EXTRA) --filter=$(FILTER)
 endif
 
-CFSKETCH:=$(PWD)/../cf-sketch/cf-sketch.pl --make_cfsketches --installsource=$(SOURCEDIR)/cfsketches.json $(SOURCEDIR); $(PWD)/../cf-sketch/cf-sketch.pl --expert --installsource=$(SOURCEDIR)/cfsketches.json --cfpath=$(CFPATH) $(EXTRA) --force
-CFSKETCH_DA:=rm $(API_RUNFILE); $(CFSKETCH) --deactivate-all --generate -v --force $(API_DIR)
+CFSKETCH_BASE:=$(PWD)/../cf-sketch/cf-sketch.pl --installsource=$(SOURCEDIR)/cfsketches.json --inputs $(DCDIR)
+CFSKETCH:=$(CFSKETCH_BASE) --make_cfsketches ; $(CFSKETCH_BASE) --expert --cfpath=$(CFPATH) $(EXTRA) --force
+CFSKETCH_DA:=rm $(API_RUNFILE); $(CFSKETCH) --deactivate-all --generate -v
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(API_DIR)/promises.cf
+
+regenerate_readme:
+	$(CFSKETCH_BASE) --make_readme
+
+regenerate_cfsketches:
+	$(CFSKETCH_BASE) --make_cfsketches
+
+regenerate: regenerate_cfsketches regenerate_readme
 
 do:
 
@@ -450,12 +460,6 @@ list:
 
 search:
 	$(CFSKETCH) --search $(API_DIR)
-
-regenerate_readme:
-	$(CFSKETCH) --make_readme $(API_DIR)
-
-regenerate_cfsketches:
-	$(PWD)/../cf-sketch/cf-sketch.pl --make_cfsketches --installsource=$(SOURCEDIR)/cfsketches.json $(SOURCEDIR)
 
 test:
 	$(CFSKETCH) --install $(SKETCH) --apitest $(SKETCH) --noignore -v $(API_DIR)
