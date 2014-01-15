@@ -212,6 +212,10 @@ sub init {
   %Config=%$config;
   # Configure completions
   if ($interactive) {
+    # Trap Ctrl-C to go to the cf-sketch prompt instead of exiting
+    use POSIX;
+    sigaction SIGINT, new POSIX::SigAction sub { print "\n"; eval q($inputline->replace_line(""); $inputline->on_new_line; $inputline->redisplay;) };
+
     # We use eval because not all ReadLine implementations support these attributes
     eval q(
     if (my $attr = $inputline->Attribs) {
