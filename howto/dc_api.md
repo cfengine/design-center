@@ -1540,7 +1540,7 @@ any other comments (so you can have, for instance, a comment).
 
 The file location where the API will record all data.  If not
 specified, it defaults to the first element of `repolist` plus
-`/meta/vardata.conf`. [[[TODO: verify]]]
+`/meta/vardata.conf`.
 
 You should avoid changing this explicitly without very good reason.
 
@@ -1551,7 +1551,7 @@ vardata file, but will pretend everything is OK.
 
 The file location for the pre-defined API validations and other constant DC
 data.  If not specified, it defaults to the first element of `repolist` plus
-`/meta/constdata.conf`. [[[TODO: verify]]]
+`/meta/constdata.conf`.
 
 You should avoid changing this explicitly without very good reason.
 
