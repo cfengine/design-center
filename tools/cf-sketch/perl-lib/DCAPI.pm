@@ -156,19 +156,31 @@ sub set_config
 
     $vardata_file = glob($vardata_file);
     $self->log5("Loading vardata file $vardata_file");
+
     $self->vardata($vardata_file);
-    if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file))
+
+    my ($v_data, @v_warnings);
+    if ($vardata_file eq '-')
     {
-        $self->log("Creating missing vardata file $vardata_file");
-        my ($ok, @save_warnings) = $self->save_vardata();
-
-        $result->add_error('vardata', @save_warnings)
-         unless $ok;
+        $self->log("Ignoring vardata file '$vardata_file' as requested");
+        $v_data = {};
+        $v_data->{$_} = $self->$_() foreach @vardata_keys;
     }
+    else
+    {
+        if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file))
+        {
+            $self->log("Creating missing vardata file $vardata_file");
+            my ($ok, @save_warnings) = $self->save_vardata();
 
-    my ($v_data, @v_warnings) = $self->load($vardata_file);
-    $result->add_error('vardata', @v_warnings)
-     if scalar @v_warnings;
+            $result->add_error('vardata', @save_warnings)
+             unless $ok;
+        }
+
+        ($v_data, @v_warnings) = $self->load($vardata_file);
+        $result->add_error('vardata', @v_warnings)
+         if scalar @v_warnings;
+    }
 
     if (ref $v_data ne 'HASH')
     {
@@ -234,6 +246,12 @@ sub save_vardata
     my $data = {};
     $data->{$_} = $self->$_() foreach @vardata_keys;
     my $vardata_file = $self->vardata();
+
+    if ($vardata_file eq '-')
+    {
+        $self->log("Not saving vardata file '$vardata_file' as requested");
+        return 1;
+    }
 
     $self->log("Saving vardata file $vardata_file");
 

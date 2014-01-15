@@ -20,12 +20,6 @@ my $DATE="2014";
 my @toremove;
 my $inputs_root;
 
-BEGIN
-{
-    $inputs_root = pop @ARGV;
-    die "Syntax: $0 [options] INPUTSDIR" unless -d $inputs_root;
-}
-
 use File::Basename;
 use FindBin;
 use lib map { $_,
@@ -52,7 +46,6 @@ use Getopt::Long;
 
 my %options = (
                environment => 'cf_sketch_testing',
-               repolist => [],
                activate => {},
                install => [],
                apitest => [],
@@ -71,6 +64,7 @@ my %options = (
                version => $VERSION,
                date => $DATE,
                dcapi => $dcapi,
+               inputs => '/var/cfengine/masterfiles',
               );
 
 Getopt::Long::Configure("bundling", "require_order");
@@ -100,12 +94,13 @@ GetOptions(\%options,
            "uninstall=s@",
            "deactivate-all|da",
            "activate|a=s%",
+           "inputs=s",
 
            "runfile_header=s",
-           "repolist|rl=s@",
           );
 
 die "$0: --installsource FILE must be specified" unless $options{installsource};
+die "$0: --inputs $options{inputs} doesn't exist" unless -d $options{inputs};
 
 my $sourcedir = dirname($options{installsource});
 $options{sourcedir} = $sourcedir;
@@ -136,7 +131,6 @@ find your local Design Center checkout more easily and avoid network queries
 EOHIPPUS
 }
 
-$options{repolist} = [ "$inputs_root/sketches" ] unless scalar @{$options{repolist}};
 $options{verbose} = 1 if $options{veryverbose};
 
 # Define default internal environment
@@ -161,7 +155,7 @@ if (exists $options{'make_readme'})
 {
     api_interaction({
                      describe => 'README',
-                     search => $options{search} eq '' ? '.' : $options{search}
+                     search => $options{search} || '.'
                     },
                     make_list_printer('search', 'README.md'));
     exit 0;
@@ -344,7 +338,7 @@ sub api_interaction
     my $opts = {
                 log => "pretty",
                 log_level => $log_level,
-                repolist => $options{repolist},
+                repolist => [ "$options{inputs}/sketches" ],
                 recognized_sources =>
                 [
                  $sourcedir
@@ -358,6 +352,11 @@ sub api_interaction
     if (exists $options{runfile_header})
     {
         $opts->{runfile}->{header} = $options{runfile_header};
+    }
+
+    if (exists $options{make_cfsketches} || exists $options{make_readme})
+    {
+        $opts->{vardata} = '-';
     }
 
     if (exists $options{apiconfig})
@@ -390,7 +389,7 @@ sub api_interaction
             }
             elsif ($fill eq 'target')
             {
-                $data = $options{repolist}->[0];
+                $data = $options{inputs};
             }
             else
             {
