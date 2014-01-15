@@ -20,6 +20,7 @@ sub wanted
 
 foreach my $f (@todo)
 {
+ print STDERR "Checking $f\n";
  my $d = dirname($f);
  $d =~ s,^\./,,;
  print $d, "\t";
