@@ -1,0 +1,141 @@
+{
+    "api": {
+        "present": [
+            {
+                "name": "runenv",
+                "type": "environment"
+            },
+            {
+                "name": "metadata",
+                "type": "metadata"
+            },
+            {
+                "name": "list_of_files",
+                "description": "List of files to ensure are absent.",
+                "type": "list",
+                "validation":"LIST_OF_PATH_ABSOLUTE_UNIX_OR_WINDOWS"
+            },
+
+            {
+                "name": "success_class",
+                "description": "Class to define if all files are present.",
+                "type": "string",
+                "validation": "CLASSNAME"
+            },
+
+            {
+                "name": "fail_class",
+                "description": "Class to define if any file is absent and can not be created.",
+                "type": "string",
+                "validation": "CLASSNAME"
+            }
+        ],
+
+        "absent": [
+            {
+                "name": "runenv",
+                "type": "environment"
+            },
+            {
+                "name": "metadata",
+                "type": "metadata"
+            },
+            {
+                "name": "list_of_files",
+                "description": "List of files to ensure are absent.",
+                "type": "list",
+                "validation":"LIST_OF_PATH_ABSOLUTE_UNIX_OR_WINDOWS"
+            },
+
+            {
+                "name": "success_class",
+                "description": "Class to define if all files are absent.",
+                "type": "string",
+                "validation": "CLASSNAME"
+            },
+
+            {
+                "name": "fail_class",
+                "description": "Class to define if any file is present and can not be deleted.",
+                "type": "string",
+                "validation": "CLASSNAME"
+            }
+        ],
+
+        "know_exists": [
+            {
+                "name": "runenv",
+                "type": "environment"
+            },
+            {
+                "name": "metadata",
+                "type": "metadata"
+            },
+            {
+                "name": "list_of_files",
+                "description": "Check if all files given files are present.",
+                "type": "list",
+                "validation":"LIST_OF_PATH_ABSOLUTE_UNIX_OR_WINDOWS"
+            },
+
+            {
+                "name": "success_class",
+                "description": "Class to define if all files are present.",
+                "type": "string",
+                "validation": "CLASSNAME"
+            },
+
+            {
+                "name": "fail_class",
+                "description": "Class to define if any file is absent.",
+                "type": "string",
+                "validation": "CLASSNAME"
+            }
+        ]
+    },
+    "interface": [
+        "main.cf"
+    ],
+    "manifest": {
+        "README.md": {
+            "documentation": true
+        },
+        "main.cf": {
+            "desc": "main file"
+        }
+    },
+    "metadata": {
+        "authors": [
+            "Nick Anderson <nick@cmdln.org>"
+        ],
+        "bundle_descriptions": {
+            "present": "Ensure all given files are present.",
+            "absent": "Ensure all given files are absent.",
+            "know_exists": "Check if all given files are present."
+        },
+        "depends": {
+            "CFEngine::dclib": {
+                "version": "1.0.0"
+            },
+            "cfengine": {
+                "version": "3.6.0"
+            },
+            "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ]
+        },
+
+        "description": "This sketch provides facilities ensuring a list of files exists or not. It can also be used strictly for validating the presence of a file which may be useful for host classification.",
+        "license": "MIT",
+        "name": "Primitives::files_existence",
+        "tags": [
+            "enterprise_compatible",
+            "primitive",
+            "sketchify_generated",
+            "files_existence",
+            "present",
+            "absent",
+            "know_exists"
+        ],
+        "version": "1.0"
+    },
+    "namespace": "cfdc_primitives_file_existence"
+}
