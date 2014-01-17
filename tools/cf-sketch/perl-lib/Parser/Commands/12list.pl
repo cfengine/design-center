@@ -231,10 +231,14 @@ sub command_list_vals
             Util::output("$msg\n\n");
         }
         $printed = 1;
-        print RESET, GREEN, $val, RESET, "\n";
         if ($full)
         {
+            print RESET, GREEN, $val, RESET, "\n";
             print DesignCenter::JSON::pretty_print($vals->{$val}, "  ", undef, undef)."\n";
+        }
+        else
+        {
+            print RESET, GREEN, $val, RESET, ": ".($vals->{$val}->{description}||"")."\n";
         }
     }
     Util::warning("No validations ".(($regex eq '.')?"are defined.\n" : "match your query\n")) unless $printed;
