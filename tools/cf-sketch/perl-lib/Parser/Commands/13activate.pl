@@ -148,12 +148,13 @@ sub command_activate {
     $envname = $env;
   }
 
-  push @{$todo{$sketch}},{
-                          target => $Config{repolist}->[0],
-                          environment => $envname,
-                          params => [ @todoparams ],
-                          identifier => $id,
-                         };
+  my $newact = {
+                target => $Config{repolist}->[0],
+                environment => $envname,
+                params => [ @todoparams ],
+                identifier => $id,
+               };
+  push @{$todo{$sketch}}, $newact;
   if (keys %todefine) {
     Util::message("Defining parameter sets: ".join(", ", sort keys %todefine).".\n");
     ($success, $result) = main::api_interaction({define => \%todefine});
