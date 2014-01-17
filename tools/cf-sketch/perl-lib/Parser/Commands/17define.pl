@@ -122,12 +122,13 @@ sub interactive_config {
         return;
     }
     Util::message("Defining parameter set '$paramset' with the entered data.\n");
+    $data->{__bundle__} = $bundle;
     my ($success, $result) = main::api_interaction({define => 
                                                     {
                                                      $paramset => { $sketchname => $data },
                                                     }});
     return unless $success;
-    Util::success("Parameter set $paramset successfully defined.\n");
+    Util::success("Parameter set $paramset for bundle $bundle successfully defined.\n");
 }
 
 sub query_bundle {

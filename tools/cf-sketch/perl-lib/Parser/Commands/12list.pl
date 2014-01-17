@@ -125,10 +125,13 @@ sub command_list_params
         {
             my @sketches = @{$found{$name}};
             my $word = (scalar(@sketches)>1 ? "Sketches" : "Sketch");
-            print RESET, GREEN, $name, RESET, ": $word ".join(", ", @sketches)."\n";
+            print RESET, GREEN, $name, RESET, ": $word ".
+             join(", ", 
+                  map { my $b = $list->{$name}->{$_}->{__bundle__} || $list->{$name}->{$_}->{CF_MP_ENTRY_POINT} || undef;
+                      "$_".($b?"($b)":"")} @sketches)."\n";
             if ($full)
             {
-                print DesignCenter::JSON::pretty_print($list->{$name},"  ", undef, undef)."\n";
+                print DesignCenter::JSON::pretty_print($list->{$name},"  ", qr(__bundle__|CF_MP_ENTRY_POINT), undef)."\n";
             }
         }
     }
