@@ -3,6 +3,7 @@ package DCAPI::Repo;
 use strict;
 use warnings;
 
+use File::Basename;
 use File::Spec;
 use Mo qw/default build builder is required option/;
 
@@ -10,6 +11,7 @@ use Util;
 use DCAPI::Sketch;
 
 use constant SKETCHES_FILE => 'cfsketches.json';
+use constant SKETCH_JSON_FILE => 'sketch.json';
 
 has api       => ( is => 'ro', required => 1 );
 has location  => ( is => 'ro', required => 1 );
@@ -89,25 +91,77 @@ sub sketches_dump
     return @lines;
 }
 
+sub make_inv_file
+{
+    my $api = shift @_;
+    my $repodir = shift @_;
+
+    return undef unless Util::is_resource_local($repodir);
+
+    my $result = DCAPI::Result->new(api => $api,
+                                    status => 1,
+                                    success => 1,
+                                    data => { });
+
+    $api->log3("Regenerating index: searching for sketches in %s",
+               $repodir);
+
+    my @todo;
+    my $old_dir = $repodir;
+    # fall back to $old_dir if glob() fails (seen on Darwin for instance)
+    $repodir = glob($repodir) || $old_dir;
+
+    require File::Find;
+    File::Find::find(sub
+                     {
+                         return unless $_ eq SKETCH_JSON_FILE;
+                         push @todo, $File::Find::name;
+                     }, $repodir);
+
+    $repodir = dirname($repodir) if $repodir =~ m/cfsketches.json$/;
+    my $index_file = sprintf("%s/%s", $repodir, SKETCHES_FILE);
+
+    if (open my $index, '>', $index_file)
+    {
+        my $encoder = JSON::PP->new()->utf8()->canonical();
+        foreach my $f (sort @todo)
+        {
+            eval
+            {
+                my $d = dirname($f);
+                $d =~ s,^$repodir/,,;
+                $d =~ s,^\./,,;
+                $api->log3("Regenerating index: on sketch dir $d");
+                open my $fh, '<', $f or warn "Couldn't open $f: $!";
+                my $out = $api->decode(join('', <$fh>));
+                $out->{api} = {} unless exists $out->{api};
+
+                # note we encode BEFORE writing a line
+                my $out_string = sprintf("%s\t%s\n", $d, $api->cencode($out));
+                print $index $out_string;
+            };
+
+            if ($@)
+            {
+                $result->add_error($f, $@);
+            }
+        }
+    }
+    else
+    {
+        $api->log("Regenerating index: could not save $index_file");
+        $result->add_error($index_file, $!);
+    }
+
+    return $result;
+}
+
 sub save_inv_file
 {
     my $self = shift;
 
-    open my $fh, '>', $self->inv_file();
-
-    unless (defined $fh)
-    {
-        $self->api()->log("Repo at %s could not save inventory file %s: $!",
-                          $self->location(),
-                          $self->inv_file());
-
-        return 0;
-    }
-
-    print $fh "$_\n" foreach $self->sketches_dump();
-    close $fh;
-
-    return 1;
+    my $result = make_inv_file($self->api(), $self->location());
+    return ! ! $result->success();
 }
 
 sub list
@@ -167,20 +221,21 @@ sub install
 
     my $manifest = $sketch->manifest();
 
-    foreach my $file (sort keys %$manifest)
+    my @files = sort keys %$manifest;
+    push @files, SKETCH_JSON_FILE unless exists $manifest->{SKETCH_JSON_FILE()};
+    foreach my $file (@files)
     {
         my $perms = Util::hashref_search($manifest->{$file}, qw/perm/);
         my $source = $sketch->location() . "/$file";
         my $dest = "$abs_location/$file";
 
-        require File::Basename;
         require File::Copy;
         $self->api()->log4("Installing sketch %s: copying %s to %s",
                            $sketch->name(),
                            $source,
                            $dest);
 
-        my $dest_dir = File::Basename::dirname($dest);
+        my $dest_dir = dirname($dest);
         Util::dc_make_path($dest_dir);
 
         unless (-d $dest_dir)
@@ -266,7 +321,12 @@ sub install
         return $result->add_error('installation', $@);
     }
 
-    # we no longer save the inventory file
+    my $inv_save = $self->save_inv_file();
+    return $result->add_error('installation',
+                              "Could not save the inventory file!")
+     if 0 == $inv_save;
+
+    $result->add_data_key('installation', 'inventory_save', $inv_save);
 
     return $result;
 }
