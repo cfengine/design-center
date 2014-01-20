@@ -61,16 +61,16 @@ ifneq ($(FILTER),)
   EXTRA:= $(EXTRA) --filter=$(FILTER)
 endif
 
-CFSKETCH_BASE:=$(PWD)/../cf-sketch/cf-sketch.pl --installsource=$(SOURCEDIR)/cfsketches.json --inputs $(DCDIR)
-CFSKETCH:=$(CFSKETCH_BASE) --make_cfsketches ; $(CFSKETCH_BASE) --expert --cfpath=$(CFPATH) $(EXTRA) --force
+CFSKETCH_BASE:=$(PWD)/../cf-sketch/cf-sketch.pl --installsource=$(SOURCEDIR)/cfsketches.json
+CFSKETCH:=$(CFSKETCH_BASE) --make_cfsketches --inputs $(DCDIR); $(CFSKETCH_BASE) --expert --cfpath=$(CFPATH) $(EXTRA) --force --inputs $(API_DIR)
 CFSKETCH_DA:=rm $(API_RUNFILE); $(CFSKETCH) --deactivate-all --generate -v
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(API_DIR)/promises.cf
 
 regenerate_readme:
-	$(CFSKETCH_BASE) --make_readme
+	$(CFSKETCH_BASE) --make_readme --inputs $(DCDIR)
 
 regenerate_cfsketches:
-	$(CFSKETCH_BASE) --make_cfsketches
+	$(CFSKETCH_BASE) --make_cfsketches --inputs $(DCDIR)
 
 regenerate: regenerate_cfsketches regenerate_readme
 

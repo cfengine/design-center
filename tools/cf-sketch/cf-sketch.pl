@@ -98,6 +98,8 @@ GetOptions(\%options,
           );
 
 die "$0: --installsource FILE must be specified" unless $options{installsource};
+
+mkdir $options{inputs} unless -d $options{inputs}; # try to create...
 die "$0: --inputs $options{inputs} doesn't exist" unless -d $options{inputs};
 
 my $sourcedir = dirname($options{installsource});
@@ -380,7 +382,7 @@ sub api_interaction
             }
             elsif ($fill eq 'target')
             {
-                $data = $options{inputs};
+                $data = "$options{inputs}/sketches";
             }
             else
             {
