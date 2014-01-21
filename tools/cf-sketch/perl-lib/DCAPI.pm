@@ -989,11 +989,7 @@ sub define_environment
                                           "Invalid environment spec $dkey: key $required is a hash but had nothing to say")
                  unless scalar @condition;
 
-                $spec->{$required}->{class_function} = [];
-                push @{$spec->{$required}->{class_function}}, {
-                                                               function => "classmatch",
-                                                               args => [$_]
-                                                              }
+                push @{$spec->{$required}}, $_
                  foreach @condition;
             }
             else
@@ -1396,7 +1392,7 @@ sub regenerate
 
     my $environment_calls = '';
     my @environment_lines = ("# environment common bundles\n");
-    foreach my $e (keys %environments)
+    foreach my $e (keys %{$self->environments()})
     {
         my @var_data;
         my @class_data;
@@ -1416,20 +1412,13 @@ sub regenerate
             $print_v =~ s/\W/_/g;
             my $d = $edata->{$v};
 
-            my $class_function;
-            if (ref $d eq 'HASH' && exists $d->{class_function})
-            {
-                $class_function = $d->{class_function};
-                $d = "--'$print_v' value passed as a class function--";
-            }
-
             my $line = join("\n",
                             map { "$indent$_" }
                             Util::make_var_lines($print_v, $d, '', 0, 0));
             push @var_data, $line;
 
             # is it a scalar?
-            if (ref $d eq '' && !defined $class_function)
+            if (ref $d eq '')
             {
                 my $d_expression = $d;
                 if (!defined $d_expression || $d_expression eq '' || $d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no')
@@ -1448,18 +1437,6 @@ sub regenerate
                                           $e,
                                           $print_v,
                                           $d_expression);
-            }
-            elsif (defined $class_function) # it's a class function call
-            {
-                my $and = ref $class_function eq 'ARRAY';
-                my $line = join("\n",
-                                map { "$indent$_" }
-                                Util::make_var_lines(sprintf("runenv_%s_%s",
-                                                             $e,
-                                                             $print_v),
-                                                     $class_function, '', 0, 0, 0, $and ? 'and' : 'expression'));
-
-                push @class_data, $line;
             }
         }
 

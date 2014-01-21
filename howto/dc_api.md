@@ -1044,21 +1044,7 @@ other than `true` and `false`.  If they are a string, then that string is a
 class expression.  So, for instance, if `activated` is `Monday` then the run
 environment will only be activated on Mondays.
 
-If `activated` is a key-value array with the key `include` pointing to an array
-of regular expressions, then every element of that array will be AND-ed in a
-classmatch.  So, if for the environment _testing_ you specify:
-
-```
-activated: { include: [ "x", "y", "regex.*" ] }
-```
-
-That will produce, in the runfile,
-
-```
-classes:
-  "runenv_testing_activated" and => { classmatch("x"), classmatch("y"), classmatch("regex.*") };
-```
-It's trivial to do an OR with alternation in the regular expression.
+It's trivial to do AND and OR in such a string, as normal for CFEngine contexts.
 
 #### `define_environment`
 

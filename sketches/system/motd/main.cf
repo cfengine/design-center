@@ -25,7 +25,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       string => "$(path_prefix)$(symlink_path)",
       comment => "Path of the main MotD (typical the only one)";
 
-    activated..!prepend_command_not_given::
+    activated.!prepend_command_not_given::
       "output"
       string => execresult("$(default:eu.exec_prefix)$(prepend_command)",
                            "noshell"),
