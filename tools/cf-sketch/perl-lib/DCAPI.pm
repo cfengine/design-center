@@ -1358,48 +1358,11 @@ sub regenerate
 
     # 2. make cfsketch_g and environment bundles with data
     my @data;
-    my %environments;
     my $position = 1;
-
-    foreach my $a (@activations)
-    {
-        $self->log("Regenerate: generating activation %s", $a->id());
-
-        foreach my $p (@{$a->params()})
-        {
-            if ($p->{type} eq 'environment')
-            {
-                $self->log("Regenerate: adding environment %s", $p);
-                $environments{$p->{value}}++;
-            }
-            elsif (DCAPI::Activation::ignored_type($p->{type}))
-            {
-                $self->log5("Regenerate: ignoring parameter %s", $p);
-            }
-            # we can't inline some types, so print them explicitly in the data bundle
-            elsif (!DCAPI::Activation::can_inline($p->{type}))
-            {
-                $self->log("Regenerate: adding explicit data %s", $p);
-                my $line = join("\n",
-                                sprintf("%s# %s '%s' from definition %s, activation %s",
-                                        $indent,
-                                        $p->{type},
-                                        $p->{name},
-                                        $p->{set},
-                                        $a->id()),
-                                map { "$indent$_" } Util::make_var_lines($a->id() . '_' . $p->{name},
-                                                                         $p->{value},
-                                                                         '',
-                                                                         0,
-                                                                         0));
-                push @data, $line;
-            }
-        }
-    }
 
     my $data_lines = join "\n\n", @data;
 
-    my @environment_data = ("# environment definitions\n");
+    my @environment_data;
     foreach my $e (keys %{$self->environments()})
     {
         my $edata = $self->environments()->{$e};
@@ -1420,12 +1383,12 @@ sub regenerate
     {
         $self->log("Regenerate: generating activation call %s", $a->id());
 
-        if (exists $environments{$a->environment()})
+        if (exists $self->environments()->{$a->environment()})
         {
-            push @invocation_lines, sprintf('%srunenv_%s_%s::',
-                                            $context_indent,
-                                            $a->environment(),
-                                            'activated');
+            push @invocation_lines,
+             sprintf('%s%s::',
+                     $context_indent,
+                     $self->environments()->{$a->environment()}->{activated});
         }
         else                            # if the bundle doesn't want an runenv
         {
@@ -1435,17 +1398,20 @@ sub regenerate
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
 
-        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s" } usebundle => %s%s(%s), handle => "dc_method_call_%s", ifvarclass => "%s", useresult => "return_%s";',
+        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s" }%susebundle => %s%s(%s),, handle => "dc_method_call_%s",%sifvarclass => "%s",%suseresult => "return_%s";',
                                         $indent,
                                         $a->id(),
                                         $a->prefix(),
                                         $a->sketch()->name(),
                                         $a->bundle(),
+                                        "\n$indent",
                                         $namespace_prefix,
                                         $a->bundle(),
-                                        $a->make_bundle_params(),
+                                        $a->make_bundle_params("\n$indent    "),
                                         $a->id(),
+                                        "\n$indent",
                                         $a->sketch()->runtime_context(),
+                                        "\n$indent",
                                         $a->id());
     }
 
@@ -1478,14 +1444,14 @@ sub regenerate
 
     my $invocation_lines = join "\n", @invocation_lines;
 
-    my $runfile_header = defined $self->runfile()->{header} ? $self->runfile()->{header} : '';
+    my $runfile_header = defined $self->runfile()->{header} ? $self->runfile()->{header} : '# Design Center runfile';
 
     my $runfile_data = <<EOHIPPUS;
 $runfile_header
 
 body file control
 {
-  inputs => $inputs;
+      inputs => $inputs;
 }
 
 bundle agent cfsketch_run
@@ -1494,8 +1460,6 @@ bundle agent cfsketch_run
 @environment_data
 
   methods:
-    any::
-      "cfsketch_g" usebundle => "cfsketch_g";
 $invocation_lines
 
   reports:

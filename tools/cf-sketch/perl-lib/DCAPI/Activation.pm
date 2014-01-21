@@ -449,6 +449,13 @@ sub options_type
     return $type eq 'bundle_options';
 }
 
+sub container_type
+{
+    my $type = shift @_;
+
+    return $type eq 'environment';
+}
+
 sub return_type
 {
     my $type = shift @_;
@@ -459,6 +466,7 @@ sub return_type
 sub make_bundle_params
 {
     my $self = shift @_;
+    my $indent = shift @_;
 
     my @data;
     foreach my $p (@{$self->params()})
@@ -467,6 +475,10 @@ sub make_bundle_params
         {
             $self->api()->log5("Bundle parameters: ignoring parameter %s", $p);
         }
+        elsif (container_type($p->{type}))
+        {
+            push @data, sprintf('@(%s)', $p->{value});
+        }
         elsif (can_inline($p->{type}))
         {
             foreach my $pr (Util::recurse_print($p->{value}, '', 0, 0, $p->{type} eq 'boolean'))
@@ -474,17 +486,14 @@ sub make_bundle_params
                 push @data, $pr->{value};
             }
         }
-        elsif ($p->{type} eq 'array')
+        else # arrays, lists, etc.
         {
-            push @data, sprintf('"default:cfsketch_run.%s_%s"', $self->id(), $p->{name});
-        }
-        elsif ($p->{type} eq 'list')
-        {
-            push @data, sprintf('@(cfsketch_run.%s_%s)', $self->id(), $p->{name});
+            push @data, sprintf("parsejson('%s')",
+                                $self->api()->cencode($p->{value}));
         }
     }
 
-    return join(', ', @data);;
+    return join(",$indent", @data);;
 }
 
 sub data_dump
