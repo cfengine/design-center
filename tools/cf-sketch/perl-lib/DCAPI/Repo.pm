@@ -131,7 +131,7 @@ sub make_inv_file
                 my $d = dirname($f);
                 $d =~ s,^$repodir/,,;
                 $d =~ s,^\./,,;
-                $api->log3("Regenerating index: on sketch dir $d");
+                $api->log5("Regenerating index: on sketch dir $d");
                 open my $fh, '<', $f or warn "Couldn't open $f: $!";
                 my $out = $api->decode(join('', <$fh>));
                 $out->{api} = {} unless exists $out->{api};
@@ -261,6 +261,60 @@ sub install
         if (-f $dest)
         {
             $result->add_data_key('installation', ["install", $sketch->name(), $file], $dest);
+
+            open my $destfh, '<', $dest;
+            my @lines;
+            if ($destfh)
+            {
+                @lines = <$destfh>;
+                close $destfh;
+            }
+            else
+            {
+                $result->add_error('installation', "could not read '%s' after install: $!", $dest);
+            }
+
+            my @newlines;
+            foreach my $line (@lines)
+            {
+                if ($line =~ m/^#\@include\s+"([^"]+)"\s*$/)
+                {
+                    my $incname = sprintf("%s/%s", dirname($dest), $1);
+                    open my $include, '<', $incname;
+                    if ($include)
+                    {
+                        push @newlines, <$include>;
+                        $result->add_data_key('installation', ["include", $sketch->name(), $dest, $incname], $dest);
+                        close $include;
+                    }
+                    else
+                    {
+                        $result->add_error('installation', "could not include '$incname' requested by '$dest' after install: $!");
+                    }
+                }
+                else
+                {
+                    push @newlines, $line;
+                }
+            }
+
+            # only write if the content is different
+            if (join('', @newlines) ne join('', @lines))
+            {
+                open my $rewrite, '>', $dest;
+                if ($rewrite)
+                {
+                    print $rewrite @newlines;
+                    close $rewrite;
+                }
+                else
+                {
+                    $result->add_error('installation', "could not rewrite '$dest' after install+include: $!");
+                }
+            }
+
+            $result->add_data_key('installation', ["install", $sketch->name(), $file], $dest);
+
             if (defined $perms)
             {
                 my $p = oct($perms);
