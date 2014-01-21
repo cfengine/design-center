@@ -16,8 +16,8 @@
       "path_prefix" string => "$(default:eu.path_prefix)";
 
   classes:
-      "$(vars)" expression => strcmp("$($(vars))", "true");
-      "not_$(vars)" not => strcmp("$($(vars))", "true");
+      "$(vars)" expression => classmatch("$($(vars))");
+      "not_$(vars)" not => classmatch("$($(vars))");
 
   methods:
       "utils" usebundle => default:eu(@(runenv));
