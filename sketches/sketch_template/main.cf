@@ -5,7 +5,7 @@ body file control
 
 bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, myarray)
 {
-@include "standard.inc"
+#@include "standard.inc"
   vars:
       # call the sample.sh script
       "sample_return" string => execresult(concat($(exec_prefix),
