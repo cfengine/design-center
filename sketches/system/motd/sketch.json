@@ -26,6 +26,8 @@
         // this is the name of the bundle!
         entry:
         [
+         { type: "environment", name: "runenv", },
+         { type: "metadata", name: "mymetadata", },
 	     { type: "string", name: "motd", description: "Message of the Day (aka motd)" },
 	     { type: "string", name: "motd_path", default: "/etc/motd", description: "Location of the primary, often only, MotD file" },
          { type: "string", name: "prepend_command", default: "/bin/uname -snrvm", description: "Command output to prepend to MotD" },
