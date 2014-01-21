@@ -550,8 +550,15 @@ sub make_var_lines
 
     foreach my $p (recurse_print($ref, $prefix, $unquote_scalars, $simplify_arrays, $empty_false, $type_override))
     {
-        push @ret, sprintf('"%s%s" %s => %s;',
-                           $name, $p->{path}, $p->{type}, $p->{value});
+        if ($name)
+        {
+            push @ret, sprintf('"%s%s" %s => %s;',
+                               $name, $p->{path}, $p->{type}, $p->{value});
+        }
+        else
+        {
+            push @ret, $p->{value};
+        }
     }
 
     return @ret;

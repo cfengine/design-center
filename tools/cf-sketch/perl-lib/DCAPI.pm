@@ -16,6 +16,8 @@ use DCAPI::Validation;
 use constant API_VERSION => '3.6.0';
 use constant CODER => JSON->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
 use constant CAN_CODER => JSON->new()->canonical()->utf8()->allow_nonref();
+use constant REQUIRED_ENVIRONMENT_KEYS => qw/activated test verbose/;
+use constant OPTIONAL_ENVIRONMENT_KEYS => qw/qa rudder/;
 
 use Mo qw/build default builder coerce is required/;
 
@@ -951,7 +953,7 @@ sub define_environment
                                       "Invalid environment spec under $dkey");
         }
 
-        foreach my $required (qw/activated test verbose/)
+        foreach my $required (REQUIRED_ENVIRONMENT_KEYS)
         {
             return $result->add_error('environment spec required key',
                                       "Invalid environment spec $dkey: missing key $required")
@@ -1000,7 +1002,7 @@ sub define_environment
             }
         }
 
-        foreach my $optional (qw/qa rudder/)
+        foreach my $optional (OPTIONAL_ENVIRONMENT_KEYS)
         {
             $spec->{$optional} = ! ! $spec->{$optional}
              if Util::is_json_boolean($spec->{$optional});
@@ -1341,7 +1343,7 @@ sub regenerate
         $self->log("Regenerate: final inputs after filtering %s", \@inputs);
     }
 
-    my $inputs = join "\n", Util::make_var_lines('inputs', \@inputs, '', 0, 0);
+    my $inputs = join "\n", Util::make_var_lines(0, \@inputs, '', 0, 0);
 
     my $type_indent = ' ' x 2;
     my $context_indent = ' ' x 4;
@@ -1390,69 +1392,20 @@ sub regenerate
 
     my $data_lines = join "\n\n", @data;
 
-    my $environment_calls = '';
-    my @environment_lines = ("# environment common bundles\n");
+    my @environment_data = ("# environment definitions\n");
     foreach my $e (keys %{$self->environments()})
     {
-        my @var_data;
-        my @class_data;
         my $edata = $self->environments()->{$e};
 
         # ensure there's an "activated" class
         unless (exists $edata->{activated})
         {
-            $edata->{activated} = 1;
+            $edata->{activated} = "any";
         }
 
-        my @ekeys = sort keys %$edata;
-        $edata->{env_vars} = \@ekeys;
-        foreach my $v (sort keys %$edata)
-        {
-            my $print_v = $v;
-            $print_v =~ s/\W/_/g;
-            my $d = $edata->{$v};
-
-            my $line = join("\n",
-                            map { "$indent$_" }
-                            Util::make_var_lines($print_v, $d, '', 0, 0));
-            push @var_data, $line;
-
-            # is it a scalar?
-            if (ref $d eq '')
-            {
-                my $d_expression = $d;
-                if (!defined $d_expression || $d_expression eq '' || $d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no')
-                {
-                    $d_expression = '!any';
-                }
-                elsif ($d_expression eq '1' || $d_expression eq 'true' || $d_expression eq 'yes')
-                {
-                    $d_expression = 'any';
-                }
-
-                $d_expression =~ s/[^a-zA-Z0-9_!&\@\$|.()\[\]{}:]/_/g;
-
-                push @class_data, sprintf('%s"runenv_%s_%s" expression => "%s";',
-                                          $indent,
-                                          $e,
-                                          $print_v,
-                                          $d_expression);
-            }
-        }
-
-        push @environment_lines,
-        sprintf("# environment %s\nbundle common %s\n{\n%s\n}\n",
-                $e, $e, join("\n",
-                                   "${type_indent}vars:",
-                                   @var_data,
-                                   # don't insert classes: line if there's no classes
-                                   (scalar @class_data ? "${type_indent}classes:" : ''),
-                                   @class_data));
-
-        $environment_calls .= "$indent\"$e\" usebundle => \"$e\";\n";
+        my $e_json = $self->cencode($edata);
+        push @environment_data, "$indent\"$e\" data => parsejson('$e_json');\n";
     }
-
-    my $environment_lines = join "\n", @environment_lines;
 
     # 3. make cfsketch_run bundle with invocations
     my @invocation_lines;
@@ -1521,27 +1474,19 @@ sub regenerate
     my $runfile_data = <<EOHIPPUS;
 $runfile_header
 
-$environment_lines
-
-# activation data
-bundle common cfsketch_g
+body file control
 {
-  vars:
-      # Files that need to be loaded for the activated sketches and
-      # their dependencies.
-      $inputs
+  inputs => $inputs;
 }
 
 bundle agent cfsketch_run
 {
   vars:
-
-$data_lines
+@environment_data
 
   methods:
     any::
       "cfsketch_g" usebundle => "cfsketch_g";
-$environment_calls
 $invocation_lines
 
   reports:
