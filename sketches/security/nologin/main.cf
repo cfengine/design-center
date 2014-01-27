@@ -3,7 +3,7 @@ body file control
       namespace => "cfdc_security_nologin";
 }
 
-bundle agent localuser_nologin(runenv, metadata, list_of_users, state)
+bundle agent localuser_nologin(runenv, metadata, list_of_users)
 {
   classes:
       "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
@@ -15,7 +15,7 @@ bundle agent localuser_nologin(runenv, metadata, list_of_users, state)
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-      "nologin_bin" string => "/usr/sbin/nologin";
+      "nologin_bin" string => "$(paths.nologin)";
 
   classes:
     "state_nologin"
@@ -29,13 +29,13 @@ bundle agent localuser_nologin(runenv, metadata, list_of_users, state)
 
 
   commands:
-    !nologin::
+    !have_nologin::
       "/bin/false"
         handle => "$(activation_id)_bad_parameter",
         comment => "Unexpected parameter, trigger a promise failed.";
 
   users:
-    nologin::
+    have_nologin::
       "$(list_of_users)"
         policy => "present",
         shell => "$(state[$(state)])",
@@ -43,7 +43,12 @@ bundle agent localuser_nologin(runenv, metadata, list_of_users, state)
 
   methods:
       "Design Center Utils"
-        usebundle => $(default:eu.path_prefix);
+        usebundle => default:eu($(runenv));
+
+  reports:
+    !have_nologin::
+      "$(this.bundle): ERROR -- I don't know where the nologin shell is, please see bundle common paths in the stdlib";
+
 }
 
 
@@ -59,7 +64,7 @@ bundle agent etc_nologin(runenv, metadata, state, content)
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-    "etc_nologin" string => "$(default:eu.path_prefix)etc/nologin";
+    "etc_nologin" string => "$(default:eu.path_prefix)/etc/nologin";
     "valid_states" slist => { "present", "absent" }; # Same as choices in the sketch.metadata file. Its good to verify everywhere! Expect bad params!
 
   classes:
