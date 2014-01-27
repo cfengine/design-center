@@ -46,7 +46,7 @@ CFEngine::dclib, CFEngine::stdlib, Cloud::Services::Common
 
 * parameter _string_ *hub* (default: none, description: Hub from which the instances should bootstrap)
 
-* parameter _array_ *options* (default: none, description: Options: security_group, netrc, ssh_pub_key, block_device_mapping.)
+* parameter _array_ *options* (default: `{"security_group":"default","netrc":"/root/.netrc","ssh_pub_key":"/root/.ssh/id_rsa.pub"}`, description: Options: security_group, netrc, ssh_pub_key, block_device_mapping.)
 
 * returns _return_ *instance_count* (default: none, description: none)
 

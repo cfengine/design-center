@@ -40,7 +40,7 @@
                 "name": "list_of_users",
                 "description": "List of users to be restricted from logging in.",
                 "type": "list",
-                "validation":"USERNAME_UNIX"
+                "validation":"LIST_OF_USERNAMES_UNIX"
             }
         ]
     },
@@ -69,7 +69,8 @@
             },
             "cfengine": {
                 "version": "3.6.0"
-            }
+            },
+            "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ]
         },
 
         "description": "This sketch provides facilities for restricing non root logins to a host.",
