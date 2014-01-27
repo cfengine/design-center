@@ -15,7 +15,7 @@ bundle agent localuser_nologin(runenv, metadata, list_of_users)
       "vars" slist => { "@(default:$(runenv).env_vars)" };
       "$(vars)" string => "$(default:$(runenv).$(vars))";
 
-      "nologin_bin" string => "$(paths.nologin)";
+      "nologin_bin" string => "$(default:paths.nologin)";
 
   classes:
     "state_nologin"
@@ -38,7 +38,7 @@ bundle agent localuser_nologin(runenv, metadata, list_of_users)
     have_nologin::
       "$(list_of_users)"
         policy => "present",
-        shell => "$(state[$(state)])",
+        shell => "$(nologin_bin)",
         ifvarclass => "have_$(list_of_users)";
 
   methods:
@@ -49,6 +49,8 @@ bundle agent localuser_nologin(runenv, metadata, list_of_users)
     !have_nologin::
       "$(this.bundle): ERROR -- I don't know where the nologin shell is, please see bundle common paths in the stdlib";
 
+    DEBUG::
+      "$(this.bundle): DEBUG -- nologin_bin = $(nologin_bin)";
 }
 
 
