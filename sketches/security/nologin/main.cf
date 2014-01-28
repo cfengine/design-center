@@ -88,7 +88,7 @@ bundle agent etc_nologin(runenv, metadata, state, content)
 
     present|absent::
       "_etc_nologin state"
-        usebundle => etc_nologin_state($(given_etc_nologin), $(state), $(content)),
+        usebundle => etc_nologin_state($(etc_nologin), $(state), $(content)),
         inherit => "true",
         handle => "$(activation_id)_methods_etc_nologin_state";
 
