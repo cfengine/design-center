@@ -1,0 +1,213 @@
+body file control
+{
+      namespace => "cfdc_primitives_file_existence";
+}
+#body common control
+#{
+#      inputs => {
+#                          "$(sys.workdir)/inputs/lib/3.5/paths.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/common.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/commands.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/packages.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/files.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/services.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/processes.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/storage.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/databases.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/monitor.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/guest_environments.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/bundles.cf",
+#                 };
+#  bundlesequence => { "dev" };
+#}
+#
+#
+#bundle agent dev
+#{
+#
+#  vars:
+#    "fav_files1" slist => { "/tmp/fav_file1", "/tmp/fav_file2", "/immutable" };
+#    "fav_files2" slist => { "/tmp/fav_file1", "/tmp/fav_file2", "/proc/nickypoo" };
+#
+#
+#  #methods:
+#
+#    #"ensure_file_exists1" usebundle => present(@(fav_files1), "PASS", "FAIL"); # should pass (can create first 2, last file already present (but immutable)
+#    #"ensure_file_exists2" usebundle => present(@(fav_files2), "PASS", "FAIL"); # should fail (cant create file in proc) 
+#    #"ensure_file_absent1" usebundle => absent(@(fav_files1), "PASS", "FAIL"); # should fail cant delete immutable file
+#    #"ensure_file_absent2" usebundle => absent(@(fav_files2), "PASS", "FAIL"); # should pass (proc file doesnt exist, can remove others)
+#    #"ensure_file_check1" usebundle => cfdc_files_ensure:presence_check("runenv", "metadata",  @(fav_files1), "PASS", "FAIL");
+#}
+
+bundle agent present(runenv, metadata, list_of_files, success_class, fail_class)
+# @brief Ensure files are present
+# @param list_of_files List of files to ensure are present
+# @param success_class Class to define when all files exist
+# @param fail_class Class to define when any file fails to exist
+{
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "canon[$(list_of_files)]" string => canonify($(list_of_files));
+      "canonified_file_names" slist => getvalues("canon");
+
+  files:
+    "$(present.list_of_files)"
+      handle => "$(activation_id)_files_exists",
+      create => "true",
+      classes => default:scoped_classes_generic("bundle", $(present.list_of_files));
+
+  methods:
+    "know exists"
+      usebundle => know_exists($(runenv), $(metadata), @(list_of_files), $(success_class), $(fail_class));
+
+    verbose::
+      #"metadata" usebundle => report_metadata($(this.bundle), $(metadata)),
+      #inherit => "true";
+
+  reports:
+    cfengine::
+      "$(fail_class)"
+        bundle_return_value_index => "defined",
+        ifvarclass => "$(fail_class)";
+
+      "$(success_class)"
+        bundle_return_value_index => "defined",
+        ifvarclass => "$(success_class)";
+
+    verbose::
+      "$(this.bundle): Looking for '$(list_of_files)'";
+
+      "$(this.bundle): Defined class $(success_class)"
+        ifvarclass => "$(success_class)";
+
+      "$(this.bundle): Defined class $(fail_class)"
+        ifvarclass => "$(fail_class)";
+
+      "$(this.bundle): '$(list_of_files)' = exists"
+        ifvarclass => "found_$(canonified_file_names)";
+
+      "$(this.bundle): '$(list_of_files)' = absent"
+        ifvarclass => "not_$(canonified_file_names)";
+}
+
+bundle agent absent(runenv, metadata, list_of_files, success_class, fail_class)
+# @brief Ensure files are absent
+# @param list_of_files List of files to ensure are absent
+# @param success_class Class to define when all files are absent
+# @param fail_class Class to define when any file fails to be absent
+{
+   vars:
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "canon[$(list_of_files)]" string => canonify($(list_of_files));
+      "canonified_file_names" slist => getvalues("canon");
+
+  files:
+    "$(list_of_files)"
+      handle => "$(activation_id)_files_absent",
+      delete => default:tidy;
+
+  methods:
+    "know absent"
+      usebundle => know_exists($(runenv), $(metadata), @(list_of_files), $(fail_class), $(success_class));
+
+     verbose::
+      #"metadata" usebundle => report_metadata($(this.bundle), $(metadata)),
+      #inherit => "true";
+
+  reports:
+    cfengine::
+      "$(fail_class)"
+        bundle_return_value_index => "defined",
+        ifvarclass => "$(fail_class)";
+
+      "$(success_class)"
+        bundle_return_value_index => "defined",
+        ifvarclass => "$(success_class)";
+
+    verbose::
+      "$(this.bundle): Looking for '$(list_of_files)'";
+
+      "$(this.bundle): Defined class $(success_class)"
+        ifvarclass => "$(success_class)";
+
+      "$(this.bundle): Defined class $(fail_class)"
+        ifvarclass => "$(fail_class)";
+
+      "$(this.bundle): '$(list_of_files)' = exists"
+        ifvarclass => "found_$(canonified_file_names)";
+
+      "$(this.bundle): '$(list_of_files)' = absent"
+        ifvarclass => "not_$(canonified_file_names)";
+}
+
+bundle agent know_exists(runenv, metadata, list_of_files, success_class, fail_class)
+# @brief Check files are present
+# @param list_of_files List of files to check are present
+# @param success_class Class to define when all files exist
+# @param fail_class Class to define when any file fails to exist
+{
+  vars:
+      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "canon[$(list_of_files)]" string => canonify($(list_of_files));
+      "canonified_file_names" slist => getvalues("canon");
+
+  classes:
+      "$(fail_class)"
+        not => fileexists($(list_of_files)),
+        scope => "namespace",
+        handle => "$(activation_id)_classes_know_absent",
+        classes => default:scoped_classes_generic("namespace", "not_$(list_of_files)");
+
+      "$(success_class)"
+        not => "$(fail_class)",
+        scope => "namespace",
+        handle => "$(activation_id)_classes_know_present",
+        classes => default:scoped_classes_generic("namespace", "found_$(list_of_files)");
+
+  #methods:
+  #  verbose::
+      #"metadata" usebundle => report_metadata($(this.bundle), $(metadata)),
+      #inherit => "true";
+
+  reports:
+    cfengine::
+      "$(fail_class)"
+        bundle_return_value_index => "defined",
+        ifvarclass => "$(fail_class)";
+
+      "$(success_class)"
+        bundle_return_value_index => "defined",
+        ifvarclass => "$(success_class)";
+
+    verbose::
+      "$(this.bundle): Looking for '$(list_of_files)'";
+
+      "$(this.bundle): Defined class $(success_class)"
+        ifvarclass => "$(success_class)";
+
+      "$(this.bundle): Defined class $(fail_class)"
+        ifvarclass => "$(fail_class)";
+
+      "$(this.bundle): '$(list_of_files)' = exists"
+        ifvarclass => "found_$(canonified_file_names)";
+
+      "$(this.bundle): '$(list_of_files)' = absent"
+        ifvarclass => "not_$(canonified_file_names)";
+}
