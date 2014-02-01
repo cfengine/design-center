@@ -1,4 +1,5 @@
 EXERCISE
+~~~~~~~~
 
 1. Set a custom class if the file /tmp/testme exists.
 

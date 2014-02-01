@@ -1,0 +1,193 @@
+CFEngine Vocabulary Primer	
+==========================
+Based on the works of Mark Burgess and CFEngine AS. 
+
+
+Preface
+-------
+CFEngine is designed to be comprehensive and to let you model
+nearly any aspect of system configuration using promises
+(statements of intention).
+
+There are over 500 promise attributes in CFEngine 3.
+They enable you to detail the desired system state.
+
+This document presents a "starting set" of commonly
+used ones. We suggest you learn them first.
+
+For more detail on the below, use the "Search CFEngine docs"
+search box at http://cf-learn.info/ (on the bottom right),
+or go to https://cfengine.com/docs/
+
+For professional CFEngine training, visit http://www.verticalsysadmin.com
+
+
+Promise Types
+-------------
+
+Arranged in the order CFEngine checks them (see "Normal Ordering" in the Reference Manual): 
+
+[cols="30%,70%"] 
+|=======================================================================================
+| vars    | A promise to be a variable, representing a value.
+| classes | A promise to be a boolean variable representing true/on/1.
+| files   | A promise about a file, including its existence, attributes and contents.
+| delete_lines   | A promise about file contents (that specified content is absent).
+| field_edits   | A promise about file contents (concerning values in text fields)
+| insert_lines   | A promise about file contents (that specified content is present).
+| replace_patterns   | A promise about file contents (that specified content is absent, replaced by another).
+| packages | A promise concerning a package, including its presence (or absence) and version.
+| processes | A promise concerning items in the system process table.
+| services | A promise concerning the state (on/off) of a service (a group of one or more processes that runs in the background).
+| commands | A promise to execute a command.
+| reports | A promise to report a message.
+|=======================================================================================
+
+
+Promise Attributes 
+------------------
+
+What follows is a listing of promise attributes by promise type.
+
+Any
+~~~
+
+These promise attributes can be used in *any* promise.
+
+[cols="30%,70%"] 
+|=======================================================================================
+| comment | A comment about this promise's intention that follows through the program
+| depends_on | A list of promise handles that this promise depends on somehow.
+| handle | A unique id-tag string for referring to this as a promisee elsewhere
+|=======================================================================================
+
+
+classes:
+~~~~~~~~
+
+[cols="30%,70%"] 
+|=======================================================================================
+| expression | Evaluate string expression of classes
+| and        | Combine class sources with AND - useful for including functions
+| or         | Combine class sources with inclusive OR - useful for including functions
+|=======================================================================================
+
+
+reports:
+~~~~~~~~
+
+[cols="30%,70%"] 
+|=======================================================================================
+| report_to_file | The path and filename to which output should be appended
+|=======================================================================================
+
+vars:
+~~~~~
+
+[cols="30%,70%"] 
+|=======================================================================================
+| string | A string
+| int | An integer
+| real | A real number (an integer with a fractional component)
+| slist | A list of strings
+| ilist | A list of integers
+| rlist | A list of real numbers
+|=======================================================================================
+
+
+commands:
+~~~~~~~~~
+
+[cols="30%,70%"] 
+|=====================================================================================
+| args | String of arguments for the command
+|=====================================================================================
+
+
+
+files:
+~~~~~~
+
+[cols="30%,70%"] 
+|=====================================================================================
+| copy_from | (external body) Used to copy files - see Standard Library section.
+| create | true/false whether to create non-existing file
+| edit_line | Specifies name of edit_line bundle
+| edit_template | The name of a special CFEngine template file to expand
+| perms | (external body) Used to set file attributes like permissions, ownership, etc.  See Standard Library section.
+| touch | true/false whether to touch time stamps on file
+| transformer | Command (with full path) used to transform current file (no shell wrapper used)
+|=====================================================================================
+
+
+
+packages:
+~~~~~~~~~
+[cols="30%,70%"]
+|=====================================================================================
+| package_architectures | Select architecture for package selection
+| package_policy | Criteria for package installation/upgrade on the current system (e.g. "add", "delete")
+|=====================================================================================
+
+processes:
+~~~~~~~~~~
+[cols="30%,70%"]
+|=====================================================================================
+| process_stop | A command used to stop a running process gracefully
+| restart_class | A class to be defined globally if the process is not running, so that a commands: rule can be referred to restart the process
+| signals | Signals to be sent to a process
+|=====================================================================================
+
+services:
+~~~~~~~~~
+
+[cols="30%,70%"]
+|=====================================================================================
+| service_policy | Policy for service (start/stop)
+|=====================================================================================
+
+
+Attributes in CFEngine Standard Library
+---------------------------------------
+[cols="11%,17%,22%,50%"]
+|=====================================================================================
+| Type | Attribute | Value | Description
+| * | action | immediate | Do it, do it nowww!
+| * | action | log_repaired | Log a repair
+| * | classes | if_repaired | Set class(es) if a promise was repaired
+| files | replace_with | value | Search and replace
+| files | copy_from | local_cp | Copy files locally
+| files | copy_from | remote_cp | Copy files from remote server
+| files | changes | detect_all_change | File integrity check
+| files | delete | tidy | Delete files, including symlinks to directories and empty directories.
+| files | perms | mog | Set mode, owner, group attributes on a file
+| files | edit_line | insert_lines | Make sure file contains lines
+| files | edit_line | expand_template | Make sure file contains content expanded from a template
+| files | edit_line | set_config_values | Set config values in a file
+| files | depth_search | depth | Maximum depth level for search (use with depth("inf") to turn on unbounded recursion)
+| files | file_select | days_old(days) | Select files by age 
+| files | file_select | name_age(name,days) | Select files by name and age 
+| files | location | before | Insert text before specified location
+| files | location | after | Insert text after specified location
+| packages | package_method | yum | Interface with YUM package manager
+| packages | package_method | apt | Interface with APT package manager
+| commands | contain | useshell | Run the command in a shell to use I/O redirection or pipelining
+|=====================================================================================
+
+Special Functions
+-----------------
+[cols="30%,70%"]
+|=====================================================================================
+| fileexists() | Returns "true" if the named file can be accessed 
+| classmatch()  | Returns "true" if the regular expression matches any currently defined class
+|=====================================================================================
+
+
+Special Variables
+-----------------
+[cols="30%,70%"]
+|=====================================================================================
+| $(sys.date) | Current time and date
+| $(sys.host) | Hostname
+| $(sys.policy_hub) | Hostname or address of our policy server.
+|=====================================================================================

@@ -1,4 +1,10 @@
-what are templates?  why would we use templates?
+Introducing templates
+~~~~~~~~~~~~~~~~~~~~~
+
+What are templates?  why would we use templates?
+
+What follows is an introduction to template for sysadmins
+that haven't worked with templates before.
 
 Example 1.  Email:
 

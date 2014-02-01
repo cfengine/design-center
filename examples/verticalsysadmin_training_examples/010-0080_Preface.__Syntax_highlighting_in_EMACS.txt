@@ -1,32 +1,5 @@
-!! Out of date !!    See "Learning CFEngine 3" book or
-cfengine.com/cfengine-code-editors for latest version.
+Emacs
+~~~~~
 
-Using the Emacs syntax highlighter
-----------------------------------
-
-1. Get latest stable Emacs (Emacs 24.1.2)
-
-2. Remove the cfengine syntax highlighter rules files that
-   ship with Emacs 24.1.2 as this cfengine.el is out of date
-   compared to the one on in the CFEngine repository:
-
-    rm share/emacs/24.1/lisp/progmodes/cfengine.elc
-    rm share/emacs/24.1/lisp/progmodes/cfengine.el.gz
-
-3. Install "cfengine.el" from 
-   https://raw.github.com/cfengine/core/master/contrib/cfengine.el
-   to the progmodes directory from #2 above.
-
-4. Open a .cf file: `C-x C-f FILENAME.cf'
-
-5. Explicitly activate the mode" `M-x cfengine3-mode'
-   (M-x is Alt-x or Esc-x usually)
-
-6. If you want to always activate cfengine3-mode when you open
-   files that end in .cf, add to following to ~/.emacs:
-
-    (add-to-list 'auto-mode-alist ("\\.cf\\'" . cfengine3-mode))
-
-7. In 24.2 cfengine-mode will be aliased to cfengine3-mode, but for
-   now it's aliased to cfengine-auto-mode, which tries to figure out if
-   you're using 2 or 3 and defaults to 2.
+See "Learning CFEngine 3" book or
+cfengine.com/cfengine-code-editors 

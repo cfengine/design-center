@@ -1,2 +1,8 @@
 CFEngine Grammar: LHS vs RHS
 ----------------------------
+
+Left-hand side  =>   Right Hand Side
+
+=> can be pronounced as "rocket"
+
+It serves to separate LHS from RHS and to differentiate CF3 syntax from CF2, which used the equals sign =

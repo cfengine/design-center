@@ -1,2 +1,6 @@
 Introductory overview
 ---------------------
+
+At this point of the course, a brief introductory
+lecture is given introducing CFEngine and the
+idea of desired state management.

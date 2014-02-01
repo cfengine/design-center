@@ -1,4 +1,5 @@
 EXERCISE 1
+~~~~~~~~~~
 
 Practice using "methods" type promises
 
@@ -16,18 +17,14 @@ Now run your policy and check.
 
 
 EXERCISE 2
-
+~~~~~~~~~~
 Now parameterize the 2nd bundle -- have the
 first bundle feed it an argument, and have the
 2nd bundle display that argument.
 
 
 EXERCISE 3
-bundle2("State Farm", "IL")
-
-
-bundle2("$(org)")
-
+~~~~~~~~~~
 
 Sysadmin Problem:
 
@@ -52,7 +49,7 @@ Demonstrate its use by calling it from another bundle:
 
 
 EXERCISE  Methods (re-usable bundles)
-
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Make a bundle called file_contains that takes two arguments:
 a filename, and a text string.  The bundle should ensure that
 the file specified in the first argument contains the text string
@@ -64,7 +61,7 @@ specified in the second argument.  Example:
 
 
 EXERCISE  Methods
-
+~~~~~~~~~~~~~~~~~
 Configuring a web server.
 
 Write a bundle "webserver" that will ensure an Apache httpd package is
@@ -83,19 +80,3 @@ Hints:
 
 Reference:
 039-0085_Basic_Examples:_Classes_and_Reports.__soft-class.cf
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

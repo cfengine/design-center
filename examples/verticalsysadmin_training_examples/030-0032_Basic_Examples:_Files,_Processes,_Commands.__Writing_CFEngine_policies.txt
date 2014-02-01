@@ -1,5 +1,5 @@
 Writing CFEngine policies
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. State the sysadmin problem
 

@@ -1,1 +1,1 @@
-Run the previous example without and with the -K switch
+Run the previous example without and with the -K switch (timelock override).

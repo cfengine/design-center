@@ -10,13 +10,16 @@ then
 	THRESHOLD=1000000
 fi
 
-COUNTER=0
+LOOP_COUNTER=0
+
+EXAMPLE_COUNTER=1
+
 
 for FILE in `ls |grep "^[0-9][0-9][0-9]\-" | grep -v .sh$`
 do
-	COUNTER=`expr $COUNTER + 1`
+	LOOP_COUNTER=`expr $LOOP_COUNTER + 1`
 
-	if [ $COUNTER -gt $THRESHOLD ]
+	if [ $LOOP_COUNTER -gt $THRESHOLD ]
         then
 		echo Reached thresholding.  Aborting.  >&2
 		exit 1
@@ -55,7 +58,12 @@ do
                         then
 		                #echo $FILE is a CFEngine file
 	                        #echo '[source]'
-				echo "=== Source code: $FILE"
+				echo
+				echo "EXAMPLE ${EXAMPLE_COUNTER}"
+	                        EXAMPLE_COUNTER=`expr $EXAMPLE_COUNTER + 1`
+				echo
+				echo "Filename: $FILE"
+				echo
 	                        echo '---------------------------------------------------------------------'
 	                        cat $FILE
 	                        echo '---------------------------------------------------------------------'
@@ -65,7 +73,7 @@ do
         	                if [ $? -eq 0 ]
                                 then
 	        	                #echo $FILE is a PERL script
-	                                #echo '[source,perl,numbered]'
+	                                echo '[source,perl,numbered]'
 	                                echo '---------------------------------------------------------------------'
 	                                echo
 	                                cat $FILE

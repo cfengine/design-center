@@ -1,5 +1,5 @@
 Integer Suffixes
-----------------
+~~~~~~~~~~~~~~~~
 
     'k' = value times 1000.
     'm' = value times 1000^2

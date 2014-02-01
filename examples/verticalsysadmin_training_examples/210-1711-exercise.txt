@@ -1,4 +1,5 @@
 EXERCISE
+~~~~~~~~
 
 1. Use CFEngine to make /tmp/mirror contain
 a copy of /usr/local/sbin

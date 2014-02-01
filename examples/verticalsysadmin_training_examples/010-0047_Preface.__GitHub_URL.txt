@@ -1,8 +1,9 @@
-GitHub
-------
+Using git
+---------
 
-I keep these examples on GitHub and update them during
-each class. 
+We keep these examples on GitHub and update
+them during each class as students ask
+questions or request additional demonstrations.
 
-You can run git at the start of each session to stay up
-to date with me.
+With git, you can download the updates
+right in class.
