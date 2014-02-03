@@ -16,7 +16,7 @@
         license: "MIT",
         tags: [ "cfdc", "security", "access", "access.conf" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 109 }, "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
+        depends: { "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
     },
 
     api:

@@ -13,7 +13,7 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
+        "depends": { "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "linux" ] }
     },
 
     "api": {

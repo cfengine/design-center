@@ -20,7 +20,7 @@
         tags: [ "cfdc", "webserver", "apache" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
         depends: {
-            "CFEngine::stdlib": {version: 109}, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {},
+            "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {},
             cfengine: {version: "3.5.0"}, os: { "redhat":true, "debian":true }
         }
     },

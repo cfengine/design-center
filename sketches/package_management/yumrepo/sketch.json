@@ -17,8 +17,7 @@
         tags: [ "cfdc" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         tested: [ "redhat_5", "centos_5" ],
-        depends: { "CFEngine::stdlib": { version: 109 },
-                   "CFEngine::dclib": { },
+        depends: {                    "CFEngine::dclib": { },
                    cfengine: { version: "3.4.0" },
                    os: [ "linux" ]
                  },

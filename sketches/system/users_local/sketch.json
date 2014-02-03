@@ -16,7 +16,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "users" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::stdlib::3.5.0": { }, "CFEngine::dclib": {}, "cfengine": { "version": "3.5.0" }, "os": [ "redhat|centos|ubuntu|debian" ] }
+        "depends": { "CFEngine::stdlib::3.5.0": { }, "CFEngine::dclib": {}, "cfengine": { "version": "3.5.0" }, "os": [ "redhat|centos|ubuntu|debian" ] }
     },
 
     "api" : {

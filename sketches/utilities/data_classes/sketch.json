@@ -15,7 +15,7 @@
         license: "MIT",
         tags: ["cfdc", "data", "classes" ],
         authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: {"CFEngine::stdlib": {version: 109}, "CFEngine::dclib::3.5.0": {}, "CFEngine::dclib": {}, cfengine: {version: "3.5.0"}, os: ["linux"] }
+        depends: {"CFEngine::dclib::3.5.0": {}, "CFEngine::dclib": {}, cfengine: {version: "3.5.0"}, os: ["linux"] }
     },
 
     api:

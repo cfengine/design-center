@@ -15,7 +15,7 @@
         license: "MIT",
         tags: [ "cfdc" ],
         authors: [ "Philip J Freeman <philip.freeman@gmail.com>" ],
-        depends: { "CFEngine::stdlib": { version: 111 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }}
+        depends: { "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }}
     },
 
     api:

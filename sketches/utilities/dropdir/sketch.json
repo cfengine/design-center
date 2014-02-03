@@ -15,7 +15,7 @@
         license: "MIT",
         tags: ["cfdc", "run", "dropdir", "window", "enterprise_compatible" ],
         authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::dclib": {}, "CFEngine::stdlib": {}, cfengine: {version: "3.5.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
+        depends: { "CFEngine::dclib": {}, cfengine: {version: "3.5.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
     },
 
     api:

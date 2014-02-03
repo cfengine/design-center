@@ -17,7 +17,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "packages", "enterprise_compatible" ],
         "authors": [ "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
+        "depends": { "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
     },
 
     api:

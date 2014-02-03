@@ -18,7 +18,7 @@
         tags: [ "cfdc" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         // this sketch depends on 3.5.0 so it can use bundle-local classes
-        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.5.0" } }
+        depends: { "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.5.0" } }
     },
 
     api:

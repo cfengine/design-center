@@ -20,7 +20,7 @@
         license: "MIT",
         tags: [ "cfdc", "cloud", "vmware", "vcli", "enterprise_compatible" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 110 },  "CFEngine::dclib::3.5.0": {}, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" },
+        depends: { "CFEngine::dclib::3.5.0": {}, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" },
                    "os" : [ {"linux" : "All Linux distributions", "windows" : "All Windows versions"} ]
                  }
     },

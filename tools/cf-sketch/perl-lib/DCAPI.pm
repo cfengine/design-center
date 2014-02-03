@@ -1445,12 +1445,23 @@ body file control
       inputs => $inputs;
 }
 
+bundle common cfsketch_g
+{
+  vars:
+      # legacy list, please ignore
+      "inputs" slist => { "cf_null" };
+}
+
 bundle agent cfsketch_run
 {
   vars:
 @environment_data
 
   methods:
+    any::
+      "cfsketch_g" usebundle => "cfsketch_g";
+
+      # invocation lines
 $invocation_lines
 
   reports:
