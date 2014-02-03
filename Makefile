@@ -10,6 +10,8 @@ ifeq ($(BUNDLEREF),)
   BUNDLEREF:=master
 endif
 
+I:=/usr/bin/install
+
 check:
 	cd tools/test; make api_selftest_junit NOIGNORE=1
 
@@ -19,8 +21,10 @@ install-bundle:
 	$(GIT) bundle create $(DESTDIR)/design-center.bundle $(BUNDLEREF)
 
 install-sketches:
-	mkdir -p $(DESTDIR)
-	$(GIT) ls-files sketches | $(GIT) checkout-index --stdin -f --prefix=$(DESTDIR)/
+	/bin/mkdir -p $(DESTDIR)
+# disabled # $(GIT) ls-files sketches | $(GIT) checkout-index --stdin -f --prefix=$(DESTDIR)/
+	$(I) -d $(DESTDIR)
+	/bin/cp -rp ./sketches $(DESTDIR)/
 
 install-tools:
 	cd tools/cf-sketch; make install-full PREFIX=$(DESTDIR) GIT=$(GIT)
