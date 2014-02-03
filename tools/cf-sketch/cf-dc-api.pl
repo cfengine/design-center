@@ -19,7 +19,7 @@ use lib map { $_,
                "$_/File-Path-2.09",
                "$_/JSON-2.53/lib",
                "$_/Mo-0.31/lib" }
- ("$FindBin::Bin/perl-lib", "$FindBin::Bin/../lib/cf-sketch");
+ ("$FindBin::Bin/perl-lib", "$FindBin::Bin/../lib/cf-sketch/perl-lib");
 
 use warnings;
 use strict;
