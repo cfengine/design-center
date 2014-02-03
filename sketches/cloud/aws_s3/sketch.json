@@ -14,7 +14,7 @@
         license: "MIT",
         tags: [ "cfdc", "cloud", "aws", "s3" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "Cloud::Services::Common": {}, "CFEngine::stdlib": { version: 110 }, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
+        depends: { "Cloud::Services::Common": {}, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
     },
     
     api:

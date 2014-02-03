@@ -16,8 +16,7 @@
         authors: [ "Eystein Stenberg <eystein@cfengine.com>" ],
         depends:
         {
-            "CFEngine::stdlib": { version: 105 },
-            "CFEngine::dclib": { },
+                        "CFEngine::dclib": { },
             "cfengine": { version: "3.4.0" },
             "os" : [ {"linux" : "All Linux distributions", "windows" : "All Windows versions"} ]
         },

@@ -16,7 +16,7 @@
         license: "MIT",
         tags: [ "cfdc", "database", "postgresql", "enterprise_compatible" ],
         authors: [ "Nakarin Phooripoom <nakarin.phooripoom@cfengine.com>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, cfengine: { version: "3.5.0" }, os: [ { "ubuntu_12_4" : "Ubuntu 12.4", "redhat_6" : "Red Hat 6" } ] }
+        depends: { "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, cfengine: { version: "3.5.0" }, os: [ { "ubuntu_12_4" : "Ubuntu 12.4", "redhat_6" : "Red Hat 6" } ] }
     },
 
     api:

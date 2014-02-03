@@ -17,7 +17,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "sudoers" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>", "Ben Heilman <bheilman@enova.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0" : {}, "cfengine": { "version": "3.5.0" }, "os": [ "linux" ] }
+        "depends": { "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0" : {}, "cfengine": { "version": "3.5.0" }, "os": [ "linux" ] }
     },
     "api" : {
         "ensure" : [
