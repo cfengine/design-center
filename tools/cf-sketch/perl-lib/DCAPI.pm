@@ -1325,7 +1325,7 @@ sub regenerate
     my @inputs;
     foreach my $a (@activations)
     {
-        push @inputs, $a->sketch()->get_inputs();
+        push @inputs, $a->sketch()->get_inputs(undef, 10);
         $self->log("Regenerate: adding inputs %s", \@inputs);
     }
 
