@@ -402,7 +402,7 @@ sub get_inputs
     my $relocate = shift;
     my $recurse = shift;
 
-    $self->dcapi()->log("getting inputs of sketch %s, relocate %s, recurse %s",
+    $self->dcapi()->log5("getting inputs of sketch %s, relocate %s, recurse %s",
                         $self->name(),
                         $relocate,
                         $recurse);
