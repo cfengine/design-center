@@ -15,7 +15,7 @@
         license: "MIT",
         tags: [ "cfdc", "stdlib" ],
         authors: [ "CFEngine AS" ],
-        depends: { "cfengine": { "version": "3.4.0" } }
+        depends: { "cfengine": { "version": "3.6.0" } }
     },
 
     interface: [ "library.cf" ]
