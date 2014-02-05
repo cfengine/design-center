@@ -11,7 +11,7 @@
     {
         name: "CFEngine::dclib",
 	    description: "Design Center standard library",
-        version: "1.0.0",
+        version: "1.1.0",
         license: "MIT",
         tags: [ "cfdc", "stdlib" ],
         authors: [ "CFEngine AS" ],
