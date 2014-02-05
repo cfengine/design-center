@@ -89,6 +89,11 @@ bundle agent dropdir_report(cmd, context, id, pname)
       handle => "$(id)_collect",
       comment => "Run and collect the output of the given command iff the context is true.";
 
+      "out_list[$(canon_cmd)]"
+      slist => splitstring("$(out[$(canon_cmd)])","[\n]", 99999);
+      handle => "$(id)_collect_list",
+      comment => "Collect the output of the given command into a slist.";
+
   reports:
     verbose::
       "$(this.bundle): WE HAVE the required context '$(context)'"
