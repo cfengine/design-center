@@ -44,6 +44,7 @@ use DCAPI;
 use Util;
 use File::Temp qw/tempfile tempdir /;
 use Parser;
+use Data::Dumper;
 
 $| = 1;                                 # autoflush
 
@@ -111,6 +112,7 @@ GetOptions(\%options,
            "filter=s@",
            "standalone_inputs=s@",
            "install|i=s@",
+           "install-all|ia",
            "apitest=s@",
            "apiconfig=s",
            "uninstall=s@",
@@ -184,7 +186,7 @@ if (exists $options{'make_readme'})
                      describe => 'README',
                      search => $options{search} eq '' ? '.' : $options{search}
                     },
-                    make_list_printer('search', 'README.md'));
+                    make_readme_saver('search', 'README.md'));
 }
 
 if (exists $options{'make_cfsketches'})
@@ -217,21 +219,24 @@ if ($options{'deactivate-all'})
     api_interaction({deactivate => 1});
 }
 
+if ($options{'install-all'})
+{
+    $options{force} = 1; # because the dependencies will need to be overwritten
+    api_interaction({
+                     search => '.'
+                    },
+                    make_cfdc_upgrade('search'));
+}
+
 if (scalar @{$options{install}})
 {
-    my @todo;
+    my @names;                          # sketch names
     foreach (@{$options{install}})
     {
-        push @todo, split ',', $_;
+        push @names, split ',', $_;
     }
 
-    @todo = map
-    {
-        {
-            sketch => $_, force => $options{force}, source => undef, target => undef
-        }
-    } @todo;
-    api_interaction({install => \@todo}, undef, undef, [qw/source target/]);
+    install_sketches(@names);
 }
 
 if (scalar @{$options{apitest}})
@@ -512,10 +517,81 @@ sub replace_attribute
      }
 }
 
+sub install_sketches
+{
+    my @todo = map
+    {
+        {
+            sketch => $_, force => $options{force}, source => undef, target => undef
+        }
+    } @_;
+    api_interaction({install => \@todo}, undef, undef, [qw/source target/]);
+}
+
+sub make_cfdc_upgrade
+{
+    my $type = shift @_;
+    my @names;
+
+    return make_list_processor($type,
+                               sub
+                               {
+                                   my $item = shift @_;
+                                   die "Unexpected non-scalar item in list printer"
+                                    unless ref $item eq '';
+
+                                   push @names, $item;
+                               },
+                               sub
+                               {
+                                   install_sketches(@names);
+                               });
+}
+
 sub make_list_printer
 {
     my $type = shift @_;
+
+    return make_list_processor($type,
+                               sub
+                               {
+                                   my $item = shift @_;
+                                   die "Unexpected item in list printer"
+                                    unless ref $item eq 'HASH';
+
+                                   my $name = Util::hashref_search($item, qw/metadata name/);
+                                   my $desc = Util::hashref_search($item, qw/metadata description/);
+                                   print "$name $desc\n";
+                               });
+}
+
+sub make_readme_saver
+{
+    my $type = shift @_;
     my $target_file = shift @_;
+
+    return make_list_processor($type,
+                               sub
+                               {
+                                   my $item = shift @_;
+                                   die "Unexpected item in README saver"
+                                    unless ref $item eq 'ARRAY';
+
+                                   my ($dir, $content) = @$item;
+                                   my $file = "$dir/$target_file";
+                                   open my $f, '>', $file
+                                    or die "Could not write $file: $!";
+                                   print $f $content;
+                                   close $f;
+                                   print "wrote $file...\n";
+                               });
+}
+
+sub make_list_processor
+{
+    my $type = shift @_;
+    my $proc = shift @_;
+    my $post = shift @_;
 
     return sub
     {
@@ -528,25 +604,12 @@ sub make_list_printer
             {
                 foreach my $sketch (values %{$list->{$repo}})
                 {
-                    if ($target_file && ref $sketch eq 'ARRAY')
-                    {
-                        my ($dir, $content) = @$sketch;
-                        my $file = "$dir/$target_file";
-                        open my $f, '>', $file
-                         or die "Could not write $file: $!";
-                        print $f $content;
-                        close $f;
-                        print "wrote $file...\n";
-                    }
-                    else
-                    {
-                        my $name = Util::hashref_search($sketch, qw/metadata name/);
-                        my $desc = Util::hashref_search($sketch, qw/metadata description/);
-                        print "$name $desc\n";
-                    }
+                    $proc->($sketch);
                 }
             }
         }
+
+        $post->() if $post;
     }
 }
 
