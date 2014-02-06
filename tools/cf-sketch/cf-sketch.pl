@@ -222,10 +222,14 @@ if ($options{'deactivate-all'})
 if ($options{'install-all'})
 {
     $options{force} = 1; # because the dependencies will need to be overwritten
-    api_interaction({
-                     search => '.'
-                    },
-                    make_cfdc_upgrade('search'));
+    my ($success, $result) = api_interaction({
+                                              search => '.'
+                                             },
+                                             make_cfdc_upgrade('search'));
+
+    exit 0 if $success;
+
+    exit 1;
 }
 
 if (scalar @{$options{install}})
