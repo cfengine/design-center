@@ -1,7 +1,7 @@
 # Cloud::Services::VMWare version 1
 
 License: MIT
-Tags: cfdc, cloud, vmware, vcli, enterprise_compatible
+Tags: cfdc, cloud, vmware, vcli
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description

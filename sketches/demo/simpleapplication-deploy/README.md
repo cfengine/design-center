@@ -1,7 +1,7 @@
 # Demo::SimpleApplication::Deploy version 1.1
 
 License: MIT
-Tags: vmware, ensure, deploy, demo, sketchify_generated, enterprise_compatible
+Tags: vmware, ensure, deploy, demo, sketchify_generated
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description

@@ -51,7 +51,6 @@
          "s3",
          "deploy",
          "demo",
-         "enterprise_compatible"
       ],
        "version" : "1.0",
        depends: { "Cloud::Services::AWS::S3": {}, cfengine: { version: "3.5.1" },

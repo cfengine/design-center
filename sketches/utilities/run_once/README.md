@@ -18,7 +18,7 @@ CFEngine::dclib, CFEngine::stdlib
 
 * parameter _string_ *context* (default: `"any"`, description: Context in which to run)
 
-* parameter _list_ *scripts* (default: none, description: List of scripts to run)
+* parameter _list_ *scripts* (default: none, description: List of scripts to run.  If an element is a file, use that file as TXT or CSV)
 
 
 ## SAMPLE USAGE

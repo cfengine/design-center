@@ -48,7 +48,6 @@
          "deploy",
          "demo",
          "sketchify_generated",
-         "enterprise_compatible"
       ],
        "version" : "1.1",
        depends: { "Demo::SimpleApplication": { }, "Cloud::Services::VMWare": {}, "Cloud::Services::AWS::EC2": {}, "Cloud::Services::OpenStack": {}, cfengine: { version: "3.5.0" },

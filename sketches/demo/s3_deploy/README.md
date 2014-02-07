@@ -1,7 +1,7 @@
 # Demo::S3::Deploy version 1.0
 
 License: MIT
-Tags: s3, deploy, demo, enterprise_compatible
+Tags: s3, deploy, demo
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
