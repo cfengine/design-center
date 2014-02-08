@@ -278,55 +278,66 @@ sub is_resource_local
     return ($resource !~ m,^[a-z][a-z]+:,);
 }
 
-sub get_remote
 {
-    my $resource = shift @_;
-    my $lwp = 1;
+    my $ua;
+
     eval
     {
-        require LWP::Simple;
-    };
-    if ($@)
-    {
-        Util::color_warn "Could not load LWP::Simple (you should install libwww-perl)";
-        $lwp = 0;
-    }
-
-    if ($resource =~ m/^https/)
-    {
+        require LWP::UserAgent;
+        $ua = LWP::UserAgent->new(agent => "CFEngine/DesignCenter");
         eval
         {
-            require LWP::Protocol::https;
-        };
-        if ($@ )
-        {
-            Util::color_warn "Could not load LWP::Protocol::https (you should install it)";
-            $lwp = 0;
+            require LWP::ConnCache;
+            my $cache = LWP::ConnCache->new;
+            $ua->conn_cache($cache);
         }
-    }
+    };
 
-    if ($lwp)
+    if ($@)
     {
-        return LWP::Simple::get($resource);
+        Util::color_warn "Could not load LWP::UserAgent (you should install libwww-perl)";
     }
-    else
+
+    sub get_remote
     {
-        require File::Which;
-        my $curl = File::Which::which('curl');
-        if (defined $curl)
+        my $resource = shift @_;
+
+        if ($resource =~ m/^https/)
         {
-            return read_command($curl, "--silent", $resource);
+            eval
+            {
+                require LWP::Protocol::https;
+            };
+            if ($@ )
+            {
+                Util::color_warn "Could not load LWP::Protocol::https (you should install it)";
+                undef $ua;
+            }
         }
 
-        my $wget = File::Which::which('wget');
-        if (defined $wget)
+        if ($ua)
         {
-            return read_command($wget, "-q", "--output-document=-", $resource);
+            return $ua->get($resource);
+        }
+        else
+        {
+            require File::Which;
+            my $curl = File::Which::which('curl');
+            if (defined $curl)
+            {
+                return read_command($curl, "--silent", $resource);
+            }
+
+            my $wget = File::Which::which('wget');
+            if (defined $wget)
+            {
+                return read_command($wget, "-q", "--output-document=-", $resource);
+            }
+
         }
 
+        Util::color_die("Neither curl nor wget nor LWP modules are available, sorry");
     }
-
-    Util::color_die("Neither curl nor wget nor LWP modules are available, sorry");
 }
 
 sub read_command
