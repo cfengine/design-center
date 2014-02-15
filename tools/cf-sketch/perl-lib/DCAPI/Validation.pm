@@ -103,12 +103,20 @@ sub validate
                                       "The choice is not an array ref");
         }
 
-        $self->api()->log4("Validating %s: checking choice %s",
-                           $self->name,
-                           $choice);
-        return $result->add_error([qw/choice validation/],
-                                  "The value '$data' is not in [@$choice]")
-         unless grep { $_ eq $data } @$choice;
+        if (!isscalarref($data))
+        {
+            $self->api()->log4("Validating %s: checking choice %s",
+                               $self->name,
+                               $choice);
+            return $result->add_error([qw/choice validation/],
+                                      "The value '$data' is not in [@$choice]")
+             unless grep { $_ eq $data } @$choice;
+        }
+        else
+        {
+            $self->api()->log5("Validating %s: scalar ref allowed 'choice'",
+                               $self->name);
+        }
     }
 
     my $minimum_value = Util::hashref_search($d, qw/minimum_value/);
@@ -118,16 +126,24 @@ sub validate
                                   "The minimum_value validation can't take a $data_type")
          if ref $data ne '';
 
-        return $result->add_error([qw/minimum_value validation/],
-                                  "The minimum_value validation can't take a non-numeric value")
-         if $data !~ m/^-?\d+$/;
+        if (!isscalarref($data))
+        {
+            return $result->add_error([qw/minimum_value validation/],
+                                      "The minimum_value validation can't take a non-numeric value")
+             if $data !~ m/^-?\d+$/;
 
-        $self->api()->log4("Validating %s: checking minimum value %s",
-                           $self->name,
-                           $minimum_value);
-        return $result->add_error([qw/minimum_value validation/],
-                                  "The value '$data' is below $minimum_value")
-         if $data < $minimum_value;
+            $self->api()->log4("Validating %s: checking minimum value %s",
+                               $self->name,
+                               $minimum_value);
+            return $result->add_error([qw/minimum_value validation/],
+                                      "The value '$data' is below $minimum_value")
+             if $data < $minimum_value;
+        }
+        else
+        {
+            $self->api()->log5("Validating %s: scalar ref allowed 'minimum'",
+                               $self->name);
+        }
     }
 
     my $maximum_value = Util::hashref_search($d, qw/maximum_value/);
@@ -137,16 +153,24 @@ sub validate
                                   "The maximum_value validation can't take a $data_type")
          if ref $data ne '';
 
-        return $result->add_error([qw/maximum_value validation/],
-                                  "The maximum_value validation can't take a non-numeric value")
-         if $data !~ m/^-?\d+$/;
+        if (!isscalarref($data))
+        {
+            return $result->add_error([qw/maximum_value validation/],
+                                      "The maximum_value validation can't take a non-numeric value")
+             if $data !~ m/^-?\d+$/;
 
-        $self->api()->log4("Validating %s: checking maximum value %s",
-                           $self->name,
-                           $maximum_value);
-        return $result->add_error([qw/maximum_value validation/],
-                                  "The value '$data' is above $maximum_value")
-         if $data > $maximum_value;
+            $self->api()->log4("Validating %s: checking maximum value %s",
+                               $self->name,
+                               $maximum_value);
+            return $result->add_error([qw/maximum_value validation/],
+                                      "The value '$data' is above $maximum_value")
+             if $data > $maximum_value;
+        }
+        else
+        {
+            $self->api()->log5("Validating %s: scalar ref allowed 'maximum'",
+                               $self->name);
+        }
     }
 
     my $invalid_regex = Util::hashref_search($d, qw/invalid_regex/);
@@ -156,12 +180,20 @@ sub validate
                                   "The invalid_regex validation can't take a $data_type")
          if ref $data ne '';
 
-        $self->api()->log4("Validating %s: checking invalid_regex %s",
-                           $self->name,
-                           $invalid_regex);
-        return $result->add_error([qw/invalid_regex validation/],
-                                  "The value '$data' matches forbidden pattern '$invalid_regex'")
-         if $data =~ m/$invalid_regex/;
+        if (!isscalarref($data))
+        {
+            $self->api()->log4("Validating %s: checking invalid_regex %s",
+                               $self->name,
+                               $invalid_regex);
+            return $result->add_error([qw/invalid_regex validation/],
+                                      "The value '$data' matches forbidden pattern '$invalid_regex'")
+             if $data =~ m/$invalid_regex/;
+        }
+        else
+        {
+            $self->api()->log5("Validating %s: scalar ref passes 'regex'",
+                               $self->name);
+        }
     }
 
     my $valid_regex = Util::hashref_search($d, qw/valid_regex/);
@@ -171,12 +203,20 @@ sub validate
                                   "The valid_regex validation can't take a $data_type")
          if ref $data ne '';
 
-        $self->api()->log4("Validating %s: checking valid_regex %s",
-                           $self->name,
-                           $valid_regex);
-        return $result->add_error([qw/valid_regex validation/],
-                                  "The value '$data' does not match '$valid_regex'")
-         if $data !~ m/$valid_regex/;
+        if (!isscalarref($data))
+        {
+            $self->api()->log4("Validating %s: checking valid_regex %s",
+                               $self->name,
+                               $valid_regex);
+            return $result->add_error([qw/valid_regex validation/],
+                                      "The value '$data' does not match '$valid_regex'")
+             if $data !~ m/$valid_regex/;
+        }
+        else
+        {
+            $self->api()->log5("Validating %s: scalar ref passes 'regex'",
+                               $self->name);
+        }
     }
 
     my $invalid_ipv4 = Util::hashref_search($d, qw/invalid_ipv4/);
@@ -186,12 +226,20 @@ sub validate
                                   "The invalid_ipv4 validation can't take a $data_type")
          if ref $data ne '';
 
-        $self->api()->log4("Validating %s: checking invalid_ipv4 %s",
-                           $self->name,
-                           $invalid_ipv4);
-        return $result->add_error([qw/invalid_ipv4 validation/],
-                                  "The IPv4 '$data' matches the forbidden pattern '$invalid_ipv4'")
-         if $self->ipmatch($data, $invalid_ipv4);
+        if (!isscalarref($data))
+        {
+            $self->api()->log4("Validating %s: checking invalid_ipv4 %s",
+                               $self->name,
+                               $invalid_ipv4);
+            return $result->add_error([qw/invalid_ipv4 validation/],
+                                      "The IPv4 '$data' matches the forbidden pattern '$invalid_ipv4'")
+             if $self->ipmatch($data, $invalid_ipv4);
+        }
+        else
+        {
+            $self->api()->log5("Validating %s: scalar ref passes 'ipv4'",
+                               $self->name);
+        }
     }
 
     my $valid_ipv4 = Util::hashref_search($d, qw/valid_ipv4/);
@@ -201,12 +249,20 @@ sub validate
                                   "The valid_ipv4 validation can't take a $data_type")
          if ref $data ne '';
 
-        $self->api()->log4("Validating %s: checking valid_ipv4 %s",
-                           $self->name,
-                           $valid_ipv4);
-        return $result->add_error([qw/valid_ipv4 validation/],
-                                  "The IPv4 '$data' does not match '$valid_ipv4'")
-         unless $self->ipmatch($data, $valid_ipv4);
+        if (!isscalarref($data))
+        {
+            $self->api()->log4("Validating %s: checking valid_ipv4 %s",
+                               $self->name,
+                               $valid_ipv4);
+            return $result->add_error([qw/valid_ipv4 validation/],
+                                      "The IPv4 '$data' does not match '$valid_ipv4'")
+             unless $self->ipmatch($data, $valid_ipv4);
+        }
+        else
+        {
+            $self->api()->log5("Validating %s: scalar ref passes 'ipv4'",
+                               $self->name);
+        }
     }
 
     my $list = Util::hashref_search($d, qw/list/);
@@ -420,6 +476,13 @@ sub ipmatch
     my $self = shift @_;
     $self->api()->log4("TODO: implement ipmatch()");
     return 0;
+}
+
+# this checks the form $(...) (inside you can have "namespace:bundle.varname")
+sub isscalarref
+{
+    my $string = shift @_;
+    return $string =~ m/^\$\([\w:.]+\)$/;
 }
 
 1;
