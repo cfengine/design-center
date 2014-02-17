@@ -23,8 +23,8 @@
     {
         cfdc_stitch:
         [
-            { type: "string", name: "filename", description: "File to edit (overwriting)." },
-            { type: "array", name: "pieces", description: "key-value array of pieces in format CONTEXT::PIECE.  Keys should sort() sequentially.  Best use numbers like 000, 001, etc. for the keys or simply pass a JSON list.", validation: "ARRAYLIST OF CONTEXT::PIECE" },
+            { type: "string", name: "filename", description: "File to edit (overwriting)" },
+            { type: "array", name: "pieces", description: "key-value array of pieces in format CONTEXT::PIECE.  Keys should sort() sequentially.  Best use numbers like 000, 001, etc. for the keys or simply pass a JSON list", validation: "ARRAYLIST OF CONTEXT::PIECE" },
             { type: "return", name: "built", },
         ],
     },

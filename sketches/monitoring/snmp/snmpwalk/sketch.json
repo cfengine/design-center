@@ -24,10 +24,10 @@
         [
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "mymetadata", },
-            { type: "string", name: "snmpwalk", description: "Command line to execute 'snmpwalk' (with options).  Note that '-Oaqt' is required and '-m ALL' is highly recommended.", default: "/usr/bin/snmpwalk -Oaqt -m ALL -v 2c -c public" },
+            { type: "string", name: "snmpwalk", description: "Command line to execute 'snmpwalk' (with options).  Note that '-Oaqt' is required and '-m ALL' is highly recommended", default: "/usr/bin/snmpwalk -Oaqt -m ALL -v 2c -c public" },
             { type: "string", name: "agent", description: "Agent to target, e.g. a host name or IP address", default: "localhost" },
             { type: "string", name: "oid", description: "OID to walk", default: "" },
-            { type: "return", name: "walked", description: "Was the tree walked?  Boolean." },
+            { type: "return", name: "walked", description: "Was the tree walked?  Boolean" },
             { type: "return", name: "module_array", description: "Name of array defined by the 'walk' bundle" },
         ],
     },

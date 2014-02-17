@@ -25,13 +25,13 @@
         [
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "string", name: "source_dir", description: "Directory where the content can be found.", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
-            { type: "string", name: "dest_dir", description: "Directory where the content will be installed.", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
-            { type: "string", name: "owner", description: "Owner of the dest_dir after staging.", validation: "USERNAME_UNIX" },
-            { type: "string", name: "group", description: "Owner of the dest_dir after staging.", validation: "USERNAME_UNIX" },
-            { type: "string", name: "dirmode", description: "Directory mode to install.", validation: "DIGITS" },
-            { type: "string", name: "filemode", description: "File mode to install.", validation: "DIGITS" },
-            { type: "array", name: "options", description: "Staging options.",
+            { type: "string", name: "source_dir", description: "Directory where the content can be found", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "string", name: "dest_dir", description: "Directory where the content will be installed", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "string", name: "owner", description: "Owner of the dest_dir after staging", validation: "USERNAME_UNIX" },
+            { type: "string", name: "group", description: "Owner of the dest_dir after staging", validation: "USERNAME_UNIX" },
+            { type: "string", name: "dirmode", description: "Directory mode to install", validation: "DIGITS" },
+            { type: "string", name: "filemode", description: "File mode to install", validation: "DIGITS" },
+            { type: "array", name: "options", description: "Staging options",
             default:
               {
                   excluded: [".cvs", ".svn", ".subversion", ".git", ".bzr"],

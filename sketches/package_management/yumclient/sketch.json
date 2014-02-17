@@ -59,7 +59,7 @@
         [
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "string", name: "file", description: "File to ensure. Note that the file will be OVERWRITTEN so you should probably not specify /etc/yum.conf.  If you leave this blank, it will default to /etc/yum.repos.d/SECTION.repo, where SECTION is the 'section' parameter."},
+            { type: "string", name: "file", description: "File to ensure. Note that the file will be OVERWRITTEN so you should probably not specify /etc/yum.conf.  If you leave this blank, it will default to /etc/yum.repos.d/SECTION.repo, where SECTION is the 'section' parameter"},
             { type: "string", name: "section" },
             { type: "array", name: "template_config" },
             { type: "return", name: "file", },

@@ -12,7 +12,7 @@
     metadata:
     {
         "name": "System::set_hostname",
-	"description": "Set system hostname. Domain name is also set on Mac, Red Hat and and Gentoo derived distributions (but not Debian).",
+	"description": "Set system hostname. Domain name is also set on Mac, Red Hat and and Gentoo derived distributions (but not Debian)",
         "version": "1.05.2",
         "license": "MIT",
         "tags": [ "cfdc" ],

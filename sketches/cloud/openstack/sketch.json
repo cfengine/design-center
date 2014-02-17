@@ -28,7 +28,7 @@
             { type: "string", name: "class", description: "Logical class to assign to machines" },
             { type: "boolean", name: "install_cfengine", },
             { type: "string", name: "hub", description: "Hub from which the instances should bootstrap" },
-            { type: "array", name: "options", description: "Options: security_group, netrc, ssh_pub_key." },
+            { type: "array", name: "options", description: "Options: security_group, netrc, ssh_pub_key" },
             { type: "return", name: "instance_count", },
         ],
     },

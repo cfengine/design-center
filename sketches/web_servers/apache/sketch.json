@@ -31,11 +31,11 @@
         [
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "string", name: "hostname", description: "Main site host name.", validation: "HOSTNAME" },
-            { type: "string", name: "port", description: "Main site port number.", default: 80, validation: "PORT_NUMBER" },
-            { type: "string", name: "ssl_port", description: "Main site SSL port number.", default: 443, validation: "PORT_NUMBER" },
-            { type: "string", name: "docroot", description: "Document root for the main site.", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
-            { type: "array", name: "options", description: "Apache options.  Provide ssl=1 if you want SSL enabled.",
+            { type: "string", name: "hostname", description: "Main site host name", validation: "HOSTNAME" },
+            { type: "string", name: "port", description: "Main site port number", default: 80, validation: "PORT_NUMBER" },
+            { type: "string", name: "ssl_port", description: "Main site SSL port number", default: 443, validation: "PORT_NUMBER" },
+            { type: "string", name: "docroot", description: "Document root for the main site", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "array", name: "options", description: "Apache options.  Provide ssl=1 if you want SSL enabled",
             default:
               {
                   ssl: true,
