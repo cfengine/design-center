@@ -295,7 +295,7 @@ sub is_resource_local
 
     if ($@)
     {
-        Util::color_warn "Could not load LWP::UserAgent (you should install libwww-perl)";
+        $ua = 0; # meaning "warn me later"
     }
 
     sub get_remote
@@ -321,6 +321,12 @@ sub is_resource_local
         }
         else
         {
+            if (defined $ua) # it is 0, from above where LWP failed to load
+            {
+                Util::color_warn "Could not load LWP::UserAgent (you should install libwww-perl)";
+                undef $ua;
+            }
+
             require File::Which;
             my $curl = File::Which::which('curl');
             if (defined $curl)
