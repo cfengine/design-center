@@ -1485,7 +1485,7 @@ sub regenerate
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
 
-        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s" } usebundle => %s%s(%s), ifvarclass => "%s", useresult => "return_%s";',
+        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s" } usebundle => %s%s(%s), handle => "dc_method_call_%s", ifvarclass => "%s", useresult => "return_%s";',
                                         $indent,
                                         $a->id(),
                                         $a->prefix(),
@@ -1494,6 +1494,7 @@ sub regenerate
                                         $namespace_prefix,
                                         $a->bundle(),
                                         $a->make_bundle_params(),
+                                        $a->id(),
                                         $a->sketch()->runtime_context(),
                                         $a->id());
     }
@@ -1513,10 +1514,11 @@ sub regenerate
         }
 
         push @report_lines,
-         sprintf('%s"activation %s could not run because it requires classes %s" ifvarclass => "inform_mode.!(%s)";',
+         sprintf('%s"activation %s could not run because it requires classes %s" handle => "dc_return_report_%s", ifvarclass => "inform_mode.!(%s)";',
                  $indent,
                  $a->id(),
                  $a->sketch()->runtime_context(),
+                 $a->id(),
                  $a->sketch()->runtime_context());
     }
 
