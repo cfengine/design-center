@@ -529,6 +529,7 @@ sub resolve_dependencies
             my $list = $self->dcapi()->collect_int($self->dcapi()->repos(),
                                                    \@criteria,
                                                    { flatten => 1 });
+
             if (scalar @$list < 1 || $options{force})
             {
                 if ($options{install})
@@ -562,8 +563,8 @@ sub resolve_dependencies
                     }
                     else
                     {
-                        return $$search->add_error('dependency install',
-                                                   "Could not install dependency $dep for $name");
+                        return $search->add_error('dependency install',
+                                                  "Could not install dependency $dep for $name");
                     }
                 }
                 else

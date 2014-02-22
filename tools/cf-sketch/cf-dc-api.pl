@@ -34,11 +34,6 @@ my @log;
 my $required_version = '3.4.0';
 my $api = DCAPI->new(cfengine_min_version => $required_version);
 
-unless ($api->curl())
-{
-    $api->exit_error("$base: could not locate `curl' executable in $ENV{PATH}.  Install curl, please.");
-}
-
 unless ($api->cfagent())
 {
     $api->exit_error("$base: You probably need to install CFEngine!  I could not locate `cf-agent' executable in $ENV{PATH} or /var/cfengine/bin");

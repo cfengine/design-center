@@ -26,7 +26,6 @@ has version => ( is => 'ro', default => sub { API_VERSION } );
 
 has config => ( );
 
-has curl => ( is => 'ro', default => sub { which('curl') } );
 has cfagent => (
                 is => 'ro',
                 default => sub
@@ -68,6 +67,8 @@ has selftests => ( is => 'rw', default => sub { { } } );
 
 has cfengine_min_version => ( is => 'ro', required => 1 );
 has cfengine_version => ( is => 'rw' );
+
+has forced_cache => ( is => 'ro', default => sub { {} } );
 
 has coder =>
 (
@@ -329,7 +330,6 @@ sub data_dump
     {
      version => $self->version(),
      config => $self->config(),
-     curl => $self->curl(),
      repolist => $self->repos(),
      recognized_sources => $self->recognized_sources(),
      vardata => $self->vardata(),
@@ -598,7 +598,7 @@ sub describe_int
 
 sub install
 {
-    my $self = shift;
+    my $self    = shift;
     my $install = shift;
 
     my $result = DCAPI::Result->new(api => $self,
@@ -687,9 +687,16 @@ sub install
         if ($drepo->find_sketch($d{sketch}))
         {
             $self->log3("Sketch $d{sketch} is already in target repo");
-            if ($d{force})
+            $self->log5("forced cache = %s", $self->forced_cache());
+            if ($d{force} && !exists $self->forced_cache()->{$d{target}}->{$d{sketch}})
             {
                 $self->log("With force=true, overwriting sketch $d{sketch} in $d{target};");
+                $self->forced_cache()->{$d{target}}->{$d{sketch}}++;
+            }
+            elsif (exists $self->forced_cache()->{$d{target}}->{$d{sketch}})
+            {
+                $self->log3("Sketch $d{sketch} has already been force-installed");
+                next INSTALLER;
             }
             else
             {
@@ -1958,27 +1965,6 @@ sub cencode_pretty { shift; CAN_CODER->pretty->encode(@_) };
 
 sub dump_encode { shift; use Data::Dumper; return Dumper([@_]); }
 
-sub curl_GET { shift->curl_call('', @_) };
-
-sub curl_call
-{
-    my $self = shift @_;
-    my $mode = shift @_;
-    my $url = shift @_;
-
-    my $curl = $self->curl();
-
-    my $run = <<EOHIPPUS;
-$curl -s $mode $url |
-EOHIPPUS
-
-    $self->log("Running: $run\n");
-
-    open my $c, $run or return (undef, "Could not run command [$run]: $!");
-
-    return ([<$c>], undef);
-}
-
 sub load_raw
 {
     my $self = shift @_;
@@ -2042,12 +2028,11 @@ sub load_int
     }
     else
     {
-        my ($j, $error) = $self->curl_GET($f);
+        my $j = Util::get_remote($f);
 
-        defined $error and return (undef, $error);
         defined $j or return (undef, "Unable to retrieve $f");
 
-        @j = @$j;
+        @j = split "\n", $j;
     }
 
     if (scalar @j)

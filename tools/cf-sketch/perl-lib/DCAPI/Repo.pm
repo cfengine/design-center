@@ -199,8 +199,13 @@ sub install
         }
         else
         {
-            # Requires curl
-            $self->api()->curl_call("-o '$dest'", $source);
+            my $data = Util::get_remote($source);
+            if (defined $data)
+            {
+                open my $out, '>', $dest;
+                print $out $data;
+                close $out;
+            }
         }
 
         if (-f $dest)

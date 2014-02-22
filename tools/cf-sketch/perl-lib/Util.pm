@@ -317,7 +317,11 @@ sub is_resource_local
 
         if ($ua)
         {
-            return $ua->get($resource);
+            my $response = $ua->get($resource);
+            if ($response->is_success)
+            {
+                return $response->decoded_content;
+            }
         }
         else
         {
