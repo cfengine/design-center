@@ -1,6 +1,11 @@
 The Real Basic Form of a Promise
---------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Each promise includes a statement of context,
+where is that promise applicable, on what
+class of machines, where and when?
+
+--------------------------------------------
 promise_type:
 
     context::
@@ -9,19 +14,18 @@ promise_type:
 
             attribute1 => value1,
             attribute2 => value2;
+--------------------------------------------
 
-----------------------------------------------
-
-Example:
-
+Example
+^^^^^^^
+------------------------------------------------------------------
 files:
 
   linux&Sunday::
-
 
     "/etc/nologin"
 
               handle => "disable_nonroot_logins",
              comment => "Take a day off, don't work on Sunday!",
               create => "true";
-
+------------------------------------------------------------------

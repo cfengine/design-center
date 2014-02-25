@@ -1,11 +1,14 @@
-Example: Promise Body
----------------------
+Example of Promise Body
+^^^^^^^^^^^^^^^^^^^^^^^
 
+The last three lines constitute the promise body.
+
+------------------------------------------------------------
 files:
 
     "/var/cfengine/i_am_alive" 
 
-        create  => "true",                          # body
-        touch   => "true",                          # body
-        comment => "Prove CFEngine is running.";    # body
-        
+        create  => "true",                          
+        touch   => "true",                         
+        comment => "Prove CFEngine is running.";  
+------------------------------------------------------------

@@ -1,3 +1,5 @@
+Promise attributes
+~~~~~~~~~~~~~~~~~~
 CFEngine uses many "constraint expressions" as part
 of the body of a promise.  These are attributes of
 a promise, they detail and constrain the promise.

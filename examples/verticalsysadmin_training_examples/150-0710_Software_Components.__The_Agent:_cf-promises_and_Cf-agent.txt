@@ -1,16 +1,21 @@
-Software Components
+CFEngine Components
+~~~~~~~~~~~~~~~~~~~
 
+CFEngine 3 consists of a number of components.
 
-CFEngine 3 consists of a number of components:
+Syntax checker and Agent
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-* cf-promises 
+cf-promises 
+^^^^^^^^^^^
 
   You can use it to syntax check your policies:
 
     cf-promises -f ./your_policy.cf
 
 
-* cf-agent
+cf-agent
+^^^^^^^^
 
 Execute your policies.  cf-agent is responsible
 for maintaining promises about the state of your

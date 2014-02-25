@@ -1,5 +1,0 @@
-!! SKIP !!
-
-EXERCISE
-
-Copy /var/cfengine/share/CoreBase/*cf to /var/cfengine/inputs

@@ -1,5 +1,3 @@
-CamelCase
-
 # - demonstrate setting a custom class using a function
 
 bundle agent example {

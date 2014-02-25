@@ -1,4 +1,5 @@
 EXERCISE
+~~~~~~~~
 
 Make an array, student_grades.
 

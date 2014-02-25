@@ -1,2 +1,2 @@
-Arrays
-------
+Data Structures: Arrays
+-----------------------

@@ -1,5 +1,5 @@
-Setting up client-server
-------------------------
+Setting up client-server (or, client-server bootstrap)
+------------------------------------------------------
 
 Wipe the slate clean (on both client and server):
 

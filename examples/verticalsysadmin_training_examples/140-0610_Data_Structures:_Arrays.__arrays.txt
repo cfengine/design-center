@@ -16,12 +16,17 @@ Example:
 
 
 Food Prices
------------
 
-Apple   59c
-Banana  30c
-Oranges 35c
+* Apple   59c
+* Banana  30c 
+* Oranges 35c
 
+Put the price of Apple into food_prices array:
+-----------------------------------------------------
 vars:   "food_prices[Apple]"    string =>  "59c";
+-----------------------------------------------------
 
+Use the price of Apple:
+-----------------------------------------------------
 $(food_prices[Apple])
+-----------------------------------------------------

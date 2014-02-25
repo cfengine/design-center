@@ -1,4 +1,7 @@
-EXERCISE - create executable shell script
+EXERCISE
+~~~~~~~~
+
+Create executable shell script
 
 Write a CFEngine policy to ensure /usr/local/bin/helloworld
 exists, has permissions 0755, owner root, group root, and

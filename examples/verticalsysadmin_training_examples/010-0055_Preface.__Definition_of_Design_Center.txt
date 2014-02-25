@@ -1,0 +1,14 @@
+Definition: Design Center
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+The CFEngine Design Center is a curated collection
+of policies and examples located at
+
+    http://github.com/cfengine/design-center
+
+The collection comes from CFEngine staff and users
+and is curated by CFEngine staff.
+
+The Vertical Sysadmin Training Examples are in the
+"examples" section of the Design Center.

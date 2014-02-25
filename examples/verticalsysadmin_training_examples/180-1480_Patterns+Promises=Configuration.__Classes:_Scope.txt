@@ -1,2 +1,3 @@
 Classes and Scope
-
+~~~~~~~~~~~~~~~~~
+Do classes have scope?
