@@ -291,7 +291,7 @@ sub command_sketchify
     {
         Util::warning("\nThe entry point '$bundle' doesn't seem to receive parameters of type 'environment' or 'metadata'.\n");
         Util::message("These arguments are not necessary, but can be useful for the sketch to respond to different run environment parameters (i.e. test or verbose mode) or to have access to its own metadata.\n");
-        Util::message("I can automatically add these parameters to the bundle, together with some code to put their information in classes and variables, and also to create an activation_id variable that will make it possible to use the new sketch with the CFEngine Enterprise Design Center GUI.\n");
+        Util::message("I can automatically add these parameters to the bundle, together with some convenience code to put their information in classes and variables.\n");
         my $add;
         ($add, $stop) = prompt_sketch_datum("Would you like me to do this? (Y/n) ", "", sub { shift =~ /^(y(es)?|no?)?$/i }, "Please enter 'yes' or 'no'.");
         return if $stop;
@@ -312,13 +312,16 @@ sub command_sketchify
     # Generate a suggestion for the sketch directory, based on its name
     my $sketch_dir = lc($sketchname);
     $sketch_dir =~ s!::!/!g;
-    ($sketch_dir, $stop) = prompt_sketch_datum("Please enter the directory within the sketches repository where this sketch should be stored: ", $sketch_dir);
+    ($sketch_dir, $stop) = prompt_sketch_datum("Please enter the directory within the sketches repository where this sketch should be stored. I have generated a suggestion based on your sketch name: ", $sketch_dir);
     return if $stop;
     $sketch_dir =~ s,^\./,,;
     $output ||= "$Config{sourcedir}/$sketch_dir";
     Util::message("Your new sketch will be stored under $output/\n");
     Util::dc_make_path($output)
        or do { Util::error("Error creating directory $output: $!\n"); return; };
+
+    # Automatically determine how many ".." to include in the path to the include file for standard.inc (see below)
+    my $ndots=scalar(split '/', $sketch_dir);
 
     Util::warning("New sketch data structure: ".Dumper($new_sketch)."\n")
        if $Config{verbose};
@@ -357,18 +360,9 @@ sub command_sketchify
         print F $line;
         if ($waiting_to_insert && $line =~ /\{/)
         {
-            print F q#
-  classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
-
-  vars:
-      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
-
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-#;
+            my $incfile = ( '../' x $ndots ) . 'sketch_template/standard.inc';
+            print F qq(#\@include "$incfile"\n\n);
+);
             $waiting_to_insert = undef;
         }
     }
