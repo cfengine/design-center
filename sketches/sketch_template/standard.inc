@@ -4,7 +4,7 @@
 
   vars:
       "vars" slist => getindices(runenv);
-      "$(vars)" string => nth(runenv, $(vars));
+      "$(vars)" string => "$(runenv[$(vars)])";
       # often you need a unique value for the current run through a
       # bundle, especially if you use if_repaired and such.  The
       # canon_prefix will give you that.
@@ -16,8 +16,8 @@
       "show_prefix" string => "", policy => "free";
 
     activated.test::
-      "exec_prefix" string => "$(paths.paths[echo]) ", policy => "free";
-      "show_prefix" string => "$(paths.paths[grep]) . ", policy => "free";
+      "exec_prefix" string => "$(paths.path[echo]) ", policy => "free";
+      "show_prefix" string => "$(paths.path[grep]) . ", policy => "free";
 
     activated.no_path_prefix.not_test::
       "path_prefix" string => "", policy => "free";
