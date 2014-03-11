@@ -9,7 +9,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
 
   vars:
       "main_path"
-      string => "$(default:eu.path_prefix)$(motd_path)",
+      string => "$(path_prefix)$(motd_path)",
       comment => "Path of the main MotD (typical the only one)";
 
       "owner" string => ifelse("test", $(this.promiser_uid),
@@ -27,7 +27,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
 
     activated.!prepend_command_not_given::
       "output"
-      string => execresult("$(default:eu.exec_prefix)$(prepend_command)",
+      string => execresult("$(exec_prefix)$(prepend_command)",
                            "noshell"),
       comment => "Command output to prepend to MtoD";
 
@@ -104,11 +104,11 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
   reports:
       # use the "test" context to help debug the sketch (for the developer)
     test::
-      "$(this.bundle): running in test mode";
-      "$(this.bundle): owner = $(owner)";
-      "$(this.bundle): output = $(output)" ifvarclass => "!prepend_command_not_given";
-      "$(this.bundle): main_path = $(main_path)";
-      "$(this.bundle): main_lines = $(main_lines)";
-      "$(this.bundle): output_path = $(output_path)" ifvarclass => "dynamic_path_given";
-      "$(this.bundle): symlink_link = $(symlink_link)" ifvarclass => "create_symlink";
+      "$(dcbundle): running in test mode";
+      "$(dcbundle): owner = $(owner)";
+      "$(dcbundle): output = $(output)" ifvarclass => "!prepend_command_not_given";
+      "$(dcbundle): main_path = $(main_path)";
+      "$(dcbundle): main_lines = $(main_lines)";
+      "$(dcbundle): output_path = $(output_path)" ifvarclass => "dynamic_path_given";
+      "$(dcbundle): symlink_link = $(symlink_link)" ifvarclass => "create_symlink";
 }

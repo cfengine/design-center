@@ -17,38 +17,6 @@ bundle agent report_metadata(bundlename, metadata)
       "$(bundlename): $($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
 }
 
-# environment utilities, shortened for convenience
-bundle agent eu(runenv)
-{
-  classes:
-      "$(vars)" expression => strcmp("$($(vars))", "true");
-      "not_$(vars)" not => strcmp("$($(vars))", "true");
-
-      "have_path_prefix" expression => isvariable("runenv[path_prefix]");
-      "no_path_prefix" not => isvariable("runenv[path_prefix]");
-
-  vars:
-      "vars" slist => getindices(runenv);
-      "$(vars)" string => nth(runenv, $(vars));
-
-    activated.not_test::
-      "exec_prefix" string => "", policy => "free";
-      "show_prefix" string => "", policy => "free";
-
-    activated.test::
-      "exec_prefix" string => "/bin/echo ", policy => "free";
-      "show_prefix" string => "/bin/grep . ", policy => "free";
-
-    activated.no_path_prefix.not_test::
-      "path_prefix" string => "", policy => "free";
-    activated.no_path_prefix.test::
-      "path_prefix" string => "/tmp", policy => "free";
-
-  reports:
-    verbose::
-      "$(this.bundle): the path_prefix for runenv $(runenv) is '$(path_prefix)'";
-}
-
 # an example of how a sketch can install itself
 # "install" usebundle => default:install_sketch(METADATA, "sourcedir", "destdir");
 # TODO: add permissions and owner/group
