@@ -17,7 +17,7 @@
         "license": "MIT",
         "tags": [ "cfdc" ],
         "authors": [ "Aleksey Tsalolikhin <atsaloli.tech@gmail.com>", "Diego Zamboni <diego.zamboni@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "cfengine": { "version": "3.3.0" }, "os": [ "linux" ] }
+        "depends": { "cfengine": { "version": "3.3.0" }, "os": [ "linux" ] }
     },
 
     

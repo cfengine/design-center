@@ -18,7 +18,7 @@
         license: "MIT",
         tags: [ "cfdc" ],
         authors: [ "Ben Heilman <bheilman@enova.com>" ],
-        depends: { "CFEngine::stdlib": { version: 111 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
+        depends: { "CFEngine::sketch_template": {}, os: [ "linux" ] }
     },
 
     api:
@@ -26,14 +26,13 @@
         // this is the name of the bundle!
         entry:
         [
-            { type: "environment", name: "runenv", },
-            { type: "metadata", name: "metadata", },
-
-	    { type: "string", name: "motd", description: "Message of the Day (aka motd)" },
-	    { type: "string", name: "motd_path", default: "/etc/motd", description: "Location of the primary, often only, MotD file" },
-            { type: "string", name: "prepend_command", default: "/bin/uname -snrvm", description: "Command output to prepend to MotD" },
-            { type: "string", name: "dynamic_path", default: null, description: "Location of the dynamic part of the MotD file" },
-            { type: "string", name: "symlink_path", default: null, description: "Location of the symlink to the motd file" }
+         { type: "environment", name: "runenv", },
+         { type: "metadata", name: "mymetadata", },
+	     { type: "string", name: "motd", description: "Message of the Day (aka motd)" },
+	     { type: "string", name: "motd_path", default: "/etc/motd", description: "Location of the primary, often only, MotD file" },
+         { type: "string", name: "prepend_command", default: "/bin/uname -snrvm", description: "Command output to prepend to MotD" },
+         { type: "string", name: "dynamic_path", default: null, description: "Location of the dynamic part of the MotD file" },
+         { type: "string", name: "symlink_path", default: null, description: "Location of the symlink to the motd file" }
         ],
     },
 

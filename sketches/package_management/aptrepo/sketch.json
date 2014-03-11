@@ -18,8 +18,7 @@
         tags: [ "cfdc" ],
         authors: [ "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         tested: [ "debian_wheezy" ],
-        depends: { "CFEngine::stdlib": { version: 110 },
-                   "CFEngine::dclib": {},
+        depends: {                    "CFEngine::dclib": {},
                    cfengine: { version: "3.4.0" },
                    os: [ "linux" ]
                  },

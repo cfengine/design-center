@@ -2,6 +2,7 @@
     manifest:
     {
         "main.cf": { desc: "main file" },
+        "standard.inc": { desc: "standard DC include template", version: 1 },
         "test.cf": { desc: "standalone test" },
         "README.md": { documentation: true },
         "params/demo.json": { comment: "simple demo of sketch" },
@@ -13,11 +14,11 @@
     {
         name: "CFEngine::sketch_template",
 	    description: "Standard template for Design Center sketches",
-        version: "1.01",
+        version: "2.00",
         license: "MIT",
         tags: [ "cfdc" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }, os: [ "linux|darwin" ] }
+        depends: { "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.6.0" }, os: { any: "Any OS" } }
     },
 
     api:

@@ -15,7 +15,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "memcached" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.5.0" }, "os": [ "debian|ubuntu|redhat|centos|fedora" ] }
+        "depends": { "CFEngine::dclib": {}, "cfengine": { "version": "3.5.0" }, "os": [ "debian|ubuntu|redhat|centos|fedora" ] }
     },
 
 		"api" : {

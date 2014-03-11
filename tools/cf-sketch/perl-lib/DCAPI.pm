@@ -13,9 +13,11 @@ use DCAPI::Activation;
 use DCAPI::Result;
 use DCAPI::Validation;
 
-use constant API_VERSION => '0.0.1';
+use constant API_VERSION => '3.6.0';
 use constant CODER => JSON->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
 use constant CAN_CODER => JSON->new()->canonical()->utf8()->allow_nonref();
+use constant REQUIRED_ENVIRONMENT_KEYS => qw/activated test verbose/;
+use constant OPTIONAL_ENVIRONMENT_KEYS => qw/qa rudder/;
 
 use Mo qw/build default builder coerce is required/;
 
@@ -113,6 +115,13 @@ sub set_config
 
     $self->config($self->load($file));
 
+    my @repos = @{(Util::hashref_search($self->config(), qw/repolist/) || [])};
+    return $result->add_error('repolist', "No repolist entries were provided")
+     unless scalar @repos;
+
+    $self->log5("Adding recognized repo $_") foreach @repos;
+    push @{$self->repos()}, @repos;
+
     my $runfile = Util::hashref_search($self->config(), qw/runfile/);
 
     if (ref $runfile ne 'HASH')
@@ -122,23 +131,13 @@ sub set_config
     else
     {
         %{$self->runfile()} = %$runfile;
-        $result->add_error('runfile', "runfile has no location")
+        $self->runfile()->{location} = "$repos[0]/meta/api-runfile.cf"
          unless exists $self->runfile()->{location};
-
-        $result->add_error('runfile', "runfile has no standalone boolean")
-         unless exists $self->runfile()->{standalone};
-
-        $result->add_error('runfile', "runfile has no relocate_path parameter")
-         unless exists $self->runfile()->{relocate_path};
     }
 
     my @sources = @{(Util::hashref_search($self->config(), qw/recognized_sources/) || [])};
     $self->log5("Adding recognized source $_") foreach @sources;
     push @{$self->recognized_sources()}, @sources;
-
-    my @repos = @{(Util::hashref_search($self->config(), qw/repolist/) || [])};
-    $self->log5("Adding recognized repo $_") foreach @repos;
-    push @{$self->repos()}, @repos;
 
     foreach my $location (@{$self->repos()}, @{$self->recognized_sources()})
     {
@@ -155,13 +154,22 @@ sub set_config
         }
     }
 
-    my $vardata_file = Util::hashref_search($self->config(), qw/vardata/);
+    my $vardata_file = Util::hashref_search($self->config(), qw/vardata/) || "$repos[0]/meta/vardata.conf";# TODO: verify!
 
-    if ($vardata_file)
+    $vardata_file = glob($vardata_file);
+    $self->log5("Loading vardata file $vardata_file");
+
+    $self->vardata($vardata_file);
+
+    my ($v_data, @v_warnings);
+    if ($vardata_file eq '-')
     {
-        $vardata_file = glob($vardata_file);
-        $self->log5("Loading vardata file $vardata_file");
-        $self->vardata($vardata_file);
+        $self->log("Ignoring vardata file '$vardata_file' as requested");
+        $v_data = {};
+        $v_data->{$_} = $self->$_() foreach @vardata_keys;
+    }
+    else
+    {
         if (!(-f $vardata_file && -w $vardata_file && -r $vardata_file))
         {
             $self->log("Creating missing vardata file $vardata_file");
@@ -171,69 +179,72 @@ sub set_config
              unless $ok;
         }
 
-        my ($v_data, @v_warnings) = $self->load($vardata_file);
+        ($v_data, @v_warnings) = $self->load($vardata_file);
         $result->add_error('vardata', @v_warnings)
          if scalar @v_warnings;
+    }
 
-        if (ref $v_data ne 'HASH')
-        {
-            $result->add_error($vardata_file, "vardata is not a hash");
-        }
-        else
-        {
-            $self->log3("Successfully loaded vardata file $vardata_file");
-
-            foreach my $key (@vardata_keys)
-            {
-                if (exists $v_data->{$key})
-                {
-                    $self->$key(Util::hashref_merge($self->$key(), $v_data->{$key}));
-                }
-                else
-                {
-                    $result->add_error($vardata_file, "vardata has no key '$key'");
-                }
-            }
-        }
+    if (ref $v_data ne 'HASH')
+    {
+        $result->add_error($vardata_file, "vardata is not a hash");
     }
     else
     {
-        $result->add_error('vardata', "No vardata file specified");
+        $self->log3("Successfully loaded vardata file $vardata_file");
+
+        foreach my $key (@vardata_keys)
+        {
+            if (exists $v_data->{$key})
+            {
+                $self->$key(Util::hashref_merge($self->$key(), $v_data->{$key}));
+            }
+            else
+            {
+                $result->add_error($vardata_file, "vardata has no key '$key'");
+            }
+        }
     }
 
-    my $constdata_file = Util::hashref_search($self->config(), qw/constdata/);
+    my $constdata_file = Util::hashref_search($self->config(), qw/constdata/) || "$repos[0]/meta/constdata.conf";# TODO: verify!
 
-    if ($constdata_file)
+    $constdata_file = glob($constdata_file);
+    $self->log5("Loading constdata file $constdata_file");
+    $self->constdata($constdata_file);
+
+    if ($constdata_file eq '-')
     {
-        $constdata_file = glob($constdata_file);
-        $self->log5("Loading constdata file $constdata_file");
-        $self->constdata($constdata_file);
+        $self->log("Ignoring constdata file '$constdata_file' as requested");
+        $v_data = {};
+        @v_warnings = ();
+    }
+    else
+    {
         if (-f $constdata_file && -r $constdata_file)
         {
-            my ($v_data, @v_warnings) = $self->load($constdata_file);
+            ($v_data, @v_warnings) = $self->load($constdata_file);
             $result->add_error('constdata', @v_warnings)
              if scalar @v_warnings;
+        }
+    }
 
-            foreach my $key (@vardata_keys)
+    foreach my $key (@vardata_keys)
+    {
+        if (ref $v_data eq 'HASH' && exists $v_data->{$key} && ref $v_data->{$key} eq 'HASH' && ref $self->$key() eq 'HASH')
+        {
+            foreach my $subkey (sort keys %{$v_data->{$key}})
             {
-                if (exists $v_data->{$key} && ref $v_data->{$key} eq 'HASH' && ref $self->$key() eq 'HASH')
-                {
-                    foreach my $subkey (sort keys %{$v_data->{$key}})
-                    {
-                        $self->log5("Successfully loaded override $key/$subkey from constdata file $constdata_file");
-                        $self->$key()->{$subkey} = $v_data->{$key}->{$subkey};
-                    }
-                }
+                $self->log5("Successfully loaded override $key/$subkey from constdata file $constdata_file");
+                $self->$key()->{$subkey} = $v_data->{$key}->{$subkey};
             }
+        }
+    }
 
-            foreach my $key (@constdata_keys)
-            {
-                if (exists $v_data->{$key})
-                {
-                    $self->log5("Successfully loaded constdata $key from constdata file $constdata_file");
-                    $self->$key($v_data->{$key});
-                }
-            }
+    foreach my $key (@constdata_keys)
+    {
+        if (exists $v_data->{$key})
+        {
+            $self->log5("Successfully loaded constdata $key from constdata file $constdata_file");
+            $self->$key($v_data->{$key});
         }
     }
 
@@ -247,6 +258,12 @@ sub save_vardata
     my $data = {};
     $data->{$_} = $self->$_() foreach @vardata_keys;
     my $vardata_file = $self->vardata();
+
+    if ($vardata_file eq '-')
+    {
+        $self->log("Not saving vardata file '$vardata_file' as requested");
+        return 1;
+    }
 
     $self->log("Saving vardata file $vardata_file");
 
@@ -943,7 +960,7 @@ sub define_environment
                                       "Invalid environment spec under $dkey");
         }
 
-        foreach my $required (qw/activated test verbose/)
+        foreach my $required (REQUIRED_ENVIRONMENT_KEYS)
         {
             return $result->add_error('environment spec required key',
                                       "Invalid environment spec $dkey: missing key $required")
@@ -981,11 +998,7 @@ sub define_environment
                                           "Invalid environment spec $dkey: key $required is a hash but had nothing to say")
                  unless scalar @condition;
 
-                $spec->{$required}->{class_function} = [];
-                push @{$spec->{$required}->{class_function}}, {
-                                                               function => "classmatch",
-                                                               args => [$_]
-                                                              }
+                push @{$spec->{$required}}, $_
                  foreach @condition;
             }
             else
@@ -996,7 +1009,7 @@ sub define_environment
             }
         }
 
-        foreach my $optional (qw/qa rudder/)
+        foreach my $optional (OPTIONAL_ENVIRONMENT_KEYS)
         {
             $spec->{$optional} = ! ! $spec->{$optional}
              if Util::is_json_boolean($spec->{$optional});
@@ -1279,8 +1292,6 @@ sub regenerate
                                     success => 1,
                                     data => { });
 
-    my $relocate = $self->runfile()->{relocate_path};
-
     my @activations;                 # these are DCAPI::Activation objects
     my $acts = $self->activations(); # these are data structures
     foreach my $sketch (keys %$acts)
@@ -1321,7 +1332,7 @@ sub regenerate
     my @inputs;
     foreach my $a (@activations)
     {
-        push @inputs, $a->sketch()->get_inputs($relocate, 5);
+        push @inputs, $a->sketch()->get_inputs(undef, 10);
         $self->log("Regenerate: adding inputs %s", \@inputs);
     }
 
@@ -1339,7 +1350,7 @@ sub regenerate
         $self->log("Regenerate: final inputs after filtering %s", \@inputs);
     }
 
-    my $inputs = join "\n", Util::make_var_lines('inputs', \@inputs, '', 0, 0);
+    my $inputs = join "\n", Util::make_var_lines(0, \@inputs, '', 0, 0);
 
     my $type_indent = ' ' x 2;
     my $context_indent = ' ' x 4;
@@ -1347,129 +1358,24 @@ sub regenerate
 
     # 2. make cfsketch_g and environment bundles with data
     my @data;
-    my %environments;
     my $position = 1;
-
-    foreach my $a (@activations)
-    {
-        $self->log("Regenerate: generating activation %s", $a->id());
-
-        foreach my $p (@{$a->params()})
-        {
-            if ($p->{type} eq 'environment')
-            {
-                $self->log("Regenerate: adding environment %s", $p);
-                $environments{$p->{value}}++;
-            }
-            elsif (DCAPI::Activation::ignored_type($p->{type}))
-            {
-                $self->log5("Regenerate: ignoring parameter %s", $p);
-            }
-            # we can't inline some types, so print them explicitly in the data bundle
-            elsif (!DCAPI::Activation::can_inline($p->{type}))
-            {
-                $self->log("Regenerate: adding explicit data %s", $p);
-                my $line = join("\n",
-                                sprintf("%s# %s '%s' from definition %s, activation %s",
-                                        $indent,
-                                        $p->{type},
-                                        $p->{name},
-                                        $p->{set},
-                                        $a->id()),
-                                map { "$indent$_" } Util::make_var_lines($a->id() . '_' . $p->{name},
-                                                                         $p->{value},
-                                                                         '',
-                                                                         0,
-                                                                         0));
-                push @data, $line;
-            }
-        }
-    }
 
     my $data_lines = join "\n\n", @data;
 
-    my $environment_calls = '';
-    my @environment_lines = ("# environment common bundles\n");
-    foreach my $e (keys %environments)
+    my @environment_data;
+    foreach my $e (keys %{$self->environments()})
     {
-        my @var_data;
-        my @class_data;
         my $edata = $self->environments()->{$e};
 
         # ensure there's an "activated" class
         unless (exists $edata->{activated})
         {
-            $edata->{activated} = 1;
+            $edata->{activated} = "any";
         }
 
-        my @ekeys = sort keys %$edata;
-        $edata->{env_vars} = \@ekeys;
-        foreach my $v (sort keys %$edata)
-        {
-            my $print_v = $v;
-            $print_v =~ s/\W/_/g;
-            my $d = $edata->{$v};
-
-            my $class_function;
-            if (ref $d eq 'HASH' && exists $d->{class_function})
-            {
-                $class_function = $d->{class_function};
-                $d = "--'$print_v' value passed as a class function--";
-            }
-
-            my $line = join("\n",
-                            map { "$indent$_" }
-                            Util::make_var_lines($print_v, $d, '', 0, 0));
-            push @var_data, $line;
-
-            # is it a scalar?
-            if (ref $d eq '' && !defined $class_function)
-            {
-                my $d_expression = $d;
-                if (!defined $d_expression || $d_expression eq '' || $d_expression eq '0' || $d_expression eq 'false' || $d_expression eq 'no')
-                {
-                    $d_expression = '!any';
-                }
-                elsif ($d_expression eq '1' || $d_expression eq 'true' || $d_expression eq 'yes')
-                {
-                    $d_expression = 'any';
-                }
-
-                $d_expression =~ s/[^a-zA-Z0-9_!&\@\$|.()\[\]{}:]/_/g;
-
-                push @class_data, sprintf('%s"runenv_%s_%s" expression => "%s";',
-                                          $indent,
-                                          $e,
-                                          $print_v,
-                                          $d_expression);
-            }
-            elsif (defined $class_function) # it's a class function call
-            {
-                my $and = ref $class_function eq 'ARRAY';
-                my $line = join("\n",
-                                map { "$indent$_" }
-                                Util::make_var_lines(sprintf("runenv_%s_%s",
-                                                             $e,
-                                                             $print_v),
-                                                     $class_function, '', 0, 0, 0, $and ? 'and' : 'expression'));
-
-                push @class_data, $line;
-            }
-        }
-
-        push @environment_lines,
-        sprintf("# environment %s\nbundle common %s\n{\n%s\n}\n",
-                $e, $e, join("\n",
-                                   "${type_indent}vars:",
-                                   @var_data,
-                                   # don't insert classes: line if there's no classes
-                                   (scalar @class_data ? "${type_indent}classes:" : ''),
-                                   @class_data));
-
-        $environment_calls .= "$indent\"$e\" usebundle => \"$e\";\n";
+        my $e_json = $self->cencode($edata);
+        push @environment_data, "$indent\"$e\" data => parsejson('$e_json');\n";
     }
-
-    my $environment_lines = join "\n", @environment_lines;
 
     # 3. make cfsketch_run bundle with invocations
     my @invocation_lines;
@@ -1477,12 +1383,12 @@ sub regenerate
     {
         $self->log("Regenerate: generating activation call %s", $a->id());
 
-        if (exists $environments{$a->environment()})
+        if (exists $self->environments()->{$a->environment()})
         {
-            push @invocation_lines, sprintf('%srunenv_%s_%s::',
-                                            $context_indent,
-                                            $a->environment(),
-                                            'activated');
+            push @invocation_lines,
+             sprintf('%s%s::',
+                     $context_indent,
+                     $self->environments()->{$a->environment()}->{activated});
         }
         else                            # if the bundle doesn't want an runenv
         {
@@ -1492,17 +1398,20 @@ sub regenerate
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
 
-        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s" } usebundle => %s%s(%s), handle => "dc_method_call_%s", ifvarclass => "%s", useresult => "return_%s";',
+        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s" }%susebundle => %s%s(%s),, handle => "dc_method_call_%s",%sifvarclass => "%s",%suseresult => "return_%s";',
                                         $indent,
                                         $a->id(),
                                         $a->prefix(),
                                         $a->sketch()->name(),
                                         $a->bundle(),
+                                        "\n$indent",
                                         $namespace_prefix,
                                         $a->bundle(),
-                                        $a->make_bundle_params(),
+                                        $a->make_bundle_params("\n$indent    "),
                                         $a->id(),
+                                        "\n$indent",
                                         $a->sketch()->runtime_context(),
+                                        "\n$indent",
                                         $a->id());
     }
 
@@ -1533,57 +1442,35 @@ sub regenerate
      "${context_indent}inform_mode::",
       @report_lines;
 
-    my $standalone_inputs = $self->runfile()->{standalone_inputs};
-    my $standalone_inputs_exp = '';
-    if (ref $standalone_inputs eq 'ARRAY' &&
-        scalar @$standalone_inputs > 0)
-    {
-        $self->log("Regenerate: standalone inputs are %s",
-                   $standalone_inputs);
-        $standalone_inputs_exp = sprintf(', %s',
-                                         join(",", map { "'$_'" } @$standalone_inputs));
-    }
-
-    my $standalone_lines = <<EOHIPPUS;
-body common control
-{
-      bundlesequence => { cfsketch_g, cfsketch_run };
-      inputs => { @(cfsketch_g.inputs) $standalone_inputs_exp };
-}
-EOHIPPUS
-
-    $standalone_lines = '' unless $self->runfile()->{standalone};
-
     my $invocation_lines = join "\n", @invocation_lines;
 
-    my $runfile_header = defined $self->runfile()->{header} ? $self->runfile()->{header} : '';
+    my $runfile_header = defined $self->runfile()->{header} ? $self->runfile()->{header} : '# Design Center runfile';
 
     my $runfile_data = <<EOHIPPUS;
 $runfile_header
 
-$standalone_lines
+body file control
+{
+      inputs => $inputs;
+}
 
-$environment_lines
-
-# activation data
 bundle common cfsketch_g
 {
   vars:
-      # Files that need to be loaded for the activated sketches and
-      # their dependencies.
-      $inputs
+      # legacy list, please ignore
+      "inputs" slist => { "cf_null" };
 }
 
 bundle agent cfsketch_run
 {
   vars:
-
-$data_lines
+@environment_data
 
   methods:
     any::
       "cfsketch_g" usebundle => "cfsketch_g";
-$environment_calls
+
+      # invocation lines
 $invocation_lines
 
   reports:
@@ -1673,82 +1560,21 @@ sub regenerate_index
     my $self = shift;
     my $request = shift; # the repodir
 
-    my $result = DCAPI::Result->new(api => $self,
-                                    status => 1,
-                                    success => 1,
-                                    data => { });
-
-    my $found = 0;
+    my $result;
 
     foreach my $repodir (@{$self->recognized_sources()})
     {
         next if ref $request ne ''; # must be a scalar
         next if $request ne $repodir; # must be the specific repo
 
-        if (Util::is_resource_local($repodir))
-        {
-            $self->log3("Regenerating index: searching for sketches in %s",
-                        $repodir);
-            my @todo;
-            $repodir = glob($repodir);
-            require File::Find;
-            File::Find::find(sub
-                 {
-                     push @todo, $File::Find::name if $_ eq 'sketch.json';
-                 }, $repodir);
-
-            # remove the cfsketches.json if it's there
-            $repodir = dirname($repodir) if $repodir =~ m/cfsketches.json$/;
-            my $index_file = "$repodir/cfsketches.json";
-
-            if (open my $index, '>', $index_file)
-            {
-                my $encoder = JSON::PP->new()->utf8()->canonical();
-                foreach my $f (sort @todo)
-                {
-                    eval
-                    {
-                        my $d = dirname($f);
-                        $d =~ s,^$repodir/,,;
-                        $d =~ s,^\./,,;
-                        $self->log3("Regenerating index: on sketch dir $d");
-                        my $j = regenerate_cfsketches_read_file($f);
-                        my $out = JSON::PP->new()->allow_barekey()->relaxed()->utf8()->allow_nonref()->decode($j);
-                        $out->{api} = {} unless exists $out->{api};
-
-                        # note we encode BEFORE writing a line
-                        my $out_string = sprintf("%s\t%s\n",
-                                                 $d, $encoder->encode($out));
-                        print $index $out_string;
-                    };
-
-                    if ($@)
-                    {
-                        $result->add_error($f, $@);
-                    }
-                }
-            }
-            else
-            {
-                $self->log("Regenerating index: could not save $index_file");
-                $result->add_error($index_file, $!);
-            }
-
-            $found = 1;
-        }
+        $result = DCAPI::Repo::make_inv_file($self, $repodir);
+        last if $result;
     }
 
     $result->add_error('repodir', "Did not find the repodir")
-        unless $found;
+        unless $result && $result->success();
 
     return $result;
-}
-
-sub regenerate_cfsketches_read_file
-{
-    my $f = shift;
-    open my $fh, '<', $f or warn "Couldn't open $f: $!";
-    return join('', <$fh>);
 }
 
 sub run_cf

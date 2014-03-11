@@ -5,39 +5,23 @@ body file control
 
 bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, myarray)
 {
+#@include "standard.inc"
   vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-      # often you need a unique value for the current run through a
-      # bundle, especially if you use if_repaired and such.  The
-      # canon_prefix will give you that.
-      "canon_prefix" string => canonify("$(prefix)");
-
       # call the sample.sh script
-      "sample_return" string => execresult("$($(metadata)[location])/scripts/sample.sh",
+      "sample_return" string => execresult(concat($(exec_prefix),
+                                                  $(this.promise_dirname),
+                                                  "/scripts/sample.sh"),
                                            "useshell");
 
-  classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
-
-  methods:
-    verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      inherit => "true";
+      "mylist_str" string => format("%S", mylist);
+      "myarray_str" string => format("%S", myarray);
 
   commands:
       # call a module included with the bundle
-      "$($(metadata)[location])/modules/mymodule"
+      "$(this.promise_dirname)/modules/mymodule"
       module => "true";
 
   reports:
-    verbose::
-      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
-      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
-      ifvarclass => "$(vars)";
-
     cfengine::
       # This will define localclass with a locally meaningful prefix
       # every time (otherwise, localclass will be global and will be
@@ -54,16 +38,10 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
       "$(this.bundle): got myboolean=$(myboolean)";
       "$(this.bundle): got mytype=$(mytype)";
       "$(this.bundle): got myip=$(myip)";
-      "$(this.bundle): got mylist=$(mylist)";
-      "$(this.bundle): got myarray=$(myarray)";
+      "$(this.bundle): got mylist=$(mylist_str)";
+      "$(this.bundle): got myarray=$(myarray_str)";
 
       "[anything I want to return goes here]" bundle_return_value_index => "myreturn";
       "[anything else I want to return goes here]" bundle_return_value_index => "myreturn2";
 
-      # use the "verbose" context to show the sketch operation (for the user)
-    verbose::
-      "$(this.bundle): running in verbose mode";
-      # use the "test" context to help debug the sketch (for the developer)
-    test::
-      "$(this.bundle): running in test mode";
 }

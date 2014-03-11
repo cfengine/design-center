@@ -19,8 +19,7 @@
         depends:
         {
             cfengine: { version: "3.4.0" },
-            "CFEngine::stdlib":{ version: 105 },
-            "CFEngine::dclib": {},
+                        "CFEngine::dclib": {},
         },
     },
 

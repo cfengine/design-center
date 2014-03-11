@@ -16,7 +16,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "php_fpm", "php", "fpm" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.5.0" }, "os": [ "debian|ubuntu" ] }
+        "depends": { "CFEngine::dclib": {}, "cfengine": { "version": "3.5.0" }, "os": [ "debian|ubuntu" ] }
     },
 
 	"api" : {

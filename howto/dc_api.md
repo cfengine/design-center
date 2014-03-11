@@ -4,7 +4,7 @@
 
 ### Author: Ted Zlatanov <tzz@lifelogs.com>
 
-### Version: 0.0.1-1
+### Version: 3.6.0-1
 
 ### API General Information
 
@@ -22,13 +22,16 @@ escapes such sequences so they should not happen anywhere in the payloads.
 API requests have the following general structure:
 
 ```json
-{ dc_api_version: "0.0.1", request: { ...commands... } }
+{ dc_api_version: "3.6.0", request: { ...commands... } }
 ```
 
 The version is strictly semantically versioned as *major.minor.patch*.  It must
-match exactly, so you can't have a _0.0.1_ client talking to a _0.0.2_ server
-for instance (the client has to say "0.0.2" to be usable).  We expect backwards
+match exactly, so you can't have a _3.6.0_ client talking to a _3.6.1_ server
+for instance (the client has to say "3.6.1" to be usable).  We expect backward
 compatibility, this is just a way to avoid misunderstandings.
+
+It's possible that CFEngine 3.7.x will keep using the 3.6.0 API, for instance.
+Think of the API version as the minimum CFEngine version required to use it.
 
 #### NOTE: Generally, only *one* command may be specified per request.
 
@@ -108,7 +111,7 @@ The `list` command lists *installed* sketches.
 Here are examples of three `list` commands.  The first one lists everything installed.
 
 ```json
-{ dc_api_version: "0.0.1", request: {list: true } }
+{ dc_api_version: "3.6.0", request: {list: true } }
 ```
 
 ```json
@@ -148,7 +151,7 @@ The next one takes *terms* and lists all the sketches whose name satisfies the
 *terms*.
     
 ```json
-{ dc_api_version: "0.0.1", request: {list: [["name", "matches", "(Cloud|CFEngine|Security)"]] } }
+{ dc_api_version: "3.6.0", request: {list: [["name", "matches", "(Cloud|CFEngine|Security)"]] } }
 ```
 
 ```json
@@ -186,7 +189,7 @@ When `describe` is given as a top-level option with a value of `true`, as in the
 example below, the returned data is the contents of `sketch.json`.
 
 ```json
-{ dc_api_version: "0.0.1", request: {describe: true, list: [["name", "matches", "ping"]] } }
+{ dc_api_version: "3.6.0", request: {describe: true, list: [["name", "matches", "ping"]] } }
 ```
 
 ```json
@@ -285,7 +288,7 @@ in the `README.md` in the Description section.  That makes it easier to write
 documentation for your sketches.
 
 ```json
-{ dc_api_version: "0.0.1", request: {describe: "README", list: [["name", "matches", "ping"]] } }
+{ dc_api_version: "3.6.0", request: {describe: "README", list: [["name", "matches", "ping"]] } }
 ```
 
 ```json
@@ -329,7 +332,7 @@ The `describe` command gives the contents of `sketch.json` for the matching
 installed sketches by name.
 
 ```json
-{ dc_api_version: "0.0.1", request: {describe:"Security::SSH"} }
+{ dc_api_version: "3.6.0", request: {describe:"Security::SSH"} }
 ```
 
 ```json
@@ -462,7 +465,7 @@ list of key-value arrays with keys:
 
 ```json
 {
-    dc_api_version: "0.0.1",
+    dc_api_version: "3.6.0",
     request: {
         install: [{
             sketch: "CFEngine::sketch_template",
@@ -532,7 +535,7 @@ everything under it.  It takes a list of key-value arrays with keys:
 * `target`: the sketch install directory we want to clean.  Must be in the API's `repolist`.
 
 ```json
-{ dc_api_version: "0.0.1", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "~/.cfagent/inputs/sketches" } ] } }
+{ dc_api_version: "3.6.0", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "~/.cfagent/inputs/sketches" } ] } }
 ```
 
 ```json
@@ -566,7 +569,7 @@ The `inventory_save` key in the return indicates whether the inventory (`cfsketc
 The `compositions` command lists the defined compositions.
 
 ```json
-{ dc_api_version: "0.0.1", request: {compositions: true} }
+{ dc_api_version: "3.6.0", request: {compositions: true} }
 ```
 
 ```json
@@ -604,7 +607,7 @@ The `compose` command defines a composition.  It returns the same data as `compo
 
 ```json
 {
-    dc_api_version: "0.0.1",
+    dc_api_version: "3.6.0",
     request: {
         compose: {
             mirror_to_template_1: {
@@ -660,7 +663,7 @@ The `compose` command defines a composition.  It returns the same data as `compo
 The `decompose` command undefines a composition by name.  It returns the same data as `compositions`.
 
 ```json
-{ dc_api_version: "0.0.1", request: {decompose: "mirror_to_template_1" } }
+{ dc_api_version: "3.6.0", request: {decompose: "mirror_to_template_1" } }
 ```
 
 ```json
@@ -693,7 +696,7 @@ The `decompose` command undefines a composition by name.  It returns the same da
 The `activations` command lists the defined activations.
 
 ```json
-{ dc_api_version: "0.0.1", request: {activations:true} }
+{ dc_api_version: "3.6.0", request: {activations:true} }
 ```
 
 ```json
@@ -739,7 +742,7 @@ target (so the API knows which installed sketch to inspect), a run environment
 name, and a list of parameter names.
 
 ```json
-{ dc_api_version: "0.0.1", request: {activate: { "VCS::vcs_mirror": { target: "~/.cfagent/inputs/sketches", environment: "testing", params: [ "vcs_base", "git_mirror_core" ] } } } }
+{ dc_api_version: "3.6.0", request: {activate: { "VCS::vcs_mirror": { target: "~/.cfagent/inputs/sketches", environment: "testing", params: [ "vcs_base", "git_mirror_core" ] } } } }
 ```
 
 The sketch bundle will be selected based on which one is satisfied by the given
@@ -798,7 +801,7 @@ The `deactivate` command removes sketch activations.  It can take either the
 name of a sketch or `true` to indicate all activations should be removed.
 
 ```json
-{ dc_api_version: "0.0.1", request: {deactivate: "VCS::vcs_mirror" } }
+{ dc_api_version: "3.6.0", request: {deactivate: "VCS::vcs_mirror" } }
 ```
 
 ```json
@@ -822,7 +825,7 @@ name of a sketch or `true` to indicate all activations should be removed.
 ```
 
 ```json
-{ dc_api_version: "0.0.1", request: {deactivate: true } }
+{ dc_api_version: "3.6.0", request: {deactivate: true } }
 ```
 
 (No activations existed at this point, so the return data is empty.)
@@ -851,7 +854,7 @@ to activate a sketch, and can contain more than one sketch's parameters or only
 part of a sketch's parameters.
 
 ```json
-{ dc_api_version: "0.0.1", request: {definitions:true} }
+{ dc_api_version: "3.6.0", request: {definitions:true} }
 ```
 
 ```json
@@ -898,7 +901,7 @@ call is preserved.
 
 
 ```json
-{ dc_api_version: "0.0.1", request: {define: { "vcs_base": { "VCS::vcs_mirror": { options: { parent_dir: { owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: "755", ensure: true }, nowipe: true, vcs: { runas: { "function": "getenv", "args": ["LOGNAME", "128"] }, umask: "000" } } } } } } }
+{ dc_api_version: "3.6.0", request: {define: { "vcs_base": { "VCS::vcs_mirror": { options: { parent_dir: { owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: "755", ensure: true }, nowipe: true, vcs: { runas: { "function": "getenv", "args": ["LOGNAME", "128"] }, umask: "000" } } } } } } }
 ```
 
 ```json
@@ -922,7 +925,7 @@ call is preserved.
 ```
 
 ```json
-{ dc_api_version: "0.0.1", request: {define: { "git_mirror_core": { "VCS::vcs_mirror": { vcs: "/usr/bin/git", path: "/tmp/q/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git" } } } } }
+{ dc_api_version: "3.6.0", request: {define: { "git_mirror_core": { "VCS::vcs_mirror": { vcs: "/usr/bin/git", path: "/tmp/q/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git" } } } } }
 ```
 
 ```json
@@ -952,7 +955,7 @@ list of string parameter definition names or simply `true` to remove all the
 parameter definitions.
 
 ```json
-{ dc_api_version: "0.0.1", request: {undefine: ["git_mirror_core"] } }
+{ dc_api_version: "3.6.0", request: {undefine: ["git_mirror_core"] } }
 ```
 
 ```json
@@ -1011,7 +1014,7 @@ bundle common testing
 And here is the definition of that run environment:
 
 ```json
-{ dc_api_version: "0.0.1", request: {environments:true} }
+{ dc_api_version: "3.6.0", request: {environments:true} }
 ```
 
 ```json
@@ -1041,21 +1044,7 @@ other than `true` and `false`.  If they are a string, then that string is a
 class expression.  So, for instance, if `activated` is `Monday` then the run
 environment will only be activated on Mondays.
 
-If `activated` is a key-value array with the key `include` pointing to an array
-of regular expressions, then every element of that array will be AND-ed in a
-classmatch.  So, if for the environment _testing_ you specify:
-
-```
-activated: { include: [ "x", "y", "regex.*" ] }
-```
-
-That will produce, in the runfile,
-
-```
-classes:
-  "runenv_testing_activated" and => { classmatch("x"), classmatch("y"), classmatch("regex.*") };
-```
-It's trivial to do an OR with alternation in the regular expression.
+It's trivial to do AND and OR in such a string, as normal for CFEngine contexts.
 
 #### `define_environment`
 
@@ -1063,7 +1052,7 @@ The `define_environemnt` command defines a run environment.  The `testing`
 example above can be defined like so:
 
 ```json
-{ dc_api_version: "0.0.1", request: {define_environment: { "testing": { activated: true, test: true, verbose: true } } } }
+{ dc_api_version: "3.6.0", request: {define_environment: { "testing": { activated: true, test: true, verbose: true } } } }
 ```
 
 ```json
@@ -1095,7 +1084,7 @@ The `undefine_environemnt` command removes a run environment.  It takes a list
 of environment names.
 
 ```json
-{ dc_api_version: "0.0.1", request: {undefine_environment: [ "testing" ] } }
+{ dc_api_version: "3.6.0", request: {undefine_environment: [ "testing" ] } }
 ```
 
 ```json
@@ -1175,7 +1164,7 @@ The `define_validation` command defines a data validation.  In the return data
 you will find all the currently defined data validations.
 
 ```json
-{ dc_api_version: "0.0.1", request: {define_validation: { NONEMPTY_STRING: { valid_regex: "." } } } }
+{ dc_api_version: "3.6.0", request: {define_validation: { NONEMPTY_STRING: { valid_regex: "." } } } }
 ```
 
 ```json
@@ -1206,7 +1195,7 @@ you will find all the currently defined data validations.
 The `undefine_validation` command removes a data validation by name.
 
 ```json
-{ dc_api_version: "0.0.1", request: {undefine_validation: "NONEMPTY_STRING" } }'
+{ dc_api_version: "3.6.0", request: {undefine_validation: "NONEMPTY_STRING" } }'
 ```
 
 ```json
@@ -1234,7 +1223,7 @@ The `undefine_validation` command removes a data validation by name.
 The `validate` command validates data using a named data validation.
 
 ```json
-{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "not a URL" } } } }
+{ dc_api_version: "3.6.0", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "not a URL" } } } }
 ```
 
 It's useful to look at the log output here.  This example failed:
@@ -1277,7 +1266,7 @@ DCAPI::log4(Validation.pm:166): Validating URL: checking valid_regex ^[A-Za-z]{3
 This example succeeded:
 
 ```json
-{ dc_api_version: "0.0.1", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "http://this.that2" } } } }
+{ dc_api_version: "3.6.0", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "http://this.that2" } } } }
 ```
 
 ```
@@ -1318,8 +1307,8 @@ The `regenerate` command writes the API runfile (as specified in the API
 configuration) from all the known activations, compositions, run environments,
 parameter definitions, and data validations.
 
-The command does not allow the user to change the runfile type (standalone or
-not) or location, as that is a possible security risk.
+The command does not allow the user to change the runfile location, as that is a
+possible security risk.
 
 #### `regenerate_index`
 
@@ -1330,7 +1319,7 @@ The directory must be local and listed in the API configuration's
 written or if an error happened while loading any sketch.json files.
 
 ```json
-{ dc_api_version: "0.0.1", request: {regenerate_index: "~/source/cfengine/design-center/sketches" } }
+{ dc_api_version: "3.6.0", request: {regenerate_index: "~/source/cfengine/design-center/sketches" } }
 ```
 
 ```
@@ -1364,7 +1353,7 @@ installed (shown when no sketches were installed for brevity; see below for a
 full test example).
 
 ```json
-{ dc_api_version: "0.0.1", request: {test: true } }
+{ dc_api_version: "3.6.0", request: {test: true } }
 ```
 
 ```json
@@ -1406,7 +1395,7 @@ The `bench` key will give you some timings, but more precise timings may be
 added in the future.  Do not depend on the format of the `bench` value.
     
 ```json
-{ dc_api_version: "0.0.1", request: {test: ["Applications::Memcached"] } }
+{ dc_api_version: "3.6.0", request: {test: ["Applications::Memcached"] } }
 ```
 
 ```json
@@ -1450,7 +1439,7 @@ command the `coverage` parameter.  Here's how you can inspect the coverage of
 every single installed sketch:
 
 ```json
-{"dc_api_version":"0.0.1","request":{"coverage":1,"test":["1"]}}
+{"dc_api_version":"3.6.0","request":{"coverage":1,"test":["1"]}}
 ```
 
 ```json
@@ -1516,27 +1505,48 @@ local directories or URLs.
 
 #### `runfile`
 
-A key-value array with keys `location` for the place where the runfile is
-written; `standalone` for the runfile standalone (when false, this setting makes
-the runfile suitable for inclusion in the main `promises.cf`); `relocate_path`
-for what to add to all inputs.
+A key-value array.
 
-If you specify the array `filter_inputs` under `runfile`, any inputs matching
+The key `location` specifies the place where the runfile is written.  If not
+specified, it defaults to the first element of `repolist` plus
+`/meta/api-runfile.cf`.
+
+The `standalone`, `standalone_inputs`, and `relocate_path` keys were available
+in older versions but are ignored as of DC API version 3.6.0.
+
+If you specify the key `filter_inputs` with an array value, any inputs matching
 any elements in that array will be omitted from the generated runfile.  That way
 you can, for example, exclude the `cfengine_stdlib.cf` that Design Center
 provides.
-
-If you specify the array `standalone_inputs` under `runfile`, its members will
-be added to the generated runfile when `standalone` is `true` but not otherwise.
 
 If you specify the string `header` under `runfile`, it will be inserted before
 any other comments (so you can have, for instance, a comment).
 
 #### `vardata`
 
-The file location where the API will record all data.
+The file location where the API will record all data.  If not
+specified, it defaults to the first element of `repolist` plus
+`/meta/vardata.conf`.
+
+You should avoid changing this explicitly without very good reason.
+
+A `vardata` of `-` (just a dash) means that the API will not try to write to the
+vardata file, but will pretend everything is OK.
+
+#### `constdata`
+
+The file location for the pre-defined API validations and other constant DC
+data.  If not specified, it defaults to the first element of `repolist` plus
+`/meta/constdata.conf`.
+
+You should avoid changing this explicitly without very good reason.
+
+A `constdata` of `-` (just a dash) means that the API will not try to load the
+constdata file, but will pretend everything is OK.
 
 #### Full `config.json` example
+
+The `constdata`, `vardata`, and `runfile` `location` are left as the default.
 
 ```json
 {
@@ -1544,13 +1554,9 @@ The file location where the API will record all data.
  log_level: 4,
  repolist: [ "~/.cfagent/inputs/sketches" ],
  recognized_sources: [ "~/source/design-center/sketches" ],
- runfile: { location: "~/.cfagent/inputs/api-runfile.cf",
-            standalone: true,
+ runfile: {
             header: "# This file is maintained by CFEngine",
-            relocate_path: "sketches",
             filter_inputs: [ "some bad file" ],
-            standalone_inputs: [ "extra.cf" ]
           },
- vardata: "~/.cfagent/vardata.conf",
 }
 ```

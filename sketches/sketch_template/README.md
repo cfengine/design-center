@@ -1,4 +1,4 @@
-# CFEngine::sketch_template version 1.01
+# CFEngine::sketch_template version 2.00
 
 License: MIT
 Tags: cfdc
