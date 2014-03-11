@@ -1398,7 +1398,7 @@ sub regenerate
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
 
-        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s" }%susebundle => %s%s(%s), handle => "dc_method_call_%s",%sifvarclass => "%s",%suseresult => "return_%s";',
+        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s" }%susebundle => %s%s(%s),%shandle => "dc_method_call_%s",%sifvarclass => "%s",%suseresult => "return_%s";',
                                         $indent,
                                         $a->id(),
                                         $a->prefix(),
@@ -1408,6 +1408,7 @@ sub regenerate
                                         $namespace_prefix,
                                         $a->bundle(),
                                         $a->make_bundle_params("\n$indent    "),
+                                        "\n$indent",
                                         $a->id(),
                                         "\n$indent",
                                         $a->sketch()->runtime_context(),
