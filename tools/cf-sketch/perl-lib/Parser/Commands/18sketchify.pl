@@ -161,9 +161,6 @@ sub command_sketchify
 
     Util::message("I will now prompt you for the data needed to generate the sketch.\nPlease enter STOP at any prompt to interrumpt the process.\n\n");
 
-    # Get current CFEngine::stdlib version
-    my $stdlib = main::get_sketch("CFEngine::stdlib");
-    my $stdlib_version = $stdlib ? { "version" => $stdlib->{'CFEngine::stdlib'}->{metadata}->{version} } : {};
     # Empty sketch.json skeleton
     my $new_sketch = {
                       manifest =>
@@ -173,8 +170,8 @@ sub command_sketchify
                       },
                       metadata =>
                       { depends =>
-                        { cfengine => { version => "3.5.0" },
-                          "CFEngine::stdlib" => $stdlib_version,
+                        {
+                         "CFEngine::sketch_template" => {},
                         }
                       },
                       api => { $bundle => [] },
@@ -409,7 +406,8 @@ sub command_sketchify
 do them automatically yet:
 
 1. Verify the dependencies for your sketch in $json_file.
-   By default I added only CFEngine::stdlib as a dependency.
+   By default I added only CFEngine::sketch_template as a dependency,
+   which is needed by all sketches.
 2. Make sure all the calls to bodies/bundles in the standard library are
    prefixed with 'default:' so that they are found (the stdlib lives in the
    'default' namespace). For example, if your sketch uses the if_repaired
