@@ -453,7 +453,7 @@ sub json_boolean
 sub dump_ref
 {
     require Data::Dumper;
-    return Dumper(\@_);
+    return Data::Dumper(\@_);
 }
 
 sub recurse_print
@@ -596,6 +596,22 @@ sub make_container_line
     $encoded =~ s/'/\\'/g;
     return sprintf('"%s%s" data => parsejson(\'%s\');',
                    $prefix, $name, $encoded);
+}
+
+sub recurse_context
+{
+    my $data = shift @_;
+
+    if (ref $data eq 'ARRAY')
+    {
+        return join('&', map { recurse_context($_) } @$data);
+    }
+    elsif (ref $data eq 'HASH')
+    {
+        return '(' . join('|', sort keys %$data) . ')';
+    }
+
+    return $data;
 }
 
 sub dc_make_path

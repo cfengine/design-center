@@ -19,6 +19,7 @@ bundle agent set(runenv, metadata, given_sysctl_file, empty_first, ensured_kv, r
 
     any::
       "sysctl_file" string => "$(path_prefix)$(given_sysctl_file)";
+      "sysctl_run" string => "$(exec_prefix)$(paths.path[sysctl])";
 
   classes:
       # We need to know if we are on the second pass
@@ -32,7 +33,7 @@ bundle agent set(runenv, metadata, given_sysctl_file, empty_first, ensured_kv, r
       "$(sysctl_file)"
       create => "true",
       handle => "sysctl_files_noempty",
-      edit_line => default:set_variable_values("$(ensured_kv)"),
+      edit_line => default:set_line_based("cfdc_sysctl:set.ensured_kv", "=", "\s*=\s*", ".*", "\s*#\s*"),
       classes => default:if_repaired("sysctl_reload"),
       comment => "Only ensure specific defined values are present";
 
@@ -41,7 +42,7 @@ bundle agent set(runenv, metadata, given_sysctl_file, empty_first, ensured_kv, r
       create => "true",
       handle => "sysctl_files_empty_first",
       edit_defaults => default:empty,
-      edit_line => default:set_variable_values("$(ensured_kv)"),
+      edit_line => default:set_line_based("cfdc_sysctl:set.ensured_kv", "=", "\s*=\s*", ".*", "\s*#\s*"),
       classes => default:if_repaired("sysctl_reload"),
       comment => "Empty file before ensuring specified values are present,
 this effectively promises the full file content.";
@@ -55,7 +56,7 @@ this effectively promises the full file content.";
 
   commands:
     sysctl_reload::
-      "$(exec_prefix)/sbin/sysctl"
+      "$(sysctl_run)"
       args => "-p",
       classes => default:if_repaired("sysctl_reloaded"),
       comment => "Reload sysctl after repairing configuration";
@@ -73,10 +74,13 @@ this effectively promises the full file content.";
       "$(dcbundle): Set sysctl var: $(sysctl_vars)=$(ensured_kv[$(sysctl_vars)])";
       "$(dcbundle): Remove sysctl var: $(removed_indices)=$(cfdc_sysctl:set.removed[$(removed_indices)])";
 
-      "$(dcbundle): I repaired $(sysctl_file), sysctl needs to be reloaded"
+      "$(dcbundle): $(sysctl_file) was not repaired, sysctl does NOT need to be reloaded with '$(sysctl_run)'"
+      ifvarclass => "!sysctl_reload";
+
+      "$(dcbundle): repaired $(sysctl_file), sysctl needs to be reloaded with '$(sysctl_run)'"
       ifvarclass => "sysctl_reload";
 
-      "$(dcbundle): I successfully reloaded sysctl"
+      "$(dcbundle): successfully reloaded sysctl with '$(sysctl_run)'"
       ifvarclass => "sysctl_reloaded";
 
 }

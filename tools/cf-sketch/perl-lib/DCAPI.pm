@@ -1400,17 +1400,27 @@ sub regenerate
     {
         $self->log("Regenerate: generating activation call %s", $a->id());
 
-        if (exists $self->environments()->{$a->environment()})
-        {
-            push @invocation_lines,
-             sprintf('%s%s::',
-                     $context_indent,
-                     $self->environments()->{$a->environment()}->{activated});
+        my $env_activated_context = 'any';
+         if (exists $self->environments()->{$a->environment()})
+         {
+             eval
+             {
+                 $env_activated_context = Util::recurse_context($self->environments()->{'092b04a40fdd4cb8bfdb685f2c4a0328'}->{activated}->{include});
+             };
+
+             if ($@)
+             {
+                 $result->add_error("regeneration",
+                                    "runtime context conversion to string",
+                                    $a->environment(),
+                                    $@);
+             }
         }
-        else                            # if the bundle doesn't want an runenv
-        {
-            push @invocation_lines, sprintf('%sany::', $context_indent);
-        }
+
+        push @invocation_lines,
+         sprintf('%s%s::',
+                 $context_indent,
+                 $env_activated_context);
 
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";

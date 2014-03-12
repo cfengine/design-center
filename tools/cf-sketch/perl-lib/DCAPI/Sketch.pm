@@ -460,25 +460,9 @@ sub runtime_context
     my $self = shift @_;
 
     my $runtime_deps = $self->runtime_dependencies();
-    return $self->recurse_context($runtime_deps) || 'any';
+    return Util::recurse_context($runtime_deps) || 'any';
 }
 
-sub recurse_context
-{
-    my $self = shift @_;
-    my $data = shift @_;
-
-    if (ref $data eq 'ARRAY')
-    {
-        return join('&', map { $self->recurse_context($_) } @$data);
-    }
-    elsif (ref $data eq 'HASH')
-    {
-        return '(' . join('|', sort keys %$data) . ')';
-    }
-
-    return $data;
-}
 
 # these dependencies should be checked at install time
 sub resolve_dependencies
