@@ -224,7 +224,7 @@ sub print_api_messages
 # Validate a regex
 sub check_regex {
     my $regex = shift;
-    my $cregex = eval "qr/$regex/";
+    my $cregex = eval "qr/\$regex/";
     my $err = $@;
     if ($err)
     {
