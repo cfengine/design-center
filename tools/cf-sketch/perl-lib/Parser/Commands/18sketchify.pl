@@ -9,11 +9,17 @@ use File::Copy;
 
 %COMMANDS =
   (
-   'sketchify' =>
+   'sketchify_old' =>
    [[
-     'sketchify FILE.cf',
+     '-sketchify_old FILE.cf',
      'Interactively generate a sketch from FILE.cf. You will be prompted for all the necessary information.',
      '(\S+)(?:\s+(\S+)(?:\s+(\S+)(?:\s+(\S+))?)?)?'
+    ]],
+   'sketchify' =>
+   [[
+     'sketchify SKETCH | FILE.cf',
+     'Interactively generate a sketch from FILE.cf, or review and update an existing SKETCH. You will be prompted for all the necessary information.',
+     '(\S+)'
     ]]
   );
 
@@ -53,6 +59,48 @@ sub prompt_sketch_datum
 }
 
 sub command_sketchify
+{
+    my $thing = shift;
+
+    my $file;
+    my $sketchname;
+    my $bundle;
+    my $outputdir;
+    my $file_base;
+
+    # Some general parameters
+    my $sketchname_regex = qr(^(\w+)(::\w+)*$);
+    my @valid_types = qw(string boolean list array);
+
+    # Verify if $thing is a sketch or a file
+    if ($thing =~ /\.cf$/)
+    {
+        $file = $thing;
+        unless (-f $file)
+        {
+            Util::error("Error: I cannot find file $file.\n");
+            return;
+        }
+        $file_base = basename($file);
+    }
+    else
+    {
+        my $sk=main::get_sketch($thing);
+        if (exists($sk->{$thing}))
+        {
+            $sketchname = $thing;
+        }
+        else
+        {
+            Util::error("Error: I cannot find sketch $thing.\n");
+            return;
+        }
+    }
+
+    Util::message("Processing ".($sketchname ? "sketch $sketchname" : "file $file")."\n");
+}
+
+sub command_sketchify_old
 {
     my $file = shift;
     my $sketchname = shift;
