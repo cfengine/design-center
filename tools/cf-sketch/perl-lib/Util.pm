@@ -14,6 +14,7 @@ use Term::ANSIColor qw(:constants);
 use File::Spec;
 use File::Basename;
 use Cwd;
+use Digest::MD5 qw(md5_hex);
 
 BEGIN {
     # This stuff is executed once when the module is loaded, because it
@@ -23,6 +24,11 @@ BEGIN {
     $Data::Dumper::Terse=1;
     $Data::Dumper::Indent=0;
 
+}
+
+sub md5
+{
+    return md5_hex(shift);
 }
 
 sub function_exists

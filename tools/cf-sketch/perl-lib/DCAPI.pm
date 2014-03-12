@@ -1398,14 +1398,30 @@ sub regenerate
     my @invocation_lines;
     foreach my $a (@activations)
     {
-        $self->log("Regenerate: generating activation call %s", $a->id());
+        $result->add_data_key("activations",
+                              $a->id(),
+                              [
+                               $a->prefix(),
+                               $a->sketch()->name(),
+                               $a->bundle(),
+                               $a->hash()
+                              ]);
+        $self->log3("Regenerate: generating activation call %s", $a->id());
 
         my $env_activated_context = 'any';
          if (exists $self->environments()->{$a->environment()})
          {
              eval
              {
-                 $env_activated_context = Util::recurse_context($self->environments()->{'092b04a40fdd4cb8bfdb685f2c4a0328'}->{activated}->{include});
+                 my $activated = $self->environments()->{$a->environment()}->{activated};
+                 if (ref $activated)
+                 {
+                     $env_activated_context = Util::recurse_context($self->environments()->{$a->environment()}->{activated}->{include});
+                 }
+                 else
+                 {
+                     $env_activated_context = $activated;
+                 }
              };
 
              if ($@)
@@ -1425,12 +1441,13 @@ sub regenerate
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
 
-        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s" }%susebundle => %s%s(%s),%shandle => "dc_method_call_%s",%sifvarclass => "%s",%suseresult => "return_%s";',
+        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s", "%s" }%susebundle => %s%s(%s),%shandle => "dc_method_call_%s",%sifvarclass => "%s",%suseresult => "return_%s";',
                                         $indent,
                                         $a->id(),
                                         $a->prefix(),
                                         $a->sketch()->name(),
                                         $a->bundle(),
+                                        $a->hash(),
                                         "\n$indent",
                                         $namespace_prefix,
                                         $a->bundle(),

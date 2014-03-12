@@ -16,6 +16,7 @@ has prefix => ( is => 'ro', required => 0, default => '' );
 has compositions => ( is => 'ro', required => 1, default => [] );
 has id => ( is => 'ro', required => 1 );
 has priority => ( is => 'ro', required => 1 );
+has hash => ( is => 'ro', required => 1 );
 
 our $activation_position = 1;
 
@@ -195,6 +196,17 @@ sub make_activation
         # define behavior for single-use sketches: Redmine #2534
     }
 
+    my %cparams;
+    foreach my $p (@{$bundle_params{$bundle}})
+    {
+        next unless sketch_parameter_type($p->{type});
+        next if $p->{name} eq 'metadata';
+        $cparams{$p->{name}} = $p->{value};
+    }
+
+    $cparams{$sketch} = $bundle;
+    $api->log5("sketch %s, bundle %s gets parameters %s", $found, $bundle, \%cparams);
+
     return DCAPI::Activation->new(api => $api,
                                   prefix => $activation_prefix,
                                   sketch => $found,
@@ -204,7 +216,8 @@ sub make_activation
                                   priority => $activation_priority,
                                   compositions => $compositions,
                                   metadata => $metadata,
-                                  params => $bundle_params{$bundle});
+                                  params => $bundle_params{$bundle},
+                                  hash => Util::md5($api->cencode(\%cparams)));
 }
 
 sub fill_param
@@ -217,7 +230,7 @@ sub fill_param
 
     $api->log5("looking to fill parameter $name of type $type");
 
-    if ($type eq 'environment')
+    if (environment_type($type))
     {
         return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
                  set=>undef,
@@ -430,9 +443,9 @@ sub can_inline
 {
     my $type = shift @_;
 
-    return (!ignored_type($type) &&
-            ($type ne 'list' && $type ne 'array' &&
-             $type ne 'metadata'));
+    return 0 if ignored_type($type);
+
+    return ! container_type($type);
 }
 
 sub ignored_type
@@ -459,14 +472,21 @@ sub environment_type
 sub container_type
 {
     my $type = shift @_;
-    return 0 if environment_type($type);
 
     return (
-            $type eq 'environment' ||
             $type eq 'list' ||
             $type eq 'array' ||
             $type eq 'metadata'
            );
+}
+
+sub sketch_parameter_type
+{
+    my $type = shift @_;
+
+    return 1 if container_type($type);
+    return 0 if environment_type($type);
+    return can_inline($type);
 }
 
 sub return_type
@@ -527,6 +547,7 @@ sub data_dump
             prefix => $self->prefix(),
             metadata => $self->metadata(),
             id => $self->id(),
+            hash => $self->hash(),
            };
 }
 
