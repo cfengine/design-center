@@ -449,11 +449,24 @@ sub options_type
     return $type eq 'bundle_options';
 }
 
-sub container_type
+sub environment_type
 {
     my $type = shift @_;
 
     return $type eq 'environment';
+}
+
+sub container_type
+{
+    my $type = shift @_;
+    return 0 if environment_type($type);
+
+    return (
+            $type eq 'environment' ||
+            $type eq 'list' ||
+            $type eq 'array' ||
+            $type eq 'metadata'
+           );
 }
 
 sub return_type
@@ -467,6 +480,7 @@ sub make_bundle_params
 {
     my $self = shift @_;
     my $indent = shift @_;
+    my $a = shift @_;
 
     my @data;
     foreach my $p (@{$self->params()})
@@ -475,9 +489,9 @@ sub make_bundle_params
         {
             $self->api()->log5("Bundle parameters: ignoring parameter %s", $p);
         }
-        elsif (container_type($p->{type}))
+        elsif (environment_type($p->{type}))
         {
-            push @data, sprintf('@(%s)', $p->{value});
+            push @data, sprintf('@(cfsketch_run.%s)', $p->{value});
         }
         elsif (can_inline($p->{type}))
         {
@@ -486,10 +500,14 @@ sub make_bundle_params
                 push @data, $pr->{value};
             }
         }
-        else # arrays, lists, etc.
+        elsif (container_type($p->{type}))
         {
-            push @data, sprintf("parsejson('%s')",
-                                $self->api()->cencode($p->{value}));
+            push @data, sprintf('@(cfsketch_run.%s_%s)', $a->id(), $p->{name});
+        }
+        else # nothing should reach this point
+        {
+            $self->api()->log("Bundle parameters: can't handle parameter %s", $p);
+            push @data, sprintf('"baddata"');
         }
     }
 

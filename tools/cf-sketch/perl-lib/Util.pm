@@ -585,6 +585,19 @@ sub make_var_lines
     return @ret;
 }
 
+sub make_container_line
+{
+    my $prefix          = shift @_;
+    my $name            = shift @_;
+    my $encoded         = shift @_;
+
+    $prefix = "${prefix}_" if length $prefix;
+
+    $encoded =~ s/'/\\'/g;
+    return sprintf('"%s%s" data => parsejson(\'%s\');',
+                   $prefix, $name, $encoded);
+}
+
 sub dc_make_path
 {
     if (-x '/bin/mkdir')

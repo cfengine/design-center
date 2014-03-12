@@ -1,22 +1,3 @@
-bundle agent report_metadata(bundlename, metadata)
-{
-  classes:
-      "given" not => strcmp($(metadata), "");
-
-  vars:
-      # pretty-print the authors and dependencies
-      "_deps" slist => getindices("metadata[depends]");
-      "dependencies" string => join(", ", "_deps");
-      "authors" string => join(", ", "metadata[authors]");
-
-  reports:
-    given::
-      "$(bundlename): $($(metadata)[name]) license = $($(metadata)[license])";
-      "$(bundlename): $($(metadata)[name]) dependencies = $(dependencies)";
-
-      "$(bundlename): $($(metadata)[name]) version $($(metadata)[version]) by $(authors) starting up...";
-}
-
 # an example of how a sketch can install itself
 # "install" usebundle => default:install_sketch(METADATA, "sourcedir", "destdir");
 # TODO: add permissions and owner/group

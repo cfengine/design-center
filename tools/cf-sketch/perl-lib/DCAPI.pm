@@ -1360,6 +1360,27 @@ sub regenerate
     my @data;
     my $position = 1;
 
+    foreach my $a (@activations)
+    {
+        $self->log("Regenerate: generating activation %s", $a->id());
+
+        foreach my $p (@{$a->params()})
+        {
+            if (DCAPI::Activation::container_type($p->{type}))
+            {
+                my $line = join("\n",
+                                sprintf("%s# %s '%s' from definition %s, activation %s",
+                                        $indent,
+                                        $p->{type},
+                                        $p->{name},
+                                        $p->{set},
+                                        $a->id()),
+                                $indent . Util::make_container_line($a->id(), $p->{name}, $self->cencode($p->{value})));
+                push @data, $line;
+            }
+        }
+    }
+
     my $data_lines = join "\n\n", @data;
 
     my @environment_data;
@@ -1373,8 +1394,7 @@ sub regenerate
             $edata->{activated} = "any";
         }
 
-        my $e_json = $self->cencode($edata);
-        push @environment_data, "$indent\"$e\" data => parsejson('$e_json');\n";
+        push @environment_data, $indent . Util::make_container_line("", $e, $self->cencode($edata)) . "\n";
     }
 
     # 3. make cfsketch_run bundle with invocations
@@ -1407,7 +1427,7 @@ sub regenerate
                                         "\n$indent",
                                         $namespace_prefix,
                                         $a->bundle(),
-                                        $a->make_bundle_params("\n$indent    "),
+                                        $a->make_bundle_params("\n$indent    ", $a),
                                         "\n$indent",
                                         $a->id(),
                                         "\n$indent",
@@ -1466,6 +1486,7 @@ bundle agent cfsketch_run
 {
   vars:
 @environment_data
+$data_lines
 
   methods:
     any::

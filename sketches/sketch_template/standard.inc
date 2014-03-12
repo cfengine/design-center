@@ -11,6 +11,11 @@
       "canon_prefix" string => canonify("$(prefix)");
       "dcbundle" string => concat($(this.namespace), ':', $(this.bundle));
 
+    verbose::
+      # pretty-print the authors and dependencies
+      "dependencies" string => format("%S", "metadata[depends]");
+      "authors" string => format("%S", "metadata[authors]");
+
     activated.not_test::
       "exec_prefix" string => "", policy => "free";
       "show_prefix" string => "", policy => "free";
@@ -30,14 +35,12 @@
       "have_path_prefix" expression => isvariable("runenv[path_prefix]");
       "no_path_prefix" not => isvariable("runenv[path_prefix]");
 
-  methods:
-    verbose::
-      "report metadata"
-      usebundle => default:report_metadata($(dcbundle), @(metadata)),
-      inherit => "true";
-
   reports:
     verbose::
+      "$(dcbundle): $(metadata[name]) license = $(metadata[license])";
+      "$(dcbundle): $(metadata[name]) dependencies = $(dependencies)";
+      "$(dcbundle): $(metadata[name]) version $(metadata[version]) by $(authors) starting up...";
+
       "$(dcbundle): imported environment var '$(vars)' with value '$($(vars))'";
       "$(dcbundle): imported environment class '$(vars)' because '$($(vars))' was true"
       ifvarclass => "$(vars)";
