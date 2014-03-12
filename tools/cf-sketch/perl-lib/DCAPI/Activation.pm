@@ -200,12 +200,15 @@ sub make_activation
     foreach my $p (@{$bundle_params{$bundle}})
     {
         next unless sketch_parameter_type($p->{type});
-        next if $p->{name} eq 'metadata';
+        next if $p->{name} =~ m/metadata/;
         $cparams{$p->{name}} = $p->{value};
     }
 
     $cparams{$sketch} = $bundle;
-    $api->log5("sketch %s, bundle %s gets parameters %s", $found, $bundle, \%cparams);
+    # note we don't include the "runenv" above but add it here, because some sketches don't have a "runenv" parameter
+    $cparams{env} = $env;
+
+    $api->log5("sketch %s, bundle %s gets parameters %s", $sketch, $bundle, \%cparams);
 
     return DCAPI::Activation->new(api => $api,
                                   prefix => $activation_prefix,

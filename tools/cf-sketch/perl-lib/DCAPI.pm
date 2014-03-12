@@ -1398,6 +1398,7 @@ sub regenerate
     my @invocation_lines;
     foreach my $a (@activations)
     {
+        $self->log3("Regenerate: generating invocation call %s", $a->id());
         $result->add_data_key("activations",
                               $a->id(),
                               [
@@ -1406,7 +1407,6 @@ sub regenerate
                                $a->bundle(),
                                $a->hash()
                               ]);
-        $self->log3("Regenerate: generating activation call %s", $a->id());
 
         my $env_activated_context = 'any';
          if (exists $self->environments()->{$a->environment()})
