@@ -362,7 +362,6 @@ sub command_sketchify
         {
             my $incfile = ( '../' x $ndots ) . 'sketch_template/standard.inc';
             print F qq(#\@include "$incfile"\n\n);
-);
             $waiting_to_insert = undef;
         }
     }
