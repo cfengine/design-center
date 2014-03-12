@@ -68,7 +68,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       classes => default:classes_generic("files_main"),
       comment => "Create and populate the static motd file";
 
-    dynamic_path_given.!prepend_command_not_given::
+    activated.dynamic_path_given.!prepend_command_not_given::
       "$(output_path)"
       pathtype => "literal",
       create => "true",
@@ -80,7 +80,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       classes => default:classes_generic("files_dynamic"),
       comment => "Create and populate the dynamic motd file";
 
-    dynamic_path_given.prepend_command_not_given::
+    activated.dynamic_path_given.prepend_command_not_given::
       "$(output_path)"
       pathtype => "literal",
       create => "true",
@@ -91,7 +91,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       classes => default:classes_generic("files_dynamic"),
       comment => "create an empty dynamic motd file";
 
-    create_symlink::
+    activated.create_symlink::
       "$(symlink_link)"
       pathtype => "literal",
       move_obstructions => "true",
