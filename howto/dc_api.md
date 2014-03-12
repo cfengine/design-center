@@ -1310,6 +1310,31 @@ parameter definitions, and data validations.
 The command does not allow the user to change the runfile location, as that is a
 possible security risk.
 
+In the returned data you can find each activation in a key-value map, indexed by
+the internal activation unique name, and with each value a list of `name,
+sketch, bundle, parameter checksum`.  The parameter checksum is calculated from
+the final parameters **after** the parameter definitions have been resolved, so
+compositions will be recognized as well.  Here's an example regeneration with
+just one activation.
+
+```
+{
+    "api_ok": {
+        "warnings": [],
+        "success": true,
+        "errors": [],
+        "error_tags": {},
+        "data": {
+            "___001_System_motd_entry": ["", "System::motd", "entry", "b3172b7755c090fd49e0b250f6320880"]
+        },
+        "log": [],
+        "tags": {
+            "activations": 1
+        }
+    }
+}
+```
+
 #### `regenerate_index`
 
 The `regenerate_index` command takes a directory parameter (string) and writes
