@@ -601,10 +601,9 @@ sub get_all_sketches {
                                                   search => $regex,
                                                  });
   my $list = Util::hashref_search($result, 'data', 'search');
-  my $res = undef;
+  my $res = {};
   if (ref $list eq 'HASH')
   {
-    $res = {};
     foreach my $repo (keys %$list) {
       foreach my $sketch (keys %{$list->{$repo}}) {
         $res->{$sketch} = $list->{$repo}->{$sketch};
