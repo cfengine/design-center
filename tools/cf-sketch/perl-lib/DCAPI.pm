@@ -997,9 +997,6 @@ sub define_environment
                 return $result->add_error('environment spec has no selectors',
                                           "Invalid environment spec $dkey: key $required is a hash but had nothing to say")
                  unless scalar @condition;
-
-                push @{$spec->{$required}}, $_
-                 foreach @condition;
             }
             else
             {
