@@ -5,40 +5,27 @@ body file control
 
 bundle agent set(runenv, metadata, given_sysctl_file, empty_first, ensured_kv, removed_kv, removed_vars)
 {
+#@include "../../sketch_template/standard.inc"
   vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-      "sysctl_vars" slist => getindices("$(ensured_kv)");
-
-      "removed_kvindices" slist => getindices("$(removed_kv)");
+      "sysctl_vars" slist => getindices(ensured_kv);
+      "removed_kvindices" slist => getindices(removed_kv);
 
       # build the array of things to be removed
       "removed[$(removed_vars)]"  string => ".*";
-      "removed[$(removed_kvindices)]" string => "$($(removed_kv)[$(removed_kvindices)])";
+      "removed[$(removed_kvindices)]" string => "$(removed_kv[$(removed_kvindices)])";
 
     second_class_pass::
       "removed_indices" slist => { getindices("cfdc_sysctl:set.removed") };
 
     any::
-      "sysctl_file" string => "$(default:eu.path_prefix)$(given_sysctl_file)";
+      "sysctl_file" string => "$(path_prefix)$(given_sysctl_file)";
 
   classes:
       # We need to know if we are on the second pass
       "second_class_pass" and => {"first_class_pass"};
       "first_class_pass" and => {"any"};
 
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
-
       "empty_first" expression => strcmp($(empty_first), "1");
-
-  methods:
-      "utils" usebundle => default:eu($(runenv));
-
-    verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      inherit => "true";
 
   files:
     second_class_pass.!empty_first::
@@ -68,34 +55,28 @@ this effectively promises the full file content.";
 
   commands:
     sysctl_reload::
-      "$(default:eu.exec_prefix)/sbin/sysctl"
+      "$(exec_prefix)/sbin/sysctl"
       args => "-p",
       classes => default:if_repaired("sysctl_reloaded"),
       comment => "Reload sysctl after repairing configuration";
 
   reports:
-    verbose::
-      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
-      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
-      ifvarclass => "$(vars)";
-
     any::
       "$(sysctl_file)" bundle_return_value_index => "sysctl_file";
 
     second_class_pass.verbose.empty_first::
-      "$(this.bundle): $(sysctl_file) will be emptied before editing";
+      "$(dcbundle): $(sysctl_file) will be emptied before editing";
 
     second_class_pass.verbose::
-      "$(this.bundle): VERBOSE is turned on for sysctl";
+      "$(dcbundle): VERBOSE is turned on for sysctl";
 
-      "$(this.bundle): Set sysctl var: $(sysctl_vars)=$($(ensured_kv)[$(sysctl_vars)])";
-      "$(this.bundle): Remove sysctl var: $(removed_indices)=$(cfdc_sysctl:set.removed[$(removed_indices)])";
-      # "Removed vars: $(removed_indices)";
+      "$(dcbundle): Set sysctl var: $(sysctl_vars)=$(ensured_kv[$(sysctl_vars)])";
+      "$(dcbundle): Remove sysctl var: $(removed_indices)=$(cfdc_sysctl:set.removed[$(removed_indices)])";
 
-      "$(this.bundle): I repaired $(sysctl_file), sysctl needs to be reloaded"
+      "$(dcbundle): I repaired $(sysctl_file), sysctl needs to be reloaded"
       ifvarclass => "sysctl_reload";
 
-      "$(this.bundle): I successfully reloaded sysctl"
+      "$(dcbundle): I successfully reloaded sysctl"
       ifvarclass => "sysctl_reloaded";
 
 }
