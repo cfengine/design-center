@@ -2,7 +2,6 @@
     manifest:
     {
         "main.cf": { desc: "main file" },
-        "test.cf": {comment: "Test Policy"},
         "test.pl": {test:true},
         "README.md": { documentation: true },
         "README.include": { documentation: true },

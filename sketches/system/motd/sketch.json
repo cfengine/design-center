@@ -2,7 +2,6 @@
     manifest:
     {
         "main.cf": { desc: "main file" },
-        "test.cf": { desc: "standalone test" },
         "README.md": { documentation: true },
         "params/example.json": { comment: "example configuration" },
         "params/simple.json": { comment: "simple configuration that should work on most systems" },

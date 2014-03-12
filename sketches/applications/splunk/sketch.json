@@ -4,7 +4,6 @@
         "main.cf": { "desc": "main file" },
         "Changelog": { "desc": "Changelog" },
         "test.pl": {test:true},
-        "test.cf": {comment: "Test Policy"},
         "README.md": { "documentation": true },
 
         "params/demo.json": { "comment": "Install Splunk: common parameters" },

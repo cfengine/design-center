@@ -3,7 +3,6 @@
     {
         "main.cf": {desc: "main file" },
         "README.md": {documentation: true},
-        "test.cf": {comment: "Test Policy"},
         "params/demo.json": {comment: "Demo of data-driven classes."}
     },
 

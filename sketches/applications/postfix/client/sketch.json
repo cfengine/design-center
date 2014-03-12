@@ -3,7 +3,6 @@
     {
         "main.cf": { "desc": "main file" },
         "test.pl": { test:true },
-        "test.cf": { desc: "example policy" },
         "params/demo.json": { desc: "example parameters" },
         "README.md": { "documentation": true },
     },

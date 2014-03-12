@@ -3,7 +3,6 @@
     {
         "main.cf": {desc: "main file" },
         "README.md": {documentation: true},
-        "test.cf": {comment: "Test Policy"},
         changelog: {comment: "changelog"},
         "params/example.json": {comment: "Example parameters to report on a few hosts connectivity."}
     },

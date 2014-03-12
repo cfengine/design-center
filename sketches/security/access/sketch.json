@@ -3,7 +3,6 @@
     {
         "main.cf": { desc: "main file" },
         "README.md": { documentation: true },
-        "test.cf": {comment: "Test Policy"},
         "sketch.json": {comment: "Sketch definition"},
         "params/example.json": {comment: "Example parameters for use with cf-sketch"}
     },

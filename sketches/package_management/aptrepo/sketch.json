@@ -5,7 +5,6 @@
         "main.cf": { desc: "main file" },
         "README.md": { documentation: true },
         "test.pl": { test:true },
-        "test.cf": { desc: "Example Policy" },
         "params/repos.json": { }
     },
 

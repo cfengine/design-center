@@ -3,7 +3,6 @@
     {
         "main.cf": { "desc": "main file" },
         "test.pl": {test:true},
-        "test.cf": {comment: "Test Policy"},
         "README.md": { "documentation": true },
 
         "params/demo.json": { "comment": "Install New Relic: common parameters" },

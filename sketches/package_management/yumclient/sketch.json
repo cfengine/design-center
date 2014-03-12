@@ -3,7 +3,6 @@
     {
         "main.cf":     { desc: "main file" },
         "README.md":   { documentation: true },
-        "test.cf":     { comment: "Example policy" },
         changelog:     { comment: "changelog" },
         "params/demo.json": { comment: "demo JSON parameters" }
     },

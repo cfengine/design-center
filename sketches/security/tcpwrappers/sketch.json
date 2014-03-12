@@ -3,7 +3,6 @@
     {
         "main.cf": {desc: "main file", version: 1.2 },
         "README.md": {documentation: true},
-        "test.cf": {comment: "Test Policy"},
         "test-complex.cf": {comment: "Complex Test Policy"},
         "sketch.json": {comment: "Sketch metadata"},
         changelog: {comment: "changelog"},

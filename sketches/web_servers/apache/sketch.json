@@ -4,7 +4,6 @@
         "main.cf": {desc: "main file" },
         "README.md": {documentation: true},
         "test.pl": { test:true },
-        "test.cf": {comment: "Test Policy"},
         "templates/debian/ports.tmpl": { comment: "Ports template" },
         "templates/debian/default.tmpl": { comment: "Default non-SSL site" },
         "templates/debian/default-ssl.tmpl": { comment: "Default SSL site" },

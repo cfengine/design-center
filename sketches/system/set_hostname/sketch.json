@@ -5,7 +5,6 @@
         "main.cf": { desc: "main file", "version": "1.05.2" },
         "README.md": { "documentation": true },
         "params/example.json": { "comment": "Sample parameters to set hostname to node1.example.com" },
-        "test.cf": { "comment": "Standalone Test policy" },
         "changelog": { "comment": "changelog" }
     },
 

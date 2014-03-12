@@ -4,7 +4,6 @@
         "main.cf": { desc: "main file", version: 1.2 },
         "README.md": { documentation: true },
         "test.pl": { test:true },
-        "test.cf": { comment: "Test policy" },
         changelog: { comment: "changelog" },
         "params/example.json": { },
     },
