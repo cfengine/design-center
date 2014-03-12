@@ -284,11 +284,11 @@ sub install
             my @newlines;
             foreach my $line (@lines)
             {
-                if ($line =~ m/^#\@include\s+"([^"]+)"\s*$/)
+                if ($line =~ m/^\s*#\@include\s+"([^"]+)"\s*$/)
                 {
                     my $incname = sprintf("%s/%s", dirname($dest), $1);
-                    open my $include, '<', $incname;
-                    if ($include)
+                    my $include;
+                    if (open $include, '<', $incname)
                     {
                         push @newlines, <$include>;
                         $result->add_data_key('installation', ["include", $sketch->name(), $dest, $incname], $dest);

@@ -1,7 +1,7 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "zmain.cf": { desc: "main file" },
         "standard.inc": { desc: "standard DC include template", version: 1 },
         "README.md": { documentation: true },
         "params/demo.json": { comment: "simple demo of sketch" },
