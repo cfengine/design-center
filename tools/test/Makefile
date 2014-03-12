@@ -799,3 +799,11 @@ sudoers:
 sudoers2:
 	$(CFSKETCH_DA) --install System::Sudoers --activate System::Sudoers=$(SOURCEDIR)/system/sudoers/params/fnord.json
 	$(RUNNER)
+
+nologin:
+	$(CFSKETCH_DA) --install Security::nologin --activate Security::nologin=$(SOURCEDIR)/security/nologin/params/present.json
+	$(RUNNER)
+
+nologin_off:
+	$(CFSKETCH_DA) --install Security::nologin --activate Security::nologin=$(SOURCEDIR)/security/nologin/params/absent.json
+	$(RUNNER)

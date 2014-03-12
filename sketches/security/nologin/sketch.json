@@ -64,9 +64,7 @@
             "localuser_nologin": "The nologin command displays a message that an account is not available and exits non-zero. It is intended as a replacement shell field for accounts that have been disabled."
         },
         "depends": {
-            "CFEngine::dclib": {
-                "version": "1.0.0"
-            },
+            "CFEngine::sketch_template": {},
             "cfengine": {
                 "version": "3.6.0"
             },
@@ -81,6 +79,7 @@
             "security",
             "sketchify_generated",
             "nologin",
+            "sixified",
             "cfdc"
         ],
         "version": "1.0"

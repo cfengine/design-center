@@ -1,8 +1,7 @@
 {
-  "No Logins Allowed" : {
-     "Security::_etc_nologin" : {
+    "Security::nologin":
+    {
         "content" : "This machine is managed by CFEngine, no direct logins allowed.",
         "state" : "present"
-     }
-  }
+    }
 }
