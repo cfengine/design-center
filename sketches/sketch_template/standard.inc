@@ -42,17 +42,19 @@
       "$(dcbundle): $(metadata[name]) version $(metadata[version]) by $(authors) starting up...";
 
       "$(dcbundle): imported environment var '$(vars)' with value '$($(vars))'";
+
       "$(dcbundle): imported environment class '$(vars)' because '$($(vars))' was true"
       ifvarclass => "$(vars)";
+
       "$(dcbundle): the path_prefix for runenv $(runenv) is '$(path_prefix)'";
       "$(dcbundle): the exec_prefix for runenv $(runenv) is '$(exec_prefix)'";
       "$(dcbundle): the show_prefix for runenv $(runenv) is '$(show_prefix)'";
 
-      # use the "verbose" context to show the sketch operation (for the user)
     verbose::
+      # use the "verbose" context to show the sketch operation (for the user)
       "$(dcbundle): running in verbose mode";
-      # use the "test" context to help debug the sketch (for the developer)
     test::
+       # use the "test" context to help debug the sketch (for the developer)
        "$(dcbundle): running in test mode";
 
 ##############################################################################

@@ -104,7 +104,6 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
   reports:
       # use the "test" context to help debug the sketch (for the developer)
     test::
-      "$(dcbundle): running in test mode";
       "$(dcbundle): owner = $(owner)";
       "$(dcbundle): output = $(output)" ifvarclass => "!prepend_command_not_given";
       "$(dcbundle): main_path = $(main_path)";
