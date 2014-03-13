@@ -1241,6 +1241,11 @@ sub activate
 
         if ($verify)
         {
+            if (ref $spec eq 'HASH')
+            {
+                $spec->{hash} = $verify->hash();
+            }
+
             $self->log("Activating sketch %s with spec %s", $sketch, $spec);
             my $cspec = $self->cencode($spec);
             if (exists $self->activations()->{$sketch})
