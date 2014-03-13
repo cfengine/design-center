@@ -1385,18 +1385,39 @@ sub regenerate
 
     my $data_lines = join "\n\n", @data;
 
+    my %stringified = (
+                       activated => 1,
+                       test => 1,
+                       verbose => 1,
+                       qa => 1,
+                      );
+
     my @environment_data;
     foreach my $e (keys %{$self->environments()})
     {
-        my $edata = $self->environments()->{$e};
+        # make a copy of the run environment
+        my %edata = %{$self->environments()->{$e}};
 
         # ensure there's an "activated" class
-        unless (exists $edata->{activated})
+        unless (exists $edata{activated})
         {
-            $edata->{activated} = "any";
+            $edata{activated} = "any";
         }
 
-        push @environment_data, $indent . Util::make_container_line("", $e, $self->cencode($edata)) . "\n";
+        # stringify every context as needed
+        foreach my $k (keys %stringified)
+        {
+            my $include = Util::hashref_search(\%edata, $k, qw/include/);
+            next unless defined $include;
+
+            if (ref $include ne '') # HASH, ARRAY, SCALAR, etc.
+            {
+                # TODO: we're ignoring 'exclude' here
+                $edata{$k} = Util::recurse_context($include);
+            }
+        }
+
+        push @environment_data, $indent . Util::make_container_line("", $e, $self->cencode(\%edata)) . "\n";
     }
 
     # 3. make cfsketch_run bundle with invocations
