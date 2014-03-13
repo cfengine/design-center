@@ -732,6 +732,10 @@ The `activations` command lists the defined activations.
 }
 ```
 
+Under each activation you may find an optional `hash` key identifying it
+uniquely (it's a hash of the resolved parameters, bundle and sketch name, and
+run environment name), but this should never be considered mandatory.
+
 #### `activate`
 
 The `activate` command defines a new activation of a sketch.
@@ -787,6 +791,9 @@ under the `activation` key in the metadata.
 
 You can pass a `target` parameter to an `activate` command with an install location,
 which will only activate sketches that exist in that location.
+
+You may find a `hash` key in the result, as described in the `activations`
+command above.
 
 ##### option: `compose`
 
