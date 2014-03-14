@@ -1,0 +1,6 @@
+{
+    "Packages::installed":
+    {
+        url: "file:///tmp/mypackage"
+    }
+}

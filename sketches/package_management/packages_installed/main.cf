@@ -35,3 +35,31 @@ bundle agent from_file(runenv, metadata, file, state)
     !have_todo::
       "$(dcbundle): file $(file) could not be parsed to get the file list";
 }
+
+bundle agent from_url(runenv, metadata, url, state, retriever, spooldir)
+{
+#@include "../../sketch_template/standard.inc"
+
+  vars:
+      "basename" string => lastnode($(url), "/");
+      "spoolfile" string => "$(spooldir)/$(basename)";
+
+  classes:
+      "have_file" expression => fileexists($(spoolfile));
+
+  commands:
+    have_exec_prefix::
+      "$(exec_prefix)$(retriever) > $(spoolfile)"
+      contain => default:in_shell,
+      classes => default:scoped_classes_generic("retrieve", "bundle");
+
+  methods:
+    not_test.have_file::
+      "install" usebundle => default:cfe_package_ensure_named($(spoolfile), $(state), ">=", "0.0.0", "*");
+
+  reports:
+    have_file.test::
+      "$(dcbundle): In test mode, simulating adding package $(spoolfile)";
+    !have_file.retrieve_reached::
+      "$(dcbundle): file $(spoolfile) could not be retrieved from $(url)";
+}

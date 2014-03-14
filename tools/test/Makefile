@@ -715,6 +715,11 @@ packages_installed_file:
 	$(CFSKETCH_DA) --install Packages::installed --activate Packages::installed=$(SOURCEDIR)/package_management/packages_installed/params/demo_file.json
 	$(RUNNER)
 
+packages_installed_url:
+	touch /tmp/mypackage
+	$(CFSKETCH_DA) --install Packages::installed --activate Packages::installed=$(SOURCEDIR)/package_management/packages_installed/params/demo_url.json
+	$(RUNNER)
+
 # this is for a Blueprint called 'first' ("blueprint create first; blueprint show --cfengine3 first")
 first:
 	$(CFSKETCH_DA) --install CFEngine::Blueprint

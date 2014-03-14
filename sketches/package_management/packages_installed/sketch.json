@@ -39,8 +39,18 @@
             { type: "string", name: "file", description: "Filename with packages, one per line", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
             { type: "string", name: "state", description: "Desired package state", default: "addupdate", choice: [ "add", "addupdate", "update" ], },
         ],
-    },
 
+        from_url:
+        [
+            { type: "bundle_options", name: "", single_use: true },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "url", description: "URL for package file", validation: "URL" },
+            { type: "string", name: "state", description: "Desired package state", default: "addupdate", choice: [ "add", "addupdate", "update" ], },
+            { type: "string", name: "url_retriever", default: "/usr/bin/curl -s", description: "Command to run, will be given the `url` and expected to send the output to STDOUT", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "string", name: "spooldir", description: "Directory where packages are spooled", default: "/var/tmp", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+        ],
+    },
     namespace: "cfdc_packages",
     
     interface: [ "main.cf" ]
