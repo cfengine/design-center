@@ -10,30 +10,28 @@
       # canon_prefix will give you that.
       "canon_prefix" string => canonify("$(prefix)");
       "dcbundle" string => concat($(this.namespace), ':', $(this.bundle));
+      "prefixes" slist => { "show", "exec", "path" };
 
     verbose::
       # pretty-print the authors and dependencies
       "dependencies" string => format("%S", "metadata[depends]");
       "authors" string => format("%S", "metadata[authors]");
 
-    activated.not_test::
+    not_test::
       "exec_prefix" string => "", policy => "free";
       "show_prefix" string => "", policy => "free";
+      "path_prefix" string => "", policy => "free";
 
-    activated.test::
+    test::
       "exec_prefix" string => "$(paths.path[echo]) ", policy => "free";
       "show_prefix" string => "$(paths.path[grep]) . ", policy => "free";
-
-    activated.no_path_prefix.not_test::
-      "path_prefix" string => "", policy => "free";
-    activated.no_path_prefix.test::
       "path_prefix" string => "/tmp", policy => "free";
 
   classes:
       "$(vars)" expression => classmatch("$($(vars))");
       "not_$(vars)" not => classmatch("$($(vars))");
-      "have_path_prefix" expression => isvariable("runenv[path_prefix]");
-      "no_path_prefix" not => isvariable("runenv[path_prefix]");
+      "have_$(prefixes)_prefix" expression => isvariable("$(prefixes)_prefix");
+      "no_$(prefixes)_prefix" not => isvariable("$(prefixes)_prefix");
 
   reports:
     verbose::
@@ -46,9 +44,8 @@
       "$(dcbundle): imported environment class '$(vars)' because '$($(vars))' was true"
       ifvarclass => "$(vars)";
 
-      "$(dcbundle): the path_prefix for runenv $(runenv) is '$(path_prefix)'";
-      "$(dcbundle): the exec_prefix for runenv $(runenv) is '$(exec_prefix)'";
-      "$(dcbundle): the show_prefix for runenv $(runenv) is '$(show_prefix)'";
+      "$(dcbundle): the $(prefixes)_prefix for runenv $(runenv) is '$($(prefixes)_prefix)'"
+      ifvarclass => "have_$(prefixes)_prefix";
 
     verbose::
       # use the "verbose" context to show the sketch operation (for the user)
