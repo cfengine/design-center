@@ -5,7 +5,7 @@ body file control
 
 bundle agent localuser_nologin(runenv, metadata, list_of_users)
 {
-#@include "../../sketch_template/standard.inc"
+#@include "REPO/sketch_template/standard.inc"
 
   vars:
       "nologin_bin" string => "$(exec_prefix)$(default:paths.path[nologin])";
@@ -44,7 +44,7 @@ bundle agent localuser_nologin(runenv, metadata, list_of_users)
 
 bundle agent etc_nologin(runenv, metadata, state, content)
 {
-#@include "../../sketch_template/standard.inc"
+#@include "REPO/sketch_template/standard.inc"
 
   vars:
       "etc_nologin" string => "$(path_prefix)/etc/nologin";

@@ -5,7 +5,7 @@ body file control
 
 bundle agent installed(runenv, metadata, pkgs_add, state)
 {
-#@include "../../sketch_template/standard.inc"
+#@include "REPO/sketch_template/standard.inc"
 
   methods:
     not_test::
@@ -18,7 +18,7 @@ bundle agent installed(runenv, metadata, pkgs_add, state)
 
 bundle agent from_file(runenv, metadata, file, state)
 {
-#@include "../../sketch_template/standard.inc"
+#@include "REPO/sketch_template/standard.inc"
   vars:
       "todo" slist => readstringlist($(file), "#.*", "\n", 10000, 500000);
 
@@ -38,7 +38,7 @@ bundle agent from_file(runenv, metadata, file, state)
 
 bundle agent from_url(runenv, metadata, url, state, retriever, spooldir)
 {
-#@include "../../sketch_template/standard.inc"
+#@include "REPO/sketch_template/standard.inc"
 
   vars:
       "basename" string => lastnode($(url), "/");

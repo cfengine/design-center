@@ -5,7 +5,7 @@ body file control
 
 bundle agent removed(runenv, metadata, pkgs_removed)
 {
-#@include "../../sketch_template/standard.inc"
+#@include "REPO/sketch_template/standard.inc"
 
   methods:
     not_test::
@@ -18,7 +18,7 @@ bundle agent removed(runenv, metadata, pkgs_removed)
 
 bundle agent remove_from_file(runenv, metadata, file)
 {
-#@include "../../sketch_template/standard.inc"
+#@include "REPO/sketch_template/standard.inc"
   vars:
       "todo" slist => readstringlist($(file), "#.*", "\n", 10000, 500000);
 
