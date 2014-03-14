@@ -5,7 +5,7 @@ body file control
 
 bundle agent set(runenv, metadata, given_sysctl_file, empty_first, ensured_kv, removed_kv, removed_vars)
 {
-#@include "../../sketch_template/standard.inc"
+#@include "REPO/sketch_template/standard.inc"
   vars:
       "sysctl_vars" slist => getindices(ensured_kv);
       "removed_kvindices" slist => getindices(removed_kv);

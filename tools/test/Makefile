@@ -673,7 +673,7 @@ gencert:
 	$(RUNNER)
 
 syslog:
-	$(CFSKETCH_DA) --install System::Syslog --activate System::Syslog=$(SOURCEDIR)/system/syslog/params/demo.json
+	$(CFSKETCH_DA) --install System::syslog --activate System::syslog=$(SOURCEDIR)/system/syslog/params/demo.json
 	$(RUNNER)
 
 routes:

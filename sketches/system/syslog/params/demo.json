@@ -1,19 +1,13 @@
 {
-    "System::Syslog":
+    "System::syslog":
     {
-				"config" : {
-					"*.err;kern.notice;auth.notice" : {
-						"action" : "/dev/console",
-					},
-					"*.alert" : {
-						"action" : "root",
-					},
-					"*.emerg" : {
-						"action" : "*",
-					}, 
-					"*.debug" : {
-						"action" : "/var/adm/messages",
-					},
-				}
+        "file": "/etc/syslog.conf",
+		"ensured_kv" :
+        {
+			"*.err;kern.notice;auth.notice" : "/dev/console",
+			"*.alert" : "root",
+			"*.emerg" : "*",
+			"*.debug" : "/var/adm/messages"
+		}
     }
 }
