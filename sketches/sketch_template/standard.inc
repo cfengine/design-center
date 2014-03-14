@@ -31,7 +31,6 @@
       "$(vars)" expression => classmatch("$($(vars))");
       "not_$(vars)" not => classmatch("$($(vars))");
       "have_$(prefixes)_prefix" expression => isvariable("$(prefixes)_prefix");
-      "no_$(prefixes)_prefix" not => isvariable("$(prefixes)_prefix");
 
   reports:
     verbose::
