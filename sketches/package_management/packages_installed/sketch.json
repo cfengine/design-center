@@ -14,9 +14,9 @@
         "description": "Ensure certain packages are installed. The networked package manager of the OS (e.g. yum or aptitude) is used to perform installations, so the packages need to be available in its package repository.",
         "version": "1.0.0",
         "license": "MIT",
-        "tags": [ "cfdc", "packages", "enterprise_compatible" ],
+        "tags": [ "cfdc", "packages", "enterprise_compatible", "sixified" ],
         "authors": [ "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" ],
-        "depends": { "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
+        "depends": { "CFEngine::sketch_template": { }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
     },
 
     api:
@@ -27,7 +27,8 @@
             { type: "bundle_options", name: "", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "list", name: "pkgs_add", description: "Packages that should be installed", validation: "LIST_OF_PACKAGE_NAME", example: "apache2, zsh" }
+            { type: "list", name: "pkgs_add", description: "Packages that should be installed", validation: "LIST_OF_PACKAGE_NAME", example: "apache2, zsh" },
+            { type: "string", name: "state", description: "Desired package state", default: "addupdate", choice: [ "add", "addupdate", "update" ], },
         ],
     },
 

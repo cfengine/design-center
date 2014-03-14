@@ -3,64 +3,15 @@ body file control
       namespace => "cfdc_packages";
 }
 
-bundle agent installed(runenv, metadata, pkgs_add)
+bundle agent installed(runenv, metadata, pkgs_add, state)
 {
-  classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
-
-  vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+#@include "../../sketch_template/standard.inc"
 
   methods:
-    verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      inherit => "true";
-
-  packages:
-    not_test.redhat::
-      "$(pkgs_add)"
-      package_policy => "add",
-      package_method => default:generic,
-      handle => "$(activation_id)_packages_add_redhat_$(pkgs_add)";
-
-    not_test.debian::
-      "$(pkgs_add)"
-      package_policy => "add",
-      package_method => apt_get,  # aptitude return zero on error too
-      classes => default:if_ok("packages_installed"),
-      handle => "$(activation_id)_packages_add_$(pkgs_add)";
+    not_test::
+      "install" usebundle => cfe_package_ensure($(pkgs_add), $(state));
 
   reports:
     test::
-      "$(this.bundle): In test mode, so simulating adding package $(pkgs_add)";
-}
-
-
-body package_method apt_get  # TODO: use the one in cfengine_stdlib when available
-{
-      package_changes => "bulk";
-      package_list_command => "/usr/bin/dpkg -l";
-      package_list_name_regex    => ".i\s+([^\s]+).*";
-      package_list_version_regex => ".i\s+[^\s]+\s+([^\s]+).*";
-      package_installed_regex => ".i.*"; # packages that have been uninstalled may be listed
-      package_name_convention => "$(name)";
-
-      # set it to "0" to avoid caching of list during upgrade
-      package_list_update_ifelapsed => "240";
-
-      package_add_command => "/usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C /usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes install";
-      package_list_update_command => "/usr/bin/apt-get update";
-      package_delete_command => "/usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C /usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes -q remove";
-      package_update_command =>  "/usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C /usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes install";
-      package_patch_command =>  "/usr/bin/env DEBIAN_FRONTEND=noninteractive LC_ALL=C /usr/bin/apt-get -o Dpkg::Options::=--force-confold -o Dpkg::Options::=--force-confdef --yes install";
-      package_verify_command => "/usr/bin/dpkg -s";
-      package_noverify_returncode => "1";
-
-      package_patch_list_command => "/usr/bin/apt-get --just-print dist-upgrade";
-      package_patch_name_regex => "^Inst\s+(\S+)\s+.*";
-      package_patch_version_regex => "^Inst\s+\S+\s+\[?\(?([^\],\s]+).*";
+      "$(dcbundle): In test mode, simulating adding package $(pkgs_add)";
 }
