@@ -15,3 +15,23 @@ bundle agent installed(runenv, metadata, pkgs_add, state)
     test::
       "$(dcbundle): In test mode, simulating adding package $(pkgs_add)";
 }
+
+bundle agent from_file(runenv, metadata, file, state)
+{
+#@include "../../sketch_template/standard.inc"
+  vars:
+      "todo" slist => readstringlist($(file), "#.*", "\n", 10000, 500000);
+
+  classes:
+      "have_todo" expression => isvariable("todo");
+
+  methods:
+    have_todo.not_test::
+      "install" usebundle => default:cfe_package_ensure($(todo), $(state));
+
+  reports:
+    have_todo.test::
+      "$(dcbundle): In test mode, simulating adding package $(todo)";
+    !have_todo::
+      "$(dcbundle): file $(file) could not be parsed to get the file list";
+}

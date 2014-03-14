@@ -1,6 +1,6 @@
 {
     "Packages::installed":
     {
-        pkgs_add: [ "screen" ],
+        file: "/tmp/packages.dat"
     }
 }

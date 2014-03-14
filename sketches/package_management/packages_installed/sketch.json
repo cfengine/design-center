@@ -30,6 +30,15 @@
             { type: "list", name: "pkgs_add", description: "Packages that should be installed", validation: "LIST_OF_PACKAGE_NAME", example: "apache2, zsh" },
             { type: "string", name: "state", description: "Desired package state", default: "addupdate", choice: [ "add", "addupdate", "update" ], },
         ],
+
+        from_file:
+        [
+            { type: "bundle_options", name: "", single_use: true },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "file", description: "Filename with packages, one per line", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "string", name: "state", description: "Desired package state", default: "addupdate", choice: [ "add", "addupdate", "update" ], },
+        ],
     },
 
     namespace: "cfdc_packages",
