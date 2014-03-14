@@ -287,6 +287,8 @@ sub install
                 if ($line =~ m/^\s*#\@include\s+"([^"]+)"\s*$/)
                 {
                     my $incname = sprintf("%s/%s", dirname($dest), $1);
+                    my $repo = $self->location();
+                    $incname =~ s/.*REPO/$repo/g;
                     my $include;
                     if (open $include, '<', $incname)
                     {
