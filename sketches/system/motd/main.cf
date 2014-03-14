@@ -56,7 +56,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       comment => "Split MotD into dynamic and static portions";
 
   files:
-    activated::
+    have_path_prefix.activated::
       "$(main_path)"
       pathtype => "literal",
       create => "true",
@@ -68,7 +68,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       classes => default:classes_generic("files_main"),
       comment => "Create and populate the static motd file";
 
-    activated.dynamic_path_given.!prepend_command_not_given::
+    have_path_prefix.have_exec_prefix.activated.dynamic_path_given.!prepend_command_not_given::
       "$(output_path)"
       pathtype => "literal",
       create => "true",
@@ -80,7 +80,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       classes => default:classes_generic("files_dynamic"),
       comment => "Create and populate the dynamic motd file";
 
-    activated.dynamic_path_given.prepend_command_not_given::
+    have_path_prefix.activated.dynamic_path_given.prepend_command_not_given::
       "$(output_path)"
       pathtype => "literal",
       create => "true",
@@ -91,7 +91,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       classes => default:classes_generic("files_dynamic"),
       comment => "create an empty dynamic motd file";
 
-    activated.create_symlink::
+    have_path_prefix.activated.create_symlink::
       "$(symlink_link)"
       pathtype => "literal",
       move_obstructions => "true",
@@ -102,8 +102,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       comment => "create a symlink to the motd file";
 
   reports:
-      # use the "test" context to help debug the sketch (for the developer)
-    test::
+    have_path_prefix.test::
       "$(dcbundle): owner = $(owner)";
       "$(dcbundle): output = $(output)" ifvarclass => "!prepend_command_not_given";
       "$(dcbundle): main_path = $(main_path)";
