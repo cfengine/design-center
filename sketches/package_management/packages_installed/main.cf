@@ -9,7 +9,7 @@ bundle agent installed(runenv, metadata, pkgs_add, state)
 
   methods:
     not_test::
-      "install" usebundle => cfe_package_ensure($(pkgs_add), $(state));
+      "install" usebundle => default:cfe_package_ensure($(pkgs_add), $(state));
 
   reports:
     test::
