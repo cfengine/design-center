@@ -704,6 +704,17 @@ nrpe:
 	$(CFSKETCH_DA) --install Applications::Nagios::NRPE --activate Applications::Nagios::NRPE=$(SOURCEDIR)/applications/nagios/nrpe/params/demo.json
 	$(RUNNER)
 
+packages_removed:
+	$(CFSKETCH_DA) --install Packages::removed --activate Packages::removed=$(SOURCEDIR)/package_management/packages_removed/params/demo.json
+	$(RUNNER)
+
+packages_removed_file:
+	echo 'screen' > /tmp/packages.dat
+	echo 'zsh' >> /tmp/packages.dat
+	echo 'nosuchpackage' >> /tmp/packages.dat
+	$(CFSKETCH_DA) --install Packages::removed --activate Packages::removed=$(SOURCEDIR)/package_management/packages_removed/params/demo_file.json
+	$(RUNNER)
+
 packages_installed:
 	$(CFSKETCH_DA) --install Packages::installed --activate Packages::installed=$(SOURCEDIR)/package_management/packages_installed/params/demo.json
 	$(RUNNER)

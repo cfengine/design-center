@@ -1,0 +1,6 @@
+{
+    "Packages::removed":
+    {
+        file: "/tmp/packages.dat",
+    }
+}

@@ -5,37 +5,33 @@ body file control
 
 bundle agent removed(runenv, metadata, pkgs_removed)
 {
-  classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
-
-  vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
-
-  files:
-      # TODO: make packages promise always give a status when package is already removed
-      #       we need at least one promise status to detect activation in Enterprise
-      #       Can be removed when this bug is fixed: https://cfengine.com/dev/issues/2861
-      "$(sys.workdir)/ppkeys/."
-      create       => "true",
-      handle       => "$(activation_id)_dummy_kept";
+#@include "../../sketch_template/standard.inc"
 
   methods:
-    verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      inherit => "true";
-
-  packages:
     not_test::
-      "$(pkgs_removed)"
-      package_policy => "delete",
-      package_method => default:generic,
-      handle => "$(activation_id)_packages_removed_$(pkgs_removed)";
+      "install" usebundle => default:cfe_package_ensure($(pkgs_removed), "delete");
 
   reports:
     test::
-      "$(this.bundle): In test mode, so simulating removing package $(pkgs_removed)";
+      "$(dcbundle): In test mode, simulating removing package $(pkgs_removed)";
+}
+
+bundle agent remove_from_file(runenv, metadata, file)
+{
+#@include "../../sketch_template/standard.inc"
+  vars:
+      "todo" slist => readstringlist($(file), "#.*", "\n", 10000, 500000);
+
+  classes:
+      "have_todo" expression => isvariable("todo");
+
+  methods:
+    have_todo.not_test::
+      "install" usebundle => default:cfe_package_ensure($(todo), "delete");
+
+  reports:
+    have_todo.test::
+      "$(dcbundle): In test mode, simulating removing package $(todo)";
+    !have_todo::
+      "$(dcbundle): file $(file) could not be parsed to get the file list";
 }
