@@ -65,6 +65,7 @@ my %options = (
                date => $DATE,
                dcapi => $dcapi,
                inputs => '/var/cfengine/masterfiles',
+               standalonerunfile => '/var/cfengine/masterfiles/cf-sketch-runfile-standalone.cf',
               );
 
 Getopt::Long::Configure("bundling", "require_order");
@@ -103,6 +104,8 @@ die "$0: --installsource FILE must be specified" unless $options{installsource};
 
 mkdir $options{inputs} unless -d $options{inputs}; # try to create...
 die "$0: --inputs $options{inputs} doesn't exist" unless -d $options{inputs};
+
+$options{installdest}="$options{inputs}/sketches";
 
 my $sourcedir = dirname($options{installsource});
 $options{sourcedir} = $sourcedir;
@@ -340,7 +343,7 @@ sub api_interaction
     my $opts = {
                 log => "pretty",
                 log_level => $log_level,
-                repolist => [ "$options{inputs}/sketches" ],
+                repolist => [ "$options{installdest}" ],
                 recognized_sources =>
                 [
                  $sourcedir
@@ -601,10 +604,9 @@ sub get_all_sketches {
                                                   search => $regex,
                                                  });
   my $list = Util::hashref_search($result, 'data', 'search');
-  my $res = undef;
+  my $res = {};
   if (ref $list eq 'HASH')
   {
-    $res = {};
     foreach my $repo (keys %$list) {
       foreach my $sketch (keys %{$list->{$repo}}) {
         $res->{$sketch} = $list->{$repo}->{$sketch};

@@ -32,6 +32,11 @@ sub command_install
          }
     } @sketches;
     my ($success, $result) = main::api_interaction({install => \@todo});
+    if (!$success)
+    {
+        Util::error("Errors occurred during installation. The sketch was not installed.\n");
+        return;
+    }
     Util::print_api_messages($result);
     my $installresult = Util::hashref_search($result, qw/data install/);
     if (ref $installresult eq 'HASH') {
