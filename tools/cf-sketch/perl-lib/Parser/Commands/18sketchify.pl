@@ -81,12 +81,10 @@ sub command_sketchify
 
     my $sketch_json = $Parser::Config{dcapi}->cencode_pretty($sketchifier->{new_sketch});
 
-    Util::warning("New sketch JSON: $sketch_json\n");
-
+    Util::warning("New sketch JSON: $sketch_json\n") if $Config{verbose};
     Util::warning("sketchifier object: ".Dumper($sketchifier)."\n") if $Config{verbose};
 
-#    sketch_confirmation_screen($sketch_data) or return;
-
+    $sketchifier->sketch_confirmation_screen or return;
     $sketchifier->write_new_sketch or return;
 
     Util::message("Done!\n");
@@ -214,11 +212,11 @@ sub init
                     "comma-separated list, preferably of the form 'Name <email>'",
                     sub { [ split(/,\s*/, shift) ] }
                    ],
-     '#extra_files' => \&query_extra_files,
-     '#sketch_api' => \&query_api,
-     '#namespace' => \&query_namespace,
-     '#env_metadata_params' => \&query_env_metadata_params,
-     '#outputdir' => \&query_output_dir,
+     '#extra_files' => [ "Extra manifest files", \&query_extra_files ],
+     '#sketch_api' => [ "Sketch API", \&query_api ],
+     '#namespace' => [ "Namespace", \&query_namespace ],
+     '#env_metadata_params' => [ "Runenv and metadata parameters", \&query_env_metadata_params ],
+     '#outputdir' => [ "Output directory", \&query_output_dir ],
     };
 
     # Order in which things will be queried
@@ -311,6 +309,31 @@ sub prompt_sketch_datum
         }
     } while (!$valid);
     return ($value, undef);
+}
+
+sub sketch_confirmation_screen
+{
+    my $self = shift;
+
+    my $data = $self->{query_values};
+    my @order = @{$self->{query_order}};
+
+    while (1)
+    {
+        my @menu=();
+        for my $p (@order)
+        {
+            push @menu, $self->{query_spec}->{$p}->[0] . ": " . Dumper($data->{$p});
+        }
+        my $n = Util::choose_one("These are the current sketch parameters:", "Please enter the number of the part you want to modify", "Enter to continue", @menu);
+        if ($n == -1)
+        {
+            return 1;
+        }
+        my ($val, $stop) = $self->query_parameter($order[$n]);
+        next if $stop;
+        $self->{query_values}->{$order[$n]} = $val;
+    }
 }
 
 sub write_new_sketch
@@ -570,7 +593,7 @@ sub query_parameter
 
     my $query_spec = $self->{query_spec};
 
-    if (ref($query_spec->{$p}) eq 'ARRAY')
+    if (ref($query_spec->{$p}) eq 'ARRAY' && ref($query_spec->{$p}->[1]) ne 'CODE')
     {
         my ($prompt, $def, $valsub, $errmsg, $hint, $postproc) = @{$query_spec->{$p}};
         # Override default value if a previous one exists
@@ -582,10 +605,10 @@ sub query_parameter
         }
         return ($val, $stop);
     }
-    elsif (ref($query_spec->{$p}) eq 'CODE')
+    elsif (ref($query_spec->{$p}) eq 'ARRAY' && ref($query_spec->{$p}->[1]) eq 'CODE')
     {
         # Call an arbitrary query subroutine
-        my ($val,$stop) = $query_spec->{$p}->($self, $p);
+        my ($val,$stop) = $query_spec->{$p}->[1]->($self, $p);
         return ($val, $stop);
     }
 }
@@ -835,7 +858,7 @@ sub determine_bundle
                 push @bundles, $bundlestr;
             }
             my $n = Util::choose_one("This policy file has multipe agent bundles.",
-                                     "Which one do you want to configure as the main entry point for the sketch?",
+                                     "Which one do you want to configure as the main entry point for the sketch?", undef,
                                      @bundles);
             if ($n < 0)
             {
