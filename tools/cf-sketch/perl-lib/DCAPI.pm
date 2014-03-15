@@ -288,17 +288,21 @@ sub save_runfile
 {
     my $self = shift @_;
     my $data = shift @_;
+    my $result = shift @_;
 
     my $runfile = glob($self->runfile()->{location});
 
+    $result->add_data_key("runfile", "runfile", $runfile);
+
     $self->log("Saving runfile $runfile");
     open my $fh, '>', $runfile
-    or return "Run file $runfile could not be created: $!";
+     or return $result->add_warning('save runfile',
+                                    "Run file $runfile could not be created: $!");
 
     print $fh $data;
     close $fh;
 
-    return 1;
+    return $result;
 }
 
 sub is_ok_cfengine_version
@@ -1550,8 +1554,7 @@ $report_lines
 }
 EOHIPPUS
 
-    my $save_result = $self->save_runfile($runfile_data);
-    return $result->add_warning('save runfile', $save_result) unless $save_result;
+    my $save_result = $self->save_runfile($runfile_data, $result);
 
     return $result;
 }

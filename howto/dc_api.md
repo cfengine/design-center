@@ -1317,12 +1317,14 @@ parameter definitions, and data validations.
 The command does not allow the user to change the runfile location, as that is a
 possible security risk.
 
-In the returned data you can find each activation in a key-value map, indexed by
-the internal activation unique name, and with each value a list of `name,
-sketch, bundle, parameter checksum`.  The parameter checksum is calculated from
-the final parameters **after** the parameter definitions have been resolved, so
-compositions will be recognized as well.  Here's an example regeneration with
-just one activation.
+In the returned data you can find the runfile name and also each activation in a
+key-value map, indexed by the internal activation unique name, and with each
+value a list of `name, sketch, bundle, parameter checksum`.  The parameter
+checksum is calculated from the final parameters **after** the parameter
+definitions have been resolved, so compositions will be recognized as well.
+Here's an example regeneration with just one activation, with the runfile
+location in a specific user's home directory (this is typically how
+`cf-sketch.pl` will configure itself if it runs as non-root).
 
 ```
 {
@@ -1332,8 +1334,9 @@ just one activation.
         "errors": [],
         "error_tags": {},
         "data": {
-            "___001_System_motd_entry": ["", "System::motd", "entry", "b3172b7755c090fd49e0b250f6320880"]
-        },
+            "___001_System_motd_entry": ["", "System::motd", "entry", "b3172b7755c090fd49e0b250f6320880"],
+            "runfile":"/home/tzz/.cfagent/inputs/sketches/meta/api-runfile.cf"
+            },
         "log": [],
         "tags": {
             "activations": 1
