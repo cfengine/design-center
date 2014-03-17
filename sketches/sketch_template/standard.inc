@@ -9,7 +9,7 @@
       # bundle, especially if you use if_repaired and such.  The
       # canon_prefix will give you that.
       "canon_prefix" string => canonify("$(prefix)");
-      "dcbundle" string => concat($(this.namespace), ':', $(this.bundle));
+      "dcbundle" string => concat("[$(metadata[name])] ", $(this.namespace), ':', $(this.bundle));
       "prefixes" slist => { "show", "exec", "path" };
 
     verbose::
