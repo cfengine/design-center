@@ -23,8 +23,8 @@
       "path_prefix" string => "", policy => "free";
 
     test::
-      "exec_prefix" string => "$(paths.path[echo]) ", policy => "free";
-      "show_prefix" string => "$(paths.path[grep]) . ", policy => "free";
+      "exec_prefix" string => "$(default:paths.path[echo]) ", policy => "free";
+      "show_prefix" string => "$(default:paths.path[grep]) . ", policy => "free";
       "path_prefix" string => "/tmp", policy => "free";
 
   classes:
