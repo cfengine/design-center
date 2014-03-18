@@ -1647,8 +1647,11 @@ sub regenerate_index
         last if $result;
     }
 
-    $result->add_error('repodir', "Did not find the repodir")
-        unless $result && $result->success();
+    if (defined $result)
+    {
+        $result->add_error('repodir', "Did not find the repodir")
+         unless $result && $result->success();
+    }
 
     return $result;
 }

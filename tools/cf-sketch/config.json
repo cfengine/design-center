@@ -1,6 +1,7 @@
 {
  log: "STDERR",
  log_level: 4,
+ constdata: "~/source/cfengine/design-center/tools/cf-sketch/constdata.conf",
  repolist: [ "~/.cfagent/inputs/sketches" ],
  recognized_sources: [ "~/source/cfengine/design-center/sketches" ],
  runfile: { },

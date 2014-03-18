@@ -26,9 +26,9 @@
         [
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "string", name: "hostfile", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS", desc: "Location of the hosts file", default: "/etc/hosts" },
-            { type: "boolean", name: "defined_only", desc: "Keep only the given entries in the hosts file (but note that 127.0.0.1 and localhost are never removed" },
-            { type: "array", name: "hosts", desc: "Map of address keys to host lines", validation: "ETC_HOSTS_VALIDATION" },
+            { type: "string", name: "hostfile", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS", description: "Location of the hosts file", default: "/etc/hosts" },
+            { type: "boolean", name: "defined_only", description: "Keep only the given entries in the hosts file (but note that 127.0.0.1 and localhost are never removed)" },
+            { type: "array", name: "hosts", description: "Map of address keys to host lines", validation: "ETC_HOSTS_VALIDATION" },
             { type: "return", name: "file", },
         ],
     },

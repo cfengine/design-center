@@ -74,7 +74,6 @@ regenerate_cfsketches:
 regenerate: regenerate_cfsketches regenerate_readme
 
 do:
-	echo '{ dc_api_version: "3.6.0", request: {validate: { validation: "IPADDRESS", data: {"hello":256} } } }' | $(CFAPI)
 
 api_test:
 	echo '{ dc_api_version: "3.6.0", request: {deactivate: true } }' | $(CFAPI)
