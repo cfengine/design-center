@@ -3,7 +3,7 @@ body file control
       namespace => "cfdc_packages";
 }
 
-bundle agent installed(runenv, metadata, pkgs_add, state)
+bundle agent from_list(runenv, metadata, pkgs_add, state)
 {
 #@include "REPO/sketch_template/standard.inc"
 

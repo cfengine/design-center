@@ -22,7 +22,7 @@
     api:
     {
         // the key is the name of the bundle!
-        installed:
+        from_list:
         [
             { type: "bundle_options", name: "", single_use: true },
             { type: "environment", name: "runenv", },
