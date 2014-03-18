@@ -31,57 +31,45 @@ body file control
 
 bundle agent configure(runenv, metadata, original_hostfile, defined_only, hosts)
 {
-  vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
+#@include "REPO/sketch_template/standard.inc"
 
+  vars:
       "ip" slist   => getindices("$(hosts)"),
       comment => "We need the list of IPs to look for in the hosts file";
-
-      "config[$(ip)]"  string => "$($(hosts)[$(ip)])";
-
-      "esc_ips[$(ip)]" string => escape("$(ip)"),
-      comment => "We build an array of escaped ips for safe use in regexes";
 
       "CFEnotice" string  => "# This file is managed by CFEngine, manual edits will be reverted",
       comment => "It's nice to let people know why the file keep magically reverting on them";
 
       "class_prefix" string => canonify($(hostfile));
 
-    not_test::
-      "hostfile" string => "$(original_hostfile)", policy => "free";
-    test::
-      "hostfile" string => "/tmp/hosts", policy => "free";
+      "hostfile" string => "$(path_prefix)$(original_hostfile)";
 
   classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
       "defined_only" expression => strcmp($(defined_only), "1");
 
-  methods:
-    verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      inherit => "true";
-
   files:
+    have_path_prefix::
       "$(hostfile)"
       create      =>  "true",
-      edit_line   =>  default:replace_or_add("^$(esc_ips[$(ip)])\s.*",
-                                             "$(ip)    $(config[$(ip)])"),
-      classes     =>  default:if_else("$(class_prefix)_converged",
-                                      "$(class_prefix)_not_converged"),
+      edit_line   =>  default:set_line_based("cfdc_etc_hosts:configure.hosts",
+                                             " ",
+                                             "\s+",
+                                             ".*",
+                                             "\s*#\s*"),
+      classes     =>  default:scoped_classes_generic("bundle", "converged"),
       comment     =>  "Fix hosts entry to be as defined.";
 
+    defined_only::
       # We only need to delete nonmanaged entries if we specify the
       # defined_only flag
       "$(hostfile)"
-      edit_line   => cfdc_etc_hosts:delete_nonmanaged("@(configure.ip)"),
-      ifvarclass  => "defined_only",
+      edit_line   => delete_nonmanaged("@(configure.ip)"),
       comment     => "Delete lines that do not match our managed ip list";
 
+    have_path_prefix::
       "$(hostfile)"
       create      =>  "true",
-      edit_line   =>  cfdc_etc_hosts:prepend_if_no_line("$(CFEnotice)"),
+      edit_line   =>  default:prepend_if_no_line("$(CFEnotice)"),
       comment     =>  "Notice that the file is managed by CFEngine";
 
       # I have no idea what windows permissions should be for this file
@@ -91,35 +79,25 @@ bundle agent configure(runenv, metadata, original_hostfile, defined_only, hosts)
       comment => "Set proper permissions so everyone can read it";
 
   reports:
-    defined_only::
-      "$(this.bundle): only the defined hosts will be left in $(hostfile)";
-    !defined_only::
-      "$(this.bundle): the defined hosts will be added to $(hostfile)";
+    have_path_prefix.defined_only::
+      "$(dcbundle): only the defined hosts will be left in $(hostfile)";
+    have_path_prefix.!defined_only::
+      "$(dcbundle): the defined hosts will be added to $(hostfile)";
 
     verbose::
-      "$(this.bundle): given hosts: $(ip)    $(config[$(ip)])";
+      "$(dcbundle): given hosts: $(ip)    $(config[$(ip)])";
 
-    any::
-      "$(hostfile)" bundle_return_value_index => "file",
-      ifvarclass => "$(class_prefix)_converged";
+    converged_ok::
+      "$(hostfile)" bundle_return_value_index => "file";
 
-      "" bundle_return_value_index => "file",
-      ifvarclass => "$(class_prefix)_not_converged";
+    !converged_ok::
+      "" bundle_return_value_index => "file";
 }
-
-bundle edit_line prepend_if_no_line(string)
-{
-  insert_lines:
-      "$(string)"
-      location => default:start,
-      comment => "Prepend a line to the file if it doesn't already exist";
-}
-
 
 bundle edit_line delete_nonmanaged(ips)
 {
   vars:
-      "regex" string  => join ("|", "ips"),
+      "regex" string  => join ("|", ips),
       comment => "Or the escaped ips together so we can delete all others.";
 
   delete_lines:

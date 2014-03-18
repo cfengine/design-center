@@ -14,9 +14,9 @@
 	    description: "Manage /etc/hosts",
         version: 2.2,
         license: "MIT",
-        tags: [ "cfdc" ],
+        tags: [ "cfdc", "enterprise_compatible", "sixified" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux|darwin|windows" ] }
+        depends: { "CFEngine::sketch_template": {}, os:{"linux":"Linux", "darwin":"Mac OS X / Darwin", "windows":"Windows"} }
     },
 
     api:
