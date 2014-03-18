@@ -553,10 +553,12 @@ sub recurse_print
             $ref = ! ! $ref;
         }
 
+        my $escaped = $ref;
+        $escaped =~ s/'/\\'/g;
         push @print, {
                       path => $prefix,
                       type => ($type_override||'string'),
-                      value => $unquote_scalars ? $ref : "\"$ref\""
+                      value => $unquote_scalars ? $ref : "'$escaped'"
                      };
     }
 
