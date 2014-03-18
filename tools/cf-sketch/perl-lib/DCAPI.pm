@@ -65,7 +65,7 @@ has definitions => ( is => 'rw', default => sub { {} });
 has activations => ( is => 'rw', default => sub { {} });
 has validations => ( is => 'rw', default => sub { {} });
 has environments => ( is => 'rw', default => sub { { } } );
-has selftests => ( is => 'rw', default => sub { { } } );
+has selftests => ( is => 'rw', default => sub { [] } );
 
 has cfengine_min_version => ( is => 'ro', required => 1 );
 has cfengine_version => ( is => 'rw' );
@@ -438,6 +438,7 @@ sub selftest
     my @results;
 
     my $success = 1;
+    $self->log("Running self-tests %s", $self->selftests());
 
     foreach my $test (@{$self->selftests()})
     {
