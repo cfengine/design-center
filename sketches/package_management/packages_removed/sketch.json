@@ -15,7 +15,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "packages", "enterprise_compatible", "sixified" ],
         "authors": [ "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" ],
-        "depends": { "CFEngine::sketch_template": { }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
+        "depends": { "CFEngine::sketch_template": { }, cfengine: { version: "3.6.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
     },
 
     api:

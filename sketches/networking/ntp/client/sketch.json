@@ -13,7 +13,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "ntp", "enterprise_compatible", "sixified" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::sketch_template": {}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
+        "depends": { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
     },
 
     "api" : {

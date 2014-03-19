@@ -67,7 +67,7 @@
         },
         "depends": {
             "CFEngine::sketch_template": {},
-            "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ]
+            cfengine: { version: "3.6.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ]
         },
 
         "description": "This sketch provides facilities for restricing non root logins to a host.",

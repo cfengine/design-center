@@ -17,7 +17,7 @@
         license: "MIT",
         tags: [ "cfdc", "enterprise_compatible", "sixified" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::sketch_template": {}, os: { "linux": "Linux" } }
+        depends: { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: { "linux": "Linux" } }
     },
 
     api:

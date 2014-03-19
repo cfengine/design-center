@@ -16,7 +16,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "enterprise_compatible", "sixified" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::sketch_template": { }, "os": { "centos" : "CentOS", "redhat" : "Red Hat", "debian" : "Debian", "ubuntu" : "Ubuntu", "gentoo" : "Gentoo", "darwin" : "Mac OS X" } }
+        "depends": { "CFEngine::sketch_template": { }, cfengine: { version: "3.6.0" }, "os": { "centos" : "CentOS", "redhat" : "Red Hat", "debian" : "Debian", "ubuntu" : "Ubuntu", "gentoo" : "Gentoo", "darwin" : "Mac OS X" } }
     },
 
     api:
