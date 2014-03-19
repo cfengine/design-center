@@ -17,7 +17,7 @@
         license: "MIT",
         tags: [ "cfdc", "enterprise_compatible", "sixified" ],
         authors: [ "Ben Heilman <bheilman@enova.com>" ],
-        depends: { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: [ "linux" ] }
+        depends: { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: { "linux": "Linux" } }
     },
 
     api:
