@@ -15,7 +15,7 @@
         license: "MIT",
         "tags": [ "cfdc", "syslog", "enterprise_compatible", "sixified" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>", "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com", "Diego Zamboni <diego.zamboni@cfengine.com>" ],
-        "depends": { "CFEngine::sketch_template": {}, os: [ { "linux": "All Linux distributions", "solaris": "Solaris 8-11" } ] }
+        "depends": { "CFEngine::sketch_template": {}, os: { "linux": "All Linux distributions", "solaris": "Solaris 8-11" } }
     },
 
     api:
@@ -23,13 +23,14 @@
         // the key is the name of the bundle!
         set:
         [
+            { type: "bundle_options", name: "Set up the syslog contents" },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "string", name: "syslog_file", default: "/etc/rsyslog.conf" },
+            { type: "string", name: "syslog_file", default: "/etc/rsyslog.conf", description: "syslogd/rsyslogd configuration file", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
             { type: "boolean", name: "empty_first", default: false },
-            { type: "array", name: "ensured_kv", description: "Key-value pairs ensured to be present" },
-            { type: "array", name: "removed_kv", default: {"removethisvar": "somevalue"}, description: "Key-value pairs ensured to be removed"  },
-            { type: "list", name: "removed_vars", default: ["nosuchvar"], description: "Variable names ensured to be present"  },
+            { type: "array", name: "ensured_kv", description: "Key-value pairs ensured to be present", validation: "KVMAP" },
+            { type: "array", name: "removed_kv", default: {"removethisvar": "somevalue"}, description: "Key-value pairs ensured to be removed", validation: "KVMAP" },
+            { type: "list", name: "removed_vars", default: ["nosuchvar"], description: "Variable names ensured to be present", validation: "LIST_OF_STRING_NONEMPTY" },
             { type: "return", name: "syslog_file", },
         ],
     },
