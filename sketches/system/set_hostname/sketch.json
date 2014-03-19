@@ -16,7 +16,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "enterprise_compatible", "sixified" ],
         "authors": [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::sketch_template": { }, "os": [ { "centos" : "CentOS", "redhat" : "Red Hat", "debian" : "Debian", "ubuntu" : "Ubuntu", "gentoo" : "Gentoo", "darwin" : "Mac OS X" } ] }
+        "depends": { "CFEngine::sketch_template": { }, "os": { "centos" : "CentOS", "redhat" : "Red Hat", "debian" : "Debian", "ubuntu" : "Ubuntu", "gentoo" : "Gentoo", "darwin" : "Mac OS X" } }
     },
 
     api:
@@ -24,7 +24,7 @@
         // the key is the name of the bundle!
         set:
         [
-            { type: "bundle_options", name: "", single_use: true },
+            { type: "bundle_options", name: "Set the system hostname", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
             { type: "string", name: "hostname", description: "Host name to set", validation: "HOSTNAME", example: "myhost" },
