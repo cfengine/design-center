@@ -14,7 +14,8 @@ bundle agent resolver(runenv, metadata, file, nameserver, search, domain, option
       handle        => "cfdc_config_resolver_file",
       create        => "true",
       edit_defaults => default:empty,
-      edit_line     => cfdc_resolver:resolver_edit(@(nameserver),
+      edit_line     => cfdc_resolver:resolver_edit($(dcbundle),
+                                                   @(nameserver),
                                                    @(search),
                                                    @(domain),
                                                    @(options),
@@ -30,9 +31,10 @@ bundle agent resolver(runenv, metadata, file, nameserver, search, domain, option
       "" bundle_return_value_index => "resolv_conf";
 }
 
-bundle edit_line resolver_edit(nameserver, search, domain, options, sortlist, extra)
+bundle edit_line resolver_edit(dcbundle, nameserver, search, domain, options, sortlist, extra)
 {
   insert_lines:
+      "# maintained by CFEngine Design Center sketch $(dcbundle)";
       "$(extra)";
       "nameserver $(nameserver)";
       "search $(search)";
