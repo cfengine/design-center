@@ -22,9 +22,10 @@
     {
         set:
         [
+            { type: "bundle_options", name: "Set the timezone", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "string", name: "timezone",
+            { type: "string", name: "timezone", description: "Time zone",
               // this is from zone.tab but can be improved (order and completeness)
               choice:
               [
@@ -445,7 +446,7 @@
                   "Pacific/Wallis",
               ]
             },
-            { type: "string", name: "zoneinfo_dir", default: "/usr/share/zoneinfo" },
+            { type: "string", name: "zoneinfo_dir", default: "/usr/share/zoneinfo", description: "Directory of zoneinfo data files", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
             { type: "return", name: "timezone", },
         ],
     },
