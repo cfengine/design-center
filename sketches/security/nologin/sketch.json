@@ -1,6 +1,7 @@
 {
     "api": {
         "etc_nologin": [
+            { type: "bundle_options", name: "Refuse logins to the system through /etc/nologin", single_use: true },
             {
                 "name": "runenv",
                 "type": "environment"
@@ -20,7 +21,7 @@
                 "type": "string"
             },
             {
-                "default": "",
+                "default": "Logins refused by policy.",
                 "description": "The content the /etc/nologin file should have.",
                 "name": "content",
                 "type": "string"
@@ -28,6 +29,7 @@
         ],
 
         "localuser_nologin": [
+            { type: "bundle_options", name: "Refuse login privileges to specific users", single_use: true },
             {
                 "name": "runenv",
                 "type": "environment"
@@ -65,9 +67,6 @@
         },
         "depends": {
             "CFEngine::sketch_template": {},
-            "cfengine": {
-                "version": "3.6.0"
-            },
             "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ]
         },
 
