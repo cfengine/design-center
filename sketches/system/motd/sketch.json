@@ -25,11 +25,12 @@
         // this is the name of the bundle!
         entry:
         [
+         { type: "bundle_options", name: "Set up the Message Of The Day" },
          { type: "environment", name: "runenv", },
          { type: "metadata", name: "mymetadata", },
 	     { type: "string", name: "motd", description: "Message of the Day (aka motd)" },
-	     { type: "string", name: "motd_path", default: "/etc/motd", description: "Location of the primary, often only, MotD file" },
-         { type: "string", name: "prepend_command", default: "/bin/uname -snrvm", description: "Command output to prepend to MotD" },
+         { type: "string", name: "motd_path", default: "/etc/motd", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS", description: "Location of the primary, often only, MotD file" },
+         { type: "string", name: "prepend_command", default: "/bin/uname -snrvm", description: "Command output to prepend to MotD.  Leave empty to avoid." },
          { type: "string", name: "dynamic_path", default: null, description: "Location of the dynamic part of the MotD file" },
          { type: "string", name: "symlink_path", default: null, description: "Location of the symlink to the motd file" }
         ],
