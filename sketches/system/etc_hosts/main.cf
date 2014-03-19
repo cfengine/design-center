@@ -79,9 +79,9 @@ bundle agent configure(runenv, metadata, original_hostfile, defined_only, hosts)
       comment => "Set proper permissions so everyone can read it";
 
   reports:
-    have_path_prefix.defined_only::
+    verbose.have_path_prefix.defined_only::
       "$(dcbundle): only the defined hosts will be left in $(hostfile)";
-    have_path_prefix.!defined_only::
+    verbose.have_path_prefix.!defined_only::
       "$(dcbundle): the defined hosts will be added to $(hostfile)";
 
     verbose::
