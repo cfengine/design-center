@@ -17,7 +17,7 @@
         license: "MIT",
         tags: [ "cfdc", "enterprise_compatible", "sixified" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::sketch_template": {}, os: [ "linux" ] }
+        depends: { "CFEngine::sketch_template": {}, os: { "linux": "Linux" } }
     },
 
     api:
@@ -25,13 +25,14 @@
         // the key is the name of the bundle!
         set:
         [
+            { type: "bundle_options", name: "Set up the sysctl contents" },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "string", name: "sysctl_file", default: "/etc/sysctl.conf" },
+            { type: "string", name: "sysctl_file", default: "/etc/sysctl.conf", description: "sysctl configuration file", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
             { type: "boolean", name: "empty_first", default: false },
-            { type: "array", name: "ensured_kv", },
-            { type: "array", name: "removed_kv", default: {"unwantedvar":"unwantedsetting"} },
-            { type: "list", name: "removed_vars", default: ["nosuchvar"] },
+            { type: "array", name: "ensured_kv", description: "Parameters that must be in the sysctl", validation: "KVMAP" },
+            { type: "array", name: "removed_kv", default: {"unwantedvar":"unwantedsetting"}, description: "Specific key-value combinations to be removed (regular expressions allowed)", validation: "KVMAP" },
+            { type: "list", name: "removed_vars", default: ["nosuchvar"], description: "Specific variables to be removed (regular expressions allowed)", validation: "LIST_OF_STRING_NONEMPTY" },
             { type: "return", name: "sysctl_file", },
         ],
     },
