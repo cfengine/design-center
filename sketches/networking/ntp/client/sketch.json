@@ -18,14 +18,15 @@
 
     "api" : {
 		    "client" : [
+                { type: "bundle_options", name: "Set up a NTP client" },
 				{ "name" : "runenv", "type" : "environment" },
 				{ "name" : "metadata", "type" : "metadata" },
-				{ "name" : "peers", "type" : "list" },
-				{ "name" : "servers", "type" : "list" },
-				{ "name" : "restrictions", "type" : "list" },
-				{ "name" : "driftfile", "type" : "string", "default" : "/var/lib/ntp/drift" },
-				{ "name" : "statsdir", "type" : "string", "default" : "/var/log/ntpstats" },
-				{ "name" : "conffile", "type" : "string", "default" : "/etc/ntp.conf" },
+				{ "name" : "peers", "type" : "list", description: "List of NTP peers", validation: "LIST_OF_STRING_NONEMPTY" },
+				{ "name" : "servers", "type" : "list", description: "List of NTP servers", validation: "LIST_OF_STRING_NONEMPTY" },
+				{ "name" : "restrictions", "type" : "list", description: "List of NTP restrictions", validation: "LIST_OF_STRING_NONEMPTY" },
+				{ "name" : "driftfile", "type" : "string", "default" : "/var/lib/ntp/drift", description: "Location of drift file", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+				{ "name" : "statsdir", "type" : "string", "default" : "/var/log/ntpstats", description: "Location of stats dir", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+				{ "name" : "conffile", "type" : "string", "default" : "/etc/ntp.conf", description: "Location of NTP configuration file", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
 			],
 		},
     "namespace" : "cfdc_ntp",

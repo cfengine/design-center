@@ -24,7 +24,7 @@
         // the key is the name of the bundle!
         from_list:
         [
-            { type: "bundle_options", name: "", single_use: true },
+            { type: "bundle_options", name: "Install specific packages", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
             { type: "list", name: "pkgs_add", description: "Packages that should be installed", validation: "LIST_OF_PACKAGE_NAME", example: "apache2, zsh" },
@@ -33,7 +33,7 @@
 
         from_file:
         [
-            { type: "bundle_options", name: "", single_use: true },
+            { type: "bundle_options", name: "Install packages listed in an external file", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
             { type: "string", name: "file", description: "Filename with packages, one per line", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
@@ -42,7 +42,7 @@
 
         from_url:
         [
-            { type: "bundle_options", name: "", single_use: true },
+            { type: "bundle_options", name: "Install a package from a URL", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
             { type: "string", name: "url", description: "URL for package file", validation: "URL" },

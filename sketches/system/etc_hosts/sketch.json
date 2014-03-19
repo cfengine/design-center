@@ -24,6 +24,7 @@
         // the key is the name of the bundle!
         configure:
         [
+            { type: "bundle_options", name: "Set the contents of a hosts file" },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
             { type: "string", name: "hostfile", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS", description: "Location of the hosts file", default: "/etc/hosts" },
