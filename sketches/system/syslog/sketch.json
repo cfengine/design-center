@@ -15,7 +15,7 @@
         license: "MIT",
         "tags": [ "cfdc", "syslog", "enterprise_compatible", "sixified" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>", "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com", "Diego Zamboni <diego.zamboni@cfengine.com>" ],
-        "depends": { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: { "linux": "All Linux distributions", "solaris": "Solaris 8-11" } }
+        "depends": { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: [{ "linux": "All Linux distributions", "solaris": "Solaris 8-11" }]}
     },
 
     api:

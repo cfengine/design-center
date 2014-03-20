@@ -17,7 +17,7 @@
         license: "MIT",
         tags: [ "cfdc", "sixified" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { cfengine: { version: "3.6.0" }, os: { any: "Any OS" } }
+        depends: { cfengine: { version: "3.6.0" }, os: [{ any: "Any OS" }] }
     },
 
     api:
