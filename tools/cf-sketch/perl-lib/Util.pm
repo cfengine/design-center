@@ -678,6 +678,7 @@ sub choose_one
 {
   my $prompt_before = shift || "These are the options:";
   my $prompt_after = shift || "Which one?";
+  my $cancel_message = shift || "Enter to cancel";
   my @choices = @_;
   Util::message("$prompt_before\n");
   my $numchoices=scalar(@choices);
@@ -688,7 +689,7 @@ sub choose_one
   my $valid=undef;
   do
     {
-      $which=single_prompt("$prompt_after (1-$numchoices, Enter to cancel) ");
+      $which=single_prompt("$prompt_after (1-$numchoices, $cancel_message) ");
       $valid=undef;
       if ($which eq "") {
         return -1;

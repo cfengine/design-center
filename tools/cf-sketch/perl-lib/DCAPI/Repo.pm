@@ -137,7 +137,7 @@ sub make_inv_file
                 $out->{api} = {} unless exists $out->{api};
 
                 # note we encode BEFORE writing a line
-                my $out_string = sprintf("%s\t%s\n", $d, $api->cencode($out));
+                my $out_string = sprintf("%s\t%s\n", $d, $encoder->pretty(0)->encode($out));
                 # TODO: add proper regenerate_index filtering
                 return unless $out_string =~ m/sixified/;
                 print $index $out_string;
