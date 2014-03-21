@@ -7,6 +7,7 @@ package Sketchifier;
 use Data::Dumper;
 use File::Basename;
 use File::Copy;
+use Term::ANSIColor qw(:constants);
 
 sub new
 {
@@ -113,7 +114,8 @@ sub init
                  errormsg => undef,
                  hint =>     "comma-separated list",
                  postproc => sub { @tags{split(/[,\s]+/, shift), @{$self->{default_tags}}} = ();
-                                   return [ sort keys %tags ]; }
+                                   return [ sort keys %tags ]; },
+                 display => sub { return join(", ", @{shift()}) }
                 },
      '#authors' => {
                     desc =>     "Authors",
@@ -121,15 +123,52 @@ sub init
                     validate => \&validate_nonzerolength,
                     errormsg => "Please enter at least one author.",
                     hint =>     "comma-separated list, preferably of the form 'Name <email>'",
-                    postproc => sub { [ split(/,\s*/, shift) ] }
+                    postproc => sub { [ split(/,\s*/, shift) ] },
+                    display => sub { return join(", ", @{shift()}) }
                    },
      '#extra_files' => { 
                         desc     => "Extra manifest files",
                         input    => \&query_extra_files,
+                        display => sub {
+                            my $ma = $self->{query_values}->{'#extra_manifest'};
+                            my $mi = $self->{query_values}->{'#extra_interface'};
+                            @ei{@$mi}=();
+                            return "\n".join("\n",
+                                 map { "         $_ (description: ". ($ma->{$_}->{desc} || $ma->{$_}->{comment}) . (exists($ei{$_}) ? ", loaded" : ", not loaded") . ")" } keys %$ma );
+                        }
                        },
      '#sketch_api' => {
                        desc     => "Sketch API",
                        input    => \&query_api,
+                       display => sub {
+                           my $api = shift;
+                           my $res = "";
+                           my %returns = ();
+                           foreach my $bundle (sort keys %$api)
+                           {
+                               $res .= "\n         For bundle ".CYAN.$bundle.RESET."\n";
+                               foreach my $p (@{$api->{$bundle}})
+                               {
+                                   $res .= YELLOW."           ".$p->{name}.RESET.": ".$p->{type}.($p->{description}? " ($p->{description})" : "").($p->{validation}? " (validation: $p->{validation})" : "").($p->{default}? " [default value: ".Dumper($p->{default})."]" : "")."\n"
+                                    unless $p->{type} =~ /^(metadata|environment|bundle_options|return)$/;
+                                   if ($p->{type} eq 'return')
+                                   {
+                                       $returns{$bundle} = [] unless exists($returns{$bundle});
+                                       push @{$returns{$bundle}}, $p->{name};
+                                   }
+                               }
+                           }
+                           if (scalar(%returns))
+                           {
+                               $res .= BLUE."         Return values:\n".RESET;
+                               foreach my $bundle (sort keys %returns)
+                               {
+                                   $res .= "           Bundle ".CYAN.$bundle.RESET.": [ ".join(", ", @{$returns{$bundle}})." ]\n";
+                               }
+                           }
+                           chomp $res;
+                           return $res;
+                       }
                       },
      '#namespace' => {
                       desc     => "Namespace",
@@ -138,6 +177,9 @@ sub init
      '#env_metadata_params' => {
                                 desc     => "Runenv and metadata parameters",
                                 input    => \&query_env_metadata_params,
+                                display => sub {
+                                    return "Environment and metadata parameters and boilerplate code ".(shift() ? GREEN."WILL".RESET : RED."WILL NOT".RESET)." be added";
+                                }
                                },
      '#outputdir' => {
                       desc     => "Output directory",
@@ -243,13 +285,15 @@ sub sketch_confirmation_screen
 
     my $data = $self->{query_values};
     my @order = @{$self->{query_order}};
+    my $spec = $self->{query_spec};
 
+    Util::warning("\nYou now have a chance to modify any of the information you entered.\n\n");
     while (1)
     {
         my @menu=();
         for my $p (@order)
         {
-            push @menu, $self->{query_spec}->{$p}->{desc} . ": " . Dumper($data->{$p});
+            push @menu, BLUE.$self->{query_spec}->{$p}->{desc} . ": " . RESET . (exists($spec->{$p}->{display}) ? $spec->{$p}->{display}->($data->{$p}) : (ref($data->{$p}) eq '' ? $data->{$p} : Dumper($data->{$p}) ) );
         }
         my $n = Util::choose_one("These are the current sketch parameters:", "Please enter the number of the part you want to modify", "Enter to continue", @menu);
         if ($n == -1)
