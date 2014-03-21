@@ -310,11 +310,16 @@ sub write_new_sketch
 {
     my $self = shift;
 
-    for my $v (qw(new_sketch file file_base insert_namespace_decl
-                  bundle insert_params files_to_copy namespace outputdir
+    $self->merge_sketch_data($self->{new_sketch});
+    $self->merge_special_sketch_data;
+
+    for my $v (qw(new_sketch file file_base
+                  bundle insert_params files_to_copy outputdir
                 )) {
         $$v = $self->{$v};
     }
+    my $namespace = $self->{query_values}->{'#namespace'};
+    my $insert_namespace_decl = $self->{query_values}->{'#insert_namespace_decl'};
 
     Util::message("Your new sketch will be stored under $outputdir/\n");
     Util::dc_make_path($outputdir)
@@ -466,9 +471,6 @@ sub do_file
     Util::message("I will now prompt you for the data needed to generate the sketch.\nPlease enter STOP at any prompt to interrumpt the process.\n\n");
 
     $self->query_sketch_data or do { $self->abort; return;};
-
-    $self->merge_sketch_data($self->{new_sketch});
-    $self->merge_special_sketch_data;
 
     return $self;
 }
@@ -700,6 +702,7 @@ sub query_namespace
 
     # Get namespace information
     Util::message("Now checking the namespace declaration.\n");
+    my $namespace = undef;
     my $insert_namespace_decl = undef;
     if ($self->{namespace} eq 'default')
     {
@@ -710,7 +713,6 @@ sub query_namespace
         Util::message("I can insert the appropriate namespace declaration, and have generated a suggested namespace for you: $new_namespace\n");
         ($namespace, $stop) = $self->prompt_sketch_datum("Please enter the namespace to use for this sketch: ", $new_namespace, \&validate_nonzerolength, "You need to provide a namespace. Enter 'default' to omit the namespace declaration (not recommended).");
         return (undef,1) if $stop;
-        $self->{namespace} = $namespace;
         $insert_namespace_decl = 1 unless $namespace eq 'default';
     }
     else
@@ -719,7 +721,7 @@ sub query_namespace
     }
 
     $self->{query_values}->{'#insert_namespace_decl'} = $insert_namespace_decl;
-    return ($self->{namespace}, undef);
+    return ($namespace, undef);
 }
 
 sub query_env_metadata_params
@@ -751,7 +753,7 @@ sub query_env_metadata_params
             $self->{insert_params} = 1;
         }
     }
-    return (1,undef);
+    return ($self->{insert_params},undef);
 }
 
 sub query_output_dir
