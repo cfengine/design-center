@@ -755,10 +755,10 @@ sub query_env_metadata_params
     unless (grep { $_ eq 'runenv' || $_ eq 'metadata'}
             @{$self->{agent_bundles}->{$bundle}->{arguments}}) {
         Util::warning("\nThe entry point '$bundle' doesn't seem to receive parameters of type 'environment' or 'metadata'.\n");
-        Util::message("These arguments are not necessary, but can be useful for the sketch to respond to different run environment parameters (i.e. test or verbose mode) or to have access to its own metadata.\n");
+        Util::message("These arguments are useful for the sketch to respond to different run environment parameters (i.e. test or verbose mode) or to have access to its own metadata.\n");
         Util::message("I can automatically add these parameters to the bundle, together with some boilerplate code to put their information in classes and variables.\n");
         my $add;
-        ($add, $stop) = $self->prompt_sketch_datum("Would you like me to do this? (Y/n) ", "", \&validate_yn, "Please enter 'yes' or 'no'.");
+        ($add, $stop) = $self->prompt_sketch_datum("Would you like me to add environment/metadata parameters and code to the sketch? (Y/n) ", "", \&validate_yn, "Please enter 'yes' or 'no'.");
         return (undef, 1) if $stop;
         if (!$add || $add =~ /^y/i)
         {
