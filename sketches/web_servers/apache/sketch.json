@@ -1,13 +1,13 @@
 {
     manifest:
     {
-        "main.cf": {desc: "main file" },
+        "main.cf": {description: "main file" },
         "README.md": {documentation: true},
         "test.pl": { test:true },
-        "templates/debian/ports.tmpl": { comment: "Ports template" },
-        "templates/debian/default.tmpl": { comment: "Default non-SSL site" },
-        "templates/debian/default-ssl.tmpl": { comment: "Default SSL site" },
-        "params/demo_apache.json": {comment: "Demo parameters: install Apache."}
+        "templates/debian/ports.tmpl": { description: "Ports template" },
+        "templates/debian/default.tmpl": { description: "Default non-SSL site" },
+        "templates/debian/default-ssl.tmpl": { description: "Default SSL site" },
+        "params/demo_apache.json": {description: "Demo parameters: install Apache."}
     },
 
     metadata:

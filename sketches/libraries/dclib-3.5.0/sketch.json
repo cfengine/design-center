@@ -1,7 +1,7 @@
 {
     manifest:
     {
-        "library.cf": { desc: "Design Center stdlib" },
+        "library.cf": { description: "Design Center stdlib" },
         "test.pl": { test:true },
         "README.md": { documentation: true }
     },

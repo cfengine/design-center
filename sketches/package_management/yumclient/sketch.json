@@ -1,10 +1,10 @@
 {
     manifest:
     {
-        "main.cf":     { desc: "main file" },
+        "main.cf":     { description: "main file" },
         "README.md":   { documentation: true },
-        changelog:     { comment: "changelog" },
-        "params/demo.json": { comment: "demo JSON parameters" }
+        changelog:     { description: "changelog" },
+        "params/demo.json": { description: "demo JSON parameters" }
     },
 
     metadata:

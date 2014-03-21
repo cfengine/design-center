@@ -1,9 +1,9 @@
 {
     "manifest":
     {
-        "main.cf": { "desc": "main file" },
+        "main.cf": { "description": "main file" },
         "test.pl": { test:true },
-        "params/demo.json": { desc: "example parameters" },
+        "params/demo.json": { description: "example parameters" },
         "README.md": { "documentation": true },
     },
 

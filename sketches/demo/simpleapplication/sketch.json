@@ -19,7 +19,7 @@
          "documentation" : true
       },
       "balance.cf" : {
-         "desc" : "main file"
+         "description" : "main file"
       }
    },
    "metadata" : {

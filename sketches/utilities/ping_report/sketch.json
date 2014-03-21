@@ -1,10 +1,10 @@
 {
     manifest:
     {
-        "main.cf": {desc: "main file" },
+        "main.cf": {description: "main file" },
         "README.md": {documentation: true},
-        changelog: {comment: "changelog"},
-        "params/example.json": {comment: "Example parameters to report on a few hosts connectivity."}
+        changelog: {description: "changelog"},
+        "params/example.json": {description: "Example parameters to report on a few hosts connectivity."}
     },
 
     metadata:

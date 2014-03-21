@@ -27,12 +27,12 @@
       "deploy.cf"
    ],
    "manifest" : {
-       "params/demo.json": { desc: "example parameters" },
+       "params/demo.json": { description: "example parameters" },
       "README.md" : {
          "documentation" : true
       },
       "deploy.cf" : {
-         "desc" : "main file"
+         "description" : "main file"
       }
    },
    "metadata" : {

@@ -1,7 +1,7 @@
 {
     manifest:
     {
-        "ssh.cf": { desc: "main file" },
+        "ssh.cf": { description: "main file" },
         "README.md": { documentation: true },
         "params/simple.json": { }
     },

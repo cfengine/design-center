@@ -1,10 +1,10 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file", version: 1.2 },
+        "main.cf": { description: "main file", version: 1.2 },
         "README.md": { documentation: true },
         "test.pl": { test:true },
-        changelog: { comment: "changelog" },
+        changelog: { description: "changelog" },
         "params/example.json": { },
     },
 

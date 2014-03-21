@@ -1,11 +1,11 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
         "README.include": { documentation: true },
-        "scripts/cf3vmware": { perm: 755, comment: "VMWare shim" },
-        "params/demo.json": { comment: "simple demo of VMWare integration through the vSphere Perl SDK" },
+        "scripts/cf3vmware": { perm: 755, description: "VMWare shim" },
+        "params/demo.json": { description: "simple demo of VMWare integration through the vSphere Perl SDK" },
     },
 
     metadata:

@@ -2,11 +2,11 @@
 
     "manifest":
     {
-        "wordpress.cf": { "desc": "main file" },
+        "wordpress.cf": { "description": "main file" },
         "README.md": { "documentation": true },
 
-        "params/wordpress-base.json": { "comment": "Base configuration parameters for different platforms" },
-        "params/wordpress.json": { "comment": "Example configuration parameters" }
+        "params/wordpress-base.json": { "description": "Base configuration parameters for different platforms" },
+        "params/wordpress.json": { "description": "Example configuration parameters" }
     },
 
     "metadata":

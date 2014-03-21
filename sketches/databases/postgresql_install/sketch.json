@@ -1,11 +1,11 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
 
-        "params/demo_client.json": { comment: "Install PostgreSQL client" },
-        "params/demo_server.json": { comment: "Install PostgreSQL server" },
+        "params/demo_client.json": { description: "Install PostgreSQL client" },
+        "params/demo_server.json": { description: "Install PostgreSQL server" },
     },
 
     metadata:

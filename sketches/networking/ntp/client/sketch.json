@@ -1,7 +1,7 @@
 {
     "manifest":
     {
-        "main.cf": { "desc": "main file" },
+        "main.cf": { "description": "main file" },
         "README.md": { "documentation": true },
     },
 

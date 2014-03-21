@@ -45,7 +45,7 @@
            "documentation" : true
        },
        "github.cf" : {
-           "desc" : "main file"
+           "description" : "main file"
        }
    },
    "metadata" : {

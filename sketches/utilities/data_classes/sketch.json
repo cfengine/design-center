@@ -1,9 +1,9 @@
 {
     manifest:
     {
-        "main.cf": {desc: "main file" },
+        "main.cf": {description: "main file" },
         "README.md": {documentation: true},
-        "params/demo.json": {comment: "Demo of data-driven classes."}
+        "params/demo.json": {description: "Demo of data-driven classes."}
     },
 
     metadata:

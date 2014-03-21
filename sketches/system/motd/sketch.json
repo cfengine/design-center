@@ -1,12 +1,12 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
-        "params/example.json": { comment: "example configuration" },
-        "params/simple.json": { comment: "simple configuration that should work on most systems" },
-        "params/debian_squeeze.json": { comment: "simple configuration for Debian Squeeze and Lenny" },
-        "params/debian_wheezy.json": { comment: "simple configuration for Debian Wheezy" }
+        "params/example.json": { description: "example configuration" },
+        "params/simple.json": { description: "simple configuration that should work on most systems" },
+        "params/debian_squeeze.json": { description: "simple configuration for Debian Squeeze and Lenny" },
+        "params/debian_wheezy.json": { description: "simple configuration for Debian Wheezy" }
     },
 
     metadata:

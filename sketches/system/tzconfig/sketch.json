@@ -2,9 +2,9 @@
 
     manifest:
     {
-        "main.cf": { desc: "main file", version: 1.3 },
+        "main.cf": { description: "main file", version: 1.3 },
         "README.md": { documentation: true },
-        "params/US_Central.json": { comment: "Sample parameters to set timezone to US Central" }
+        "params/US_Central.json": { description: "Sample parameters to set timezone to US Central" }
     },
 
     metadata:

@@ -1,10 +1,10 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
         "README.include": { documentation: true },
-        "params/demo.json": { comment: "simple demo of EC2 integration" },
+        "params/demo.json": { description: "simple demo of EC2 integration" },
     },
 
     metadata:

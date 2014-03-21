@@ -101,7 +101,7 @@
             "documentation": true
         },
         "main.cf": {
-            "desc": "main file"
+            "description": "main file"
         }
     },
     "metadata": {

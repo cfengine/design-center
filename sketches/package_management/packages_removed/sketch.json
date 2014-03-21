@@ -2,8 +2,8 @@
 
     manifest:
     {
-        "main.cf": { desc: "main file", "version": "1.0.0" },
-        "params/demo.json": { desc: "example parameters" },
+        "main.cf": { description: "main file", "version": "1.0.0" },
+        "params/demo.json": { description: "example parameters" },
         "README.md": { documentation: true },
     },
 

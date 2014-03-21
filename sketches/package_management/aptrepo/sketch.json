@@ -2,7 +2,7 @@
 
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
         "test.pl": { test:true },
         "params/repos.json": { }
@@ -31,7 +31,7 @@
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
             { type: "string", name: "file", default: "/etc/apt/sources.list",
-              desc: "The file in which we will write the APT sources lines.  Can be /etc/apt/sources.list.d/whatever.list or /etc/apt/sources.list or any other path." },
+              description: "The file in which we will write the APT sources lines.  Can be /etc/apt/sources.list.d/whatever.list or /etc/apt/sources.list or any other path." },
             { type: "string", name: "url" },
             { type: "string", name: "distribution" },
             { type: "list", name: "components" },
@@ -46,7 +46,7 @@
             { type: "metadata", name: "metadata", },
             { type: "boolean", name: "wipe", },
             { type: "string", name: "file",
-              desc: "The file to wipe.  Can be /etc/apt/sources.list.d/whatever.list or /etc/apt/sources.list or any other path." },
+              description: "The file to wipe.  Can be /etc/apt/sources.list.d/whatever.list or /etc/apt/sources.list or any other path." },
             { type: "return", name: "file", },
         ],
     },

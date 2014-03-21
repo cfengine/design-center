@@ -1,10 +1,10 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
-        "sketch.json": {comment: "Sketch definition"},
-        "params/demo.json": {comment: "Example parameters for use with cf-sketch"}
+        "sketch.json": {description: "Sketch definition"},
+        "params/demo.json": {description: "Example parameters for use with cf-sketch"}
     },
 
     metadata:

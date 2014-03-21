@@ -1,12 +1,12 @@
 {
     manifest:
     {
-        "main.cf": {desc: "main file", version: 1.2 },
+        "main.cf": {description: "main file", version: 1.2 },
         "README.md": {documentation: true},
-        "test-complex.cf": {comment: "Complex Test Policy"},
-        "sketch.json": {comment: "Sketch metadata"},
-        changelog: {comment: "changelog"},
-        "params/params.json": {comment: "Example json parameters for cf-sketch"}
+        "test-complex.cf": {description: "Complex Test Policy"},
+        "sketch.json": {description: "Sketch metadata"},
+        changelog: {description: "changelog"},
+        "params/params.json": {description: "Example json parameters for cf-sketch"}
     },
 
     metadata:

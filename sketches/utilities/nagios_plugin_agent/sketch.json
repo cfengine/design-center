@@ -2,10 +2,10 @@
 
     "manifest":
     {
-        "main.cf": { "desc": "main file", "version": 1.04 },
+        "main.cf": { "description": "main file", "version": 1.04 },
         "README.md": { "documentation": true },
-        "modules/nagios_plugin_wrapper": { "desc": "plugin wrapper" },
-        "params/check_dummy_OK.json": { "comment": "Sample parameters to do a dummy OK check" }
+        "modules/nagios_plugin_wrapper": { "description": "plugin wrapper" },
+        "params/check_dummy_OK.json": { "description": "Sample parameters to do a dummy OK check" }
     },
 
     "metadata":

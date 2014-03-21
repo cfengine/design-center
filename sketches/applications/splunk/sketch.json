@@ -1,14 +1,14 @@
 {
     manifest:
     {
-        "main.cf": { "desc": "main file" },
-        "Changelog": { "desc": "Changelog" },
+        "main.cf": { "description": "main file" },
+        "Changelog": { "description": "Changelog" },
         "test.pl": {test:true},
         "README.md": { "documentation": true },
 
-        "params/demo.json": { "comment": "Install Splunk: common parameters" },
-        "templates/splunk-inputs.conf": { "comment": "Splunk inputs.conf" },
-        "templates/splunk-outputs.conf": { "comment": "Splunk outputs.conf" },
+        "params/demo.json": { "description": "Install Splunk: common parameters" },
+        "templates/splunk-inputs.conf": { "description": "Splunk inputs.conf" },
+        "templates/splunk-outputs.conf": { "description": "Splunk outputs.conf" },
     },
 
     metadata:

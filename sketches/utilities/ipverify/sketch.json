@@ -2,10 +2,10 @@
 
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
-        "params/if_at_home_backup_pictures.json": { comment: "Sample parameters to backup my pictures when I am at home" },
-        "params/example.json": { comment: "Example" }
+        "params/if_at_home_backup_pictures.json": { description: "Sample parameters to backup my pictures when I am at home" },
+        "params/example.json": { description: "Example" }
     },
 
     metadata:

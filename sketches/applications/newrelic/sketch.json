@@ -1,11 +1,11 @@
 {
     "manifest":
     {
-        "main.cf": { "desc": "main file" },
+        "main.cf": { "description": "main file" },
         "test.pl": {test:true},
         "README.md": { "documentation": true },
 
-        "params/demo.json": { "comment": "Install New Relic: common parameters" },
+        "params/demo.json": { "description": "Install New Relic: common parameters" },
     },
 
     "metadata":

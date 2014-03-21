@@ -2,10 +2,10 @@
 
     manifest:
     {
-        "main.cf": { desc: "main file", "version": "1.05.2" },
+        "main.cf": { description: "main file", "version": "1.05.2" },
         "README.md": { "documentation": true },
-        "params/example.json": { "comment": "Sample parameters to set hostname to node1.example.com" },
-        "changelog": { "comment": "changelog" }
+        "params/example.json": { "description": "Sample parameters to set hostname to node1.example.com" },
+        "changelog": { "description": "changelog" }
     },
 
     metadata:

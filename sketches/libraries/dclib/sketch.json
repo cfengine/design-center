@@ -1,9 +1,9 @@
 {
     manifest:
     {
-        "library.cf": { desc: "Design Center stdlib" },
+        "library.cf": { description: "Design Center stdlib" },
         "test.pl": { test:true },
-        "dctest.pm": { desc: "testing utilities" },
+        "dctest.pm": { description: "testing utilities" },
         "README.md": { documentation: true }
     },
 

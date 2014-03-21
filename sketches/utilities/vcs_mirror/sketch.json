@@ -1,12 +1,12 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file", version: 1.12 },
+        "main.cf": { description: "main file", version: 1.12 },
         "README.md": { documentation: true },
-        "params/cfengine-core.json": { comment: "Sample parameters to use Git to check out the CFEngine core into /tmp/cfengine-core" },
-        "params/cfengine-core-runas-tzz.json": { comment: "Same as cfengine-core.json, but runs as user 'tzz'" },
-        "params/cfengine-copbl.json": { comment: "Sample parameters to use Git to check out the CFEngine standard library (COPBL) into /tmp/cfengine-copbl" },
-        "params/thrift-lib-perl.json": { comment: "Sample parameters to use Subversion to check out the Thrift Perl libraries into /tmp/thrift-lib-perl" }
+        "params/cfengine-core.json": { description: "Sample parameters to use Git to check out the CFEngine core into /tmp/cfengine-core" },
+        "params/cfengine-core-runas-tzz.json": { description: "Same as cfengine-core.json, but runs as user 'tzz'" },
+        "params/cfengine-copbl.json": { description: "Sample parameters to use Git to check out the CFEngine standard library (COPBL) into /tmp/cfengine-copbl" },
+        "params/thrift-lib-perl.json": { description: "Sample parameters to use Subversion to check out the Thrift Perl libraries into /tmp/thrift-lib-perl" }
     },
 
     metadata:

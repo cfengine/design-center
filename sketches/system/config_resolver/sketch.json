@@ -2,9 +2,9 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file", version: 2.1 },
+        "main.cf": { description: "main file", version: 2.1 },
         "README.md": { documentation: true },
-        "params/example.json": { comment: "Example parameters" }
+        "params/example.json": { description: "Example parameters" }
     },
 
     metadata:

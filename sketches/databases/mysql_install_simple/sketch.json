@@ -1,11 +1,11 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
 
-        "params/demo_client.json": { comment: "Install MySQL client" },
-        "params/demo_server.json": { comment: "Install MySQL server" },
+        "params/demo_client.json": { description: "Install MySQL client" },
+        "params/demo_server.json": { description: "Install MySQL server" },
     },
 
     metadata:

@@ -1,11 +1,11 @@
 {
     manifest:
     {
-        "main.cf": {desc: "main file" },
+        "main.cf": {description: "main file" },
         "README.md": {documentation: true},
         "test.pl": { test: true},
-        "params/test.json": {comment: "Testing parameter set"},
-        "params/demo.json": {comment: "Demo of package control."}
+        "params/test.json": {description: "Testing parameter set"},
+        "params/demo.json": {description: "Demo of package control."}
     },
 
     metadata:
