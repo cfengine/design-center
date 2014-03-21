@@ -8,12 +8,6 @@ use Data::Dumper;
 
 %COMMANDS =
  (
-  'sketchify_old' =>
-  [[
-    '-sketchify_old FILE.cf',
-    'Interactively generate a sketch from FILE.cf. You will be prompted for all the necessary information.',
-    '(\S+)(?:\s+(\S+)(?:\s+(\S+)(?:\s+(\S+))?)?)?'
-   ]],
   'sketchify' =>
   [[
     'sketchify SKETCH | FILE.cf',
