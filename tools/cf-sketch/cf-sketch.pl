@@ -307,6 +307,7 @@ unless ($options{'expert'}) {
 
     # Determine where to load command modules from
     (-d ($options{'cmddir'}="$FindBin::Bin/../lib/cf-sketch/Parser/Commands")) ||
+    (-d ($options{'cmddir'}="$FindBin::Bin/../lib/cf-sketch/perl-lib/Parser/Commands")) ||
     (-d ($options{'cmddir'}="$FindBin::Bin/perl-lib/Parser/Commands")) ||
     ($options{'cmddir'}=undef);
 
