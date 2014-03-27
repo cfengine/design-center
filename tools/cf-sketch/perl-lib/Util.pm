@@ -259,7 +259,11 @@ sub local_cfsketches_source
     my $sketches_probe = File::Spec->catfile($dir, 'sketches', 'cfsketches.json');
     return $sketches_probe if -f $sketches_probe;
 
-    return undef if $rootdir eq $dir;
+    if ($rootdir eq $dir) {
+      $sketches_probe = File::Spec->catfile(Cwd::realpath('/var/cfengine/design-center/sketches'), 'cfsketches.json');
+      return $sketches_probe if -f $sketches_probe;
+      return undef;
+    }
     my $updir = Cwd::realpath(dirname($dir));
 
     return local_cfsketches_source($updir);
@@ -316,7 +320,7 @@ sub is_resource_local
             };
             if ($@ )
             {
-                Util::color_warn "Could not load LWP::Protocol::https (you should install it)";
+                Util::color_warn "Could not load LWP::Protocol::https (you should install it) - trying curl or wget for now\n";
                 undef $ua;
             }
         }
@@ -333,7 +337,7 @@ sub is_resource_local
         {
             if (defined $ua) # it is 0, from above where LWP failed to load
             {
-                Util::color_warn "Could not load LWP::UserAgent (you should install libwww-perl)";
+                Util::color_warn "Could not load LWP::UserAgent (you should install libwww-perl) - trying curl or wget for now\n";
                 undef $ua;
             }
 
