@@ -117,6 +117,8 @@ sub data_dump
         }
     }
 
+    $ret{location} = $self->location();
+
     return \%ret;
 }
 
