@@ -10,7 +10,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
   vars:
       "main_path"
       string => "$(path_prefix)$(motd_path)",
-      comment => "Path of the main MotD (typical the only one)";
+      comment => "Path of the main MotD (typically the only one)";
 
       "owner" string => ifelse("test", $(this.promiser_uid),
                                "root"),
@@ -18,7 +18,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
 
       "output_path"
       string => "$(path_prefix)$(dynamic_path)",
-      comment => "Path of the main MotD (typically the only one)";
+      comment => "Path of the dynamic MotD";
 
     activated.create_symlink::
       "symlink_link"
@@ -28,7 +28,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
     activated.!prepend_command_not_given::
       "output"
       string => execresult("$(exec_prefix)$(prepend_command)",
-                           "noshell"),
+                           "useshell"),
       comment => "Command output to prepend to MtoD";
 
     activated.!(prepend_command_not_given|dynamic_path_given)::
@@ -102,7 +102,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, dynamic_p
       comment => "create a symlink to the motd file";
 
   reports:
-    have_path_prefix.test::
+    have_path_prefix.verbose::
       "$(dcbundle): owner = $(owner)";
       "$(dcbundle): output = $(output)" ifvarclass => "!prepend_command_not_given";
       "$(dcbundle): main_path = $(main_path)";
