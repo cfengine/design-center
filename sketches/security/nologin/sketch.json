@@ -70,7 +70,7 @@
             cfengine: { version: "3.6.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ]
         },
 
-        "description": "This sketch provides facilities for restricing non root logins to a host.",
+        "description": "This sketch provides facilities for restricting non root logins to a host.",
         "license": "MIT",
         "name": "Security::nologin",
         "tags": [
