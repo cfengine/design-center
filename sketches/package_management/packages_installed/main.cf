@@ -6,10 +6,14 @@ body file control
 bundle agent from_list(runenv, metadata, pkgs_add, state)
 {
 #@include "REPO/sketch_template/standard.inc"
+  classes:
+    "latest_wanted" expression => strcmp("addupdate", $(state));
 
   methods:
-    not_test::
-      "install" usebundle => default:cfe_package_ensure($(pkgs_add), $(state));
+    not_test.latest_wanted::
+      "install" usebundle => default:cfe_package_latest($(pkgs_add));
+    not_test.!latest_wanted::
+      "install" usebundle => default:cfe_package_present($(pkgs_add));
 
   reports:
     test::
@@ -26,8 +30,10 @@ bundle agent from_file(runenv, metadata, file, state)
       "have_todo" expression => isvariable("todo");
 
   methods:
-    have_todo.not_test::
-      "install" usebundle => default:cfe_package_ensure($(todo), $(state));
+    have_todo.not_test.latest_wanted::
+      "install" usebundle => default:cfe_package_latest($(todo));
+    have_todo.not_test.!latest_wanted::
+      "install" usebundle => default:cfe_package_present($(todo));
 
   reports:
     have_todo.test::
@@ -55,7 +61,7 @@ bundle agent from_url(runenv, metadata, url, state, retriever, spooldir)
 
   methods:
     not_test.have_file::
-      "install" usebundle => default:cfe_package_ensure_named($(spoolfile), $(state), ">=", "0.0.0", "*");
+      "install" usebundle => default:cfe_package_specific($(spoolfile), $(state), "0.0.0", "*");
 
   reports:
     have_file.test::
