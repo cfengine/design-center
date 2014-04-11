@@ -77,12 +77,22 @@ bundle agent runit(cmd, context, id, pname)
   vars:
       "pc" string => canonify($(pname));
 
+    have_file::
+      "contexts" slist => readstringlist($(context), "#.*", "\s", 1000, 40000);
+    !have_file::
+      "contexts" slist => { $(context) };
+
+  classes:
+      "have_file" expression => fileexists($(context_or_file));
+
+      "contexts_found" expression => classify($(contexts));
+
   commands:
       "$(default:eu.exec_prefix)$(cmd)"
       contain => default:in_shell,
       handle => "$(id)_ran",
       comment => "Run the given command iff the context is true and we haven't run it before.",
-      ifvarclass => concat(canonify($(pname)), "_unknown.$(context)"),
+      ifvarclass => concat(canonify($(pname)), "_unknown.contexts_found"),
       classes => run_once_persist($(pname));
 
   reports:

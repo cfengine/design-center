@@ -23,7 +23,7 @@
         [
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "mymetadata", },
-            { type: "string", name: "context", description: "Context in which to run", default: "any" },
+            { type: "string", name: "context", description: "Context in which to run OR file with classes or hostnames in which to run", default: "any" },
             { type: "list", name: "scripts", description: "List of scripts to run.  If an element is a file, use that file as TXT or CSV" },
         ],
     },
