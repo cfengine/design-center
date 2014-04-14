@@ -23,8 +23,8 @@
       "path_prefix" string => "", policy => "free";
 
     dc_test::
-      "exec_prefix" string => "$(default:paths.path[echo]) ", policy => "free";
-      "show_prefix" string => "$(default:paths.path[grep]) . ", policy => "free";
+      "exec_prefix" string => "$(default:paths.echo) ", policy => "free";
+      "show_prefix" string => "$(default:paths.grep) . ", policy => "free";
       "path_prefix" string => "/tmp", policy => "free";
 
   classes:
@@ -43,7 +43,7 @@
       "$(dcbundle): imported environment class '$(vars)' because '$($(vars))' was true"
       ifvarclass => "dc_$(vars)";
 
-      "$(dcbundle): the $(prefixes)_prefix for runenv $(runenv) is '$($(prefixes)_prefix)'"
+      "$(dcbundle): the $(prefixes)_prefix is '$($(prefixes)_prefix)'"
       ifvarclass => "have_$(prefixes)_prefix";
 
     dc_verbose::
