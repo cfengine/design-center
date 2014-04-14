@@ -16,7 +16,7 @@ bundle agent localuser_nologin(runenv, metadata, list_of_users)
       scope => "namespace";
 
       "have_nologin"
-      or => { "test", isexecutable("$(nologin_bin)") };
+      or => { "dc_test", isexecutable("$(nologin_bin)") };
 
       "have_$(list_of_users)" expression => userexists("$(list_of_users)");
 
@@ -37,7 +37,7 @@ bundle agent localuser_nologin(runenv, metadata, list_of_users)
     !have_nologin::
       "$(dcbundle): ERROR -- I don't know where the nologin shell is, please see bundle common paths in the stdlib";
 
-    verbose::
+    dc_verbose::
       "$(dcbundle): DEBUG -- nologin_bin = $(nologin_bin)";
 }
 
@@ -93,17 +93,17 @@ bundle agent etc_nologin_state(etc_nologin, content)
       delete => default:tidy;
 
   reports:
-    verbose::
+    dc_verbose::
       "content = $(content)";
       "/etc/nologin = $(etc_nologin)";
 
-    verbose.nologin_create_ok::
+    dc_verbose.nologin_create_ok::
       "$(etc_nologin) was created";
 
     present.!nologin_create_ok::
       "$(etc_nologin) was NOT created";
 
-    verbose.nologin_remove_ok::
+    dc_verbose.nologin_remove_ok::
       "$(etc_nologin) was removed";
 
     absent.!nologin_remove_ok::

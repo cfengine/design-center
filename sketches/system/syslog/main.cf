@@ -79,21 +79,21 @@ this effectively promises the full file content.";
     have_path_prefix::
       "$(syslog_file)" bundle_return_value_index => "syslog_file";
 
-    have_path_prefix.verbose.empty_first::
+    have_path_prefix.dc_verbose.empty_first::
       "$(this.bundle): $(syslog_file) will be emptied before editing";
 
-    verbose::
+    dc_verbose::
       "$(this.bundle): VERBOSE is turned on for syslog";
 
       "$(this.bundle): Set syslog var: $(syslog_vars)=$(ensured_kv[$(syslog_vars)])";
-    have_removed_indices.verbose::
+    have_removed_indices.dc_verbose::
       "$(this.bundle): Remove syslog var: $(removed_indices)=$(cfdc_syslog:set.removed[$(removed_indices)])";
 
-    have_path_prefix.verbose::
+    have_path_prefix.dc_verbose::
       "$(this.bundle): I repaired $(syslog_file), syslog needs to be reloaded"
       ifvarclass => "syslog_reload";
 
-    verbose.syslog_reloaded::
+    dc_verbose.syslog_reloaded::
       "$(this.bundle): I successfully reloaded syslog";
 }
 
@@ -113,6 +113,6 @@ bundle edit_line del_syslog_values(v)
       comment => "Delete a specific variable";
 
   reports:
-    verbose::
+    dc_verbose::
       "$(this.bundle): we will delete lines matching: '$(index)\s*=\s*$($(v)[$(index)])'";
 }

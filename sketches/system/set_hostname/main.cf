@@ -103,7 +103,7 @@ we dont have to reboot for it",
       "$(hostname)" bundle_return_value_index => "hostname";
       "$(domainname)" bundle_return_value_index => "domainname";
 
-    verbose::
+    dc_verbose::
       "$(dcbundle): setting hostname=$(hostname), domainname=$(domainname)";
       "$(dcbundle): hostname command = $(sethost_command)";
       "$(dcbundle): domainname command = $(setdomain_command)";

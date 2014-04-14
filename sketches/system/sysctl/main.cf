@@ -67,17 +67,17 @@ this effectively promises the full file content.";
     any::
       "$(sysctl_file)" bundle_return_value_index => "sysctl_file";
 
-    have_path_prefix.verbose.empty_first::
+    have_path_prefix.dc_verbose.empty_first::
       "$(dcbundle): $(sysctl_file) will be emptied before editing";
 
-    second_class_pass.verbose::
+    second_class_pass.dc_verbose::
       "$(dcbundle): VERBOSE is turned on for sysctl";
 
       "$(dcbundle): Set sysctl var: $(sysctl_vars)=$(ensured_kv[$(sysctl_vars)])";
-    have_removed_indices.verbose::
+    have_removed_indices.dc_verbose::
       "$(dcbundle): Remove sysctl var: $(removed_indices)=$(cfdc_sysctl:set.removed[$(removed_indices)])";
 
-    have_path_prefix.have_exec_prefix.verbose::
+    have_path_prefix.have_exec_prefix.dc_verbose::
       "$(dcbundle): $(sysctl_file) was not repaired, sysctl does NOT need to be reloaded with '$(sysctl_run)'"
       ifvarclass => "!sysctl_reload";
 
@@ -105,6 +105,6 @@ bundle edit_line del_variable_values(v)
       comment => "Delete a specific variable";
 
   reports:
-    verbose::
+    dc_verbose::
       "$(this.bundle): we will delete lines matching: '$(index)\s*=\s*$($(v)[$(index)])'";
 }

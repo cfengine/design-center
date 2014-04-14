@@ -43,18 +43,18 @@ bundle agent install
       classes => default:if_ok("ntp_client_installed");
 
   reports:
-    verbose.test.ntp_client_installed::
+    dc_verbose.dc_test.ntp_client_installed::
       "$(client.dcbundle): Simulated the installation of NTP successfully.";
-    verbose.not_test.ntp_client_installed::
+    dc_verbose.not_test.ntp_client_installed::
       "$(client.dcbundle): Installed NTP successfully.";
-    verbose.not_test.!ntp_client_installed::
+    dc_verbose.not_test.!ntp_client_installed::
       "$(client.dcbundle): Could not install NTP successfully.";
 
     ntp_client_installed::
       "1" bundle_return_value_index => "package_status";
     not_test.!ntp_client_installed::
       "0" bundle_return_value_index => "package_status";
-    test::
+    dc_test::
       "$(client.dcbundle): Overriding bundle return status to success (1) in test mode";
       "1" bundle_return_value_index => "package_status";
 }

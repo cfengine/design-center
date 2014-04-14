@@ -8,8 +8,8 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, symlink_p
 #@include "REPO/sketch_template/standard.inc"
 
   vars:
-    activated::
-      "owner" string => ifelse("test", $(this.promiser_uid),
+    dc_activated::
+      "owner" string => ifelse("dc_test", $(this.promiser_uid),
                                "root"),
       comment => "Owner of the MotD file";
 
@@ -33,14 +33,14 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, symlink_p
       comment => "Lines to print to the MotD";
 
   classes:
-    activated::
+    dc_activated::
       "prepend_command_not_given" expression => strcmp($(prepend_command),"");
       "prepend_command_given" not => strcmp($(prepend_command),"");
 
       "create_symlink" not => strcmp($(symlink_path),"");
 
   files:
-    have_path_prefix.activated::
+    have_path_prefix.dc_activated::
       "$(path)"
       pathtype => "literal",
       create => "true",
@@ -58,7 +58,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, symlink_p
       comment => "create a symlink to the motd file";
 
   reports:
-    have_path_prefix.verbose::
+    have_path_prefix.dc_verbose::
       "$(dcbundle): owner = $(owner)";
       "$(dcbundle): output = '$(output)'" ifvarclass => "prepend_command_given";
       "$(dcbundle): path = $(path)";

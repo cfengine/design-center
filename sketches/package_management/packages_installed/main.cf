@@ -16,7 +16,7 @@ bundle agent from_list(runenv, metadata, pkgs_add, state)
       "install" usebundle => default:cfe_package_present($(pkgs_add));
 
   reports:
-    test::
+    dc_test::
       "$(dcbundle): In test mode, simulating adding package $(pkgs_add)";
 }
 
@@ -36,7 +36,7 @@ bundle agent from_file(runenv, metadata, file, state)
       "install" usebundle => default:cfe_package_present($(todo));
 
   reports:
-    have_todo.test::
+    have_todo.dc_test::
       "$(dcbundle): In test mode, simulating adding package $(todo)";
     !have_todo::
       "$(dcbundle): file $(file) could not be parsed to get the file list";
@@ -64,7 +64,7 @@ bundle agent from_url(runenv, metadata, url, state, retriever, spooldir)
       "install" usebundle => default:cfe_package_specific($(spoolfile), $(state), "0.0.0", "*");
 
   reports:
-    have_file.test::
+    have_file.dc_test::
       "$(dcbundle): In test mode, simulating adding package $(spoolfile)";
     !have_file.retrieve_reached::
       "$(dcbundle): file $(spoolfile) could not be retrieved from $(url)";

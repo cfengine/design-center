@@ -12,7 +12,7 @@ bundle agent removed(runenv, metadata, pkgs_removed)
       "install" usebundle => default:cfe_package_absent($(pkgs_removed));
 
   reports:
-    test::
+    dc_test::
       "$(dcbundle): In test mode, simulating removing package $(pkgs_removed)";
 }
 
@@ -30,7 +30,7 @@ bundle agent remove_from_file(runenv, metadata, file)
       "install" usebundle => default:cfe_package_absent($(todo));
 
   reports:
-    have_todo.test::
+    have_todo.dc_test::
       "$(dcbundle): In test mode, simulating removing package $(todo)";
     !have_todo::
       "$(dcbundle): file $(file) could not be parsed to get the file list";
