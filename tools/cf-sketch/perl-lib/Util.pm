@@ -626,6 +626,42 @@ sub recurse_context
     return $data;
 }
 
+sub recurse_context_lines
+{
+    my $data = shift @_;
+    my $top = shift @_;
+
+    if (ref $data eq 'ARRAY')
+    {
+        my @ret;
+        my @needed;
+        my $i = 0;
+        foreach my $v (@$data)
+        {
+            my $need = "${top}_${i}";
+            push @needed, $need;
+            push @ret, recurse_context_lines($v, $need);
+            $i++;
+        }
+
+        push @ret, sprintf('"%s" and => { %s };', $top, join(", ", map { "'$_'" } @needed));
+
+        return @ret;
+    }
+    elsif (ref $data eq 'HASH')
+    {
+        my @ret;
+        foreach my $k (sort keys %$data)
+        {
+            push @ret, recurse_context_lines($data->{$k}. $top);
+        }
+
+        return @ret;
+    }
+
+    return sprintf('"%s" expression => classmatch("%s");', $top, $data);
+}
+
 sub dc_make_path
 {
     if (-x '/bin/mkdir')

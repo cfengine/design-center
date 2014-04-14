@@ -1398,6 +1398,7 @@ sub regenerate
                       );
 
     my @environment_data;
+    my @environment_classes;
     foreach my $e (keys %{$self->environments()})
     {
         # make a copy of the run environment
@@ -1413,17 +1414,22 @@ sub regenerate
         foreach my $k (keys %stringified)
         {
             my $include = Util::hashref_search(\%edata, $k, qw/include/);
+
+            $include = $edata{$k} if (exists $edata{$k} && ref $edata{$k} eq '');
+
             next unless defined $include;
 
-            if (ref $include ne '') # HASH, ARRAY, SCALAR, etc.
-            {
-                # TODO: we're ignoring 'exclude' here
-                $edata{$k} = Util::recurse_context($include);
-            }
+            # TODO: we're ignoring 'exclude' here
+            my $class_name = "${e}_${k}";
+            $edata{$k} = $class_name;
+            push @environment_classes, map { "$indent$_" } Util::recurse_context_lines($include, $class_name);
         }
 
-        push @environment_data, $indent . Util::make_container_line("", $e, $self->cencode(\%edata)) . "\n";
+        push @environment_data, $indent . Util::make_container_line("", $e, $self->cencode(\%edata));
     }
+
+    my $environment_classes = join "\n", @environment_classes;
+    my $environment_data = join "\n", @environment_data;
 
     # 3. make cfsketch_run bundle with invocations
     my @invocation_lines;
@@ -1439,30 +1445,7 @@ sub regenerate
                                $a->hash()
                               ]);
 
-        my $env_activated_context = 'any';
-         if (exists $self->environments()->{$a->environment()})
-         {
-             eval
-             {
-                 my $activated = $self->environments()->{$a->environment()}->{activated};
-                 if (ref $activated)
-                 {
-                     $env_activated_context = Util::recurse_context($self->environments()->{$a->environment()}->{activated}->{include});
-                 }
-                 else
-                 {
-                     $env_activated_context = $activated;
-                 }
-             };
-
-             if ($@)
-             {
-                 $result->add_error("regeneration",
-                                    "runtime context conversion to string",
-                                    $a->environment(),
-                                    $@);
-             }
-        }
+        my $env_activated_context = $a->environment() . "_activated";
 
         push @invocation_lines,
          sprintf('%s%s::',
@@ -1472,7 +1455,7 @@ sub regenerate
         my $namespace = $a->sketch()->namespace();
         my $namespace_prefix = $namespace eq 'default' ? '' : "$namespace:";
 
-        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s", "%s" }%susebundle => %s%s(%s),%shandle => "dc_method_call_%s",%sifvarclass => "%s",%suseresult => "return_%s";',
+        push @invocation_lines, sprintf('%s"%s" -> { "%s", "%s", "%s", "%s" }%susebundle => %s%s(%s),%sinherit => "true", handle => "dc_method_call_%s",%sifvarclass => "%s",%suseresult => "return_%s";',
                                         $indent,
                                         $a->id(),
                                         $a->prefix(),
@@ -1489,6 +1472,7 @@ sub regenerate
                                         $a->sketch()->runtime_context(),
                                         "\n$indent",
                                         $a->id());
+        push @invocation_lines, "\n";
     }
 
     # 4. print return value reports
@@ -1539,8 +1523,10 @@ bundle common cfsketch_g
 
 bundle agent cfsketch_run
 {
+  classes:
+$environment_classes
   vars:
-@environment_data
+$environment_data
 $data_lines
 
   methods:
