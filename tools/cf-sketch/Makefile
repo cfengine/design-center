@@ -9,6 +9,8 @@ endif
 BIN:=$(PREFIX)/bin
 LIB:=$(PREFIX)/lib/cf-sketch
 
+UNAME := $(shell uname)
+
 ifeq ($(UNAME), Solaris)
 I:=/usr/local/bin/install
 else
