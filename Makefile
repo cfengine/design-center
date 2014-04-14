@@ -10,6 +10,8 @@ ifeq ($(BUNDLEREF),)
   BUNDLEREF:=master
 endif
 
+UNAME := $(shell uname)
+
 ifeq ($(UNAME), Solaris)
 I:=/usr/local/bin/install
 else
