@@ -11,9 +11,9 @@ bundle agent from_list(runenv, metadata, pkgs_add, state)
 
   methods:
     not_test.latest_wanted::
-      "install" usebundle => default:cfe_package_latest($(pkgs_add));
+      "install" usebundle => default:package_latest($(pkgs_add));
     not_test.!latest_wanted::
-      "install" usebundle => default:cfe_package_present($(pkgs_add));
+      "install" usebundle => default:package_present($(pkgs_add));
 
   reports:
     dc_test::
@@ -31,9 +31,9 @@ bundle agent from_file(runenv, metadata, file, state)
 
   methods:
     have_todo.not_test.latest_wanted::
-      "install" usebundle => default:cfe_package_latest($(todo));
+      "install" usebundle => default:package_latest($(todo));
     have_todo.not_test.!latest_wanted::
-      "install" usebundle => default:cfe_package_present($(todo));
+      "install" usebundle => default:package_present($(todo));
 
   reports:
     have_todo.dc_test::
@@ -61,7 +61,7 @@ bundle agent from_url(runenv, metadata, url, state, retriever, spooldir)
 
   methods:
     not_test.have_file::
-      "install" usebundle => default:cfe_package_specific($(spoolfile), $(state), "0.0.0", "*");
+      "install" usebundle => default:package_specific($(spoolfile), $(state), "0.0.0", "*");
 
   reports:
     have_file.dc_test::

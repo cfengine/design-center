@@ -9,7 +9,7 @@ bundle agent removed(runenv, metadata, pkgs_removed)
 
   methods:
     not_test::
-      "install" usebundle => default:cfe_package_absent($(pkgs_removed));
+      "install" usebundle => default:package_absent($(pkgs_removed));
 
   reports:
     dc_test::
@@ -27,7 +27,7 @@ bundle agent remove_from_file(runenv, metadata, file)
 
   methods:
     have_todo.not_test::
-      "install" usebundle => default:cfe_package_absent($(todo));
+      "install" usebundle => default:package_absent($(todo));
 
   reports:
     have_todo.dc_test::
