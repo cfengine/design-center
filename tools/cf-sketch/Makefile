@@ -11,7 +11,7 @@ LIB:=$(PREFIX)/lib/cf-sketch
 
 UNAME := $(shell uname)
 
-ifeq ($(UNAME), Solaris)
+ifeq ($(UNAME), SunOS)
 I:=/usr/local/bin/install
 else
 I:=/usr/bin/install
