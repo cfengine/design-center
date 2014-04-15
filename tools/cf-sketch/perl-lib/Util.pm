@@ -659,7 +659,13 @@ sub recurse_context_lines
         return @ret;
     }
 
-    return sprintf('"%s" expression => classmatch("%s");', $top, $data);
+    my $mode = 'expression';
+    if ($data =~ s/^!//)
+    {
+        $mode = 'not';
+    }
+
+    return sprintf('"%s" %s => classmatch("%s");', $top, $mode, $data);
 }
 
 sub dc_make_path
