@@ -15,7 +15,7 @@
 	    description: "Standard template for Design Center sketches",
         version: "2.00",
         license: "MIT",
-        tags: [ "cfdc", "enterprise_3_6" ],
+        tags: [ "cfdc", "enterprise_compatible", "enterprise_3_6" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
         depends: { cfengine: { version: "3.6.0" }, os: [{ any: "Any OS" }] }
     },
