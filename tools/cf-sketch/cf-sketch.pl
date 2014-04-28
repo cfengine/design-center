@@ -162,7 +162,7 @@ if (exists $options{'make_readme'})
                      describe => 'README',
                      search => $options{search} || '.'
                     },
-                    make_list_printer('search', 'README.md'));
+                    make_readme_saver('search', 'README.md'));
     exit 0;
 }
 
@@ -537,7 +537,7 @@ sub make_list_printer
                                sub
                                {
                                    my $item = shift @_;
-                                   die "Unexpected item in list printer"
+                                   die "Unexpected item in list printer $item"
                                     unless ref $item eq 'HASH';
 
                                    my $name = Util::hashref_search($item, qw/metadata name/);
