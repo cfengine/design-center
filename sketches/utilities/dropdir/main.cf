@@ -2,7 +2,7 @@ bundle agent dropdir_run(runenv, metadata, context, directory, days)
 {
 #@include "REPO/sketch_template/standard.inc"
   vars:
-      "a2string" string => format("%S %s", scripts, $(context));
+      "a2string" string => format("%s %s %s", $(context), $(directory), $(days));
       "activation_id" string => hash($(a2string), "sha1");
 
       "scripts" slist => lsdir($(directory), "...+", "true");
