@@ -1,23 +1,13 @@
 bundle agent dropdir_run(runenv, metadata, context, directory, days)
 {
+#@include "REPO/sketch_template/standard.inc"
   vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
+      "a2string" string => format("%S %s", scripts, $(context));
+      "activation_id" string => hash($(a2string), "sha1");
 
       "scripts" slist => lsdir($(directory), "...+", "true");
 
-  classes:
-      "$(vars)"
-      expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)"
-      expression => "!default:runenv_$(runenv)_$(vars)";
-
   methods:
-      "utils" usebundle => default:eu($(runenv)),
-      inherit => "true";
-
       "cleanit" usebundle => dropdir_cleanit($(scripts),
                                              $(days),
                                              $(activation_id)),
@@ -29,19 +19,9 @@ bundle agent dropdir_run(runenv, metadata, context, directory, days)
                                                "$(scripts) $(activation_id)"),
       inherit => "true";
 
-    verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      inherit => "true";
-
   reports:
-    verbose::
-      "$(this.bundle): running in verbose mode";
-      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
-      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
-      ifvarclass => "$(vars)";
-
-    test::
-      "$(this.bundle): running in test mode";
+    dc_verbose::
+      "$(dcbundle): The unique ID is $(activation_id)";
 }
 
 bundle agent dropdir_cleanit(script, days, id)
@@ -56,21 +36,20 @@ bundle agent dropdir_cleanit(script, days, id)
       "ago" int => ago(0, 0, $(days), 0, 0, 0);
 
   files:
-    cleanit.!test::
+    cleanit.!dc_test::
       "$(script)"
       delete => default:tidy,
-      handle => "$(id)_script_clean",
       classes => default:if_ok("$(pc)_cleaned");
 
   reports:
-    verbose::
-      "$(this.bundle): $(script) age = $(age), limit = $(ago)";
-      "$(this.bundle): $(script) is older than $(days) days, cleaning..." ifvarclass => "cleanit";
-      "$(this.bundle): $(script) is newer than $(days) days, leaving it" ifvarclass => "recent";
-      "$(this.bundle): $(script) was cleaned" ifvarclass => "$(pc)_cleaned";
+    dc_verbose::
+      "$(dcbundle): $(script) age = $(age), limit = $(ago)";
+      "$(dcbundle): $(script) is older than $(days) days, cleaning..." ifvarclass => "cleanit";
+      "$(dcbundle): $(script) is newer than $(days) days, leaving it" ifvarclass => "recent";
+      "$(dcbundle): $(script) was cleaned" ifvarclass => "$(pc)_cleaned";
 
-    cleanit.test::
-      "$(this.bundle): in test mode, simulating that $(script) was cleaned"
+    cleanit.dc_test::
+      "$(dcbundle): in test mode, simulating that $(script) was cleaned"
       handle => "$(id)_script_simulate_clean";
 }
 
@@ -86,25 +65,23 @@ bundle agent dropdir_report(cmd, context, id, pname)
     runit::
       "out[$(canon_cmd)]"
       string => execresult($(cmd), "noshell"),
-      handle => "$(id)_collect",
       comment => "Run and collect the output of the given command iff the context is true.";
 
       "out_list[$(canon_cmd)]"
-      slist => splitstring("$(out[$(canon_cmd)])","[\n]", 99999);
-      handle => "$(id)_collect_list",
+      slist => splitstring("$(out[$(canon_cmd)])","[\n]", 99999),
       comment => "Collect the output of the given command into a slist.";
 
   reports:
-    verbose::
-      "$(this.bundle): WE HAVE the required context '$(context)'"
+    dc_verbose::
+      "$(dcbundle): WE HAVE the required context '$(context)'"
       ifvarclass => "$(context)";
 
-      "$(this.bundle): WE LACK the required context '$(context)'"
+      "$(dcbundle): WE LACK the required context '$(context)'"
       ifvarclass => "!($(context))";
 
-      "$(this.bundle): The command $(cmd) ran and collected output '$(out[$(canon_cmd)])'"
+      "$(dcbundle): The command $(cmd) ran and collected output '$(out[$(canon_cmd)])'"
       ifvarclass => "runit";
 
-      "$(this.bundle): The command $(cmd) doesn't exist or won't run in context '$(context)'"
+      "$(dcbundle): The command $(cmd) doesn't exist or won't run in context '$(context)'"
       ifvarclass => "!runit";
 }
