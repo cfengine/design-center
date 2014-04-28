@@ -1,18 +1,29 @@
 # Packages::removed version 1.0.0
 
 License: MIT
-Tags: cfdc, packages, enterprise_compatible
+Tags: cfdc, packages, enterprise_compatible, enterprise_3_6
 Authors: Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>
 
 ## Description
 Ensure certain packages are removed (not installed). The package manager of the OS (e.g. rpm or aptitude) is used to check the status of a package and remove it, if necessary.
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib
+CFEngine::sketch_template
 
 ## API
+### bundle: remove_from_file
+* bundle option: name = Remove packages listed in a file
+
+* bundle option: single_use = true
+
+* parameter _environment_ *runenv* (default: none, description: none)
+
+* parameter _metadata_ *metadata* (default: none, description: none)
+
+* parameter _string_ *file* (default: none, description: Filename with packages, one per line)
+
 ### bundle: removed
-* bundle option: name = 
+* bundle option: name = Specify packages to be removed
 
 * bundle option: single_use = true
 
