@@ -12,9 +12,9 @@
 	    description: "Run a given script at most once when a given context is true.",
         version: 1.0,
         license: "MIT",
-        tags: ["cfdc", "run", "once", "window", "enterprise_staging" ],
+        tags: ["cfdc", "run", "once", "window", "enterprise_compatible", "enterprise_3_6" ],
         authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::dclib": {}, cfengine: {version: "3.5.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
+        depends: { "CFEngine::sketch_template": {}, cfengine: {version: "3.6.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
     },
 
     api:
@@ -28,5 +28,6 @@
         ],
     },
 
+    namespace: "cfdc_utilities_run_once",
     interface: ["main.cf"]
 }
