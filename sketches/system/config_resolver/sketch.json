@@ -13,7 +13,7 @@
 	    description: "Configure DNS resolver",
         version: 1.1,
         license: "MIT",
-        tags: [ "cfdc", "enterprise_compatible", "sixified" ],
+        tags: [ "cfdc", "enterprise_compatible", "enterprise_3_6" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         depends: { "CFEngine::sketch_template": { }, cfengine: { version: "3.6.0" }, os: [{ "linux": "Linux" }]}
     },

@@ -127,7 +127,7 @@
         "license": "MIT",
         "name": "Primitives::files_existence",
         "tags": [
-            "enterprise_compatible",
+            "enterprise_staging",
             "primitive",
             "sketchify_generated",
             "files_existence",

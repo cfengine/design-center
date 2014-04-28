@@ -15,7 +15,7 @@
 	description: "Configure the Message of the Day",
         version: "1.00",
         license: "MIT",
-        tags: [ "cfdc", "enterprise_compatible", "sixified" ],
+        tags: [ "cfdc", "enterprise_compatible", "enterprise_3_6" ],
         authors: [ "Ben Heilman <bheilman@enova.com>" ],
         depends: { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: [{ "linux": "Linux" }] }
     },

@@ -14,7 +14,7 @@
         "description": "Sketch for installing, configuring, and starting New Relic monitoring plugins (only server monitoring supported at the moment).",
         "version": 1.00,
         "license": "MIT",
-        "tags": [ "cfdc", "newrelic", "enterprise_compatible" ],
+        "tags": [ "cfdc", "newrelic", "enterprise_staging" ],
         "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
         "depends": { "CFEngine::dclib": {},
                      "cfengine": { "version": "3.5.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }

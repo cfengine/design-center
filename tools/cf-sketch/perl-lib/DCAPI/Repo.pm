@@ -139,7 +139,7 @@ sub make_inv_file
                 # note we encode BEFORE writing a line
                 my $out_string = sprintf("%s\t%s\n", $d, $encoder->pretty(0)->encode($out));
                 # TODO: add proper regenerate_index filtering
-                return unless $out_string =~ m/sixified/;
+                return unless $out_string =~ m/enterprise_compatible/;
                 print $index $out_string;
             };
 

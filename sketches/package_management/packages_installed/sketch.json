@@ -14,7 +14,7 @@
         "description": "Ensure certain packages are installed. The networked package manager of the OS (e.g. yum or aptitude) is used to perform installations, so the packages need to be available in its package repository.",
         "version": "1.0.0",
         "license": "MIT",
-        "tags": [ "cfdc", "packages", "enterprise_compatible", "sixified" ],
+        "tags": [ "cfdc", "packages", "enterprise_compatible", "enterprise_3_6" ],
         "authors": [ "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" ],
         "depends": { "CFEngine::sketch_template": { }, cfengine: { version: "3.6.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
     },

@@ -12,7 +12,7 @@
 	    description: "Run the scripts in a directory for a limited time when a given context is true and report their output in the 'dropdir' bundle.  Clean out outdated scripts.  Requires three or more letters in the script name",
         version: 1.0,
         license: "MIT",
-        tags: ["cfdc", "run", "dropdir", "window", "enterprise_compatible" ],
+        tags: ["cfdc", "run", "dropdir", "window", "enterprise_staging" ],
         authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
         depends: { "CFEngine::dclib": {}, cfengine: {version: "3.5.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
     },

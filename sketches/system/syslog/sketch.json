@@ -13,7 +13,7 @@
         description: "Manage syslog configuration",
         version: 1.0,
         license: "MIT",
-        "tags": [ "cfdc", "syslog", "enterprise_compatible", "sixified" ],
+        "tags": [ "cfdc", "syslog", "enterprise_compatible", "enterprise_3_6" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>", "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com", "Diego Zamboni <diego.zamboni@cfengine.com>" ],
         "depends": { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: [{ "linux": "All Linux distributions", "solaris": "Solaris 8-11" }]}
     },
