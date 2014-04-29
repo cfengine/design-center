@@ -1,0 +1,41 @@
+body file control
+{
+      namespace => "cfdc_utilities_run_withdata";
+}
+
+bundle agent run(runenv, metadata, script, parameters)
+{
+#@include "REPO/sketch_template/standard.inc"
+  vars:
+      "a2string" string => format("%S %s", parameters, $(script));
+      "activation_id" string => hash($(a2string), "sha1");
+      "jfile" string => "$(sys.workdir)/state/$(activation_id).json";
+      "pstring" string => format("%S", parameters);
+
+  classes:
+      "made_jfile" expression => fileexists($(jfile));
+
+  methods:
+      "writeit" usebundle => default:file_make($(jfile), $(pstring)),
+      classes => default:scoped_classes_generic("bundle", "write"),
+      inherit => "true";
+
+      "runit" usebundle => runit($(script), $(jfile)),
+      ifvarclass => "made_jfile",
+      inherit => "true";
+
+      "cleanit" usebundle => default:file_tidy($(jfile)),
+      ifvarclass => "made_jfile",
+      inherit => "true";
+
+  reports:
+    dc_verbose::
+      "$(dcbundle): The unique ID is $(activation_id) and the JSON parameter file is $(jfile)";
+}
+
+bundle agent runit(cmd, jfile)
+{
+  commands:
+      "$(run.exec_prefix)$(cmd) $(jfile)"
+      contain => default:in_shell;
+}

@@ -1,0 +1,3 @@
+[
+    { "Run::WithData": { script: "/tmp/runme.sh", parameters: { x: 100, y: [ 200, 300] } } },
+]

@@ -801,6 +801,10 @@ data_triggers_jenkins:
 	$(CFSKETCH_DA) --install Data::Triggers::Jenkins --activate Data::Triggers::Jenkins=$(SOURCEDIR)/utilities/triggers_jenkins/params/demo.json
 	$(RUNNER)
 
+run_withdata:
+	$(CFSKETCH_DA) --install Run::WithData --activate Run::WithData=$(SOURCEDIR)/utilities/run_withdata/params/demo.json
+	$(RUNNER)
+
 run_once:
 	$(CFSKETCH_DA) --install Run::Once --activate Run::Once=$(SOURCEDIR)/utilities/run_once/params/demo.json
 	$(RUNNER)
