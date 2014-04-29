@@ -1,14 +1,14 @@
 # Security::file_integrity version 1
 
 License: MIT
-Tags: cfdc, pcidss, pcidss_v2, pcidss_v2_sec_11_5, enterprise_compatible
+Tags: cfdc, pcidss, pcidss_v2, pcidss_v2_sec_11_5, enterprise_compatible, enterprise_3_6
 Authors: Eystein Stenberg <eystein@cfengine.com>
 
 ## Description
 File hashes will be generated at intervals specified by ifelapsed. Reports on changes will be part of the FileChanges report table (CFEngine Enterprise only), or agent output in community. Hashing files requires a lot of disk and CPU cycles, so you should be careful when selecting the amount of files to check and the interval at which it happens (ifelapsed).
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib
+CFEngine::sketch_template
 
 ## API
 ### bundle: watch

@@ -5,55 +5,32 @@ body file control
 
 bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
 {
-  classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+#@include "REPO/sketch_template/standard.inc"
 
   vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
-
-    test::
+    dc_test::
       "watch" slist => { "/tmp" }, policy => "free";
     not_test::
       "watch" slist => { @(given_watch) }, policy => "free";
 
     any::
-      "watch_str" string => join(";", "watch"), policy => "free";
-
-  methods:
-    verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      inherit => "true";
+      "watch_str" string => join(";", watch), policy => "free";
 
   files:
       "$(watch)"
       comment      => "Detect changes to files",
-      changes      => changes_file_integrity("$(hash_algorithm)"),
+      changes      => changes_file_integrity($(hash_algorithm)),
       depth_search => default:recurse("inf"),
-      action       => default:if_elapsed("$(ifelapsed)"),
-      handle       => "$(activation_id)_file_integrity_$(watch)";
-
-      # TODO: make file changes promise always give a status when file does not exist
-      #       we need at least one promise status to detect activation in Enterprise
-      #       Can be removed when this bux is fixed: https://cfengine.com/dev/issues/2820
-      "$(sys.workdir)/ppkeys/."
-      create       => "true",
-      handle       => "$(activation_id)_dummy_kept";
+      action       => default:if_elapsed($(ifelapsed));
 
   reports:
     any::
       "$(watch_str)" bundle_return_value_index => "paths";
-
-    test::
-      "test mode";
 }
 
 body changes changes_file_integrity(hash_algorithm)
 {
-      hash           => "$(hash_algorithm)";
+      hash           => $(hash_algorithm);
       report_changes => "content";
       update_hashes  => "yes";
       report_diffs   => "false";
