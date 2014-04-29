@@ -2,7 +2,6 @@
     "manifest":
     {
         "main.cf": { "description": "main file" },
-        "test.pl": {test:true},
         "README.md": { "documentation": true },
 
         "params/demo.json": { "description": "Install New Relic: common parameters" },
@@ -14,10 +13,9 @@
         "description": "Sketch for installing, configuring, and starting New Relic monitoring plugins (only server monitoring supported at the moment).",
         "version": 1.00,
         "license": "MIT",
-        "tags": [ "cfdc", "newrelic", "enterprise_staging" ],
+        "tags": [ "cfdc", "newrelic", "enterprise_compatible", "enterprise_3_6" ],
         "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        "depends": { "CFEngine::dclib": {},
-                     "cfengine": { "version": "3.5.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
+        depends: { "CFEngine::sketch_template": {}, cfengine: {version: "3.6.0"}, os:[ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] },
     },
 
 	"api" : {
