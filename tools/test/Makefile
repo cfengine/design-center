@@ -834,3 +834,7 @@ nologin:
 nologin_off:
 	$(CFSKETCH_DA) --install Security::nologin --activate Security::nologin=$(SOURCEDIR)/security/nologin/params/absent.json
 	$(RUNNER)
+
+files_existence:
+	$(CFSKETCH_DA) --install Primitives::files_existence --activate Primitives::files_existence=$(SOURCEDIR)/primitives/file_existence/params/demo.json
+	$(RUNNER)
