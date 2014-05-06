@@ -837,4 +837,7 @@ nologin_off:
 
 files_existence:
 	$(CFSKETCH_DA) --install Primitives::files_existence --activate Primitives::files_existence=$(SOURCEDIR)/primitives/file_existence/params/demo.json
+
+roles:
+	$(CFSKETCH_DA) --install Utilities::Roles --activate Utilities::Roles=$(SOURCEDIR)/utilities/roles/params/demo.json
 	$(RUNNER)
