@@ -2,8 +2,8 @@ bundle agent roles(runenv, metadata, role, extra_roles)
 {
 #@include "REPO/sketch_template/standard.inc"
   classes:
-    "$(role)" scope => "namespace", expression => "any";
-    "$(extra_roles)" scope => "namespace", expression => "any";
+    "$(role)" scope => "namespace", expression => "any", meta => { "inventory" };
+    "$(extra_roles)" scope => "namespace", expression => "any", meta => { "inventory" };
 
   reports:
     inform_mode|dc_verbose::
