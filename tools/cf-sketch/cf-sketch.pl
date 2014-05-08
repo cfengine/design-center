@@ -59,7 +59,7 @@ my %options = (
                ignore => 1,
                activated => 'any',
                veryverbose => 0,
-               installsource => Util::local_cfsketches_source(File::Spec->curdir()) || 'https://raw.github.com/cfengine/design-center/master/sketches/cfsketches.json',
+               installsource => Util::local_cfsketches_source(File::Spec->curdir()) || 'https://raw.githubusercontent.com/cfengine/design-center/master/sketches/cfsketches.json',
                # These are hardcoded above, we put them here for convenience
                version => $VERSION,
                date => $DATE,
