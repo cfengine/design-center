@@ -12,9 +12,9 @@ CFEngine::sketch_template
 
 ## API
 ### bundle: etc_nologin (description: If the file /etc/nologin exists and is readable, login(1) will allow access only to root. Other users will be shown the contents of this file and their logins will be refused.)
-* bundle option: name = Refuse logins to the system through /etc/nologin
-
 * bundle option: single_use = true
+
+* bundle option: name = Refuse logins to the system through /etc/nologin
 
 * parameter _environment_ *runenv* (default: none, description: none)
 
