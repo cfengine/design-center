@@ -12,9 +12,9 @@ CFEngine::sketch_template
 
 ## API
 ### bundle: remove_from_file
-* bundle option: name = Remove packages listed in a file
-
 * bundle option: single_use = true
+
+* bundle option: name = Remove packages listed in a file
 
 * parameter _environment_ *runenv* (default: none, description: none)
 
@@ -23,9 +23,9 @@ CFEngine::sketch_template
 * parameter _string_ *file* (default: none, description: Filename with packages, one per line)
 
 ### bundle: removed
-* bundle option: name = Specify packages to be removed
-
 * bundle option: single_use = true
+
+* bundle option: name = Specify packages to be removed
 
 * parameter _environment_ *runenv* (default: none, description: none)
 
