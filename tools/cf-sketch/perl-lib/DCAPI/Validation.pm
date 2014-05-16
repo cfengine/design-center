@@ -114,8 +114,25 @@ sub validate
 
         if (ref $choice ne 'ARRAY')
         {
-            return $result->add_error([qw/choice validation/],
-                                      "The choice is not an array ref");
+            my $file = (ref $choice eq 'HASH') && Util::hashref_search($choice, qw/file/);
+            if ($file && -r $file)
+            {
+                open my $fp, '<', $file
+                 or return $result->add_error([qw/choice validation/],
+                                              "The choice's file: pointer pointed to an unreadable file '$file': $!");
+                my @choices;
+                while (<$fp>)
+                {
+                    chomp;
+                    push @choices, $_;
+                }
+                $choice = \@choices;
+            }
+            else
+            {
+                return $result->add_error([qw/choice validation/],
+                                          "The choice is not an array ref or a valid file: pointer");
+            }
         }
 
         if (!isscalarref($data))

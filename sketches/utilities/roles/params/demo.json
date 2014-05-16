@@ -1,6 +1,14 @@
-{
-    "Utilities::Roles":
+[
     {
-        role: "webserver",
+        "Utilities::Roles":
+        {
+            role: "webserver",
+        }
+    },
+    {
+        "Utilities::Roles":
+        {
+            role_fromfile: "hamburger",
+        }
     }
-}
+]

@@ -29,6 +29,13 @@
             { type: "string", name: "role", description: "Desired system role", choice: [ "webserver", "dbserver", "memcached", "proxy", "gridworker", "oracle", "mysql", "postgresql", "sybase",  ], },
             { type: "list", name: "extra_roles", description: "Other desired system roles, separated by commas", default: [] },
         ],
+        // the key is the name of the bundle!
+        roles_fromfile:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "role_fromfile", description: "Desired system role", choice: { file: "/etc/cfengine/available_roles.txt" } },
+        ],
     },
 
     interface: [ "main.cf" ]

@@ -17,3 +17,17 @@ bundle agent roles(runenv, metadata, role, extra_roles)
       "$(dcbundle): defined role $(role)";
       "$(dcbundle): defined extra role $(extra_roles)";
 }
+
+bundle agent roles_fromfile(runenv, metadata, role_fromfile)
+{
+#@include "REPO/sketch_template/standard.inc"
+  classes:
+    "$(role_fromfile)"
+      scope => "namespace",
+      expression => "any",
+      meta => { "inventory", "attribute_name=Role"};
+
+  reports:
+    inform_mode|dc_verbose::
+      "$(dcbundle): defined role $(role_fromfile)";
+}

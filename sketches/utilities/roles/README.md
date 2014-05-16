@@ -20,6 +20,13 @@ CFEngine::sketch_template
 
 * parameter _list_ *extra_roles* (default: `[]`, description: Other desired system roles, separated by commas)
 
+### bundle: roles_fromfile
+* parameter _environment_ *runenv* (default: none, description: none)
+
+* parameter _metadata_ *metadata* (default: none, description: none)
+
+* parameter _string_ *role_fromfile* (default: none, description: Desired system role)
+
 
 ## SAMPLE USAGE
 See `test.cf` or the example parameters provided
