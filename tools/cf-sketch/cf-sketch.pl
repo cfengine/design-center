@@ -59,7 +59,7 @@ my %options = (
                ignore => 1,
                activated => 'any',
                veryverbose => 0,
-               installsource => [Util::local_cfsketches_source(File::Spec->curdir()) || 'https://raw.githubusercontent.com/cfengine/design-center/master/sketches/cfsketches.json'],
+               installsource => Util::local_cfsketches_source(File::Spec->curdir()) || 'https://raw.githubusercontent.com/cfengine/design-center/master/sketches/cfsketches.json',
                # These are hardcoded above, we put them here for convenience
                version => $VERSION,
                date => $DATE,
@@ -81,7 +81,7 @@ GetOptions(\%options,
            "force|f!",
            "test:s",
            "activated:s",
-           "installsource|is=s@",
+           "installsource|is=s",
            "cfpath=s",
            "list:s",
            "search:s",
@@ -100,41 +100,34 @@ GetOptions(\%options,
            "runfile_header=s",
           );
 
-die "$0: --installsource FILE must be specified" unless scalar @{$options{installsource}};
+die "$0: --installsource FILE must be specified" unless $options{installsource};
 
 mkdir $options{inputs} unless -d $options{inputs}; # try to create...
 die "$0: --inputs $options{inputs} doesn't exist" unless -d $options{inputs};
 
 $options{installdest}="$options{inputs}/sketches";
 
-my @sourcedirs = map { dirname($_) } @{$options{installsource}};
-$options{sourcedir} = $sourcedirs[0];
+my $sourcedir = dirname($options{installsource});
+$options{sourcedir} = $sourcedir;
 
 if (exists $options{'make_cfsketches'})
 {
     # do nothing in this case
 }
-elsif (Util::is_resource_local($options{installsource}->[0]))
+elsif (Util::is_resource_local($options{installsource}))
 {
-    foreach (@{$options{installsource}})
-    {
-        die "$0: Sorry, installsource $_ is not a file" unless -f $_;
-    }
-
-    foreach (@sourcedirs)
-    {
-        die "$0: Sorry, can't locate source directory $_" unless -d $_;
-    }
+    die "$0: $options{installsource} is not a file" unless (-f "$options{installsource}");
+    die "Sorry, can't locate source directory" unless -d $sourcedir;
 }
 else
 {
-    my $remote = Util::get_remote($options{installsource}->[0]);
-    die "Could not retrieve remote URL $options{installsource}->[0], aborting"
+    my $remote = Util::get_remote($options{installsource});
+    die "Could not retrieve remote URL $options{installsource}, aborting"
         unless $remote;
 
     warn <<EOHIPPUS;
 
-You are using a remote sketch repository ($options{installsource}->[0]),
+You are using a remote sketch repository ($options{installsource}),
 which may be slow.  If you run cf-sketch with the --installsource option
 pointing to cfsketches.json, or run it in your Design Center checkout directory,
 or give the DC API a config.json with a 'recognized_source' parameter, it will
@@ -351,7 +344,10 @@ sub api_interaction
                 log => "pretty",
                 log_level => $log_level,
                 repolist => [ "$options{installdest}" ],
-                recognized_sources => \@sourcedirs,
+                recognized_sources =>
+                [
+                 $sourcedir
+                ],
                 runfile =>
                 {
                  filter_inputs => $options{filter},
@@ -394,7 +390,7 @@ sub api_interaction
             my $data;
             if ($fill eq 'source')
             {
-                $data = $sourcedirs[0];
+                $data = $sourcedir;
             }
             elsif ($fill eq 'target')
             {
