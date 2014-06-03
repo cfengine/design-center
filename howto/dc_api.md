@@ -21,7 +21,7 @@ escapes such sequences so they should not happen anywhere in the payloads.
 
 API requests have the following general structure:
 
-```json
+```
 { dc_api_version: "3.6.0", request: { ...commands... } }
 ```
 
@@ -37,7 +37,7 @@ Think of the API version as the minimum CFEngine version required to use it.
 
 API responses look like this:
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -110,11 +110,11 @@ The `list` command lists *installed* sketches.
 
 Here are examples of three `list` commands.  The first one lists everything installed.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {list: true } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -150,11 +150,11 @@ always a local directory.
 The next one takes *terms* and lists all the sketches whose name satisfies the
 *terms*.
     
-```json
+```
 { dc_api_version: "3.6.0", request: {list: [["name", "matches", "(Cloud|CFEngine|Security)"]] } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -188,11 +188,11 @@ When `count_only` is given as a top-level option with a value of `true`, only th
 When `describe` is given as a top-level option with a value of `true`, as in the
 example below, the returned data is the contents of `sketch.json`.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {describe: true, list: [["name", "matches", "ping"]] } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -287,11 +287,11 @@ If the manifest includes a `README.include` file, it will be included verbatim
 in the `README.md` in the Description section.  That makes it easier to write
 documentation for your sketches.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {describe: "README", list: [["name", "matches", "ping"]] } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -331,11 +331,11 @@ The `describe` option to `search` works exactly like it does for `list` above.
 The `describe` command gives the contents of `sketch.json` for the matching
 installed sketches by name.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {describe:"Security::SSH"} }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -463,7 +463,7 @@ list of key-value arrays with keys:
 
 * `source`: the sketch source repository.  Must be in the API's `recognized_sources`.  Optional; when not given, every element of the `recognized_sources` will be tried.  Can be a string or an array of strings.
 
-```json
+```
 {
     dc_api_version: "3.6.0",
     request: {
@@ -483,7 +483,7 @@ list of key-value arrays with keys:
 
 The return data is a key-value array as follows, describing the installation details.
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -534,11 +534,11 @@ everything under it.  It takes a list of key-value arrays with keys:
 
 * `target`: the sketch install directory we want to clean.  Must be in the API's `repolist`.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {uninstall: [ { sketch: "CFEngine::stdlib", target: "~/.cfagent/inputs/sketches" } ] } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -568,11 +568,11 @@ The `inventory_save` key in the return indicates whether the inventory (`cfsketc
 
 The `compositions` command lists the defined compositions.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {compositions: true} }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -605,7 +605,7 @@ The `compositions` command lists the defined compositions.
 
 The `compose` command defines a composition.  It returns the same data as `compositions`.
 
-```json
+```
 {
     dc_api_version: "3.6.0",
     request: {
@@ -627,7 +627,7 @@ The `compose` command defines a composition.  It returns the same data as `compo
 }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -662,11 +662,11 @@ The `compose` command defines a composition.  It returns the same data as `compo
 
 The `decompose` command undefines a composition by name.  It returns the same data as `compositions`.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {decompose: "mirror_to_template_1" } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -695,11 +695,11 @@ The `decompose` command undefines a composition by name.  It returns the same da
 
 The `activations` command lists the defined activations.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {activations:true} }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -745,7 +745,7 @@ environment, and optionally compositions.  The sketch name is matched with a
 target (so the API knows which installed sketch to inspect), a run environment
 name, and a list of parameter names.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {activate: { "VCS::vcs_mirror": { target: "~/.cfagent/inputs/sketches", environment: "testing", params: [ "vcs_base", "git_mirror_core" ] } } } }
 ```
 
@@ -753,7 +753,7 @@ The sketch bundle will be selected based on which one is satisfied by the given
 parameters and compositions.  You can use the `__bundle__` parameter key to
 specify the bundle explicitly.
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -807,11 +807,11 @@ as late and immediate bindings of the passed data respectively.
 The `deactivate` command removes sketch activations.  It can take either the
 name of a sketch or `true` to indicate all activations should be removed.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {deactivate: "VCS::vcs_mirror" } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -831,13 +831,13 @@ name of a sketch or `true` to indicate all activations should be removed.
 }
 ```
 
-```json
+```
 { dc_api_version: "3.6.0", request: {deactivate: true } }
 ```
 
 (No activations existed at this point, so the return data is empty.)
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -860,11 +860,11 @@ sketch bundle).  Parameter definitions have names, which are used when you want
 to activate a sketch, and can contain more than one sketch's parameters or only
 part of a sketch's parameters.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {definitions:true} }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -907,11 +907,11 @@ the DC API will make a function call and not just pass a string.  So, instead of
 call is preserved.
 
 
-```json
+```
 { dc_api_version: "3.6.0", request: {define: { "vcs_base": { "VCS::vcs_mirror": { options: { parent_dir: { owner: { "function": "getenv", "args": ["LOGNAME", "128"] }, group: { "function": "getenv", "args": ["LOGNAME", "128"] }, perms: "755", ensure: true }, nowipe: true, vcs: { runas: { "function": "getenv", "args": ["LOGNAME", "128"] }, umask: "000" } } } } } } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -931,11 +931,11 @@ call is preserved.
 }
 ```
 
-```json
+```
 { dc_api_version: "3.6.0", request: {define: { "git_mirror_core": { "VCS::vcs_mirror": { vcs: "/usr/bin/git", path: "/tmp/q/cfengine-core", branch: "master", origin: "https://github.com/cfengine/core.git" } } } } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -961,11 +961,11 @@ The `undefine` command removes a parameter definition by name.  You can pass a
 list of string parameter definition names or simply `true` to remove all the
 parameter definitions.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {undefine: ["git_mirror_core"] } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1020,11 +1020,11 @@ bundle common testing
 
 And here is the definition of that run environment:
 
-```json
+```
 { dc_api_version: "3.6.0", request: {environments:true} }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1058,11 +1058,11 @@ It's trivial to do AND and OR in such a string, as normal for CFEngine contexts.
 The `define_environemnt` command defines a run environment.  The `testing`
 example above can be defined like so:
 
-```json
+```
 { dc_api_version: "3.6.0", request: {define_environment: { "testing": { activated: true, test: true, verbose: true } } } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1090,11 +1090,11 @@ as a class expression, and that you can have more than those three variables.
 The `undefine_environemnt` command removes a run environment.  It takes a list
 of environment names.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {undefine_environment: [ "testing" ] } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1123,7 +1123,7 @@ with them.  Specific keys trigger specific validation behavior in order, as
 follows.  Note that the examples below are not necessarily in your API
 installation already.
 
-```json
+```
 // only the inside of the request is shown for brevity
 define_validation: { DIGITS: { valid_regex: "^[0-9]+$" } }
 define_validation: { NUMBER: { derived: [ "DIGITS" ] } }
@@ -1170,11 +1170,11 @@ define_validation: { ARRAY_OF_NUMBERS_TO_URLS: { array_k: [ "NUMBER" ], array_v:
 The `define_validation` command defines a data validation.  In the return data
 you will find all the currently defined data validations.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {define_validation: { NONEMPTY_STRING: { valid_regex: "." } } } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1201,11 +1201,11 @@ you will find all the currently defined data validations.
 
 The `undefine_validation` command removes a data validation by name.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {undefine_validation: "NONEMPTY_STRING" } }'
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1229,7 +1229,7 @@ The `undefine_validation` command removes a data validation by name.
 
 The `validate` command validates data using a named data validation.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "not a URL" } } } }
 ```
 
@@ -1253,7 +1253,7 @@ DCAPI::log4(Validation.pm:73): Validating URL against data 'http://this.that'
 DCAPI::log4(Validation.pm:166): Validating URL: checking valid_regex ^[A-Za-z]{3,9}://.+
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1272,7 +1272,7 @@ DCAPI::log4(Validation.pm:166): Validating URL: checking valid_regex ^[A-Za-z]{3
 
 This example succeeded:
 
-```json
+```
 { dc_api_version: "3.6.0", request: {validate: { validation: "ARRAY_OF_NUMBERS_TO_URLS", data: { "20": "http://this.that", "30": "http://this.that2" } } } }
 ```
 
@@ -1294,7 +1294,7 @@ DCAPI::log4(Validation.pm:73): Validating URL against data 'http://this.that'
 DCAPI::log4(Validation.pm:166): Validating URL: checking valid_regex ^[A-Za-z]{3,9}://.+
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1353,7 +1353,7 @@ The directory must be local and listed in the API configuration's
 `recognized_sources`.  The command returns an error if the index could not be
 written or if an error happened while loading any sketch.json files.
 
-```json
+```
 { dc_api_version: "3.6.0", request: {regenerate_index: "~/source/cfengine/design-center/sketches" } }
 ```
 
@@ -1364,7 +1364,7 @@ DCAPI::log3(DCAPI.pm:1523): Regenerating index: on sketch dir applications/memca
 DCAPI::log3(DCAPI.pm:1523): Regenerating index: on sketch dir web_servers/apache
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1387,11 +1387,11 @@ Here are examples of two `test` commands.  The first one tests everything
 installed (shown when no sketches were installed for brevity; see below for a
 full test example).
 
-```json
+```
 { dc_api_version: "3.6.0", request: {test: true } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1429,11 +1429,11 @@ For instance the `good` key will be `1` if all the planned tests succeeded.
 The `bench` key will give you some timings, but more precise timings may be
 added in the future.  Do not depend on the format of the `bench` value.
     
-```json
+```
 { dc_api_version: "3.6.0", request: {test: ["Applications::Memcached"] } }
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1473,11 +1473,11 @@ You can skip the actual testing and just get the coverage if you give the `test`
 command the `coverage` parameter.  Here's how you can inspect the coverage of
 every single installed sketch:
 
-```json
+```
 {"dc_api_version":"3.6.0","request":{"coverage":1,"test":["1"]}}
 ```
 
-```json
+```
 {
     "api_ok": {
         "warnings": [],
@@ -1583,7 +1583,7 @@ constdata file, but will pretend everything is OK.
 
 The `constdata`, `vardata`, and `runfile` `location` are left as the default.
 
-```json
+```
 {
  log: "STDERR",
  log_level: 4,
