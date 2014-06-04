@@ -1,6 +1,6 @@
 {
     "Applications::NewRelic":
     {
-        license_key: "invalid license key"
+        license_key: "newrelic_license_key"
     }
 }
