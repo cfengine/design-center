@@ -1,0 +1,30 @@
+body file control
+{
+      namespace => "cfdc_users";
+}
+
+bundle agent ensure_users(runenv, metadata, users, group, homedir, shell)
+{
+#@include "REPO/sketch_template/standard.inc"
+  users:
+    !dc_test::
+      "$(users)" -> {"PCI-DSS-2", "Baseline_developers_2_3"}
+      policy => "present",
+      home_dir => "$(homedir)/$(users)",
+      group_primary => $(group),
+      shell => $(shell),
+      handle => "ensure_user_setup",
+      home_bundle => setup_home_dir($(users), $(homedir));
+
+  reports:
+    dc_verbose.dc_test::
+      "$(dcbundle): simulating user = $(users) with group $(group), home dir $(homedir) and shell $(shell)";
+    dc_verbose.!dc_test::
+      "$(dcbundle): ensuring user = $(users) with group $(group), home dir $(homedir) and shell $(shell)";
+}
+
+bundle agent setup_home_dir(user, group, homedir)
+{
+  files:
+    "$(homedir)/$(user)/." create => "true";
+}

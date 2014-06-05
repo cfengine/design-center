@@ -1,0 +1,38 @@
+{
+    manifest:
+    {
+        "main.cf": { description: "main file" },
+        "README.md": { documentation: true },
+        "params/demo.json": { description: "example configuration" },
+    },
+
+    metadata:
+    {
+        name: "System::Users",
+	    description: "Configure users with parameters",
+        version: "1.00",
+        license: "MIT",
+        tags: [ "cfdc", "users", "enterprise_compatible", "enterprise_3_6" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: [{ "linux": "Linux", "solaris": "Solaris", "aix": "AIX", "windows": "Windows" }] }
+    },
+
+    api:
+    {
+        // this is the name of the bundle!
+        ensure_users:
+        [
+            { type: "bundle_options", name: "Ensure the users exist as specified" },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+	        { type: "list", name: "users", validation: "LIST_OF_STRING_NONEMPTY", description: "User names to add (separate by commas)" },
+	        { type: "string", name: "group", validation: "STRING_NONEMPTY", description: "Primary user group" },
+            { type: "string", name: "homedir", default: "/home", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS", description: "Location of the parent directory of the user's home directory" },
+            { type: "string", name: "shell", default: "/bin/bash", choice: [ "/bin/sh", "/bin/bash", "/bin/csh", "/bin/tcsh", "/bin/zsh" ], description: "User shell" },
+        ],
+    },
+
+    namespace: "cfdc_users",
+
+    interface: [ "main.cf" ],
+}

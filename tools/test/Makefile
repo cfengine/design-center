@@ -754,7 +754,7 @@ autobalance_vmware:
 	$(CFSKETCH_DA) --install Cloud::Autobalance --activate Cloud::Autobalance=$(SOURCEDIR)/cloud/autobalance/params/demo_vmware.json
 	$(RUNNER)
 
-users:
+users_local:
 	$(CFSKETCH_DA) --install Users::Local --activate Users::Local=$(SOURCEDIR)/system/users_local/params/demo.json
 	$(RUNNER)
 
@@ -840,4 +840,8 @@ files_existence:
 
 roles:
 	$(CFSKETCH_DA) --install Utilities::Roles --activate Utilities::Roles=$(SOURCEDIR)/utilities/roles/params/demo.json
+	$(RUNNER)
+
+users:
+	$(CFSKETCH_DA) --install System::Users --activate System::Users=$(SOURCEDIR)/system/users/params/demo.json
 	$(RUNNER)
