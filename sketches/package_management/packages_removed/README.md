@@ -12,9 +12,9 @@ CFEngine::sketch_template
 
 ## API
 ### bundle: remove_from_file
-* bundle option: single_use = true
-
 * bundle option: name = Remove packages listed in a file
+
+* bundle option: single_use = true
 
 * parameter _environment_ *runenv* (default: none, description: none)
 

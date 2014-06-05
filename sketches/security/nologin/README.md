@@ -12,9 +12,9 @@ CFEngine::sketch_template
 
 ## API
 ### bundle: etc_nologin (description: If the file /etc/nologin exists and is readable, login(1) will allow access only to root. Other users will be shown the contents of this file and their logins will be refused.)
-* bundle option: single_use = true
-
 * bundle option: name = Refuse logins to the system through /etc/nologin
+
+* bundle option: single_use = true
 
 * parameter _environment_ *runenv* (default: none, description: none)
 
@@ -25,9 +25,9 @@ CFEngine::sketch_template
 * parameter _string_ *content* (default: `"Logins refused by policy."`, description: The content the /etc/nologin file should have.)
 
 ### bundle: localuser_nologin (description: The nologin command displays a message that an account is not available and exits non-zero. It is intended as a replacement shell field for accounts that have been disabled.)
-* bundle option: name = Refuse login privileges to specific users
-
 * bundle option: single_use = true
+
+* bundle option: name = Refuse login privileges to specific users
 
 * parameter _environment_ *runenv* (default: none, description: none)
 

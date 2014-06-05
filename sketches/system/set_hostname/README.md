@@ -12,9 +12,9 @@ CFEngine::sketch_template
 
 ## API
 ### bundle: set
-* bundle option: name = Set the system hostname
-
 * bundle option: single_use = true
+
+* bundle option: name = Set the system hostname
 
 * parameter _environment_ *runenv* (default: none, description: none)
 

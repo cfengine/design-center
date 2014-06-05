@@ -25,9 +25,9 @@ CFEngine::sketch_template
 * parameter _string_ *state* (default: `"addupdate"`, description: Desired package state)
 
 ### bundle: from_list
-* bundle option: name = Install specific packages
-
 * bundle option: single_use = true
+
+* bundle option: name = Install specific packages
 
 * parameter _environment_ *runenv* (default: none, description: none)
 
@@ -38,9 +38,9 @@ CFEngine::sketch_template
 * parameter _string_ *state* (default: `"addupdate"`, description: Desired package state)
 
 ### bundle: from_url
-* bundle option: name = Install a package from a URL
-
 * bundle option: single_use = true
+
+* bundle option: name = Install a package from a URL
 
 * parameter _environment_ *runenv* (default: none, description: none)
 
