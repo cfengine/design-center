@@ -1,0 +1,9 @@
+[
+{
+    "Utilities::iCal":
+    {
+        calendar_file: "$(this.promise_dirname)/params/US32Holidays.ics",
+        days_forward: 200
+    }
+},
+]

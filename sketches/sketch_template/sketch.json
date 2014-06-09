@@ -3,6 +3,7 @@
     {
         "zmain.cf": { description: "main file" },
         "standard.inc": { description: "standard DC include template", version: 1 },
+        "dc.pm": { description: "standard DC Perl module", version: 1 },
         "README.md": { documentation: true },
         "params/demo.json": { description: "simple demo of sketch" },
         "scripts/sample.sh": { perm: 755, description: "Sample script bundled with the sketch" },

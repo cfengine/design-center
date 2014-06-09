@@ -1,0 +1,35 @@
+{
+    manifest:
+    {
+        "main.pl": { description: "main file" },
+        "README.md": { documentation: true },
+        "params/demo.json": { description: "example configuration" },
+    },
+
+    metadata:
+    {
+        name: "System::ProcessTable",
+	    description: "Process table access with Proc::ProcessTable",
+        version: "1.00",
+        license: "MIT",
+        tags: [ "cfdc", "processes", "enterprise_compatible", "enterprise_3_6" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: [{ "linux": "Linux", "solaris": "Solaris", "aix": "AIX" }], perl: { modules: [ "Proc::ProcessTable" ], version: "5.10.0" } },
+    },
+
+    api:
+    {
+        // this is the name of the bundle!
+        find_processes:
+        [
+            { type: "bundle_options", name: "Find the available processes" },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "regex", description: "Regular expression to search (default is to find all)", default: "."},
+            { type: "return", name: "present", },
+        ],
+    },
+
+    language: "perl",
+    interface: [ "main.pl" ],
+}

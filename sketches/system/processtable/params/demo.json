@@ -1,0 +1,14 @@
+[
+{
+    "System::ProcessTable":
+    {
+        regex: "sshd",
+    }
+},
+{
+    "System::ProcessTable":
+    {
+        regex: "perl",
+    }
+},
+]

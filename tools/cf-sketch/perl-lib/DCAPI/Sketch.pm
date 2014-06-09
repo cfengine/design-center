@@ -8,7 +8,7 @@ use DCAPI::Terms;
 use Util;
 use Mo qw/default build builder is required option/;
 
-use constant MEMBERS => qw/entry_point interface manifest metadata api namespace/;
+use constant MEMBERS => qw/entry_point interface manifest metadata api namespace language/;
 use constant META_MEMBERS => qw/name version description bundle_descriptions license tags depends authors/;
 
 has dcapi        => ( is => 'ro', required => 1 );
@@ -20,6 +20,7 @@ has rel_location => ( is => 'ro', required => 1 );
 has verify_files => ( is => 'ro');
 
 # sketch-specific properties
+has language    => ( is => 'rw' );
 has api         => ( is => 'rw' );
 has namespace   => ( is => 'rw' );
 has entry_point => ( is => 'rw' );
@@ -56,6 +57,10 @@ sub BUILD
             {
                 # it's OK to have a null namespace, it becomes "default"
             }
+            elsif ($m eq 'language')
+            {
+                # it's OK to have a null language, it becomes "cfengine"
+            }
             else
             {
                 die sprintf("Sketch in location %s is missing required attribute: %s\n",
@@ -67,6 +72,7 @@ sub BUILD
         $self->$m($v);
     }
 
+    $self->language('cfengine') unless $self->language();
     $self->namespace('default') unless $self->namespace();
 
     if ($self->verify_files())
@@ -235,6 +241,7 @@ sub make_readme
 License: {{license}}
 Tags: {{tags}}
 Authors: {{authors}}
+Language: {{language}}
 
 ## Description
 {{description}}
@@ -505,6 +512,56 @@ sub resolve_dependencies
                     $self->dcapi()->log2("CFEngine version requirement of sketch $name not OK: %s", $v);
                     return $result->add_error('dependency',
                                               "CFEngine version below required $v for sketch $name");
+                }
+            }
+        }
+        elsif ($dep eq 'perl')
+        {
+            if (exists $deps{$dep}->{version})
+            {
+                my $v = $deps{$dep}->{version};
+                eval
+                {
+                    die if $^V lt $v;
+                };
+
+                if ($@)
+                {
+                    $self->dcapi()->log2("Perl version requirement of sketch $name not OK: requested %s > actual $^V", $v);
+                    return $result->add_error('dependency',
+                                              "Perl version $^V below required $v for sketch $name");
+                }
+                else
+                {
+                    $self->dcapi()->log3("Perl version requirement of sketch $name OK: %s", $v);
+                }
+            }
+
+            if (exists $deps{$dep}->{modules})
+            {
+                my $m = $deps{$dep}->{modules};
+                if (ref $m ne 'ARRAY')
+                {
+                    $self->dcapi()->log2("Perl modules requirement of sketch $name was not an ARRAY: %s", $m);
+                    return $result->add_error('dependency',
+                                              "Perl modules requirement $m in wrong format for sketch $name");
+                }
+
+                foreach my $module (@$m)
+                {
+                    $module =~ s/[^\w:]//g;
+                    eval "require $module";
+
+                    if ($@)
+                    {
+                        $self->dcapi()->log2("Perl module requirement of sketch $name not OK: %s ($!)", $module);
+                        return $result->add_error('dependency',
+                                                  "Perl module $module missing for sketch $name");
+                    }
+                    else
+                    {
+                        $self->dcapi()->log3("Perl module requirement of sketch $name OK: %s", $module);
+                    }
                 }
             }
         }

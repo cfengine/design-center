@@ -409,6 +409,7 @@ sub hashref_merge
     my $old = shift @_;
     my $new = shift @_;
 
+    return $old unless defined $new;
     return unless ref $new eq 'HASH';
     return $new unless ref $old eq 'HASH';
 
@@ -425,7 +426,7 @@ sub hashref_merge
         }
     }
 
-    return \%ret;
+    return hashref_merge(\%ret, @_);
 }
 
 sub is_scalar
@@ -463,7 +464,7 @@ sub json_boolean
 sub dump_ref
 {
     require Data::Dumper;
-    return Data::Dumper(\@_);
+    return Dumper(\@_);
 }
 
 sub recurse_print
