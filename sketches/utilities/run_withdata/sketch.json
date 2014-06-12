@@ -9,7 +9,7 @@
     metadata:
     {
         name: "Run::WithData",
-	    description: "Run a given script with the given parameters in a JSON file.",
+	    description: "Run a given script with the given parameters in a JSON file or passed directly.",
         version: 1.0,
         license: "MIT",
         tags: ["cfdc", "run", "data", "json", "enterprise_compatible", "enterprise_3_6" ],
@@ -21,10 +21,20 @@
     {
         run:
         [
+            { type: "bundle_options", name: "Run the script with the parameters directly" },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "mymetadata", },
             { type: "string", name: "script", description: "Script to run", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
             { type: "array", name: "parameters", description: "Parameters that will be passed to the script in JSON format as a file argument", default: {} },
+        ],
+
+        run_fromfile:
+        [
+            { type: "bundle_options", name: "Run the script with the parameters in a file" },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "script", description: "Script to run", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "string", name: "jfile", description: "JSON data file", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
         ],
     },
 
