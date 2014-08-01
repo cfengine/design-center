@@ -86,7 +86,7 @@ bundle agent install
 {
   commands:
     debian||ubuntu::
-      "$(server.exec_prefix)/usr/bin/apt-key adv --keyserver hkp://subkeys.pgp.net --recv-keys 548C16BF"
+      "wget -O- https://download.newrelic.com/548C16BF.gpg | apt-key add - && apt-get update"
       handle => "cfdc_newrelic_addkey",
       contain => default:in_shell;
 
