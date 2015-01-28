@@ -29,7 +29,7 @@ body file control
 # 3. Any line beginning with ::1 will never be deleted by this bundle, only
 #    replaced if you provide an entry for it
 
-bundle agent configure(runenv, metadata, original_hostfile, defined_only, hosts)
+bundle agent configure(runenv, metadata, hostfile, defined_only, hosts)
 {
 #@include "REPO/sketch_template/standard.inc"
 
@@ -40,15 +40,10 @@ bundle agent configure(runenv, metadata, original_hostfile, defined_only, hosts)
       "CFEnotice" string  => "# This file is managed by CFEngine, manual edits will be reverted",
       comment => "It's nice to let people know why the file keep magically reverting on them";
 
-      "class_prefix" string => canonify($(hostfile));
-
-      "hostfile" string => "$(path_prefix)$(original_hostfile)";
-
   classes:
       "defined_only" expression => strcmp($(defined_only), "1");
 
   files:
-    have_path_prefix::
       "$(hostfile)"
       create      =>  "true",
       edit_line   =>  default:set_line_based("cfdc_etc_hosts:configure.hosts",
@@ -66,22 +61,21 @@ bundle agent configure(runenv, metadata, original_hostfile, defined_only, hosts)
       edit_line   => delete_nonmanaged("@(configure.ip)"),
       comment     => "Delete lines that do not match our managed ip list";
 
-    have_path_prefix::
       "$(hostfile)"
       create      =>  "true",
       edit_line   =>  default:prepend_if_no_line("$(CFEnotice)"),
       comment     =>  "Notice that the file is managed by CFEngine";
 
       # I have no idea what windows permissions should be for this file
-    !windows.not_test::
+    !windows::
       "$(hostfile)"
       perms   => default:mog("644", "root", "root"),
       comment => "Set proper permissions so everyone can read it";
 
   reports:
-    dc_verbose.have_path_prefix.defined_only::
+    dc_verbose.defined_only::
       "$(dcbundle): only the defined hosts will be left in $(hostfile)";
-    dc_verbose.have_path_prefix.!defined_only::
+    dc_verbose.!defined_only::
       "$(dcbundle): the defined hosts will be added to $(hostfile)";
 
     dc_verbose::

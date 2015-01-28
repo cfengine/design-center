@@ -48,7 +48,6 @@ bundle agent present(runenv, metadata, list_of_files, success_class, fail_class)
 #@include "REPO/sketch_template/standard.inc"
 
   files:
-    not_test::
       "$(list_of_files)"
       create => "true",
       classes => default:scoped_classes_generic("bundle", $(list_of_files));
@@ -86,7 +85,6 @@ bundle agent absent(runenv, metadata, list_of_files, success_class, fail_class)
 #@include "REPO/sketch_template/standard.inc"
 
   files:
-    not_test::
       "$(list_of_files)"
       delete => default:tidy;
 

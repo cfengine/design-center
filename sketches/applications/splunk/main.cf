@@ -17,7 +17,7 @@ bundle agent install_forwarder(runenv, metadata, installdir, server, password, c
   vars:
       "return" slist => { "installed", "enabled", "configured", "restarted" };
 
-      "splunkforwarder_control" string => "$(exec_prefix)$(installdir)/bin/splunk";
+      "splunkforwarder_control" string => "$(installdir)/bin/splunk";
 
   processes:
     any::
@@ -46,7 +46,7 @@ bundle agent install_forwarder(runenv, metadata, installdir, server, password, c
 
   commands:
     !splunkforwarder_installed::
-      "$(exec_prefix)/bin/false" -> { "Mission Portal Design Center UI" }
+      "/bin/false" -> { "Mission Portal Design Center UI" }
         comment => "Since this sketch does not handle installing
                    splunkforwarder we must have a promise fail if its not present for Mission
                    Portal to detect the sketch is failing.";

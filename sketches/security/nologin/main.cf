@@ -8,15 +8,14 @@ bundle agent localuser_nologin(runenv, metadata, list_of_users)
 #@include "REPO/sketch_template/standard.inc"
 
   vars:
-      "nologin_bin" string => "$(exec_prefix)$(default:paths.path[nologin])";
+      "nologin_bin" string => "$(default:paths.path[nologin])";
 
   classes:
       "state_nologin"
       expression => strcmp( $(state), "nologin" ),
       scope => "namespace";
 
-      "have_nologin"
-      or => { "dc_test", isexecutable("$(nologin_bin)") };
+      "have_nologin" expression => isexecutable("$(nologin_bin)");
 
       "have_$(list_of_users)" expression => userexists("$(list_of_users)");
 
@@ -47,7 +46,7 @@ bundle agent etc_nologin(runenv, metadata, state, content)
 #@include "REPO/sketch_template/standard.inc"
 
   vars:
-      "etc_nologin" string => "$(path_prefix)/etc/nologin";
+      "etc_nologin" string => "/etc/nologin";
       "valid_states" slist => { "present", "absent" }; # Same as choices in the sketch.metadata file. Its good to verify everywhere! Expect bad params!
 
   classes:

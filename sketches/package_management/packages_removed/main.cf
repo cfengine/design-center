@@ -8,12 +8,7 @@ bundle agent removed(runenv, metadata, pkgs_removed)
 #@include "REPO/sketch_template/standard.inc"
 
   methods:
-    not_test::
       "install" usebundle => default:package_absent($(pkgs_removed));
-
-  reports:
-    dc_test::
-      "$(dcbundle): In test mode, simulating removing package $(pkgs_removed)";
 }
 
 bundle agent remove_from_file(runenv, metadata, file)
@@ -26,12 +21,10 @@ bundle agent remove_from_file(runenv, metadata, file)
       "have_todo" expression => isvariable("todo");
 
   methods:
-    have_todo.not_test::
+    have_todo::
       "install" usebundle => default:package_absent($(todo));
 
   reports:
-    have_todo.dc_test::
-      "$(dcbundle): In test mode, simulating removing package $(todo)";
     !have_todo::
       "$(dcbundle): file $(file) could not be parsed to get the file list";
 }

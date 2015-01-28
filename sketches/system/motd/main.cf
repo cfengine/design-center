@@ -9,19 +9,16 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, symlink_p
 
   vars:
     dc_activated::
-      "owner" string => ifelse("dc_test", $(this.promiser_uid),
-                               "root"),
+      "owner" string => "root",
       comment => "Owner of the MotD file";
 
-    have_path_prefix::
-      "path" string => "$(path_prefix)$(motd_path)",
+      "path" string => $(motd_path),
       comment => "Path of the main MotD";
 
-      "symlink" string => "$(path_prefix)$(symlink_path)";
+      "symlink" string => $(symlink_path);
 
     prepend_command_given::
-      "output" string => execresult("$(exec_prefix)$(prepend_command)",
-                                    "useshell");
+      "output" string => execresult($(prepend_command), "useshell");
 
       "main_lines" slist => { $(output), $(motd) },
       policy => "free",
@@ -40,7 +37,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, symlink_p
       "create_symlink" not => strcmp($(symlink_path),"");
 
   files:
-    have_path_prefix.dc_activated::
+    dc_activated::
       "$(path)"
       pathtype => "literal",
       create => "true",
@@ -50,7 +47,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, symlink_p
       perms => default:mog("444",$(owner),$(owner)),
       comment => "Create and populate the static motd file";
 
-    have_path_prefix.create_symlink::
+    create_symlink::
       "$(symlink)"
       pathtype => "literal",
       move_obstructions => "true",
@@ -58,7 +55,7 @@ bundle agent entry(runenv, metadata, motd, motd_path, prepend_command, symlink_p
       comment => "create a symlink to the motd file";
 
   reports:
-    have_path_prefix.dc_verbose::
+    dc_verbose::
       "$(dcbundle): owner = $(owner)";
       "$(dcbundle): output = '$(output)'" ifvarclass => "prepend_command_given";
       "$(dcbundle): path = $(path)";
