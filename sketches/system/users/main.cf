@@ -7,7 +7,6 @@ bundle agent ensure_users(runenv, metadata, users, group, homedir, shell)
 {
 #@include "REPO/sketch_template/standard.inc"
   users:
-    !dc_test::
       "$(users)" -> {"PCI-DSS-2", "Baseline_developers_2_3"}
       policy => "present",
       home_dir => "$(homedir)/$(users)",
@@ -17,9 +16,7 @@ bundle agent ensure_users(runenv, metadata, users, group, homedir, shell)
       home_bundle => setup_home_dir($(users), $(homedir));
 
   reports:
-    dc_verbose.dc_test::
-      "$(dcbundle): simulating user = $(users) with group $(group), home dir $(homedir) and shell $(shell)";
-    dc_verbose.!dc_test::
+    dc_verbose::
       "$(dcbundle): ensuring user = $(users) with group $(group), home dir $(homedir) and shell $(shell)";
 }
 

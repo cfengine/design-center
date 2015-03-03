@@ -19,31 +19,31 @@ bundle agent set(runenv, metadata, timezone, zoneinfo_dir)
 
   files:
     timezone_exists.(ubuntu|debian|gentoo)::
-      "$(path_prefix)/etc/timezone"
+      "/etc/timezone"
       handle        => "tzconfig_files_etc_timezone",
       edit_defaults => default:empty,
       create        => "true",
       edit_line     => default:insert_lines("$(timezone)"),
-      perms         => dc_test_aware_mog("644", "root", "root"),
+      perms         => default:mog("644", "root", "root"),
       comment       => "Debian and Gentoo based systems also use the /etc/timezone file";
 
     timezone_exists.(redhat|centos)::
-      "$(path_prefix)/etc/sysconfig/clock"
+      "/etc/sysconfig/clock"
       handle     => "tzconfig_files_etc_sysconfig_clock",
       create     => "true",
       edit_line  => default:replace_or_add("^ZONE=.*", 'ZONE="$(timezone)"'),
-      perms      => dc_test_aware_mog("644", "root", "root"),
+      perms      => default:mog("644", "root", "root"),
       comment    => "Redhat like systems use /etc/sysconfig/clock for
 the Time and Date Properties Tool
 (system-config-date), and editing it does not
 change the system timezone.";
 
     timezone_exists.linux::
-      "$(path_prefix)/etc/localtime"
+      "/etc/localtime"
       handle            => "tzconfig_files_etc_localtime",
       copy_from         => cfdc_tzconfig:copy_zoneinfo("$(tz_file)"),
       classes           => default:if_repaired("tz_updated"),
-      perms             => dc_test_aware_mog("644", "root", "root"),
+      perms             => default:mog("644", "root", "root"),
       move_obstructions => "true",
       comment           => "Copy the proper timezone file in place. We dont use
 a symlink because that might cause problems across
@@ -70,20 +70,4 @@ body copy_from copy_zoneinfo(source)
       source => "$(source)";
       copylink_patterns => { ".*", };
       compare => "hash";
-}
-
-body perms dc_test_aware_mog(mode, user, group)
-# @brief Set the file's mode, owner and group based on the `dc_test` class
-# @param mode The new mode
-# @param user The username of the new owner (if `dc_test`, `$(this.promiser_uid)`)
-# @param group The group name (if `dc_test`, `$(this.promiser_gid)`)
-{
-    any::
-      mode   => "$(mode)";
-    not_test::
-      owners => { "$(user)" };
-      groups => { "$(group)" };
-    dc_test::
-      owners => { $(this.promiser_uid) };
-      groups => { $(this.promiser_gid) };
 }

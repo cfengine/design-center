@@ -8,10 +8,9 @@ bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, my
 #@include "standard.inc"
   vars:
       # call the sample.sh script
-      "sample_return" string => execresult(concat($(exec_prefix),
-                                                  $(this.promise_dirname),
-                                                  "/scripts/sample.sh"),
-                                           "useshell");
+      "sample_return" string => execresult(concat($(this.promise_dirname),
+                                                 "/scripts/sample.sh"),
+                                          "useshell");
 
       "mylist_str" string => format("%S", mylist);
       "myarray_str" string => format("%S", myarray);

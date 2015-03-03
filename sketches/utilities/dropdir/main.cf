@@ -36,7 +36,7 @@ bundle agent dropdir_cleanit(script, days, id)
       "ago" int => ago(0, 0, $(days), 0, 0, 0);
 
   files:
-    cleanit.!dc_test::
+    cleanit::
       "$(script)"
       delete => default:tidy,
       classes => default:if_ok("$(pc)_cleaned");
@@ -47,10 +47,6 @@ bundle agent dropdir_cleanit(script, days, id)
       "$(dcbundle): $(script) is older than $(days) days, cleaning..." ifvarclass => "cleanit";
       "$(dcbundle): $(script) is newer than $(days) days, leaving it" ifvarclass => "recent";
       "$(dcbundle): $(script) was cleaned" ifvarclass => "$(pc)_cleaned";
-
-    cleanit.dc_test::
-      "$(dcbundle): in test mode, simulating that $(script) was cleaned"
-      handle => "$(id)_script_simulate_clean";
 }
 
 bundle agent dropdir_report(cmd, context, id, pname)

@@ -3,13 +3,9 @@ body file control
       namespace => "cfdc_ntp";
 }
 
-bundle agent client(runenv,metadata,peers,servers,restrictions,driftfile,given_statsdir,given_conffile)
+bundle agent client(runenv,metadata,peers,servers,restrictions,driftfile,statsdir,conffile)
 {
 #@include "REPO/sketch_template/standard.inc"
-
-  vars:
-      "conffile" string => "$(path_prefix)$(given_conffile)";
-      "statsdir" string => "$(path_prefix)$(given_statsdir)";
 
   methods:
       "NTP CLIENT INSTALL $(runenv)"
@@ -38,25 +34,19 @@ bundle agent client(runenv,metadata,peers,servers,restrictions,driftfile,given_s
 bundle agent install
 {
   methods:
-    not_test::
       "ntp" usebundle => cfe_package_ensure("ntp", "add"),
       classes => default:if_ok("ntp_client_installed");
 
   reports:
-    dc_verbose.dc_test.ntp_client_installed::
-      "$(client.dcbundle): Simulated the installation of NTP successfully.";
-    dc_verbose.not_test.ntp_client_installed::
+    dc_verbose.ntp_client_installed::
       "$(client.dcbundle): Installed NTP successfully.";
-    dc_verbose.not_test.!ntp_client_installed::
+    dc_verbose.!ntp_client_installed::
       "$(client.dcbundle): Could not install NTP successfully.";
 
     ntp_client_installed::
       "1" bundle_return_value_index => "package_status";
-    not_test.!ntp_client_installed::
+    !ntp_client_installed::
       "0" bundle_return_value_index => "package_status";
-    dc_test::
-      "$(client.dcbundle): Overriding bundle return status to success (1) in test mode";
-      "1" bundle_return_value_index => "package_status";
 }
 
 bundle agent conf(runenv,metadata,pkg_status,peers,servers,restrictions,driftfile,statsdir,conffile)
@@ -105,13 +95,13 @@ bundle agent proc(service_mode)
 
   commands:
     ntp_client_conf_repaired.(redhat|centos|fedora)::
-      "$(client.exec_prefix)/etc/init.d/ntpd restart";
+      "/etc/init.d/ntpd restart";
     ntp_client_conf_repaired.(ubuntu|debian)::
-      "$(client.exec_prefix)/etc/init.d/ntp restart";
+      "/etc/init.d/ntp restart";
     ntp_client_proc_start.(redhat|centos|fedora)::
-      "$(client.exec_prefix)/etc/init.d/ntpd start";
+      "/etc/init.d/ntpd start";
     ntp_client_proc_start.(ubuntu|debian)::
-      "$(client.exec_prefix)/etc/init.d/ntp start";
+      "/etc/init.d/ntp start";
 }
 
 bundle edit_line ntp_client_editline(peers,servers,restrictions,driftfile,statsdir)

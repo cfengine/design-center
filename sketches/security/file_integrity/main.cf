@@ -3,17 +3,11 @@ body file control
       namespace => "cfdc_file_integrity";
 }
 
-bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
+bundle agent watch(runenv, metadata, watch, hash_algorithm, ifelapsed)
 {
 #@include "REPO/sketch_template/standard.inc"
 
   vars:
-    dc_test::
-      "watch" slist => { "/tmp" }, policy => "free";
-    not_test::
-      "watch" slist => { @(given_watch) }, policy => "free";
-
-    any::
       "watch_str" string => join(";", watch), policy => "free";
 
   files:
@@ -24,7 +18,6 @@ bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
       action       => default:if_elapsed($(ifelapsed));
 
   reports:
-    any::
       "$(watch_str)" bundle_return_value_index => "paths";
 }
 

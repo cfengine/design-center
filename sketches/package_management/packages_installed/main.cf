@@ -10,14 +10,10 @@ bundle agent from_list(runenv, metadata, pkgs_add, state)
     "latest_wanted" expression => strcmp("addupdate", $(state));
 
   methods:
-    not_test.latest_wanted::
+    latest_wanted::
       "install" usebundle => default:package_latest($(pkgs_add));
-    not_test.!latest_wanted::
+    !latest_wanted::
       "install" usebundle => default:package_present($(pkgs_add));
-
-  reports:
-    dc_test::
-      "$(dcbundle): In test mode, simulating adding package $(pkgs_add)";
 }
 
 bundle agent from_file(runenv, metadata, file, state)
@@ -30,14 +26,12 @@ bundle agent from_file(runenv, metadata, file, state)
       "have_todo" expression => isvariable("todo");
 
   methods:
-    have_todo.not_test.latest_wanted::
+    have_todo.latest_wanted::
       "install" usebundle => default:package_latest($(todo));
-    have_todo.not_test.!latest_wanted::
+    have_todo.!latest_wanted::
       "install" usebundle => default:package_present($(todo));
 
   reports:
-    have_todo.dc_test::
-      "$(dcbundle): In test mode, simulating adding package $(todo)";
     !have_todo::
       "$(dcbundle): file $(file) could not be parsed to get the file list";
 }
@@ -54,18 +48,15 @@ bundle agent from_url(runenv, metadata, url, state, retriever, spooldir)
       "have_file" expression => fileexists($(spoolfile));
 
   commands:
-    have_exec_prefix::
-      "$(exec_prefix)$(retriever) > $(spoolfile)"
+      "$(retriever) > $(spoolfile)"
       contain => default:in_shell,
       classes => default:scoped_classes_generic("retrieve", "bundle");
 
   methods:
-    not_test.have_file::
+    have_file::
       "install" usebundle => default:package_specific($(spoolfile), $(state), "0.0.0", "*");
 
   reports:
-    have_file.dc_test::
-      "$(dcbundle): In test mode, simulating adding package $(spoolfile)";
     !have_file.retrieve_reached::
       "$(dcbundle): file $(spoolfile) could not be retrieved from $(url)";
 }

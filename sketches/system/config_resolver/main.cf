@@ -7,10 +7,8 @@ bundle agent resolver(runenv, metadata, file, nameserver, search, domain, option
 {
 #@include "REPO/sketch_template/standard.inc"
 
-  vars:
-      "rfile" string => "$(path_prefix)$(file)";
   files:
-      "$(rfile)"
+      "$(file)"
       handle        => "cfdc_config_resolver_file",
       create        => "true",
       edit_defaults => default:empty,
@@ -22,11 +20,11 @@ bundle agent resolver(runenv, metadata, file, nameserver, search, domain, option
                                                    @(sortlist),
                                                    @(extra)),
       classes       => default:if_ok("resolver_edit_successful"),
-      comment       => "Empty and edit resolver file $(rfile)";
+      comment       => "Empty and edit resolver file $(file)";
 
   reports:
     resolver_edit_successful::
-      "$(rfile)" bundle_return_value_index => "resolv_conf";
+      "$(file)" bundle_return_value_index => "resolv_conf";
     !resolver_edit_successful::
       "" bundle_return_value_index => "resolv_conf";
 }

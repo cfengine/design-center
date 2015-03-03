@@ -16,7 +16,6 @@ bundle agent run(runenv, metadata, script, parameters)
       "made_jfile" expression => fileexists($(jfile));
 
   methods:
-    !dc_test::
       "writeit" usebundle => default:file_make($(jfile), $(pstring)),
       classes => default:scoped_classes_generic("bundle", "write"),
       inherit => "true";
@@ -32,8 +31,6 @@ bundle agent run(runenv, metadata, script, parameters)
   reports:
     dc_verbose::
       "$(dcbundle): The unique ID is $(activation_id) and the JSON parameter file is $(jfile)";
-    dc_test::
-      "$(dcbundle): Simulating execution of '$(script) $(jfile)'";
 }
 
 bundle agent run_fromfile(runenv, metadata, script, jfile)
@@ -44,7 +41,6 @@ bundle agent run_fromfile(runenv, metadata, script, jfile)
       "have_jfile" expression => fileexists($(jfile));
 
   methods:
-    !dc_test::
       "runit" usebundle => runit($(script), $(jfile)),
       ifvarclass => "have_jfile",
       inherit => "true";
@@ -52,13 +48,11 @@ bundle agent run_fromfile(runenv, metadata, script, jfile)
   reports:
     dc_verbose::
       "$(dcbundle): The JSON parameter file is $(jfile)";
-    dc_test::
-      "$(dcbundle): Simulating execution of '$(script) $(jfile)'";
 }
 
 bundle agent runit(cmd, jfile)
 {
   commands:
-      "$(run.exec_prefix)$(cmd) $(jfile)"
+      "$(cmd) $(jfile)"
       contain => default:in_shell;
 }
