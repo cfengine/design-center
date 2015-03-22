@@ -90,6 +90,21 @@ sub validate
                                  "Could not validate parent type $derived");
     }
 
+    my @or = @{Util::hashref_search($d, qw/or/) || []};
+    foreach my $or (@or)
+    {
+        my $check = $self->api()->validate({ validation => $or,
+                                             data => $data});
+        $self->api()->log4("Validating %s: checking parent data type %s",
+                           $self->name,
+                           $or);
+        return $check if $check->success();
+    }
+
+    return $result->add_error([qw/or validation/],
+                              "Could not validate any of the 'or' types @or")
+     if scalar @or;
+
     my $choice = Util::hashref_search($d, qw/choice/);
     if (defined $choice)
     {

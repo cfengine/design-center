@@ -5,26 +5,12 @@ body file control
 
 bundle agent run(runenv, metadata, context, scripts)
 {
+#@include "REPO/sketch_template/standard.inc"
   vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
-
-  classes:
-      "$(vars)"
-      expression => "default:runenv_$(runenv)_$(vars)";
-
-      "not_$(vars)"
-      expression => "!default:runenv_$(runenv)_$(vars)";
-
-      "second_pass" expression => "any";
+      "a2string" string => format("%S %s", scripts, $(context));
+      "activation_id" string => hash($(a2string), "sha1");
 
   methods:
-    second_pass::
-      "utils" usebundle => default:eu($(runenv)),
-      inherit => "true";
-
       "checkit" usebundle => checkit($(scripts),
                                      $(activation_id),
                                      "$(scripts) $(activation_id)"),
@@ -36,19 +22,9 @@ bundle agent run(runenv, metadata, context, scripts)
                                  "$(scripts) $(activation_id)"),
       inherit => "true";
 
-    verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      inherit => "true";
-
   reports:
-    verbose::
-      "$(this.bundle): running in verbose mode";
-      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
-      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
-      ifvarclass => "$(vars)";
-
-    test::
-      "$(this.bundle): running in test mode";
+    dc_verbose::
+      "$(dcbundle): The unique ID is $(activation_id)";
 }
 
 bundle agent checkit(script, id, pname)
@@ -61,14 +37,14 @@ bundle agent checkit(script, id, pname)
       "pc" string => canonify($(pname));
 
   reports:
-    verbose::
-      "$(this.bundle): Checking if $(pname) is defined";
+    dc_verbose::
+      "$(dcbundle): Checking if $(pname) is defined";
 
-      "$(this.bundle): $(pc) is defined" ifvarclass => $(pc);
-      "$(this.bundle): $(pc) is NOT defined" ifvarclass => "!$(pc)";
+      "$(dcbundle): $(pc) is defined" ifvarclass => $(pc);
+      "$(dcbundle): $(pc) is NOT defined" ifvarclass => "!$(pc)";
 
-      "$(this.bundle): $(pc)_unknown is defined" ifvarclass => "$(pc)_unknown";
-      "$(this.bundle): $(pc)_unknown is NOT defined" ifvarclass => "!$(pc)_unknown";
+      "$(dcbundle): $(pc)_unknown is defined" ifvarclass => "$(pc)_unknown";
+      "$(dcbundle): $(pc)_unknown is NOT defined" ifvarclass => "!$(pc)_unknown";
 
 }
 
@@ -77,26 +53,35 @@ bundle agent runit(cmd, context, id, pname)
   vars:
       "pc" string => canonify($(pname));
 
+    have_file::
+      "contexts" slist => readstringlist($(context), "#.*", "\s", 1000, 40000);
+    !have_file::
+      "contexts" slist => { $(context) };
+
+  classes:
+      "have_file" expression => fileexists($(context_or_file));
+
+      "contexts_found" expression => classify($(contexts));
+
   commands:
-      "$(default:eu.exec_prefix)$(cmd)"
+      "$(cmd)"
       contain => default:in_shell,
-      handle => "$(id)_ran",
       comment => "Run the given command iff the context is true and we haven't run it before.",
-      ifvarclass => concat(canonify($(pname)), "_unknown.$(context)"),
+      ifvarclass => concat(canonify($(pname)), "_unknown.contexts_found"),
       classes => run_once_persist($(pname));
 
   reports:
-    verbose::
-      "$(this.bundle): WE HAVE the required context '$(context)'"
+    dc_verbose::
+      "$(dcbundle): WE HAVE the required context '$(context)'"
       ifvarclass => "$(context)";
 
-      "$(this.bundle): WE LACK the required context '$(context)'"
+      "$(dcbundle): WE LACK the required context '$(context)'"
       ifvarclass => "!($(context))";
 
-      "$(this.bundle): The command ran or has already run for context '$(pc)'"
+      "$(dcbundle): The command ran or has already run for context '$(pc)'"
       ifvarclass => $(pc);
 
-      "$(this.bundle): The command did not run successfully and has not already run for context '$(pc)'"
+      "$(dcbundle): The command did not run successfully and has not already run for context '$(pc)'"
       ifvarclass => "$(pc)_unknown";
 }
 

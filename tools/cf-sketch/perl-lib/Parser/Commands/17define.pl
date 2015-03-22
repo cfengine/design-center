@@ -145,7 +145,7 @@ sub query_bundle {
         push @bundles, $bundlestr;
     }
     return Util::choose_one("This sketch has multiple accessible bundles.",
-                            "Which one do you want to configure?",
+                            "Which one do you want to configure?", undef,
                             @bundles);
 }
 

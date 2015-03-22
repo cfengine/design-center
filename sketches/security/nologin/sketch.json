@@ -1,6 +1,7 @@
 {
     "api": {
         "etc_nologin": [
+            { type: "bundle_options", name: "Refuse logins to the system through /etc/nologin", single_use: true },
             {
                 "name": "runenv",
                 "type": "environment"
@@ -20,7 +21,7 @@
                 "type": "string"
             },
             {
-                "default": "",
+                "default": "Logins refused by policy.",
                 "description": "The content the /etc/nologin file should have.",
                 "name": "content",
                 "type": "string"
@@ -28,6 +29,7 @@
         ],
 
         "localuser_nologin": [
+            { type: "bundle_options", name: "Refuse login privileges to specific users", single_use: true },
             {
                 "name": "runenv",
                 "type": "environment"
@@ -52,7 +54,7 @@
             "documentation": true
         },
         "main.cf": {
-            "desc": "main file"
+            "description": "main file"
         }
     },
     "metadata": {
@@ -64,16 +66,11 @@
             "localuser_nologin": "The nologin command displays a message that an account is not available and exits non-zero. It is intended as a replacement shell field for accounts that have been disabled."
         },
         "depends": {
-            "CFEngine::dclib": {
-                "version": "1.0.0"
-            },
-            "cfengine": {
-                "version": "3.6.0"
-            },
-            "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ]
+            "CFEngine::sketch_template": {},
+            cfengine: { version: "3.6.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ]
         },
 
-        "description": "This sketch provides facilities for restricing non root logins to a host.",
+        "description": "This sketch provides facilities for restricting non root logins to a host.",
         "license": "MIT",
         "name": "Security::nologin",
         "tags": [
@@ -81,6 +78,7 @@
             "security",
             "sketchify_generated",
             "nologin",
+            "enterprise_3_6",
             "cfdc"
         ],
         "version": "1.0"

@@ -2,9 +2,8 @@
 
     manifest:
     {
-        "main.cf": { desc: "main file", "version": "1.0.0" },
-        "params/demo.json": { desc: "example parameters" },
-        "test.cf": { desc: "example policy" },
+        "main.cf": { description: "main file", "version": "1.0.0" },
+        "params/demo.json": { description: "example parameters" },
         "test.pl": { test:true },
         "README.md": { documentation: true },
     },
@@ -15,23 +14,43 @@
         "description": "Ensure certain packages are installed. The networked package manager of the OS (e.g. yum or aptitude) is used to perform installations, so the packages need to be available in its package repository.",
         "version": "1.0.0",
         "license": "MIT",
-        "tags": [ "cfdc", "packages", "enterprise_compatible" ],
+        "tags": [ "cfdc", "packages", "enterprise_compatible", "enterprise_3_6" ],
         "authors": [ "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
+        "depends": { "CFEngine::sketch_template": { }, cfengine: { version: "3.6.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
     },
 
     api:
     {
         // the key is the name of the bundle!
-        installed:
+        from_list:
         [
-            { type: "bundle_options", name: "", single_use: true },
+            { type: "bundle_options", name: "Install specific packages", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "list", name: "pkgs_add", description: "Packages that should be installed", validation: "LIST_OF_PACKAGE_NAME", example: "apache2, zsh" }
+            { type: "list", name: "pkgs_add", description: "Packages that should be installed", validation: "LIST_OF_PACKAGE_NAME", example: "apache2, zsh" },
+            { type: "string", name: "state", description: "Desired package state", default: "addupdate", choice: [ "add", "addupdate", "update" ], },
+        ],
+
+        from_file:
+        [
+            { type: "bundle_options", name: "Install packages listed in an external file", single_use: true },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "file", description: "Filename with packages, one per line", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "string", name: "state", description: "Desired package state", default: "addupdate", choice: [ "add", "addupdate", "update" ], },
+        ],
+
+        from_url:
+        [
+            { type: "bundle_options", name: "Install a package from a URL", single_use: true },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "url", description: "URL for package file", validation: "URL" },
+            { type: "string", name: "state", description: "Desired package state", default: "addupdate", choice: [ "add", "addupdate", "update" ], },
+            { type: "string", name: "url_retriever", default: "/usr/bin/curl -s", description: "Command to run, will be given the `url` and expected to send the output to STDOUT", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "string", name: "spooldir", description: "Directory where packages are spooled", default: "/var/tmp", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
         ],
     },
-
     namespace: "cfdc_packages",
     
     interface: [ "main.cf" ]

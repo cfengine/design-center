@@ -1,11 +1,10 @@
 {
     manifest:
     {
-        "main.cf":     { desc: "main file" },
+        "main.cf":     { description: "main file" },
         "README.md":   { documentation: true },
-        "test.cf":     { comment: "Example policy" },
-        changelog:     { comment: "changelog" },
-        "params/demo.json": { comment: "demo JSON parameters" }
+        changelog:     { description: "changelog" },
+        "params/demo.json": { description: "demo JSON parameters" }
     },
 
     metadata:
@@ -17,8 +16,7 @@
         tags: [ "cfdc" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
         tested: [ "redhat_5", "centos_5" ],
-        depends: { "CFEngine::stdlib": { version: 105 },
-                   "CFEngine::dclib": {},
+        depends: {                    "CFEngine::dclib": {},
                    cfengine: { version: "3.4.0" },
                    os: [ "linux" ]
                  }

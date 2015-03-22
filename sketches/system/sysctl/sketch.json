@@ -1,13 +1,12 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
-        "test.cf": {comment: "Test Policy"},
-        "example.cf": {comment: "Example Policy"},
-        changelog: {comment: "changelog"},
-        "sketch.json": {comment: "Sketch definition"},
-        "params/example.json": {comment: "Example parameters for use with cf-sketch"}
+        "example.cf": {description: "Example Policy"},
+        changelog: {description: "changelog"},
+        "sketch.json": {description: "Sketch definition"},
+        "params/example.json": {description: "Example parameters for use with cf-sketch"}
     },
 
     metadata:
@@ -16,9 +15,9 @@
        	description: "Manage sysctl values",
         version: 1.5,
         license: "MIT",
-        tags: [ "cfdc" ],
+        tags: [ "cfdc", "enterprise_compatible", "enterprise_3_6" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
+        depends: { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: [{ "linux": "Linux" }] }
     },
 
     api:
@@ -26,13 +25,14 @@
         // the key is the name of the bundle!
         set:
         [
+            { type: "bundle_options", name: "Set up the sysctl contents" },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "string", name: "sysctl_file", default: "/etc/sysctl.conf" },
-            { type: "boolean", name: "empty_first" },
-            { type: "array", name: "ensured_kv" },
-            { type: "array", name: "removed_kv" },
-            { type: "list", name: "removed_vars" },
+            { type: "string", name: "sysctl_file", default: "/etc/sysctl.conf", description: "sysctl configuration file", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "boolean", name: "empty_first", default: false },
+            { type: "array", name: "ensured_kv", description: "Parameters that must be in the sysctl", validation: "KVMAP" },
+            { type: "array", name: "removed_kv", default: {"unwantedvar":"unwantedsetting"}, description: "Specific key-value combinations to be removed (regular expressions allowed)", validation: "KVMAP" },
+            { type: "list", name: "removed_vars", default: ["nosuchvar"], description: "Specific variables to be removed (regular expressions allowed)", validation: "LIST_OF_STRING_NONEMPTY" },
             { type: "return", name: "sysctl_file", },
         ],
     },

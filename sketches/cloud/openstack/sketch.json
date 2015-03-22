@@ -1,10 +1,10 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
         "README.include": { documentation: true },
-        "params/demo.json": { comment: "simple demo of OpenStack integration" },
+        "params/demo.json": { description: "simple demo of OpenStack integration" },
     },
 
     metadata:
@@ -15,7 +15,7 @@
         license: "MIT",
         tags: [ "cfdc", "cloud", "openstack" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "Cloud::Services::Common": {}, "CFEngine::stdlib": { version: 110 }, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
+        depends: { "Cloud::Services::Common": {}, "CFEngine::dclib": {}, cfengine: { version: "3.5.0" } }
     },
     
     api:

@@ -1,9 +1,8 @@
 {
     "manifest":
     {
-        "main.cf": { "desc": "main file" },
+        "main.cf": { "description": "main file" },
         "test.pl": { test:true },
-        "test.cf": { desc: "example policy" },
         "README.md": { "documentation": true },
     },
 
@@ -15,7 +14,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "epel" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "redhat|centos" ] }
+        "depends": { "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "redhat|centos" ] }
     },
 
     "api" : {

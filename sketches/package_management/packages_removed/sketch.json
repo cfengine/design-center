@@ -2,8 +2,8 @@
 
     manifest:
     {
-        "main.cf": { desc: "main file", "version": "1.0.0" },
-        "params/demo.json": { desc: "example parameters" },
+        "main.cf": { description: "main file", "version": "1.0.0" },
+        "params/demo.json": { description: "example parameters" },
         "README.md": { documentation: true },
     },
 
@@ -13,9 +13,9 @@
         "description": "Ensure certain packages are removed (not installed). The package manager of the OS (e.g. rpm or aptitude) is used to check the status of a package and remove it, if necessary.",
         "version": "1.0.0",
         "license": "MIT",
-        "tags": [ "cfdc", "packages", "enterprise_compatible" ],
+        "tags": [ "cfdc", "packages", "enterprise_compatible", "enterprise_3_6" ],
         "authors": [ "Eystein Stenberg <eystein.maloy.stenberg@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": { }, "cfengine": { "version": "3.4.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
+        "depends": { "CFEngine::sketch_template": { }, cfengine: { version: "3.6.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ] }
     },
 
     api:
@@ -23,10 +23,18 @@
         // the key is the name of the bundle!
         removed:
         [
-            { type: "bundle_options", name: "", single_use: true },
+            { type: "bundle_options", name: "Specify packages to be removed", single_use: true },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
             { type: "list", name: "pkgs_removed", description: "Packages that should not be installed", validation: "LIST_OF_PACKAGE_NAME", example: "telnetd" }
+        ],
+
+        remove_from_file:
+        [
+            { type: "bundle_options", name: "Remove packages listed in a file", single_use: true },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "file", description: "Filename with packages, one per line", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
         ],
     },
 

@@ -1,11 +1,10 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
-        "test.cf": {comment: "Test Policy"},
-        "sketch.json": {comment: "Sketch definition"},
-        "params/example.json": {comment: "Example parameters for use with cf-sketch"}
+        "sketch.json": {description: "Sketch definition"},
+        "params/example.json": {description: "Example parameters for use with cf-sketch"}
     },
 
     metadata:
@@ -16,7 +15,7 @@
         license: "MIT",
         tags: [ "cfdc", "security", "access", "access.conf" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 109 }, "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
+        depends: { "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
     },
 
     api:

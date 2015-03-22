@@ -39,7 +39,7 @@
            "documentation" : true
        },
        "jenkins.cf" : {
-           "desc" : "main file"
+           "description" : "main file"
        }
    },
    "metadata" : {
@@ -63,7 +63,7 @@
           "sketchify_generated",
           "jenkins",
           "persistent",
-          "enterprise_compatible"
+          "enterprise_staging"
       ],
        "version" : "1.0"
    },

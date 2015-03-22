@@ -1,12 +1,11 @@
 {
     "manifest":
     {
-        "main.cf": { "desc": "main file" },
+        "main.cf": { "description": "main file" },
         "README.md": { "documentation": true },
-        "test.cf": { "comment": "Test Policy"},
         "test.pl": { "test": true},
-        "params/test.json": {"comment": "Testing parameter set"},
-        "params/demo.json": {"comment": "Demo of package control."}
+        "params/test.json": {"description": "Testing parameter set"},
+        "params/demo.json": {"description": "Demo of package control."}
     },
 
     "metadata":
@@ -17,7 +16,7 @@
         "license": "MIT",
         "tags": [ "cfdc", "sudoers" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>", "Ben Heilman <bheilman@enova.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0" : {}, "cfengine": { "version": "3.5.0" }, "os": [ "linux" ] }
+        "depends": { "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0" : {}, "cfengine": { "version": "3.5.0" }, "os": [ "linux" ] }
     },
     "api" : {
         "ensure" : [

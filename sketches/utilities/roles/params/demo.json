@@ -1,0 +1,6 @@
+{
+    "Utilities::Roles":
+    {
+        role: "webserver",
+    }
+}

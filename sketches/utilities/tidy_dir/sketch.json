@@ -1,10 +1,9 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
-        "test.cf": { desc: "standalone test" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
-        "params/demo.json": { comment: "simple demo of sketch" },
+        "params/demo.json": { description: "simple demo of sketch" },
     },
 
     metadata:
@@ -15,7 +14,7 @@
         license: "MIT",
         tags: [ "cfdc" ],
         authors: [ "Philip J Freeman <philip.freeman@gmail.com>" ],
-        depends: { "CFEngine::stdlib": { version: 111 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }}
+        depends: { "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }}
     },
 
     api:

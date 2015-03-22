@@ -1,0 +1,43 @@
+{
+    manifest:
+    {
+        "main.cf": {description: "main file" },
+        "README.md": {documentation: true},
+        "params/demo.json": {description: "Demo of usage."}
+    },
+
+    metadata:
+    {
+        name: "Run::WithData",
+	    description: "Run a given script with the given parameters in a JSON file or passed directly.",
+        version: 1.0,
+        license: "MIT",
+        tags: ["cfdc", "run", "data", "json", "enterprise_compatible", "enterprise_3_6" ],
+        authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::sketch_template": {}, cfengine: {version: "3.6.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
+    },
+
+    api:
+    {
+        run:
+        [
+            { type: "bundle_options", name: "Run the script with the parameters directly" },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "script", description: "Script to run", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "array", name: "parameters", description: "Parameters that will be passed to the script in JSON format as a file argument", default: {} },
+        ],
+
+        run_fromfile:
+        [
+            { type: "bundle_options", name: "Run the script with the parameters in a file" },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "script", description: "Script to run", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "string", name: "jfile", description: "JSON data file", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+        ],
+    },
+
+    namespace: "cfdc_utilities_run_withdata",
+    interface: ["main.cf"]
+}

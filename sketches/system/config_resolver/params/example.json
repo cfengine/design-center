@@ -1,7 +1,7 @@
 {
     "System::config_resolver":
     {
-        "file": "/tmp/resolv.conf",
+        "file": "/etc/resolv.conf.test",
         "nameserver": [ "8.8.8.8", "8.8.4.4" ],
         "search": [ "example.net", "example.org" ],
         "options": [ "ndots:1", "timeout:5", "attempts:2", "rotate", "no-check-names", "inet6", "ip6-bytestring", "edns0", "ip6-dotint", "no-ip6-dotint" ],

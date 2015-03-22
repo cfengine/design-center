@@ -1,0 +1,4 @@
+[
+    { "Primitives::files_existence": { __bundle__: "present", list_of_files: [ "/tmp" ], success_class: "files_found", fail_class: "none_found" } },
+    { "Primitives::files_existence": { __bundle__: "absent", list_of_files: [ "/tmp/nosuchdir" ], success_class: "files_absent", fail_class: "none_absent" } },
+]

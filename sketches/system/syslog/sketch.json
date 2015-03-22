@@ -1,29 +1,41 @@
 {
-    "manifest":
+    manifest:
     {
-        "main.cf": { "desc": "main file" },
-        "README.md": { "documentation": true },
+        "main.cf": { description: "main file" },
+        "README.md": { documentation: true },
+        "sketch.json": {description: "Sketch definition"},
+        "params/demo.json": {description: "Example parameters for use with cf-sketch"}
     },
 
-    "metadata":
+    metadata:
     {
-        "name": "System::Syslog",
-        "description": "Configures syslog",
-        "version": 1.00,
-        "license": "MIT",
-        "tags": [ "cfdc" ],
-        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
-        "depends": { "CFEngine::stdlib": { "version": 105 }, "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "solaris" ] }
+        name: "System::syslog",
+        description: "Manage syslog configuration",
+        version: 1.0,
+        license: "MIT",
+        "tags": [ "cfdc", "syslog", "enterprise_compatible", "enterprise_3_6" ],
+        authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>", "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com", "Diego Zamboni <diego.zamboni@cfengine.com>" ],
+        "depends": { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: [{ "linux": "All Linux distributions", "solaris": "Solaris 8-11" }]}
     },
 
-    "api" : {
-			  "ensure" : [
-                  { "name" : "runenv", "type" : "environment" },
-				  { "name" : "metadata", "type" : "metadata" },
-				  { "name" : "conf_file", "type" : "string", "default" : "/etc/syslog.conf" },
-				  { "name" : "config", "type" : "array" }
-				]
-		},
-    "namespace": "cfdc_syslog",
-    "interface": [ "main.cf" ]
+    api:
+    {
+        // the key is the name of the bundle!
+        set:
+        [
+            { type: "bundle_options", name: "Set up the syslog contents" },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "syslog_file", default: "/etc/rsyslog.conf", description: "syslogd/rsyslogd configuration file", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS" },
+            { type: "boolean", name: "empty_first", default: false },
+            { type: "array", name: "ensured_kv", description: "Key-value pairs ensured to be present", validation: "KVMAP" },
+            { type: "array", name: "removed_kv", default: {"removethisvar": "somevalue"}, description: "Key-value pairs ensured to be removed", validation: "KVMAP" },
+            { type: "list", name: "removed_vars", default: ["nosuchvar"], description: "Variable names ensured to be present", validation: "LIST_OF_STRING_NONEMPTY" },
+            { type: "return", name: "syslog_file", },
+        ],
+    },
+
+    namespace: "cfdc_syslog",
+
+    interface: [ "main.cf" ]
 }

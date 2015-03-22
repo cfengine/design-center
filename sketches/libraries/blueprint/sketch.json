@@ -1,7 +1,7 @@
 {
     manifest:
     {
-        "library.cf": { desc: "Blueprint to Design Center glue library" },
+        "library.cf": { description: "Blueprint to Design Center glue library" },
         "test.pl": { test:true },
         "README.md": { documentation: true }
     },

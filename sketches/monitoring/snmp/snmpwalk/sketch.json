@@ -1,10 +1,10 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
 
-        "params/demo.json": { comment: "SNMP walk example with defaults" },
+        "params/demo.json": { description: "SNMP walk example with defaults" },
     },
 
     metadata:
@@ -15,7 +15,7 @@
         license: "MIT",
         tags: [ "cfdc", "snmp" ],
         authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 109 }, "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, cfengine: { version: "3.5.0" }, os: [ "linux" ] },
+        depends: { "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0": {}, cfengine: { version: "3.5.0" }, os: [ "linux" ] },
     },
 
     api:

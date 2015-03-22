@@ -5,51 +5,34 @@ body file control
 
 bundle agent resolver(runenv, metadata, file, nameserver, search, domain, options, sortlist, extra)
 {
-  vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-    test::
-      "rfile" string => "/tmp/resolv.conf";
-    not_test::
-      "rfile" string => $(file);
-
-  classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
-
-  methods:
-    verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      inherit => "true";
+#@include "REPO/sketch_template/standard.inc"
 
   files:
-      "$(rfile)"
+      "$(file)"
       handle        => "cfdc_config_resolver_file",
       create        => "true",
       edit_defaults => default:empty,
-      edit_line     => cfdc_resolver:resolver_edit(@(resolver.nameserver),
-                                                   @(resolver.search),
-                                                   @(resolver.domain),
-                                                   @(resolver.options),
-                                                   @(resolver.sortlist),
-                                                   @(resolver.extra)),
+      edit_line     => cfdc_resolver:resolver_edit($(dcbundle),
+                                                   @(nameserver),
+                                                   @(search),
+                                                   @(domain),
+                                                   @(options),
+                                                   @(sortlist),
+                                                   @(extra)),
       classes       => default:if_ok("resolver_edit_successful"),
-      comment       => "Empty and edit resolver file $(rfile)";
+      comment       => "Empty and edit resolver file $(file)";
 
   reports:
-    verbose::
-      "$(this.bundle) @@ editing file $(rfile)";
-
     resolver_edit_successful::
-      "$(rfile)" bundle_return_value_index => "resolv_conf";
+      "$(file)" bundle_return_value_index => "resolv_conf";
     !resolver_edit_successful::
       "" bundle_return_value_index => "resolv_conf";
 }
 
-bundle edit_line resolver_edit(nameserver, search, domain, options, sortlist, extra)
+bundle edit_line resolver_edit(dcbundle, nameserver, search, domain, options, sortlist, extra)
 {
   insert_lines:
+      "# maintained by CFEngine Design Center sketch $(dcbundle)";
       "$(extra)";
       "nameserver $(nameserver)";
       "search $(search)";

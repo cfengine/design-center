@@ -14,6 +14,7 @@ use Term::ANSIColor qw(:constants);
 use File::Spec;
 use File::Basename;
 use Cwd;
+use Digest::MD5 qw(md5_hex);
 
 BEGIN {
     # This stuff is executed once when the module is loaded, because it
@@ -23,6 +24,11 @@ BEGIN {
     $Data::Dumper::Terse=1;
     $Data::Dumper::Indent=0;
 
+}
+
+sub md5
+{
+    return md5_hex(shift);
 }
 
 sub function_exists
@@ -218,7 +224,7 @@ sub print_api_messages
 # Validate a regex
 sub check_regex {
     my $regex = shift;
-    my $cregex = eval "qr/$regex/";
+    my $cregex = eval "qr/\$regex/";
     my $err = $@;
     if ($err)
     {
@@ -253,7 +259,11 @@ sub local_cfsketches_source
     my $sketches_probe = File::Spec->catfile($dir, 'sketches', 'cfsketches.json');
     return $sketches_probe if -f $sketches_probe;
 
-    return undef if $rootdir eq $dir;
+    if ($rootdir eq $dir) {
+      $sketches_probe = File::Spec->catfile(Cwd::realpath('/var/cfengine/design-center/sketches'), 'cfsketches.json');
+      return $sketches_probe if -f $sketches_probe;
+      return undef;
+    }
     my $updir = Cwd::realpath(dirname($dir));
 
     return local_cfsketches_source($updir);
@@ -310,7 +320,7 @@ sub is_resource_local
             };
             if ($@ )
             {
-                Util::color_warn "Could not load LWP::Protocol::https (you should install it)";
+                Util::color_warn "Could not load LWP::Protocol::https (you should install it) - trying curl or wget for now\n";
                 undef $ua;
             }
         }
@@ -327,7 +337,7 @@ sub is_resource_local
         {
             if (defined $ua) # it is 0, from above where LWP failed to load
             {
-                Util::color_warn "Could not load LWP::UserAgent (you should install libwww-perl)";
+                Util::color_warn "Could not load LWP::UserAgent (you should install libwww-perl) - trying curl or wget for now\n";
                 undef $ua;
             }
 
@@ -453,7 +463,7 @@ sub json_boolean
 sub dump_ref
 {
     require Data::Dumper;
-    return Dumper(\@_);
+    return Data::Dumper(\@_);
 }
 
 sub recurse_print
@@ -547,10 +557,12 @@ sub recurse_print
             $ref = ! ! $ref;
         }
 
+        my $escaped = $ref;
+        $escaped =~ s/'/\\'/g;
         push @print, {
                       path => $prefix,
                       type => ($type_override||'string'),
-                      value => $unquote_scalars ? $ref : "\"$ref\""
+                      value => $unquote_scalars ? $ref : "'$escaped'"
                      };
     }
 
@@ -571,11 +583,89 @@ sub make_var_lines
 
     foreach my $p (recurse_print($ref, $prefix, $unquote_scalars, $simplify_arrays, $empty_false, $type_override))
     {
-        push @ret, sprintf('"%s%s" %s => %s;',
-                           $name, $p->{path}, $p->{type}, $p->{value});
+        if ($name)
+        {
+            push @ret, sprintf('"%s%s" %s => %s;',
+                               $name, $p->{path}, $p->{type}, $p->{value});
+        }
+        else
+        {
+            push @ret, $p->{value};
+        }
     }
 
     return @ret;
+}
+
+sub make_container_line
+{
+    my $prefix          = shift @_;
+    my $name            = shift @_;
+    my $encoded         = shift @_;
+
+    $prefix = "${prefix}_" if length $prefix;
+
+    $encoded =~ s/'/\\'/g;
+    return sprintf('"%s%s" data => parsejson(\'%s\');',
+                   $prefix, $name, $encoded);
+}
+
+sub recurse_context
+{
+    my $data = shift @_;
+
+    if (ref $data eq 'ARRAY')
+    {
+        return join('&', map { recurse_context($_) } @$data);
+    }
+    elsif (ref $data eq 'HASH')
+    {
+        return '(' . join('|', sort keys %$data) . ')';
+    }
+
+    return $data;
+}
+
+sub recurse_context_lines
+{
+    my $data = shift @_;
+    my $top = shift @_;
+
+    if (ref $data eq 'ARRAY')
+    {
+        my @ret;
+        my @needed;
+        my $i = 0;
+        foreach my $v (@$data)
+        {
+            my $need = "${top}_${i}";
+            push @needed, $need;
+            push @ret, recurse_context_lines($v, $need);
+            $i++;
+        }
+
+        push @ret, sprintf('"%s" and => { %s };', $top, join(", ", map { "'$_'" } @needed));
+
+        return @ret;
+    }
+    elsif (ref $data eq 'HASH')
+    {
+        my @ret;
+        foreach my $k (sort keys %$data)
+        {
+            push @ret, recurse_context_lines($data->{$k}. $top);
+        }
+
+        return @ret;
+    }
+
+    my $mode = 'expression';
+    if ($data =~ s/^!//)
+    {
+        $mode = 'not';
+    }
+
+    return sprintf('"%s" %s => classmatch("%s");', $top, $mode, $data);
 }
 
 sub dc_make_path
@@ -634,6 +724,7 @@ sub choose_one
 {
   my $prompt_before = shift || "These are the options:";
   my $prompt_after = shift || "Which one?";
+  my $cancel_message = shift || "Enter to cancel";
   my @choices = @_;
   Util::message("$prompt_before\n");
   my $numchoices=scalar(@choices);
@@ -644,7 +735,7 @@ sub choose_one
   my $valid=undef;
   do
     {
-      $which=single_prompt("$prompt_after (1-$numchoices, Enter to cancel) ");
+      $which=single_prompt("$prompt_after (1-$numchoices, $cancel_message) ");
       $valid=undef;
       if ($which eq "") {
         return -1;

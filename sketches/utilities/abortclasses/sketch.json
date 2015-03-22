@@ -1,11 +1,10 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
-        "params/example.json": { comment: "Example parameters" },
-        "test.cf": { comment: "Standalone test policy" },
-        changelog: { comment: "changelog" }
+        "params/example.json": { description: "Example parameters" },
+        changelog: { description: "changelog" }
     },
 
     metadata:
@@ -19,8 +18,7 @@
         depends:
         {
             cfengine: { version: "3.4.0" },
-            "CFEngine::stdlib":{ version: 105 },
-            "CFEngine::dclib": {},
+                        "CFEngine::dclib": {},
         },
     },
 

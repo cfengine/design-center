@@ -1,14 +1,14 @@
-# CFEngine::sketch_template version 1.01
+# CFEngine::sketch_template version 2.00
 
 License: MIT
-Tags: cfdc
+Tags: cfdc, enterprise_compatible, enterprise_3_6
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
 Standard template for Design Center sketches
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib
+none
 
 ## API
 ### bundle: entry

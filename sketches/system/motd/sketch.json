@@ -1,13 +1,12 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
-        "test.cf": { desc: "standalone test" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
-        "params/example.json": { comment: "example configuration" },
-        "params/simple.json": { comment: "simple configuration that should work on most systems" },
-        "params/debian_squeeze.json": { comment: "simple configuration for Debian Squeeze and Lenny" },
-        "params/debian_wheezy.json": { comment: "simple configuration for Debian Wheezy" }
+        "params/example.json": { description: "example configuration" },
+        "params/simple.json": { description: "simple configuration that should work on most systems" },
+        "params/debian_squeeze.json": { description: "simple configuration for Debian Squeeze and Lenny" },
+        "params/debian_wheezy.json": { description: "simple configuration for Debian Wheezy" }
     },
 
     metadata:
@@ -16,9 +15,9 @@
 	description: "Configure the Message of the Day",
         version: "1.00",
         license: "MIT",
-        tags: [ "cfdc" ],
+        tags: [ "cfdc", "enterprise_compatible", "enterprise_3_6" ],
         authors: [ "Ben Heilman <bheilman@enova.com>" ],
-        depends: { "CFEngine::stdlib": { version: 111 }, "CFEngine::dclib": { version: "1.0.0" }, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
+        depends: { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: [{ "linux": "Linux" }] }
     },
 
     api:
@@ -26,14 +25,13 @@
         // this is the name of the bundle!
         entry:
         [
-            { type: "environment", name: "runenv", },
-            { type: "metadata", name: "metadata", },
-
-	    { type: "string", name: "motd", description: "Message of the Day (aka motd)" },
-	    { type: "string", name: "motd_path", default: "/etc/motd", description: "Location of the primary, often only, MotD file" },
-            { type: "string", name: "prepend_command", default: "/bin/uname -snrvm", description: "Command output to prepend to MotD" },
-            { type: "string", name: "dynamic_path", default: null, description: "Location of the dynamic part of the MotD file" },
-            { type: "string", name: "symlink_path", default: null, description: "Location of the symlink to the motd file" }
+         { type: "bundle_options", name: "Set up the Message Of The Day" },
+         { type: "environment", name: "runenv", },
+         { type: "metadata", name: "mymetadata", },
+	     { type: "string", name: "motd", description: "Message of the Day (aka motd)" },
+         { type: "string", name: "motd_path", default: "/etc/motd", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS", description: "Location of the primary, often only, MotD file" },
+         { type: "string", name: "prepend_command", default: "/bin/uname -snrvm", description: "Command output to prepend to MotD.  Leave empty to avoid." },
+         { type: "string", name: "symlink_path", default: null, validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS", description: "Optional symlink to the motd file" }
         ],
     },
 

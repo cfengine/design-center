@@ -8,7 +8,14 @@ endif
 
 BIN:=$(PREFIX)/bin
 LIB:=$(PREFIX)/lib/cf-sketch
+
+UNAME := $(shell uname)
+
+ifeq ($(UNAME), SunOS)
+I:=/usr/local/bin/install
+else
 I:=/usr/bin/install
+endif
 
 help:
 	@echo You should probably run '"make install"' unless you want to run cf-sketch.pl directly here.

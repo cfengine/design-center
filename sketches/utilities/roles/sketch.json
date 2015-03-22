@@ -1,0 +1,35 @@
+{
+
+    manifest:
+    {
+        "main.cf": { description: "main file", "version": "1.0.0" },
+        "params/demo.json": { description: "example parameters" },
+        "README.md": { documentation: true },
+    },
+
+    metadata:
+    {
+        "name": "Utilities::Roles",
+        "description": "Set system roles from a list",
+        "version": "1.0.0",
+        "license": "MIT",
+        "tags": [ "cfdc", "utilities", "roles", "enterprise_compatible", "enterprise_3_6" ],
+        "authors": [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        "depends": { "CFEngine::sketch_template": { }, cfengine: { version: "3.6.0" }, "os": [ { "windows": "Windows", "linux" : "Linux" } ] }
+    },
+
+    api:
+    {
+        // the key is the name of the bundle!
+        roles:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            // the list of roles could be expanded
+            { type: "string", name: "role", description: "Desired system role", choice: [ "webserver", "dbserver", "memcached", "proxy", "gridworker", "oracle", "mysql", "postgresql", "sybase",  ], },
+            { type: "list", name: "extra_roles", description: "Other desired system roles, separated by commas", default: [] },
+        ],
+    },
+
+    interface: [ "main.cf" ]
+}

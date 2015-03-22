@@ -1,11 +1,10 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file", version: 1.2 },
+        "main.cf": { description: "main file", version: 1.2 },
         "README.md": { documentation: true },
         "test.pl": { test:true },
-        "test.cf": { comment: "Test policy" },
-        changelog: { comment: "changelog" },
+        changelog: { description: "changelog" },
         "params/example.json": { },
     },
 
@@ -17,7 +16,7 @@
         license: "MIT",
         tags: [ "cfdc" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": {version: 105}, "CFEngine::dclib": {}, cfengine: {version: "3.4.0"}, os: [ "linux" ] },
+        depends: { "CFEngine::dclib": {}, cfengine: {version: "3.4.0"}, os: [ "linux" ] },
     },
 
     api:

@@ -1,0 +1,9 @@
+[
+{
+    "System::Users":
+    {
+        users: [ "moo" ],
+        group: "foo",
+    }
+},
+]

@@ -1,9 +1,9 @@
 {
     manifest:
     {
-        "library.cf": { desc: "Design Center stdlib" },
+        "library.cf": { description: "Design Center stdlib" },
         "test.pl": { test:true },
-        "dctest.pm": { desc: "testing utilities" },
+        "dctest.pm": { description: "testing utilities" },
         "README.md": { documentation: true }
     },
 
@@ -11,11 +11,11 @@
     {
         name: "CFEngine::dclib",
 	    description: "Design Center standard library",
-        version: "1.0.0",
+        version: "1.1.0",
         license: "MIT",
         tags: [ "cfdc", "stdlib" ],
         authors: [ "CFEngine AS" ],
-        depends: { "cfengine": { "version": "3.4.0" } }
+        depends: { "cfengine": { "version": "3.6.0" } }
     },
 
     interface: [ "library.cf" ]

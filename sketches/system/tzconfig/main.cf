@@ -7,56 +7,43 @@ body file control
 # At least in the linux distros I checked this should be
 # relative to /usr/share/zoneinfo
 
-bundle agent set(runenv, metadata, timezone, zoneinfo)
+bundle agent set(runenv, metadata, timezone, zoneinfo_dir)
 {
+#@include "REPO/sketch_template/standard.inc"
+
   vars:
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-      "tz_file" string => "$(zoneinfo)/$(timezone)";
-
-    not_test::
-      "relocate" string => "", policy => "free";
-    test::
-      "relocate" string => "/tmp", policy => "free";
+      "tz_file" string => "$(zoneinfo_dir)/$(timezone)";
 
   classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
       "timezone_exists" expression => fileexists("$(tz_file)");
-
-  methods:
-    verbose::
-      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
-      inherit => "true";
 
   files:
     timezone_exists.(ubuntu|debian|gentoo)::
-      "$(relocate)/etc/timezone"
+      "/etc/timezone"
       handle        => "tzconfig_files_etc_timezone",
       edit_defaults => default:empty,
       create        => "true",
       edit_line     => default:insert_lines("$(timezone)"),
-      perms         => cfdc_tzconfig:test_aware_mog("644", "root", "root"),
+      perms         => default:mog("644", "root", "root"),
       comment       => "Debian and Gentoo based systems also use the /etc/timezone file";
 
     timezone_exists.(redhat|centos)::
-      "$(relocate)/etc/sysconfig/clock"
+      "/etc/sysconfig/clock"
       handle     => "tzconfig_files_etc_sysconfig_clock",
       create     => "true",
-      edit_line  => default:replace_or_add("^ZONE=.*", "ZONE=\"$(timezone)\""),
-      perms      => cfdc_tzconfig:test_aware_mog("644", "root", "root"),
+      edit_line  => default:replace_or_add("^ZONE=.*", 'ZONE="$(timezone)"'),
+      perms      => default:mog("644", "root", "root"),
       comment    => "Redhat like systems use /etc/sysconfig/clock for
 the Time and Date Properties Tool
 (system-config-date), and editing it does not
 change the system timezone.";
 
     timezone_exists.linux::
-      "$(relocate)/etc/localtime"
+      "/etc/localtime"
       handle            => "tzconfig_files_etc_localtime",
       copy_from         => cfdc_tzconfig:copy_zoneinfo("$(tz_file)"),
       classes           => default:if_repaired("tz_updated"),
-      perms             => cfdc_tzconfig:test_aware_mog("644", "root", "root"),
+      perms             => default:mog("644", "root", "root"),
       move_obstructions => "true",
       comment           => "Copy the proper timezone file in place. We dont use
 a symlink because that might cause problems across
@@ -64,7 +51,7 @@ different filesystems, it has been a bug in the past.";
 
   reports:
     !timezone_exists::
-      "Unable to set invalid timezone $(timezone): file $(tz_file) does not exist.";
+      "$(dcbundle): Unable to set invalid timezone $(timezone): file $(tz_file) does not exist.";
 
       "" bundle_return_value_index => "timezone";
 
@@ -72,8 +59,7 @@ different filesystems, it has been a bug in the past.";
       "$(timezone)" bundle_return_value_index => "timezone";
 
     tz_updated::
-      "System timezone updated to $(timezone)";
-
+      "$(dcbundle): System timezone updated to $(timezone)";
 }
 
 body copy_from copy_zoneinfo(source)
@@ -84,15 +70,4 @@ body copy_from copy_zoneinfo(source)
       source => "$(source)";
       copylink_patterns => { ".*", };
       compare => "hash";
-}
-
-body perms test_aware_mog(mode, user, group)
-{
-    not_test::
-      owners => { "$(user)" };
-      groups => { "$(group)" };
-      mode   => "$(mode)";
-    test::
-      owners => { getenv("LOGNAME", 100) };
-      mode   => "$(mode)";
 }

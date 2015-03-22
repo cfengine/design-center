@@ -45,36 +45,19 @@ bundle agent present(runenv, metadata, list_of_files, success_class, fail_class)
 # @param success_class Class to define when all files exist
 # @param fail_class Class to define when any file fails to exist
 {
-
-  classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
-
-  vars:
-      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
-
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-      "canon[$(list_of_files)]" string => canonify($(list_of_files));
-      "canonified_file_names" slist => getvalues("canon");
+#@include "REPO/sketch_template/standard.inc"
 
   files:
-    "$(present.list_of_files)"
-      handle => "$(activation_id)_files_exists",
+      "$(list_of_files)"
       create => "true",
-      classes => default:scoped_classes_generic("bundle", $(present.list_of_files));
+      classes => default:scoped_classes_generic("bundle", $(list_of_files));
 
   methods:
-    "know exists"
-      usebundle => know_exists($(runenv), $(metadata), @(list_of_files), $(success_class), $(fail_class));
-
-    verbose::
-      #"metadata" usebundle => report_metadata($(this.bundle), $(metadata)),
-      #inherit => "true";
+      "know exists"
+      inherit => "true",
+      usebundle => know_exists(@(list_of_files), $(success_class), $(fail_class));
 
   reports:
-    cfengine::
       "$(fail_class)"
         bundle_return_value_index => "defined",
         ifvarclass => "$(fail_class)";
@@ -83,20 +66,14 @@ bundle agent present(runenv, metadata, list_of_files, success_class, fail_class)
         bundle_return_value_index => "defined",
         ifvarclass => "$(success_class)";
 
-    verbose::
-      "$(this.bundle): Looking for '$(list_of_files)'";
+    dc_verbose::
+      "$(dcbundle): Looking for '$(list_of_files)'";
 
-      "$(this.bundle): Defined class $(success_class)"
+      "$(dcbundle): Defined class $(success_class)"
         ifvarclass => "$(success_class)";
 
-      "$(this.bundle): Defined class $(fail_class)"
+      "$(dcbundle): Defined class $(fail_class)"
         ifvarclass => "$(fail_class)";
-
-      "$(this.bundle): '$(list_of_files)' = exists"
-        ifvarclass => "found_$(canonified_file_names)";
-
-      "$(this.bundle): '$(list_of_files)' = absent"
-        ifvarclass => "not_$(canonified_file_names)";
 }
 
 bundle agent absent(runenv, metadata, list_of_files, success_class, fail_class)
@@ -105,30 +82,18 @@ bundle agent absent(runenv, metadata, list_of_files, success_class, fail_class)
 # @param success_class Class to define when all files are absent
 # @param fail_class Class to define when any file fails to be absent
 {
-   vars:
-      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
-
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-      "canon[$(list_of_files)]" string => canonify($(list_of_files));
-      "canonified_file_names" slist => getvalues("canon");
+#@include "REPO/sketch_template/standard.inc"
 
   files:
-    "$(list_of_files)"
-      handle => "$(activation_id)_files_absent",
+      "$(list_of_files)"
       delete => default:tidy;
 
   methods:
     "know absent"
-      usebundle => know_exists($(runenv), $(metadata), @(list_of_files), $(fail_class), $(success_class));
-
-     verbose::
-      #"metadata" usebundle => report_metadata($(this.bundle), $(metadata)),
-      #inherit => "true";
+      inherit => "true",
+      usebundle => know_exists(@(list_of_files), $(fail_class), $(success_class));
 
   reports:
-    cfengine::
       "$(fail_class)"
         bundle_return_value_index => "defined",
         ifvarclass => "$(fail_class)";
@@ -137,77 +102,43 @@ bundle agent absent(runenv, metadata, list_of_files, success_class, fail_class)
         bundle_return_value_index => "defined",
         ifvarclass => "$(success_class)";
 
-    verbose::
-      "$(this.bundle): Looking for '$(list_of_files)'";
+    dc_verbose::
+      "$(dcbundle): Looking for '$(list_of_files)'";
 
-      "$(this.bundle): Defined class $(success_class)"
+      "$(dcbundle): Defined class $(success_class)"
         ifvarclass => "$(success_class)";
 
-      "$(this.bundle): Defined class $(fail_class)"
+      "$(dcbundle): Defined class $(fail_class)"
         ifvarclass => "$(fail_class)";
-
-      "$(this.bundle): '$(list_of_files)' = exists"
-        ifvarclass => "found_$(canonified_file_names)";
-
-      "$(this.bundle): '$(list_of_files)' = absent"
-        ifvarclass => "not_$(canonified_file_names)";
 }
 
-bundle agent know_exists(runenv, metadata, list_of_files, success_class, fail_class)
+bundle agent know_exists(list_of_files, success_class, fail_class)
 # @brief Check files are present
 # @param list_of_files List of files to check are present
-# @param success_class Class to define when all files exist
-# @param fail_class Class to define when any file fails to exist
+# @param success_class Global class to define when all files exist
+# @param fail_class Global class to define when any file fails to exist
 {
   vars:
-      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
-
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
       "canon[$(list_of_files)]" string => canonify($(list_of_files));
       "canonified_file_names" slist => getvalues("canon");
 
   classes:
+      "$(list_of_files)" expression => fileexists($(list_of_files));
+
       "$(fail_class)"
         not => fileexists($(list_of_files)),
-        scope => "namespace",
-        handle => "$(activation_id)_classes_know_absent",
-        classes => default:scoped_classes_generic("namespace", "not_$(list_of_files)");
+        scope => "namespace";
+
+      "$(fail_class)"
+        not => fileexists($(list_of_files)),
+        scope => "namespace";
 
       "$(success_class)"
         not => "$(fail_class)",
-        scope => "namespace",
-        handle => "$(activation_id)_classes_know_present",
-        classes => default:scoped_classes_generic("namespace", "found_$(list_of_files)");
-
-  #methods:
-  #  verbose::
-      #"metadata" usebundle => report_metadata($(this.bundle), $(metadata)),
-      #inherit => "true";
+      scope => "namespace";
 
   reports:
-    cfengine::
-      "$(fail_class)"
-        bundle_return_value_index => "defined",
-        ifvarclass => "$(fail_class)";
-
-      "$(success_class)"
-        bundle_return_value_index => "defined",
-        ifvarclass => "$(success_class)";
-
-    verbose::
-      "$(this.bundle): Looking for '$(list_of_files)'";
-
-      "$(this.bundle): Defined class $(success_class)"
-        ifvarclass => "$(success_class)";
-
-      "$(this.bundle): Defined class $(fail_class)"
-        ifvarclass => "$(fail_class)";
-
-      "$(this.bundle): '$(list_of_files)' = exists"
-        ifvarclass => "found_$(canonified_file_names)";
-
-      "$(this.bundle): '$(list_of_files)' = absent"
-        ifvarclass => "not_$(canonified_file_names)";
+    dc_verbose::
+      "$(this.bundle): $(list_of_files) is absent" ifvarclass => "!$(canon[$(list_of_files)])";
+      "$(this.bundle): $(list_of_files) is present" ifvarclass => "$(canon[$(list_of_files)])";
 }

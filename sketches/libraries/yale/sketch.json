@@ -1,7 +1,7 @@
 {
     manifest:
     {
-        "library.cf": { desc: "Yale stdlib" },
+        "library.cf": { description: "Yale stdlib" },
         "test.pl": { test:true },
         "README.md": { documentation: true }
     },

@@ -10,7 +10,13 @@ ifeq ($(BUNDLEREF),)
   BUNDLEREF:=master
 endif
 
+UNAME := $(shell uname)
+
+ifeq ($(UNAME), SunOS)
+I:=/usr/local/bin/install
+else
 I:=/usr/bin/install
+endif
 
 check:
 	cd tools/test; make api_selftest_junit NOIGNORE=1

@@ -14,8 +14,8 @@ use Util;
    'run' =>
    [
     [
-     'run [ARGUMENTS]',
-     'Execute the currently-activated sketches immediately using cf-agent. If any arguments are given, they are passed as-is to cf-agent. Remember to use -K if you want all promises to be evaluated (i.e. when testing in quick sequence).)',
+     '-run [ARGUMENTS]',
+     '(DISABLED) Execute the currently-activated sketches immediately using cf-agent. If any arguments are given, they are passed as-is to cf-agent. Remember to use -K if you want all promises to be evaluated (i.e. when testing in quick sequence).)',
      '(.+)?',
     ],
    ],
@@ -44,13 +44,14 @@ use Util;
 sub command_run {
   my $opts=shift || "";
   my $file = $Config{standalonerunfile};
+  Util::error("Sorry, the run command is disabled for now.\n");
+  return;
+
   my ($success, $result) = main::api_interaction(
     {regenerate => 1},
     undef,
     { 'runfile' => {
                     location => $file,
-                    standalone => 1,
-                    relocate_path => "sketches",
                     filter_inputs => $Config{filter},
                    }
     });
@@ -64,7 +65,7 @@ sub command_run {
 sub command_generate {
     my ($success, $result) = main::api_interaction({regenerate => 1});
     return unless $success;
-    Util::success("Runfile $Config{runfile} successfully generated.");
+    Util::success("Runfile $Config{installdest}/meta/api-runfile.cf successfully generated.");
 }
 
 sub command_deploy {

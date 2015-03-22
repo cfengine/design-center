@@ -1,0 +1,19 @@
+bundle agent roles(runenv, metadata, role, extra_roles)
+{
+#@include "REPO/sketch_template/standard.inc"
+  classes:
+    "$(role)"
+      scope => "namespace",
+      expression => "any",
+      meta => { "inventory", "attribute_name=Role"};
+
+    "$(extra_roles)"
+      scope => "namespace",
+      expression => "any",
+      meta => { "inventory", "attribute_name=Role" };
+
+  reports:
+    inform_mode|dc_verbose::
+      "$(dcbundle): defined role $(role)";
+      "$(dcbundle): defined extra role $(extra_roles)";
+}

@@ -1,0 +1,6 @@
+{
+    "Packages::installed":
+    {
+        file: "/tmp/packages.dat"
+    }
+}

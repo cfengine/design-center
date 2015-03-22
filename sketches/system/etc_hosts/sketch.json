@@ -2,11 +2,10 @@
 
     manifest:
     {
-        "main.cf": { desc: "main file" },
+        "main.cf": { description: "main file" },
         "README.md": { documentation: true },
-        "params/example.json": { comment: "Example parameters" },
+        "params/example.json": { description: "Example parameters" },
         "test.pl": { test: true },
-        "test.cf": { }
     },
 
     metadata:
@@ -15,9 +14,9 @@
 	    description: "Manage /etc/hosts",
         version: 2.2,
         license: "MIT",
-        tags: [ "cfdc" ],
+        tags: [ "cfdc", "enterprise_compatible", "enterprise_3_6" ],
         authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
-        depends: { "CFEngine::stdlib": { version: 105 }, "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux|darwin|windows" ] }
+        depends: { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os:[{"linux":"Linux", "darwin":"Mac OS X / Darwin", "windows":"Windows"}] }
     },
 
     api:
@@ -25,11 +24,12 @@
         // the key is the name of the bundle!
         configure:
         [
+            { type: "bundle_options", name: "Set the contents of a hosts file" },
             { type: "environment", name: "runenv", },
             { type: "metadata", name: "metadata", },
-            { type: "string", name: "hostfile", default: "/etc/hosts" },
-            { type: "boolean", name: "defined_only" },
-            { type: "array", name: "hosts" },
+            { type: "string", name: "hostfile", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS", description: "Location of the hosts file", default: "/etc/hosts" },
+            { type: "boolean", name: "defined_only", description: "Keep only the given entries in the hosts file (but note that 127.0.0.1 and localhost are never removed)" },
+            { type: "array", name: "hosts", description: "Map of address keys to host lines", validation: "ETC_HOSTS_VALIDATION" },
             { type: "return", name: "file", },
         ],
     },

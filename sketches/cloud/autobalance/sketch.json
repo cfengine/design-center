@@ -1,13 +1,12 @@
 {
     manifest:
     {
-        "main.cf": { desc: "main file" },
-        "test.cf": {comment: "Test Policy"},
+        "main.cf": { description: "main file" },
         "test.pl": {test:true},
         "README.md": { documentation: true },
         "README.include": { documentation: true },
-        "params/demo.json": { comment: "simple demo of Cloud::Autobalance: AWS EC2 and OpenStack" },
-        "params/demo_vmware.json": { comment: "simple demo of Cloud::Autobalance: VMWare and OpenStack" },
+        "params/demo.json": { description: "simple demo of Cloud::Autobalance: AWS EC2 and OpenStack" },
+        "params/demo_vmware.json": { description: "simple demo of Cloud::Autobalance: VMWare and OpenStack" },
     },
 
     metadata:

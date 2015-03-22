@@ -1,8 +1,7 @@
 {
-  "Normal Mode" : {
-     "Security::_etc_nologin" : {
+    "Security::nologin":
+    {
         "content" : "",
         "state" : "absent"
-     }
-  }
+    }
 }

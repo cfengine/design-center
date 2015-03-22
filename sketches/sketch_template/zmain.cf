@@ -1,0 +1,46 @@
+body file control
+{
+      namespace => "cfdc_sketch_template";
+}
+
+bundle agent entry(runenv, metadata, prefix, myboolean, mytype, myip, mylist, myarray)
+{
+#@include "standard.inc"
+  vars:
+      # call the sample.sh script
+      "sample_return" string => execresult(concat($(this.promise_dirname),
+                                                 "/scripts/sample.sh"),
+                                          "useshell");
+
+      "mylist_str" string => format("%S", mylist);
+      "myarray_str" string => format("%S", myarray);
+
+  commands:
+      # call a module included with the bundle
+      "$(this.promise_dirname)/modules/mymodule"
+      module => "true";
+
+  reports:
+    cfengine::
+      # This will define localclass with a locally meaningful prefix
+      # every time (otherwise, localclass will be global and will be
+      # defined with the same name every time).
+      "$(this.bundle): Hello there"
+      classes => default:if_repaired("$(canon_prefix)localclass");
+
+      # And this will use the localclass
+      "$(this.bundle): Hello back"
+      ifvarclass => "$(canon_prefix)localclass";
+
+      "$(this.bundle): running the external sample script gave us $(sample_return)";
+
+      "$(this.bundle): got myboolean=$(myboolean)";
+      "$(this.bundle): got mytype=$(mytype)";
+      "$(this.bundle): got myip=$(myip)";
+      "$(this.bundle): got mylist=$(mylist_str)";
+      "$(this.bundle): got myarray=$(myarray_str)";
+
+      "[anything I want to return goes here]" bundle_return_value_index => "myreturn";
+      "[anything else I want to return goes here]" bundle_return_value_index => "myreturn2";
+
+}

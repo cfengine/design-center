@@ -5,127 +5,106 @@ body file control
 
 bundle agent localuser_nologin(runenv, metadata, list_of_users)
 {
-  classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+#@include "REPO/sketch_template/standard.inc"
 
   vars:
-      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
-
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-      "nologin_bin" string => "$(default:paths.nologin)";
+      "nologin_bin" string => "$(default:paths.path[nologin])";
 
   classes:
-    "state_nologin"
+      "state_nologin"
       expression => strcmp( $(state), "nologin" ),
       scope => "namespace";
 
-    "have_nologin"
-      expression => isexecutable("$(nologin_bin)");
+      "have_nologin" expression => isexecutable("$(nologin_bin)");
 
-    "have_$(list_of_users)" expression => userexists("$(list_of_users)");
-
+      "have_$(list_of_users)" expression => userexists("$(list_of_users)");
 
   commands:
     !have_nologin::
-      "/bin/false"
-        handle => "$(activation_id)_bad_parameter",
-        comment => "Unexpected parameter, trigger a promise failed.";
+      "$(default:paths.path[false])"
+      handle => "nologin_bad_parameter",
+      comment => "Unexpected parameter, trigger a promise failed.";
 
   users:
     have_nologin::
       "$(list_of_users)"
-        policy => "present",
-        shell => "$(nologin_bin)",
-        ifvarclass => "have_$(list_of_users)";
-
-  methods:
-      "Design Center Utils"
-        usebundle => default:eu($(runenv));
+      policy => "present",
+      shell => "$(nologin_bin)",
+      ifvarclass => "have_$(list_of_users)";
 
   reports:
     !have_nologin::
-      "$(this.bundle): ERROR -- I don't know where the nologin shell is, please see bundle common paths in the stdlib";
+      "$(dcbundle): ERROR -- I don't know where the nologin shell is, please see bundle common paths in the stdlib";
 
-    DEBUG::
-      "$(this.bundle): DEBUG -- nologin_bin = $(nologin_bin)";
+    dc_verbose::
+      "$(dcbundle): DEBUG -- nologin_bin = $(nologin_bin)";
 }
 
 
 bundle agent etc_nologin(runenv, metadata, state, content)
 {
-  classes:
-      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
-      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+#@include "REPO/sketch_template/standard.inc"
 
   vars:
-      "activation_id" string => canonify("$(this.bundle)_$($(metadata)[activation][identifier])_$($(metadata)[activation][timestamp])");
-
-      "vars" slist => { "@(default:$(runenv).env_vars)" };
-      "$(vars)" string => "$(default:$(runenv).$(vars))";
-
-    "etc_nologin" string => "$(default:eu.path_prefix)/etc/nologin";
-    "valid_states" slist => { "present", "absent" }; # Same as choices in the sketch.metadata file. Its good to verify everywhere! Expect bad params!
+      "etc_nologin" string => "/etc/nologin";
+      "valid_states" slist => { "present", "absent" }; # Same as choices in the sketch.metadata file. Its good to verify everywhere! Expect bad params!
 
   classes:
-    "present"
+      "present"
       expression => strcmp( $(state), "present" );
 
-    "absent"
+      "absent"
       expression => strcmp( $(state), "absent" );
 
   commands:
     !(present|absent)::
-      "/bin/false"
-        handle => "$(activation_id)_bad_parameter_not_present_or_absent",
-        comment => "Unexpected parameter, trigger a promise failed.";
+      "$(default:paths.path[false])"
+      handle => "nologin_bad_parameter_not_present_or_absent",
+      comment => "Unexpected parameter, trigger a promise failed.";
 
   methods:
-      "Design Center Utils"
-        usebundle => default:eu($(runenv));
-
     present|absent::
       "_etc_nologin state"
-        usebundle => etc_nologin_state($(etc_nologin), $(state), $(content)),
-        inherit => "true",
-        handle => "$(activation_id)_methods_etc_nologin_state";
+      usebundle => etc_nologin_state($(etc_nologin), $(content)),
+      inherit => "true",
+      handle => "nologin_methods_etc_nologin_state";
 
   reports:
     !(present|absent)::
-      "$(this.bundle): ERROR invalid state given, only present or absent allowed given $(state)";
+      "$(dcbundle): ERROR invalid state given, only present or absent allowed given $(state)";
 }
 
-bundle agent etc_nologin_state(etc_nologin, state, content)
+bundle agent etc_nologin_state(etc_nologin, content)
 {
   files:
     present::
       "$(etc_nologin)"
-        create => "true",
-        edit_defaults => default:empty,
-        handle => "$(activation_id)_state_files_present",
-        classes => default:scoped_classes_generic("bundle", "_etc_nologin_present"),
-        edit_line => default:append_if_no_line($(content));
+      create => "true",
+      edit_defaults => default:empty,
+      handle => "nologin_state_files_present",
+      classes => default:scoped_classes_generic("bundle", "nologin_create"),
+      edit_line => default:append_if_no_line($(content));
 
     absent::
       "$(etc_nologin)"
-        handle => "$(activation_id)_state_files_absent",
-        classes => default:scoped_classes_generic("bundle", "_etc_nologin_absent"),
-        delete => default:tidy;
+      handle => "nologin_state_files_absent",
+      classes => default:scoped_classes_generic("bundle", "nologin_remove"),
+      delete => default:tidy;
 
   reports:
-    DEBUG::
-      "state = $(state)";
+    dc_verbose::
       "content = $(content)";
       "/etc/nologin = $(etc_nologin)";
 
-    verbose._etc_nologin_present::
-      "$(etc_nologin) is present";
+    dc_verbose.nologin_create_ok::
+      "$(etc_nologin) was created";
 
-    verbose._etc_nologin_absent::
-      "$(etc_nologin) is absent";
+    present.!nologin_create_ok::
+      "$(etc_nologin) was NOT created";
 
-    verbose.!(_etc_nologin_absent|_etc_nologin_present)::
-      "This should never be reached.";
+    dc_verbose.nologin_remove_ok::
+      "$(etc_nologin) was removed";
+
+    absent.!nologin_remove_ok::
+      "$(etc_nologin) was NOT removed";
 }

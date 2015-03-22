@@ -117,6 +117,8 @@ sub data_dump
         }
     }
 
+    $ret{location} = $self->location();
+
     return \%ret;
 }
 
@@ -402,6 +404,11 @@ sub get_inputs
     my $relocate = shift;
     my $recurse = shift;
 
+    $self->dcapi()->log5("getting inputs of sketch %s, relocate %s, recurse %s",
+                        $self->name(),
+                        $relocate,
+                        $recurse);
+
     my @inputs;
     if ($recurse)
     {
@@ -410,7 +417,7 @@ sub get_inputs
         {
             foreach my $dep (keys %{$depcheck->data()})
             {
-                $self->dcapi()->log5("Sketch %s looking for dependency %s",
+                $self->dcapi()->log4("Sketch %s looking for dependency %s",
                                      $self->name(),
                                      $dep);
                 my $sketch = $self->dcapi()->describe_int($dep, undef, 1);
@@ -455,25 +462,9 @@ sub runtime_context
     my $self = shift @_;
 
     my $runtime_deps = $self->runtime_dependencies();
-    return $self->recurse_context($runtime_deps) || 'any';
+    return Util::recurse_context($runtime_deps) || 'any';
 }
 
-sub recurse_context
-{
-    my $self = shift @_;
-    my $data = shift @_;
-
-    if (ref $data eq 'ARRAY')
-    {
-        return join('&', map { $self->recurse_context($_) } @$data);
-    }
-    elsif (ref $data eq 'HASH')
-    {
-        return '(' . join('|', sort keys %$data) . ')';
-    }
-
-    return $data;
-}
 
 # these dependencies should be checked at install time
 sub resolve_dependencies

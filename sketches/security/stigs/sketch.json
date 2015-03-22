@@ -31,7 +31,7 @@
          "documentation" : true
       },
       "STIGs.cf" : {
-         "desc" : "main file"
+         "description" : "main file"
       }
    },
    "metadata" : {
@@ -39,7 +39,7 @@
          "Jurica Borozan <jurica.borozan@gmail.com>",
          "Ted Zlatanov <tzz@lifelogs.com>"
       ],
-       depends: { "CFEngine::stdlib": {version: 111}, "CFEngine::dclib": {}, cfengine: {version: "3.5.0"}, os: [ "linux" ] },
+       depends: { "CFEngine::dclib": {}, cfengine: {version: "3.5.0"}, os: [ "linux" ] },
       "description" : "Implement STIGs security policies",
       "license" : "MIT",
        "name" : "Security::STIG",

@@ -16,6 +16,7 @@ has prefix => ( is => 'ro', required => 0, default => '' );
 has compositions => ( is => 'ro', required => 1, default => [] );
 has id => ( is => 'ro', required => 1 );
 has priority => ( is => 'ro', required => 1 );
+has hash => ( is => 'ro', required => 1 );
 
 our $activation_position = 1;
 
@@ -195,6 +196,20 @@ sub make_activation
         # define behavior for single-use sketches: Redmine #2534
     }
 
+    my %cparams;
+    foreach my $p (@{$bundle_params{$bundle}})
+    {
+        next unless sketch_parameter_type($p->{type});
+        next if $p->{name} =~ m/metadata/;
+        $cparams{$p->{name}} = $p->{value};
+    }
+
+    $cparams{$sketch} = $bundle;
+    # note we don't include the "runenv" above but add it here, because some sketches don't have a "runenv" parameter
+    $cparams{env} = $env;
+
+    $api->log5("sketch %s, bundle %s gets parameters %s", $sketch, $bundle, \%cparams);
+
     return DCAPI::Activation->new(api => $api,
                                   prefix => $activation_prefix,
                                   sketch => $found,
@@ -204,7 +219,8 @@ sub make_activation
                                   priority => $activation_priority,
                                   compositions => $compositions,
                                   metadata => $metadata,
-                                  params => $bundle_params{$bundle});
+                                  params => $bundle_params{$bundle},
+                                  hash => Util::md5($api->cencode(\%cparams)));
 }
 
 sub fill_param
@@ -217,7 +233,7 @@ sub fill_param
 
     $api->log5("looking to fill parameter $name of type $type");
 
-    if ($type eq 'environment')
+    if (environment_type($type))
     {
         return { bundle => $extra->{bundle}, sketch => $extra->{sketch_name},
                  set=>undef,
@@ -430,9 +446,9 @@ sub can_inline
 {
     my $type = shift @_;
 
-    return (!ignored_type($type) &&
-            ($type ne 'list' && $type ne 'array' &&
-             $type ne 'metadata'));
+    return 0 if ignored_type($type);
+
+    return ! container_type($type);
 }
 
 sub ignored_type
@@ -449,6 +465,33 @@ sub options_type
     return $type eq 'bundle_options';
 }
 
+sub environment_type
+{
+    my $type = shift @_;
+
+    return $type eq 'environment';
+}
+
+sub container_type
+{
+    my $type = shift @_;
+
+    return (
+            $type eq 'list' ||
+            $type eq 'array' ||
+            $type eq 'metadata'
+           );
+}
+
+sub sketch_parameter_type
+{
+    my $type = shift @_;
+
+    return 1 if container_type($type);
+    return 0 if environment_type($type);
+    return can_inline($type);
+}
+
 sub return_type
 {
     my $type = shift @_;
@@ -459,6 +502,8 @@ sub return_type
 sub make_bundle_params
 {
     my $self = shift @_;
+    my $indent = shift @_;
+    my $a = shift @_;
 
     my @data;
     foreach my $p (@{$self->params()})
@@ -467,6 +512,10 @@ sub make_bundle_params
         {
             $self->api()->log5("Bundle parameters: ignoring parameter %s", $p);
         }
+        elsif (environment_type($p->{type}))
+        {
+            push @data, sprintf('@(cfsketch_run.%s)', $p->{value});
+        }
         elsif (can_inline($p->{type}))
         {
             foreach my $pr (Util::recurse_print($p->{value}, '', 0, 0, $p->{type} eq 'boolean'))
@@ -474,17 +523,18 @@ sub make_bundle_params
                 push @data, $pr->{value};
             }
         }
-        elsif ($p->{type} eq 'array')
+        elsif (container_type($p->{type}))
         {
-            push @data, sprintf('"default:cfsketch_run.%s_%s"', $self->id(), $p->{name});
+            push @data, sprintf('@(cfsketch_run.%s_%s)', $a->id(), $p->{name});
         }
-        elsif ($p->{type} eq 'list')
+        else # nothing should reach this point
         {
-            push @data, sprintf('@(cfsketch_run.%s_%s)', $self->id(), $p->{name});
+            $self->api()->log("Bundle parameters: can't handle parameter %s", $p);
+            push @data, sprintf('"baddata"');
         }
     }
 
-    return join(', ', @data);;
+    return join(",$indent", @data);;
 }
 
 sub data_dump
@@ -500,6 +550,7 @@ sub data_dump
             prefix => $self->prefix(),
             metadata => $self->metadata(),
             id => $self->id(),
+            hash => $self->hash(),
            };
 }
 

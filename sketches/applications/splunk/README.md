@@ -1,14 +1,14 @@
 # Applications::Splunk version 1.0.1
 
 License: MIT
-Tags: cfdc, install, splunk, enterprise_compatible
+Tags: cfdc, install, splunk, enterprise_compatible, enterprise_3_6
 Authors: Ted Zlatanov <tzz@lifelogs.com>, Diego Zamboni <diego.zamboni@cfengine.com>, Nick Anderson <nick@cmdln.org>
 
 ## Description
 Configure and enable a Splunk forwarder
 
 ## Dependencies
-CFEngine::dclib
+CFEngine::sketch_template
 
 ## API
 ### bundle: install_forwarder

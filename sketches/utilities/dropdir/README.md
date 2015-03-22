@@ -1,14 +1,14 @@
 # Run::Dropdir version 1
 
 License: MIT
-Tags: cfdc, run, dropdir, window, enterprise_compatible
+Tags: cfdc, run, dropdir, window, enterprise_compatible, enterprise_3_6
 Authors: Ted Zlatanov <tzz@lifelogs.com>
 
 ## Description
-Run the scripts in a directory for a limited time when a given context is true and report their output in the 'dropdir' bundle.  Clean out outdated scripts.  Requires three or more letters in the script name.
+Run the scripts in a directory for a limited time when a given context is true and report their output in the 'dropdir' bundle.  Clean out outdated scripts.  Requires three or more letters in the script name
 
 ## Dependencies
-CFEngine::dclib, CFEngine::stdlib
+CFEngine::sketch_template
 
 ## API
 ### bundle: dropdir_run
