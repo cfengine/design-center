@@ -16,7 +16,7 @@ use DCAPI::Validation;
 use constant API_VERSION => '3.6.0';
 use constant CODER => JSON->new()->allow_barekey()->relaxed()->utf8()->allow_nonref();
 use constant CAN_CODER => JSON->new()->canonical()->utf8()->allow_nonref();
-use constant REQUIRED_ENVIRONMENT_KEYS => qw/activated test verbose/;
+use constant REQUIRED_ENVIRONMENT_KEYS => qw/activated verbose/;
 use constant OPTIONAL_ENVIRONMENT_KEYS => qw/qa rudder/;
 
 use Mo qw/build default builder coerce is required/;

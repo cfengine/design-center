@@ -43,12 +43,6 @@ ifeq ($(V),1)
   EXTRA:=--verbose=any
 endif
 
-ifneq ($(T),)
-  EXTRA:= $(EXTRA) --test=$(T)
-else
-  EXTRA:= $(EXTRA) --test=any
-endif
-
 ifneq ($(A),)
   EXTRA:= $(EXTRA) --activated=$(A)
 else
