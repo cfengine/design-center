@@ -1339,7 +1339,7 @@ sub regenerate
     my @inputs;
     foreach my $a (@activations)
     {
-        push @inputs, $a->sketch()->get_inputs(undef, 10);
+        push @inputs, $a->sketch()->get_inputs($self->runfile()->{relocate_path}, 10);
         $self->log("Regenerate: adding inputs %s", \@inputs);
     }
 

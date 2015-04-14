@@ -96,6 +96,7 @@ GetOptions(\%options,
            "deactivate-all|da",
            "activate|a=s%",
            "inputs=s",
+           "relocate_path:s",
 
            "runfile_header=s",
           );
@@ -357,6 +358,11 @@ sub api_interaction
     if (exists $options{runfile_header})
     {
         $opts->{runfile}->{header} = $options{runfile_header};
+    }
+
+    if (exists $options{relocate_path})
+    {
+        $opts->{runfile}->{relocate_path} = $options{relocate_path};
     }
 
     if (exists $options{make_cfsketches} || exists $options{make_readme})
