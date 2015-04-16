@@ -1,6 +1,5 @@
-body common control {
-               inputs => {"libraries/cfengine_stdlib.cf"};
-}
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+body file control { inputs => { @(f.inputs) }; }
 
 bundle agent example {
 
@@ -31,9 +30,9 @@ package_add_command    => "/bin/rpm -ihv ";
       # refuse to install the epel-release RPM as it does not have the EPEL GPG key,
       # but rpm goes ahead and installs the epel-release RPM and the EPEL GPG key.
 
-package_name_convention => "$(name)-$(version).$(arch).rpm"; 
-      # The above is a change from Tron's yum_rpm body. When package_file_repositories is in play, 
-      # package_name_convention has to match the file name, not the package name, per the 
+package_name_convention => "$(name)-$(version).$(arch).rpm";
+      # The above is a change from Tron's yum_rpm body. When package_file_repositories is in play,
+      # package_name_convention has to match the file name, not the package name, per the
       # CFEngine 3 Reference Manual
 
       # The rest is unchanged from Trond's yum_rpm body
@@ -55,10 +54,10 @@ package_verify_command => "/bin/rpm -V";
 # Example output from running this policy:
 # linux# cf-agent -f ./MISC_install_packages_from_local_filesystem_based_repository.cf  -b example -KI
 # >> Using command line specified bundlesequence
-# 
+#
 # Q:rpm -ihv  "/repo/RPM ...:Preparing...                ##################################################
 # Q:rpm -ihv  "/repo/RPM ...:epel-release                ##################################################
-# 
+#
 # Q:rpm -ihv  "/repo/RPM ...:
 # linux#
 

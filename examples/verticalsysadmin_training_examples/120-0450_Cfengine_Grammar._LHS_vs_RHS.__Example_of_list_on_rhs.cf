@@ -12,7 +12,7 @@ bundle agent example2 {
 
   reports:
 
-    linux::
+    cfengine::
 
       "Second things second"
                handle => "identify_2nd_bundle",
@@ -23,9 +23,9 @@ bundle agent example1 {
 
   reports:
 
-    linux::
+    cfengine::
 
-      "First things first" 
+      "First things first"
                handle => "identify_1st_bundle",
               comment => "Identify the 1st bundle to demonstrate bundlesequence";
 }

@@ -1,11 +1,5 @@
 bundle agent example {
 
-      # implicit looping over a slist in an array is broken right now.
-
-      #######################################################################
-      # Configuration section
-      #######################################################################
-
   vars:
       "config[users]"
                handle => "users_list_in_config_array",
@@ -27,7 +21,6 @@ bundle agent example {
 
   reports:
 
-    linux::
 
       "The value for key $(keys) is: $(config[$(keys)])";
 

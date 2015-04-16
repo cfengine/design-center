@@ -18,8 +18,8 @@ bundle agent example {
 
   reports:
 
-    linux::
-      
+    cfengine::
+
       "$(name)";
 
 

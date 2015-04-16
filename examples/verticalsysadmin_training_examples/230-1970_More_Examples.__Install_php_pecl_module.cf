@@ -1,13 +1,10 @@
-# Install pecl_http PHP module to provide HttpRequest class to our PHP Web app: 
+# Install pecl_http PHP module to provide HttpRequest class to our PHP Web app:
 #   - run "pecl install pecl_http" and set SELinux type on http.so to textrel_shlib_t
 #   - edit /etc/php.ini to tell php to dynamically load http.so
 
 
-body common control
-
-{
-      inputs          => { "libraries/cfengine_stdlib.cf" };
-}
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+body file control { inputs => { @(f.inputs) }; }
 
 ################################################################
 
@@ -34,7 +31,7 @@ bundle agent php_pecl_http_extension_is_installed_and_integrated {
       "/usr/bin/yes ' ' | /usr/bin/pecl install pecl_http && /usr/bin/chcon -t textrel_shlib_t /usr/lib64/php/modules/http.so"  # force the install to be non-interactive - let the pecl install pecl_http use the default settings.  Then set SELinux label.
 
               contain => in_shell;  # so we can do a pipeline
-} 
+}
 
 
 ###############################################################
@@ -61,7 +58,7 @@ body location in_Dynamic_Extensions_section
  select_line_matching => "; Dynamic Extensions ;";
 }
 
-# reloading the httpd if php.ini was edited 
+# reloading the httpd if php.ini was edited
 # is left as an exercise for the reader
 # hint: if_repaired
 

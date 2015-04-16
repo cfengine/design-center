@@ -28,7 +28,7 @@
 #    restrict -4 default kod notrap nomodify nopeer noquery
 #    restrict -6 default kod notrap nomodify nopeer noquery
 #    [cfengine00  practical_examples]#
-#    
+#
 
 
 
@@ -67,6 +67,7 @@ bundle agent main
       system_ntpclient_configure(@(g.ntpservers));
 }
 
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
 body common control
 {
        bundlesequence => {
@@ -76,7 +77,7 @@ body common control
       # Building a per-site inputs list is beyond the scope of this
       # example.
                inputs => {
-                           "libraries/cfengine_stdlib.cf",
+                           @(f.inputs),
                            "ntp.cf"
                };
 }

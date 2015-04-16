@@ -2,12 +2,12 @@ bundle agent example {
 
   files:
 
-      "/tmp/testfile" 
+      "/tmp/testfile"
 
 
                handle => "demo_special_variables_in_comment",
               comment => "XYZ needs /tmp/testfile so make it.
-Line $(this.promise_linenumber) in $(this.promise_filename) 
+Line $(this.promise_linenumber) in $(this.promise_filename)
 ",
       # this comment will show up in verbose or debug modes
 

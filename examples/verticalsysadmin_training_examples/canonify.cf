@@ -7,14 +7,14 @@ bundle agent example {
               string  =>  "mil-mail01";
 
 
-      "canonified_hostname" 
+      "canonified_hostname"
 
               string  => canonify("$(raw_hostname)");
 
 
   reports:
 
-    linux::
+    cfengine::
 
       "raw: $(raw_hostname)
 canonified: $(canonified_hostname)";

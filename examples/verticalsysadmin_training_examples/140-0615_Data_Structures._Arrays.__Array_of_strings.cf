@@ -21,7 +21,7 @@ bundle agent example {
                 slist => getindices("cfengine_components");
 
   reports:
-    linux::
+
       "$(component_names)$(const.t)$(cfengine_components[$(component_names)])"
                handle => "dump_array",
               comment => "Display the array keys and values";

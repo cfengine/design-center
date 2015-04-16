@@ -9,8 +9,8 @@ bundle agent example {
 
   reports:
 
-    linux::
-      
+    cfengine::
+
       "$(cfengine_components[CF-exEcD])"
                handle => "case_demo",
               comment => "Case maTTerS!";

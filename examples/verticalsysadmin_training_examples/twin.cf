@@ -1,7 +1,7 @@
 bundle agent example {
   reports:
 
-    linux::
+    cfengine::
 
       "
 sys.cf_twin: $(sys.cf_twin)

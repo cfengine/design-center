@@ -18,7 +18,7 @@ var",
                 slist => { $(preface), @(my_slist) };
 
   reports:
-    linux::
+    cfengine::
       " Iterating over @(the_sum_of_all_parts): $(the_sum_of_all_parts)"
                handle => "list_demo",
               comment => "Demonstrate how list variables are handled";

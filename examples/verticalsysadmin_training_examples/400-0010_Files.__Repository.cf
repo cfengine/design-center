@@ -1,6 +1,5 @@
-body common control {
-               inputs => { "libraries/cfengine_stdlib.cf" };
-}
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+body file control { inputs => { @(f.inputs) }; }
 
 bundle agent example {
 
@@ -31,5 +30,5 @@ body edit_defaults timestamp
 #  >> Using command line specified bundlesequence
 #  -> Edited file /tmp/file.txt
 # Moved /tmp/file.txt_1333404969_Mon_Apr__2_17_16_10_2012.cf-before-edit to repository location /var/cfengine/repository/_tmp_file.txt_1333404969_Mon_Apr__2_17_16_10_2012.cf-before-edit
-# [root@web01 verticalsysadmin_training_examples]# 
+# [root@web01 verticalsysadmin_training_examples]#
 

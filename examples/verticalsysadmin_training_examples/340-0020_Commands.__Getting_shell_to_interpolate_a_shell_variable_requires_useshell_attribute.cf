@@ -1,14 +1,12 @@
-body common control {
-               inputs => { "libraries/cfengine_stdlib.cf" };
-}
-
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+body file control { inputs => { @(f.inputs) }; }
 
 bundle agent example {
 
   commands:
 
       "/bin/echo"
-                 args => " \"hello $(const.dollar)USER $(const.t)adfs\"",
+                 args => " \"hello $(const.dollar){LOGNAME} $(const.t)adfs\"",
               contain => in_shell;
 
 }

@@ -7,7 +7,7 @@ bundle agent example {
       "days"
                handle => "days",
               comment => "Build a list of days to report what day of the week it is.",
-                slist => { "Monday", 
+                slist => { "Monday",
                            "Tuesday",
                            "Wednesday",
                            "Thursday",
@@ -18,11 +18,10 @@ bundle agent example {
 
 
   reports:
-    linux::
       "Hello world!  I love $(days)s!"
                handle => "report_the_day",
-              comment => "Report what day of the week it is";
-           ifvarclass => "$(days)"; 
+              comment => "Report what day of the week it is",
+           ifvarclass => "$(days)";
 
 
 }

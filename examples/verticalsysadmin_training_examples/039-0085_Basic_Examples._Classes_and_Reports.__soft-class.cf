@@ -1,7 +1,7 @@
 bundle agent example{
       # Demonstrate normal ordering and multiple passes through a bundle
   classes:
-      "file_exists" 
+      "file_exists"
                handle => "create_soft_class",
               comment => "Create a soft class that will be used by reports: promises.",
            expression => fileexists("/tmp/newfile");

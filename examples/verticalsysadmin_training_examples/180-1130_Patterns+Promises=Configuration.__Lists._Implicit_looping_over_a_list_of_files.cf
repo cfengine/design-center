@@ -1,6 +1,5 @@
-body common control { 
-               inputs =>         { "libraries/cfengine_stdlib.cf" };
-}
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+body file control { inputs => { @(f.inputs) }; }
 
 bundle agent example {
 
@@ -21,5 +20,5 @@ bundle agent example {
                handle => "set_mode_and_ownership",
               comment => "Ensure a list of files is owned by root
 and mode 644",
-                perms => mo("644","root"); 
+                perms => mo("644","root");
 }

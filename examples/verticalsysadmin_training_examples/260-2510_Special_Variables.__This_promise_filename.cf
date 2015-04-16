@@ -3,12 +3,12 @@
 bundle agent example
 {
   reports:
-    linux::
+    cfengine::
 
       "$(this.promise_filename)";
 }
 
-# Here is what cf-agent would output: 
+# Here is what cf-agent would output:
 #
 # myhost# cf-agent -b example -f ./00181_Special_Variables__this_promise_filename.cf -KI
 # >> Using command line specified bundlesequence

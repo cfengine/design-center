@@ -4,9 +4,9 @@ bundle agent example {
   files:
 
       "/tmp/etc/motd"
-               handle => "touch_file", 
+               handle => "touch_file",
               comment => "Demonstrate body classes if_else",
-               create => "true", 
+               create => "true",
               classes => if_else("file_exists","file_missing");
 
   reports:
@@ -22,8 +22,5 @@ bundle agent example {
 }
 
 
-body common control {
-               inputs => { "libraries/cfengine_stdlib.cf" };
-}
-
-
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+body file control { inputs => { @(f.inputs) }; }

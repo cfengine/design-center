@@ -15,7 +15,7 @@ bundle agent example {
 
   reports:
 
-    linux::
+    cfengine::
 
       "The HTTP reply was:$(const.t)$(http_reply)"
 

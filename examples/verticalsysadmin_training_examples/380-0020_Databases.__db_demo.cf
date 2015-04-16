@@ -1,7 +1,7 @@
 # Demonstration of CFEngine's databases promises.
-# First, install and configure a PostgreSQL database 
+# First, install and configure a PostgreSQL database
 # cluster and create an database.
-# Then use "databases" type promises to set up and 
+# Then use "databases" type promises to set up and
 # maintain the schema of 3 tables.
 #
 # Note: package_list_update_ifelapsed should be set to 0
@@ -16,13 +16,14 @@
 
 
 
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
 body common control {
 
               version => "1.1 21-Oct-2011";
 
    host_licenses_paid => "10";
 
-               inputs => { "libraries/cfengine_stdlib.cf" };
+               inputs => { @(f.inputs) };
 
        bundlesequence =>        {
                                   "db_cluster_is_installed",
@@ -143,7 +144,7 @@ bundle agent schema_exists_and_is_correct {
 
    database_operation => "$(create_and_verify)",
         database_type => "sql",
-     database_columns => { 
+     database_columns => {
                            "speaker_name,varchar,50",
                            "speaker_bio,varchar,600",
                            "speaker_affiliation,varchar,50",
@@ -155,7 +156,7 @@ bundle agent schema_exists_and_is_correct {
 
    database_operation => "$(create_and_verify)",
         database_type => "sql",
-     database_columns => { 
+     database_columns => {
                            "room_name,varchar,256",
                            "room_number_of_seats,integer",
      },
@@ -166,7 +167,7 @@ bundle agent schema_exists_and_is_correct {
 
    database_operation => "$(create_and_verify)",
         database_type => "sql",
-     database_columns => { 
+     database_columns => {
                            "speaker_name,varchar,256",
                            "room_name,varchar,256",
                            "start_time,date",

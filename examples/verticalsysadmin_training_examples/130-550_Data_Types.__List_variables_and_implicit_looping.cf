@@ -17,7 +17,7 @@ bundle agent example {
       ############################################################
 
   reports:
-    linux::
+    cfengine::
       "buy $(shopping_list)"
                handle => "lets_go_shopping",
               comment => "Fire off the (implicit) loop";

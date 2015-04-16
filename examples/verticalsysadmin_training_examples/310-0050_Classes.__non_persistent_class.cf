@@ -1,8 +1,5 @@
-body common control {
-
-               inputs => { "libraries/cfengine_stdlib.cf" };
-
-}
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+body file control { inputs => { @(f.inputs) }; }
 
 
 bundle agent example {
@@ -13,7 +10,7 @@ bundle agent example {
                create => "true",
             edit_line => insert_lines("hello world 1234"),
               classes => if_repaired("promise_repaired");
-      
+
 
   reports:
     promise_repaired::
