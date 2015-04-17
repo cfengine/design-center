@@ -10,12 +10,9 @@ files:
           copy_from => remote_dcp("/repo", "$(sys.policy_hub)"),
           depth_search => recurse("inf"),
           action => immediate;
-          
-}
-
-body common control {
-
-  inputs => {"/var/cfengine/inputs/libraries/cfengine_stdlib.cf"};
 
 }
+
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+body file control { inputs => { @(f.inputs) }; }
 

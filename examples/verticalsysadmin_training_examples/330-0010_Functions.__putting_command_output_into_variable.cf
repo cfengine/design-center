@@ -5,7 +5,7 @@ bundle agent example {
                string => execresult("/bin/ls /tmp", "noshell");
 
   reports:
-    linux::
+    cfengine::
       "Variable is $(my_result)";
 
 }

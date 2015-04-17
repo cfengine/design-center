@@ -1,6 +1,8 @@
-Updating your copy
-===================
+Updating examples
+~~~~~~~~~~~~~~~~~
 
-Pull in updates from Aleksey's master on github:
+Pull in updates:
 
+----------------------------------------
     git pull
+----------------------------------------

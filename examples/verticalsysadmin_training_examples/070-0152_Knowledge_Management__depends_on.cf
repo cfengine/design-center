@@ -9,10 +9,10 @@ bundle agent example
       "/tmp/testfile"
            depends_on => { "run_command", "print_report" },
                handle => "create_file",
-              comment => "Demonstrate flow control with depends_on", 
+              comment => "Demonstrate flow control with depends_on",
                create => "true";
 
-      
+
 }
 
 bundle agent example2 {
@@ -25,7 +25,7 @@ bundle agent example2 {
 
   reports:
 
-    linux::
+    cfengine::
 
       "Just a report"
                handle => "print_report";

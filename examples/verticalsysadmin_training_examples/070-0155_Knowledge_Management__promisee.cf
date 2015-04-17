@@ -2,7 +2,7 @@ bundle agent example {
 
   files:
 
-      "/etc/httpd/conf/httpd.conf" -> "Web Services team", 
+      "/etc/httpd/conf/httpd.conf" -> "Web Services team"
       # document stakeholders
 
               create  => "true";

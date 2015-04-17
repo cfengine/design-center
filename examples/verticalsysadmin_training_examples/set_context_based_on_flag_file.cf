@@ -2,11 +2,11 @@ bundle agent set_context_from_flag_file  {
 
 
   classes:
-    linux::
+    cfengine::
       "webserver"
 
            expression =>  fileexists("/etc/webserver");
-      
+
 
   reports:
 

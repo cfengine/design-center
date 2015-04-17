@@ -1,6 +1,5 @@
-Class schedule (10 - 6)
-----------------------
-
+10 - 6
+~~~~~~
 10:00 AM - 11:30 AM  Class
 
 11:30 AM - 12:00 PM  Morning break

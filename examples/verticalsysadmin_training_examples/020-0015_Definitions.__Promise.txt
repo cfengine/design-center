@@ -1,5 +1,5 @@
-Definition: Promise
--------------------
+Promise
+~~~~~~~
 
 A promise is a statement of intention.
 

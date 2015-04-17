@@ -1,0 +1,19 @@
+bundle agent example {
+
+  vars:
+
+      "cfengine_components[cf-execd]"
+               handle => "describe_executor",
+              comment => "Document the cf-execd component",
+               string => "The executor";
+
+  reports:
+
+    cfengine::
+
+      "$(cfengine_components[CF-exEcD])"
+               handle => "case_demo",
+              comment => "Case maTTerS!";
+
+}
+

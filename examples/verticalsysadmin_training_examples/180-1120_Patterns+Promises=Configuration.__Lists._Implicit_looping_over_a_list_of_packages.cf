@@ -1,0 +1,57 @@
+bundle agent example {
+
+      ######################################################
+      # This is the data section, which describes the desired pattern
+      #
+      # All you do is add to or edit the list...
+      #
+      # This is *data-driven* configuration.
+      ######################################################
+  vars:
+
+      "desired_package"
+
+               handle => "good_packages",
+              comment => "list the packages we want",
+                slist => {
+                           "httpd",
+                           "php",
+                           "php-mysql",
+                           "mysql-server",
+                };
+
+
+      "unwanted_package"
+
+               handle => "bad_packages",
+              comment => "list the packages we do not want",
+                slist => {
+                           "java",
+                           "ruby",
+                };
+
+      ######################################################
+      # Below here is stock convergent code, forget this...
+      ######################################################
+
+  packages:
+      "$(desired_package)"
+               handle => "add_package",
+              comment => "Ensure package is present",
+       package_policy => "add",
+package_architectures => { "x86_64" },
+       package_method => yum;
+
+
+  packages:
+      "$(unwanted_package)"
+               handle => "remove_package",
+              comment => "Ensure package is absent",
+       package_policy => "delete",
+package_architectures => { "x86_64" },
+       package_method => yum;
+
+}
+
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+body file control { inputs => { @(f.inputs) }; }

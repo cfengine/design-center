@@ -1,4 +1,5 @@
 EXERCISE
+~~~~~~~~
 
 Write a policy that will ensure /etc/motd always
 contains:

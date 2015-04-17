@@ -1,5 +1,5 @@
 Policy Flow Diagram
--------------------
+~~~~~~~~~~~~~~~~~~~
 
              cfhub:/var/cfengine/masterfiles
                 /                    \

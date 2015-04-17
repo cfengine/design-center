@@ -13,7 +13,7 @@ bundle agent example {
 
       "/etc/group"
 
-            edit_line => delete_group("$(unwanted_groups)"),
+            edit_line => delete_group(@(unwanted_groups)),
                handle => "purge_unwanted_groups",
               comment => "Demonstrate parameterization of an edit_line bundle";
 

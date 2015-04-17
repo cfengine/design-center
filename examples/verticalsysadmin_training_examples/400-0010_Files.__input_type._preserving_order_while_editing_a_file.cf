@@ -1,6 +1,5 @@
-body common control {
-               inputs => { "libraries/cfengine_stdlib.cf" };
-}
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+body file control { inputs => { @(f.inputs) }; }
 
 
 bundle agent example {
@@ -20,7 +19,7 @@ bundle agent example {
 bundle edit_line  proper_greetings {
 
 
-  insert_lines: 
+  insert_lines:
 
       "Good Evening"
              location => after("Good Day");

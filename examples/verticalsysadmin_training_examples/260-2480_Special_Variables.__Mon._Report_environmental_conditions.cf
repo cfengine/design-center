@@ -3,7 +3,8 @@
 bundle agent example {
 
   reports:
-    linux::
+      cfengine::
+
       "
 Metric     CurVal, AvgVal, StDev
 cfengine_in      ${mon.value_cfengine_in},  ${mon.av_cfengine_in},  ${mon.dev_cfengine_in}

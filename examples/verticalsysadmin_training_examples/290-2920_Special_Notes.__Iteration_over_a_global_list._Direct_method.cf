@@ -21,6 +21,6 @@ bundle agent example
       vars: "mylist" slist => { @(g.myusers) };
 
   reports:
-    linux::
-      "$(mylist)"; 
+    cfengine::
+      "$(mylist)";
 }

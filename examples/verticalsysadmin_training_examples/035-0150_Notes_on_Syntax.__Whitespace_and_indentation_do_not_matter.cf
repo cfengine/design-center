@@ -1,4 +1,4 @@
-# Indentation does not matter
+# Whitespace/ndentation does not matter, these two bundles are identical.
 
 bundle agent example {
 

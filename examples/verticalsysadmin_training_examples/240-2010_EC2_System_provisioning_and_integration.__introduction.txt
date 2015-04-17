@@ -1,6 +1,11 @@
+EC2 System Provisioning and Integration Demo
+--------------------------------------------
+
+Note: The following was a demo given at CasITConf 2011. Tighter integration with AWS may now exist in CFEngine.
+
 Purpose: proof of concept of multi-node deployment, configuration and integration on Amazon EC2 cloud using CFEngine.
 
-We start on a Ubuntu VM with Amazon EC2 CLI tools installed, courtesy of Florian of CloudTrainings.com. We configure it with our EC2 credentials.
+We start on a Ubuntu VM with Amazon EC2 CLI tools installed, courtesy of Florian Drescher of CloudTrainings.com. We configure it with our EC2 credentials.
 
 Then we install CFEngine 3.1.4. Then we run casit_demo.cf to instantiate two servers, "web" and "db", and to install CFEngine 3.1.4 onto them. We then use that CFEngine to install Apache httpd and mod_php and WordPress PHP application on "web" and MySQL server on "db"; and we integrate the two servers. End result: a working instance of WordPress deployed across two servers.
 

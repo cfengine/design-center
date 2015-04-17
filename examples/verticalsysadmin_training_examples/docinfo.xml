@@ -1,0 +1,26 @@
+<authorgroup>
+  <author>
+    <firstname>Aleksey</firstname>
+    <surname>Tsalolikhin</surname>
+    <affiliation>
+      <orgname>Vertical Sysadmin, Inc.</orgname>
+    </affiliation>
+  </author>
+</authorgroup>
+
+
+<legalnotice>
+  <simpara>
+	  Based on the works of Mark Burgess and CFEngine, Inc.
+  </simpara>
+  <simpara>
+This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License (http://creativecommons.org/licenses/by-sa/3.0/).
+  </simpara>
+</legalnotice>
+
+
+<publisher>
+    <publishername>Vertical Sysadmin, Inc.</publishername>
+</publisher>
+
+<subtitle>Vertical Sysadmin Training Examples</subtitle>

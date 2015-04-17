@@ -1,4 +1,5 @@
-                   EXERCISE
+EXERCISE
+~~~~~~~~
 
 Running CFEngine Non-Interactive (as a Service)
 using promises.cf as input.

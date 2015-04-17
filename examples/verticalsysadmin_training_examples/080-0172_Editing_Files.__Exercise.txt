@@ -1,4 +1,5 @@
-                       EXERCISE
+EXERCISE
+~~~~~~~~
 
 Purpose: practice editing file content using a template 
 containing scalar variables.

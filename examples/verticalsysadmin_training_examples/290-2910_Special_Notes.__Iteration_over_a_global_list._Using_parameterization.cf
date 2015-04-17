@@ -1,12 +1,12 @@
 # Scalar references to *local* list variables imply iteration.
 # To iterate over a global list variable, map the global list
-# into the local context, or supply it to the bundle as a 
+# into the local context, or supply it to the bundle as a
 # parameter.
 #
 # Example of mapping it into the local context
 
 body common control {
-       bundlesequence => { runme(@(g.myusers)) };  # note lack of 
+       bundlesequence => { runme(@(g.myusers)) };  # note lack of
       # " symbols
 }
 
@@ -22,6 +22,6 @@ bundle agent runme(x)
 {
 
   reports:
-    linux::
-      "$(x)"; 
+    cfengine::
+      "$(x)";
 }

@@ -1,11 +1,11 @@
 
 
 
-
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
 body common control {
 
        bundlesequence => { "create_db_users" };
-               inputs => { "libraries/cfengine_stdlib.cf" };
+               inputs => { @(f.inputs) };
 
 }
 
@@ -48,7 +48,7 @@ bundle agent create_db_users {
       "any"
             usebundle => create_pg_user("nagios", "$(db.createuser_defaults)"),
               comment => "Every node that runs postgres should have pg user nagios for monitoring using check-postgres.pl plugin";
-      
+
     specialcase1::
 
       "any"
@@ -81,7 +81,7 @@ bundle agent create_pg_user(username,args) {
   commands:
 
 
-      "/usr/bin/createuser $(args)  $(username)" 
+      "/usr/bin/createuser $(args)  $(username)"
               contain => in_shell_and_silent,
            ifvarclass => "!$(username)_exists",
               comment => "Create PostgreSQL user $(username) with createuser args $(args)";

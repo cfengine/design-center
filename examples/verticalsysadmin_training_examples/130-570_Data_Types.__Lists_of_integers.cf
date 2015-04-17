@@ -9,7 +9,7 @@ bundle agent example {
                 ilist => { "1", "2", "3" };
   reports:
 
-    linux::
+    cfengine::
 
       "Iterating over the values in @(my_list):  $(my_list)"
                handle => "demo_int_list",

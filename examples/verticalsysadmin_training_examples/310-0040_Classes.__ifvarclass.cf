@@ -5,7 +5,7 @@ bundle agent example {
 
   reports:
 
-    linux::
+    cfengine::
 
       "I love bananas for breakfast"
 

@@ -11,7 +11,9 @@
 #               2.2. Extract it into the httpd document root where it can be run by the Web server.
 #               2.3. Create WordPress config file wp-config.php from wp-config-sample.php that's shipped with WordPress.
 #               2.4. Tweak wp-config.php to put in the data needed to establish database connection (db name, db username and password).
-#       
+#
+
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
 
 body common control
 {
@@ -21,7 +23,7 @@ body common control
        };
 
 
-               inputs =>          { "libraries/cfengine_stdlib.cf" };
+               inputs =>          { @(f.inputs) };
 
 }
 
@@ -47,7 +49,7 @@ bundle agent wordpress_install
       "any" usebundle => wp_web_front_end_packages_installed("wordpress_install.wp_config");
       "any" usebundle => wp_web_front_end_services_up("wordpress_install.wp_config");
       "any" usebundle => wp_tarball_is_present("wordpress_install.wp_config");
-      "any" usebundle => wp_tarball_is_unrolled("wordpress_install.wp_config"); 
+      "any" usebundle => wp_tarball_is_unrolled("wordpress_install.wp_config");
       "any" usebundle => wp_config_exists("wordpress_install.wp_config");
       "any" usebundle => wp_is_properly_configured("wordpress_install.wp_config");
       #  "any" usebundle => wp_allow_http_inbound("wordpress_install.wp_config");
@@ -55,8 +57,8 @@ bundle agent wordpress_install
     db::
       "any" usebundle => wp_db_back_end_packages_installed("wordpress_install.wp_config");
       "any" usebundle => wp_db_back_end_services_up("wordpress_install.wp_config");
-      "any" usebundle => wp_mysql_is_secured("wordpress_install.wp_config"); 
-      "any" usebundle => wp_mysql_configuration("wordpress_install.wp_config"); 
+      "any" usebundle => wp_mysql_is_secured("wordpress_install.wp_config");
+      "any" usebundle => wp_mysql_configuration("wordpress_install.wp_config");
 }
 
 
@@ -67,14 +69,14 @@ bundle agent wp_web_front_end_packages_installed(params)
   vars:
 
     debian::
-      "desired_package" slist => { 
-                                   "apache2", 
+      "desired_package" slist => {
+                                   "apache2",
                                    "php5",
                                    "php5-mysql",
       };
 
     redhat::
-      "desired_package" slist => { 
+      "desired_package" slist => {
                                    "httpd",
                                    "php",
                                    "php-mysql",
@@ -85,13 +87,13 @@ bundle agent wp_web_front_end_packages_installed(params)
        package_method => generic,
               classes => if_repaired("packages_added");
 
-  commands: 
+  commands:
     packages_added&&redhat::
-      "/sbin/service httpd graceful" 
+      "/sbin/service httpd graceful"
               comment => "Restarting httpd so it can pick up new modules.";
 
     packages_added&&debian::
-      "/usr/sbin/service apache2 graceful" 
+      "/usr/sbin/service apache2 graceful"
               comment => "Restarting httpd so it can pick up new modules.";
 }
 
@@ -100,7 +102,7 @@ bundle agent wp_db_back_end_packages_installed(params)
 {
   vars:
 
-      "desired_package" slist => { 
+      "desired_package" slist => {
                                    "mysql-server",
       };
 
@@ -220,7 +222,7 @@ bundle agent wp_mysql_is_secured(params)
       "/usr/bin/mysql -u root -e \"
 DELETE FROM mysql.user WHERE User='';
 DELETE FROM mysql.user WHERE User='root' AND Host!='localhost';
-DROP DATABASE test;    
+DROP DATABASE test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 FLUSH PRIVILEGES;\"
 ";
@@ -249,7 +251,7 @@ bundle agent wp_config_exists(params)
 {
 
   classes:
-      "wordpress_config_file_exists" 
+      "wordpress_config_file_exists"
            expression => fileexists("$($(params)[wp_config])");
 
   reports:
@@ -285,7 +287,7 @@ bundle agent wp_allow_http_inbound(params)
               comment => "insert HTTP allow rule into /etc/sysconfig/iptables",
               classes => if_repaired("iptables_edited");
 
-  commands: 
+  commands:
     iptables_edited::
       "/sbin/service iptables restart"
               comment => "Restarting iptables to load new config";
@@ -309,7 +311,7 @@ body location before_the_accept_established_tcp_conns_rule
 }
 
 bundle edit_line replace_or_add(pattern,line)
-# Diego's.  
+# Diego's.
 # Replace a pattern in a file with a single line.
 # If the pattern is not found, add the line to the file.
 # The pattern must match the whole line (it is automatically

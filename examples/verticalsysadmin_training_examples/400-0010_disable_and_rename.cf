@@ -1,14 +1,10 @@
-body common control {
-
-               inputs => { "libraries/cfengine_stdlib.cf" };
-
-}
-
+#bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+#body file control { inputs => { @(f.inputs) }; }
 
 bundle agent example {
 
   files:
-      "/bin/chown"
+      "/tmp/test2"
                rename => disable_for_good;
 }
 

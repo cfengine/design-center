@@ -12,7 +12,7 @@ bundle agent example
 {
 
   commands:
-    linux::
+    cfengine::
       "/bin/nosuchcommand hello world, i love wednesdays and coffee";
 }
 

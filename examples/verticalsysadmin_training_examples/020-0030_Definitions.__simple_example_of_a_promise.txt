@@ -1,9 +1,11 @@
-Simple Example
---------------
+Example simple promise - create a file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+-------------------------------------------------------------------
 files:
 
     "/etc/nologin" 
 
         create  => "true",
         comment => "Prevent non-root users from logging in so we can perform maintenance";
+-------------------------------------------------------------------

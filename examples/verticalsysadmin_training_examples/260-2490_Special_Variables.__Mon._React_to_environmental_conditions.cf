@@ -3,7 +3,7 @@
 bundle agent example {
 
   reports:
-    linux::
+    cfengine::
       "Percent CPU utilization         ${mon.value_cpu}";
       "Percent CPU0 utilization         ${mon.value_cpu0}";
       "Percent CPU1 utilization         ${mon.value_cpu1}";

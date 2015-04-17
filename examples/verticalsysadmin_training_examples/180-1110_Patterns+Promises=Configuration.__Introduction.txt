@@ -1,3 +1,6 @@
+Patterns + Promises = Configuration
+-----------------------------------
+
 Patterns are a way of compressing information.
 
 The CFEngine 3 language is made of promises and patterns;
