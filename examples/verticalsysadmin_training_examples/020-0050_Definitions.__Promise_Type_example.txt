@@ -1,9 +1,13 @@
-Example: Promise Type
----------------------
+Example of Promise Type
+^^^^^^^^^^^^^^^^^^^^^^^
 
-files:    # promise type
+"files:" indicates the promise type.
+
+--------------------------------------------------------
+files:    
 
     "/etc/nologin" 
 
         create  => "true",
         comment => "Prevent non-root users from logging in";
+--------------------------------------------------------

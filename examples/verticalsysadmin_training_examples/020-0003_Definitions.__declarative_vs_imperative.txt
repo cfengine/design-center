@@ -1,8 +1,8 @@
-Declarative vs. Imperative Programming
---------------------------------------
+Examples
+~~~~~~~~
 
-(By Mike English)
-
+[quote, Mike English, 'http://spin.atomicobject.com/2012/09/13/from-imperative-to-declarative-system-configuration-with-puppet/']
+__________________________________________________________________ 
 Make Me a Sandwich! (Imperative) Spread peanut butter
 on one slice of bread. Set this slice of bread on a plate,
 face-up. Spread jelly on another slice of bread. Place
@@ -12,7 +12,12 @@ Bring me the sandwich.
 The Sandwich I Desire. (Declarative) There should be a
 sandwich on a plate in front of me... It should have only
 peanut butter and jelly between the two slices of bread.
+__________________________________________________________________ 
 
+Declarative Programming for System Administration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[quote, Mike English, 'http://spin.atomicobject.com/2012/09/13/from-imperative-to-declarative-system-configuration-with-puppet/']
+__________________________________________________________________ 
 Declarative programming is a more natural fit for managing
 system configuration. We want to be talking about whether
 or not MySQL is installed on this machine or Apache on that
@@ -21,6 +26,4 @@ here or apt-get install apache2 there. It allows us to
 express intent more clearly in the code. It is also less
 tedious to write and can even be more portable to different
 platforms.
-
-
-English, Mike, "From Imperative to Declarative System Configuration with Puppet," Atomic Spin, September 13, 2012, http://spin.atomicobject.com/2012/09/13/from-imperative-to-declarative-system-configuration-with-puppet/ )
+__________________________________________________________________ 

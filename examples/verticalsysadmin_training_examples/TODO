@@ -1,5 +1,10 @@
 TO DO:
 
+course materials:
+- portrait orientation
+- revision date
+- separate repo for mkpdf toolchain
+
 -----------------------------------------------------------
 
 if you put a sequence of signals like
@@ -165,4 +170,14 @@ in a non-zero Promises Repaired percentage.  How to separate the promises
 related to cfengine's internal maintenance from system repair promises?
 
 ---
+
+to do
+
+- publish CFEngine Design Center half-day class
+
+- make a functions summary reference card
+
+- add example screenshot of Topic Maps
+
+- send poster
 

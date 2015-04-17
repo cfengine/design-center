@@ -1,7 +1,6 @@
-Definitions: Promiser
----------------------
+Promiser
+~~~~~~~~
 
 The promiser is the part of the system that will be affected by the promise.
 
-(We are affected by the promises we make.)
-
+We are affected by the promises we make.

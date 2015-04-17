@@ -1,2 +1,5 @@
 Basic Examples: Vars
 --------------------
+
+Variables.
+
