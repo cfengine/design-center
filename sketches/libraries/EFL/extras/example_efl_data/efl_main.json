@@ -1,0 +1,10 @@
+[
+   {
+      "class" : "any",
+      "promiser" : "running commands",
+      "bundle" : "efl_command",
+      "ifelapsed" : "1",
+      "parameter" : "$(sys.inputdir)/efl_data/efl_command.json",
+      "promisee" : "cfengine policy"
+   }
+]

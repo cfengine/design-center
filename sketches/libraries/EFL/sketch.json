@@ -1,0 +1,47 @@
+{
+    "api": {
+       "efl_bundlesequence": [
+            {
+                "name": "runenv",
+                "type": "environment"
+            },
+            {
+                "name": "metadata",
+                "type": "metadata"
+            },
+            {
+                "name": "efl_main_data",
+                "description": "Full path to file containing data used to drive the Evolve Thinking framework bundlesequence.",
+                "type": "string"
+            }
+          ] 
+        },
+    "manifest": {
+        "README.md": {
+            "documentation": true
+        },
+        "evolve_freelib.cf": {
+            "description": "Evolve Free Library"
+        },
+        "efl_bundlesequence.cf": {
+            "description": "Main entry to Evolve Thinking framework"
+        },
+        "efl_common.cf": {
+            "description": "Evolve Free Library Common Settings"
+        }
+    },
+    "metadata": {
+        "authors": [
+            "Neil Watson <nwatson@evolvethinking.com>"
+        ],
+        "depends": { os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] },
+        "description": "The bundles contained in this CFEngine library primarily focus on data driven policy. Each such bundle takes CSV or JSON type delimited parameter file as shown in the common bundle efl_c. Website: https://github.com/evolvethinking/evolve_cfengine_freelib Support: http://evolvethinking.com/",
+        "license": "GPLv3",
+        "name": "Libraries::EFL",
+        "tags": ["framework", "library", "enterprise_compatible", "enterprise_3_6" ],
+        "website": "https://github.com/evolvethinking/evolve_cfengine_freelib",
+        "support": "http://evolvethinking.com/",
+        "version": "1.0"
+    },
+  interface: [ "efl_common.cf", "evolve_freelib.cf", "efl_bundlesequence.cf" ]
+}

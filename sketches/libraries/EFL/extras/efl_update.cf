@@ -1,0 +1,259 @@
+# This is a work in progress and is not well tested.
+
+# This file is alternative update file. It is simpler, yet reduces server load
+# and uses server reduncancy.
+
+# namespace left out due to bug https://cfengine.com/dev/issues/4762
+# body file control
+# {
+#    namespace => "eflu";
+# }
+
+body common control
+{
+   inputs => { "lib/3.6/EFL/efl_common.cf" };
+   bundlesequence => { "list_backup", "efl_c", "main" };
+}
+
+bundle agent config
+{
+   meta:
+      "purpose" string => "User defined configs here.";
+
+   vars:
+      "modules_path"
+         comment => "Where to find modules on the policy server.",
+         string  => "${sys.workdir}/modules";
+
+      "inputs_manifest"
+         comment => "Manifest file to determine what inputs to download",
+         string  => "efl_manifest.txt";
+
+      "cfengine_procs"
+         comment => "CFEngine processes to start or restart",
+         slist   => { "cf-serverd", "cf-execd", "cf-monitord" };
+
+      policy_server|am_policy_hub::
+         "modules"
+            comment => "Modules required for a minimum working system.",
+            slist   => { "cf-manifest" };
+      
+   classes:
+      "daily_inputs_sync_with_purge"
+         scope      => "namespace",
+         expression => splayclass( "${sys.host}", "daily" );
+
+   reports:
+      report_policy_servers::
+         "${list_backup.policy_servers}";
+}
+
+bundle agent main
+{
+   meta:
+      "purpose" string => "Drives bundle order through method calls.";
+
+   methods:
+      "Build classes and vars"
+         handle     => "main_methods_efl_main",
+         comment    => "Build required vars and classes",
+         usebundle  => efl_main( "${sys.workdir}/inputs/efl_data/bundle_params/efl_update_main.txt" );
+
+      "Load configs"
+         handle    => "main_methods_config",
+         usebundle => config;
+
+      !daily_inputs_sync_with_purge::
+         "Download manifest"
+            handle     => "main_methods_download_manifest",
+            depends_on => { "main_methods_config" },
+            usebundle  => download_manifest ( "${config.inputs_manifest}" );
+
+         "Update inputs and modules"
+            handle     => "main_methods_inputs",
+            depends_on => { "main_methods_config", "main_methods_download_manifest" },
+            usebundle  => inputs_and_modules ( "${sys.workdir}/inputs/${config.inputs_manifest}" );
+
+      daily_inputs_sync_with_purge::
+         "Recurse inputs copy with purge"
+            handle     => "main_methods_inputs_purge",
+            depends_on => { "main_methods_config" },
+            usebundle  => inputs_purge;
+
+      any::
+         "Start processes"
+            handle     => "main_methods_start_procs",
+            depends_on => { "main_methods_config" },
+            usebundle  => start_procs;
+}
+
+bundle agent download_manifest( ref )
+{
+   meta:
+      "purpose" string => "Download inputs manifest file";
+
+   files:
+      "${sys.workdir}/inputs/${ref}"
+         handle    => "download_manifest_files_inputs_manifest",
+         perms     => mog( "600", "root", "root" ),
+         copy_from => secure_cp( 
+            "${efl_global_strings.masterfiles}/${ref}",
+            # "@{eflu:config.policy_servers}" # prefix with namespace because of bug
+            "@{list_backup.policy_servers}" 
+            );
+}
+
+bundle agent inputs_purge
+{
+   meta:
+      "purpose" string => "Do a full sync of inputs with purging on.";
+
+   files:
+      "${sys.workdir}/inputs/"
+         handle       => "inputs_purge_files_inputs",
+         perms        => mog( "600", "root", "root" ),
+         classes      => if_repaired( "kill_cf_procs" ),
+         depth_search => recurse( "inf" ),
+         copy_from    => secure_sync( "${efl_global_strings.masterfiles}", "@{list_backup.policy_servers}" );
+
+   processes:
+      kill_cf_procs::
+         "${config.cfengine_procs}"
+            handle         => "inputs_purge_processes_kill",
+            comment        => "Kill procs for later restart.",
+            process_select => by_name( "(${sys.workdir}/bin/){0,1}${config.cfengine_procs}" ),
+            signals        => { "term", "kill" };
+}
+
+bundle agent inputs_and_modules( ref )
+{
+   meta:
+      "purpose" string => "Download inputs determined by manifest file.";
+
+   vars:
+      "manifest"
+         comment => "Read data file for parsing.",
+         data    => data_readstringarrayidx(
+            "${ref}",
+            "${efl_c.comment}",
+            "${efl_c.array_delimiter}",
+            "${efl_c.max_num}",
+            "${efl_c.max_bytes}"
+         );
+
+      "i"
+         comment => "Get index json loaded above.",
+         slist   => getindices( "manifest" );
+
+      "manifest_file_canon[${i}]"
+         comment => "Canonify for later use",
+         string  => canonify( "${manifest[${i}][0]}" );
+
+      "manifest_file[${i}]"
+         comment => "Turn into reference for simpler reading.",
+         string  => "manifest[${i}][0]";
+
+      "manifest_md5sum[${i}]"
+         comment => "Turn into reference for simpler reading.",
+         string  => "manifest[${i}][1]";
+
+   classes:
+      "download_${manifest_file_canon[${i}]}"
+         comment => "Set download class if file is missing.",
+         not     => fileexists( "${sys.workdir}/inputs/${${manifest_file[${i}]}}" );
+
+      "download_${manifest_file_canon[${i}]}"
+         comment => "Set download class if file checksum does not match manifest.",
+         not     => hashmatch( "${sys.workdir}/inputs/${${manifest_file[${i}]}}", "md5", "${${manifest_md5sum[${i}]}}" );
+
+   files:
+      "${sys.workdir}/inputs/${${manifest_file[${i}]}}"
+         handle     => "inputs_and_modules_files_inputs_download",
+         comment    => "Download file shown to be new by the mainfest",
+         ifvarclass => "download_${manifest_file_canon[${i}]}",
+         classes    => if_repaired( "kill_cf_procs" ),
+         copy_from  => secure_cp( "${efl_global_strings.masterfiles}/${${manifest_file[${i}]}}", "@{list_backup.policy_servers}" );
+      
+      "${sys.workdir}/inputs/${${manifest_file[${i}]}}"
+         handle     => "inputs_and_modules_files_inputs_permissions",
+         comment    => "Promise file perms",
+         perms      => mog( "600", "root", "root" );
+
+# TODO were to put masterfiles module? sitefiles?
+      "${sys.workdir}/modules/${config.modules}"
+         handle    => "inputs_and_modules_files_modules_download",
+         comment   => "Update modules",
+         perms     => mog( "700", "root", "root" ),
+         copy_from => secure_cp( "${config.modules_path}/${config.modules}", "@{list_backup.policy_servers}" );
+
+   processes:
+      kill_cf_procs::
+         "${config.cfengine_procs}"
+            handle         => "inputs_and_modules_processes_kill",
+            comment        => "Kill procs for later restart.",
+            process_select => by_name( "(${sys.workdir}/bin/){0,1}${config.cfengine_procs}" ),
+            signals        => { "term", "kill" };
+}
+
+bundle agent start_procs
+{
+   meta:
+      "purpose" string => "Start CFEngine processes";
+
+   processes:
+      "${config.cfengine_procs}"
+         handle         => "start_procs_processes_start",
+         comment        => "Kill procs for later restart.",
+         process_select => by_name( "(${sys.workdir}/bin/){0,1}${config.cfengine_procs}" ),
+         restart_class  => canonify( "restart_${config.cfengine_procs}" );
+
+   commands:
+      "${sys.workdir}/bin/${config.cfengine_procs}"
+         handle     => "start_procs_commands_start",
+         comment    => "Issue restart commmand",
+         ifvarclass => canonify( "restart_${config.cfengine_procs}" );
+}
+   
+body process_select by_name( command_regex )
+{
+   command        => "${command_regex}";
+   process_result => "command";
+}
+
+body perms mog(mode,user,group)
+{
+   owners => { "$(user)" };
+   groups => { "$(group)" };
+   mode   => "$(mode)";
+}
+
+body copy_from secure_cp(from,server)
+{
+   source      => "$(from)";
+   servers     => { "$(server)" };
+   compare     => "digest";
+   encrypt     => "true";
+   verify      => "true";
+}
+
+body copy_from secure_sync(from,server)
+{
+   source      => "$(from)";
+   servers     => { "$(server)" };
+   compare     => "digest";
+   purge       => "true";
+   type_check  => "false";
+   encrypt     => "true";
+   verify      => "true";
+}
+
+body classes if_repaired(x)
+{
+   promise_repaired => { "$(x)" };
+}
+
+body depth_search recurse(d)
+{
+depth => "$(d)";
+xdev  => "true";
+}

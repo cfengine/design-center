@@ -1,0 +1,6 @@
+bundle agent efl_bundlesequence(runenv, metadata, efl_main_data)
+{
+  methods:
+      "EFL"
+        usebundle => efl_main( $(efl_main_data) );
+}

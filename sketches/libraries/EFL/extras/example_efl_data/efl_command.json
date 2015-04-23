@@ -1,0 +1,11 @@
+[
+   {
+      "class" : "any",
+      "command" : "/bin/touch /RUNNING_EFL",
+      "useshell" : "noshell",
+      "module" : "no",
+      "ifelapsed" : "1440",
+      "promisee" : "dmz security"
+   }
+]
+
