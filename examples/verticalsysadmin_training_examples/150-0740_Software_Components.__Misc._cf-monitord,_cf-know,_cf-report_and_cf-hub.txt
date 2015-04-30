@@ -9,14 +9,16 @@ information about the status of your system (which can be
 reported upon or used to enforce promises or influence when
 promises are enforced).
 
+The following have to be installed separately:
 
-cf-know
-~~~~~~~
-Knowledge modelling agent – responsible for building and
-analysing a semantic knowledge network. (Enterprise edition
-only.)
+cf-deploy
+~~~~~~~~~
+Third-party add-on to facilite policy deployment.
 
-cf-hub
-~~~~~~
-A data aggregator used as part of the commercial product
-and not available in the community edition of CFEngine. 
+reindent.pl
+~~~~~~~~~~~
+Source code reformatter (like "tidy").  In contrib/.
+
+cf-locate
+~~~~~~~~~
+Locate bundles in CFEngine source code.  In contrib/.
