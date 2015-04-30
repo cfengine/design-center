@@ -1,4 +1,5 @@
 bundle agent example {
+# implicit looping over slist in array 
 
   vars:
       "config[users]"
