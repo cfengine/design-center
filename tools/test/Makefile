@@ -43,12 +43,6 @@ ifeq ($(V),1)
   EXTRA:=--verbose=any
 endif
 
-ifneq ($(T),)
-  EXTRA:= $(EXTRA) --test=$(T)
-else
-  EXTRA:= $(EXTRA) --test=any
-endif
-
 ifneq ($(A),)
   EXTRA:= $(EXTRA) --activated=$(A)
 else
@@ -60,7 +54,7 @@ ifneq ($(FILTER),)
 endif
 
 CFSKETCH_BASE:=$(PWD)/../cf-sketch/cf-sketch.pl --installsource=$(SOURCEDIR)/cfsketches.json
-CFSKETCH:=$(CFSKETCH_BASE) --make_cfsketches --inputs $(DCDIR); $(CFSKETCH_BASE) --expert --cfpath=$(CFPATH) $(EXTRA) --force --inputs $(API_DIR)
+CFSKETCH:=$(CFSKETCH_BASE) --make_cfsketches --inputs $(DCDIR); $(CFSKETCH_BASE) --expert --cfpath=$(CFPATH) $(EXTRA) --force --inputs $(API_DIR) --relocate_path sketches
 CFSKETCH_DA:=rm $(API_RUNFILE); $(CFSKETCH) --deactivate-all --generate -v
 RUNNER:=$(CFPATH)/cf-agent -KI -f $(API_DIR)/promises.cf
 CFAPI:=$(PWD)/../cf-sketch/cf-dc-api.pl $(PWD)/../cf-sketch/config.json

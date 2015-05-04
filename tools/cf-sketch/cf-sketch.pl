@@ -55,7 +55,6 @@ my %options = (
                force => 0,
                quiet => 0,
                verbose => 0,
-               test => '!any',
                ignore => 1,
                activated => 'any',
                veryverbose => 0,
@@ -79,7 +78,6 @@ GetOptions(\%options,
            "veryverbose|vv!",
            "generate!",
            "force|f!",
-           "test:s",
            "activated:s",
            "installsource|is=s",
            "cfpath=s",
@@ -96,6 +94,7 @@ GetOptions(\%options,
            "deactivate-all|da",
            "activate|a=s%",
            "inputs=s",
+           "relocate_path:s",
 
            "runfile_header=s",
           );
@@ -139,9 +138,6 @@ EOHIPPUS
 $options{verbose} = 1 if $options{veryverbose};
 
 # Define default internal environment
-$options{test} = '!any' if !$options{test};
-my $env_test = $options{test};
-
 $options{activated} = 'any' if !$options{activated};
 my $env_activated = $options{activated};
 
@@ -150,7 +146,6 @@ api_interaction({
                                         $options{environment} =>
                                         {
                                          activated => $env_activated,
-                                         test => $env_test,
                                          verbose => $options{verbose} ? 'any' : '!any',
                                         }
                                        }
@@ -357,6 +352,11 @@ sub api_interaction
     if (exists $options{runfile_header})
     {
         $opts->{runfile}->{header} = $options{runfile_header};
+    }
+
+    if (exists $options{relocate_path})
+    {
+        $opts->{runfile}->{relocate_path} = $options{relocate_path};
     }
 
     if (exists $options{make_cfsketches} || exists $options{make_readme})
