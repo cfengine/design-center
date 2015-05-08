@@ -12,9 +12,10 @@ THRESHOLD=$1
 if [ -z "$THRESHOLD" ]; then THRESHOLD=10; fi
 LOOP_COUNTER=0
 EXERCISE_COUNTER=1
+FIGURE_COUNTER=1
 
 ### Get list of cf, txt and pl files. Sort
-find . -maxdepth 1 -type f -iname "[0-9]*[cf|txt|pl|sh|exr]" | sort > /tmp/file_list.txt
+find . -maxdepth 1 -type f -iname "[0-9]*[cf|txt|pl|sh|exr|dot]" | sort > /tmp/file_list.txt
 
 ### Begin Work
 for file in `cat /tmp/file_list.txt`
@@ -38,6 +39,8 @@ fi
 				filetype=perl
 			elif [ -n "`echo $file | grep 'exr$' | grep -v $0`" ]; then
 				filetype=exercise
+			elif [ -n "`echo $file | grep 'dot$' | grep -v $0`" ]; then
+				filetype=graphviz
 			elif [ -n "`echo $file | grep 'sh$' | grep -v $0`" ]; then
 				filetype=bash
 		fi
@@ -104,6 +107,21 @@ echo "=====" >> $target
 EXERCISE_COUNTER=`expr $EXERCISE_COUNTER + 1`
 fi
 
+### process graphviz files
+	if [ "$filetype" == "graphviz" ];then
+> $target
+echo "" >> $target 
+echo ".Figure $FIGURE_COUNTER" >> $target
+echo "[graphviz]" >> $target
+echo "-----" >> $target
+echo "" >> $target 
+cat $file >> $target 
+echo "" >> $target 
+echo "-----" >> $target
+echo "File: vi $file" >> $target
+FIGURE_COUNTER=`expr $FIGURE_COUNTER + 1`
+fi
+
 ### process cfengine files
 	if [ "$filetype" == "cfengine" ];then
 > $target
@@ -131,7 +149,7 @@ function concatenate() {
 ######### book target first
 echo "Concatenating files into single ${output_target}.txt..."
 if [ -f ${output_target}.txt ]; then echo "Removing old ${output_target}.txt file..."; rm ${output_target}.txt; fi
-for file in `find /tmp/mod_files/* -maxdepth 1 -type f -iname "[0-9]*[cf|txt|pl|sh|exr]" |  egrep -v '0038-0015' |  sort`
+for file in `find /tmp/mod_files/* -maxdepth 1 -type f -iname "[0-9]*[cf|txt|pl|sh|exr|dot]" |  egrep -v '0038-0015' |  sort`
 	do
 		cat $file >> ${output_target}.txt
 	done
