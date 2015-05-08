@@ -1,3 +1,2 @@
-Classes
-~~~~~~~
+==== Classes
 This chapter discusses Classes.

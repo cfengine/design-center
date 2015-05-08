@@ -1,2 +1,1 @@
-Arrays
------
+=== Data Structures: Arrays

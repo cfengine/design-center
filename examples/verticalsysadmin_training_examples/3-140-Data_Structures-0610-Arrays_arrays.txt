@@ -1,7 +1,6 @@
 Arrays are associative (hashes). 
 
-They may contain scalars
-or lists as their elements.
+They may contain scalars or lists as their elements.
 
 Array variables are written with '[' and ']' brackets:
 
@@ -14,14 +13,13 @@ $(bundle_name.array_name[key_name])
 
 Example: 
 
+.Food Prices
 
-Food Prices
------
+Apple   59c +
+Banana  30c +
+Oranges 35c +
 
-Apple   59c
-Banana  30c
-Oranges 35c
-
-vars:   "food_prices[Apple]"    string =>  "59c";
+[horizontal]
+vars::   "food_prices[Apple]"    string =>  "59c";
 
 $(food_prices[Apple])

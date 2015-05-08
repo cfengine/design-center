@@ -1,11 +1,8 @@
-Example of classes provided by cf-monitord
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.Example of classes provided by cf-monitord
 
-If you are running cf-monitord, you may also see entropy and anomaly
-detection classes:
+If you are running cf-monitord, you may also see entropy and anomaly detection classes:
 
-entropy
-^^^^^^^
+.entropy
 
 -----
 entropy_cfengine_in_low
@@ -44,19 +41,14 @@ entropy_wwws_in_low
 entropy_wwws_out_low
 -----
 
-A low entropy value means that most of the events came from
-only a few (or one) IP addresses. A high entropy value
-implies that the events were spread over many IP sources.
+A low entropy value means that most of the events came from only a few (or one) IP addresses. A high entropy value implies that the events were spread over many IP sources.
 
-anomaly
-^^^^^^^
-Anomaly detection  - example classes:
+[horizontal]
+.Anomaly Detection Example Classes:
 
-loadavg_high_ldt - load average higher than usual (based on
-                   Leap-Detection Test)
+loadavg_high_ldt:: - load average higher than usual (based on Leap-Detection Test)
 
-messages_high_dev1 -the current value of the metric is more
-                    than 1 standard deviation above the average.
+messages_high_dev1:: -the current value of the metric is more than 1 standard deviation above the average.
 
 etc.
 
