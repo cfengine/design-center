@@ -18,21 +18,3 @@ bundle agent example {
       "Original keys: $(index)";
       "Canonified keys: $(cindex[$(index)])";
 }
-#############################################################
-# Data Structures:
-
-Array myarray                        
------
-loc@t!on,Bloomington
-t!me###,first week of April
-
-List index
------
-loc@t!on
-t!me###
-
-Array cindex
------
-loc@t!on,loc_t_on
-t!me###,t_me___
-

@@ -1,7 +1,5 @@
 #!/usr/bin/env perl
 
-
-
 $record =
 "James Alexander Richard Smith";
 

@@ -1,2 +1,1 @@
-Classes (advanced)
------
+=== Advanced Usage Of Classes

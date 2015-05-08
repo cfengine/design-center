@@ -1,2 +1,1 @@
-Linking Promises with Classes
------
+=== Advanced Usage Of Classes: Linking Promises

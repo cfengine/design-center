@@ -1,5 +1,4 @@
-EC2 System Provisioning and Integration Demo
------
+=== Amazon AWS EC2
 
 Note: The following was a demo given at CasITConf 2011. Tighter integration with AWS may now exist in CFEngine.
 

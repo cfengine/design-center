@@ -46,9 +46,9 @@ A low entropy value means that most of the events came from only a few (or one) 
 [horizontal]
 .Anomaly Detection Example Classes:
 
-loadavg_high_ldt:: - load average higher than usual (based on Leap-Detection Test)
+loadavg_high_ldt:: load average higher than usual (based on Leap-Detection Test)
 
-messages_high_dev1:: -the current value of the metric is more than 1 standard deviation above the average.
+messages_high_dev1:: the current value of the metric is more than 1 standard deviation above the average.
 
 etc.
 

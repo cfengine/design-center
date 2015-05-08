@@ -1,8 +1,4 @@
-Security
------
+=== Security
 
-Change Detection
-~~~~~~~~~~~~~~~~
-In the "computer immunology" research and development
-phase, Mark added file change detection capability to
-CFEngine.
+.Change Detection
+In the "computer immunology" research and development phase, Mark added file change detection capability to CFEngine.

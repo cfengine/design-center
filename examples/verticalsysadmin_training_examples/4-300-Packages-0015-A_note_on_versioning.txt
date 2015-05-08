@@ -1,9 +1,9 @@
-Package versions are of data type string, not number!  Thus numeric comparison, while it can be attempted, is fraught with peril and frustration.
+TIP: Package versions are of data type string, not number!  Thus numeric comparison, while it can be attempted, is fraught with peril and frustration.
 
-Which version is newer:
+Which version is newer?
 
-1.2.3f
-1.2.3-4
-1.2.3-hotpotato 
+* 1.2.3f
+* 1.2.3-4
+* 1.2.3-hotpotato 
 
-See http://semver.org/ for a proposal for a meaningful versioning standard.
+NOTE: See http://semver.org/ for a proposal for a meaningful versioning standard.
