@@ -1,24 +1,9 @@
-Using this collection
-~~~~~~~~~~~~~~~~~~~~~
+.Using this collection
 
-The "CFEngine Essentials" course
-(formerly known as "Automating System Administration
-using CFEngine 3" ) is based on in-class
-demonstration of the following examples,
-complete with discussion and exercises.
+The "CFEngine Essentials" course (formerly known as "Automating System Administration using CFEngine 3" ) is based on in-class demonstration of the following examples, complete with discussion and exercises.
 
-To encourage and support study of CFEngine 3
-for those unable to attend our class,
-we are making available all the examples and
-exercises.
+To encourage and support study of CFEngine 3 for those unable to attend our class, we are making available all the examples and exercises.
 
-Study the course materials in sequence.
-Check them out from GitHub  and list them
-with the "l.sh" script.  Try out and run 
-the examples.  Modify them and run them again.
-Write your own examples.  Do the exercises.
+Study the course materials in sequence.  Check them out from GitHub  and list them with the "l.sh" script.  Try out and run the examples.  Modify them and run them again.  Write your own examples.  Do the exercises.
 
-Work your way through the materials until
-you understand it all and have done all the
-exercises.  Make sure to look up unfamiliar
-terms in the Reference Manual.
+Work your way through the materials until you understand it all and have done all the exercises.  Make sure to look up unfamiliar terms in the Reference Manual.

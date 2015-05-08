@@ -1,22 +1,22 @@
-Running the examples
-~~~~~~~~~~~~~~~~~~~~
+.Running the examples
 
-All of the examples are shipped as standalone
-CFEngine 3 files (*.cf) and are runnable:
+All of the examples are shipped as standalone CFEngine 3 files (*.cf) and are runnable:
 
---------------------------------------------------
+-----
 cf-agent -KIb example -f ./example_115.cf
---------------------------------------------------
--K: "do it now" (over-rides time lock database)
+-----
 
--I: Inform me of any changes made to the system
+[horizontal]
+*-K:*:: "do it now" (over-rides time lock database)
 
--b: list of bundles to run  (a bundle is a group of CFEngine policies)
+*-I:*:: Inform me of any changes made to the system
 
--f: input filename (make sure to add the dot slash to specify the current directory)
+*-b:*:: list of bundles to run  (a bundle is a group of CFEngine policies)
+
+*-f:*:: input filename (make sure to add the dot slash to specify the current directory)
 
 Example:
---------------------------------------------------
+-----
 cf-agent -KIb example -f \
 ./030-0005_Basic_Examples:_Files,_Processes,_Commands.__Files._Create_a_file.cf
---------------------------------------------------
+-----
