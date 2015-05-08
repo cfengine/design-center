@@ -8,14 +8,14 @@ that haven't worked with templates before.
 
 Example 1.  Email:
 
-----------------------------------
+-----
 Hello __NAME__,
 
   Please buy our product.
 
 Love,
 Company
-----------------------------------
+-----
 
 
 Example 2.  Config file:

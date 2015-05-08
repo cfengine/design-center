@@ -16,7 +16,7 @@ Example:
 
 
 Food Prices
------------
+-----
 
 Apple   59c
 Banana  30c

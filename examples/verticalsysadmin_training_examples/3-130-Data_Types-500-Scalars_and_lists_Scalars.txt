@@ -1,5 +1,5 @@
 Data Types
-----------
+-----
 
 CFEngine variables have two meta-types: scalars and lists.
 

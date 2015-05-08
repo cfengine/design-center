@@ -1,5 +1,5 @@
 Methods
--------
+-----
 
 There is a special promise type in CFEngine 3 called "methods"
 that promises to call another promise bundle.  

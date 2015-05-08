@@ -1,5 +1,5 @@
 Patterns + Promises = Configuration
------------------------------------
+-----
 
 Patterns are a way of compressing information.
 

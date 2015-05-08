@@ -22,7 +22,7 @@ using promises.cf as input.
    /etc/motd within 5 minutes:
 
      watch ls -l /etc/motd 2>/dev/null
-------------------------------------------------------------------
+-----
 Change cf-execd schedule from 5 min to 1 min. 
 1. in /var/cfengine/masterfiles/controls/cf_execd.cf, set
      schedule => { "any" }; 

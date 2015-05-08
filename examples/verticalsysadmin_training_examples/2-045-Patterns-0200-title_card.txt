@@ -1,5 +1,5 @@
 Patterns
---------
+-----
 
 The CFEngine 3 language can be described by the following equation:
 

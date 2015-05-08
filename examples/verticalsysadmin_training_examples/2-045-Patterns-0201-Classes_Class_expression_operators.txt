@@ -1,5 +1,5 @@
 Class Operators
----------------
+-----
 
 !        negate (not)
 

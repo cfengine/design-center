@@ -1,6 +1,7 @@
-The Real Basic Form of a Promise
---------------------------------
+.The Real Basic Form of a Promise
 
+[source,cfengine3]
+-----
 promise_type:
 
     context::
@@ -9,11 +10,12 @@ promise_type:
 
             attribute1 => value1,
             attribute2 => value2;
-
-----------------------------------------------
+-----
 
 Example:
 
+[source,cfengine3]
+-----
 files:
 
   linux&Sunday::
@@ -24,4 +26,4 @@ files:
               handle => "disable_nonroot_logins",
              comment => "Take a day off, don't work on Sunday!",
               create => "true";
-
+-----

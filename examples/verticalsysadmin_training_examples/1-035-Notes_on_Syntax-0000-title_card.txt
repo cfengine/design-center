@@ -1,5 +1,4 @@
-Notes on Syntax
----------------
+=== Notes on Syntax and Running
 
 A bundle is a group of one or more promises.  We will show you two promises in one bundle.
 

@@ -68,11 +68,11 @@ fi
 > $target
 echo ".File: vi $file" >> $target
 echo "[source,bash]" >> $target
-echo "---------------------------------------------------------------------" >> $target
+echo "-----" >> $target
 echo "" >> $target 
 cat $file >> $target 
 echo "" >> $target 
-echo "---------------------------------------------------------------------" >> $target
+echo "-----" >> $target
 echo "" >> $target
 fi
 
@@ -81,11 +81,11 @@ fi
 > $target
 echo ".File: vi $file" >> $target
 echo "[source,perl]" >> $target
-echo "---------------------------------------------------------------------" >> $target
+echo "-----" >> $target
 echo "" >> $target 
 cat $file >> $target 
 echo "" >> $target 
-echo "---------------------------------------------------------------------" >> $target
+echo "-----" >> $target
 echo "" >> $target
 fi
 
@@ -95,12 +95,12 @@ fi
 echo "" >> $target 
 echo ".Exercise $EXERCISE_COUNTER" >> $target
 echo "[IMPORTANT]" >> $target
-echo "====" >> $target
+echo "=====" >> $target
 echo "" >> $target 
 cat $file >> $target 
 echo "" >> $target 
 echo "File: vi $file" >> $target
-echo "====" >> $target
+echo "=====" >> $target
 EXERCISE_COUNTER=`expr $EXERCISE_COUNTER + 1`
 fi
 
@@ -110,14 +110,14 @@ fi
 echo "" >> $target 
 echo ".File: vi $file" >> $target
 echo "" >> $target 
-echo "====" >> $target
+echo "=====" >> $target
 echo "[source,cfengine3,numbered]" >> $target
-echo "----" >> $target
+echo "-----" >> $target
 echo "" >> $target 
 cat $file >> $target 
 echo "" >> $target 
-echo "----" >> $target
-echo "====" >> $target
+echo "-----" >> $target
+echo "=====" >> $target
 fi
 
 ### end main loop

@@ -7,7 +7,7 @@ detection classes:
 entropy
 ^^^^^^^
 
--------------------------------
+-----
 entropy_cfengine_in_low
 entropy_cfengine_out_low
 entropy_dns_in_low
@@ -42,7 +42,7 @@ entropy_www_in_low
 entropy_www_out_low
 entropy_wwws_in_low
 entropy_wwws_out_low
--------------------------------
+-----
 
 A low entropy value means that most of the events came from
 only a few (or one) IP addresses. A high entropy value
