@@ -1,11 +1,11 @@
-Class Operators
------
+[horizontal]
+.Class Operators
 
-!        negate (not)
+!::        negate (not)
 
-.  &     and 
+.  &::     and 
 
-| ||     or
+| ||::     or
 
-( )   groupers
+( )::   groupers
 
