@@ -1,16 +1,11 @@
-EXERCISE - Kill a process
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Write a policy to signal TERM and then KILL to any
-process matching "trn".  (trn = Threaded Read News,
-a NetNews client.)
+Write a policy to signal TERM and then KILL to any process matching "trn".  (trn = Threaded Read News, a NetNews client.)
 
   Testing it:
 
+-----
     cp /bin/sleep ~/trn
     ~/trn 1000 &
     cf-agent  --file ... --bundle ...
+-----
 
-If you finish before everybody else, please study the
-Vocabulary Primer and then chapter 1-4 in the Reference
-Manual.
+If you finish before everybody else, please study the Vocabulary Primer and then chapter 1-4 in the Reference Manual.

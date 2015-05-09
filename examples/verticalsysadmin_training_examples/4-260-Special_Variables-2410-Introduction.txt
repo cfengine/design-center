@@ -1,5 +1,5 @@
-Introduction
-~~~~~~~~~~~~
+=== CFEngine Special Variables
+==== Introduction
 
 CFEngine has some special variables.
 

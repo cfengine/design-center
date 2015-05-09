@@ -1,5 +1,3 @@
-Emacs
-~~~~~
+.Emacs
 
-See "Learning CFEngine 3" book or
-cfengine.com/cfengine-code-editors 
+See "Learning CFEngine 3" book or http://cfengine.com/cfengine-code-editors 

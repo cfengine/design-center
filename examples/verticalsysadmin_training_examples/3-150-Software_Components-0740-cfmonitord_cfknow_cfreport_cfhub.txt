@@ -1,24 +1,14 @@
-Misc.
-~~~~~
-Miscellaneous components
+[horizontal]
+.Miscellaneous components
 
-cf-monitord
-~~~~~~~~~~~
-Passive monitoring agent – responsible for collecting
-information about the status of your system (which can be
-reported upon or used to enforce promises or influence when
-promises are enforced).
+cf-monitord::
+Passive monitoring agent is responsible for collecting information about the status of your system (which can be reported upon or used to enforce promises or influence when promises are enforced).
 
 The following have to be installed separately:
 
-cf-deploy
-~~~~~~~~~
-Third-party add-on to facilite policy deployment.
+[horizontal]
+cf-deploy:: Third-party add-on to facilite policy deployment.
 
-reindent.pl
-~~~~~~~~~~~
-Source code reformatter (like "tidy").  In contrib/.
+reindent.pl:: Source code reformatter (like "tidy").  In contrib/.
 
-cf-locate
-~~~~~~~~~
-Locate bundles in CFEngine source code.  In contrib/.
+cf-locate:: Locate bundles in CFEngine source code.  In contrib/.

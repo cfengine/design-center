@@ -1,4 +1,0 @@
-CFEngine Running Unattended
----------------------------
-
-CFEngine Running Unattended 

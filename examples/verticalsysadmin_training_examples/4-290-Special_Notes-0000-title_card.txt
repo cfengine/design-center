@@ -1,2 +1,1 @@
-Special Notes
--------------
+=== Special Notes And Gotchas

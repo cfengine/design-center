@@ -1,11 +1,4 @@
-EXERCISE
-~~~~~~~~
+* Copy /var/cfengine/share/CoreBase/*cf to /var/cfengine/inputs
 
-Copy /var/cfengine/share/CoreBase/*cf to /var/cfengine/inputs
-
-
-EXERCISE
-~~~~~~~~
-
-/root/passwd.bak is a backup (copy) of /etc/passwd
+* Create /root/passwd.bak as a backup (copy) of /etc/passwd
 

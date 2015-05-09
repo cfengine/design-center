@@ -1,12 +1,10 @@
-Methods provide encapsulation of multiple issues
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.Methods provide encapsulation of multiple issues
 
-Methods offer powerful ways to encapsulate multiple
-issues pertaining to a set of parameters. 
+Methods offer powerful ways to encapsulate multiple issues pertaining to a set of parameters. 
 
 For example:
 
-Removing a user:
-     1. userdel
-     2. sudoers
-     3. mail spool
+.Removing a user:
+* userdel
+* sudoers
+* mail spool

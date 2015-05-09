@@ -1,0 +1,10 @@
+.Bootstrap CFEngine on your machine to itself
+
+-----
+cf-agent --bootstrap your.ip.address.or.hostname
+
+cf-agent
+-----
+
+* Bootstrap hub may be listed as IP or name but only the IP will be used.
+* The IP of the hub cannot be 127.0.0.1.

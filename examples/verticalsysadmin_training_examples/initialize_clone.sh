@@ -1,1 +1,0 @@
-/home/dan/cfengine_work/initialize_clone.sh

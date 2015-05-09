@@ -1,25 +1,22 @@
-Introducing templates
-~~~~~~~~~~~~~~~~~~~~~
+.Introducing templates
 
 What are templates?  why would we use templates?
 
-What follows is an introduction to template for sysadmins
-that haven't worked with templates before.
+What follows is an introduction to template for sysadmins that haven't worked with templates before.
 
-Example 1.  Email:
-
-----------------------------------
+.Email:
+-----
 Hello __NAME__,
 
   Please buy our product.
 
 Love,
 Company
-----------------------------------
+-----
 
 
-Example 2.  Config file:
-
+.Config file:
+-----
 MASTER_MAP_NAME="auto.master"
 TIMEOUT=300
 BROWSE_MODE="yes"
@@ -31,4 +28,5 @@ ENTRY_ATTRIBUTE="cn"
 VALUE_ATTRIBUTE="automountInformation"
 USE_MISC_DEVICE="yes"
 SEARCH_BASE="ou=__SITE__,ou=Sites,dc=VerticalSysadmin,dc=com"
+-----
 

@@ -1,5 +1,4 @@
-Promiser
-~~~~~~~~
+.Promiser
 
 The promiser is the part of the system that will be affected by the promise.
 

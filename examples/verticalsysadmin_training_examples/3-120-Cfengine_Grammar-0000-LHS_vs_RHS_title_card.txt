@@ -1,2 +1,1 @@
-CFEngine Grammar: LHS vs RHS
-----------------------------
+=== CFEngine Grammar: LHS vs RHS

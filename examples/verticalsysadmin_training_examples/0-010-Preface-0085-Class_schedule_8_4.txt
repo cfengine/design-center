@@ -1,18 +1,18 @@
-Class schedule for on-site training
------------------------------------
+.Class schedule for on-site training
 
-8 - 4
-~~~~~
-08:00 AM - 09:30 AM  Class
+[horizontal]
+.8 - 4
+08:00 AM:: - 09:30 AM::  Class
 
-09:30 AM - 10:00 AM  Morning break
+09:30 AM:: - 10:00 AM::  Morning break
 
-10:00 AM - 11:30 AM  Class
+10:00 AM:: - 11:30 AM::  Class
 
-11:30 AM - 12:30 PM  Lunch break
+11:30 AM:: - 12:30 PM::  Lunch break
 
-12:30 PM - 02:00 PM  Class
+12:30 PM:: - 02:00 PM::  Class
 
-02:00 PM - 02:30 PM  Afternoon break
+02:00 PM:: - 02:30 PM::  Afternoon break
 
-02:30 PM - 04:00 PM  Class
+02:30 PM:: - 04:00 PM::  Class
+
