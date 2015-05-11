@@ -1,2 +1,1 @@
-Using cf-monitord
------
+=== The CFEngine Monitor daemon

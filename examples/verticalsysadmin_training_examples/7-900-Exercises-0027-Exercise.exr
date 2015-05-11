@@ -1,0 +1,3 @@
+.Bonus Points 
+
+Restart sshd if process start time of sshd predates the modification timestamp of '/etc/ssh/sshd_config' (Process selection is demonstrated in *Process_Selection* in verticalsysadmin_training_examples)

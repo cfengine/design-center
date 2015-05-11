@@ -1,0 +1,4 @@
+.Report the current time using:
+* output from /bin/date (captured using execresult() function)
+
+* built-in special variable $(sys.date)
