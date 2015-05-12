@@ -104,7 +104,7 @@ fi
 	if [ "$filetype" == "exercise" ];then
 > $target
 echo "" >> $target 
-echo ".$chapter: Exercise $EXERCISE_COUNTER" >> $target
+echo ".Exercise $EXERCISE_COUNTER: $chapter" >> $target
 echo "[IMPORTANT]" >> $target
 echo "=====" >> $target
 echo "" >> $target 
