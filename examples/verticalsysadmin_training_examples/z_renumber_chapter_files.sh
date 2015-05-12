@@ -30,8 +30,8 @@ for part in 0 1 2 3 4 5 6 7
 				if [ $file_count -lt 100 ] && [ $file_count -gt 0 ];then file_count="00${file_count}"; fi
 				if [ $file_count -lt 1000 ] && [ $file_count -ge 100 ];then file_count="0${file_count}"; fi
 				#echo $part: $chapter $file_count: $file
-				file_count=`expr $file_count + 10`
 				echo "git mv $file $part-$chapter-$section-$file_count-$sub_ext"
 				git mv $file $part-$chapter-$section-$file_count-$sub_ext
+				file_count=`expr $file_count + 10`
 			done
 	done
