@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 output_target=z_cfengine_essentials
 
 #########################################
@@ -20,10 +20,12 @@ find . -maxdepth 1 -type f -iname "[0-9]*[cf|txt|pl|sh|exr|dot]" | sort > /tmp/f
 ### Begin Work
 for file in `cat /tmp/file_list.txt`
 	do
-	chapter=`echo $file | awk -F"-" '{print $3}' | sed "s/_/ /g"`
-	chapter=${chapter^}
-	section=`echo $file | awk -F"-" '{print $5}' |  awk -F"." '{print $1}' | sed "s/_/ /g"`
-	section=${section^}
+	chapter=`echo ${file^} | awk -F"-" '{print $3}' | sed "s/_/ /g"`
+	worda=( $(IFS=._- ; printf '%s ' $chapter) )
+	chapter=${worda[@]^}
+	section=`echo ${file^} | awk -F"-" '{print $5}' |  awk -F"." '{print $1}' | sed "s/_/ /g"`
+	wordb=( $(IFS=._- ; printf '%s ' $section) )
+	section=${wordb[@]^}
 
 LOOP_COUNTER=`expr $LOOP_COUNTER + 1`
 if [ $LOOP_COUNTER -gt $THRESHOLD ]; then
@@ -73,7 +75,8 @@ fi
 ### process bash files
 	if [ "$filetype" == "bash" ];then
 > $target
-echo ".File: vi $file" >> $target
+#echo ".File: vi $file" >> $target
+echo ".$section" >> $target
 echo "[source,bash]" >> $target
 echo "-----" >> $target
 echo "" >> $target 
@@ -86,7 +89,8 @@ fi
 ### process perl files
 	if [ "$filetype" == "perl" ];then
 > $target
-echo ".File: vi $file" >> $target
+#echo ".File: vi $file" >> $target
+echo ".$section" >> $target
 echo "[source,perl]" >> $target
 echo "-----" >> $target
 echo "" >> $target 
@@ -100,7 +104,7 @@ fi
 	if [ "$filetype" == "exercise" ];then
 > $target
 echo "" >> $target 
-echo ".$chapter - $section $EXERCISE_COUNTER" >> $target
+echo ".$chapter: Exercise $EXERCISE_COUNTER" >> $target
 echo "[IMPORTANT]" >> $target
 echo "=====" >> $target
 echo "" >> $target 
@@ -115,7 +119,7 @@ fi
 	if [ "$filetype" == "graphviz" ];then
 > $target
 echo "" >> $target 
-echo ".$chapter - $section" >> $target
+echo ".$section" >> $target
 echo "[graphviz]" >> $target
 echo "-----" >> $target
 echo "" >> $target 
@@ -129,7 +133,8 @@ fi
 	if [ "$filetype" == "cfengine" ];then
 > $target
 echo "" >> $target 
-echo ".File: vi $file" >> $target
+#echo ".File: vi $file" >> $target
+echo ".$section" >> $target
 echo "" >> $target 
 echo "=====" >> $target
 echo "[source,cfengine3,numbered]" >> $target
@@ -162,8 +167,7 @@ echo "${output_target}.txt has been created"
 #########################################
 ### ASCIIDOC
 function asciidoc() {
-for type in html pdf; do if [ -f ${output_target}.$type ]; then echo "Removing old ${output_target}.$type file..."; rm ${output_target}.$type; fi; done
-for type in png; do if [ -f ${output_target}__[0-9].$type ]; then echo "Removing old ${output_target}__[0-9].$type file..."; rm ${output_target}__[0-9].$type; fi; done
+for type in html pdf png; do rm ${output_target}*.$type; done
 echo "Beginning asciidoc..."
 ########### with asciidoc to html
 
