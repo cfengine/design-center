@@ -20,6 +20,10 @@ find . -maxdepth 1 -type f -iname "[0-9]*[cf|txt|pl|sh|exr|dot]" | sort > /tmp/f
 ### Begin Work
 for file in `cat /tmp/file_list.txt`
 	do
+	chapter=`echo $file | awk -F"-" '{print $3}' | sed "s/_/ /g"`
+	chapter=${chapter^}
+	section=`echo $file | awk -F"-" '{print $5}' |  awk -F"." '{print $1}' | sed "s/_/ /g"`
+	section=${section^}
 
 LOOP_COUNTER=`expr $LOOP_COUNTER + 1`
 if [ $LOOP_COUNTER -gt $THRESHOLD ]; then
@@ -96,7 +100,7 @@ fi
 	if [ "$filetype" == "exercise" ];then
 > $target
 echo "" >> $target 
-echo ".Exercise $EXERCISE_COUNTER" >> $target
+echo ".$chapter - $section $EXERCISE_COUNTER" >> $target
 echo "[IMPORTANT]" >> $target
 echo "=====" >> $target
 echo "" >> $target 
@@ -111,7 +115,7 @@ fi
 	if [ "$filetype" == "graphviz" ];then
 > $target
 echo "" >> $target 
-echo ".Figure $FIGURE_COUNTER" >> $target
+echo ".$chapter - $section" >> $target
 echo "[graphviz]" >> $target
 echo "-----" >> $target
 echo "" >> $target 
@@ -119,7 +123,6 @@ cat $file >> $target
 echo "" >> $target 
 echo "-----" >> $target
 echo "File: vi $file" >> $target
-FIGURE_COUNTER=`expr $FIGURE_COUNTER + 1`
 fi
 
 ### process cfengine files
@@ -160,6 +163,7 @@ echo "${output_target}.txt has been created"
 ### ASCIIDOC
 function asciidoc() {
 for type in html pdf; do if [ -f ${output_target}.$type ]; then echo "Removing old ${output_target}.$type file..."; rm ${output_target}.$type; fi; done
+for type in png; do if [ -f ${output_target}__[0-9].$type ]; then echo "Removing old ${output_target}__[0-9].$type file..."; rm ${output_target}__[0-9].$type; fi; done
 echo "Beginning asciidoc..."
 ########### with asciidoc to html
 
