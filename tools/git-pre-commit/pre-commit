@@ -1,11 +1,12 @@
 #!/bin/bash
 # Author: Nick Anderson <nick@cmdln.org>
 # git pre-commit hook to check CFEngine policy for syntax errors
+# Install in .git/hooks/pre-commit
 
 # List of files to check with cf-promises, this is relative to 
 # masterfiles promises.cf and failsafe.cf are the standard entry
 # points. You might want to add any other entry points you use.
-checkfiles="promises.cf failsafe.cf"
+checkfiles="promises.cf update.cf"
 
 
 # I try to guess which cf-promises you want to use by looking in the
@@ -13,14 +14,14 @@ checkfiles="promises.cf failsafe.cf"
 # cfpromises="/var/cfengine/bin/cf-promises"
 
 commoncfbin="/var/cfengine/bin /usr/sbin /usr/local/bin /usr/local/sbin"
-if [ !-x $cfpromises ]; then
+if [[ ! -x $cfpromises ]]; then
   for dir in $commoncfbin; do
-    if [ -x $dir/cf-promises ]; then
+    if [[ -x $dir/cf-promises ]]; then
       cfpromises="$dir/cf-promises"
       break
     fi
   done
-  if [ !-x $cfpromises ]; then
+  if [[ ! -x $cfpromises ]]; then
       echo "Unable to find cf-promises, please specify the path manually" 1>&2
       echo "in $0 or install into one of the common locations ($commoncfbin)" 1>&2
       exit 1
@@ -30,10 +31,12 @@ fi
 ERRORS=0
 
 # Directory to create temporary checkout
-tmp="/tmp"
+tmp="${HOME}/tmp/cfengine/git-pre-commit-hook"
+mkdir -p ${tmp} >/dev/null 2>/dev/null
+
 #tmpdir=$(mktemp --directory --dry-run --tmpdir=$tmp)
 tmpdir=$(mktemp --directory --tmpdir=$tmp)
-if [ $? -eq 1 ]; then
+if [[ $? -eq 1 ]]; then
   let ERRORS++
   echo Creation of temporary directory in $tmp FAILED
   exit $ERRORS
@@ -41,7 +44,7 @@ fi
 
 # Checkout a copy of the current index into a temporary directory for testing
 git checkout-index --prefix=$tmpdir/ -af
-if [ $? -eq 1 ]; then
+if [[ $? -eq 1 ]]; then
   let ERRORS++
   echo Checkout to $tmpdir FAILED
   exit $ERRORS
@@ -49,8 +52,8 @@ if [ $? -eq 1 ]; then
 fi
 
 for file in $checkfiles; do
-  $cfpromises -f $tmpdir/$file 
-  if [ $? -eq 1 ]; then
+  $cfpromises -cf $tmpdir/$file 
+  if [[ $? -eq 1 ]]; then
     let ERRORS++
     echo Syntax check on $file FAILED
   fi
@@ -59,7 +62,7 @@ done
 # Cleanup temporary checkout
 rm -rf $tmpdir
 
-if [ $ERRORS -gt 0 ]; then
+if [[ $ERRORS -gt 0 ]]; then
   echo Aborting, we dont allow broken commits
   exit $ERRORS
 fi
