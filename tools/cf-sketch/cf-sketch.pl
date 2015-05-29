@@ -270,8 +270,21 @@ if (scalar keys %{$options{activate}})
 
         if (ref $load ne 'ARRAY')
         {
-            ($load, @warnings) = $dcapi->load($file);
-            die "Could not load $file: @warnings" unless defined $load;
+            $file =~ s/^'(.+)'$/$1/;
+            if (substr($file, 0, 1) eq '{')
+            {
+                ($load, @warnings) = $dcapi->decode($file);
+                die "Could not decode JSON string '$file': @warnings" unless defined $load;
+                unless (Util::hashref_search($load, $sketch))
+                {
+                    $load = { $sketch => $load };
+                }
+            }
+            else
+            {
+                ($load, @warnings) = $dcapi->load($file);
+                die "Could not load $file: @warnings" unless defined $load;
+            }
         }
 
         if (ref $load eq 'ARRAY')
