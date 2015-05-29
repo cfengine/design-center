@@ -1567,7 +1567,7 @@ sub _incr_parse {
     $self->{incr_text} = substr( $self->{incr_text}, $p );
     $self->{incr_p} = 0;
 
-    return $obj or '';
+    return $obj || '';
 }
 
 
