@@ -1,8 +1,18 @@
 #!/usr/bin/perl -w
 
+######################################################################
+my $VERSION="3.6.0";
+my $DATE="2014";
+######################################################################
+
 BEGIN
 {
     $ENV{PERL_JSON_BACKEND} = 'JSON::backportPP';
+
+    if ($0 =~ m/design_center$/)
+    {
+        unshift @ARGV, '--module_mode';
+    }
 
     if (-l $0)
     {
@@ -11,11 +21,6 @@ BEGIN
         FindBin->again();
     }
 }
-
-######################################################################
-my $VERSION="3.6.0";
-my $DATE="2014";
-######################################################################
 
 my @toremove;
 my $inputs_root;
@@ -75,6 +80,7 @@ GetOptions(\%options,
            "ignore!",
            "coverage!",
            "verbose|v!",
+           "module_mode!",
            "veryverbose|vv!",
            "generate!",
            "force|f!",
@@ -106,8 +112,8 @@ die "$0: --inputs $options{inputs} doesn't exist" unless -d $options{inputs};
 
 $options{installdest}="$options{inputs}/sketches";
 
-my $sourcedir = dirname($options{installsource});
-$options{sourcedir} = $sourcedir;
+my $sourcedir;
+set_installsource_sourcedir($options{installsource});
 
 if (exists $options{'make_cfsketches'})
 {
@@ -167,6 +173,12 @@ if (exists $options{'make_cfsketches'})
                      regenerate_index => $options{sourcedir},
                     });
     exit 0;
+}
+
+if (exists $options{module_mode})
+{
+    $options{expert} = 1;
+    cfe_module_interaction(@ARGV);
 }
 
 if (exists $options{'search'})
@@ -249,16 +261,40 @@ if (scalar keys %{$options{activate}})
     my %todo;
     foreach my $sketch (keys %{$options{activate}})
     {
+        next if $sketch eq 'pname';
+
         my $file = $options{activate}->{$sketch};
-        my ($load, @warnings) = $dcapi->load($file);
-        die "Could not load $file: @warnings" unless defined $load;
+
+        my $load = $file;
+        my @warnings;
+
+        if (ref $load ne 'ARRAY')
+        {
+            $file =~ s/^'(.+)'$/$1/;
+            if (substr($file, 0, 1) eq '{')
+            {
+                ($load, @warnings) = $dcapi->decode($file);
+                die "Could not decode JSON string '$file': @warnings" unless defined $load;
+                unless (Util::hashref_search($load, $sketch))
+                {
+                    $load = { $sketch => $load };
+                }
+            }
+            else
+            {
+                ($load, @warnings) = $dcapi->load($file);
+                die "Could not load $file: @warnings" unless defined $load;
+            }
+        }
 
         if (ref $load eq 'ARRAY')
         {
             my $i = 1;
             foreach (@$load)
             {
-                my $k = "parameter definition from $file-$i";
+                my $pname = exists $options{activate}->{pname} ? $options{activate}->{pname} : $file;
+
+                my $k = exists $options{activate}->{pname} ? $options{activate}->{pname} : "parameter definition from $file-$i";
                 $todefine{$k} = $_;
                 $i++;
                 push @{$todo{$sketch}},{
@@ -318,6 +354,14 @@ unless ($options{'expert'}) {
     exit(0);
 }
 
+sub set_installsource_sourcedir
+{
+    $options{installsource} = shift @_;
+
+    $sourcedir = dirname($options{installsource});
+    $options{sourcedir} = $sourcedir;
+}
+
 sub api_interaction
 {
     my $request = shift @_;
@@ -367,7 +411,7 @@ sub api_interaction
     if (exists $options{apiconfig})
     {
         my $error;
-        print ">> OVERRIDING CONFIG FROM $options{apiconfig}\n" if $options{verbose};
+        print STDERR ">> OVERRIDING CONFIG FROM $options{apiconfig}\n" if $options{verbose};
         ($opts, $error) = $dcapi->load($options{apiconfig});
         die $error if defined $error;
     }
@@ -379,7 +423,7 @@ sub api_interaction
       }
     }
     my $config = $dcapi->cencode($opts);
-    print ">> $config\n" if $options{verbose};
+    print STDERR ">> $config\n" if $options{verbose};
     print $fh_config "$config\n";
     close $fh_config;
 
@@ -410,11 +454,11 @@ sub api_interaction
                                 dc_api_version => "3.6.0",
                                 request => $request,
                                });
-    print ">> $data\n" if $options{verbose};
+    print STDERR ">> $data\n" if $options{verbose};
     print $fh_data "$data\n";
     close $fh_data;
 
-    print "Running [$api_bin '$filename_config' '$filename_data']\n"
+    print STDERR "Running [$api_bin '$filename_config' '$filename_data']\n"
      if $options{veryverbose};
     open my $api, '-|', "$api_bin '$filename_config' '$filename_data'" or die "Could not open $api_bin: $!";
 
@@ -440,7 +484,7 @@ sub api_interaction
         }
         else
         {
-            print "OK: Got unsuccessful result: ".$dcapi->encode($result)."\n"
+            print STDERR "OK: Got unsuccessful result: ".$dcapi->encode($result)."\n"
               if $options{verbose};
             Util::print_api_messages($result);
         }
@@ -507,6 +551,17 @@ sub install_sketches
         }
     } @_;
     api_interaction({install => \@todo}, undef, undef, [qw/source target/]);
+}
+
+sub uninstall_sketches
+{
+    my @todo = map
+    {
+        {
+            sketch => $_, force => $options{force}, source => undef, target => undef
+        }
+    } @_;
+    api_interaction({uninstall => \@todo}, undef, undef, [qw/source target/]);
 }
 
 sub make_cfdc_upgrade
@@ -621,8 +676,10 @@ sub get_all_sketches {
 }
 
 # Alias for get_all_sketches
-sub get_sketch {
-  return get_all_sketches(shift);
+sub get_sketch
+{
+    my $sketch = shift;
+    return Util::hashref_search(get_all_sketches($sketch), $sketch);
 }
 
 # Return list of installed sketches and their repositories
@@ -655,16 +712,45 @@ sub is_sketch_installed
 {
   my $sketch = shift;
   my $installed = get_installed;
-  return exists($installed->{$sketch});
+  return $installed->{$sketch} if exists $installed->{$sketch};
 }
 
 # Return all activations
 sub get_activations {
+    my $sketch = shift @_;
+    my $pname = shift @_;
+
     my ($success, $result) = main::api_interaction({ activations => 1 });
     my $activs = Util::hashref_search($result, 'data', 'activations');
     if (ref $activs eq 'HASH')
     {
-        return $activs;
+        if (defined $sketch)
+        {
+            my $sketch_activs = Util::hashref_search($activs, $sketch);
+            if (ref $sketch_activs eq 'ARRAY' && defined $pname)
+            {
+                    foreach my $a (@$sketch_activs)
+                    {
+                        foreach my $p (@{$a->{params}})
+                        {
+                            if ($p eq $pname)
+                            {
+                                return $a;
+                            }
+                        }
+                    }
+
+                    return undef;
+            }
+            else
+            {
+                return $sketch_activs;
+            }
+        }
+        else
+        {
+            return $activs;
+        }
     }
     else
     {
@@ -703,4 +789,171 @@ sub get_validations {
   my $vals = Util::hashref_search($result, 'data', 'validations');
   $vals = {} unless (ref $vals eq 'HASH');
   return $vals;
+}
+
+###################################################################
+# Package Module Interface ########################################
+###################################################################
+
+sub cfe_module_interaction_package_from_sketch
+{
+    my $data = shift @_;
+    my $showtype = shift @_;
+
+    my $name = Util::hashref_search($data, qw/metadata name/);
+
+    die "Unexpected error: sketch data is missing a name " . $dcapi->cencode($data)
+     unless $name;
+    print "Name=$name\n";
+
+    my $version = Util::hashref_search($data, qw/metadata version/) || 0;
+    print "Version=$version\n";
+    print "Architecture=none\n";
+
+    print "PackageType=repo\n" if $showtype;
+}
+
+sub cfe_module_interaction_read
+{
+    my %in;
+    while (<STDIN>)
+    {
+        chomp;
+        my ($k, $v) = split '=', $_, 2;
+        if ($k eq 'options')
+        {
+            cfe_module_special_options(split '=', $v, 2);
+        }
+        else
+        {
+            push @{$in{$k}}, $v;
+        }
+    }
+
+    return \%in;
+}
+
+sub cfe_module_special_options
+{
+    my $k = shift @_;
+    my $v = shift @_;
+
+    if ($k eq 'installsource')
+    {
+        set_installsource_sourcedir($v);
+    }
+    elsif ($k eq 'verbose' || $k eq 'veryverbose')
+    {
+        $options{$k} = $v;
+    }
+}
+
+sub cfe_module_interaction
+{
+    my @args = @_;
+
+    foreach my $command (@args)
+    {
+        if ($command eq 'supports-api-version')
+        {
+            print "1\n";
+        }
+        else
+        {
+            my $conf = cfe_module_interaction_read();
+            if ($options{veryverbose})
+            {
+                warn "{{{ $0: $command config: " . Dumper($conf);
+            }
+
+            if ($command eq 'get-package-data')
+            {
+                my $file = Util::hashref_search($conf, 'File');
+
+                die "$0: no 'File' parameters given, aborting"
+                 unless ref $file eq 'ARRAY';
+
+                die "$0: multiple 'File' parameters are not supported, aborting"
+                 unless scalar @$file == 1;
+
+                my $sketch = $file->[0];
+                my $found = get_sketch($sketch);
+
+                if ($found)
+                {
+                    cfe_module_interaction_package_from_sketch($found, 1);
+                }
+                else
+                {
+                    print STDERR "ErrorMessage=Sketch '$sketch' was not found in $options{installsource}\n";
+                    exit 1;
+                }
+            }
+            elsif ($command eq 'list-installed')
+            {
+                my $installed = get_installed();
+                if (defined $installed && ref $installed eq 'HASH')
+                {
+                    foreach my $sketch (sort keys %$installed)
+                    {
+                        cfe_module_interaction_package_from_sketch(get_sketch($sketch), 0);
+                    }
+                }
+            }
+            elsif ($command eq 'list-updates')
+            {
+                # TODO
+            }
+            elsif ($command eq 'list-updates-local')
+            {
+                # TODO
+            }
+            elsif ($command eq 'repo-install' || $command eq 'remove')
+            {
+                my $remove_mode = ($command eq 'remove');
+                my $name = Util::hashref_search($conf, 'Name');
+
+                die "$0: no 'Name' parameters given, aborting"
+                 unless ref $name eq 'ARRAY';
+
+                die "$0: multiple 'Name' parameters are not supported, aborting"
+                 unless scalar @$name == 1;
+
+                my $sketch = $name->[0];
+
+                if ($remove_mode)
+                {
+                    if (is_sketch_installed($sketch))
+                    {
+                        uninstall_sketches($sketch);
+                    }
+
+                    if (is_sketch_installed($sketch))
+                    {
+                        print STDERR "ErrorMessage=Sorry, could not remove sketch '$sketch' from $options{installsource}\n";
+                        exit 1;
+                    }
+                }
+                else # install mode
+                {
+                    unless (is_sketch_installed($sketch))
+                    {
+                        install_sketches($sketch);
+                    }
+
+                    unless (is_sketch_installed($sketch))
+                    {
+                        print STDERR "ErrorMessage=Sorry, could not install sketch '$sketch' from $options{installsource}\n";
+                        exit 1;
+                    }
+                }
+            }
+            else
+            {
+                die "Unknown command: $command";
+            }
+        }
+    }
+
+    exit 0;
 }
