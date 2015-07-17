@@ -1,5 +1,5 @@
 #!/bin/sh
-# Installing Neil Watson's CFEngine 3 syntax highlighter
+# Run this shell script to install Neil Watson's CFEngine 3 syntax highlighter
 cat <<EOF >> ~/.vimrc
 
 filetype plugin on
