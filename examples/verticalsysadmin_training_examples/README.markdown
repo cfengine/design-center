@@ -10,9 +10,9 @@ alphanumeric order (facilitated by l.sh script),
 or run the provided run_slides.sh script which
 will display the files, in order, using vi.
 
-I would love to hear from you, email me at
-aleksey at verticalsysadmin.com
+I would love to hear from you. Email me at aleksey
+at verticalsysadmin.com
 
 Aleksey Tsalolikhin
-20 April 2013
 Los Angeles, California
+17 July 2015
