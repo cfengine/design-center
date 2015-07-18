@@ -95,6 +95,10 @@ api_validations:
 	@echo ...define a choice-of validation with choice and derived
 	echo '{ dc_api_version: "3.6.0", request: {define_validation: { AB: { choice: [ "A", "B" ] } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "3.6.0", request: {define_validation: { C: { choice: [ "C" ] } } } }' | $(CFAPI)
+	mkdir -p /var/tmp
+	echo hamburger > /var/tmp/roles.txt
+	echo cheeseburger >> /var/tmp/roles.txt
+	echo '{ dc_api_version: "3.6.0", request: {define_validation: { FILE: { choice: { file: "/var/tmp/roles.txt" } } } } }' | $(CFAPI)
 	@echo ...define some basic validations
 	echo '{ dc_api_version: "3.6.0", request: {define_validation: { IPv4_local: { valid_ipv4: "10.0.0/24", invalid_ipv4: "10.3.6.0" } } } }' | $(CFAPI)
 	echo '{ dc_api_version: "3.6.0", request: {define_validation: { IPv4: { valid_ipv4: "0.0.0.0/0" } } } }' | $(CFAPI)
@@ -129,6 +133,7 @@ api_validate:
 	echo '{ dc_api_version: "3.6.0", request: {validate: { validation: "AB", data: "A" } } }' | $(CFAPI)
 	echo '{ dc_api_version: "3.6.0", request: {validate: { validation: "AB", data: "" } } }' | $(CFAPI)
 	echo '{ dc_api_version: "3.6.0", request: {validate: { validation: "C", data: "C" } } }' | $(CFAPI)
+	echo '{ dc_api_version: "3.6.0", request: {validate: { validation: "FILE", data: "hamburger" } } }' | $(CFAPI)
 
 	@echo ...now validate numeric data
 	echo '{ dc_api_version: "3.6.0", request: {validate: { validation: "8BIT_NUMBER", data: 100 } } }' | $(CFAPI)
