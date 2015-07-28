@@ -3,20 +3,24 @@
 All of the examples are shipped as standalone CFEngine 3 files (*.cf) and are runnable:
 
 -----
-cf-agent -KIb example -f ./example_115.cf
+cf-agent -I -b example -f ./example_115.cf
 -----
 
 [horizontal]
-*-K:*:: "do it now" (over-rides time lock database)
 
-*-I:*:: Inform me of any changes made to the system
+*-f:*:: input filename (make sure to specify the directory, CFEngine doesn't
+like to make assumptions, as wrong guesses about infrastructure can be
+disastrous)
 
-*-b:*:: list of bundles to run  (a bundle is a group of CFEngine policies)
+*-b:*:: list of bundles to run (a bundle is a group of CFEngine policies)
 
-*-f:*:: input filename (make sure to add the dot slash to specify the current directory)
+*-I:*:: Inform me of any changes made to the system (by default CFEngine runs
+quietly as output can be overwhelming at scale (e.g. from 10,000 systems))
+
 
 Example:
 -----
-cf-agent -KIb example -f \
+cf-agent -f \
 ./030-0005_Basic_Examples:_Files,_Processes,_Commands.__Files._Create_a_file.cf
+  -b example -I
 -----
