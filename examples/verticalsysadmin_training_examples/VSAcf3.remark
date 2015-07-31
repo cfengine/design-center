@@ -3,17 +3,36 @@
 
 include "common"
 
+style MyBoldStyle
+{
+  pre "\E[1m"
+  post "\E[0m"
+}
+
+style BoldBlue
+{
+  pre "\E[34m" post "\E[39m"
+  MyBoldStyle
+}
+
+
+
 # Special: Color all lines that don't match any of the rules below red
 /.*/ red
 
 # chapter break files
-/^([0-9]{3})/  cyan
+/(.*Title.*)/  {
+  BoldBlue
+  break
+}
 
-/^([0-9]+)-([0-9]+)_(.*)__(.*)$/ {
+/^([0-9]+)-([0-9]+)-(.*)-(.*)-(.*)$/ {
   default
   1 cyan
-  2 blue
-  3 green
+  2 BoldBlue
+  3 blue
   4 yellow
+  5 cyan
+  s/^/    /
   break
 }
