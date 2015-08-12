@@ -261,11 +261,8 @@ sub fill_param
         my $metadata = $extra->{sketch}->runfile_data_dump();
         $metadata = Util::hashref_merge($metadata,
                                         {
-                                         activation => $extra->{metadata},
                                          bundle_options => $extra->{sketch}->api_options($extra->{bundle}),
                                          api => $extra->{sketch}->api_describe($extra->{bundle}),
-                                        },
-                                        {
                                          activation => {
                                                         identifier => $extra->{id},
                                                         timestamp => $extra->{timestamp},
@@ -505,6 +502,8 @@ sub make_bundle_params
     my $indent = shift @_;
     my $a = shift @_;
 
+    my $perl = $self->sketch()->language() eq 'perl';
+
     my @data;
     foreach my $p (@{$self->params()})
     {
@@ -514,18 +513,39 @@ sub make_bundle_params
         }
         elsif (environment_type($p->{type}))
         {
-            push @data, sprintf('@(cfsketch_run.%s)', $p->{value});
+            if ($perl)
+            {
+                push @data, $p->{value};
+            }
+            else
+            {
+                push @data, sprintf('@(cfsketch_run.%s)', $p->{value});
+            }
         }
         elsif (can_inline($p->{type}))
         {
-            foreach my $pr (Util::recurse_print($p->{value}, '', 0, 0, $p->{type} eq 'boolean'))
+            if ($perl)
             {
-                push @data, $pr->{value};
+                push @data, $p->{value};
+            }
+            else
+            {
+                foreach my $pr (Util::recurse_print($p->{value}, '', 0, 0, $p->{type} eq 'boolean'))
+                {
+                    push @data, $pr->{value};
+                }
             }
         }
         elsif (container_type($p->{type}))
         {
-            push @data, sprintf('@(cfsketch_run.%s_%s)', $a->id(), $p->{name});
+            if ($perl)
+            {
+                push @data, $p->{value};
+            }
+            else
+            {
+                push @data, sprintf('@(cfsketch_run.%s_%s)', $a->id(), $p->{name});
+            }
         }
         else # nothing should reach this point
         {
@@ -534,7 +554,9 @@ sub make_bundle_params
         }
     }
 
-    return join(",$indent", @data);;
+    return \@data if $perl;
+
+    return join(",$indent", @data);
 }
 
 sub data_dump

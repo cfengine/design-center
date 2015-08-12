@@ -21,7 +21,7 @@ use constant OPTIONAL_ENVIRONMENT_KEYS => qw/qa rudder/;
 
 use Mo qw/build default builder coerce is required/;
 
-our @vardata_keys = qw/compositions activations definitions environments validations/;
+our @vardata_keys = qw/compositions activations definitions environments validations expansions/;
 our @constdata_keys = qw/selftests/;
 
 has version => ( is => 'ro', default => sub { API_VERSION } );
@@ -64,6 +64,7 @@ has compositions => ( is => 'rw', default => sub { {} });
 has definitions => ( is => 'rw', default => sub { {} });
 has activations => ( is => 'rw', default => sub { {} });
 has validations => ( is => 'rw', default => sub { {} });
+has expansions => ( is => 'rw', default => sub { {} });
 has environments => ( is => 'rw', default => sub { { } } );
 has selftests => ( is => 'rw', default => sub { [] } );
 
@@ -191,6 +192,11 @@ sub set_config
     else
     {
         $self->log3("Successfully loaded vardata file $vardata_file");
+
+        unless (exists $v_data->{expansions})
+        {
+            $v_data->{expansions} = {};
+        }
 
         foreach my $key (@vardata_keys)
         {
@@ -1294,6 +1300,9 @@ sub regenerate
     my $self = shift;
     my $regenerate = shift;
 
+    my $expdata = $self->expansions();
+    %$expdata = ();
+
     my $result = DCAPI::Result->new(api => $self,
                                     status => 1,
                                     success => 1,
@@ -1339,6 +1348,7 @@ sub regenerate
     my @inputs;
     foreach my $a (@activations)
     {
+        next unless $a->sketch()->language() eq 'cfengine';
         push @inputs, $a->sketch()->get_inputs($self->runfile()->{relocate_path}, 10);
         $self->log("Regenerate: adding inputs %s", \@inputs);
     }
@@ -1388,8 +1398,6 @@ sub regenerate
         }
     }
 
-    my $data_lines = join "\n\n", @data;
-
     my %stringified = (
                        activated => 1,
                        test => 1,
@@ -1426,15 +1434,17 @@ sub regenerate
         }
 
         push @environment_data, $indent . Util::make_container_line("", $e, $self->cencode(\%edata));
+        $expdata->{$e} = \%edata;
     }
 
     my $environment_classes = join "\n", @environment_classes;
     my $environment_data = join "\n", @environment_data;
 
-    # 3. make cfsketch_run bundle with invocations
+    # 3a. make cfsketch_run bundle with CFEngine bundle invocations
     my @invocation_lines;
     foreach my $a (@activations)
     {
+        next unless $a->sketch()->language() eq 'cfengine';
         $self->log3("Regenerate: generating invocation call %s", $a->id());
         $result->add_data_key("activations",
                               $a->id(),
@@ -1475,18 +1485,99 @@ sub regenerate
         push @invocation_lines, "\n";
     }
 
+    # 3b. add external bundle invocations
+    my @external_invocation_lines;
+    my $modified_vardata = 0;
+
+    foreach my $a (@activations)
+    {
+        next unless $a->sketch()->language() eq 'perl';
+        $self->log3("Regenerate: generating Perl invocation call %s", $a->id());
+        $result->add_data_key("perl_activations",
+                              $a->id(),
+                              [
+                               $a->prefix(),
+                               $a->sketch()->name(),
+                               $a->bundle(),
+                               $a->hash()
+                              ]);
+
+        my $env_activated_context = $a->environment() . "_activated";
+
+        push @invocation_lines,
+         sprintf('%s%s::',
+                 $context_indent,
+                 $env_activated_context);
+
+        my @external_inputs = $a->sketch()->get_inputs(undef, 10);
+
+        push @external_invocation_lines, sprintf('%s"%s %s %s %s expansions %s" -> { "%s", "%s", "%s", "%s" }%smodule => "true", contain => in_shell, handle => "dc_perl_call_%s",%sifvarclass => "%s";',
+                                                 $indent,
+                                                 'perl',
+                                                 $external_inputs[0],
+                                                 $a->bundle(),
+                                                 $self->vardata(),
+                                                 $a->id(),
+                                                 $a->id(),
+                                                 $a->sketch()->name(),
+                                                 $a->bundle(),
+                                                 $a->hash(),
+                                                 "\n$indent",
+                                                 $a->id(),
+                                                 "\n$indent",
+                                                 $a->sketch()->runtime_context());
+        push @external_invocation_lines, "\n";
+
+        $expdata->{$a->id()} = $a->make_bundle_params("", $a);
+        $modified_vardata++;
+    }
+
+    $self->save_vardata() if $modified_vardata;
+
     # 4. print return value reports
     my @report_lines;
     foreach my $a (@activations)
     {
         foreach my $p (grep { DCAPI::Activation::return_type($_->{type}) } @{$a->params()})
         {
-            push @report_lines,
-            sprintf('%s"activation %s returned %s = %s";',
-                    $indent,
-                    $a->id(),
-                    $p->{name},
-                    sprintf('$(return_%s[%s])', $a->id(), $p->{name}));
+            if ($a->sketch()->language() eq 'perl')
+            {
+                my $context = 'dcreturn';
+                my $varname = sprintf("%s_%s", $a->id(), $p->{name});
+                #my $context = "return_" . $a->id(); # requires Redmine#6063 to work
+                #my $varname = $p->{name}; # requires Redmine#6063 to work
+                push @report_lines,
+                 sprintf('%s"Perl activation %s returned %s = $(%s_%s_str)";',
+                         $indent,
+                         $a->id(),
+                         $p->{name},
+                         $a->id(),
+                         $p->{name},
+                         );
+
+                my $line = join("\n",
+                                sprintf("%s# printable version of return value '%s' for activation %s",
+                                        $indent,
+                                        $p->{name},
+                                        $a->id()),
+                                sprintf('%s"%s_%s_str" string => format("%%S", "%s.%s");',
+                                        $indent,
+                                        $a->id(),
+                                        $p->{name},
+                                        $context,
+                                        $varname),
+                               );
+                push @data, $line;
+            }
+            else
+            {
+                push @report_lines,
+                 sprintf('%s"activation %s returned %s = %s";',
+                         $indent,
+                         $a->id(),
+                         $p->{name},
+                         sprintf('$(return_%s[%s])', $a->id(), $p->{name}));
+            }
         }
 
         push @report_lines,
@@ -1502,7 +1593,10 @@ sub regenerate
      "${context_indent}inform_mode::",
       @report_lines;
 
+    my $data_lines = join "\n\n", @data;
+
     my $invocation_lines = join "\n", @invocation_lines;
+    my $external_invocation_lines = join "\n", @external_invocation_lines;
 
     my $runfile_header = defined $self->runfile()->{header} ? $self->runfile()->{header} : '# Design Center runfile';
 
@@ -1535,6 +1629,10 @@ $data_lines
 
       # invocation lines
 $invocation_lines
+
+  commands:
+      # external invocation lines
+$external_invocation_lines
 
   reports:
 $report_lines

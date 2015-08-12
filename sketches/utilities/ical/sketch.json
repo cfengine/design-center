@@ -1,0 +1,40 @@
+{
+    manifest:
+    {
+        "main.pl": { description: "main file" },
+        "README.md": { documentation: true },
+        "params/demo.json": { description: "example configuration" },
+        "params/US32Holidays.ics": { description: "example US holidays from https://www.apple.com/downloads/macosx/calendars/" },
+    },
+
+    metadata:
+    {
+        name: "Utilities::iCal",
+	    description: "Parse iCal files for events and TODOs",
+        version: "1.00",
+        license: "MIT",
+        tags: [ "cfdc", "ical", "ics", "events", "todos", "holidays", "enterprise_compatible", "enterprise_3_6" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::sketch_template": {}, cfengine: { version: "3.6.0" }, os: [{ "linux": "Linux", "solaris": "Solaris", "aix": "AIX" }], perl: { modules: [ "iCal::Parser" ], version: "5.10.0" } },
+    },
+
+    api:
+    {
+        // this is the name of the bundle!
+        parse_ical:
+        [
+            { type: "bundle_options", name: "Parse iCal files for events and TODOs" },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "calendar_file", description: "Calendar file", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS", default: "$(this.promise_dirname)/params/US32Holidays.ics" },
+            { type: "boolean", name: "define_classes", description: "Define classes for today's events and TODOs?", default: true },
+            { type: "string", name: "days_back", description: "Days back from today to examine", validation: "DIGITS", default: "0" },
+            { type: "string", name: "days_forward", description: "Days forward from today to examine", validation: "DIGITS", default: "0" },
+            { type: "return", name: "events", },
+            { type: "return", name: "todo", },
+        ],
+    },
+
+    language: "perl",
+    interface: [ "main.pl" ],
+}

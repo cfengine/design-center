@@ -839,3 +839,11 @@ roles:
 users:
 	$(CFSKETCH_DA) --install System::Users --activate System::Users=$(SOURCEDIR)/system/users/params/demo.json
 	$(RUNNER)
+
+processtable:
+	$(CFSKETCH_DA) --install System::ProcessTable --activate System::ProcessTable=$(SOURCEDIR)/system/processtable/params/demo.json
+	$(RUNNER)
+
+ical:
+	$(CFSKETCH_DA) --install Utilities::iCal --activate Utilities::iCal=$(SOURCEDIR)/utilities/ical/params/demo.json
+	$(RUNNER)
