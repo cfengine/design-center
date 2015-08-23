@@ -13,5 +13,6 @@ bundle agent example
       "Checking fuel..." -> ignition
                handle => "fuel_check";
  
-      
+# consider taking this out... students should be encouraged to think
+# declaratively      
 }

@@ -24,4 +24,15 @@ bundle agent example{
                handle => "report_failure",
               comment => "Report lack of existence of /tmp/newfile";
 }
+### demonstrate linear ordering within a single promise type
+bundle agent example2 {
+reports:
+  "Two";
+
+"Three";
+
+reports:
+  "One";
+
+}
 

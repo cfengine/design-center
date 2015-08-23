@@ -1,3 +1,5 @@
 Create two files.
 
 Make the existence of the 2nd file conditional on existence of the 1st file.
+
+(Have we covered yet how to test if a file exists?)

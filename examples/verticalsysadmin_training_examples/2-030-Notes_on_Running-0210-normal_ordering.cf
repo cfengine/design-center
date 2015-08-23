@@ -24,4 +24,4 @@ bundle agent example{
     !myclass::
       "file /tmp/newfile does not exist";
 }
-
+# this is a duplicate, remove it

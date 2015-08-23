@@ -6,7 +6,7 @@ bundle agent example {
 
     my_hostname_has_dashes::
 
-      "Boo!";
+      "Hello world";
 
 }
 

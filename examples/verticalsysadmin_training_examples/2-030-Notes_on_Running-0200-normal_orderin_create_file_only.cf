@@ -8,5 +8,5 @@ bundle agent example {
       "/tmp/newfile"
                create => "true",
               comment => "file created";
-
+## this should be moved to "normal ordering" section, earlier
 }
