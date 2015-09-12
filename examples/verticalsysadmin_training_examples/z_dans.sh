@@ -173,7 +173,7 @@ echo "Beginning asciidoc..."
 
 ### gen html
 echo "Generating html..."
-/usr/bin/asciidoc -b html -d book -a data-uri -a icons -a toc -a max-width=90% -a source-highlighter=pygments -o ${output_target}.html ${output_target}.txt
+asciidoc -b html -d book -a data-uri -a icons -a toc -a max-width=90% -a source-highlighter=pygments -o ${output_target}.html ${output_target}.txt
 
 ######################### This block will use asciidoc to generate pdf. No longer used.
 ### gen xml
