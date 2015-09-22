@@ -9,7 +9,10 @@ syntax on
 autocmd BufRead,BufNewFile *.cf set ft=cf3
 
 " Disable folding so it does not confuse students not familiar with it
-set nofoldenable 
+if exists("&foldenable")
+	set nofoldenable 
+endif
+
 
 " asciidoc syntax highlighting
 autocmd BufRead,BufNewFile *.asciidoc set ft=asciidoc
