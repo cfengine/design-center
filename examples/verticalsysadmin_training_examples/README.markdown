@@ -25,6 +25,12 @@ and use the key bindings:
 
 List files using the l.sh script ("l" for "list")
 
+## Exercises
+
+Run "ls *exr" to list exercises.
+
+## Feedback wanted
+
 I would love to hear from you. Write me at "aleksey" at "verticalsysadmin.com"
 
 Aleksey Tsalolikhin
