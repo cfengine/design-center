@@ -48,8 +48,8 @@ autocmd BufRead,BufNewFile *.txt set ft=asciidoc
 
 " use SPACE and BACKSPACE to control the run_slides.sh slideshow (move
 " forwards and backwards)
-map <SPACE> :next<CR>
-map <BACKSPACE> :prev<CR>:<CR>gg
+map <SPACE> :next +1<CR>
+map <BACKSPACE> :prev +1<CR>
 
 " run current "f"ile using cf-agent in Inform mode
 map ff :!clear;/var/cfengine/bin/cf-agent --color=always -KIb example -f '%:p'
@@ -60,11 +60,22 @@ map vv :!clear;/var/cfengine/bin/cf-agent --color=always -KIvb example -f '%:p' 
 " run current file using /bin/sh
 map rr :!clear;/bin/sh '%:p'
 
-" Add file name to statusline
-set statusline+=%f
 
-" Make status line always visible
+" run asciidoc to render AsciiDoc file; display it with elinks
+" but filter out the Last-updated footer that elinks adds.
+" Throw away warnings from asciidoc; some heading levels generate 
+" warnings when processed standalone but they are needed for the
+" compiled materials (in book form) to be more readable.
+map tt :!clear;asciidoc -a source-highlighter=pygments -o - '%:p' 2>/dev/null \| elinks -dump -config-dir $HOME -config-file vsa-elinks.conf \| grep -v '^   Last updated '
+
+" autocommand to render asciidoc files (*.txt) (should be the same as "tt" mapping above)
+:autocmd BufRead *.txt :!clear; asciidoc -a source-highlighter=pygments -o - '%:p' 2>/dev/null  | elinks -dump -config-dir $HOME -config-file vsa-elinks.conf | grep -v '^   Last updated '
+
+" Make status line visible
 set laststatus=2
+
+" Add file name to statusline so we know where we are in the slideshow
+set statusline+=%f
 
 " -------- end of  .vimrc settings from Vertical Sysadmin training examples collection
 EOF
