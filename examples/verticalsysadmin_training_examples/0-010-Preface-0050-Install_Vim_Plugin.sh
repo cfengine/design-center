@@ -66,14 +66,6 @@ set statusline+=%f
 " Make status line always visible
 set laststatus=2
 
-" Remap Tab to Esc (not needed for slideshow, just author's personal
-" preference. Aleksey Tsalolikhin)
-" nnoremap <Tab> <Esc>
-" vnoremap <Tab> <Esc>gV
-" onoremap <Tab> <Esc>
-" inoremap <Tab> <Esc>`^
-" inoremap <Leader><Tab> <Tab>
-
 " -------- end of  .vimrc settings from Vertical Sysadmin training examples collection
 EOF
 
