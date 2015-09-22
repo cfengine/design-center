@@ -1,8 +1,16 @@
 #!/bin/bash
+
+_DEBUG="on"
+
+function DEBUG()
+{
+	 [ "$_DEBUG" == "on" ] &&  $@
+}
+
+DEBUG=1
 output_target=z_cfengine_essentials
 
-#########################################
-### process files 
+###########################################################################
 function process_files(){
 
 ### initialize environment
@@ -29,10 +37,10 @@ for file in `cat /tmp/file_list.txt`
 
 LOOP_COUNTER=`expr $LOOP_COUNTER + 1`
 if [ $LOOP_COUNTER -gt $THRESHOLD ]; then
-   echo Target reached. Moving on...  >&2
+   DEBUG echo Target reached. Moving on...  >&2
 fi
 
-		#echo $file $LOOP_COUNTER
+		DEBUG echo $file $LOOP_COUNTER
 			if [ -n "`grep SKIP $file`" ]; then
 				filetype=skip;
 			elif [ -n "`grep 'asciidoc cannot handle' $file`" ]; then
@@ -50,17 +58,19 @@ fi
 			elif [ -n "`echo $file | grep 'sh$' | grep -v $0`" ]; then
 				filetype=bash
 		fi
-		#echo "$file is a $filetype file."
+
+		DEBUG echo "$file is a $filetype file."
+
 		target="/tmp/mod_files/$file"
 
 ### skip SKIP files
 	if [ "$filetype" == "skip" ];then
-		echo "skipping $file"
+		DEBUG echo "skipping $file"
 	fi
 
 ### skip asciidoc cannot handle files
 	if [ "$filetype" == "cannot_handle" ];then
-		echo "skipping $file: regex code examples break asciidoc."
+		DEBUG echo "skipping $file: regex code examples break asciidoc."
 	fi
 
 ### process text files
@@ -166,35 +176,25 @@ echo "${output_target}.txt has been created"
 
 #########################################
 ### ASCIIDOC
-function asciidoc() {
-for type in html pdf png; do rm ${output_target}*.$type; done
-echo "Beginning asciidoc..."
-########### with asciidoc to html
-
-### gen html
-echo "Generating html..."
-/usr/bin/asciidoc -b html -d book -a data-uri -a icons -a toc -a max-width=90% -a source-highlighter=pygments -o ${output_target}.html ${output_target}.txt
-
-######################### This block will use asciidoc to generate pdf. No longer used.
-### gen xml
-#echo "Generating xml..."
-#/usr/bin/asciidoc -b docbook -d book -o ${book_target}.xml ${book_target}.txt
-
-### gen fo 
-#echo "Generating fo..."
-#xsltproc --nonet --stringparam toc.section.depth 0 --stringparam  section.autolabel 0 --stringparam  generate.toc "book toc" --stringparam page.orientation "portrait" -o ${book_target}.fo /etc/asciidoc/docbook-xsl/fo.xsl ${book_target}.xml
-#xsltproc --nonet -o ${book_target}.fo /etc/asciidoc/docbook-xsl/fo.xsl ${book_target}.xml
-
-### gen pdf
-#echo "Generating pdf..."
-#fop ${book_target}.fo ${book_target}.pdf
-######################### This block will use asciidoc to generate pdf. No longer used.
+function run_asciidoc() {
+DEBUG echo entered function asciidoc
+for type in html pdf png; do rm -f ${output_target}*.$type; done
+echo
+DEBUG echo =================================================================
+DEBUG echo output_target=${output_target}
+DEBUG echo "Beginning asciidoc..."
+DEBUG echo "Generating html..."
+DEBUG echo asciidoc -v -b html -d book -a data-uri -a icons -a toc -a max-width=90% -a source-highlighter=pygments -o ${output_target}.html ${output_target}.txt
+asciidoc -v -b html -d book -a data-uri -a icons -a toc -a max-width=90% -a source-highlighter=pygments -o ${output_target}.html ${output_target}.txt || DEBUG echo asciidoc processing of ${output_target}.txt failed!!
+ls ${output_target}.txt
+ls ${output_target}.html
 
 ### gen pdf
 echo "Generating pdf..."
-wkhtmltopdf ${output_target}.html ${output_target}.pdf
+wkhtmltopdf ${output_target}.html ${output_target}.pdf || echo PDF creation failed
 
-echo "Finished asciidoc..."
+DEBUG echo "Finished asciidoc..."
+
 }
 
 #########################################
@@ -214,7 +214,7 @@ case "$1" in
   concatenate
   ;;
 'asciidoc')
-  asciidoc
+  run_asciidoc
   ;;
 'view')
   view
