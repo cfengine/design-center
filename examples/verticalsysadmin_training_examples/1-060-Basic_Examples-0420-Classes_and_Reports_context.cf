@@ -7,7 +7,8 @@ bundle agent example {
       "/etc/nologin" 
 
                handle => "touch_etc_nologin",
-              comment => "Quiesce the system for 2 - 4 A.M. Sunday maintenance",
+              comment => "Quiesce the system for maintenance start at 2 AM on
+                          Sunday",
               create  => "true";
 
 }
