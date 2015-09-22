@@ -6,7 +6,10 @@ filetype plugin on
 syntax enable
 au BufRead,BufNewFile *.cf set ft=cf3
 " Disable folding so it does not confuse students not familiar with it
-set nofoldenable 
+if exists("&foldenable")
+	set nofoldenable 
+endif
+
 " disable abbreviations so we do not confuse students
 let g:DisableCFE3KeywordAbbreviations=0
 
