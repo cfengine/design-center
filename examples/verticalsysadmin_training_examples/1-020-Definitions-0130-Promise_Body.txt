@@ -1,6 +1,6 @@
 .Promise Body
 
-First, let's define "body".
+Definitions:
 
 *Body*
 

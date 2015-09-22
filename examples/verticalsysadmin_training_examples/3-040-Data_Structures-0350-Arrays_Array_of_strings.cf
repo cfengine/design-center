@@ -1,3 +1,17 @@
+bundle agent example__ {
+
+  vars:  
+
+     "food_prices[Apple]" 
+           string =>  "59c";
+
+  reports:
+     "Apple costs $(food_prices[Apple])";
+
+}
+
+#-----------------------------------------------------------------------------
+
 bundle agent example {
   vars:
       "cfengine_components[cf-monitord]"

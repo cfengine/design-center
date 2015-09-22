@@ -2,7 +2,7 @@
 
 "files:" indicates the promise type.
 
-[source,cfengine3]
+[source,c]
 -----
 files:    
 

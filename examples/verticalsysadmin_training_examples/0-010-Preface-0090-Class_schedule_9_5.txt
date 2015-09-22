@@ -1,16 +1,16 @@
 [horizontal]
 .9 - 5
-09:00 AM:: - 10:30 AM::  Class
+09:00 AM - 10:30 AM::  Class
 
-10:30 AM:: - 11:00 AM::  Morning break
+10:30 AM - 11:00 AM::  Morning break
 
-11:00 AM:: - 12:30 PM::  Class
+11:00 AM - 12:30 PM::  Class
 
-12:30 PM:: - 01:30 PM::  Lunch break
+12:30 PM - 01:30 PM::  Lunch break
 
-01:30 PM:: - 03:00 PM::  Class
+01:30 PM - 03:00 PM::  Class
 
-03:00 PM:: - 03:30 PM::  Afternoon break
+03:00 PM - 03:30 PM::  Afternoon break
 
-03:30 PM:: - 05:00 PM::  Class
+03:30 PM - 05:00 PM::  Class
 

@@ -1,6 +1,6 @@
 .The Real Basic Form of a Promise
 
-[source,cfengine3]
+[source,c]
 -----
 promise_type:
 
@@ -14,7 +14,7 @@ promise_type:
 
 Example:
 
-[source,cfengine3]
+[source,c]
 -----
 files:
 

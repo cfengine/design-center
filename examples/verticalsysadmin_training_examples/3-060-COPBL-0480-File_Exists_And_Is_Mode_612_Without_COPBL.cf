@@ -5,7 +5,7 @@ bundle agent example {
       "/tmp/testfile" 
 
               handle  => "set_file_attributes", 
-              comment => "Demonstrate_setting_file_attributes", 
+              comment => "Demonstrate setting file attributes", 
               create  => "true",  
               perms   => mog("612","aleksey","cfengine"); 
 
@@ -16,7 +16,7 @@ bundle agent example {
 body perms mog(mode,owner,group)
 {
                owners => { "$(owner)", "john", "brian" };
-               groups => { "$(group)" };
                mode   => "$(mode)";
+               groups => { "$(group)" };
 }
 

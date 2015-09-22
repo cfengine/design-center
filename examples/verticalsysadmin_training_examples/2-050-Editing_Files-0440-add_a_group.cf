@@ -10,9 +10,7 @@ bundle agent example {
                handle => "group_presence",
               comment => "Ensure CFEngine group is present",
             edit_line => cfengine_group_is_present;
-
 }
-
 
 bundle edit_line cfengine_group_is_present {
 
@@ -22,6 +20,4 @@ bundle edit_line cfengine_group_is_present {
 
                handle => "cfengine_group_entry",
               comment => "Arbitrary group entry in /etc/group";
-
 }
-

@@ -12,13 +12,15 @@ bundle agent example {
 
 bundle agent example2 {
 
-  commands:
+  vars:
+    "var1"
+      string => "My fair lady";
 
-      "/bin/echo"
+  reports:
+    "Our bundle name is: $(this.bundle)";
+    "Variable value = $(var1)"
+    #"Variable value = $(example.var1)"
 
-              handle  =>  "use_var_1",
-             comment  =>  "Use variable declared in another bundle to demonstrate scope",
-      #args  =>  "$(var1)";
-                args  =>  "$(example.var1)";
+             comment  =>  "Use variable declared in another bundle to demonstrate scope";
 
 }

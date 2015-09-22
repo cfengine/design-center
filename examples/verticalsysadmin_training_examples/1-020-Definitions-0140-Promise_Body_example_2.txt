@@ -2,7 +2,7 @@
 
 The last three lines constitute the promise body.
 
-[source,cfengine3]
+[source,c]
 -----
 files:
 

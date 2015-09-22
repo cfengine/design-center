@@ -16,8 +16,6 @@ bundle agent example {
               string  => "$(variable_0)";       # a scalar variable
   reports:
 
-    cfengine::
-
       "
 variable_0: $(variable_0)
 variable_1: $(variable_1)

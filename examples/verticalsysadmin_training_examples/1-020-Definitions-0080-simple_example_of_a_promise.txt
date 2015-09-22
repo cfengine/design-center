@@ -1,6 +1,6 @@
 .Example simple promise - create a file
 
-[source,cfengine3]
+[source,c]
 -----
 files:
 

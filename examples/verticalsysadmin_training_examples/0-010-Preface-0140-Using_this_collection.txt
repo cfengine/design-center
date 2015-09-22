@@ -4,6 +4,6 @@ The "CFEngine Essentials" course (formerly known as "Automating System Administr
 
 To encourage and support study of CFEngine 3 for those unable to attend our class, we are making available all the examples and exercises.
 
-Study the course materials in sequence.  Check them out from GitHub  and list them with the "l.sh" script.  Try out and run the examples.  Modify them and run them again.  Write your own examples.  Do the exercises.
+Study the course materials in sequence.  Check them out from GitHub  and list them with the "l.sh" script or view them with the "run_slides.sh" script.  Try out and run the examples.  Modify them and run them again.  Write your own examples.  Do the exercises.
 
 Work your way through the materials until you understand it all and have done all the exercises.  Make sure to look up unfamiliar terms in the Reference Manual.

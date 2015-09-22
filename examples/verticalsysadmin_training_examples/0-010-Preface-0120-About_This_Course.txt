@@ -68,7 +68,5 @@ Many Practical Examples and Exercises to Seed Your Policy Set
 
 The course balances theory and practical.
 
-
 [horizontal]
-Requirements:: Please bring a laptop with two VMs for the lab exercises.  See http://www.verticalsysadmin.com/VMs.txt if you need help setting this up.  Please have the VMS ready before class starts so we don't spend class time setting it up.
-
+Requirements:: Please bring a laptop with wi-fi capability so you can access the lab VMs. 

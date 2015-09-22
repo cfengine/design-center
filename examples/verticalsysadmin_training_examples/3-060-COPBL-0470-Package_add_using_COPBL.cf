@@ -1,3 +1,5 @@
+NEEDS TO BE UPDATED TO 3.7 SYNTAX
+
 bundle agent example {
 
   packages:

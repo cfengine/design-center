@@ -1,4 +1,6 @@
-# set hostname to "my-hostname-has-dashes"
+# CFEngine automatically canonifies hard classes (converts any
+# character that is not alphanum/underscore to underscore)
+# For this example, run "hostname my-hostname-has-dashes"
 
 bundle agent example {
 

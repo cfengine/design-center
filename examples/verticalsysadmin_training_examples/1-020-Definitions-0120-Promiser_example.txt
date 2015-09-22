@@ -2,7 +2,7 @@
 
 '/etc/nologin' is the promiser (the affected system object).
 
-[source,cfengine3]
+[source,c]
 -----
 files:
 

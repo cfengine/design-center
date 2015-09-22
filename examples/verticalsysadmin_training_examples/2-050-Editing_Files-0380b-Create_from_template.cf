@@ -1,3 +1,41 @@
+EXERCISE
+
+Run the following command in the shell to prepare the lab for this exercise:
+date > /tmp/source.txt
+
+Write a policy that will insert the contents of /tmp/source.txt
+into /tmp/dest.txt
+
+Hint: Use a files type promise with an edit_line bundle that
+contains an insert_lines promise with an insert_type => file.
+
+-----------------------------------------------------
+insert_type
+Description: Type of object the promiser string refers to
+
+Menu:
+   * literal or string (treats multiple lines as separate objects)
+   * preserve_block (treats the multiple lines as a single objects)
+   * file (the string should be interpreted as a filename from which to import lines)
+   etc.
+
+bundle edit_line example {
+insert_lines:
+   "this is line one
+this is line two
+this is lne thee"
+    comment => "blah",
+    insert_type => "preserve_block";
+
+
+
+-------------------------------------------------------
+TODO: give an example of insert_type first, then insert_type with
+expand_scalars  (break up the below slide into two slides)
+
+
+-----------------------------------------------------
+
 bundle agent example {
 
   vars:
