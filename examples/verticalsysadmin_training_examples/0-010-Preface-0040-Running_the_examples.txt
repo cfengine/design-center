@@ -1,26 +1,19 @@
 .Running the examples
 
-All of the examples are shipped as standalone CFEngine 3 files (*.cf) and are runnable:
+All of the examples are shipped as standalone CFEngine 3 files which
+you can run on the command-line by specifying the input filename with
+the *-f* switch:
 
 -----
-cf-agent -I -b example -f ./example_115.cf
+cf-agent -f ./example_115.cf
 -----
 
-[horizontal]
-
-*-f:*:: input filename (make sure to specify the directory, CFEngine doesn't
-like to make assumptions, as wrong guesses about infrastructure can be
-disastrous)
-
-*-b:*:: list of bundles to run (a bundle is a group of CFEngine policies)
-
-*-I:*:: Inform me of any changes made to the system (by default CFEngine runs
-quietly as output can be overwhelming at scale (e.g. from 10,000 systems))
-
+We recommend adding *-I* to turn on Inform mode, to inform of
+changes made to the system.  By default CFEngine won't inform of changes
+as reports at scale (e.g. tens of thousands of systems) can be overwhelming.
+However, while we are learning, it's nice to see what CFEngine is doing.
 
 Example:
 -----
-cf-agent -f \
-./030-0005_Basic_Examples:_Files,_Processes,_Commands.__Files._Create_a_file.cf
-  -b example -I
+cf-agent -I -f ./example_115.cf
 -----
