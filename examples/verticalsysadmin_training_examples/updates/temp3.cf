@@ -1,0 +1,20 @@
+body common control {
+
+  bundlesequence => { "example" };
+
+}
+
+
+bundle agent example {
+
+classes:
+  "web"
+     expression => fileexists("/etc/passwd");
+
+reports:
+
+  "hello world";
+
+}
+
+

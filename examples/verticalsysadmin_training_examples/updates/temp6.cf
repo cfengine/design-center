@@ -1,0 +1,6 @@
+bundle agent example {
+
+reports:
+
+"This is $(const.dollar) sign $(const.t)a$(const.n)b $";
+}

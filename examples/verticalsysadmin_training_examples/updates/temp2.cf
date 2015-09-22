@@ -1,0 +1,7 @@
+bundle agent main {
+
+commands:
+
+  "/bin/echo `/bin/date`";
+
+}
