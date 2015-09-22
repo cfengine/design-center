@@ -6,7 +6,7 @@
 # - CFEngine 3 Training Examples "vim slideshow" keybindings
 
 
-cat <<EOF >> ~/.vimrc
+cat <<EOF >> $HOME/.vimrc
 
 " -------- start of  .vimrc settings from Vertical Sysadmin training examples collection
 "
