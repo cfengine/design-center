@@ -17,7 +17,7 @@ examples:
 Run the shell script run_slides.sh to start the vim slideshow,
 and use the key bindings:
 
-  SPACE      go forward 
+  F7         go forward 
   BACKSPACE  go backward
   ff         run current file using cf-agent (mnemonic "file") in Inform mode
   vv         run current file using cf-agent in verbose mode (mnemonic "verbose")

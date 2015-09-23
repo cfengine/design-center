@@ -46,9 +46,9 @@ autocmd BufRead,BufNewFile *.txt set ft=asciidoc
 
 " The following are mappings to support the Training Examples vim "slideshow"
 
-" use SPACE and BACKSPACE to control the run_slides.sh slideshow (move
+" use F7 and BACKSPACE to control the run_slides.sh slideshow (move
 " forwards and backwards)
-map <SPACE> :next +1<CR>
+map <F7> :next +1<CR>
 map <BACKSPACE> :prev +1<CR>
 
 " run current "f"ile using cf-agent in Inform mode
