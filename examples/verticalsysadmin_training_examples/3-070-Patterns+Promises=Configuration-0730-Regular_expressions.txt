@@ -1,0 +1,6 @@
+==== Regular Expressions
+
+Regular Expressions is another way of writing patterns.
+
+CFEngine supports POSIX and PCRE regular expressions.  (PCRE by default.)
+

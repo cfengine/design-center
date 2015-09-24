@@ -1,0 +1,1 @@
+TIP: There is no limit to the length of lists or arrays, but there is a limit to the size of variable-expanded strings (scalars). The final result of any single variable expansion is limited to about 4k.

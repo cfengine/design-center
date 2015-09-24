@@ -1,0 +1,10 @@
+bundle agent main {
+
+reports:
+
+  "uqhost = $(sys.uqhost)
+fqhost - $(sys.fqhost)
+policy hub = $(sys.policy_hub)
+";
+
+}

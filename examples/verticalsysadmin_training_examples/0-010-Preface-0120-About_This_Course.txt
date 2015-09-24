@@ -1,0 +1,72 @@
+.About This Course
+*Automating System Administration with CFEngine 3 (5 days)*
+
+No knowledge of CFEngine or configuration management is required, only basic knowledge of system administration.
+
+The course covers:
+
+.Background and philosophy
+* Academic origin
+* Partnership with Industry
+* Self-healing
+* Promise theory
+* The importance of Knowledge Management
+
+.CFEngine structure
+* Components: agent, executor and server
+* Directory structure and files: /var/cfengine
+* Client-server data flows
+* Policy writing, testing and deployment Work flows
+
+.Basic terminology
+* Promises
+* Bodies
+* Bundles
+* Attributes
+* Convergence
+* Classes (Contexts)
+
+.Automating common tasks
+* copying and editing files
+* setting file ownership and permissions
+* installing packages
+* starting services
+* deleting old logfiles
+
+.Intermediate topics
+* controlling which policies apply where and when
+* tracking what repairs were and weren't done
+* troubleshooting
+
+.Variables
+* Strings, Integers and Real numbers
+* Lists
+* Arrays
+
+.Special:
+* Functions
+* Variables
+
+.Patterns
+* Using Patterns and Promises to Describe Configuration Efficiently
+* Leveraging the power of regular expressions
+* Using lists to drive action
+* Re-using code by abstracting promise attributes into parameterizable promise bodies
+* Re-using code by abstracting promise bundles into parameterizable methods
+
+.Advanced topics
+* Selecting files using simple and compound filters
+* Selecting processes using simple and compound filters
+* Configuring a CFEngine client-server ecosystem
+* Generating reports; how CFEngine can help you audit and report compliance
+
+Many Practical Examples and Exercises to Seed Your Policy Set
+
+.Q&A 
+* Get all your CFEngine questions answered,
+* and all your confusions clarified.
+
+The course balances theory and practical.
+
+[horizontal]
+Requirements:: Please bring a laptop with wi-fi capability so you can access the lab VMs. 

@@ -1,0 +1,15 @@
+bundle agent example {
+
+vars:
+
+  "commands"
+
+      slist => { "/bin/date", "/bin/uname" };
+
+
+commands:
+
+  "$(commands)";
+
+
+}

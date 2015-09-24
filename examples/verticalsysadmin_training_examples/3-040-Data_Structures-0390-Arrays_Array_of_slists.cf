@@ -1,0 +1,28 @@
+bundle agent example {
+# implicit looping over slist in array 
+
+  vars:
+      "config[users]"
+               handle => "users_list_in_config_array",
+              comment => "Demonstrate how an array value can hold a list",
+                slist => { "jim", "jane", "george" };
+
+      "config[packages]"
+               handle => "packages_list_in_config_array",
+              comment => "Demonstrate how an array value can hold a list",
+                slist => { "httpd", "php" };
+
+      #######################################################################
+
+      "keys"
+               handle => "config_array_keys",
+              comment => "generate a list containing keys to 'config' array",
+                slist => getindices("config");
+
+
+  reports:
+
+
+      "The value for key $(keys) is: $(config[$(keys)])";
+
+}

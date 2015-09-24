@@ -1,0 +1,8 @@
+.CFEngine Package
+
+Run the following to examine what is in the CFEngine package
+
+-----
+     rpm -q --filesbypkg cfengine-community | less
+-----
+

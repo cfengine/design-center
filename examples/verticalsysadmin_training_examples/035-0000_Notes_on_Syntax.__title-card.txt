@@ -1,8 +1,0 @@
-Notes on Syntax
----------------
-
-A bundle is a group of one or more promises.  We will show you two promises in one bundle.
-
-File can hold one or more bundles.  We will show you two bundles in one file.
-
-Whitespace does not matter.  (Extra whitespace is for humans, not for the parser.)

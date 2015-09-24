@@ -1,0 +1,30 @@
+Running CFEngine Non-Interactive (as a Service) using promises.cf as input.
+
+. Put your "motd" exercise file under '/var/cfengine/masterfiles/services/'
+
+. Edit '/var/cfengine/masterfiles/promises.cf':
+* Add your "motd" exercise file name to "inputs" list
+* Add your "motd" exercise bundle name to "bundlesequence" list
+
+. Now let's test it:
+
+-----
+    > /etc/motd               # make a repair necessary
+    cf-agent -f update.cf -I  # update from "masterfiles" to "inputs"
+    cf-agent -I               # make sure /etc/motd is repaired
+-----
+
+
+. Remove your '/etc/motd' and watch CFEngine create '/etc/motd' within 5 minutes:
+
+-----
+     watch ls -l /etc/motd 2>/dev/null
+-----
+
+Change cf-execd schedule from 5 min to 1 min. 
+
+. in /var/cfengine/masterfiles/controls/cf_execd.cf, set schedule => { "any" }; 
+-----
+     cf-agent -f update.cf -I
+     /etc/init.d/cfengine3 restart
+-----

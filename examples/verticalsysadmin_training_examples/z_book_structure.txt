@@ -1,0 +1,135 @@
+CFEngine Essentials
+===================
+
+
+010 Preface
+
+Part I: Getting Started
+------------------------
+
+015 Introductory overview
+
+020 Definitions
+
+030 Basic Examples of Promises concerning Files, Processes and Commands
+
+035 Notes on Syntax
+037 Notes on Running
+(035 and 037 should be combined into one chapter, Notes on Syntax and Running)
+
+039 Basic Examples of Promises concerning Classes and Reports
+
+
+Part II: More Fundamentals
+--------------------------
+045 Patterns: Classes
+
+048 Basic Examples of Promises concerning Variables
+
+050 More Notes on Running
+
+070 Knowledge Management
+
+080 Editing Files
+
+110 Promise Body Parts
+
+
+Part III: Going Pro
+------------------
+115 CFEngine Running Unattended (perhaps better title would be "CFEngine as a System Service" or "CFEngine Daemon"?)
+
+120 CFEngine Grammar: Left-hand side, right-hand side
+
+130 Data Types
+
+140 Data Structures: Arrays
+
+150 Software Components
+
+170 CFEngine Standard Library
+
+180 Patterns + Promises = Configuration (needs to have the following sections
+Introduction
+Lists
+Regex
+Body templates
+Classes)
+
+190 Basic Examples of Promises concerning Methods
+
+200 Notes on Application: Versioning Policy
+
+210 Copying Files
+
+
+Part IV: More Examples and Capabilities
+----------------------------------------
+
+220 Security (should be moved to Part IV)
+
+230 More Examples (should be moved to Part IV)
+
+240 Amazon AWS EC2 (should be moved to Part IV)
+
+250 Advanced usage of Classes
+
+260 CFEngine special variables (should have sections:
+- introduction
+- Constants
+- Edit
+- Match
+- Monitoring
+- System
+- This
+)
+
+270 Selecting Files
+
+280 Selecting Processes
+
+290 Special Notes and Gotchas
+
+300 Packages
+
+310 Advanced usage of Classes
+
+320 Advanced usage of Regular Expressions
+
+330 CFEngine functions
+
+340 Advanced usage of Commands
+
+350 Advanced usage of Classes: Linking Promises
+
+370 Dynamic Inputs and Bundlesequence
+
+380 Promises concerning Databases
+
+
+Part V: Even More Examples  
+---------------------------- 
+390 Making sure a process is running
+
+400 More Examples of Handling Files
+
+410 A complete working PXEboot kickstart server example
+
+
+Part VI: Even more Capabilities
+-------------------------------
+
+800 the CFEngine Monitor daemon
+
+810-0010 Reporter.  last seen.cf -- this might be obsolete, there is no longer a cf-reporter
+
+(a brief chapter on "cf-keys -s" could go here)
+
+
+Part VII: Conclusion
+-------------------
+900 Exercises
+
+999 survey (we can have a book survey)
+
+

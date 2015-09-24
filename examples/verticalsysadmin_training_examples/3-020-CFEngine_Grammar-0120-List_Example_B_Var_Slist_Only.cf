@@ -1,0 +1,29 @@
+# Example of
+#
+#      cfengine_word => { list }    #  (directly and via variable)
+
+bundle agent example {
+
+  vars:
+
+      "my_slist_0"
+
+               handle => "declare_slist_var",
+              comment => "Demonstrate a list on the RHS",
+               slist  => {
+                           "String contents...",
+                           "... are beauutifuuul this time of year aasldfkj
+askdfj 
+askfdsakdjfaskdfj ;asldkjf as;ldkf jas;dfj a;sdklfj as;df
+
+asdlfkjas;fj as;dfj as;ldf jasfd j"
+               };
+
+
+      "my_slist_1"
+
+               handle => "declare_another_slist_var",
+              comment => "Demonstrate a list variable on the RHS",
+               slist  => { @(my_slist_0), "apple", "banana", "orange", @(blah) };
+
+}

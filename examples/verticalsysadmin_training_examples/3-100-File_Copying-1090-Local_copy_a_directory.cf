@@ -1,0 +1,26 @@
+bundle common f { vars: "inputs" slist => findfiles("$(sys.masterdir)/lib/3.6/*.cf"); }
+body file control { inputs => { @(f.inputs) }; }
+
+
+########################################
+
+
+bundle agent example
+{
+
+  vars:
+
+      # A standard location for the source point
+      "master_location" string => "/var/cfengine/masterfiles";
+
+  files:
+
+      "/var/cfengine/inputs/."
+
+         comment      => "Update the policy files from the master",
+         copy_from    => local_cp("$(master_location)"),
+         depth_search => recurse("inf");
+
+      #   /var/cfengine/masterfiles -----
+
+}

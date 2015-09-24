@@ -1,0 +1,34 @@
+.Setting up client-server (or, client-server bootstrap)
+
+Wipe the slate clean (on both client and server):
+-----
+   rpm -e cfengine-community
+   rm -rf /var/cfengine/
+
+   rpm -i cfengine*rpm
+-----
+
+
+On the server:
+
+Edit '/var/cfengine/masterfiles/def.cf' to add client and server IPs to the "acl" list.
+
+On the server, configure the firewall to allow access on cfengine port 5308:
+-----
+    /etc/init.d/iptables stop
+    chkconfig iptables off  # for training only, not production!!
+-----
+
+Install CFEngine RPM on the client.
+
+On the server:
+-----
+  cf-agent --bootstrap -s 10.1.1.10  
+  cf-agent -f update.cf -IK
+-----
+
+On the client:  
+-----
+  cf-agent --bootstrap -s 10.1.1.10  
+  cf-agent -f update.cf -IK
+-----

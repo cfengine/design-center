@@ -1,0 +1,7 @@
+.Updating Examples
+
+Pull in updates:
+
+-----
+    git pull
+-----

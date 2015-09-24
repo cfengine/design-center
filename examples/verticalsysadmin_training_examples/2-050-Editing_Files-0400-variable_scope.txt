@@ -1,0 +1,13 @@
+.Scope of variables
+
+Note: a fully qualified variable consists of the bundle name wherein the variable is defined plus the variable name. 
+
+.Fully Qualified
+-----
+    bundle agent mybundle { vars: "myvar" string => "myvalue"; }
+-----
+
+$(myvar)   <--- unqualified
+
+$(mybundle.myvar)  <--- fully qualified (complete with scope)
+

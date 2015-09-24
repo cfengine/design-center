@@ -1,0 +1,23 @@
+# Make sure /etc/group contains an entry for
+# a "cfengine" group, GID 502
+
+bundle agent example {
+
+  files:
+
+      "/etc/group"
+
+               handle => "group_presence",
+              comment => "Ensure CFEngine group is present",
+            edit_line => cfengine_group_is_present;
+}
+
+bundle edit_line cfengine_group_is_present {
+
+  insert_lines: 
+
+      "cfengine:x:502:"
+
+               handle => "cfengine_group_entry",
+              comment => "Arbitrary group entry in /etc/group";
+}

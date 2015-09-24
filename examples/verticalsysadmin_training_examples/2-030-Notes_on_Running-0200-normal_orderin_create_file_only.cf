@@ -1,0 +1,12 @@
+bundle agent example {
+
+  commands:
+      "/bin/echo hello world";
+
+
+  files:
+      "/tmp/newfile"
+               create => "true",
+              comment => "file created";
+## this should be moved to "normal ordering" section, earlier
+}

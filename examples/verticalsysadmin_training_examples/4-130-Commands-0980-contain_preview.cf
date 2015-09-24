@@ -1,0 +1,15 @@
+bundle agent example {
+
+  commands:
+
+      "/bin/touch /tmp/test2"
+
+              contain => preview;
+
+}
+
+body contain preview {
+
+              preview => "true";
+
+}

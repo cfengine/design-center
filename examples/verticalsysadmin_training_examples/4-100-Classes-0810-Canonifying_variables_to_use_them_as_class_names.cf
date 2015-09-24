@@ -1,0 +1,20 @@
+bundle agent example {
+
+  vars:
+      "myarray[loc@t!on]" string  => "Bloomington";
+      "myarray[t!me###]"     string  => "first week of April";
+
+
+      "index" slist =>  getindices("myarray");
+
+      
+      "cindex[$(index)]" string => canonify("$(index)");
+
+
+  reports:
+
+    cfengine::
+
+      "Original keys: $(index)";
+      "Canonified keys: $(cindex[$(index)])";
+}

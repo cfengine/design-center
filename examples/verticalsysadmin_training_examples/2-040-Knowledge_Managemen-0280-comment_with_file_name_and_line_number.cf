@@ -1,0 +1,25 @@
+bundle agent example {
+
+  vars:
+   "name" 
+      string => "George";
+
+  files:
+
+      "/tmp/testfile"
+
+
+               handle => "demo_special_variables_in_comment",
+              comment => "XYZ needs /tmp/testfile so make it.
+Line $(this.promise_linenumber) in $(this.promise_filename)
+",
+      # this comment will show up in verbose or debug modes
+
+              create  => "true";
+
+  reports:
+   DEBUG|DEBUG_example::
+    "DEBUG bundle = $(this.bundle)";
+    "name = '$(name)'";
+
+}

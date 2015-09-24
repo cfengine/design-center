@@ -1,0 +1,5 @@
+.Using git
+
+We keep these examples on GitHub and update them during each class as students ask questions or request additional demonstrations.
+
+With git, you can download the updates right in class.

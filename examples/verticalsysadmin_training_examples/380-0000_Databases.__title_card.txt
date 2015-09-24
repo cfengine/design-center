@@ -1,4 +1,0 @@
-Databases
----------
-
-Demonstrate CFEngine integration with PostgreSQL.

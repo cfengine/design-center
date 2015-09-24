@@ -1,0 +1,10 @@
+bundle agent example {
+  files:
+    "/tmp/test"    perms => dev_team;
+}
+
+body perms dev_team {
+  owners => { "Aleksey", "John", "Susan" };
+  groups => { "developers", "cfengine" };
+  mode   => "0640";
+}

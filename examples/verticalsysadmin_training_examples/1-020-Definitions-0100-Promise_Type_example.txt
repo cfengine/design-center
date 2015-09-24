@@ -1,0 +1,13 @@
+.Example of Promise Type
+
+"files:" indicates the promise type.
+
+[source,c]
+-----
+files:    
+
+    "/etc/nologin" 
+
+        create  => "true",
+        comment => "Prevent non-root users from logging in";
+-----

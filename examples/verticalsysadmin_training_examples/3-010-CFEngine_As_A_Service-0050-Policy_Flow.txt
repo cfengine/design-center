@@ -1,0 +1,3 @@
+.Policy Flow Diagram
+
+The following diagrams should be rendered with graphviz.

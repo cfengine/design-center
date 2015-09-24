@@ -1,4 +1,0 @@
-Please run "git pull origin".
-
-Please do exercises (starting with 6A) in
-900-0010_Exercises.__Exercises.txt

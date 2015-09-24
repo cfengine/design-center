@@ -1,0 +1,12 @@
+[horizontal]
+.Class Operators
+
+
+& . ::     AND 
+
+| || ::     OR
+
+! ::        NOT
+
+( ) ::   Groupers
+

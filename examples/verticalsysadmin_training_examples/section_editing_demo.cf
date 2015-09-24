@@ -1,20 +1,56 @@
-bundle agent example {
+# Example of targeting a file section for editing
+#
+#Given a file that has three sections:
+#
+#-----------------
+#[bank]
+#
+#[farm]
+#
+#[home]
+#-----------------
+#
+#
+# edit a specific section -- in our case, bank:
+#
+#-----------------
+#[bank]
+#
+#security=100
+#[farm]
+#
+#[home]
+#
+#
+#-----------------
+
+bundle agent main {
+
+methods:
+
+   "Keep bank security high"
+        usebundle => ensure_security("bank");
+}
+
+
+
+bundle agent ensure_security(parameter) {
 
 files:
 
-  "/etc/example.conf"
+  "/tmp/config.conf"
 
              handle => "demo_section_editing",
-            comment => "Demo section editing capability",
-            edit_line => high_security("bank");
+            comment => "Demonstrate section editing capability",
+            edit_line => security("${parameter}");
 }
 
 ########################################################
 
-bundle edit_line high_security(parameter) {
+bundle edit_line security(parameter) {
 
   insert_lines:
-      "security=1"
+      "security=100"
         select_region => MyINISection("$(parameter)");
 
 }
@@ -26,5 +62,11 @@ body select_region MyINISection(x)
 {
          select_start => "\[$(x)\]";
            select_end => "\[.*\]";
+           # sections are INI-style, with [headers]
 
+}
+
+body common control {
+  bundlesequence => { "main" };
+  inputs => { "/var/cfengine/inputs/libraries/cfengine_stdlib.cf" };
 }

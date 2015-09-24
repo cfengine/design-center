@@ -1,0 +1,10 @@
+[horizontal]
+.Inter-Node Communication
+
+cf-serverd:: Used to distribute files to clients requesting them and to listen to network requests for re-running the local cf-agent.  
+
+
+cf-key:: Key generation tool is run once on every host to create public/private key pairs for secure communication.
+
+
+cf-runagent:: Remote run agent is used to execute cf-agent on a remote machine.  cf-runagent does not keep any promises, but instead is used to ask another machine to do so.

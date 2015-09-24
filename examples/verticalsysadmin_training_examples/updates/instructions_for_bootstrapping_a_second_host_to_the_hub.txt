@@ -1,0 +1,37 @@
+bootstrap your second host to your hub:
+
+
+0.  on the second host, Install CFEngine Enterprise RPM 
+
+    wget https://cfengine-package-repos.s3.amazonaws.com/enterprise/Enterprise-3.7.1/agent/agent_rhel6_x86_64/cfengine-nova-3.7.1-1.x86_64.rpm
+
+    rpm -ihv ./cfengine-nova-3.7*rpm
+
+1. On the hub, add the IP address of your host
+   to the "acl" list in /var/cfengine/masterfiles/controls/3.7/def.cf
+   (you can uncomment one of the entries there and change the IP address)
+
+2. run the update policy ON THE HUB
+
+    cf-agent -IC -f update.cf
+
+3. restart cf-serverd ON THE HUB to load the new acl list
+
+    service cfengine3 restart
+
+4. on the second host, bootstrap to the hub:
+
+    cf-agent -B your.hub.ip.address
+-----------
+
+Exercise
+
+1. create "motd" file in /var/cfengine/masterfiles on the hub
+
+     (example: vi /etc/motd) 
+
+2. create a policy on the second host that will copy that file to /etc/motd on the 2nd host
+
+   you can use special variable $(sys.policy_hub) which holds the Hub IP address
+ 
+

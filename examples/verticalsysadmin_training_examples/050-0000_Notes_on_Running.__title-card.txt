@@ -1,5 +1,0 @@
-Notes on Running
-----------------
-
-
-Notes on running CFEngine.
