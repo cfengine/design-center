@@ -1,6 +1,6 @@
 # VSA Training Examples
 
-VSA Training Examples are now at [www.cfenginetutorial.org](www.cfenginetutorial.org)
+VSA Training Examples are now at [www.cfenginetutorial.org](http://www.cfenginetutorial.org/)
 
 Clone them on GitHub!  
 
