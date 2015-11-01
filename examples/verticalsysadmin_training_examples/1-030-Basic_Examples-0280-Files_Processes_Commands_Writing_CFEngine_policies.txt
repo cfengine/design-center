@@ -1,8 +1,0 @@
-.Writing CFEngine policies
-
-. State the sysadmin problem
-
-. Envision the desired end state
-
-. Translate the desired end state into CFEngine Policy Language
-

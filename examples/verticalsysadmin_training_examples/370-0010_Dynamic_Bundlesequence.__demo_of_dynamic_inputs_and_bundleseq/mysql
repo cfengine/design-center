@@ -1,5 +1,0 @@
-bundle agent mysql{
-    reports:
-        cfengine_3::
-            "mysql bundle";
-}

@@ -1,8 +1,0 @@
-Run the following command:
-
------
-   date  > /tmp/date.txt
------
-
-Now write a CFEngine policy that will comment out (using #) the contents of that file.
-

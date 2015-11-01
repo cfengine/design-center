@@ -1,1 +1,0 @@
-TIP: Knowledge Management is one of the key challenges of scale.

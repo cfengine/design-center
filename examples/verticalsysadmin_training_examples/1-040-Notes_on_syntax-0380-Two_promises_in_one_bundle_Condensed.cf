@@ -1,8 +1,0 @@
-bundle agent example {
-
-  files:
-
-      "/tmp/hello" create  => "true";
-
-      "/tmp/world" create  => "true";
-}
