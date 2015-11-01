@@ -1,1 +1,0 @@
-=== PXEboot Kickstart Server

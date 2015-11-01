@@ -1,9 +1,0 @@
-bundle agent example {
-
-  commands:
-
-      "/bin/date"
-
-               handle => "run_date_cmd",
-              comment => "Demonstrating running an external command";
-}

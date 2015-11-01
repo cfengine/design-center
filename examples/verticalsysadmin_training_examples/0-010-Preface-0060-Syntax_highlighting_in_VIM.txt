@@ -1,8 +1,0 @@
-.Syntax highlighting
-
-The use of a syntax highlighter is strongly recommended to save time and trouble.
-
-
-.vi
-
-You can install Neil Watson's CFEngine 3 syntax highlighter using 010-0070-install-vim-plugin.sh, or follow the instructions in "Learning CFEngine 3" or http://www.cfengine.com/cfengine-code-editors 

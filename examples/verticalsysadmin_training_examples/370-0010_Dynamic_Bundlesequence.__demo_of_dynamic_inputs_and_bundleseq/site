@@ -1,5 +1,0 @@
-bundle agent site{
-    reports:
-        cfengine_3::
-            "site bundle";
-}
