@@ -1,7 +1,0 @@
-Exercise
-
-Write a policy to set up a variable called "first_name"
-and set the value to YOUR FIRST NAME
-
-Then create a reports promise to have CFEngine say hello to you (using your
-first name)

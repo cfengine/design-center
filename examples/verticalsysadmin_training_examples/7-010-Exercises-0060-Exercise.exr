@@ -1,3 +1,0 @@
-Write a promise that logs when it is repaired to '/var/log/cfengine/repairs.log'
-
-Reference: Special Topics guide on Reporting.

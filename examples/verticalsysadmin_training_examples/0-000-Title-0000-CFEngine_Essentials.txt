@@ -1,5 +1,0 @@
-CFEngine Essentials
-===================
-
-:author: Aleksey Tsalolikhin
-

@@ -1,3 +1,0 @@
-=== CFEngine As A Service
-
-CFEngine running as a service

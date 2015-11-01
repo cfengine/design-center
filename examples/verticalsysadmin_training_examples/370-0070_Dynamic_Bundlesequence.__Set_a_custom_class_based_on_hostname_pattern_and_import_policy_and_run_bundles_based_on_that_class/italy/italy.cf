@@ -1,7 +1,0 @@
-bundle agent italy {
-
-reports:
-  linux::
-    "This promise came out of italy/italy.cf";
-
-}
