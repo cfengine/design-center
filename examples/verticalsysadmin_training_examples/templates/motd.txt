@@ -1,6 +1,0 @@
-This computer system is managed by CFEngine.
-Make your changes through CFEngine or they 
-will be overwritten.
-
-This file was last updated on $(sys.date).
-
