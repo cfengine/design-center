@@ -126,6 +126,7 @@ sub make_inv_file
         my $encoder = JSON::PP->new()->utf8()->canonical();
         foreach my $f (sort @todo)
         {
+            $api->log5("Regenerating index: examining %s", $f);
             eval
             {
                 my $d = dirname($f);

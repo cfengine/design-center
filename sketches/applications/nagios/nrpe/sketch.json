@@ -13,7 +13,7 @@
         "description": "Sketch for configuring Nagios NRPE",
         "version": 1.00,
         "license": "MIT",
-        "tags": [ "cfdc", "nagios", "nrpe" ],
+        "tags": [ "cfdc", "nagios", "nrpe", "enterprise_compatible" ],
         "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>" ],
         "depends": { "CFEngine::dclib": {}, "cfengine": { "version": "3.4.0" }, "os": [ "ubuntu|debian" ] }
     },

@@ -311,6 +311,13 @@ sub save_runfile
     return $result;
 }
 
+sub semantic_sprintf
+{
+    my $todo = shift @_;
+    $todo =~ s/^(\d+\.)?(\d+\.)?(\d+)$/sprintf("%010d.%010d.%010d", $1, $2, $3)/e;
+    return $todo;
+}
+
 sub is_ok_cfengine_version
 {
     my $self = shift @_;
@@ -318,7 +325,7 @@ sub is_ok_cfengine_version
 
     return 0 unless defined $req;
 
-    return $req le $self->cfengine_version();
+    return semantic_sprintf($req) le semantic_sprintf($self->cfengine_version());
 }
 
 sub all_repos
