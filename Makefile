@@ -19,7 +19,7 @@ I:=/usr/bin/install
 endif
 
 check:
-	cd tools/test; make api_selftest_junit NOIGNORE=1
+	cd tools/test; $(MAKE) api_selftest_junit NOIGNORE=1
 
 # NOTE: extract bundle with git clone -b $(BUNDLEREF) $(DESTDIR)/design-center.bundle
 install-bundle:
@@ -33,6 +33,6 @@ install-sketches:
 	/bin/cp -rp ./sketches $(DESTDIR)/
 
 install-tools:
-	cd tools/cf-sketch; make install-full PREFIX=$(DESTDIR) GIT=$(GIT)
+	cd tools/cf-sketch; $(MAKE) install-full PREFIX=$(DESTDIR) GIT=$(GIT)
 
 install: install-sketches install-tools
