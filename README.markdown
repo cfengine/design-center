@@ -1,3 +1,7 @@
+**Design Center has been replaced with CFEngine Build:**
+
+https://build.cfengine.com
+
 # The CFEngine Design Center
 
 **Please note: you need [CFEngine 3.6.0](http://cfengine.com) or later to use the Design Center tools and sketches.**
